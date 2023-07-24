@@ -11,6 +11,7 @@ import {
 import { step14VisitSection } from '../step-14';
 import { step14CertificateQuestion } from '../step-14';
 import { Rating as RatingType } from '../../..';
+import { step12VisitSection } from '../step-12';
 
 interface Section {
   questions?: Question[];
@@ -35,6 +36,9 @@ export const Rating = ({
   sectionQuestions,
   setPqaRating,
 }: TableProps) => {
+  const step12Answer = sectionQuestions?.find(
+    (item) => item.visitSection === step12VisitSection
+  )?.questions[0].answer as string[];
   const step14Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step14VisitSection)
     ?.questions.find(
@@ -87,9 +91,13 @@ export const Rating = ({
   ];
 
   const isRedFlagScoreLess5 = sectionList[2].score < 5;
-  const isRedFlagSmartSpaceLicence = step14Question1Answer === true;
-  const isOrangeFlagProgramme = step16Question2Answer === (false || 'false');
-  const isOrangeFlagManyChildren = step16Question3Answer === (true || 'true');
+  // eslint-disable-next-line eqeqeq
+  const isRedFlagSmartSpaceLicence = step14Question1Answer == false;
+  const isRedFlagSmartSpaceCheck = step12Answer?.length < 12;
+  // eslint-disable-next-line eqeqeq
+  const isOrangeFlagProgramme = step16Question2Answer == false;
+  // eslint-disable-next-line eqeqeq
+  const isOrangeFlagManyChildren = step16Question3Answer == true;
 
   const body = [
     {
@@ -132,11 +140,14 @@ export const Rating = ({
       rating > 42 && (isOrangeFlagProgramme || isOrangeFlagManyChildren);
     const isOrangeRating = rating >= 18 && rating <= 42;
     const isOrangeCard =
-      (isOrangeRating || isOrangeFlag) && !isRedFlagSmartSpaceLicence;
+      (isOrangeRating || isOrangeFlag) &&
+      !isRedFlagSmartSpaceLicence &&
+      !isRedFlagSmartSpaceCheck;
 
     if (
       rating > 42 &&
       ratingColours.every((item) => item === 'successMain') &&
+      !isRedFlagSmartSpaceCheck &&
       !isRedFlagSmartSpaceLicence &&
       !isOrangeFlag
     ) {
@@ -197,7 +208,7 @@ export const Rating = ({
             {rating}/68
           </p>
         </div>
-        {isRedFlagSmartSpaceLicence && (
+        {(isRedFlagSmartSpaceLicence || isRedFlagSmartSpaceCheck) && (
           <Typography
             type="h4"
             text={`Although the PQA score is ${
@@ -214,6 +225,7 @@ export const Rating = ({
       {getCard()}
       {(isRedFlagScoreLess5 ||
         isRedFlagSmartSpaceLicence ||
+        isRedFlagSmartSpaceCheck ||
         isOrangeFlagProgramme ||
         isOrangeFlagManyChildren) && (
         <ul className="ml-5 mb-4 list-disc">
@@ -222,6 +234,11 @@ export const Rating = ({
           )}
           {isRedFlagScoreLess5 && (
             <li className="text-textMid">Score for Part 3 was less than 5</li>
+          )}
+          {isRedFlagSmartSpaceCheck && (
+            <li className="text-textMid">
+              Score for SmartSpace check was less than 12
+            </li>
           )}
           {isOrangeFlagProgramme && (
             <li className="text-textMid">

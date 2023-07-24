@@ -76,6 +76,7 @@ export const Step14 = ({
   const step13Answer = sectionQuestions?.find(
     (item) => item.visitSection === step13VisitSection
   )?.questions[0].answer as string[];
+  const isToShowFirstQuestion = step12Answer?.length >= 12;
 
   const options = [
     { text: 'Yes', value: true, disabled: isViewAnswers },
@@ -104,13 +105,17 @@ export const Step14 = ({
         },
       ]);
 
-      if (updatedQuestions[1].answer !== '') {
+      const isAllCompleted = isToShowFirstQuestion
+        ? updatedQuestions.every((question) => question.answer !== '')
+        : updatedQuestions[1].answer !== '';
+
+      if (isAllCompleted) {
         setEnableButton?.(true);
       } else {
         setEnableButton?.(false);
       }
     },
-    [questions, setEnableButton, setSectionQuestions]
+    [isToShowFirstQuestion, questions, setEnableButton, setSectionQuestions]
   );
 
   const renderTopCard = useMemo(() => {
@@ -259,7 +264,7 @@ export const Step14 = ({
         />
       )}
       {renderTopCard}
-      {step12Answer?.length >= 12 && (
+      {isToShowFirstQuestion && (
         <>
           <Typography
             type="h4"
