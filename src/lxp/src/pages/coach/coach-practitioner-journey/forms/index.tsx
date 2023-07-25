@@ -9,7 +9,7 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
@@ -55,9 +55,12 @@ import { ChildrenDialog } from './dialog';
 import {
   step15ReAccreditationQuestions,
   step15ReAccreditationVisitSection,
+  step2ReAccreditationVisitSection,
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { options } from './reaccreditation/step-2/options';
+import ROUTES from '@/routes/routes';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -106,6 +109,7 @@ export const Form = ({
   >();
 
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
 
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
@@ -125,6 +129,12 @@ export const Form = ({
   const step16Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step16VisitSection)
     ?.questions.find((item) => item.question === step16Question1)?.answer;
+  const step2ReAccreditationQuestionAnswers = sectionQuestions?.find(
+    (item) => item.visitSection === step2ReAccreditationVisitSection
+  )?.questions?.[0]?.answer as string[] | undefined;
+  const isBasicSmartSpaceStandardsCompleted =
+    step2ReAccreditationQuestionAnswers?.length === options.length;
+
   const step15ReAccreditationQuestion1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step15ReAccreditationVisitSection)
     ?.questions.find(
@@ -501,8 +511,20 @@ export const Form = ({
         })
       );
       appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
+
+      if (!isBasicSmartSpaceStandardsCompleted) {
+        // TODO: add schedule feature
+        onBack?.();
+        history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
+      }
     },
-    [appDispatch, practitionerId]
+    [
+      appDispatch,
+      history,
+      isBasicSmartSpaceStandardsCompleted,
+      onBack,
+      practitionerId,
+    ]
   );
 
   const onSubmit = useCallback(() => {
@@ -665,6 +687,7 @@ export const Form = ({
         isToShowStep1: true,
         isToShowStep16: true,
         isToRemoveSmartStarter,
+        isBasicSmartSpaceStandardsCompleted,
       });
     }
 
@@ -675,7 +698,13 @@ export const Form = ({
       isToRemoveSmartStarter,
       isToShowStep17: true,
     });
-  }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
+  }, [
+    activityName,
+    isBasicSmartSpaceStandardsCompleted,
+    isStep11AnswerTrue,
+    isToRemoveSmartStarter,
+    visitName,
+  ]);
 
   const onSetPqaRating = (rating: Rating) => {
     if (rating.score === pqaRating?.score) return;
@@ -761,6 +790,11 @@ export const Form = ({
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
+        submitButton={
+          !isBasicSmartSpaceStandardsCompleted
+            ? { text: 'Save & next', icon: 'SaveIcon' }
+            : undefined
+        }
         setPqaRating={onSetPqaRating}
         setReAccreditationRating={onSetReAccreditationRating}
         isLoading={
