@@ -1,0 +1,385 @@
+import { Button, Typography, classNames } from '@ecdlink/ui';
+import Fuse from 'fuse.js';
+import {
+  ChangeEvent,
+  Key,
+  ReactChild,
+  ReactFragment,
+  ReactPortal,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
+import Table from 'react-tailwind-table';
+import Icon from '../icon';
+import { Link, useHistory } from 'react-router-dom';
+import { useLazyQuery, useMutation } from '@apollo/client';
+import { sentInviteToMultipleUsers } from '@ecdlink/graphql';
+import { ReactI18NextChild } from 'react-i18next';
+import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
+import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+
+export default function UiTable(
+  {
+    columns = [],
+    rows = [],
+    options = {},
+    urlRow,
+    searchInput,
+    component,
+  }: UiTableProps,
+  props
+) {
+  const history = useHistory();
+  const [inviteRows, setInviteRows] = useState<boolean>(false);
+  const { setNotification, clearNotification } = useNotifications();
+
+  const [lastUpdate, setLastUpdate] = useState(Date.now());
+  const [searchValue, setSearchValue] = useState('');
+  const [searchRows, setSearchRows] = useState<any[]>([]);
+  const [selectedRows, setSelectedRows] = useState([]);
+  const searchKeys = useRef(columns.map(({ field }) => field));
+  const fuseOptions = {
+    keys: searchKeys.current,
+    shouldSort: false,
+    threshold: 0,
+    distance: 0,
+  };
+  const fuse = useRef(new Fuse(rows, fuseOptions));
+
+  const [sendInvitations, { loading: invitationsLoading }] = useMutation(
+    sentInviteToMultipleUsers,
+    {
+      variables: {
+        userIds: [],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const inviteUsers = () => {
+    sendInvitations({
+      variables: {
+        userIds: selectedRows,
+      },
+    })
+      .then((res) => {
+        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+            setNotification({
+              title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+              variant: NOTIFICATION.ERROR,
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to send invitations',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  };
+
+  useEffect(() => {
+    fuse.current = new Fuse(rows, fuseOptions);
+    setSearchRows(getSearchResults());
+    setLastUpdate(Date.now());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows]);
+
+  useEffect(() => {
+    setSearchRows(getSearchResults());
+    setLastUpdate(Date.now());
+    setSearchValue(searchInput);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchInput]);
+
+  const getSearchResults = () => {
+    if (!searchValue) {
+      return rows;
+    }
+    return fuse.current.search(searchValue).map((result) => result.item);
+  };
+
+  const makeColumns = (cols: any[] = []) => {
+    const selectColumn = {
+      field: 'select',
+      use: '',
+      Header: 'Select',
+      accessor: '', // Set the accessor value based on your data structure
+      Cell: null,
+    };
+    console.log(">>>", columns)
+
+    const columnsWithSelect = [selectColumn, ...cols];
+    return component !== 'consent' || component !== 'roles'
+      ? [...columnsWithSelect, ...columns]
+      : [...columns];
+  };
+
+  const handleRowSelect = (
+    event: ChangeEvent<HTMLInputElement>,
+    row: { id: any }
+  ) => {
+    const selectedRowId = row.id;
+    const isChecked = event.target.checked;
+
+    if (selectedRows.length === 0) {
+      setInviteRows(!inviteRows);
+    }
+
+    setSelectedRows((prevSelectedRows) => {
+      if (isChecked) {
+        return [...prevSelectedRows, selectedRowId];
+      } else {
+        return prevSelectedRows.filter(
+          (selectedRow) => selectedRow !== selectedRowId
+        );
+      }
+    });
+  };
+
+  const makeRows = () => {
+    if ((!searchRows?.length && searchValue) || !rows.length) {
+      return [{ [columns[0].field]: 'No entries found' }];
+    }
+
+    return ((searchRows as any[]) || []).map((row: any) => {
+      let rowKey = 1;
+      const rowWithCheckbox = {
+        ...row,
+      };
+
+      ++rowKey;
+      return row;
+    });
+  };
+
+  const formatDate = (value: string | number | Date) => {
+    try {
+      const date = new Date(value);
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear());
+      return `${day}/${month}/${year}`;
+    } catch (e) {
+      return '';
+    }
+  };
+
+  const viewSelectedRow = (selectedRow: any) => {
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+
+    history.push({
+      pathname: urlRow,
+      state: {
+        component: component,
+        userId: selectedRow?.userId,
+      },
+    });
+  };
+
+  const renderFormat = (row: any, column: any, display_value: any) => {
+    if ((!searchRows?.length && searchValue) || !rows.length) {
+      return column.field === columns[0].field ? display_value : <></>;
+    }
+    let rowValue: any;
+
+    const checkboxCell = (
+      <input
+        type="checkbox"
+        className="form-checkbox text-primary border-gray-30 focus:border-secondary focus:outline h-5 w-5 rounded "
+        checked={selectedRows.includes(row.id)}
+        onChange={(event) => handleRowSelect(event, row)}
+      />
+    );
+    if (
+      column.field === 'select' &&
+      component !== 'consent' &&
+      component !== 'roles'
+    ) {
+      return checkboxCell;
+    } else if (typeof display_value === 'boolean') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          {display_value ? (
+            <p className="text-successMain ">Active</p>
+          ) : (
+            <p className="text-errorMain text-normal">Inactive</p>
+          )}
+        </div>
+      );
+    } else if (
+      column.field.match(/created|createdAt|updated|insertedDate|updatedAt/)
+    ) {
+      rowValue = (
+        <span
+          className="cursor-pointer overflow-ellipsis"
+          onClick={() => {
+            component !== 'team-leads' && viewSelectedRow(row);
+          }}
+        >
+          {formatDate(display_value)}
+        </span>
+      );
+    } else if (column.type === 'array') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
+          {display_value?.map(
+            (item: {
+              [x: string]:
+                | boolean
+                | ReactChild
+                | ReactFragment
+                | ReactPortal
+                | Iterable<ReactI18NextChild>;
+              id: Key;
+            }) => (
+              <div
+                key={item.id}
+                className={
+                  `${
+                    item[column.displayProperty] === 'Administrator'
+                      ? 'bg-tertiary'
+                      : item[column.displayProperty] === 'Practitioner'
+                      ? 'bg-secondary'
+                      : 'bg-primary'
+                  }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                }
+              >
+                {item[column.displayProperty]}
+              </div>
+            )
+          )}
+        </div>
+      );
+    } else if (column.type === 'workflowStatus') {
+      rowValue = (
+        <span
+          className={classNames(
+            'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white ',
+            display_value && display_value[0].statusColor
+          )}
+        >
+          {display_value && display_value[0].statusValue}
+        </span>
+      );
+    } else {
+      rowValue =
+        typeof display_value === 'string' ? (
+          <div className="inline-block overflow-ellipsis ">
+            <span>{display_value}</span>
+          </div>
+        ) : (
+          <div>{display_value}</div>
+        );
+    }
+
+    return (
+      <div
+        onClick={() => {
+          component !== 'team-leads' && viewSelectedRow(row);
+        }}
+        className={'cursor-pointer'}
+      >
+        {rowValue}{' '}
+      </div>
+    );
+  };
+
+  return (
+    <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
+      {selectedRows?.length >= 1 && (
+        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2">
+          <div className="w-4/12">
+            <p className="text-md pl-4 text-white">
+              {selectedRows?.length} Selected
+            </p>
+          </div>
+          <div className="flex w-6/12 flex-row items-center">
+            <Button
+              className="mr-4 rounded-xl px-6 py-0"
+              type="filled"
+              isLoading={invitationsLoading}
+              color="secondary"
+              onClick={inviteUsers}
+            >
+              <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
+              <Typography type="help" color="white" text="Resend Invitations" />
+            </Button>
+
+            <Button
+              className="mr-4 rounded-xl px-6 py-0"
+              type="outlined"
+              // isLoading={isLoading}
+              color="tertiary"
+              // onClick={deactivateUser}
+            >
+              <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
+                {' '}
+              </TrashIcon>
+              <Typography
+                type="help"
+                color="tertiary"
+                text={'Deactivate User'}
+              ></Typography>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <Table
+        key={`table-${lastUpdate}`}
+        row_render={renderFormat}
+        should_export={options.should_export || false}
+        show_search={options.show_search || false}
+        styling={{
+          base_bg_color: 'white',
+          base_text_color: 'text-gray-900',
+          top: options.top || {
+            elements: {
+              main: 'hidden',
+            },
+          },
+          main: 'rounded-lg',
+          table_head: {
+            table_row: ` mb-10 border-b-2 border-secondary `,
+            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-infoBb text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
+          },
+          table_body: {
+            main: ``,
+            // table_row: 'border-none bg-secondary ',
+            table_row: 'border-none py-6 bg-infoBb',
+
+            table_data:
+              'truncate w-20 px-6 pt-2 pb-2 text-sm font-medium text-gray-900 border-b border-gray-100',
+          },
+          footer: options.footer || {
+            main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
+            statistics: {
+              main: `${
+                rows.length < 10 ? 'hidden' : ''
+              } text-gray-600 table-stats md:w-auto md:flex-row`,
+              bold_numbers: `text-gray-900 font-bold`,
+            },
+            page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
+          },
+        }}
+        columns={makeColumns()}
+        rows={makeRows()}
+        per_page={10}
+        no_content_text="-"
+        striped
+        bordered
+      />
+    </div>
+  );
+}
