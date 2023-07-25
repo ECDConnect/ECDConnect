@@ -8,7 +8,7 @@ import {
   ButtonGroupTypes,
   FormInput,
 } from '@ecdlink/ui';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { useState } from 'react';
 import {
   EditConsentAgreementProps,
@@ -32,7 +32,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     setValue: setConsentFormValue,
     register: consentFormRegister,
     // reset: resetConsentFormValue,
-    // control: consentFormControl,
+    control: consentFormControl,
   } = useForm<PregnantConsentModel>({
     resolver: yupResolver(pregnantConsentModelSchema),
     mode: 'onBlur',
@@ -43,6 +43,10 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     useState<ContentConsentTypeEnum>(ContentConsentTypeEnum.PhotoPermissions);
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [accept, setAccept] = useState(false);
+
+  const { errors } = useFormState({
+    control: consentFormControl,
+  });
 
   const handleConsentAccept = () => {
     setConsentFormValue('hasConsent', !accept);
@@ -88,6 +92,9 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
             placeholder={'e.g. 2'}
             type={'number'}
             className="mt-4"
+            error={
+              !!errors.numberOfChildren ? errors.numberOfChildren : undefined
+            }
           ></FormInput>
         </div>
       )}

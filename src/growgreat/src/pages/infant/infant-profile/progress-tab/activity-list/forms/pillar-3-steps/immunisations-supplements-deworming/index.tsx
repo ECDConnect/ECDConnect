@@ -13,8 +13,8 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { differenceInDays } from 'date-fns';
-import { getAgeInYearsMonthsAndDays, replaceBraces } from '@ecdlink/core';
+import { differenceInDays, differenceInCalendarMonths } from 'date-fns';
+import { replaceBraces } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { getIsInfantFirstVisitSelector } from '@/store/infant/infant.selectors';
 
@@ -45,7 +45,11 @@ export const ImmunisationsSupplementsDewormingStep = ({
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
+  //const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
+  const ageMonths = differenceInCalendarMonths(
+    new Date(),
+    new Date(dateOfBirth)
+  );
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
 
   const caregiverName = useMemo(
