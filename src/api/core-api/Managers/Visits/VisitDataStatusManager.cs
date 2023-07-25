@@ -1062,7 +1062,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // REFERRALS && G9 FOR ALL
-            if (wIndicator != "Normal" && lIndicator != "Normal" && mIndicator != "Normal") {
+            if (wIndicator != "Normal" || lIndicator != "Normal" || mIndicator != "Normal") {
                 // Referrals
                 comment = firstName + Constants.GGSettings.growth_referral + "<li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li>";
                 AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
