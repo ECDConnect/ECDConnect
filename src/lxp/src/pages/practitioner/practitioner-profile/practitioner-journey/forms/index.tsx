@@ -70,7 +70,7 @@ export const Form = ({ onBack }: FormProps) => {
     )
   );
   const isStep2AllCompleted =
-    step2PreviousData?.questions?.[0].answer.split('.,')?.length ===
+    String(step2PreviousData?.questions?.[0]?.answer)?.split('.,')?.length ===
     options.length;
   const previousData = useSelector(
     getSectionsQuestionsByStep(

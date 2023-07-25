@@ -504,13 +504,13 @@ export const Form = ({
 
   const onSubmitReAccreditation = useCallback(
     ({ payload }: SubmitProps) => {
-      // appDispatch(
-      //   pqaActions.addVisitFormData(payload, {
-      //     userId: practitionerId,
-      //     formType: 're-accreditation',
-      //   })
-      // );
-      // appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
+      appDispatch(
+        pqaActions.addVisitFormData(payload, {
+          userId: practitionerId,
+          formType: 're-accreditation',
+        })
+      );
+      appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
 
       if (!isBasicSmartSpaceStandardsCompleted) {
         // TODO: add schedule feature
@@ -518,7 +518,13 @@ export const Form = ({
         history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       }
     },
-    [history, isBasicSmartSpaceStandardsCompleted, onBack]
+    [
+      appDispatch,
+      history,
+      isBasicSmartSpaceStandardsCompleted,
+      onBack,
+      practitionerId,
+    ]
   );
 
   const onSubmit = useCallback(() => {
