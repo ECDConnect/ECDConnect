@@ -15,7 +15,7 @@ import {
   getCurrentReAccreditationRatingByUserId,
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { useParams } from 'react-router';
 import {
@@ -151,11 +151,7 @@ export const CoachingAndVisitOrCallStep = ({
   const visitId = window.sessionStorage.getItem(visitIdKey);
 
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      practitionerId,
-      visitId || '',
-      'prePqaPreviousFormData'
-    )
+    getVisitDataByVisitIdSelector(visitId || '', 'prePqaPreviousFormData')
   );
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection

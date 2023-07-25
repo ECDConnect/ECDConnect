@@ -354,6 +354,7 @@ export const SignUp: React.FC = () => {
               }
             />
           </div>
+          {/*           
           <Button
             id="gtm-register"
             className={styles.formButton}
@@ -364,7 +365,7 @@ export const SignUp: React.FC = () => {
             onClick={handleSubmit(submitForm)}
           >
             <Typography type="help" color="white" text={'Sign up'} />
-          </Button>
+          </Button> */}
 
           <Divider
             title={'Already have a CHW Connect account?'}

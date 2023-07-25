@@ -86,7 +86,6 @@ export default function HealthCareWorkerPanelCreate(
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
   const [idType, setIdType] = useState<string>('idNumber');
 
-
   // FORMS
   // USER FORM DETAILS
   const { register, formState, getValues, handleSubmit } = useForm({
@@ -129,7 +128,7 @@ export default function HealthCareWorkerPanelCreate(
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       phoneNumber: userDetailForm.phoneNumber,
-      contactPreference: "sms"
+      contactPreference: 'sms',
     };
 
     await createUser({
@@ -137,8 +136,6 @@ export default function HealthCareWorkerPanelCreate(
         input: { ...userInputModel },
       },
     }).then(async (response) => {
-
-
       const userId = response.data.addUser.id;
       if (userId) {
         await saveHealthCareWorker(userId);
@@ -226,7 +223,6 @@ export default function HealthCareWorkerPanelCreate(
             Create Community Health Worker
           </h1>
           <p className="text-md pb-2 text-gray-500">Step 1 of 1</p>
-
         </div>
         <div className=" border-t border-dashed border-gray-500 px-4 py-5 ">
           <form className="space-y-6 divide-y divide-gray-200">
@@ -268,23 +264,31 @@ export default function HealthCareWorkerPanelCreate(
                 </div>
 
                 <div className="my-4 sm:col-span-3">
-                  <div className=' flex flex-row mb-4'>
+                  <div className=" mb-4 flex flex-row">
                     <Button
-                      className={"mt-3 mr-1 w-full rounded-md "}
-                      type={idType === 'idNumber' ? "filled" : "outlined"}
+                      className={'mt-3 mr-1 w-full rounded-md '}
+                      type={idType === 'idNumber' ? 'filled' : 'outlined'}
                       color="tertiary"
                       onClick={() => setIdType('idNumber')}
                     >
-                      <Typography type="help" color={idType === 'idNumber' ? "white" : "tertiary"} text="Id Number"></Typography>
+                      <Typography
+                        type="help"
+                        color={idType === 'idNumber' ? 'white' : 'tertiary'}
+                        text="Id Number"
+                      ></Typography>
                     </Button>
 
                     <Button
                       className="mt-3 w-full rounded-md"
-                      type={idType === 'Passport' ? "filled" : "outlined"}
+                      type={idType === 'Passport' ? 'filled' : 'outlined'}
                       color="tertiary"
                       onClick={() => setIdType('Passport')}
                     >
-                      <Typography type="help" color={idType === 'Passport' ? "white" : "tertiary"} text="Passport"></Typography>
+                      <Typography
+                        type="help"
+                        color={idType === 'Passport' ? 'white' : 'tertiary'}
+                        text="Passport"
+                      ></Typography>
                     </Button>
                   </div>
                   <FormField
@@ -292,9 +296,12 @@ export default function HealthCareWorkerPanelCreate(
                     nameProp={'idNumber'}
                     register={register}
                     error={errors.idNumber?.message}
-                    placeholder={idType === 'idNumber' ? "e.g 6201014800088" : "e.g EN000666"}
+                    placeholder={
+                      idType === 'idNumber'
+                        ? 'e.g 6201014800088'
+                        : 'e.g EN000666'
+                    }
                   />
-
                 </div>
               </div>
             </div>
@@ -302,9 +309,7 @@ export default function HealthCareWorkerPanelCreate(
           <div></div>
         </div>
 
-        <div className="  rounded-lg border-b border-gray-200 px-4 pb-6">
-
-        </div>
+        <div className="  rounded-lg border-b border-gray-200 px-4 pb-6"></div>
       </>
     );
   };

@@ -19,6 +19,12 @@ import { SuccessCard } from '@/components/success-card/success-card';
 import { showDialog } from './dialog';
 import { getNextDateByDay } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
+import {
+  childDocumentationModelSchema,
+  ChildDocumentationModel,
+} from './child-documentation';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useForm, useFormState } from 'react-hook-form';
 
 enum Question {
   one = 0,
@@ -38,6 +44,15 @@ export const ChildDocumentationStep = ({
   setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
+  const { register: childDocumentRegister, control: childDocumentControl } =
+    useForm<ChildDocumentationModel>({
+      resolver: yupResolver(childDocumentationModelSchema),
+      mode: 'onBlur',
+      reValidateMode: 'onChange',
+    });
+
+  const { errors } = useFormState({ control: childDocumentControl });
+
   const [questions, setAnswers] = useState([
     {
       question: birthCertificateQuestion,
@@ -254,12 +269,15 @@ export const ChildDocumentationStep = ({
               label={replaceBraces(questionTwo.question, name)}
               subLabel="The ID number is needed to complete the profile."
               placeholder="e.g 851201123456"
+              nameProp={'idNumber'}
               type="number"
               className="mt-4"
+              register={childDocumentRegister}
               value={questionTwo.answer as string}
               onChange={(event) =>
                 onOptionSelected(event.target.value, Question.two)
               }
+              error={!!errors.idNumber ? errors.idNumber : undefined}
             ></FormInput>
             <Typography
               type="h3"

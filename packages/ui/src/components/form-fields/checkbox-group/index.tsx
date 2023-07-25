@@ -111,7 +111,7 @@ export const CheckboxGroup = ({
       </div>
       {extraChildren}
       {disabled && (
-        <span className="absolute left-0 h-full w-full bg-gray-100 opacity-70" />
+        <span className="absolute left-0 h-full w-full bg-gray-100 opacity-50" />
       )}
     </label>
   );

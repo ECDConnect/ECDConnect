@@ -90,7 +90,6 @@ export function Dropdown<T>({
           onBlur={onToggleMenu}
           disabled={disabled}
         />
-     
       </div>
     ),
     [search, selectedItem.label, placeholder, fillType, fillColor, disabled]

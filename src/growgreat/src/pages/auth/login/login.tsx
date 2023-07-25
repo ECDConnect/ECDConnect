@@ -210,7 +210,7 @@ export const Login: React.FC = () => {
         >
           <Typography type="help" color="white" text={'Log in'} />
         </Button>
-        <Button
+        {/* <Button
           id="gtm-signup"
           type="outlined"
           color={'primary'}
@@ -219,7 +219,7 @@ export const Login: React.FC = () => {
           onClick={() => history.push(ROUTES.SIGN_UP)}
         >
           <Typography type="help" color="primary" text={'Sign up'} />
-        </Button>
+        </Button> */}
       </form>
     </BannerWrapper>
   );

@@ -4,10 +4,11 @@ import {
   UserDto,
   PractitionerDto,
   PractitionerColleagues,
-  ClassroomDto,
+  ClassroomGroupDto,
 } from '@ecdlink/core';
 import {
   ClassroomGroupReassignmentsInput,
+  LicenseModelInput,
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
   PractitionerInput,
@@ -598,7 +599,7 @@ class PractitionerService {
 
   async getClassroomGroupClassroomsForPractitioner(
     userId: string
-  ): Promise<{ classroom: ClassroomDto }> {
+  ): Promise<ClassroomGroupDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -1178,7 +1179,9 @@ class PractitionerService {
 
   async deActivatePractitioner(
     userId: string,
-    leavingComment?: string
+    reasonForPractitionerLeavingId: string,
+    leavingComment?: string,
+    reasonDetails?: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
@@ -1187,21 +1190,51 @@ class PractitionerService {
       errors?: {};
     }>(``, {
       query: `
-      mutation DeActivatePractitioner($userId: String, $leavingComment: String) {          
-        deActivatePractitioner(userId: $userId, leavingComment: $leavingComment) {          
+      mutation DeActivatePractitioner($userId: String, $leavingComment: String, $reasonForPractitionerLeavingId: String, $reasonDetails: String) {          
+        deActivatePractitioner(userId: $userId, leavingComment: $leavingComment, reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId, reasonDetails: $reasonDetails) {          
       }        
       }
       `,
       variables: {
         userId,
         leavingComment,
+        reasonForPractitionerLeavingId,
+        reasonDetails,
       },
     });
     if (response.status !== 200 || response.data.errors) {
-      throw new Error('Get Practitioner Failed - Server connection error');
+      throw new Error(
+        'Deactivate Practitioner Failed - Server connection error'
+      );
     }
 
     return response.data.data.deActivatePractitioner;
+  }
+
+  async delicensePractitioner(input: LicenseModelInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<{
+      data: { delicensePractitioner: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation delicensePractitioner($input: LicenseModelInput) {          
+        delicensePractitioner(input: $input) {          
+      }        
+      }
+      `,
+      variables: {
+        input,
+      },
+    });
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Delicense Practitioner Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.delicensePractitioner;
   }
 }
 

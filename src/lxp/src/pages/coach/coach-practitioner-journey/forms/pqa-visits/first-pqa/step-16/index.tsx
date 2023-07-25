@@ -1,13 +1,18 @@
 import {
+  Alert,
   ButtonGroup,
   ButtonGroupTypes,
   Colours,
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
-import { Fragment, useCallback, useState } from 'react';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { step5TotalScore, step5VisitSection } from '../step-5';
+import { parseBool, usePrevious, useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const step16VisitSection = 'Step 16';
 export const step16Question1 =
@@ -17,8 +22,14 @@ export const step16Question2 =
 export const step16Question3 =
   'Are there too many children attending the SmartStart programme?';
 
+interface State {
+  question: string;
+  answer: string;
+}
+
 export const Step16 = ({
   sectionQuestions,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -37,13 +48,38 @@ export const Step16 = ({
     },
   ]);
 
-  const step5Questions = sectionQuestions?.find(
-    (item) => item.visitSection === step5VisitSection
-  )?.questions;
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousDataStep5 = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step5VisitSection
+    )
+  );
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step16VisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
+
+  const step5Questions = isViewAnswers
+    ? previousDataStep5?.questions
+    : sectionQuestions?.find((item) => item.visitSection === step5VisitSection)
+        ?.questions;
 
   const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+    { text: 'Yes', value: true, disabled: isViewAnswers },
+    { text: 'No', value: false, disabled: isViewAnswers },
   ];
 
   const getScore = () => {
@@ -99,6 +135,32 @@ export const Step16 = ({
     [questions, setEnableButton, setSectionQuestions]
   );
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      setAnswers(
+        () =>
+          previousData?.questions.map((item) => ({
+            ...item,
+            answer: item?.answer ? parseBool(String(item.answer)) : '',
+          })) as State[]
+      );
+    }
+  }, [isViewAnswers, previousData, previousStatePreviousData]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   return (
     <div className="p-4">
       <Typography
@@ -107,6 +169,12 @@ export const Step16 = ({
         text="Additional concerns or observations"
         color="textDark"
       />
+      {isViewAnswers && (
+        <Alert
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       {questions.map((item, index) => (
         <Fragment key={item.question}>
           <Typography
@@ -119,6 +187,9 @@ export const Step16 = ({
             color="secondary"
             type={ButtonGroupTypes.Button}
             options={options}
+            selectedOptions={
+              item.answer !== '' ? Boolean(item.answer) : undefined
+            }
             onOptionSelected={(value) => onOptionSelected(value, index)}
           />
           {index === 0 && (

@@ -17,8 +17,4 @@ export const editProfileSchema = Yup.object().shape({
       'Password must contain at least 1 capital letter and 1 number'
     )
     .required('Password is required'),
-
 });
-
-
-

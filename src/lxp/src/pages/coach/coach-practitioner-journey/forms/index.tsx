@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseBool, useDialog, usePrevious, useSnackbar } from '@ecdlink/core';
+import {
+  ReasonsForPractitionerLeaving,
+  parseBool,
+  useDialog,
+  usePrevious,
+  useSnackbar,
+} from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
@@ -39,6 +45,7 @@ import {
 import {
   PractitionerActions,
   deActivatePractitioner,
+  delicensePractitioner,
 } from '@/store/practitioner/practitioner.actions';
 import {
   delicensingQuestion2,
@@ -238,8 +245,10 @@ export const Form = ({
 
   const setRatingStep = useCallback(() => {
     const stepsLength = getFirstPqaSteps({
+      isToShowStep1: true,
       isStep11AnswerTrue,
       isToRemoveSmartStarter,
+      isToShowStep17: true,
     }).length;
 
     if (stepsLength <= 16) {
@@ -564,9 +573,38 @@ export const Form = ({
       ?.questions?.find((item) => item.question === delicensingQuestion2)
       ?.answer as string | undefined;
 
+    const collectedDocsQuestions = sectionQuestions
+      ?.find((item) => item.visitSection === delicensingStep1VisitSection)
+      ?.questions?.find((item) =>
+        item.question.endsWith(
+          'to return the items below and confirm that you have received them.'
+        )
+      )?.answer as string[] | [];
+
+    const collectedSSPlaykit = collectedDocsQuestions.some((answer) =>
+      answer.endsWith('SmartStart playkit')
+    );
+    const collectedSSHandbook = collectedDocsQuestions.some((answer) =>
+      answer.endsWith('SmartStart handbook')
+    );
+
     if (!!practitioner?.userId) {
       appDispatch(
-        deActivatePractitioner({ userId: practitioner?.userId, leavingComment })
+        deActivatePractitioner({
+          userId: practitioner?.userId,
+          reasonForPractitionerLeavingId:
+            ReasonsForPractitionerLeaving.DELICENSED,
+          leavingComment,
+        })
+      );
+      appDispatch(
+        delicensePractitioner({
+          userId: practitioner?.userId,
+          delicensedDate: new Date(),
+          delicensedComment: leavingComment,
+          collectedSSHandbook,
+          collectedSSPlaykit,
+        })
       );
     }
   };
@@ -623,11 +661,20 @@ export const Form = ({
 
     if (visitName.includes(visitTypes.reaccreditation.includes)) {
       setTitle('Reaccreditation');
-      return getReAccreditationSteps({ isToRemoveSmartStarter });
+      return getReAccreditationSteps({
+        isToShowStep1: true,
+        isToShowStep16: true,
+        isToRemoveSmartStarter,
+      });
     }
 
     setTitle(visitTypes.pqa.firstPQA.description);
-    return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
+    return getFirstPqaSteps({
+      isToShowStep1: true,
+      isStep11AnswerTrue,
+      isToRemoveSmartStarter,
+      isToShowStep17: true,
+    });
   }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
 
   const onSetPqaRating = (rating: Rating) => {

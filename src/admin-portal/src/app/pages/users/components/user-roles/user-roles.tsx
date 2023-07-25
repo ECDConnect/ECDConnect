@@ -20,11 +20,15 @@ const UserRoles: React.FC<UserRolesProps> = ({
     }
   }, [roles]);
 
-  const handleUserRolesChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleUserRolesChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
     const selectedRoleName = event.target.value;
     setSelectedUserRole(selectedRoleName);
 
-    const selectedRole = roleList.find((role) => role.name === selectedRoleName);
+    const selectedRole = roleList.find(
+      (role) => role.name === selectedRoleName
+    );
     if (selectedRole) {
       onUserRoleChange([selectedRole]);
     } else {

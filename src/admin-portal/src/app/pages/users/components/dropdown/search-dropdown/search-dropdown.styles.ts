@@ -1,7 +1,4 @@
-import {
-  Colours,
-  classNames,
-} from '@ecdlink/ui';
+import { Colours, classNames } from '@ecdlink/ui';
 
 export const menu = 'w-full';
 export const icon = 'h-6 w-6 pr-2';

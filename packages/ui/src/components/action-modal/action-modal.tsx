@@ -46,7 +46,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
   children,
   customDetailText,
   className,
-  buttonClass
+  buttonClass,
 }) => {
   return (
     <div
@@ -139,7 +139,10 @@ export const ActionModal: React.FC<ActionModalProps> = ({
       {actionButtons.map((button, index, { length }) => (
         <Button
           key={`action-modal-button-${index}`}
-          className={classNames(`mt-2 w-full ${index + 1 === length ? 'mb-0' : 'mb-2'}`, buttonClass)}
+          className={classNames(
+            `mt-2 w-full ${index + 1 === length ? 'mb-0' : 'mb-2'}`,
+            buttonClass
+          )}
           type={button.type}
           color={button.colour}
           onClick={button.onClick}

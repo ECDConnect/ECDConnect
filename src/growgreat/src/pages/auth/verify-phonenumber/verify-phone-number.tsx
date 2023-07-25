@@ -23,7 +23,8 @@ export const VerifyPhoneNumber = () => {
   const confirm = async () => {
     setIsLoading(true);
     setRequestDone(true);
-    if (window.sessionStorage.getItem('verifyPhoneNumberToken') === state.token) return;
+    if (window.sessionStorage.getItem('verifyPhoneNumberToken') === state.token)
+      return;
     window.sessionStorage.setItem('verifyPhoneNumberToken', state.token);
 
     const accepted = await new AuthService().AcceptInvitationRequest({
@@ -61,8 +62,7 @@ export const VerifyPhoneNumber = () => {
   };
 
   useEffect(() => {
-    if (!requestDone)
-      confirm();
+    if (!requestDone) confirm();
   }, []);
 
   return <Loader loadingMessage={isLoading ? 'Loading . . .' : ''} />;

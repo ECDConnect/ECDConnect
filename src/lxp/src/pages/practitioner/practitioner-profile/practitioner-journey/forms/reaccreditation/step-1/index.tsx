@@ -1,7 +1,7 @@
 import { Divider, LoadingSpinner, Note, Typography } from '@ecdlink/ui';
-import { visitIdKey } from '../..';
+import { practitionerVisitIdKey } from '../..';
 import { useSelector } from 'react-redux';
-import { getVisitDataForVisitIdSelectorByUserId } from '@/store/pqa/pqa.selectors';
+import { getVisitDataByVisitIdSelector } from '@/store/pqa/pqa.selectors';
 import { DynamicFormProps, Question } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
 import { dateLongMonthOptions } from '../../../timeline/utils';
@@ -25,7 +25,7 @@ export const ReAccreditationSummaryStep1 = ({
   setEnableButton,
   smartStarter,
 }: DynamicFormProps) => {
-  const visitId = window.sessionStorage.getItem(visitIdKey) || '';
+  const visitId = window.sessionStorage.getItem(practitionerVisitIdKey) || '';
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
@@ -33,11 +33,7 @@ export const ReAccreditationSummaryStep1 = ({
   );
 
   const data = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      smartStarter?.id || '',
-      visitId,
-      'reAccreditationPreviousFormData'
-    )
+    getVisitDataByVisitIdSelector(visitId, 'reAccreditationPreviousFormData')
   );
   const date = data?.[0]?.insertedDate;
 
@@ -107,7 +103,11 @@ export const ReAccreditationSummaryStep1 = ({
 
   return (
     <div className="p-4">
-      <Typography type="h2" text="PQA rating" color="textDark" />
+      <Typography
+        type="h2"
+        text="Reaccreditation PQA rating"
+        color="textDark"
+      />
       <Typography
         type="h4"
         text={new Date(date).toLocaleString('en-ZA', dateLongMonthOptions)}
@@ -115,7 +115,10 @@ export const ReAccreditationSummaryStep1 = ({
       />
       <Divider dividerType="dashed" className="my-4" />
       <Rating sections={sections} sectionQuestions={sectionQuestions} />
-      <Note title="Summary of discussion" body={String(summaryNote?.answer)} />
+      <Note
+        title="Summary of discussion"
+        body={summaryNote?.answer ? String(summaryNote?.answer) : '---'}
+      />
     </div>
   );
 };

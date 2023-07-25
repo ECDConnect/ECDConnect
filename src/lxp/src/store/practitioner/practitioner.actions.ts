@@ -7,12 +7,14 @@ import {
   PractitionerInput,
   MutationUpdatePractitionerProgressArgs,
   MutationUpdatePractitionerUsePhotoInReportArgs,
+  LicenseModelInput,
 } from '@ecdlink/graphql';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
   UPDATE_PRACTITIONER_PROGRESS: 'updatePractitionerProgress',
   DEACTIVATE_PRACTITIONER: 'deActivatePractitioner',
+  DELICENSE_PRACTITIONER: 'delicensePractitioner',
   UPDATE_PRACTITIONER_USEPHOTOINPROGRESS:
     'updatePractitionerUsePhotoInProgress',
 };
@@ -267,11 +269,19 @@ export const updatePractitionerProgress = createAsyncThunk<
 
 export const deActivatePractitioner = createAsyncThunk<
   boolean | undefined,
-  { userId: string; leavingComment?: string },
+  {
+    userId: string;
+    reasonForPractitionerLeavingId: string;
+    leavingComment?: string;
+    reasonDetails?: string;
+  },
   ThunkApiType<RootState>
 >(
   PractitionerActions.DEACTIVATE_PRACTITIONER,
-  async ({ userId, leavingComment }, { getState, rejectWithValue }) => {
+  async (
+    { userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -280,7 +290,35 @@ export const deActivatePractitioner = createAsyncThunk<
       if (userAuth?.auth_token) {
         return await new PractitionerService(
           userAuth.auth_token
-        ).deActivatePractitioner(userId, leavingComment);
+        ).deActivatePractitioner(
+          userId,
+          reasonForPractitionerLeavingId,
+          leavingComment,
+          reasonDetails
+        );
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const delicensePractitioner = createAsyncThunk<
+  boolean | undefined,
+  LicenseModelInput,
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.DELICENSE_PRACTITIONER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PractitionerService(
+          userAuth.auth_token
+        ).delicensePractitioner(input);
       }
     } catch (err) {
       return rejectWithValue(err);

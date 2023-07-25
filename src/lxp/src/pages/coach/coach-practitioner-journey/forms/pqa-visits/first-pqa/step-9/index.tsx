@@ -3,7 +3,7 @@ import { DynamicFormProps } from '../../../dynamic-form';
 import { useLayoutEffect } from 'react';
 
 export const Step9 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
-  const name = smartStarter?.user?.firstName;
+  const name = smartStarter?.user?.firstName || smartStarter?.firstName;
 
   // TODO: add N7
   const isFilledSelfAssessment = false;

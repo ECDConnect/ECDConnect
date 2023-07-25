@@ -82,9 +82,7 @@ export default function Roles() {
           title="Delete Role"
           message={`You are about to delete a Role, this can implicate data issues. Would you like to go ahead`}
           onCancel={onCancel}
-          btnText={
-            ['Yes, Delete Rule', 'No, Cancel']
-          }
+          btnText={['Yes, Delete Rule', 'No, Cancel']}
           onSubmit={() => {
             onSubmit();
 

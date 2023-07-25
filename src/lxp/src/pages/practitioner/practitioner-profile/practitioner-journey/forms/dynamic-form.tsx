@@ -38,6 +38,7 @@ export interface DynamicFormProps {
   onPreviousStep?: () => void;
   onClose?: () => void;
   onSubmit?: () => void;
+  onView?: () => void;
 }
 
 export const DynamicForm = ({
@@ -55,6 +56,7 @@ export const DynamicForm = ({
   setIsSecondaryPage,
   onClose,
   onSubmit,
+  onView,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
@@ -136,10 +138,22 @@ export const DynamicForm = ({
     onNextStep,
   ]);
 
+  const onSubmitFunction = useCallback(() => {
+    if (onView && isView) {
+      return onView();
+    }
+
+    if (isView) {
+      return onClose?.();
+    }
+
+    onSubmit?.();
+  }, [isView, onClose, onSubmit, onView]);
+
   const renderButton = useMemo(() => {
     if (Number(steps?.length) === 1) {
       return {
-        action: isView ? onClose : onSubmit,
+        action: onSubmitFunction,
         text: submitButton.text,
         icon: submitButton.icon,
         type: submitButton.type,
@@ -156,7 +170,7 @@ export const DynamicForm = ({
     }
 
     return {
-      action: isView ? onClose : onSubmit,
+      action: onSubmitFunction,
       text: isView ? 'Close' : submitButton.text,
       icon: isView ? 'XIcon' : submitButton.icon,
       type: submitButton.type,
@@ -164,10 +178,11 @@ export const DynamicForm = ({
   }, [
     steps?.length,
     currentStep,
+    onSubmitFunction,
     isView,
-    onClose,
-    onSubmit,
-    submitButton,
+    submitButton.text,
+    submitButton.icon,
+    submitButton.type,
     handleOnNext,
     nextButtonText,
   ]);

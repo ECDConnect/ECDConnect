@@ -1,4 +1,3 @@
-
 import { Colours, ChipConfig } from '@ecdlink/ui';
 import { SearchDropDownOption } from './SearchDropDownOption';
 

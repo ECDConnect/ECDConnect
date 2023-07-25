@@ -264,7 +264,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public async Task<bool> RemovePractitioner([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
-            [Service] PersonnelService personnelManager,
+            [Service] PersonnelService personnelService,
             UserManager<ApplicationUser> userManager,
             string practitionerId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
@@ -273,56 +273,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             var user = await userManager.FindByIdAsync(practitioner.UserId);
 
-            Console.WriteLine("Starting removal process");
-
             if (!string.IsNullOrEmpty(newPrincipalId))
             {
-                Console.WriteLine("Switching principals");
-                personnelManager.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
+                personnelService.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
             }
 
-            //Reassign all the classes for the practitioner as indicated
+            //Reassign all the classes for the practitioner as indicated            
             foreach (var reassignment in classroomGroupReassignments)
             {
                 if (reassignment.ClassroomGroupId == null || reassignment.PractitionerId == null)
                 {
-                    Console.WriteLine("Failed to reassing class");
                     return false;
                 }
-                Console.WriteLine($"Reassigning class {reassignment.ClassroomGroupId}");
                 reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
             }
 
-            practitioner.DateToBeRemoved = DateTime.Now;
-            practitioner.DateAccepted = null;
-            practitioner.DateLinked = null;
-            practitioner.IsLeaving = true;
-            //update and clear the principals details
-            practitioner.PrincipalHierarchy = null;
-            practitioner.CoachHierarchy = null;
-            practitioner.ShareInfo = false;
-            practitioner.ReasonForPractitionerLeavingId = Guid.Parse(reasonForPractitionerLeavingId);
-            practitioner.ReasonForLeavingDetails = reasonDetails;
-            
-            //update practitioner with column changes
-            practitionerRepo.Update(practitioner);
-
-            //Delete user
-            user.IsActive = false;
-            var updateResult = await userManager.UpdateAsync(user);
-
-            return updateResult.Succeeded;
+            return personnelService.DeActivatePractitioner(practitionerId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
-        public bool DeActivatePractitioner([Service] PersonnelService personnelService, string userId, string leavingComment)
+        public bool DeActivatePractitioner([Service] PersonnelService personnelService,
+            string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
-            return personnelService.DeActivatePractitioner(userId, leavingComment);
+            return personnelService.DeActivatePractitioner(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
 
         public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)
         {
             return userLicenseManager.DelicenseUser(input);
         }
-
     }
 }

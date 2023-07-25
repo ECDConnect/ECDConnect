@@ -14,7 +14,7 @@ import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.t
 import { useSelector } from 'react-redux';
 import {
   getCurrentCoachPractitionerVisitByUserId,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { currentActivityKey } from '../..';
 import { ClassroomGroup, Maybe } from '@ecdlink/graphql';
@@ -73,11 +73,7 @@ export const ProgrammeDetails = ({
     )
   );
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      practitionerId,
-      currentVisit?.id,
-      'prePqaPreviousFormData'
-    )
+    getVisitDataByVisitIdSelector(currentVisit?.id, 'prePqaPreviousFormData')
   );
 
   const previousSectionAnswers = previousVisitAnswers?.filter(

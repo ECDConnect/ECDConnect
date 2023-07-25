@@ -3,9 +3,9 @@ import {
   TableProps,
 } from '@/pages/coach/coach-practitioner-journey/forms/pqa-visits/first-pqa/step-17/table';
 import { Divider, LoadingSpinner, Note, Typography } from '@ecdlink/ui';
-import { visitIdKey } from '../..';
+import { practitionerVisitIdKey } from '../..';
 import { useSelector } from 'react-redux';
-import { getVisitDataForVisitIdSelectorByUserId } from '@/store/pqa/pqa.selectors';
+import { getVisitDataByVisitIdSelector } from '@/store/pqa/pqa.selectors';
 import { DynamicFormProps } from '../../dynamic-form';
 import {
   pqaSummaryQuestionStep17,
@@ -37,18 +37,14 @@ export const PqaSummaryStep1 = ({
   setEnableButton,
   smartStarter,
 }: DynamicFormProps) => {
-  const visitId = window.sessionStorage.getItem(visitIdKey) || '';
+  const visitId = window.sessionStorage.getItem(practitionerVisitIdKey) || '';
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
     PqaActions.GET_VISIT_DATA_FOR_VISIT_ID
   );
   const data = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      smartStarter?.id || '',
-      visitId,
-      'pqaPreviousFormData'
-    )
+    getVisitDataByVisitIdSelector(visitId, 'pqaPreviousFormData')
   );
   const date = data?.[0]?.insertedDate;
 
@@ -147,7 +143,10 @@ export const PqaSummaryStep1 = ({
       />
       <Divider dividerType="dashed" className="my-4" />
       <Rating sections={sections} sectionQuestions={sectionQuestions} />
-      <Note title="Summary of discussion" body={String(summaryNote?.answer)} />
+      <Note
+        title="Summary of discussion"
+        body={summaryNote?.answer ? String(summaryNote?.answer) : '---'}
+      />
     </div>
   );
 };

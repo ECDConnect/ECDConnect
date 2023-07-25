@@ -74,9 +74,8 @@ export default function ContentManagement() {
         <div className="flex justify-center bg-white ">
           {dataTypes.contentTypes.map((item) => (
             <div
-             
               style={{
-                width: '15%'
+                width: '15%',
               }}
             >
               <SubNavigationLink
@@ -87,8 +86,8 @@ export default function ContentManagement() {
           ))}
         </div>
         {!selectedContent && (
-          <div className="shadow flex-1 min-w-0 bg-white xl:flex rounded bg-white">
-            <div className="border-b border-gray-200 xl:border-b-0 xl:flex-shrink-0 xl:w-64 xl:border-r xl:border-uiMidDark ">
+          <div className="min-w-0 flex-1 rounded bg-white bg-white shadow xl:flex">
+            <div className="xl:border-uiMidDark border-b border-gray-200 xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
               {/* <div
                 key={"contentGroupCreate"}
                 onClick={() => displayPanel()}
@@ -109,7 +108,7 @@ export default function ContentManagement() {
                     selectedType?.id === item.id
                       ? 'bg-uiMidDark text-white'
                       : 'text-textMid hover:bg-uiMidDark hover:text-white',
-                    'group flex items-center px-4 text-sm font-medium h-14 cursor-pointer'
+                    'group flex h-14 cursor-pointer items-center px-4 text-sm font-medium'
                   )}
                 >
                   {item.description}
@@ -144,7 +143,7 @@ export default function ContentManagement() {
             goBack={() => setSelectedContent(undefined)}
             savedContent={() => refreshParent()}
           />
-        )} 
+        )}
       </div>
     );
   } else {

@@ -1,11 +1,12 @@
 import {
+  Alert,
   ButtonGroup,
   ButtonGroupTypes,
   Divider,
   FormInput,
   Typography,
 } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { childrenSelectors } from '@/store/children';
@@ -16,11 +17,23 @@ import {
   UserDto,
   getFormattedDateInYearsMonthsAndDays,
   numberToDayOfWeek,
+  parseBool,
   usePrevious,
+  useSessionStorage,
 } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+
+const question3 = 'Was there an assistant present today?';
+
+interface State {
+  question: string;
+  answer: string;
+}
 
 export const Step18 = ({
   smartStarter,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -35,7 +48,7 @@ export const Step18 = ({
       answer: '',
     },
     {
-      question: 'Was there an assistant present today?',
+      question: question3,
       answer: '',
     },
     {
@@ -49,12 +62,32 @@ export const Step18 = ({
   ]);
 
   const visitSection = 'Step 18';
-  const name = smartStarter?.user?.firstName || 'the SmartStarter';
+  const name =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the SmartStarter';
   const isPrincipal = smartStarter?.isPrincipal === true;
 
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      visitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
+
   const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+    { text: 'Yes', value: true, disabled: isViewAnswers },
+    { text: 'No', value: false, disabled: isViewAnswers },
   ];
 
   const children = useSelector(childrenSelectors.getChildren);
@@ -68,7 +101,7 @@ export const Step18 = ({
   );
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const classroomGroups = allClassroomGroups.filter(
-    (x) => x.name !== NoPlaygroupClassroomType.name
+    (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
   const currentClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === smartStarter?.userId
@@ -77,17 +110,17 @@ export const Step18 = ({
     | ClassroomGroupDto[]
     | undefined;
 
-  const currentClassProgrammes = classProgrammes.filter((el) => {
-    return currentClassroomGroups.some((f) => {
-      return f.id === el.classroomGroupId;
+  const currentClassProgrammes = classProgrammes?.filter((el) => {
+    return currentClassroomGroups?.some((f) => {
+      return f?.id === el?.classroomGroupId;
     });
   });
 
-  const days = currentClassProgrammes.map((item) => item.meetingDay).sort();
+  const days = currentClassProgrammes?.map((item) => item?.meetingDay)?.sort();
 
   const stringDays = days
     // remove duplicates
-    .filter((element, index) => days.indexOf(element) === index)
+    .filter((element, index) => days?.indexOf(element) === index)
     .map((item) => numberToDayOfWeek(item, 'short'));
 
   const onOptionSelected = useCallback(
@@ -127,27 +160,25 @@ export const Step18 = ({
   );
 
   const handleChildren = useCallback(() => {
-    if (
-      currentClassProgrammes[0] &&
-      previousClassroomGroups?.length === currentClassroomGroups.length
-    )
+    if (previousClassroomGroups?.length === currentClassroomGroups?.length)
       return;
 
     const filteredChildren = [];
-    const _allLearners = allLearners.filter(
-      (x) => !Boolean(x.stoppedAttendance)
+    const _allLearners = allLearners?.filter(
+      (x) => !Boolean(x?.stoppedAttendance)
     );
 
     for (const learner of _allLearners) {
       if (
-        learner.classroomGroupId !== currentClassProgrammes[0].classroomGroupId
+        learner?.classroomGroupId !==
+        currentClassProgrammes?.[0]?.classroomGroupId
       )
         continue;
 
       const child = children?.find(
-        (child) => child.userId === learner.userId && child.isActive
+        (child) => child?.userId === learner?.userId && child?.isActive
       );
-      const childUser = childUsers?.find((y) => y.id === learner.userId);
+      const childUser = childUsers?.find((y) => y?.id === learner?.userId);
 
       if (
         child &&
@@ -182,7 +213,7 @@ export const Step18 = ({
     childUsers,
     children,
     currentClassProgrammes,
-    currentClassroomGroups.length,
+    currentClassroomGroups?.length,
     previousClassroomGroups?.length,
   ]);
 
@@ -190,9 +221,62 @@ export const Step18 = ({
     handleChildren();
   }, [handleChildren]);
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const updatedQuestions = questions.map((question) => {
+        const correspondingQuestion = previousData?.questions.find(
+          (secondQuestion) => secondQuestion?.question === question.question
+        );
+
+        if (correspondingQuestion) {
+          const isQuestion3 =
+            correspondingQuestion.question.includes(question3);
+
+          return {
+            ...question,
+            answer:
+              isQuestion3 && correspondingQuestion.answer
+                ? parseBool(String(correspondingQuestion.answer))
+                : correspondingQuestion.answer,
+          };
+        }
+
+        return question;
+      });
+
+      setAnswers(updatedQuestions as State[]);
+    }
+  }, [
+    isViewAnswers,
+    previousData?.questions,
+    previousStatePreviousData?.questions?.length,
+    questions,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   return (
     <div className="flex flex-col gap-3 p-4">
       <Typography type="h2" text="Programme details" color="textDark" />
+      {isViewAnswers && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Divider dividerType="dashed" />
       <div className="flex items-center gap-2">
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
@@ -243,13 +327,18 @@ export const Step18 = ({
           type="body"
           text={isPrincipal ? 'Programme days' : 'Class days:'}
         />
-        <Typography color="textMid" type="body" text={stringDays.join(', ')} />
+        <Typography
+          color="textMid"
+          type="body"
+          text={stringDays.length ? stringDays.join(', ') : 'Not provided'}
+        />
       </div>
       <Divider dividerType="dashed" />
       <FormInput
         type="number"
         label={questions[0].question}
         value={questions[0].answer}
+        disabled={isViewAnswers}
         onChange={(e) => onOptionSelected(e.target.value, 0)}
         placeholder={'e.g. 4'}
       />
@@ -257,6 +346,7 @@ export const Step18 = ({
         type="number"
         label={questions[1].question}
         value={questions[1].answer}
+        disabled={isViewAnswers}
         onChange={(e) => onOptionSelected(e.target.value, 1)}
         placeholder={'e.g. 3'}
       />
@@ -271,6 +361,11 @@ export const Step18 = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           options={options}
+          selectedOptions={
+            questions[2].answer !== ''
+              ? Boolean(questions[2].answer)
+              : undefined
+          }
           onOptionSelected={(value) => onOptionSelected(value, 2)}
         />
       </div>
@@ -279,12 +374,14 @@ export const Step18 = ({
           <FormInput
             label={questions[3].question}
             value={questions[3].answer}
+            disabled={isViewAnswers}
             onChange={(e) => onOptionSelected(e.target.value, 3)}
             placeholder={'First name'}
           />
           <FormInput
             label={questions[4].question}
             value={questions[4].answer}
+            disabled={isViewAnswers}
             onChange={(e) => onOptionSelected(e.target.value, 4)}
             placeholder={'Surname/family name'}
           />

@@ -36,8 +36,6 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
   const routeViewUserMatch = useRouteMatch('/view-user/');
   const routeUploadUserMatch = useRouteMatch('/upload-users/');
 
-
-
   return (
     <Link
       to={item.route}
@@ -100,7 +98,6 @@ export default function Shell() {
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
-     
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))
@@ -243,10 +240,10 @@ export default function Shell() {
                   </div>
                 ))}
               </nav>
-              <div className="px-4 md:py-4 flex flex-col mb-2">
+              <div className="mb-2 flex flex-col px-4 md:py-4">
                 <Button
                   className={
-                    'hover:bg-secondary w-full rounded-xl hover:text-white mb-2'
+                    'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
                   }
                   type="filled"
                   // isLoading={isLoading}
@@ -279,7 +276,6 @@ export default function Shell() {
                   ></Typography>
                 </Button>
               </div>
-            
             </div>
           </div>
         </div>

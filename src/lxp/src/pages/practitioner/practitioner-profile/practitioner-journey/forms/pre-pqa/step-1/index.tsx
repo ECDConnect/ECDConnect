@@ -2,7 +2,7 @@ import { Divider, Note, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import {
   getPractitionerTimelineByIdSelector,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { useLayoutEffect } from 'react';
 
@@ -26,15 +26,13 @@ export const PrePqaSummaryStep1 = ({
   const isScheduledVisit2 = !!visit2?.eventId;
 
   const previousVisit1 = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      userId,
+    getVisitDataByVisitIdSelector(
       prePqaVisits?.[0]?.id,
       'prePqaPreviousFormData'
     )
   );
   const previousVisit2 = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      userId,
+    getVisitDataByVisitIdSelector(
       prePqaVisits?.[1]?.id,
       'prePqaPreviousFormData'
     )
@@ -69,7 +67,6 @@ export const PrePqaSummaryStep1 = ({
           body={item?.questionAnswer || '---'}
         />
       ))}
-      {/* TODO: check due date and schedule date */}
       {!visit2Data && (
         <>
           <Typography
