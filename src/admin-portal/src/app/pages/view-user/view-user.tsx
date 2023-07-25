@@ -213,7 +213,8 @@ export function ViewUser(props: any) {
             onSubmit();
             deleteUser({
               variables: {
-                id: userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
+                id:
+                  userData?.userById?.id ?? chwData.GetHealthCareWorkerById.id,
               },
             })
               .then((response: any) => {
@@ -377,7 +378,7 @@ export function ViewUser(props: any) {
     await updateUser({
       variables: {
         id:
-          userData?.userById.id ??
+          userData?.userById?.id ??
           chwData?.GetHealthCareWorkerById?.user.id ??
           teamLeadData?.user.id,
         input: userInputModel,
@@ -407,7 +408,7 @@ export function ViewUser(props: any) {
       await resetUserPassword({
         variables: {
           id:
-            userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
+            userData?.userById?.id ?? chwData?.GetHealthCareWorkerById?.user.id,
           newPassword: passwordForm.password,
         },
       }).then(() => {
