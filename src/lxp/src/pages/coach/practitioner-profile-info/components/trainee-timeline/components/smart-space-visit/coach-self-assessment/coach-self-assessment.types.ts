@@ -3,3 +3,7 @@ export enum CoachSmartSpaceChecklistSteps {
   ADDITIONAL_STANDARDS = 1,
   SAFETY_STRUCTURE_AREA = 2,
 }
+
+export interface Options {
+  [key: string]: string[];
+}

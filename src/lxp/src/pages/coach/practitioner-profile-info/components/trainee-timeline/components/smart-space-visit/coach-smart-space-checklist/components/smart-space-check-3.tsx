@@ -74,6 +74,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
       );
 
       if (previousAnswer) {
+        setEnableButton(true);
         return {
           ...item,
           answer: previousHasTrueAnswer?.answer,

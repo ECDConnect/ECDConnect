@@ -2,6 +2,7 @@ import { api } from '../axios.helper';
 import { Config, TraineeDto } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
+  CmsVisitSectionInput,
   SsChecklistVisitModelInput,
   SupportVisitModelInput,
   TraineeOnBoardTimeline,
@@ -402,6 +403,35 @@ class TraineeService {
     }
 
     return response.data.data.addAdditionalVisitForInfant;
+  }
+
+  async AddCoachFranchiseeAgreementForTrainee(
+    input: SsChecklistVisitModelInput
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addCoachFranchiseeAgreementForTrainee: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation AddCoachFranchiseeAgreementForTrainee($input: SSChecklistVisitModelInput) {
+        addCoachFranchiseeAgreementForTrainee(input: $input) {
+            id
+        }
+    }
+        `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'add Additional Visit For Child failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addCoachFranchiseeAgreementForTrainee;
   }
 }
 

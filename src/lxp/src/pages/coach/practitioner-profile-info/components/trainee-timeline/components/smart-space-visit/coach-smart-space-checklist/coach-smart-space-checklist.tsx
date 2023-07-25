@@ -18,6 +18,15 @@ import { SmartSpaceCheck7 } from './components/smart-space-check-7';
 import { SmartSpaceCheck8 } from './components/smart-space-check-8';
 import { SmartSpaceCheck9 } from './components/smart-space-check-9';
 import { SmartSpaceCheck10 } from './components/smart-space-check-10';
+import {
+  CmsVisitSectionInput,
+  InputMaybe,
+  SsChecklistVisitModelInput,
+  VisitModelInput,
+} from '@ecdlink/graphql';
+import { TraineeService } from '@/services/TraineeService';
+import { authSelectors } from '@/store/auth';
+import { userSelectors } from '@/store/user';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
@@ -31,6 +40,8 @@ export const CoachSmartSpaceChecklist: React.FC<
   CoachSmartSpaceChecklistProps
 > = () => {
   const history = useHistory();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
   const practitioner = location.state.practitioner;
@@ -55,6 +66,34 @@ export const CoachSmartSpaceChecklist: React.FC<
   const saveSmartSpaceCheckData = () => {
     appDispatch(traineeActions.saveCoachSmartSpaceCheckData(sectionQuestions));
   };
+
+  //  const onSubmit = async () => {
+  //     const sections = sectionQuestions?.map((item) => ({
+  //       ...item,
+  //       questions: item.questions.map((question) => ({
+  //         ...question,
+  //         answer: String(question.answer),
+  //       })),
+  //     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+
+  //       const visitDateInput: VisitModelInput = {
+  //         traineeId: practitioner?.userId,
+  //         coachId: user?.id!,
+  //         plannedVisitDate: new Date(),
+  //         attended: true,
+  //         checklistData: {
+  //         visitData: {
+  //           visitName: 'SmartSpace Checklist',
+  //           sections,
+  //         },
+  //       }
+  //     }
+  //       await new TraineeService(userAuth?.auth_token!).addCoachVisitInviteForTrainee(
+  //         visitDateInput
+  //       );
+
+  //       return;
+  //   };
 
   const handleBackButton = () => {
     if (activeStep === 1) {

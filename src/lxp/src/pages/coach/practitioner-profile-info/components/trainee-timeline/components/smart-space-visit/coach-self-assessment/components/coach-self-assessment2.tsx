@@ -61,36 +61,12 @@ This form must be completed before your coach’s visit. At the visit, your coac
               type="filled"
               color="primary"
               className="mt-1 mb-2 w-full"
-              onClick={() => {}}
-            >
-              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-              <Typography
-                type={'help'}
-                text={'See self-assessment form'}
-                color={'white'}
-              />
-            </Button>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <div>
-            <Button
-              type="outlined"
-              color="primary"
-              className="mt-1 mb-2 w-full"
               onClick={() => {
                 handleNextSection();
               }}
             >
-              {renderIcon('DownloadIcon', 'mr-2 text-white w-5 bg-primary')}
-              <Typography
-                type={'help'}
-                text={'Save & exit'}
-                color={'primary'}
-              />
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography type={'help'} text={'Next'} color={'white'} />
             </Button>
           </div>
         </div>

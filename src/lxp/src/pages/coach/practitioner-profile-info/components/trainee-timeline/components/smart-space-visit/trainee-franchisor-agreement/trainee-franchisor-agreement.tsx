@@ -9,6 +9,14 @@ import { useState } from 'react';
 import { CoachSmartSpaceChecklistSteps } from './trainee-franchisor-agreement.types';
 import { useAppDispatch } from '@/store';
 import { CoachTraineeFranchisorAgreement1 } from './components/coach-franchisor-agreement';
+import { TraineeService } from '@/services/TraineeService';
+import { authSelectors } from '@/store/auth';
+import {
+  CmsVisitSectionInput,
+  InputMaybe,
+  SsChecklistVisitModelInput,
+} from '@ecdlink/graphql';
+import { userSelectors } from '@/store/user';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
@@ -22,6 +30,8 @@ export const CoachTraineeFranchisorAgreement: React.FC<
   CoachSmartSpaceChecklistProps
 > = () => {
   const history = useHistory();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
   const practitioner = location.state.practitioner;
@@ -55,6 +65,35 @@ export const CoachTraineeFranchisorAgreement: React.FC<
     setActiveStep(activeStep - 1);
   };
 
+  const submitCoachFranchisorAgreement = async () => {
+    const sections = sectionQuestions?.map((item, index) => ({
+      ...item,
+      questions: item.questions.map((question) => ({
+        ...question,
+        answer: String(question.answer),
+      })),
+    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+
+    const visitDateInput: SsChecklistVisitModelInput = {
+      traineeId: practitioner?.userId,
+      // coachId: user?.id,
+      attended: true,
+      checklistData: {
+        traineeId: practitioner?.userId,
+        visitData: {
+          visitName: 'Coach smartspace check',
+          sections,
+        },
+      },
+    };
+
+    console.log({ visitDateInput });
+
+    // await new TraineeService(
+    //   userAuth?.auth_token!
+    // ).AddCoachFranchiseeAgreementForTrainee(visitDateInput);
+  };
+
   const renderStep = (step: number) => {
     switch (step) {
       default:
@@ -62,8 +101,8 @@ export const CoachTraineeFranchisorAgreement: React.FC<
           <CoachTraineeFranchisorAgreement1
             saveFranchisorAgreementData={saveFranchisorAgreementData}
             practitioner={practitioner}
-            programmeName={programmeName}
             setSectionQuestions={setSectionQuestions}
+            submitCoachFranchisorAgreement={submitCoachFranchisorAgreement}
           />
         );
     }

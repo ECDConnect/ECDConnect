@@ -16,9 +16,9 @@ import { useSelector } from 'react-redux';
 
 interface CoachTraineeFranchisorAgreement1Props {
   practitioner: PractitionerDto;
-  programmeName: string | undefined | null;
   setSectionQuestions: (value?: SectionQuestions[]) => void;
   saveFranchisorAgreementData: () => void;
+  submitCoachFranchisorAgreement: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -37,11 +37,13 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
   CoachTraineeFranchisorAgreement1Props
 > = ({
   practitioner,
-  programmeName,
   setSectionQuestions,
   saveFranchisorAgreementData,
+  submitCoachFranchisorAgreement,
 }) => {
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const visitData = useSelector(
+    traineeSelectors.getCoachFranchisorAgreementData
+  );
   const [questions, setAnswers] = useState([
     {
       question: `${practitioner?.user?.firstName} agrees to take the actions described in the box above in order to meet & maintain all SmartSpace standards.`,
@@ -192,6 +194,7 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
               className="mt-1 mb-2 w-full"
               onClick={() => {
                 saveFranchisorAgreementData();
+                submitCoachFranchisorAgreement();
               }}
               disabled={!trueAnswers}
             >
