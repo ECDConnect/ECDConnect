@@ -142,6 +142,13 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Notification
           TemplateType = TemplateTypeConstants.PasswordChangedBySelf,
           Protocol = MessageTypeConstants.EMAIL
         },
+        new T
+        {
+          Subject = "[[ApplicationName]]: Portal Password changed",
+          Message = "Hi [[FirstName]],\r\n\r\nWe received a request to reset your password. Go to this link to reset your password: [[PasswordResetLink:shorturl]]\r\n\r\n[[OrganisationName]]",
+          TemplateType = TemplateTypeConstants.ForgotPasswordPortal,
+          Protocol = MessageTypeConstants.EMAIL
+        },
 
       };
         }

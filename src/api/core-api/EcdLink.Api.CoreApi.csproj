@@ -16,6 +16,7 @@
     <Compile Remove="Services\Interfaces\IIntegrationService.cs" />
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
+    <None Remove="SQLUpgradeScripts" />
   </ItemGroup>
   
   <ItemGroup>

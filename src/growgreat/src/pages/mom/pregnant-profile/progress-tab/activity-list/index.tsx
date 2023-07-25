@@ -142,6 +142,13 @@ export const MomActivityList: React.FC = () => {
           visitSection: muacFormSection,
         })
       );
+      appDispatch(
+        visitThunkActions.getVisitAnswersForMother({
+          visitId: previousCurrentVisit.id,
+          visitName: activitiesTypes.pregnancyCare,
+          visitSection: HIVSection,
+        })
+      );
     }
   }, [appDispatch, previousCurrentVisit?.id]);
 

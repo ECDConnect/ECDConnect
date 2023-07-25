@@ -45,6 +45,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.Moodle", "ECDLink.M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDLink.IntegrationAPI", "Libraries\Modules\ECDLink.IntegrationAPI\ECDLink.IntegrationAPI.csproj", "{A621BD98-C0FB-45D3-A2CB-B4378244A349}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ECDConnect.WorkerService", "ECDConnect.WorkerService\ECDConnect.WorkerService.csproj", "{201B33F8-8754-45E9-86FB-A5E9EB06584D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,10 @@ Global
 		{A621BD98-C0FB-45D3-A2CB-B4378244A349}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A621BD98-C0FB-45D3-A2CB-B4378244A349}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A621BD98-C0FB-45D3-A2CB-B4378244A349}.Release|Any CPU.Build.0 = Release|Any CPU
+		{201B33F8-8754-45E9-86FB-A5E9EB06584D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{201B33F8-8754-45E9-86FB-A5E9EB06584D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{201B33F8-8754-45E9-86FB-A5E9EB06584D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{201B33F8-8754-45E9-86FB-A5E9EB06584D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -147,6 +153,7 @@ Global
 		{C8A64C57-4865-4707-AFDB-6A43F1A093E2} = {317A9AC1-68B9-4F3C-B326-A5BB6CB1E181}
 		{57F66D59-6E5F-4B4D-94FF-5F35350A2B7C} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}
 		{A621BD98-C0FB-45D3-A2CB-B4378244A349} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}
+		{EC1D4027-5130-44D4-99D8-696825CE0C16} = {14BD4336-F4AC-4343-896A-1CADB873A8D9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {90B0BAB8-3C6B-478C-989F-51637AD716FC}

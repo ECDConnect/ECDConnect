@@ -187,7 +187,9 @@ export const Step16 = ({
             color="secondary"
             type={ButtonGroupTypes.Button}
             options={options}
-            selectedOptions={Boolean(item.answer)}
+            selectedOptions={
+              item.answer !== '' ? Boolean(item.answer) : undefined
+            }
             onOptionSelected={(value) => onOptionSelected(value, index)}
           />
           {index === 0 && (

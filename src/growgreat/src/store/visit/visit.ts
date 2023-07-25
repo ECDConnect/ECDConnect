@@ -235,13 +235,23 @@ const visitSlice = createSlice({
         : action.payload;
     });
     builder.addCase(getVisitAnswersForMother.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
       const mergedDate = !!state.visitAnswersForMother?.length
         ? [...state.visitAnswersForMother, ...action.payload]
         : [];
 
       state.visitAnswersForMother = !!mergedDate.length
         ? mergedDate.filter((item, index) => {
-            return index === mergedDate.findIndex((obj) => obj.id === item.id);
+            return (
+              index ===
+              mergedDate.findIndex(
+                (obj) =>
+                  obj.visitSection === item.visitSection &&
+                  obj.visitId === item.visitId &&
+                  obj.visitName === item.visitName
+              )
+            );
           })
         : action.payload;
     });

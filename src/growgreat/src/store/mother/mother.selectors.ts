@@ -192,9 +192,13 @@ export const getMotherFirstVisitSelector = (
 
   const filteredVisits = visits.filter((visit) => {
     const orderDate = new Date(visit.orderDate);
-    return orderDate.getFullYear() !== 0;
+    return (
+      orderDate.getFullYear() !== 0 &&
+      visit.attended &&
+      visit.visitType?.normalizedName !== 'Additional visits'
+    );
   });
-  const firstVisit = filteredVisits.reduce(
+  const firstVisit = filteredVisits?.reduce(
     (oldest: VisitDto | null, current: VisitDto) => {
       const currentPlannedVisitDate = new Date(current.orderDate);
       if (!oldest || currentPlannedVisitDate < new Date(oldest.orderDate)) {

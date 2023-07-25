@@ -3,7 +3,9 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace ECDLink.DataAccessLayer.Helpers
 {
@@ -13,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Helpers
         private static readonly string[] _customFilterTypes = new string[] { nameof(SiteAddress.Province).ToLowerInvariant(), Roles.ADMINISTRATOR.ToLowerInvariant() };
 
 
-        public static IQueryable<T> AddFiltering<T>(FilterByField[] inputFilter, in IQueryable<T> usersQuery)
+        public static IQueryable<T> AddFiltering<T>(IEnumerable<FilterByField> inputFilter, in IQueryable<T> usersQuery)
         {
             IQueryable<T> newUsersQuery = usersQuery.AsQueryable();
 
@@ -25,7 +27,7 @@ namespace ECDLink.DataAccessLayer.Helpers
                 var fieldType = typeof(T).GetProperty(filter?.FieldName)?.PropertyType;
 
                 // This filter is not actually a field type and was handled seperately.
-                if (_customFilterTypes.Contains(fieldType?.Name?.ToLowerInvariant()))
+                if (_customFilterTypes.Contains(filter?.FieldName?.ToLowerInvariant()))
                     continue;
 
                 // If field does not exist on this type, ignore it
@@ -42,7 +44,7 @@ namespace ECDLink.DataAccessLayer.Helpers
                         }
                         break;
                     case InputFilterComparer.Contains:
-                        newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
+                        newUsersQuery = newUsersQuery.Where(u => EF.Functions.ILike(EF.Property<string>(u, filter.FieldName), $"%{input}%"));
                         break;
                     case InputFilterComparer.ContainedBy:
                         newUsersQuery = newUsersQuery.Where(u => filter.Value.Contains(EF.Property<string>(u, filter.FieldName)));
@@ -164,47 +166,6 @@ namespace ECDLink.DataAccessLayer.Helpers
 
             // string
             return inputValue?.ToString();
-        }
-
-        public static IQueryable<T> AddSorting<T>(SortByField[] sortBy, in IQueryable<T> usersQuery, SortByField[] defaultSortFields = null)
-        {
-            // Don't mutate the input:
-            var newQuery = usersQuery.AsQueryable();
-
-            if (sortBy?.Any() ?? false)
-            {
-                foreach (var sort in sortBy)
-                {
-                    var sortByFieldName = sort?.FieldName;
-
-                    if (sort.Descending)
-                        return newQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
-                    else
-                        return newQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
-                }
-            }
-            else
-            // Add default sort.
-            {
-                if (defaultSortFields?.Any() ?? false)
-                {
-                    foreach (var field in defaultSortFields.Select((value, i) => new { i, value }))
-                    {
-                        if (field.i == 0)
-                            newQuery = newQuery.OrderBy(u => EF.Property<object>(u, field.value.FieldName));
-
-                        else
-                        {
-                            newQuery = (newQuery as IOrderedQueryable<T>).ThenBy(u => EF.Property<object>(u, field.value.FieldName)).AsQueryable();
-
-                        }
-                    }
-
-                    return newQuery;
-                }
-            }
-
-            return newQuery;
         }
 
         public static IQueryable<T> AddPaging<T>(int skip, int take, in IQueryable<T> usersQuery)

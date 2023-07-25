@@ -101,7 +101,7 @@ export const Step18 = ({
   );
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const classroomGroups = allClassroomGroups.filter(
-    (x) => x.name !== NoPlaygroupClassroomType.name
+    (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
   const currentClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === smartStarter?.userId
@@ -110,17 +110,17 @@ export const Step18 = ({
     | ClassroomGroupDto[]
     | undefined;
 
-  const currentClassProgrammes = classProgrammes.filter((el) => {
-    return currentClassroomGroups.some((f) => {
-      return f.id === el.classroomGroupId;
+  const currentClassProgrammes = classProgrammes?.filter((el) => {
+    return currentClassroomGroups?.some((f) => {
+      return f?.id === el?.classroomGroupId;
     });
   });
 
-  const days = currentClassProgrammes.map((item) => item.meetingDay).sort();
+  const days = currentClassProgrammes?.map((item) => item?.meetingDay)?.sort();
 
   const stringDays = days
     // remove duplicates
-    .filter((element, index) => days.indexOf(element) === index)
+    .filter((element, index) => days?.indexOf(element) === index)
     .map((item) => numberToDayOfWeek(item, 'short'));
 
   const onOptionSelected = useCallback(
@@ -160,24 +160,25 @@ export const Step18 = ({
   );
 
   const handleChildren = useCallback(() => {
-    if (previousClassroomGroups?.length === currentClassroomGroups.length)
+    if (previousClassroomGroups?.length === currentClassroomGroups?.length)
       return;
 
     const filteredChildren = [];
-    const _allLearners = allLearners.filter(
-      (x) => !Boolean(x.stoppedAttendance)
+    const _allLearners = allLearners?.filter(
+      (x) => !Boolean(x?.stoppedAttendance)
     );
 
     for (const learner of _allLearners) {
       if (
-        learner.classroomGroupId !== currentClassProgrammes[0].classroomGroupId
+        learner?.classroomGroupId !==
+        currentClassProgrammes?.[0]?.classroomGroupId
       )
         continue;
 
       const child = children?.find(
-        (child) => child.userId === learner.userId && child.isActive
+        (child) => child?.userId === learner?.userId && child?.isActive
       );
-      const childUser = childUsers?.find((y) => y.id === learner.userId);
+      const childUser = childUsers?.find((y) => y?.id === learner?.userId);
 
       if (
         child &&
@@ -212,7 +213,7 @@ export const Step18 = ({
     childUsers,
     children,
     currentClassProgrammes,
-    currentClassroomGroups.length,
+    currentClassroomGroups?.length,
     previousClassroomGroups?.length,
   ]);
 
@@ -252,7 +253,7 @@ export const Step18 = ({
   }, [
     isViewAnswers,
     previousData?.questions,
-    previousStatePreviousData?.questions.length,
+    previousStatePreviousData?.questions?.length,
     questions,
   ]);
 
@@ -326,7 +327,11 @@ export const Step18 = ({
           type="body"
           text={isPrincipal ? 'Programme days' : 'Class days:'}
         />
-        <Typography color="textMid" type="body" text={stringDays.join(', ')} />
+        <Typography
+          color="textMid"
+          type="body"
+          text={stringDays.length ? stringDays.join(', ') : 'Not provided'}
+        />
       </div>
       <Divider dividerType="dashed" />
       <FormInput
@@ -356,7 +361,11 @@ export const Step18 = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           options={options}
-          selectedOptions={Boolean(questions[2].answer)}
+          selectedOptions={
+            questions[2].answer !== ''
+              ? Boolean(questions[2].answer)
+              : undefined
+          }
           onOptionSelected={(value) => onOptionSelected(value, 2)}
         />
       </div>

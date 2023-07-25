@@ -7,7 +7,7 @@
 @import url('https://fonts.googleapis.com/css?family=Quicksand:400,700&display=swap');
 
 div.darkBackground {
-  background-color: #27385A;
+  background-color: #27385a;
 }
 
 a.users-tabs {
@@ -30,7 +30,7 @@ body,
   position: fixed;
   overflow: hidden;
   width: 100%;
-  font-family:'Quicksand', 'sans-serif' !important;
+  font-family: 'Quicksand', 'sans-serif' !important;
 }
 
 .dashboard-container {
@@ -50,19 +50,21 @@ td.truncate {
   width: auto !important;
 }
 
-.page-numbers,
+/* .page-numbers,
 .table-footer .w-7.h-7.flex.flex-grow {
   max-width: 32px !important;
-  width: 32px !important;
-  height: 32px;
+  width: 30px !important;
+  height: 30px;
   line-height: 20px !important;
-  padding: 8px 16px !important;
+  padding:18px !important;
   justify-content: space-around !important;
+  border-radius: 50%;
+  background-color: aqua !important;
 }
 
 .page-numbers.white.text-white {
   background: #eef2ff !important;
-}
+} */
 
 /* CKEditor */
 
@@ -131,4 +133,14 @@ td.truncate {
 
 .ck-content ol {
   list-style: decimal;
+}
+
+[type='text'],
+[type='password'],
+select {
+  border-color: transparent;
+}
+
+thead{
+  background-color: red !important;
 }

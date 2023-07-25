@@ -8,9 +8,14 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { options } from './options';
-import { DynamicFormProps } from '../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
+import { usePrevious, useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const Step3ReAccreditation = ({
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -19,8 +24,25 @@ export const Step3ReAccreditation = ({
     answer: [] as (string | number | undefined)[],
   });
 
-  const visitSection = 'Step 13';
+  const visitSection = 'Step 3';
   const answers = question.answer as string[];
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      visitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -68,6 +90,31 @@ export const Step3ReAccreditation = ({
     };
   };
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const answer =
+        previousData?.questions?.[0]?.answer?.toString()?.split('.,') ?? [];
+
+      setAnswers((prevState) => ({
+        question: prevState.question,
+        answer,
+      }));
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
   useEffect(() => {
     setEnableButton?.(true);
   }, [setEnableButton]);
@@ -75,6 +122,13 @@ export const Step3ReAccreditation = ({
   return (
     <div className="p-4">
       <Typography type="h2" text={question.question} color="textDark" />
+      {isViewAnswers && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Alert
         className="mt-4"
         type="info"
@@ -90,7 +144,8 @@ export const Step3ReAccreditation = ({
           titleColours="textMid"
           titleSize="sm"
           titleWeight="normal"
-          checked={answers?.some((option) => option === item)}
+          checked={answers?.some((option) => item.includes(option))}
+          disabled={isViewAnswers}
           value={item}
           onChange={onCheckboxChange}
         />

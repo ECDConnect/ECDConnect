@@ -14,6 +14,7 @@ export interface ActionModalProps extends ComponentBaseProps {
   iconColor?: Colours;
   iconBorderColor?: Colours;
   iconClassName?: string;
+  buttonClass?: string;
   customIcon?: ReactElement;
   title?: string;
   importantText?: string;
@@ -45,6 +46,7 @@ export const ActionModal: React.FC<ActionModalProps> = ({
   children,
   customDetailText,
   className,
+  buttonClass,
 }) => {
   return (
     <div
@@ -137,7 +139,10 @@ export const ActionModal: React.FC<ActionModalProps> = ({
       {actionButtons.map((button, index, { length }) => (
         <Button
           key={`action-modal-button-${index}`}
-          className={`mt-2 w-full ${index + 1 === length ? 'mb-0' : 'mb-2'}`}
+          className={classNames(
+            `mt-2 w-full ${index + 1 === length ? 'mb-0' : 'mb-2'}`,
+            buttonClass
+          )}
           type={button.type}
           color={button.colour}
           onClick={button.onClick}

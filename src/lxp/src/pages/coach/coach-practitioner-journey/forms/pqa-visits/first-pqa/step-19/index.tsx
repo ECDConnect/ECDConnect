@@ -445,7 +445,11 @@ export const Step19 = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           options={options}
-          selectedOptions={Boolean(questions[1].answer)}
+          selectedOptions={
+            questions[1].answer !== ''
+              ? Boolean(questions[1].answer)
+              : undefined
+          }
           onOptionSelected={(value) => onOptionSelected(value, 1)}
         />
         {questions[1].answer !== '' && (

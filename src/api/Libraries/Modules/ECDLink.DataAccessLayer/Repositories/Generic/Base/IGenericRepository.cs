@@ -13,6 +13,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
     {
         void SetUserContext(string userId);
         IQueryable<T> GetAll(PagedQueryInput pagingInput = null);
+        int Count(PagedQueryInput pagingInput = null);
         T GetById(TKey id);
         Task<T> GetByIdAsync(TKey id);
         T GetByUserId(string id);

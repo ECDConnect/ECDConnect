@@ -18,7 +18,7 @@ using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
-    public class InfantManager: BaseManager
+    public class InfantManager : BaseManager
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
@@ -75,7 +75,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var infant = new Infant();
 
             // EC-797 - if this infant is not the first client, we set the tab values to true;
-            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count() 
+            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
                             + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
 
             // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
@@ -181,7 +181,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.UpdatedBy = _applicationUserId;
             infantToUpdate.UserId = infantUser.Id;
             infantToUpdate.User = infantUser;
-            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits == null ? false: input.Completed24MonthVisits;
+            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits == null ? false : input.Completed24MonthVisits;
             infantToUpdate.ClickedVisitTab = input.ClickedVisitTab == null ? false : input.ClickedVisitTab;
             infantToUpdate.ClickedProgressTab = input.ClickedProgressTab == null ? false : input.ClickedProgressTab;
             infantToUpdate.ClickedReferralsTab = input.ClickedReferralsTab == null ? false : input.ClickedReferralsTab;
@@ -189,7 +189,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return _infantRepo.Update(infantToUpdate);
         }
-        
+
         public Infant UpdateInfantCaregiverContactDetails(string id, InfantModel input)
         {
             var entityToUpdate = _caregiverRepo.GetAll().Where(x => x.Id == input.CaregiverId).FirstOrDefault();
@@ -450,7 +450,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         statusInfo.Color = MetricsIconEnum.Warning.ToString();
                         statusInfo.Icon = MetricsIconEnum.Warning.ToString();
                         statusInfo.Subject = Constants.GGSettings.low_birth_weight;
-                    } else
+                    }
+                    else
                     {
                         statusInfo.Color = MetricsIconEnum.Success.ToString();
                         statusInfo.Icon = MetricsIconEnum.Success.ToString();
@@ -590,13 +591,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
             return true;
         }
-        private List<VisitModel> GetVisitDates(DateTime BirthDate, List<VisitType> visitTypes) 
+
+        private List<VisitModel> GetVisitDates(DateTime BirthDate, List<VisitType> visitTypes)
         {
             var dateList = new List<VisitModel>();
 
             // Due dates are created normally 1 day before the actual planned visit date
 
-            for (var i=0; i < visitTypes.Count; i++)
+            for (var i = 0; i < visitTypes.Count; i++)
             {
                 var visitDaySet = new VisitModel();
                 visitDaySet.VisitType = visitTypes[i];
@@ -604,11 +606,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 if (visitTypes[i].Name == Constants.GGSettings.day_3)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddDays(2);
-                } 
+                }
                 else if (visitTypes[i].Name == Constants.GGSettings.day_7)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddDays(6);
-                } 
+                }
                 else if (visitTypes[i].Name == Constants.GGSettings.week_2)
                 {
                     visitDaySet.PlannedVisitDate = BirthDate.AddDays(13);
@@ -708,6 +710,24 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
         }
+
+        public int GetTotalInfantCountForPeriod(string healthCareWorkerUserId, DateTime? startDate = null, DateTime? endDate = null)
+        {
+            var infants = _infantRepo.GetAll().Where(
+                i => i.Caregiver.HealthCareWorker.UserId == healthCareWorkerUserId
+                    && i.IsActive == true);
+
+            if (startDate is not null)
+                infants = infants.Where(x => x.InsertedDate >= startDate);
+
+            if (endDate is not null)
+                infants = infants.Where(x => x.InsertedDate <= endDate);
+
+            return infants.Select(x => x.Id)
+                .Distinct()
+                .Count();
+        }
+        
         public List<Infant> GetAllInfantsForCaregiver(string caregiverId)
         {
             List<Infant> infants = _infantRepo.GetAll().Where(x => x.CaregiverId.ToString() == caregiverId && x.IsActive == true).OrderBy(y => y.User.FirstName).ToList();
@@ -719,7 +739,5 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return infants;
         }
-
-       
     }
 }

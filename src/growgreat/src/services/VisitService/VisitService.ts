@@ -42,7 +42,7 @@ class Visit {
 
     if (response.status !== 200 || response.data.errors) {
       throw new Error(
-        'Get Health Care Worker Visit Status Failed - Server connection error'
+        'Get Community Health Worker Visit Status Failed - Server connection error'
       );
     }
 
@@ -367,7 +367,7 @@ class Visit {
 
     if (response.status !== 200 || response.data.errors) {
       throw new Error(
-        'Get Health Care Worker Highlights Failed - Server connection error'
+        'Get Community Health Worker Highlights Failed - Server connection error'
       );
     }
     return response.data.data.healthCareWorkerHighlights;
