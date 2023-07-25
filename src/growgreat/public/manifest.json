@@ -24,7 +24,7 @@
       "purpose": "maskable"
     }
   ],
-  "id": "funda_app",
+  "id": "chwconnect_app",
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#f36f21",
