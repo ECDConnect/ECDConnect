@@ -33,6 +33,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     register: consentFormRegister,
     // reset: resetConsentFormValue,
     control: consentFormControl,
+    clearErrors,
   } = useForm<PregnantConsentModel>({
     resolver: yupResolver(pregnantConsentModelSchema),
     mode: 'onBlur',
@@ -76,6 +77,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         <ButtonGroup<boolean>
           options={yesNoOptions}
           onOptionSelected={(value: boolean | boolean[]) => {
+            clearErrors();
             setMultipleChildren(value as boolean);
           }}
           color="secondary"
@@ -169,7 +171,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           onClick={() => {
             onSubmit(getConsentFormValues());
           }}
-          disabled={!accept}
+          disabled={!accept || !!Object.keys(errors).length}
         />
       </div>
       <Article
