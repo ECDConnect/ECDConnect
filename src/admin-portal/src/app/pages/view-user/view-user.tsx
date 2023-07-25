@@ -107,8 +107,8 @@ const showNotification = (
 
 export function ViewUser(props: any) {
   const currentDate = new Date();
-  const startDate = currentDate;
-  const endDate = subDays(currentDate, 30);
+  const startDate = subDays(currentDate, 30);
+  const endDate = currentDate;
 
   const [successNotification, setSucessNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
@@ -155,7 +155,7 @@ export function ViewUser(props: any) {
   const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
     useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
       variables: {
-        healthCareWorkerUserId: '',
+        healthCareWorkerId: '',
         startDate: '',
         endDate: '',
       },
@@ -165,7 +165,7 @@ export function ViewUser(props: any) {
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
-        healthCareWorkerUserId: props.location.state.userId ?? userId,
+        healthCareWorkerId: props.location.state.userId ?? userId,
         startDate: selectedRange[0]?.toISOString() ?? startDate.toISOString(),
         endDate: selectedRange[1]?.toISOString() ?? endDate.toISOString(),
       },

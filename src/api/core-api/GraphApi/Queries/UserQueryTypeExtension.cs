@@ -62,7 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
             usersQuery = AddDefaultUserSearch(search, usersQuery);
 
-            if (pagingInput is not null)
+            if (pagingInput is not null && pagingInput.PageSize is not null)
                 usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize ?? 1, usersQuery);
 
             return usersQuery;

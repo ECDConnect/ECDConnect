@@ -5,8 +5,10 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.Tenancy;
 using ECDLink.Tenancy.Model;
 using ECDLink.Tenancy.Services;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading.Tasks;
@@ -21,18 +23,21 @@ namespace EcdLink.Api.CoreApi.Migrations
         private readonly ContentMangementSeedService _contentManagementSeed;
         private readonly ILogger<DatabaseManagementService> _logger;
         private readonly IConfiguration _config;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public DatabaseManagementService(
             PostgresDataSeed postgresSeed,
             AuthenticationDbContext authDbContext,
             ContentManagementDbContext contentManagementDbContext,
             ContentMangementSeedService contentManagementSeed,
-            ILogger<DatabaseManagementService> logger)
+            ILogger<DatabaseManagementService> logger,
+            IWebHostEnvironment webHostEnvironment)
         {
             _postgresSeed = postgresSeed;
             _authDbContext = authDbContext;
             _contentManagementDbContext = contentManagementDbContext;
             _contentManagementSeed = contentManagementSeed;
+            _webHostEnvironment = webHostEnvironment;
             _logger = logger;
         }
 
@@ -123,7 +128,8 @@ namespace EcdLink.Api.CoreApi.Migrations
                 s.MigrationsAssembly(Migration);
             });
 
-            opts.EnableSensitiveDataLogging();
+            if (_webHostEnvironment.IsDevelopment())
+                opts.EnableSensitiveDataLogging();
 
             return opts;
         }

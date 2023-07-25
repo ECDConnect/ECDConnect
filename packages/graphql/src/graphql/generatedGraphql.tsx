@@ -10869,8 +10869,8 @@ export type QueryHealthCareWorkerHighlightsArgs = {
 
 export type QueryHealthCareWorkerSummaryForPeriodArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
+  healthCareWorkerId?: InputMaybe<Scalars['String']>;
   startDate?: InputMaybe<Scalars['DateTime']>;
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryHealthCareWorkerVisitStatusArgs = {
