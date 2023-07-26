@@ -1,6 +1,6 @@
 ﻿namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
 {
-    public class TraineeModel
+    public class TraineeAddressModel
     {
         public string? HomeAddressLine1 { get; set; }
         public string? HomeAddressLine2 { get; set; }

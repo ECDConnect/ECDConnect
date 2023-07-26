@@ -6618,7 +6618,7 @@ export type MutationUpdateTraineeArgs = {
 };
 
 export type MutationUpdateTraineeAddressArgs = {
-  input?: InputMaybe<TraineeModelInput>;
+  input?: InputMaybe<TraineeAddressModelInput>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -12752,6 +12752,13 @@ export type Trainee = {
   userId?: Maybe<Scalars['String']>;
 };
 
+export type TraineeAddressModelInput = {
+  homeAddressLine1?: InputMaybe<Scalars['String']>;
+  homeAddressLine2?: InputMaybe<Scalars['String']>;
+  homeAddressLine3?: InputMaybe<Scalars['String']>;
+  homeAddressPostalCode?: InputMaybe<Scalars['String']>;
+};
+
 export type TraineeFilterInput = {
   adminFileReceived?: InputMaybe<BooleanOperationFilterInput>;
   and?: InputMaybe<Array<TraineeFilterInput>>;
@@ -12834,13 +12841,6 @@ export type TraineeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
-};
-
-export type TraineeModelInput = {
-  homeAddressLine1?: InputMaybe<Scalars['String']>;
-  homeAddressLine2?: InputMaybe<Scalars['String']>;
-  homeAddressLine3?: InputMaybe<Scalars['String']>;
-  homeAddressPostalCode?: InputMaybe<Scalars['String']>;
 };
 
 export type TraineeOnBoardTimeline = {

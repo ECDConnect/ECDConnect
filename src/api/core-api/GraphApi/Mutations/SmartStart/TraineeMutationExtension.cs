@@ -104,7 +104,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory, 
             string userId,
-            TraineeModel input)
+            TraineeAddressModel input)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var _traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
