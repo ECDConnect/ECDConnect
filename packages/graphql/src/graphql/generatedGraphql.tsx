@@ -4220,6 +4220,7 @@ export type Mutation = {
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
+  addCoachFranchiseeAgreementForTrainee?: Maybe<Visit>;
   addCoachToFranchisor?: Maybe<Coach>;
   addCoachVisitInviteForPractitioner?: Maybe<Visit>;
   addCoachVisitInviteForTrainee?: Maybe<Visit>;
@@ -4229,7 +4230,6 @@ export type Mutation = {
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
-  addPQARatingVisitForPractitioner?: Maybe<Visit>;
   addPermissionsToNavigation: Scalars['Boolean'];
   addPermissionsToRole: Scalars['Boolean'];
   addPractitionerToCoach?: Maybe<Practitioner>;
@@ -4240,6 +4240,7 @@ export type Mutation = {
   addRole?: Maybe<IdentityRole>;
   addSSChecklistForTrainee?: Maybe<Visit>;
   addSelfAssessmentForPractitioner?: Maybe<Visit>;
+  addSmartSpaceLicenseForTrainee?: Maybe<License>;
   addStartupSupportAgreementForTrainee?: Maybe<Visit>;
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<TeamLead>;
@@ -4640,6 +4641,7 @@ export type Mutation = {
   updateTheme?: Maybe<Theme>;
   updateThemeDay?: Maybe<ThemeDay>;
   updateTrainee?: Maybe<Trainee>;
+  updateTraineeAddress?: Maybe<Trainee>;
   updateUser?: Maybe<ApplicationUser>;
   updateUserConsent?: Maybe<UserConsent>;
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
@@ -4679,6 +4681,10 @@ export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
 };
 
+export type MutationAddCoachFranchiseeAgreementForTraineeArgs = {
+  input?: InputMaybe<SsChecklistVisitModelInput>;
+};
+
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
@@ -4714,11 +4720,6 @@ export type MutationAddInfantArgs = {
 
 export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
-};
-
-export type MutationAddPqaRatingVisitForPractitionerArgs = {
-  ratingColor?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddPermissionsToNavigationArgs = {
@@ -4772,6 +4773,11 @@ export type MutationAddSsChecklistForTraineeArgs = {
 
 export type MutationAddSelfAssessmentForPractitionerArgs = {
   input?: InputMaybe<SupportVisitModelInput>;
+};
+
+export type MutationAddSmartSpaceLicenseForTraineeArgs = {
+  dateAwarded: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddStartupSupportAgreementForTraineeArgs = {
@@ -6615,6 +6621,11 @@ export type MutationUpdateThemeDayArgs = {
 export type MutationUpdateTraineeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<TraineeInput>;
+};
+
+export type MutationUpdateTraineeAddressArgs = {
+  input?: InputMaybe<TraineeAddressModelInput>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateUserArgs = {
@@ -11478,6 +11489,13 @@ export type Setting_Reporting = {
   ChildProgressReportMonths: Scalars['String'];
 };
 
+export type Setting_SmsPortal = {
+  __typename?: 'Setting_SMSPortal';
+  ApiKey: Scalars['String'];
+  ApiSecret: Scalars['String'];
+  BaseUrl: Scalars['String'];
+};
+
 export type Setting_Security = {
   __typename?: 'Setting_Security';
   ForgotPassword: Scalars['String'];
@@ -11501,6 +11519,11 @@ export type Setting_SmartLinkApi = {
   MaskDataMode: Scalars['String'];
   MaskDataNumber: Scalars['String'];
   Mode: Scalars['String'];
+};
+
+export type Setting_Sms = {
+  __typename?: 'Setting_Sms';
+  Provider: Scalars['String'];
 };
 
 export type Setting_Smtp = {
@@ -11534,6 +11557,13 @@ export type Setting_UrlShortner = {
   RedirectUrl: Scalars['String'];
 };
 
+export type Setting_ITouch = {
+  __typename?: 'Setting_iTouch';
+  BaseUrl: Scalars['String'];
+  Password: Scalars['String'];
+  Username: Scalars['String'];
+};
+
 export type SettingsType = {
   __typename?: 'SettingsType';
   AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
@@ -11549,13 +11579,16 @@ export type SettingsType = {
   Jwts: Setting_Jwts;
   RapidApi: Setting_RapidApi;
   Reporting: Setting_Reporting;
+  SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
   SmartLinkApi: Setting_SmartLinkApi;
+  Sms: Setting_Sms;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
+  iTouch: Setting_ITouch;
 };
 
 export type ShortenUrlEntity = {
@@ -12723,6 +12756,13 @@ export type Trainee = {
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['String']>;
+};
+
+export type TraineeAddressModelInput = {
+  homeAddressLine1?: InputMaybe<Scalars['String']>;
+  homeAddressLine2?: InputMaybe<Scalars['String']>;
+  homeAddressLine3?: InputMaybe<Scalars['String']>;
+  homeAddressPostalCode?: InputMaybe<Scalars['String']>;
 };
 
 export type TraineeFilterInput = {

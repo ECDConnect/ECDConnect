@@ -254,6 +254,7 @@ export const DevelopmentalScreeningWeeksStep = ({
           section={sectionName}
           subTitle="Developmental screening"
           onClose={() => setIsTip?.(false)}
+          title={headerText}
         />
       </Dialog>
     );

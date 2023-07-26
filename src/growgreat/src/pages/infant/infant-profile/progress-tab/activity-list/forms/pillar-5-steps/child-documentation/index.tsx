@@ -44,12 +44,15 @@ export const ChildDocumentationStep = ({
   setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
-  const { register: childDocumentRegister, control: childDocumentControl } =
-    useForm<ChildDocumentationModel>({
-      resolver: yupResolver(childDocumentationModelSchema),
-      mode: 'onBlur',
-      reValidateMode: 'onChange',
-    });
+  const {
+    register: childDocumentRegister,
+    control: childDocumentControl,
+    clearErrors,
+  } = useForm<ChildDocumentationModel>({
+    resolver: yupResolver(childDocumentationModelSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
 
   const { errors } = useFormState({ control: childDocumentControl });
 
@@ -139,6 +142,15 @@ export const ChildDocumentationStep = ({
         return question;
       });
 
+      if (index === Question.one && value === false) {
+        [Question.two, Question.three, Question.seven].map((value) => {
+          return (updatedQuestions[value] = {
+            question: questions[value].question,
+            answer: undefined,
+          });
+        });
+      }
+
       if (index === Question.three) {
         [Question.four, Question.five, Question.six].map((value) => {
           return (updatedQuestions[value] = {
@@ -222,20 +234,26 @@ export const ChildDocumentationStep = ({
 
     setEnableButton?.(isAllCompleted);
   }, [
-    questionFive.answer,
+    questions,
+    questionThree.answer,
     questionFour.answer,
     questionOne.answer,
-    questionSevenAnswers?.length,
-    questionSix.answer,
-    questionThree.answer,
-    questions,
     setEnableButton,
     isChildBefore1Year,
+    questionSix.answer,
+    questionFive.answer,
+    questionSevenAnswers?.length,
   ]);
 
   useEffect(() => {
     handleEnableButton();
   }, [handleEnableButton]);
+
+  useEffect(() => {
+    if (!!errors.idNumber) {
+      setEnableButton?.(false);
+    }
+  }, [errors.idNumber, setEnableButton]);
 
   return (
     <>
@@ -261,7 +279,10 @@ export const ChildDocumentationStep = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           options={options}
-          onOptionSelected={(value) => onOptionSelected(value, Question.one)}
+          onOptionSelected={(value) => {
+            clearErrors();
+            onOptionSelected(value, Question.one);
+          }}
         />
         {!!questionOne.answer && (
           <>
@@ -274,9 +295,9 @@ export const ChildDocumentationStep = ({
               className="mt-4"
               register={childDocumentRegister}
               value={questionTwo.answer as string}
-              onChange={(event) =>
-                onOptionSelected(event.target.value, Question.two)
-              }
+              onChange={(event) => {
+                onOptionSelected(event.target.value, Question.two);
+              }}
               error={!!errors.idNumber ? errors.idNumber : undefined}
             ></FormInput>
             <Typography

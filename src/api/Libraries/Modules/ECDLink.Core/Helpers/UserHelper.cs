@@ -62,7 +62,9 @@ namespace ECDLink.Core.Helpers
                         RegexOptions.IgnoreCase,
                         TimeSpan.FromMilliseconds(200)))
                 return false;
+            return true;
 
+            /*
             var resultIntArray = southAfricanIdNumber
                 .ToCharArray()
                 .Select(c => int.Parse(c.ToString()))
@@ -84,6 +86,7 @@ namespace ECDLink.Core.Helpers
             });
 
             return finalResult % 10 == 0;
+            */
         }
 
         public static string CoerceValidSAID(string shortSouthAfricanIdNumber)

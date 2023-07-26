@@ -6,7 +6,7 @@ import {
   FormInput,
   Typography,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import { Step7Map } from './map';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -80,6 +80,27 @@ export const Step7ReAccreditation = ({
     { text: 'Yes', value: true, disabled: isViewAnswers },
     { text: 'No', value: false, disabled: isViewAnswers },
   ];
+
+  const location = useMemo(() => {
+    const address = [
+      smartStarter?.siteAddress?.addressLine1,
+      smartStarter?.siteAddress?.addressLine2,
+      smartStarter?.siteAddress?.addressLine3,
+      smartStarter?.siteAddress?.province?.description,
+    ];
+
+    if (questions[1].answer) {
+      return questions[1].answer;
+    }
+
+    if (address.every((item) => item === null || item === undefined)) {
+      return 'No address available';
+    }
+
+    return `${address[0] || ''} ${address[1] || ''} ${address[2] || ''} ${
+      address[3]
+    }`;
+  }, [questions, smartStarter]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -189,12 +210,7 @@ export const Step7ReAccreditation = ({
         color="textDark"
         className="mt-4"
       />
-      <Typography
-        type="h4"
-        text={`${smartStarter?.siteAddress?.addressLine1} ${smartStarter?.siteAddress?.addressLine2} ${smartStarter?.siteAddress?.addressLine3}, ${smartStarter?.siteAddress?.province?.description}`}
-        color="textMid"
-        className="my-4"
-      />
+      <Typography type="h4" text={location} color="textMid" className="my-4" />
       <Typography
         type="h4"
         text={questions[0].question}
