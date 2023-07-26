@@ -63,7 +63,7 @@ export const TraineeOnboarding = () => {
           <GetCommunitySupport setNotificationStep={setNotificationStep} />
         );
       case 'Register 3 children':
-        return history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+        return history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
       default:
         return (
           <OnboardingTraineeDashboard
