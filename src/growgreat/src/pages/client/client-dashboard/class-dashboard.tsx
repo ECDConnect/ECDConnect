@@ -13,7 +13,13 @@ import {
   TabList,
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import {
+  useEffect,
+  useState,
+  useCallback,
+  useMemo,
+  useLayoutEffect,
+} from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
@@ -57,6 +63,7 @@ export const ClassDashboard: React.FC = () => {
     walkthroughDispatch,
     walkthroughState,
     walkthroughStepIndex,
+    isWalkthroughSession,
     setIsWalkthroughSession,
   } = useWalkthrough();
 
@@ -323,6 +330,13 @@ export const ClassDashboard: React.FC = () => {
       handleWelcomeDialog();
     }
   }, [handleWelcomeDialog, previousActiveTab, state?.activeTabIndex]);
+
+  useLayoutEffect(() => {
+    if (isWalkthroughSession) {
+      window.sessionStorage.clear();
+      return;
+    }
+  }, [appDispatch, isWalkthroughSession]);
 
   return (
     <>
