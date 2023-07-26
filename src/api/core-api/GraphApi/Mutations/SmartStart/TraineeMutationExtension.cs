@@ -1,8 +1,10 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -116,6 +118,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             trainee.HomeAddressPostalCode = input.HomeAddressPostalCode;
             
             return _traineeRepo.Update(trainee);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public License AddSmartSpaceLicenseForTrainee(
+            [Service] UserLicenseManager licenseManager,
+            string userId,
+            DateTime dateAwarded)
+        {
+            return licenseManager.AddSmartSpaceLicense(userId, dateAwarded);
         }
 
     }

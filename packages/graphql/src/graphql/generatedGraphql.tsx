@@ -4240,6 +4240,7 @@ export type Mutation = {
   addRole?: Maybe<IdentityRole>;
   addSSChecklistForTrainee?: Maybe<Visit>;
   addSelfAssessmentForPractitioner?: Maybe<Visit>;
+  addSmartSpaceLicenseForTrainee?: Maybe<License>;
   addStartupSupportAgreementForTrainee?: Maybe<Visit>;
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<TeamLead>;
@@ -4772,6 +4773,11 @@ export type MutationAddSsChecklistForTraineeArgs = {
 
 export type MutationAddSelfAssessmentForPractitionerArgs = {
   input?: InputMaybe<SupportVisitModelInput>;
+};
+
+export type MutationAddSmartSpaceLicenseForTraineeArgs = {
+  dateAwarded: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddStartupSupportAgreementForTraineeArgs = {
