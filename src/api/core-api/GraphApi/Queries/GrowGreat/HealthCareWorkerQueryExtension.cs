@@ -162,6 +162,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] InfantManager infantManager,
             [Service] MotherManager motherManager,
             IGenericRepositoryFactory repoFactory,
+            string userId,
             string healthCareWorkerId,
             DateTime? startDate = null,
             DateTime? endDate = null)
@@ -183,10 +184,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             Guid.TryParse(healthCareWorkerId, out Guid hcwId);
             var communityHealthWorker = healthCareWorkerRepo.GetById(hcwId);
 
-            if (communityHealthWorker is null)
+            var healthCareWorkerUserId = communityHealthWorker?.UserId ?? userId;
+
+            if (healthCareWorkerUserId is null)
                 throw new QueryException("User does not exist.");
-            
-            var healthCareWorkerUserId = communityHealthWorker.UserId;
+
             HCWSummary summary = new HCWSummary();
 
             // TODO: its meant to be filtered to the current date range: , _startDate, _endDate);
