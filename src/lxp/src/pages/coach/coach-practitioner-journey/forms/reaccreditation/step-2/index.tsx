@@ -6,7 +6,7 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import { useCallback, useEffect, useState } from 'react';
 import { options } from './options';
 import { ClassroomGroup } from '@ecdlink/graphql';
@@ -14,9 +14,15 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
+import { usePrevious, useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+
+export const step2ReAccreditationVisitSection = 'Step 2';
 
 export const Step2ReAccreditation = ({
   smartStarter,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -31,8 +37,27 @@ export const Step2ReAccreditation = ({
   const userAuth = useSelector(authSelectors.getAuthUser);
 
   const answers = question.answer as string[];
-  const name = smartStarter?.user?.firstName || 'the SmartStarter';
-  const visitSection = 'Step 2';
+  const name =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the SmartStarter';
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      step2ReAccreditationVisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const getScore = (answers: string[]) => {
     const length = answers?.length;
@@ -64,7 +89,7 @@ export const Step2ReAccreditation = ({
         setAnswers(updatedQuestion);
         return setSectionQuestions?.([
           {
-            visitSection: visitSection,
+            visitSection: step2ReAccreditationVisitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -75,7 +100,7 @@ export const Step2ReAccreditation = ({
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
-          visitSection: visitSection,
+          visitSection: step2ReAccreditationVisitSection,
           questions: [updatedQuestion],
         },
       ]);
@@ -94,10 +119,41 @@ export const Step2ReAccreditation = ({
     return classroomDetails;
   }, [smartStarter?.userId, userAuth?.auth_token]);
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const answer =
+        previousData?.questions?.[0]?.answer?.toString()?.split('.,') ?? [];
+
+      setAnswers((prevState) => ({
+        question: prevState.question,
+        answer,
+      }));
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
   useEffect(() => {
     classroomsDetailsForPractitioner();
     setEnableButton?.(true);
   }, [classroomsDetailsForPractitioner, setEnableButton]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
 
   return (
     <div className="p-4">
@@ -114,6 +170,13 @@ export const Step2ReAccreditation = ({
         }
         color="textMid"
       />
+      {isViewAnswers && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Alert
         className="my-4"
         type="info"
@@ -128,7 +191,8 @@ export const Step2ReAccreditation = ({
             id={item}
             key={item}
             title={item}
-            checked={answers?.some((option) => option === item)}
+            checked={answers?.some((option) => item.includes(option))}
+            disabled={isViewAnswers}
             value={item}
             onChange={onCheckboxChange}
           />

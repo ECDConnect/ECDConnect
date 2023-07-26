@@ -28,9 +28,14 @@ import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { visitTypes as coachVisitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
-import { getFirstPqaSteps } from '@/pages/coach/coach-practitioner-journey/forms/steps';
+import {
+  getFirstPqaSteps,
+  getReAccreditationSteps,
+} from '@/pages/coach/coach-practitioner-journey/forms/steps';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 import { step11VisitSection } from '@/pages/coach/coach-practitioner-journey/forms/pqa-visits/first-pqa';
+import { step2ReAccreditationVisitSection } from '@/pages/coach/coach-practitioner-journey/forms/reaccreditation';
+import { options } from '@/pages/coach/coach-practitioner-journey/forms/reaccreditation/step-2/options';
 
 export const practitionerVisitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
@@ -57,6 +62,16 @@ export const Form = ({ onBack }: FormProps) => {
 
   const [visitId] = useSessionStorage(practitionerVisitIdKey);
 
+  const step2PreviousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitId ?? '',
+      'reAccreditationPreviousFormData',
+      step2ReAccreditationVisitSection
+    )
+  );
+  const isStep2AllCompleted =
+    String(step2PreviousData?.questions?.[0]?.answer)?.split('.,')?.length ===
+    options.length;
   const previousData = useSelector(
     getSectionsQuestionsByStep(
       visitId ?? '',
@@ -82,6 +97,9 @@ export const Form = ({ onBack }: FormProps) => {
 
   const currentSteps = useMemo(() => {
     const isPQA = activityName.includes(coachVisitTypes.pqa.includes);
+    const isReAccreditation = activityName.includes(
+      coachVisitTypes.reaccreditation.includes
+    );
 
     if (activityName.includes(coachVisitTypes.prePqa.includes)) {
       setTitle('Pre-PQA site visits summary');
@@ -116,14 +134,23 @@ export const Form = ({ onBack }: FormProps) => {
       return supportVisitSteps;
     }
 
-    if (activityName.includes(coachVisitTypes.reaccreditation.includes)) {
+    if (isReAccreditation && isViewDetails) {
+      return getReAccreditationSteps({
+        isToShowStep1: false,
+        isToShowStep16: false,
+        isToRemoveSmartStarter: false,
+        isBasicSmartSpaceStandardsCompleted: isStep2AllCompleted,
+      });
+    }
+
+    if (isReAccreditation) {
       setTitle('Reaccreditation summary');
       return reAccreditationSteps;
     }
 
     setTitle('Self-assessment');
     return selfAssessmentSteps;
-  }, [activityName, isViewDetails, pqaStep11Answer]);
+  }, [activityName, isStep2AllCompleted, isViewDetails, pqaStep11Answer]);
 
   const isHideSteps = isView && currentSteps.length === 1;
 

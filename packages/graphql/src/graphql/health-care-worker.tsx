@@ -1,43 +1,113 @@
 import { gql } from '@apollo/client';
 
 export const GetAllHealthCareWorker = gql`
-  {
-    GetAllHealthCareWorker {
+  query (
+    $search: String
+    $clinicSearch: String
+    $provinceSearch: String
+    $teamLeadSearch: String
+    $pagingInput: PagedQueryInput
+    $order: [HealthCareWorkerSortInput!]
+  ) {
+    allHealthCareWorkers(
+      search: $search
+      clinicSearch: $clinicSearch
+      provinceSearch: $provinceSearch
+      teamLeadSearch: $teamLeadSearch
+      pagingInput: $pagingInput
+      order: $order
+    ) {
       id
-      userId
+      insertedDate
       user {
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
         firstName
         surname
-        email
-        isActive
-        idNumber
+        fullName
+        contactPreference
+        genderId
+        phoneNumber
+        insertedDate
+        roles {
+          id
+          name
+          __typename
+        }
+        __typename
       }
+      teamLead {
+        clinic {
+          name
+          siteAddress {
+            province {
+              description
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+        __typename
+      }
+      __typename
     }
   }
 `;
 
 export const GetHealthCareWorkerByUserId = gql`
-  query GetHealthCareWorkerByUserId($id: UUID) {
-    GetHealthCareWorkerByUserId(id: $id) {
+  query GetHealthCareWorkerByUserId($userId: UUID) {
+    GetHealthCareWorkerById(id: $userId) {
       id
+      insertedDate
       user {
+        id
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
         firstName
         surname
-        email
+        fullName
+        contactPreference
+        genderId
         phoneNumber
-      }
-      siteAddress {
-        id
-        province {
+        profileImageUrl
+        insertedDate
+        roles {
           id
-          description
+          name
+          __typename
         }
-        name
-        addressLine1
-        addressLine2
-        addressLine3
-        postalCode
-        ward
+        __typename
+      }
+      teamLead {
+        clinic {
+          siteAddress {
+            id
+            province {
+              id
+              description
+              __typename
+            }
+            name
+            addressLine1
+            addressLine2
+            addressLine3
+            postalCode
+            ward
+            __typename
+          }
+          __typename
+        }
       }
     }
   }
@@ -52,9 +122,60 @@ export const CreateHealthCareWorker = gql`
 `;
 
 export const UpdateHealthCareWorker = gql`
-  mutation updateHealthCareWorker($input: PractitionerInput, $id: UUID) {
-    updateHealthCareWorker(id: $id, input: $input) {
+  mutation updateHealthCareWorker($input: UserModelInput, $id: String) {
+    updateUser(id: $id, input: $input) {
       id
+      __typename
+    }
+  }
+`;
+
+export const UploadHealthCareWorkers = gql`
+  mutation ($file: String) {
+    importHealthCareWorkers(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers
+    }
+  }
+`;
+
+export const HealthCareWorkerTemplate = gql`
+  query {
+    healthCareWorkerTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
+  }
+`;
+
+export const GetHealthCareWorkerSummaryForPeriod = gql`
+  query (
+    $healthCareWorkerId: String
+    $startDate: DateTime
+    $endDate: DateTime
+  ) {
+    healthCareWorkerSummaryForPeriod(
+      healthCareWorkerId: $healthCareWorkerId
+      startDate: $startDate
+      endDate: $endDate
+    ) {
+      totalPregnantMomsWithIssues
+      totalCaregiversAndChildrenWithIssues
+      totalPregnantMoms
+      totalChildren
+      totalClientsVisited
+      totalFoldersOpened
+      totalVisitsMissed
+      totalPregnantMomsWithUrgentIssues
+      totalCaregiversAndChildrenWithUrgentIssues
+      totalVisitsOverdue
+      __typename
     }
   }
 `;

@@ -112,7 +112,7 @@ export const Rating = ({
     .reduce((total, number) => total + number, 0);
 
   const isRedFlagSmartSpaceLicence = step15Question1Answer === true;
-  const isOrangeQuestion2 = step15Question2Answer === true;
+  const isOrangeQuestion2 = step15Question2Answer === false;
   const isOrangeQuestion3 = step15Question3Answer === true;
   const isOrangeQuestion4 = step15Question4Answer === false;
 
@@ -145,10 +145,10 @@ export const Rating = ({
   ];
 
   const getBadge = () => {
-    if (rating >= 39) {
+    if (rating >= 39 && !isOrangeFlag) {
       return <FourStars />;
     }
-    if (rating >= 33 && rating <= 38) {
+    if (rating >= 33 && rating <= 38 && !isOrangeFlag) {
       return <ThreeStars />;
     }
 
@@ -197,7 +197,7 @@ export const Rating = ({
           {isOrangeFlag && (
             <Typography
               type="h4"
-              text="Although your score is greater than 1star, the rating is 1 star because of the following observations:"
+              text="Although your score is greater than 1 star, the rating is 1 star because of the following observations:"
             />
           )}
         </>

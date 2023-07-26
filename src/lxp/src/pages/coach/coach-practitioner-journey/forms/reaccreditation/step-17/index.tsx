@@ -16,11 +16,23 @@ import {
   UserDto,
   getFormattedDateInYearsMonthsAndDays,
   numberToDayOfWeek,
+  parseBool,
   usePrevious,
+  useSessionStorage,
 } from '@ecdlink/core';
-import { DynamicFormProps } from '../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+
+interface State {
+  question: string;
+  answer: string;
+}
+
+const question3 = 'Was there an assistant present today?';
 
 export const Step17ReAccreditation = ({
+  isView,
   smartStarter,
   setSectionQuestions,
   setEnableButton,
@@ -36,7 +48,7 @@ export const Step17ReAccreditation = ({
       answer: '',
     },
     {
-      question: 'Was there an assistant present today?',
+      question: question3,
       answer: '',
     },
     {
@@ -50,12 +62,34 @@ export const Step17ReAccreditation = ({
   ]);
 
   const visitSection = 'Step 17';
-  const name = smartStarter?.user?.firstName || 'the SmartStarter';
-  const isPrincipal = smartStarter?.isPrincipal === true;
+  const name =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the SmartStarter';
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+  const isPrincipal = !!visitIdFromPractitionerJourney
+    ? (smartStarter as UserDto)?.principalObjectData?.isPrincipal
+    : smartStarter?.isPrincipal === true;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      visitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+    { text: 'Yes', value: true, disabled: isViewAnswers },
+    { text: 'No', value: false, disabled: isViewAnswers },
   ];
 
   const children = useSelector(childrenSelectors.getChildren);
@@ -69,9 +103,9 @@ export const Step17ReAccreditation = ({
   );
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const classroomGroups = allClassroomGroups?.filter(
-    (x) => x.name !== NoPlaygroupClassroomType.name
+    (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
-  const currentClassroomGroups = classroomGroups.filter(
+  const currentClassroomGroups = classroomGroups?.filter(
     (item) => item?.userId === smartStarter?.userId
   );
   const previousClassroomGroups = usePrevious(currentClassroomGroups) as
@@ -79,24 +113,24 @@ export const Step17ReAccreditation = ({
     | undefined;
 
   const currentClassProgrammes = classProgrammes?.filter((el) => {
-    return currentClassroomGroups.some((f) => {
+    return currentClassroomGroups?.some((f) => {
       return f?.id === el?.classroomGroupId;
     });
   });
 
-  const days = currentClassProgrammes.map((item) => item?.meetingDay).sort();
+  const days = currentClassProgrammes?.map((item) => item?.meetingDay).sort();
 
   const stringDays = days
     // remove duplicates
-    .filter((element, index) => days.indexOf(element) === index)
-    .map((item) => numberToDayOfWeek(item, 'short'));
+    ?.filter((element, index) => days.indexOf(element) === index)
+    ?.map((item) => numberToDayOfWeek(item, 'short'));
 
   const wasAssistant = !!questions[2].answer;
   const isAllQuestions =
-    questions.length === 5 && questions.every((item) => item.answer !== '');
+    questions.length === 5 && questions?.every((item) => item.answer !== '');
   const is3Questions = questions
     .slice(0, 3)
-    .every((item) => item.answer !== '');
+    .every((item) => item?.answer !== '');
   const isAllCompleted = wasAssistant ? isAllQuestions : is3Questions;
 
   const onOptionSelected = useCallback(
@@ -130,13 +164,13 @@ export const Step17ReAccreditation = ({
 
     const filteredChildren = [];
     const _allLearners = allLearners?.filter(
-      (x) => !Boolean(x.stoppedAttendance)
+      (x) => !Boolean(x?.stoppedAttendance)
     );
 
     for (const learner of _allLearners) {
       if (
         learner?.classroomGroupId !==
-        currentClassProgrammes[0]?.classroomGroupId
+        currentClassProgrammes?.[0]?.classroomGroupId
       )
         continue;
 
@@ -182,17 +216,68 @@ export const Step17ReAccreditation = ({
     previousClassroomGroups,
   ]);
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData?.questions?.length !==
+        previousStatePreviousData?.questions?.length
+    ) {
+      const updatedQuestions = questions.map((question) => {
+        const correspondingQuestion = previousData?.questions?.find(
+          (secondQuestion) => secondQuestion?.question === question.question
+        );
+
+        if (correspondingQuestion) {
+          const isQuestion3 =
+            correspondingQuestion.question.includes(question3);
+
+          return {
+            ...question,
+            answer:
+              isQuestion3 && correspondingQuestion.answer
+                ? parseBool(String(correspondingQuestion.answer))
+                : correspondingQuestion.answer,
+          };
+        }
+
+        return question;
+      });
+
+      setAnswers(updatedQuestions as State[]);
+    }
+  }, [
+    isViewAnswers,
+    previousData?.questions,
+    previousStatePreviousData?.questions.length,
+    questions,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    } else {
+      setEnableButton?.(isAllCompleted);
+    }
+  }, [isAllCompleted, isViewAnswers, setEnableButton]);
+
   useEffect(() => {
     handleChildren();
   }, [handleChildren]);
 
-  useEffect(() => {
-    setEnableButton?.(isAllCompleted);
-  }, [isAllCompleted, setEnableButton]);
-
   return (
     <div className="flex flex-col gap-3 p-4">
       <Typography type="h2" text="Programme details" color="textDark" />
+      {isViewAnswers && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Divider dividerType="dashed" />
       <div className="flex items-center gap-2">
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
@@ -253,6 +338,7 @@ export const Step17ReAccreditation = ({
         type="number"
         label={questions[0].question}
         value={questions[0].answer}
+        disabled={isViewAnswers}
         onChange={(e) => onOptionSelected(e.target.value, 0)}
         placeholder={'e.g. 4'}
       />
@@ -260,6 +346,7 @@ export const Step17ReAccreditation = ({
         type="number"
         label={questions[1].question}
         value={questions[1].answer}
+        disabled={isViewAnswers}
         onChange={(e) => onOptionSelected(e.target.value, 1)}
         placeholder={'e.g. 3'}
       />
@@ -274,6 +361,11 @@ export const Step17ReAccreditation = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           options={options}
+          selectedOptions={
+            questions[2].answer !== ''
+              ? Boolean(questions[2].answer)
+              : undefined
+          }
           onOptionSelected={(value) => onOptionSelected(value, 2)}
         />
       </div>
@@ -283,11 +375,13 @@ export const Step17ReAccreditation = ({
             label={questions[3].question}
             value={questions[3].answer}
             onChange={(e) => onOptionSelected(e.target.value, 3)}
+            disabled={isViewAnswers}
             placeholder={'First name'}
           />
           <FormInput
             label={questions[4].question}
             value={questions[4].answer}
+            disabled={isViewAnswers}
             onChange={(e) => onOptionSelected(e.target.value, 4)}
             placeholder={'Surname/family name'}
           />

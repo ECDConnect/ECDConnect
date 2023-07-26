@@ -15,7 +15,12 @@ import {
 } from '@ecdlink/graphql';
 import { DialogPosition } from '@ecdlink/ui';
 import { Menu, Transition } from '@headlessui/react';
-import { CogIcon, DownloadIcon, UploadIcon } from '@heroicons/react/outline';
+import {
+  CogIcon,
+  DownloadIcon,
+  SearchIcon,
+  UploadIcon,
+} from '@heroicons/react/outline';
 import { Fragment, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
@@ -26,6 +31,7 @@ import PractitionerPanelEdit from './components/practitioner-panel-edit/practiti
 import UploadPractitionerTemplate from './components/upload-template/upload-template';
 import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import UploadAllChildrenTemplate from './components/upload-import-template-children/upload-import-template-children';
+import debounce from 'lodash.debounce';
 
 export default function Practitioners() {
   const { hasPermission } = useUser();
@@ -147,6 +153,7 @@ export default function Practitioners() {
             sendInviteToApplication({
               variables: {
                 userId: practitioner.userId,
+                inviteToPortal: false,
               },
             }).then(() => {
               setNotification({
@@ -219,19 +226,34 @@ export default function Practitioners() {
     });
   };
 
+  const [searchValue, setSearchValue] = useState('');
+
+  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value || '');
+  }, 150);
   if (tableData) {
     return (
       <div>
         <div className="flex flex-col">
-          <div className="pb-5 sm:flex sm:items-center sm:justify-between">
+          <div className="pb-5 sm:flex sm:items-center sm:justify-evenly">
             <span className="text-lg font-medium leading-6 text-gray-900"></span>
-            <div className="flex flex-row">
-              <div className="mt-3 sm:mt-0 sm:ml-4">
+            <div className="relative w-11/12">
+              <span className="absolute inset-y-1/2 left-3 mr-0 flex -translate-y-1/2 transform items-center">
+                <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+              </span>
+              <input
+                onClick={search}
+                className="bg-uiBg focus:outline-none sm:text-md block w-6/12 rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                placeholder="       Search"
+              />
+            </div>
+            <div className="flex-row-end flex w-2/12">
+              <div className="mt-3 sm:mt-0 sm:ml-0">
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
                     onClick={displayPanel}
                     type="button"
-                    className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                    className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                   >
                     Create Practitioner
                   </button>
@@ -350,6 +372,7 @@ export default function Practitioners() {
                   sendRow={
                     hasPermission(PermissionEnum.update_user) && sendInvite
                   }
+                  searchInput={searchValue}
                 />
               </div>
             </div>

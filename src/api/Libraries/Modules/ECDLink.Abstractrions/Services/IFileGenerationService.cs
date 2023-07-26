@@ -12,5 +12,6 @@ namespace ECDLink.Abstractrions.Services
 
         Task<FileModel> DataTableToExcelFile(DataTable data, string fileName);
         Task<FileModel> FieldsToExcelTemplate(List<string> fields, Dictionary<string, string> contentDefinition, Dictionary<string, string> languages, string fileName);
+        Task<FileModel> DictionaryToExcelTemplate(Dictionary<string, List<List<string>>> sheetDefinitions, string fileName);
     }
 }

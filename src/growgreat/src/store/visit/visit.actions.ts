@@ -338,7 +338,7 @@ export const getHealthCareWorkerHighlights = createAsyncThunk<
 
       if (!content) {
         return rejectWithValue(
-          'Error getting highlights for health care worker'
+          'Error getting highlights for Community Health Worker'
         );
       }
       return content;
