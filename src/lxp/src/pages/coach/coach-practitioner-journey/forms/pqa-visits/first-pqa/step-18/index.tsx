@@ -320,7 +320,6 @@ export const Step18 = ({
           }
         />
       </div>
-      {console.log({ currentClassroomGroups })}
       <div>
         <Typography
           color="textMid"
