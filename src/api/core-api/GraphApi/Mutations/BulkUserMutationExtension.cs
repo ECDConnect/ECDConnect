@@ -259,8 +259,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(ex, $"Could not send invitation to user: {user.UserName}");
-                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user.UserName}"));
+                    _logger.LogError(ex, $"Could not send invitation to user: {user?.UserName}");
+                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user?.UserName}"));
                 }
             }
 
