@@ -8,10 +8,10 @@ import {
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useMemo, useCallback } from 'react';
+import { useEffect, useMemo } from 'react';
 import { getAgeInYearsMonthsAndDays, useDialog } from '@ecdlink/core';
 import { DynamicFormProps, Question } from '../../../dynamic-form';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   InfantRoadToHealthModel,
@@ -32,13 +32,21 @@ export const WeightAndLengthFormStep = ({
   setEnableButton,
   setSectionQuestions,
 }: DynamicFormProps) => {
-  const { register, watch } = useForm<InfantRoadToHealthModel>({
+  const {
+    register,
+    watch,
+    control: infantRoadToHealthFormControl,
+  } = useForm<InfantRoadToHealthModel>({
     resolver: yupResolver(infantRoadToHealthModelSchema),
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
 
   const { lengthAtBirth, weightAtBirth, height } = watch();
+
+  const { errors } = useFormState({
+    control: infantRoadToHealthFormControl,
+  });
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const dateOfBirth = infant?.user?.dateOfBirth as string;
@@ -66,6 +74,10 @@ export const WeightAndLengthFormStep = ({
       lengthAtBirth && Number(lengthAtBirth) > 0 && Number(lengthAtBirth) <= 250
     );
   }, [lengthAtBirth]);
+
+  const isCheckedHeight = useMemo(() => {
+    return height && Number(height) > 0 && Number(height) <= 250;
+  }, [height]);
 
   const dialog = useDialog();
 
@@ -138,7 +150,11 @@ export const WeightAndLengthFormStep = ({
     }
 
     if (isDisplayHeight || isDisplayLength) {
-      if (isCheckedWeight && isCheckedLength) {
+      if (
+        isCheckedWeight &&
+        ((isDisplayLength && isCheckedLength) ||
+          (isDisplayHeight && isCheckedHeight))
+      ) {
         return setEnableButton?.(true);
       } else {
         return setEnableButton?.(false);
@@ -160,6 +176,7 @@ export const WeightAndLengthFormStep = ({
     height,
     isCheckedWeight,
     isCheckedLength,
+    isCheckedHeight,
   ]);
 
   return (
@@ -186,6 +203,7 @@ export const WeightAndLengthFormStep = ({
             type={'number'}
             min={0}
             maxLength={5}
+            error={!!errors.weightAtBirth ? errors.weightAtBirth : undefined}
           ></FormInput>
           <Typography
             type="body"
@@ -212,6 +230,9 @@ export const WeightAndLengthFormStep = ({
                 type={'number'}
                 min={0}
                 maxLength={6}
+                error={
+                  !!errors.lengthAtBirth ? errors.lengthAtBirth : undefined
+                }
               ></FormInput>
               <Typography
                 type="body"
