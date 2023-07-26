@@ -76,7 +76,7 @@ export const CoachTraineeFranchisorAgreement: React.FC<
 
     const visitDateInput: SsChecklistVisitModelInput = {
       traineeId: practitioner?.userId,
-      // coachId: user?.id,
+      coachId: user?.id,
       attended: true,
       checklistData: {
         traineeId: practitioner?.userId,
@@ -87,11 +87,9 @@ export const CoachTraineeFranchisorAgreement: React.FC<
       },
     };
 
-    console.log({ visitDateInput });
-
-    // await new TraineeService(
-    //   userAuth?.auth_token!
-    // ).AddCoachFranchiseeAgreementForTrainee(visitDateInput);
+    await new TraineeService(
+      userAuth?.auth_token!
+    ).AddCoachFranchiseeAgreementForTrainee(visitDateInput);
   };
 
   const renderStep = (step: number) => {

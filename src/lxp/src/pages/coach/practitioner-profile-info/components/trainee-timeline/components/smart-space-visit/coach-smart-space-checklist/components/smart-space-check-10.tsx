@@ -22,6 +22,7 @@ interface SmartSpaceCheck1Props {
   setSectionQuestions: (value?: SectionQuestions[]) => void;
   handleNextSection: any;
   saveSmartSpaceCheckData: () => void;
+  onSubmit: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -42,6 +43,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
   setSectionQuestions,
   handleNextSection,
   saveSmartSpaceCheckData,
+  onSubmit,
 }) => {
   const history = useHistory();
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
@@ -188,6 +190,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
               onClick={() => {
                 handleNextSection();
                 saveSmartSpaceCheckData();
+                onSubmit();
                 history.push(ROUTES.COACH_FRANCHISE_AGREEMENT, {
                   practitioner: practitioner,
                 });

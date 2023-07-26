@@ -67,33 +67,36 @@ export const CoachSmartSpaceChecklist: React.FC<
     appDispatch(traineeActions.saveCoachSmartSpaceCheckData(sectionQuestions));
   };
 
-  //  const onSubmit = async () => {
-  //     const sections = sectionQuestions?.map((item) => ({
-  //       ...item,
-  //       questions: item.questions.map((question) => ({
-  //         ...question,
-  //         answer: String(question.answer),
-  //       })),
-  //     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+  const onSubmit = async () => {
+    const sections = sectionQuestions?.map((item) => ({
+      ...item,
+      questions: item.questions.map((question) => ({
+        ...question,
+        answer: String(question.answer),
+      })),
+    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-  //       const visitDateInput: VisitModelInput = {
-  //         traineeId: practitioner?.userId,
-  //         coachId: user?.id!,
-  //         plannedVisitDate: new Date(),
-  //         attended: true,
-  //         checklistData: {
-  //         visitData: {
-  //           visitName: 'SmartSpace Checklist',
-  //           sections,
-  //         },
-  //       }
-  //     }
-  //       await new TraineeService(userAuth?.auth_token!).addCoachVisitInviteForTrainee(
-  //         visitDateInput
-  //       );
+    const visitDateInput: SsChecklistVisitModelInput = {
+      traineeId: practitioner?.userId,
+      coachId: user?.id!,
+      plannedVisitDate: new Date(),
+      attended: true,
+      checklistData: {
+        traineeId: practitioner?.userId,
+        coachId: user?.id!,
+        visitData: {
+          visitName: 'SmartSpace Checklist',
+          sections,
+        },
+      },
+    };
 
-  //       return;
-  //   };
+    await new TraineeService(
+      userAuth?.auth_token!
+    ).addCoachVisitInviteForTrainee(visitDateInput);
+
+    return;
+  };
 
   const handleBackButton = () => {
     if (activeStep === 1) {
@@ -194,6 +197,7 @@ export const CoachSmartSpaceChecklist: React.FC<
             setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+            onSubmit={onSubmit}
           />
         );
       default:
