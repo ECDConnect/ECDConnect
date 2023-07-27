@@ -194,20 +194,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // TODO: its meant to be filtered to the current date range: , _startDate, _endDate);
             summary.totalPregnantMoms = motherManager.GetTotalPregnantMothers(healthCareWorkerUserId, _startDate, _endDate);
             summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(healthCareWorkerUserId, _startDate, _endDate);
-            
-            summary.totalClientsVisited = summary.totalPregnantMoms + summary.totalChildren;
 
-            // Mothers are folders.
-            summary.totalFoldersOpened = motherManager.GetTotalNewMothersForPeriod(healthCareWorkerUserId, _startDate, _endDate);
+            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(healthCareWorkerUserId, null, _startDate, _endDate);
+
+            // Mothers and Infants are folders.
+            summary.totalFoldersOpened = motherManager.GetTotalNewClientsForPeriod(healthCareWorkerUserId, _startDate, _endDate);
 
             // Pregnant Mom Visits cannot be missed and will only be overdue.
             summary.totalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_child, _startDate, _endDate);
+            
+            var motherVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_mother, _startDate, _endDate);
+            var infantVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_mother, _startDate, _endDate);
+            summary.totalVisitsOverdue = motherVisitsOverdue + infantVisitsOverdue;
 
             summary.totalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(healthCareWorkerUserId, _startDate, _endDate);
             summary.totalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(healthCareWorkerUserId, _startDate, _endDate);
             
             // Pregnant Mom Visits cannot be missed and will only be overdue.
-            summary.totalVisitsOverdue = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_mother, _startDate, _endDate);
             summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(healthCareWorkerUserId, _startDate, _endDate);
             summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId, _startDate, _endDate); ;
 
