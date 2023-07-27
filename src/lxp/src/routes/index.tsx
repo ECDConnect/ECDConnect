@@ -81,6 +81,7 @@ import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journ
 import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
 import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
 import Calendar from '@/pages/calendar/calendar-home';
+import RemovePractitionerFromProgramme from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/remove-practitioner-from-programme';
 import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
 import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
 import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
@@ -245,6 +246,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS}
         component={ReassignClass}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME}
+        component={RemovePractitionerFromProgramme}
       />
       <Route
         exact
