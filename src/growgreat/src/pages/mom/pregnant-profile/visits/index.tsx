@@ -19,6 +19,7 @@ import { RootState } from '@/store/types';
 import {
   getMotherById,
   getMotherVisits,
+  getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
@@ -151,6 +152,9 @@ export const Visits: React.FC = () => {
   const isOrderVisitDate = plannedVisitDate && currentDate >= plannedVisitDate;
   const isDueDate = dueDate && currentDate <= dueDate;
   const isWeekDeadline = isFirstVisit || (isOrderVisitDate && isDueDate);
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
 
   const weeksPregnant = useMemo(
     () =>
@@ -167,13 +171,17 @@ export const Visits: React.FC = () => {
 
   const getType = useCallback(
     (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
+
       if (item.attended) {
         return 'completed';
       }
       if (
         (isWeekDeadline &&
           currentVisit?.visitType?.id === item.visitType?.id) ||
-        isMissedVisit
+        isMissedVisit ||
+        (isAdditionalVisit && previousVisit?.attended)
       ) {
         return 'inProgress';
       }

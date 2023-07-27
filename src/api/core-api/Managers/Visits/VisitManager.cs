@@ -1,5 +1,4 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -488,7 +487,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else if (type == Constants.GGSettings.client_child)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.VisitType.Type == Constants.GGSettings.client_child).OrderBy(y => y.PlannedVisitDate).ToList();
+                // returning visits only applicable after infant was registered
+                allVisits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.VisitType.Type == Constants.GGSettings.client_child &&
+                (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date || x.DueDate.HasValue && x.DueDate.Value.Date >= x.Infant.InsertedDate.Date)).
+                OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {

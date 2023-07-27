@@ -172,7 +172,9 @@ const visitSlice = createSlice({
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const updatedDataIndex = state.moreInformation?.findIndex(
-        (item) => item.id === action.payload.id
+        (item) =>
+          item.visit === action.payload.visit &&
+          item.type === action.payload.type
       );
 
       if (
