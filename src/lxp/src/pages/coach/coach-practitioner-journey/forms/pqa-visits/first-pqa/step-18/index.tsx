@@ -170,8 +170,9 @@ export const Step18 = ({
 
     for (const learner of _allLearners) {
       if (
-        learner?.classroomGroupId !==
-        currentClassProgrammes?.[0]?.classroomGroupId
+        !currentClassProgrammes.some(
+          (item) => item?.classroomGroupId === learner?.classroomGroupId
+        )
       )
         continue;
 
@@ -308,15 +309,13 @@ export const Step18 = ({
       <Divider dividerType="dashed" />
       <div className="flex items-center gap-2">
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
-          {isPrincipal
-            ? currentClassProgrammes?.length
-            : currentClassroomGroups.length}
+          {currentClassroomGroups.length}
         </span>
         <Typography
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${currentClassroomGroups[0].programmeType?.description}`
+              ? `classes at ${currentClassroomGroups[0].name}`
               : `classes assigned to ${name}`
           }
         />
@@ -342,14 +341,25 @@ export const Step18 = ({
         onChange={(e) => onOptionSelected(e.target.value, 0)}
         placeholder={'e.g. 4'}
       />
-      <FormInput
-        type="number"
-        label={questions[1].question}
-        value={questions[1].answer}
-        disabled={isViewAnswers}
-        onChange={(e) => onOptionSelected(e.target.value, 1)}
-        placeholder={'e.g. 3'}
-      />
+      <div>
+        <Typography type="h4" text={questions[1].question} color="textDark" />
+        <div className="flex">
+          <FormInput
+            type="number"
+            className="w-1/2"
+            value={questions[1].answer}
+            disabled={isViewAnswers}
+            onChange={(e) => onOptionSelected(e.target.value, 1)}
+            placeholder={'e.g. 3'}
+          />
+          <Typography
+            type="body"
+            text="hours"
+            color="textDark"
+            className="mt-4 ml-1"
+          />
+        </div>
+      </div>
       <div>
         <Typography
           type="h4"

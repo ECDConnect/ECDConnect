@@ -14,6 +14,8 @@ import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profil
 import { useSelector } from 'react-redux';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
+export const step3ReAccreditationVisitSection = 'Step 3';
+
 export const Step3ReAccreditation = ({
   isView,
   setSectionQuestions,
@@ -24,7 +26,6 @@ export const Step3ReAccreditation = ({
     answer: [] as (string | number | undefined)[],
   });
 
-  const visitSection = 'Step 3';
   const answers = question.answer as string[];
 
   const [visitIdFromPractitionerJourney] = useSessionStorage(
@@ -37,7 +38,7 @@ export const Step3ReAccreditation = ({
     getSectionsQuestionsByStep(
       visitIdFromPractitionerJourney ?? '',
       'reAccreditationPreviousFormData',
-      visitSection
+      step3ReAccreditationVisitSection
     )
   );
   const previousStatePreviousData = usePrevious(previousData) as
@@ -55,7 +56,7 @@ export const Step3ReAccreditation = ({
         setAnswers(updatedQuestion);
         return setSectionQuestions?.([
           {
-            visitSection: visitSection,
+            visitSection: step3ReAccreditationVisitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -65,7 +66,10 @@ export const Step3ReAccreditation = ({
 
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
-        { visitSection: visitSection, questions: [updatedQuestion] },
+        {
+          visitSection: step3ReAccreditationVisitSection,
+          questions: [updatedQuestion],
+        },
       ]);
     },
     [answers, question, setSectionQuestions]

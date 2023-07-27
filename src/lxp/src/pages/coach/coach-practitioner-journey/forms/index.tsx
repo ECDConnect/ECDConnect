@@ -9,7 +9,7 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
@@ -55,9 +55,12 @@ import { ChildrenDialog } from './dialog';
 import {
   step15ReAccreditationQuestions,
   step15ReAccreditationVisitSection,
+  step2ReAccreditationVisitSection,
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { newGuid } from '@/utils/common/uuid.utils';
+import { options } from './reaccreditation/step-2/options';
+import ROUTES from '@/routes/routes';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -106,6 +109,7 @@ export const Form = ({
   >();
 
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
 
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
@@ -125,6 +129,12 @@ export const Form = ({
   const step16Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step16VisitSection)
     ?.questions.find((item) => item.question === step16Question1)?.answer;
+  const step2ReAccreditationQuestionAnswers = sectionQuestions?.find(
+    (item) => item.visitSection === step2ReAccreditationVisitSection
+  )?.questions?.[0]?.answer as string[] | undefined;
+  const isBasicSmartSpaceStandardsCompleted =
+    step2ReAccreditationQuestionAnswers?.length === options.length;
+
   const step15ReAccreditationQuestion1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step15ReAccreditationVisitSection)
     ?.questions.find(
@@ -461,7 +471,7 @@ export const Form = ({
   );
 
   const onSubmitPqa = useCallback(
-    ({ payload, sections }: SubmitProps) => {
+    async ({ payload, sections }: SubmitProps) => {
       const step19Question2 = sections?.find((item) =>
         item?.questions?.some(
           (question) => question?.question === step19Question2Pqa
@@ -478,7 +488,7 @@ export const Form = ({
         })
       );
       // Create a new ID if it doesn't already exist
-      appDispatch(
+      await appDispatch(
         pqaThunkActions.addVisitFormData({
           ...payload,
           visitId: visitId?.includes('new') ? newGuid() : visitId,
@@ -486,23 +496,40 @@ export const Form = ({
       );
 
       if (step19Question2Answer === 'true') {
-        displayChildrenDialog('First PQA visit');
+        return displayChildrenDialog('First PQA visit');
       }
+
+      showMessage({ message: 'First PQA visit complete!' });
     },
-    [appDispatch, displayChildrenDialog, practitionerId, visitId]
+    [appDispatch, displayChildrenDialog, practitionerId, showMessage, visitId]
   );
 
   const onSubmitReAccreditation = useCallback(
-    ({ payload }: SubmitProps) => {
+    async ({ payload }: SubmitProps) => {
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 're-accreditation',
         })
       );
-      appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
+      await appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
+
+      if (!isBasicSmartSpaceStandardsCompleted) {
+        // TODO: add schedule feature
+        onBack?.();
+        return history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
+      }
+
+      showMessage({ message: 'Re-accreditation complete!' });
     },
-    [appDispatch, practitionerId]
+    [
+      appDispatch,
+      history,
+      isBasicSmartSpaceStandardsCompleted,
+      onBack,
+      practitionerId,
+      showMessage,
+    ]
   );
 
   const onSubmit = useCallback(() => {
@@ -665,6 +692,7 @@ export const Form = ({
         isToShowStep1: true,
         isToShowStep16: true,
         isToRemoveSmartStarter,
+        isBasicSmartSpaceStandardsCompleted,
       });
     }
 
@@ -675,7 +703,13 @@ export const Form = ({
       isToRemoveSmartStarter,
       isToShowStep17: true,
     });
-  }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
+  }, [
+    activityName,
+    isBasicSmartSpaceStandardsCompleted,
+    isStep11AnswerTrue,
+    isToRemoveSmartStarter,
+    visitName,
+  ]);
 
   const onSetPqaRating = (rating: Rating) => {
     if (rating.score === pqaRating?.score) return;
@@ -761,6 +795,11 @@ export const Form = ({
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
+        submitButton={
+          !isBasicSmartSpaceStandardsCompleted
+            ? { text: 'Save & next', icon: 'SaveIcon' }
+            : undefined
+        }
         setPqaRating={onSetPqaRating}
         setReAccreditationRating={onSetReAccreditationRating}
         isLoading={
@@ -768,6 +807,7 @@ export const Form = ({
           isLoadingSupportVisit ||
           isLoadingDeactivate ||
           isLoadingPqaFollowUpVisit ||
+          isLoadingReAccreditationVisit ||
           isLoadingReAccreditationFollowUpVisit
         }
         secondaryButton={

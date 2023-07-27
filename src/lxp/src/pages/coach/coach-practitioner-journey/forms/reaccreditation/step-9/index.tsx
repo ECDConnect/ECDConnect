@@ -120,7 +120,7 @@ export const Step9ReAccreditation = ({
       )}
       <Divider dividerType="dashed" />
       <div className="flex flex-col gap-2 py-4">
-        <Typography type="h4" text={`2.1 ${question.question}`} />
+        <Typography type="h4" text={question.question} />
         {options.map((item) => (
           <CheckboxGroup
             checkboxColor="primary"
