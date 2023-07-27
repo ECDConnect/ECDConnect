@@ -9,8 +9,6 @@ export function TermsPage(props: any) {
   const [content, setContent] = useState(null);
   const history = useHistory();
 
-  console.log(Config);
-
   useEffect(() => {
     var myHeaders = new Headers();
     myHeaders.append('Referer', Config.authApi);
