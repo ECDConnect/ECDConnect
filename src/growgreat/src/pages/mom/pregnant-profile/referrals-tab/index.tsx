@@ -282,7 +282,7 @@ export const ReferralsTab: React.FC = () => {
         return newState;
       });
     },
-    [setReferralsInput, setShowCelebration, appDispatch]
+    [appDispatch, referralsForMother?.length]
   );
 
   const onOptionSelected = useCallback(
@@ -324,13 +324,38 @@ export const ReferralsTab: React.FC = () => {
 
   // Mark all referrals for client
   const onMarkAll = useCallback(() => {
-    for (const section of sections) {
-      let sectionQuestions = questions[section.value];
-      for (const question of sectionQuestions) {
-        onOptionSelected({ ...question, isCompleted: true }, section.value);
+    // Call setAnswers with a function to update the state
+    setAnswers((prevState) => {
+      // Create a copy of the previous state
+      const updatedAnswers = { ...prevState };
+
+      // Iterate through each section
+      for (const section of sections) {
+        const sectionIndex = section.value;
+        const sectionQuestions = questions[sectionIndex];
+
+        // Update all questions within the section, marking them as completed
+        const updatedSectionQuestions = sectionQuestions.map((question) => ({
+          ...question,
+          isCompleted: true,
+        }));
+
+        // Update the answers with the new set of questions for this section
+        updatedAnswers[sectionIndex] = updatedSectionQuestions;
       }
-    }
-  }, [onOptionSelected, sections, questions]);
+
+      const formattedQuestions = sections.flatMap((section) =>
+        updatedAnswers[section.value].map((item) => ({
+          id: item.id,
+          isCompleted: item.isCompleted as any,
+        }))
+      );
+
+      handleSetReferrals?.(formattedQuestions);
+
+      return updatedAnswers;
+    });
+  }, [sections, handleSetReferrals, questions]);
 
   const onShowBackReferrals = useCallback(() => {
     if (isToGetPreviousVisitStatusData) {
@@ -389,8 +414,6 @@ export const ReferralsTab: React.FC = () => {
       />
     );
   }
-
-  // console.log('questions', questions);
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>
