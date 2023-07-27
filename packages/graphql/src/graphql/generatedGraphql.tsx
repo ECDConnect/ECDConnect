@@ -7433,6 +7433,7 @@ export type Practitioner = {
   reasonForLeaving?: Maybe<ReasonForPractitionerLeaving>;
   reasonForLeavingDetails?: Maybe<Scalars['String']>;
   reasonForPractitionerLeavingId?: Maybe<Scalars['UUID']>;
+  setupTraineeInitiated?: Maybe<Scalars['Boolean']>;
   shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
@@ -7524,6 +7525,7 @@ export type PractitionerFilterInput = {
   reasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingFilterInput>;
   reasonForLeavingDetails?: InputMaybe<StringOperationFilterInput>;
   reasonForPractitionerLeavingId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  setupTraineeInitiated?: InputMaybe<BooleanOperationFilterInput>;
   shareInfo?: InputMaybe<BooleanOperationFilterInput>;
   signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
@@ -7571,6 +7573,7 @@ export type PractitionerInput = {
   ReasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingInput>;
   ReasonForLeavingDetails?: InputMaybe<Scalars['String']>;
   ReasonForPractitionerLeavingId?: InputMaybe<Scalars['UUID']>;
+  SetupTraineeInitiated?: InputMaybe<Scalars['Boolean']>;
   ShareInfo?: InputMaybe<Scalars['Boolean']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
@@ -7716,6 +7719,7 @@ export type PractitionerSortInput = {
   reasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingSortInput>;
   reasonForLeavingDetails?: InputMaybe<SortEnumType>;
   reasonForPractitionerLeavingId?: InputMaybe<SortEnumType>;
+  setupTraineeInitiated?: InputMaybe<SortEnumType>;
   shareInfo?: InputMaybe<SortEnumType>;
   signingSignature?: InputMaybe<SortEnumType>;
   siteAddress?: InputMaybe<SiteAddressSortInput>;
@@ -7952,6 +7956,7 @@ export type Principal = {
   reasonForLeaving?: Maybe<ReasonForPractitionerLeaving>;
   reasonForLeavingDetails?: Maybe<Scalars['String']>;
   reasonForPractitionerLeavingId?: Maybe<Scalars['UUID']>;
+  setupTraineeInitiated?: Maybe<Scalars['Boolean']>;
   shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
@@ -8018,6 +8023,7 @@ export type PrincipalFilterInput = {
   reasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingFilterInput>;
   reasonForLeavingDetails?: InputMaybe<StringOperationFilterInput>;
   reasonForPractitionerLeavingId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  setupTraineeInitiated?: InputMaybe<BooleanOperationFilterInput>;
   shareInfo?: InputMaybe<BooleanOperationFilterInput>;
   signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
@@ -8065,6 +8071,7 @@ export type PrincipalInput = {
   ReasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingInput>;
   ReasonForLeavingDetails?: InputMaybe<Scalars['String']>;
   ReasonForPractitionerLeavingId?: InputMaybe<Scalars['UUID']>;
+  SetupTraineeInitiated?: InputMaybe<Scalars['Boolean']>;
   ShareInfo?: InputMaybe<Scalars['Boolean']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
@@ -8119,6 +8126,7 @@ export type PrincipalSortInput = {
   reasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingSortInput>;
   reasonForLeavingDetails?: InputMaybe<SortEnumType>;
   reasonForPractitionerLeavingId?: InputMaybe<SortEnumType>;
+  setupTraineeInitiated?: InputMaybe<SortEnumType>;
   shareInfo?: InputMaybe<SortEnumType>;
   signingSignature?: InputMaybe<SortEnumType>;
   siteAddress?: InputMaybe<SiteAddressSortInput>;
