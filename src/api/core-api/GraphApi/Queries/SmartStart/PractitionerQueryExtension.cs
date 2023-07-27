@@ -19,6 +19,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -345,7 +346,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return practitionerColleagues;
         }
 
-
         public int GetPractitionerInviteCount(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
@@ -378,9 +378,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public Trainee GetTraineeByUserId(
-    [Service] PersonnelService practiManager,
-    [Service] UserLicenseManager userLicenseManager,
-    string userId)
+            [Service] PersonnelService practiManager,
+            [Service] UserLicenseManager userLicenseManager,
+            string userId)
         {
             return practiManager.GetTraineeByUserId(userLicenseManager, userId);
         }
@@ -400,7 +400,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return visitDataManager.GetVisitNotesForPractitioner(userId);
         }
 
+        public PractitionerRemovalHistory GetRemovalDetailsForPractitioner(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory, 
+            string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
 
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+            var result = removalRepo.GetListByUserId(userId)
+                .Where(x => x.IsActive)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+            return result;
+        }
     }
-
 }

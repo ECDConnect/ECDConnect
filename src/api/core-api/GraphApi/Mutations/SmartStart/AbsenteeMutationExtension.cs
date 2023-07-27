@@ -1,4 +1,5 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -19,10 +20,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
-        public Absentees AddAbsenteeForPractitioner([Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            [Service] HierarchyEngine engine,
-            [Service] IReassignmentService reassignmentService,
+        public Absentees AddAbsenteeForPractitioner(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IAbsenteeService absenteetService,
             string practitionerId,
             string reassignedToPractitioner,
             string reason,
@@ -31,30 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string classProgram = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
-            var updated = new Absentees();
-            if (classProgram != null)
-            {
-                reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
-                var absent = new Absentees
-                {
-                    UserId = practitionerId,
-                    Reason = reason,
-                    AbsentDate = absentDate,
-                    LoggedBy = loggedByUser,
-                    ReassignedClass = classProgram,
-                    ReassignedToPractitioner = reassignedToPractitioner,
-                    UpdatedBy = loggedByUser,
-                    UpdatedDate = DateTime.Now
-                };
-                updated = absenteeRepo.Insert(absent);
-
-                //Log to the history table for reassignment back to owner user
-                reassignmentService.AddReassignmentForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, false);
-            }
-
-            //Save the history so it can be reassigned
-            return updated;
+            return absenteetService.AddAbsenteeForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram);
         }
 
         public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,

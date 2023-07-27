@@ -12,6 +12,7 @@ import {
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
   PractitionerInput,
+  PractitionerRemovalHistory,
 } from '@ecdlink/graphql';
 
 interface ReportDetailsForPractitionerData {
@@ -888,7 +889,7 @@ class PractitionerService {
   }
 
   async RemovePractitioner(
-    practitionerId: string,
+    practitionerUserId: string,
     reasonForPractitionerLeavingId: string | undefined = undefined,
     reasonDetails: string | undefined = undefined,
     newPrincipalId: string | undefined = undefined,
@@ -898,14 +899,14 @@ class PractitionerService {
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation removePractitioner(
-        $practitionerId: String
+        $practitionerUserId: String
         $reasonForPractitionerLeavingId: String
         $reasonDetails: String
         $newPrincipalId: String
         $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
       ) {
         removePractitioner(
-          practitionerId: $practitionerId
+          practitionerUserId: $practitionerUserId
           reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId
           reasonDetails: $reasonDetails
           newPrincipalId: $newPrincipalId
@@ -915,7 +916,7 @@ class PractitionerService {
       }  
       `,
       variables: {
-        practitionerId,
+        practitionerUserId,
         reasonForPractitionerLeavingId,
         reasonDetails,
         newPrincipalId,
@@ -930,6 +931,55 @@ class PractitionerService {
     }
 
     return response.data.data.updatePractitionerRegistered;
+  }
+
+  async RemovePractitionerFromProgramme(
+    practitionerUserId: string,
+    reasonForPractitionerLeavingProgrammeId: string | undefined = undefined,
+    reasonDetails: string | undefined = undefined,
+    classroomId: string,
+    dateOfRemoval: Date,
+    classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation removeFromProgramme(
+        $practitionerUserId: String
+        $reasonForPractitionerLeavingProgrammeId: String
+        $reasonDetails: String
+        $classroomId: String
+        $dateOfRemoval: DateTime!
+        $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
+      ) {
+        removeFromProgramme(
+          practitionerUserId: $practitionerUserId
+          reasonForPractitionerLeavingProgrammeId: $reasonForPractitionerLeavingProgrammeId
+          reasonDetails: $reasonDetails
+          classroomId: $classroomId
+          dateOfRemoval: $dateOfRemoval
+          classroomGroupReassignments: $classroomGroupReassignments
+        ) {
+        }
+      }  
+      `,
+      variables: {
+        practitionerUserId,
+        reasonForPractitionerLeavingProgrammeId,
+        reasonDetails,
+        classroomId,
+        dateOfRemoval,
+        classroomGroupReassignments,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.removeFromProgramme;
   }
 
   async displayMetrics(type: string): Promise<PractitionerDto[]> {
@@ -1235,6 +1285,115 @@ class PractitionerService {
     }
 
     return response.data.data.delicensePractitioner;
+  }
+
+  async getRemovalForPractitioner(
+    userId: string
+  ): Promise<PractitionerRemovalHistory | undefined> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query removalDetailsForPractitioner($userId: String) {
+        removalDetailsForPractitioner(userId: $userId) {
+          dateOfRemoval
+          id
+          reasonDetails
+          reasonForPractitionerLeavingProgrammeId
+          removedByUserId,
+          classReassignments {
+            id,
+            reassignedClass,
+            reassignedToPractitioner
+          }
+        }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get practitioner removal Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.removalDetailsForPractitioner;
+  }
+
+  async updateRemovePractitionerFromProgramme(
+    removalId: string,
+    reasonForPractitionerLeavingProgrammeId: string | undefined = undefined,
+    reasonDetails: string | undefined = undefined,
+    dateOfRemoval: Date,
+    classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation updateRemovalFromProgramme(
+        $removalId: String
+        $reasonForPractitionerLeavingProgrammeId: String
+        $reasonDetails: String
+        $dateOfRemoval: DateTime!
+        $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
+      ) {
+        updateRemovalFromProgramme(
+          removalId: $removalId
+          reasonForPractitionerLeavingProgrammeId: $reasonForPractitionerLeavingProgrammeId
+          reasonDetails: $reasonDetails
+          dateOfRemoval: $dateOfRemoval
+          classroomGroupReassignments: $classroomGroupReassignments
+        ) {
+        }
+      }  
+      `,
+      variables: {
+        removalId,
+        reasonForPractitionerLeavingProgrammeId,
+        reasonDetails,
+        dateOfRemoval,
+        classroomGroupReassignments,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update practitioner removal Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.removeFromProgramme;
+  }
+
+  async cancelRemovePractitionerFromProgramme(
+    removalId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation cancelRemovalFromProgramme(
+        $removalId: String
+      ) {
+        cancelRemovalFromProgramme(
+          removalId: $removalId
+        ) {
+        }
+      }  
+      `,
+      variables: {
+        removalId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Cancel practitioner removal Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.removeFromProgramme;
   }
 }
 

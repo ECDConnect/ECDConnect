@@ -33,12 +33,12 @@ import {
 import { authSelectors } from '@store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
-import { useAppDispatch } from '@store';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { OnboardingTraineeDashboard } from './components/trainee-timeline/trainee-onboarding-dashboard';
 import { TraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
+import { useAppDispatch } from '@/store';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -94,6 +94,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     );
   };
 
+  const appDispatch = useAppDispatch();
   useEffect(() => {
     const getTraineeTimeline = async () =>
       await appDispatch(
@@ -112,31 +113,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     getTraineeTimeline();
     getTraineeVisitDate();
   }, []);
-
-  const appDispatch = useAppDispatch();
-  const removePractitioner = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerRegistered(practitioner?.userId!, false);
-    await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
-    ).unwrap();
-    history.push(ROUTES.COACH.PRACTITIONERS);
-  };
 
   const classroomsDetailsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
