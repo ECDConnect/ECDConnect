@@ -507,6 +507,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             foreach (var _visit in allVisits)
             {
+                // Adding this 1 day to match the next visit's planned date.
+                _visit.DueDate = _visit.DueDate != null ? _visit.DueDate.Value.Date.AddDays(1) : _visit.PlannedVisitDate;
+
                 if (_visit.Attended == false)
                 {
                     _visit.VisitInProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == _visit.Id).Count() > 0;
