@@ -171,4 +171,4 @@ packages/.vscode/settings.json
 /*.code-workspace
 
 _data
-/src/api/.idea/.idea.EcdLink.Api.CoreApi/.idea
+/src/api/.idea/*
