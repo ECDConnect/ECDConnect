@@ -35,6 +35,10 @@ import { classroomsSelectors } from '@/store/classroom';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
 import { useAppDispatch } from '@store';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
+import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { OnboardingTraineeDashboard } from './components/trainee-timeline/trainee-onboarding-dashboard';
+import { TraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -51,6 +55,21 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal === true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
+  const isTrainee = practitioner?.isTrainee;
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const traineeVisits = timeline?.traineeVisits;
+  const traineeCurrentVisit = traineeVisits?.[0];
+  const completedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).filter((item) => item?.type === 'completed');
+  const onboardingNotCompleted = completedSteps?.length < 8;
+
+  const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
   const { theme } = useTheme();
   const { showMessage } = useSnackbar();
@@ -73,6 +92,50 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         practitioner?.user?.phoneNumber ?? ''
       )}`
     );
+  };
+
+  useEffect(() => {
+    const getTraineeTimeline = async () =>
+      await appDispatch(
+        traineeThunkActions.getTraineeTimeline({
+          userId: practitioner?.userId ? practitioner?.userId : '',
+        })
+      );
+
+    const getTraineeVisitDate = async () =>
+      await appDispatch(
+        traineeThunkActions.getTraineeVisitData({
+          visitId: traineeCurrentVisit?.id,
+        })
+      );
+
+    getTraineeTimeline();
+    getTraineeVisitDate();
+  }, []);
+
+  const appDispatch = useAppDispatch();
+  const removePractitioner = async () => {
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      practitioner?.userId!,
+      practitioner?.principalHierarchy!,
+      false
+    );
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      practitioner?.userId!,
+      practitioner?.principalHierarchy!,
+      false
+    );
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerRegistered(practitioner?.userId!, false);
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
+    history.push(ROUTES.COACH.PRACTITIONERS);
   };
 
   const classroomsDetailsForPractitioner = async () => {
@@ -108,12 +171,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       },
       text: '1',
       onActionClick: () =>
-        history.push(
-          ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
-            ':practitionerId',
-            practitionerId
-          )
-        ),
+        onboardingNotCompleted
+          ? setShowTraineeDashboard(true)
+          : history.push(
+              ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+                ':practitionerId',
+                practitionerId
+              )
+            ),
       classNames: 'bg-uiBg',
     },
     {
@@ -226,8 +291,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   return (
     <>
-      {practitioner?.isRegistered === null ||
-      practitioner?.isRegistered === false ? (
+      {(practitioner?.isRegistered === null ||
+        practitioner?.isRegistered === false) &&
+      !isTrainee ? (
         <CoachPractitionerNotRegistered
           practitioner={practitioner}
           classroom={classroom}
@@ -514,6 +580,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               </Button>
             </div>
           </>
+          <Dialog
+            fullScreen
+            visible={showTraineeDashboard}
+            position={DialogPosition.Top}
+          >
+            <div className={styles.dialogContent}>
+              <TraineeOnboarding practitioner={practitioner} />
+            </div>
+          </Dialog>
         </div>
       )}
     </>
