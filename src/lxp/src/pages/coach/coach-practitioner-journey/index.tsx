@@ -175,10 +175,10 @@ export const CoachPractitionerJourney = () => {
 
   const isPQAFollowUp =
     !!newPqaVisit &&
-    !lastAttendedPqaVisit?.visitType?.name?.includes(
+    !lastAttendedPqaVisitWithoutFollowUp?.visitType?.name?.includes(
       visitTypes.pqa.thirdPQA.name
     ) &&
-    !lastAttendedPqaVisitWithoutFollowUp?.visitType?.name?.includes(
+    !lastAttendedPqaVisit?.visitType?.name?.includes(
       visitTypes.pqa.followUp.name
     );
 
