@@ -95,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
                     string localEntity = entity.LocalEntity;
                     string remoteEntity = entity.RemoteEntity;
 
-                    url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                    url = remoteEntity + Constants.SSIntegrationSettings.UpdateMultiple;
                     jsonString.AppendLine("{");
 
                     if (updateLogs.Count() > 0)

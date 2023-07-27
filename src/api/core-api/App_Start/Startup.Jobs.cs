@@ -55,12 +55,12 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<ExpireInvitations>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.MidnightDaily;
+                c.CronExpression = CronTags.EveryFiveMinutes;
             });
             services.AddCronJob<RevertReassignment>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.MidnightDaily;
+                c.CronExpression = CronTags.EveryTenMinutes;
             });
             //services.AddCronJob<PQAsClubsVisitsLicensesRegisters>(c =>
             //{
@@ -77,11 +77,11 @@ namespace EcdLink.Api.CoreApi
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
             //    c.CronExpression = CronTags.MidnightDaily;
             //});
-            //services.AddCronJob<IntegrationChanges>(c =>
-            //{
-            //    c.TimeZoneInfo = TimeZoneInfo.Local;
-            //    c.CronExpression = CronTags.EveryMinute;
-            //});
+            services.AddCronJob<IntegrationChanges>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.EveryTenMinutes;
+            });
             //services.AddCronJob<IntegrationWeeklyAttendance>(c =>
             //{
             //    c.TimeZoneInfo = TimeZoneInfo.Local;

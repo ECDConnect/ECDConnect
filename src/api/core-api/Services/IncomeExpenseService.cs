@@ -56,8 +56,6 @@ namespace ECDLink.Core.Services
             [Service] UserManager<ApplicationUser> userManager,
             [Service] PersonnelService personnelService,
             ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
-            ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate)
-            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
             ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate, 
             IPointsEngineService pointsEngineService
             )

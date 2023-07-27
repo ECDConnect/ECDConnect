@@ -190,7 +190,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _uId);
         _clubMeetingRegisterRepo = _repositoryFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _uId);
 
-        foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
+        foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
         {
             //Clubs Data
             var clubs = await _apiManager.GetClubsByCoach(coach.RemoteId);
@@ -251,7 +251,7 @@ public class SmartStartIntegrationService : IIntegrationService
             }
 
             //ClubsmeetingRegister Data
-            var practitioners = _mappedEntities.Where(x => string.Equals(x.LocalEntity, SSIntegrationSettings.SSPractitioner) && x.IsActive == true).ToList();
+            var practitioners = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && x.IsActive == true).ToList();
             foreach (var prac in practitioners)
             {
                 try
@@ -293,7 +293,7 @@ public class SmartStartIntegrationService : IIntegrationService
     {
         _smartSpaceVisitRepo = _repositoryFactory.CreateGenericRepository<SmartSpaceVisit>(userContext: _uId);
         _pqaRepo = _repositoryFactory.CreateGenericRepository<PQA>(userContext: _uId);
-        var mappedPractitioners = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
+        var mappedPractitioners = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
 
         foreach (var prac in mappedPractitioners)
         {
@@ -330,7 +330,7 @@ public class SmartStartIntegrationService : IIntegrationService
             }
         }
 
-        var mappedTrainees = await GetMappedEntities(SSIntegrationSettings.SSTrainee);
+        var mappedTrainees = await GetMappedEntities(Constants.SSIntegrationSettings.SSTrainee);
         foreach (var prac in mappedTrainees)
         {
             try
@@ -401,12 +401,12 @@ public class SmartStartIntegrationService : IIntegrationService
         if (DateTime.Now.Date > submitPeriod.Start || DateTime.Now.Date < submitPeriod.End.AddDays(3))//only run task daily withing submit window
         {
             ////[{"Month": "January","Year": "2023","StartupSupport": 10.0,"Fees": 0.0,"Donations": 10.0,"FundRaising": 10.0,"OtherIncome": 10.0,"Rent": 10.0,"Utilities": 10.0,"Food": 10.0,"Salary": 10.0,"Transport": 10.0,"OtherExpenses": 10.0,"Franchisee": {"Guid": "4778287e-073f-e711-80e0-005056815442"},"Document": {"Guid": "9c029379-3996-ec11-834e-00155dee5a05"}}]
-            string statementsUrl = SSIntegrationSettings.SLIncomeStatementIncome + SSIntegrationSettings.CreateMultiple;
+            string statementsUrl = Constants.SSIntegrationSettings.SLIncomeStatementIncome + Constants.SSIntegrationSettings.CreateMultiple;
 
             //TODO: change to run by entities that needs to have docs sent rather than waiting for docs to be picked up - what if autosubmit doesnt run
             var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
             var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("IncomeStatementPDF")).FirstOrDefault();
-            var _mappedEntities = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
+            var _mappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
             List<IntegrationAudit> allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
 
             List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start) && x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315").ToList();
@@ -556,7 +556,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                                                                                                                                                                                                                                                      //get all mapped practitioners and iterate through them to submit attendance
         _mappedEntities = await GetMappedEntities();
 
-        string attendanceUrl = SSIntegrationSettings.SLChildAttendanceRegister + SSIntegrationSettings.CreateMultiple;
+        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
         var attendancesDueList = _mappedEntities.Where(x => (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-7))).ToList();
 
         DateTime trackingWeekDate = DateTime.Now.AddDays(-7).StartOfWeek(DayOfWeek.Monday);
@@ -586,7 +586,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         string thursdayPresent = absent;
                         string fridayPresent = absent;
                         //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, SSIntegrationSettings.SSChild)).FirstOrDefault();
+                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
                         if (mappedChild != null)
                         {
 
@@ -784,7 +784,7 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<bool> IntegrationByTrainees()
     {
         _mappedEntities = await GetMappedEntities();
-        foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
+        foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
         {
             List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
             if (remoteTrainees.Any())
@@ -853,7 +853,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 //3. Iterate through all known coaches to get information below hierarchy
                 //-------------------
 
-                foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
+                foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
                 {
                     //-------------------
                     //4. - check all changes on known entities that is not marked complete
@@ -878,7 +878,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 if (franchisee != null)
                                 {
                                     Practitioner newPractitioner = null;
-                                    if (_mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).Count() == 0)
+                                    if (_mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).Count() == 0)
                                     {
                                         //Create franchisee and map in SS system
                                         franchisee.localParentEntityId = coach.LocalId;
@@ -886,7 +886,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     }
                                     else
                                     {
-                                        var localPractitioner = _mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                                        var localPractitioner = _mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
                                         newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
                                     }
 
@@ -1502,8 +1502,8 @@ public class SmartStartIntegrationService : IIntegrationService
                                 _classroomGroupGenericRepo.Insert(pracUnsureClass);
                             }
 
-                            mapperLine.LocalEntity = SSIntegrationSettings.SSPractitioner;
-                            mapperLine.RemoteEntity = SSIntegrationSettings.SLPractitioner;
+                            mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSPractitioner;
+                            mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLPractitioner;
                             mapperLine.LocalId = newPractitioner.Id.ToString();
                             mapperLine.RemoteId = entity.Guid;
                             mapperLine.UserId = userId;
@@ -1522,8 +1522,8 @@ public class SmartStartIntegrationService : IIntegrationService
                     {
                         //TODO: CANNOT INSERT< LIST THE REMOTE FEATURES AND GUIDS AND MARK ERRORS AS CANNOT IMPORT FOR SENDING LIST TO SS
 
-                        mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
-                        mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
+                        mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSChild;
+                        mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLChild;
                         mapperLine.LocalId = null;
                         mapperLine.RemoteId = entity.Guid;
                         mapperLine.UserId = null;
@@ -1544,8 +1544,8 @@ public class SmartStartIntegrationService : IIntegrationService
                     if (existingPrac != null)
                     {
 
-                        mapperLine.LocalEntity = SSIntegrationSettings.SSPractitioner;
-                        mapperLine.RemoteEntity = SSIntegrationSettings.SLPractitioner;
+                        mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSPractitioner;
+                        mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLPractitioner;
                         mapperLine.LocalId = existingPrac.Id.ToString();
                         mapperLine.RemoteId = entity.Guid;
                         mapperLine.UserId = createdUserCheck.Id;
@@ -1824,8 +1824,8 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             //ManageChildClassrooms();
 
-                            mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
-                            mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
+                            mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSChild;
+                            mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLChild;
                             mapperLine.LocalId = newChild.Id.ToString();
                             mapperLine.RemoteId = entity.Guid;
                             mapperLine.UserId = userId;
@@ -1844,8 +1844,8 @@ public class SmartStartIntegrationService : IIntegrationService
                     {
                         //TODO: CANNOT INSERT< LIST THE REMOTE FEATURES AND GUIDS AND MARK ERRORS AS CANNOT IMPORT FOR SENDING LIST TO SS
 
-                        mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
-                        mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
+                        mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSChild;
+                        mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLChild;
                         mapperLine.LocalId = null;
                         mapperLine.RemoteId = entity.Guid;
                         mapperLine.UserId = null;
@@ -1984,8 +1984,8 @@ public class SmartStartIntegrationService : IIntegrationService
             ssDocuments.Add(childDoc);
 
             IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
-            mapperLine.LocalEntity = SSIntegrationSettings.SSDocument;
-            mapperLine.RemoteEntity = SSIntegrationSettings.SLDocument;
+            mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSDocument;
+            mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLDocument;
             mapperLine.LocalId = newDoc.Id.ToString();
             mapperLine.RemoteId = doc.Guid;
             mapperLine.UserId = newDoc.UserId;
@@ -2013,9 +2013,9 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 //check if it exists already before importing
 
-                //_mappedEntities = await GetMappedEntities();//SSIntegrationSettings.SSTrainee
+                //_mappedEntities = await GetMappedEntities();//Constants.SSIntegrationSettings.SSTrainee
 
-                if (!_mappedEntities.Where(x => string.Equals(x.RemoteId, entity.Guid) && string.Equals(x.RemoteEntity, SSIntegrationSettings.SLTrainee)).Any())
+                if (!_mappedEntities.Where(x => string.Equals(x.RemoteId, entity.Guid) && string.Equals(x.RemoteEntity, Constants.SSIntegrationSettings.SLTrainee)).Any())
                 {
                     //entity.IsPrincipal = entity.IsPrincipal.HasValue ? entity.IsPrincipal.Value : false;
                     ////basic checks to allow trainee to be imported
@@ -2342,8 +2342,8 @@ public class SmartStartIntegrationService : IIntegrationService
                                 _classroomGroupGenericRepo.Insert(pracUnsureClass);
                                 //}
 
-                                mapperLine.LocalEntity = SSIntegrationSettings.SSTrainee;
-                                mapperLine.RemoteEntity = SSIntegrationSettings.SLTrainee;
+                                mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSTrainee;
+                                mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLTrainee;
                                 mapperLine.LocalId = newTrainee.Id.ToString();
                                 mapperLine.RemoteId = entity.Guid;
                                 mapperLine.UserId = userId;
@@ -2363,8 +2363,8 @@ public class SmartStartIntegrationService : IIntegrationService
                     {
                         //TODO: CANNOT INSERT< LIST THE REMOTE FEATURES AND GUIDS AND MARK ERRORS AS CANNOT IMPORT FOR SENDING LIST TO SS
 
-                        mapperLine.LocalEntity = SSIntegrationSettings.SSTrainee;
-                        mapperLine.RemoteEntity = SSIntegrationSettings.SLTrainee;
+                        mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSTrainee;
+                        mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLTrainee;
                         mapperLine.LocalId = null;
                         mapperLine.RemoteId = entity.Guid;
                         mapperLine.UserId = null;
@@ -2401,19 +2401,19 @@ public class SmartStartIntegrationService : IIntegrationService
             //var localColumnChange = _mappedColumns.Where(c => c.RemoteColumn.Equals(model.EntityColumn) && c.RemoteEntity.Equals(model.EntityType)).FirstOrDefault();
             //if (localColumnChange != null)
             //{ //if its not mapped we arent interested in this change
-            //var pracs = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
+            //var pracs = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
             switch (model.EntityType)
             {
-                case SSIntegrationSettings.SLCaregiver:
+                case Constants.SSIntegrationSettings.SLCaregiver:
                     //caregiver is associated with a child, their details will be pulled in via a child record - so ignore
                     break;
-                case SSIntegrationSettings.SLChild:
+                case Constants.SSIntegrationSettings.SLChild:
                     //map child and caregiver
                     MappedChild child = await _apiManager.GetChildById(model.Guid);
                     if (child != null)
                     {
                         //get childs parent
-                        var parentEntity = _mappedEntities.Where(x => string.Equals(x.RemoteId, child.Franchisee.Guid) && string.Equals(x.LocalEntity, SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                        var parentEntity = _mappedEntities.Where(x => string.Equals(x.RemoteId, child.Franchisee.Guid) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
                         if (parentEntity != null)
                         {
                             Practitioner parentPrac = _practitionerGenericRepo.GetByUserId(parentEntity.UserId);
@@ -2437,20 +2437,20 @@ public class SmartStartIntegrationService : IIntegrationService
                         }
                     }
                     break;
-                case SSIntegrationSettings.SLDocument:
+                case Constants.SSIntegrationSettings.SLDocument:
                     //TODO:
                     MappedDocument doc = await _apiManager.GetDocumentsById(model.Guid);
                     if (doc != null)
                     {
                         //get document alignment with child and franchisee
-                        var docParentEntity = _mappedEntities.Where(x => string.Equals(x.RemoteId, model.RelatedGuid) && string.Equals(x.LocalEntity, SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                        var docParentEntity = _mappedEntities.Where(x => string.Equals(x.RemoteId, model.RelatedGuid) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
                         if (docParentEntity != null)
                         {
                             var practitionerOwner = _practitionerGenericRepo.GetByUserId(docParentEntity.UserId);
                             Child docChild = null;
                             if (doc.Child != null)
                             {
-                                var mappedChildren = await GetMappedEntities(SSIntegrationSettings.SSChild);
+                                var mappedChildren = await GetMappedEntities(Constants.SSIntegrationSettings.SSChild);
                                 var mappedChild = mappedChildren.Where(x => string.Equals(x.RemoteId, doc.Child.Guid)).FirstOrDefault();
                                 if (mappedChild != null)
                                 {
@@ -2462,12 +2462,12 @@ public class SmartStartIntegrationService : IIntegrationService
                         }
                     }
                     break;
-                case SSIntegrationSettings.SLAddress:
+                case Constants.SSIntegrationSettings.SLAddress:
                     //TODO:
                     MappedAddress address = await _apiManager.GetAddressById(model.Guid);
 
                     break;
-                case SSIntegrationSettings.SLTrainee:
+                case Constants.SSIntegrationSettings.SLTrainee:
                     //TODO:
                     MappedTrainee trainee = await _apiManager.GetTraineesById(model.Guid);
 
@@ -2538,7 +2538,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                         }
                         break;
-                    case SSIntegrationSettings.SSCoach:
+                    case Constants.SSIntegrationSettings.SSCoach:
                         var coach = _coachGenericRepo.GetByUserId(mappedEntity.UserId);
                         if (coach != null)
                         {
@@ -2569,7 +2569,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                         }
                         break;
-                    case SSIntegrationSettings.SSPractitioner:
+                    case Constants.SSIntegrationSettings.SSPractitioner:
                         var prac = _practitionerGenericRepo.GetByUserId(mappedEntity.UserId);
                         if (prac != null)
                         {
@@ -2602,7 +2602,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                         }
                         break;
-                    case SSIntegrationSettings.SSChild:
+                    case Constants.SSIntegrationSettings.SSChild:
                         var child = _childGenericRepo.GetByUserId(mappedEntity.UserId);
                         Type childT = typeof(Child);
                         if (child != null)
@@ -2635,7 +2635,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                         }
                         break;
-                    case SSIntegrationSettings.SSCaregiver:
+                    case Constants.SSIntegrationSettings.SSCaregiver:
                         var caregiver = _caregiverRepo.GetById(Guid.Parse(mappedEntity.LocalId));
                         if (caregiver == null)
                         {
@@ -2690,7 +2690,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                         }
                         break;
-                    case SSIntegrationSettings.SSAddress:
+                    case Constants.SSIntegrationSettings.SSAddress:
                         //TODO:
                         var address = _siteAddressRepo.GetById(Guid.Parse(mappedEntity.LocalId));
                         if (address != null)
@@ -2724,7 +2724,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                         }
                         break;
-                    case SSIntegrationSettings.SSDocument:
+                    case Constants.SSIntegrationSettings.SSDocument:
                         var doc = _docRepo.GetById(Guid.Parse(mappedEntity.LocalId));
                         if (doc != null)
                         {
@@ -2758,7 +2758,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                         }
                         break;
-                    //case SSIntegrationSettings.SSClassroom:
+                    //case Constants.SSIntegrationSettings.SSClassroom:
                     //    break;
                     default:
                         break;
@@ -2841,17 +2841,17 @@ public class SmartStartIntegrationService : IIntegrationService
                             string localEntity = mappedEntity.LocalEntity;
                             string remoteEntity = mappedEntity.RemoteEntity;
 
-                            url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                            url = remoteEntity + Constants.SSIntegrationSettings.UpdateMultiple;
                             jsonString.AppendLine("{");
 
                             //get all changes for this entity and group and build JSON
-                            var associatedChanges = (localEntity == SSIntegrationSettings.SSPractitioner || localEntity == SSIntegrationSettings.SSChild ||
-                                                    localEntity == SSIntegrationSettings.SSCoach || localEntity == SSIntegrationSettings.SSFranchisor ?
+                            var associatedChanges = (localEntity == Constants.SSIntegrationSettings.SSPractitioner || localEntity == Constants.SSIntegrationSettings.SSChild ||
+                                                    localEntity == Constants.SSIntegrationSettings.SSCoach || localEntity == Constants.SSIntegrationSettings.SSFranchisor ?
                                                         changedEntityList.Where(x => (string.Equals(x.audit.Entity, localEntity) || string.Equals(x.audit.Entity, "ApplicationUser")) && string.Equals(x.audit.RelatedId, entityToUpdate.audit.RelatedId)).OrderBy(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList() :
                                                         changedEntityList.Where(x => string.Equals(x.audit.Entity, localEntity) && string.Equals(x.audit.RelatedId, entityToUpdate.audit.RelatedId)).OrderBy(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList());
                             //var allChanges = updates.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
                             //var associatedChanges = null;
-                            //if (localEntity == SSIntegrationSettings.SSPractitioner || localEntity == SSIntegrationSettings.SSChild || localEntity == SSIntegrationSettings.SSCoach || localEntity == SSIntegrationSettings.SSFranchisor)
+                            //if (localEntity == Constants.SSIntegrationSettings.SSPractitioner || localEntity == Constants.SSIntegrationSettings.SSChild || localEntity == Constants.SSIntegrationSettings.SSCoach || localEntity == Constants.SSIntegrationSettings.SSFranchisor)
                             //{
                             //    associatedChanges = changedEntityList.Where(x => (x.audit.Entity.Equals(localEntity) || x.audit.Entity.Equals("ApplicationUser"))).OrderByDescending(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList();
                             //} else
@@ -3107,7 +3107,7 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<string> PushNewDocument(Document newDoc)
     {
         _mappedEntities = await GetMappedEntities();
-        var mappedDocEntities = await GetMappedEntities(SSIntegrationSettings.SSDocument);
+        var mappedDocEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSDocument);
         string docRemoteId = "";
         var responseString = "";
         if (newDoc != null)
@@ -3122,7 +3122,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
                 docTypeMapped = mappedDocTypes.Where(x => string.Equals(x.LocalId, newDoc.DocumentTypeId.ToString())).FirstOrDefault();
 
-                docUrl = SSIntegrationSettings.SLDocument + SSIntegrationSettings.CreateMultiple;
+                docUrl = Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.CreateMultiple;
                 var existingDoc = _mappedEntities.Where(x => string.Equals(x.LocalId, newDoc.Id.ToString()) && string.Equals(x.LocalEntity, "Document")).FirstOrDefault();
                 if (existingDoc == null)
                 {
@@ -3183,7 +3183,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                         if (!string.IsNullOrEmpty(docRemoteId))
                         {
-                            string noteUrl = SSIntegrationSettings.SLNote + SSIntegrationSettings.CreateMultiple;
+                            string noteUrl = Constants.SSIntegrationSettings.SLNote + Constants.SSIntegrationSettings.CreateMultiple;
                             //push note to SL
                             /*
                             { { RouteStart} }
@@ -3226,8 +3226,8 @@ public class SmartStartIntegrationService : IIntegrationService
                                     {
                                         noteRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
                                         IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
-                                        cgMapping.LocalEntity = SSIntegrationSettings.SSDocument;
-                                        cgMapping.RemoteEntity = SSIntegrationSettings.SLDocument;
+                                        cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSDocument;
+                                        cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLDocument;
                                         cgMapping.LocalId = newDoc.Id.ToString();
                                         cgMapping.RemoteId = docRemoteId;
                                         //cgMapping.UserId = newDoc.UserId;
@@ -3285,7 +3285,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     string cgUrl = "";
                     var caregiverColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("Caregiver") && c.IsActive == true).ToList();
 
-                    cgUrl = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.CreateMultiple;
+                    cgUrl = Constants.SSIntegrationSettings.SLCaregiver + Constants.SSIntegrationSettings.CreateMultiple;
                     jsonCaregiverString.AppendLine("[{");
                     if (caregiverColumns.Count() > 0 && newChild.Caregiver != null)
                     {
@@ -3364,8 +3364,8 @@ public class SmartStartIntegrationService : IIntegrationService
                             {
                                 cgRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
                                 IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
-                                cgMapping.LocalEntity = SSIntegrationSettings.SSCaregiver;
-                                cgMapping.RemoteEntity = SSIntegrationSettings.SLCaregiver;
+                                cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSCaregiver;
+                                cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLCaregiver;
                                 cgMapping.LocalId = newChild.CaregiverId.ToString();
                                 cgMapping.RemoteId = cgRemoteId;
                                 cgMapping.UserId = newChild.UserId;
@@ -3396,7 +3396,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 StringBuilder jsonChildString = new StringBuilder();
                 string childUrl = "";
                 var childColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("Child") && c.IsActive == true).ToList();
-                childUrl = SSIntegrationSettings.SLChild + SSIntegrationSettings.CreateMultiple;
+                childUrl = Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.CreateMultiple;
                 jsonChildString.AppendLine("[{");
                 if (childColumns.Count() > 0)
                 {
@@ -3547,8 +3547,8 @@ public class SmartStartIntegrationService : IIntegrationService
                             if (!string.IsNullOrEmpty(childRemoteId))
                             {
                                 IntegrationEntityMapping childMapping = new IntegrationEntityMapping();
-                                childMapping.LocalEntity = SSIntegrationSettings.SSChild;
-                                childMapping.RemoteEntity = SSIntegrationSettings.SLChild;
+                                childMapping.LocalEntity = Constants.SSIntegrationSettings.SSChild;
+                                childMapping.RemoteEntity = Constants.SSIntegrationSettings.SLChild;
                                 childMapping.LocalId = newChild.Id.ToString();
                                 childMapping.RemoteId = childRemoteId;
                                 childMapping.UserId = newChild.UserId;
@@ -3662,7 +3662,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             string localEntity = mappedEntity.LocalEntity;
                             string remoteEntity = mappedEntity.RemoteEntity;
 
-                            url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                            url = remoteEntity + Constants.SSIntegrationSettings.UpdateMultiple;
                             jsonString.AppendLine("{");
                             //get all changes for this entity and group and build JSON
                             var allChanges = updates.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
@@ -4552,94 +4552,94 @@ public class SmartStartIntegrationService : IIntegrationService
         if (coach.IsComplete != true)
         {
             //entity may have been manually mapped for inclusion, pull all details and update
-            string url = SSIntegrationSettings.SLCoach + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", coach.RemoteId);
+            string url = Constants.SSIntegrationSettings.SLCoach + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", coach.RemoteId);
             var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
             MappedCoach entity = JsonConvert.DeserializeObject<MappedCoach>(responseString);
             if (entity != null)
             {
                 entity.localId = coach.LocalId;
                 //update coach against mappedcoachproperties
-                await UpdateCoachEntity(entity, coach, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList());
+                await UpdateCoachEntity(entity, coach, mappedColumns.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList());
             }
         }
 
         //run through all mapped practitioners that is not complete
-        foreach (var practitioner in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList())
+        foreach (var practitioner in mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).ToList())
         {
             if (practitioner.IsComplete != true)
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
-                string url = SSIntegrationSettings.SLPractitioner + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", practitioner.RemoteId);
+                string url = Constants.SSIntegrationSettings.SLPractitioner + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", practitioner.RemoteId);
                 var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
                 MappedFranchisee entity = JsonConvert.DeserializeObject<MappedFranchisee>(responseString);
                 if (entity != null)
                 {
                     entity.localId = practitioner.LocalId;
-                    await UpdatePractitionerEntity(entity, practitioner, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList());
+                    await UpdatePractitionerEntity(entity, practitioner, mappedColumns.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).ToList());
                 }
             }
         }
         //run through all mapped children that is not complete
-        foreach (var child in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList())
+        foreach (var child in mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSChild)).ToList())
         {
             if (child.IsComplete != true)
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
-                string url = SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", child.RemoteId);
+                string url = Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", child.RemoteId);
                 var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
                 MappedChild entity = JsonConvert.DeserializeObject<MappedChild>(responseString);
                 if (entity != null)
                 {
                     entity.localId = child.LocalId;
-                    await UpdateChildEntity(entity, child, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList());
+                    await UpdateChildEntity(entity, child, mappedColumns.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSChild)).ToList());
                 }
             }
         }
         //run through all mapped caregivers
-        foreach (var caregiver in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList())
+        foreach (var caregiver in mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCaregiver)).ToList())
         {
             if (caregiver.IsComplete != true)
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
-                string url = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", caregiver.RemoteId);
+                string url = Constants.SSIntegrationSettings.SLCaregiver + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", caregiver.RemoteId);
                 var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
                 MappedCaregiver entity = JsonConvert.DeserializeObject<MappedCaregiver>(responseString);
                 if (entity != null)
                 {
                     entity.localId = caregiver.LocalId;
-                    await UpdateCaregiverEntity(entity, caregiver, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList());
+                    await UpdateCaregiverEntity(entity, caregiver, mappedColumns.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCaregiver)).ToList());
                 }
             }
         }
         //run through all mapped addresses that is not complete
-        foreach (var address in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList())
+        foreach (var address in mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSAddress)).ToList())
         {
             if (address.IsComplete != true)
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
-                string url = SSIntegrationSettings.SLAddress + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", address.RemoteId);
+                string url = Constants.SSIntegrationSettings.SLAddress + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", address.RemoteId);
                 var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
                 MappedAddress entity = JsonConvert.DeserializeObject<MappedAddress>(responseString);
                 if (entity != null)
                 {
                     entity.localId = address.LocalId;
-                    await UpdateSiteAddressEntity(entity, address, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList());
+                    await UpdateSiteAddressEntity(entity, address, mappedColumns.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSAddress)).ToList());
                 }
             }
         }
         //run through all mapped documents that is not complete
-        foreach (var docs in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList())
+        foreach (var docs in mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSDocument)).ToList())
         {
             if (docs.IsComplete != true)
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
-                string url = SSIntegrationSettings.SLDocument + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", docs.RemoteId);
+                string url = Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", docs.RemoteId);
                 var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
                 MappedDocument entity = JsonConvert.DeserializeObject<MappedDocument>(responseString);
                 if (entity != null)
                 {
                     entity.localId = docs.LocalId;
-                    await UpdateDocumentEntity(entity, docs, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList());
+                    await UpdateDocumentEntity(entity, docs, mappedColumns.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSDocument)).ToList());
                 }
             }
         }
