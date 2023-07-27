@@ -15,8 +15,10 @@ import { useSelector } from 'react-redux';
 import {
   practitionerActions,
   practitionerSelectors,
+  practitionerThunkActions,
 } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
+import { PractitionerInput } from '@ecdlink/graphql';
 
 const MOCKED_INCOMPLETE_DATA = {
   visit: {
@@ -65,7 +67,15 @@ export const SetupTrainee = () => {
     const copy = Object.assign({}, practitioner);
     copy.setupTraineeInitiated = true;
 
+    const input: PractitionerInput = {
+      SetupTraineeInitiated: true,
+      IsActive: true,
+      Progress: copy.progress,
+      Id: copy.id,
+    };
+
     appDispatch(practitionerActions.updatePractitioner(copy));
+    appDispatch(practitionerThunkActions.updatePractitioner(input));
   };
 
   return (
@@ -81,9 +91,6 @@ export const SetupTrainee = () => {
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
       >
-        {/* <div className={'px-4'}>
-          <WelcomePage onNext={() => {}} />
-        </div> */}
         <div className="p-4">
           <div className="my-4 flex items-center justify-center">
             <Card className="bg-uiBg flex w-full flex-col justify-center rounded-xl p-4">
@@ -147,8 +154,8 @@ export const SetupTrainee = () => {
               textColor="white"
               icon="ArrowCircleRightIcon"
               onClick={() => {
-                history?.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
                 updatePractitionerSetupInitiated();
+                history?.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
               }}
             />
           </div>
