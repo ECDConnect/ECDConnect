@@ -170,8 +170,9 @@ export const Step18 = ({
 
     for (const learner of _allLearners) {
       if (
-        learner?.classroomGroupId !==
-        currentClassProgrammes?.[0]?.classroomGroupId
+        !currentClassroomGroups.some(
+          (item) => item?.id === learner?.classroomGroupId
+        )
       )
         continue;
 
@@ -180,40 +181,34 @@ export const Step18 = ({
       );
       const childUser = childUsers?.find((y) => y?.id === learner?.userId);
 
-      if (
-        child &&
-        child?.caregiverId &&
-        childUser?.firstName &&
-        childUser?.surname
-      ) {
+      if (child && childUser?.firstName && childUser?.surname) {
         filteredChildren.push(childUser);
       }
     }
 
-    const sortedChildren = filteredChildren
-      .filter((child) => {
-        if (child?.dateOfBirth === undefined) {
-          return false;
-        }
+    // TODO: check if this is necessary
+    // const sortedChildren = filteredChildren
+    //   .filter((child) => {
+    //     if (child?.dateOfBirth === undefined) {
+    //       return false;
+    //     }
 
-        const date = new Date(child?.dateOfBirth);
-        const minDate = new Date('1900-01-01');
-        const maxDate = new Date();
-        return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
-      })
-      .sort(
-        (a, b) =>
-          new Date(String(a?.dateOfBirth)).getTime() -
-          new Date(String(b?.dateOfBirth)).getTime()
-      );
-
-    setRegisteredChildren(sortedChildren);
+    //     const date = new Date(child?.dateOfBirth);
+    //     const minDate = new Date('1900-01-01');
+    //     const maxDate = new Date();
+    //     return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
+    //   })
+    //   .sort(
+    //     (a, b) =>
+    //       new Date(String(a?.dateOfBirth)).getTime() -
+    //       new Date(String(b?.dateOfBirth)).getTime()
+    //   );
+    setRegisteredChildren(filteredChildren);
   }, [
     allLearners,
     childUsers,
     children,
-    currentClassProgrammes,
-    currentClassroomGroups?.length,
+    currentClassroomGroups,
     previousClassroomGroups?.length,
   ]);
 
@@ -308,9 +303,7 @@ export const Step18 = ({
       <Divider dividerType="dashed" />
       <div className="flex items-center gap-2">
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
-          {isPrincipal
-            ? currentClassProgrammes?.length
-            : currentClassroomGroups.length}
+          {currentClassroomGroups.length}
         </span>
         <Typography
           type="h4"
@@ -342,14 +335,25 @@ export const Step18 = ({
         onChange={(e) => onOptionSelected(e.target.value, 0)}
         placeholder={'e.g. 4'}
       />
-      <FormInput
-        type="number"
-        label={questions[1].question}
-        value={questions[1].answer}
-        disabled={isViewAnswers}
-        onChange={(e) => onOptionSelected(e.target.value, 1)}
-        placeholder={'e.g. 3'}
-      />
+      <div>
+        <Typography type="h4" text={questions[1].question} color="textDark" />
+        <div className="flex">
+          <FormInput
+            type="number"
+            className="w-1/2"
+            value={questions[1].answer}
+            disabled={isViewAnswers}
+            onChange={(e) => onOptionSelected(e.target.value, 1)}
+            placeholder={'e.g. 3'}
+          />
+          <Typography
+            type="body"
+            text="hours"
+            color="textDark"
+            className="mt-4 ml-1"
+          />
+        </div>
+      </div>
       <div>
         <Typography
           type="h4"

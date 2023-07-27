@@ -571,7 +571,7 @@ export const ReferralsTab: React.FC = () => {
                         type="body"
                         align="left"
                         weight="skinny"
-                        text={`Reffered on ${format(
+                        text={`Referred on ${format(
                           new Date(item.insertedDate),
                           'dd MMM yyyy'
                         )}`}

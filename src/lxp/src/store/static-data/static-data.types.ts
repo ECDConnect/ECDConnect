@@ -14,6 +14,7 @@ import {
   DocumentTypeDto,
   WorkflowStatusDto,
   NoteTypeDto,
+  ReasonForPractitionerLeavingProgrammeDto,
 } from '@ecdlink/core';
 
 export type StaticDataState = {
@@ -28,6 +29,9 @@ export type StaticDataState = {
   holidays: HolidayDto[] | undefined;
   reasonForLeaving: ReasonForLeavingDto[] | undefined;
   reasonForPractitionerLeaving: ReasonForPractitionerLeavingDto[] | undefined;
+  reasonForPractitionerLeavingProgramme:
+    | ReasonForPractitionerLeavingProgrammeDto[]
+    | undefined;
   grants: GrantDto[] | undefined;
   documentTypes: DocumentTypeDto[] | undefined;
   WorkflowStatuses: WorkflowStatusDto[] | undefined;

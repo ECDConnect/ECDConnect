@@ -471,7 +471,7 @@ export const Form = ({
   );
 
   const onSubmitPqa = useCallback(
-    ({ payload, sections }: SubmitProps) => {
+    async ({ payload, sections }: SubmitProps) => {
       const step19Question2 = sections?.find((item) =>
         item?.questions?.some(
           (question) => question?.question === step19Question2Pqa
@@ -488,7 +488,7 @@ export const Form = ({
         })
       );
       // Create a new ID if it doesn't already exist
-      appDispatch(
+      await appDispatch(
         pqaThunkActions.addVisitFormData({
           ...payload,
           visitId: visitId?.includes('new') ? newGuid() : visitId,
@@ -496,27 +496,31 @@ export const Form = ({
       );
 
       if (step19Question2Answer === 'true') {
-        displayChildrenDialog('First PQA visit');
+        return displayChildrenDialog('First PQA visit');
       }
+
+      showMessage({ message: 'First PQA visit complete!' });
     },
-    [appDispatch, displayChildrenDialog, practitionerId, visitId]
+    [appDispatch, displayChildrenDialog, practitionerId, showMessage, visitId]
   );
 
   const onSubmitReAccreditation = useCallback(
-    ({ payload }: SubmitProps) => {
+    async ({ payload }: SubmitProps) => {
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 're-accreditation',
         })
       );
-      appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
+      await appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
 
       if (!isBasicSmartSpaceStandardsCompleted) {
         // TODO: add schedule feature
         onBack?.();
-        history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
+        return history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       }
+
+      showMessage({ message: 'Re-accreditation complete!' });
     },
     [
       appDispatch,
@@ -524,6 +528,7 @@ export const Form = ({
       isBasicSmartSpaceStandardsCompleted,
       onBack,
       practitionerId,
+      showMessage,
     ]
   );
 
@@ -802,6 +807,7 @@ export const Form = ({
           isLoadingSupportVisit ||
           isLoadingDeactivate ||
           isLoadingPqaFollowUpVisit ||
+          isLoadingReAccreditationVisit ||
           isLoadingReAccreditationFollowUpVisit
         }
         secondaryButton={

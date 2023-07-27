@@ -794,7 +794,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           }`}
         >
           <PhotoPrompt
-            title={'R4b photo'}
+            title={'Upload image'}
             onClose={() => setPhotoActionBarVisible(false)}
             onAction={(imageUrl: string) => {
               setPhotoUrl(imageUrl);

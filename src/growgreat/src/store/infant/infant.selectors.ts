@@ -174,6 +174,7 @@ export function getInfantNearestPreviousVisitByOrderDate(
 
   if (currentVisit.visitType?.name === 'additional_visits') {
     const currentPlannedDate = new Date(currentVisit?.plannedVisitDate!);
+    currentPlannedDate?.setHours(23, 59, 59, 0);
 
     const previousVisits = visits.filter(
       (item) =>
@@ -189,9 +190,9 @@ export function getInfantNearestPreviousVisitByOrderDate(
     const nearestDateObject = previousVisits.reduce((previous, current) => {
       if (
         !previous ||
-        currentPlannedDate.getTime() -
+        new Date(currentVisit?.plannedVisitDate!).getTime() -
           new Date(current.actualVisitDate).getTime() <
-          currentPlannedDate.getTime() -
+          new Date(currentVisit?.plannedVisitDate!).getTime() -
             new Date(previous.actualVisitDate).getTime()
       ) {
         return current;

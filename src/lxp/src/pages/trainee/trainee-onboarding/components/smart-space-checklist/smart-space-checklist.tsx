@@ -391,7 +391,11 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const completedHealthSanitationItems = completedItems(
     'Health, sanitation & safety'
   );
-  if (completedHealthSanitationItems && completedHealthSanitationItems < 6) {
+
+  if (
+    completedHealthSanitationItems !== undefined &&
+    completedHealthSanitationItems! < 6
+  ) {
     notificationItems.push({
       showIcon: true,
       menuIcon: 'PlusCircleIcon',
@@ -426,7 +430,10 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const completedSafetyStructureItems = completedItems(
     'Safety - structure, space & area'
   );
-  if (completedSafetyStructureItems && completedSafetyStructureItems < 10) {
+  if (
+    completedSafetyStructureItems !== undefined &&
+    completedSafetyStructureItems < 10
+  ) {
     notificationItems.push({
       showIcon: true,
       menuIcon: 'ShieldCheckIcon',
@@ -461,7 +468,10 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const completedSpaceEmergencyItems = completedItems(
     'Space & emergency planning'
   );
-  if (completedSpaceEmergencyItems && completedSpaceEmergencyItems < 4) {
+  if (
+    completedSpaceEmergencyItems !== undefined &&
+    completedSpaceEmergencyItems < 4
+  ) {
     notificationItemsLaterStage.push({
       showIcon: true,
       menuIcon: 'ShieldExclamationIcon',

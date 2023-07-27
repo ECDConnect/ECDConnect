@@ -235,11 +235,6 @@ export const Rating = ({
           {isRedFlagScoreLess5 && (
             <li className="text-textMid">Score for Part 3 was less than 5</li>
           )}
-          {isRedFlagSmartSpaceCheck && (
-            <li className="text-textMid">
-              Score for SmartSpace check was less than 12
-            </li>
-          )}
           {isOrangeFlagProgramme && (
             <li className="text-textMid">
               SmartStart programme not implemented for long enough

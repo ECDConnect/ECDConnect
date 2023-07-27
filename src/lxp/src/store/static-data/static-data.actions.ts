@@ -14,6 +14,7 @@ import {
   DocumentTypeDto,
   WorkflowStatusDto,
   NoteTypeDto,
+  ReasonForPractitionerLeavingProgrammeDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DocumentTypeService } from '@services/DocumentTypeService';
@@ -32,6 +33,7 @@ import { ReasonForPractitionerLeavingService } from '@services/ReasonForPractiti
 import { RelationsService } from '@services/RelationsService';
 import { WorkflowStatusService } from '@services/WorkflowStatusService';
 import { RootState, ThunkApiType } from '../types';
+import { ReasonForPractitionerLeavingProgrammeService } from '@/services/ReasonForPractitionerLeavingProgrammeService';
 
 export const getRelations = createAsyncThunk<
   RelationDto[],
@@ -462,6 +464,48 @@ export const getReasonsForPractitionerLeaving = createAsyncThunk<
       }
     } else {
       return reasonForPractitionerLeaving;
+    }
+  }
+);
+
+export const getReasonsForPractitionerLeavingProgramme = createAsyncThunk<
+  ReasonForPractitionerLeavingProgrammeDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'getReasonsForPractitionerLeavingProgramme',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      staticData: { reasonForPractitionerLeavingProgramme },
+    } = getState();
+
+    if (!reasonForPractitionerLeavingProgramme) {
+      try {
+        let reasons: ReasonForPractitionerLeavingDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          reasons = await new ReasonForPractitionerLeavingProgrammeService(
+            userAuth?.auth_token
+          ).getReasonsForPractitionerLeavingProgramme();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!reasons) {
+          return rejectWithValue(
+            'Error getting Reasons For practitioner Leaving programme'
+          );
+        }
+
+        return reasons;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return reasonForPractitionerLeavingProgramme;
     }
   }
 );

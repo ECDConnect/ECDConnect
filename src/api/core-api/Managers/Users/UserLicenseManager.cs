@@ -35,22 +35,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
         public List<License> GetLicensesForUser(string userId)
         {
-            return (
-                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
-                join licenseType in _licenseTypeRepo.GetAll() on license.LicenseTypeId equals licenseType.Id
-                select license
-            ).ToList();
+            return _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).ToList();
         }
 
         public License GetLicenseForUserForType(string userId, string type)
         {
-            return (
-                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
-                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == type) on license.LicenseTypeId equals licenseType.Id
-                select license
-            ).FirstOrDefault();
+            return _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true && x.LicenseType.Name == type).FirstOrDefault();
         }
-
 
         public bool DelicenseUser(LicenseModel input)
         {
@@ -70,6 +61,27 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 _licenseRepo.Update(license);
             }
             return true;
+        }
+
+        public License AddSmartSpaceLicense(string userId, DateTime dateAwarded)
+        {
+            License userLicense = GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            if (userLicense == null)
+            {
+                LicenseType licenseType = _licenseTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
+                License input = new License() 
+                { 
+                    UserId = userId,
+                    LicenseType = licenseType,
+                    LicenseDate = dateAwarded,
+                    InsertedDate = DateTime.UtcNow,
+                    IsActive = true
+                };
+
+                return _licenseRepo.Insert(input);
+            }
+            
+            return null;
         }
 
     }

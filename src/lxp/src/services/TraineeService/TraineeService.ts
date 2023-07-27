@@ -8,7 +8,6 @@ import {
   UserConsentInput,
   Visit,
   VisitData,
-  VisitModelInput,
 } from '@ecdlink/graphql';
 
 class TraineeService {
@@ -370,24 +369,19 @@ class TraineeService {
     return true;
   }
 
-  async addCoachVisitInviteForTrainee(input: VisitModelInput): Promise<any> {
+  async addCoachVisitInviteForTrainee(
+    input: SsChecklistVisitModelInput
+  ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { addAdditionalVisitForInfant: Visit };
       errors?: {};
     }>(``, {
       query: `
-      mutation AddCoachVisitInviteForTrainee($input: VisitModelInput) {  
-        addCoachVisitInviteForTrainee(input: $input) {            
+      mutation AddCoachVisitInviteForTrainee($input: SSChecklistVisitModelInput) {
+        addCoachVisitInviteForTrainee(input: $input) {
             id
-            plannedVisitDate
-            attended
-            visitType {
-                id
-                name
-                description
-            }
-        }        
+        }
     }
         `,
       variables: {
@@ -402,6 +396,35 @@ class TraineeService {
     }
 
     return response.data.data.addAdditionalVisitForInfant;
+  }
+
+  async AddCoachFranchiseeAgreementForTrainee(
+    input: SsChecklistVisitModelInput
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addCoachFranchiseeAgreementForTrainee: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation AddCoachFranchiseeAgreementForTrainee($input: SSChecklistVisitModelInput) {
+        addCoachFranchiseeAgreementForTrainee(input: $input) {
+            id
+        }
+    }
+        `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'add Additional Visit For Child failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addCoachFranchiseeAgreementForTrainee;
   }
 }
 

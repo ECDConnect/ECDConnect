@@ -1,5 +1,4 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -493,7 +492,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else if (type == Constants.GGSettings.client_child)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.VisitType.Type == Constants.GGSettings.client_child).OrderBy(y => y.PlannedVisitDate).ToList();
+                // returning visits only applicable after infant was registered
+                allVisits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.VisitType.Type == Constants.GGSettings.client_child &&
+                (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date || x.DueDate.HasValue && x.DueDate.Value.Date >= x.Infant.InsertedDate.Date)).
+                OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
@@ -510,6 +512,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             foreach (var _visit in allVisits)
             {
+                // Adding this 1 day to match the next visit's planned date.
+                _visit.DueDate = _visit.DueDate != null ? _visit.DueDate.Value.Date.AddDays(1) : _visit.PlannedVisitDate;
+
                 if (_visit.Attended == false)
                 {
                     _visit.VisitInProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == _visit.Id).Count() > 0;
