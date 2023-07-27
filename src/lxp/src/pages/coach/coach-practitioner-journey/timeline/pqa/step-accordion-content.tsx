@@ -4,7 +4,6 @@ import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import {
   getCurrentPQaRatingByUserId,
-  getLastCoachAttendedFollowUpVisitByUserId,
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
@@ -38,18 +37,22 @@ export const PQAVisits = ({
     getCurrentPQaRatingByUserId(practitionerId)
   );
   const lastAttendedPqaVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(
-      practitionerId,
-      'pQASiteVisits',
-      'pqa_visit_follow_up'
-    )
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: 'pQASiteVisits',
+      followUpType: 'pqa_visit_follow_up',
+    })
   );
-  const lastAttendedPqaFollowUpVisit = useSelector(
-    getLastCoachAttendedFollowUpVisitByUserId(
-      practitionerId,
-      'pQASiteVisits',
-      'pqa_visit_follow_up'
-    )
+  const lastAttendedVisit = useSelector(
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: 'pQASiteVisits',
+    })
+  );
+
+  const newPqaVisit = timeline?.pQASiteVisits?.find(
+    (item) =>
+      !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
   );
 
   const pqaRating1 = timeline?.pQARating1;
@@ -65,25 +68,20 @@ export const PQAVisits = ({
       new Date(lastAttendedPqaVisit?.insertedDate),
       currentFollowUpDeadline
     ) <= new Date();
-  const isNewVisit =
-    !pqaRating3?.overallRating &&
-    timeline?.pQASiteVisits?.some(
-      (item) =>
-        item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
-    ) &&
-    new Date(lastAttendedPqaFollowUpVisit?.insertedDate) >
-      new Date(lastAttendedPqaVisit?.insertedDate);
+
+  const isFirstVisit = timeline?.pQASiteVisits?.length === 1;
   const isPQAFollowUp =
-    !!currentPqaRating.rating?.overallRatingColor &&
-    currentPqaRating.rating?.overallRatingColor !== 'Success' &&
+    !!newPqaVisit &&
     !lastAttendedPqaVisit?.visitType?.name?.includes(
       visitTypes.pqa.thirdPQA.name
     ) &&
-    !isNewVisit;
+    !lastAttendedVisit?.visitType?.name?.includes(visitTypes.pqa.followUp.name);
 
   const mergedVisits = timeline?.pQASiteVisits
     ? [
-        ...timeline.pQASiteVisits,
+        ...(isFirstVisit
+          ? timeline.pQASiteVisits
+          : timeline.pQASiteVisits.filter((item) => item?.attended)),
         ...(isPQAFollowUp
           ? [
               {
@@ -100,19 +98,7 @@ export const PQAVisits = ({
               } as Maybe<Visit>,
             ]
           : []),
-        ...(isNewVisit
-          ? [
-              {
-                id: newPqaVisitId,
-                visitType: {
-                  description: `First PQA visit`,
-                  name: visitTypes.pqa.firstPQA.name,
-                },
-                plannedVisitDate: lastAttendedPqaFollowUpVisit?.insertedDate,
-                attended: false,
-              } as Maybe<Visit>,
-            ]
-          : []),
+        ...(newPqaVisit ? [newPqaVisit] : []),
       ]
     : [];
 

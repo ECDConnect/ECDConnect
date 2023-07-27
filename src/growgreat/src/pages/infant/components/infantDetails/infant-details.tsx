@@ -145,6 +145,10 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
     return setMyYear(date);
   };
 
+  const handleDateChangeRaw = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+  };
+
   return (
     <>
       <Typography
@@ -189,6 +193,9 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             onChange={(date: Date) => setMyDay(date || currentDate)}
             dateFormat="dd"
             renderDayContents={renderDayContents}
+            disabledKeyboardNavigation
+            onFocus={(e) => e.target.blur()}
+            onChangeRaw={(e) => handleDateChangeRaw(e)}
             renderCustomHeader={() => <></>}
             {...(myMonth.getMonth() === currentDate.getMonth() && {
               maxDate: currentDate,
@@ -210,6 +217,9 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             renderCustomHeader={() => <></>}
             dateFormat="MMMM"
             showMonthYearPicker
+            disabledKeyboardNavigation
+            onFocus={(e) => e.target.blur()}
+            onChangeRaw={(e) => handleDateChangeRaw(e)}
             showPopperArrow={true}
             {...(!!expectedDateOfDelivery && {
               minDate: twoMonthsAgo,
@@ -230,6 +240,9 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
             selected={myYear}
             onChange={(date: Date) => onChangeYear(date || currentDate)}
             dateFormat="yyyy"
+            disabledKeyboardNavigation
+            onFocus={(e) => e.target.blur()}
+            onChangeRaw={(e) => handleDateChangeRaw(e)}
             showYearPicker
             {...(!!expectedDateOfDelivery
               ? {

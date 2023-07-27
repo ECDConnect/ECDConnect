@@ -24,3 +24,10 @@ export const sortDateFunction = (a: Date, b: Date) => {
 export const flatArray = (array: any[]): any[] => {
   return array.reduce((acc, val) => acc.concat(val), []);
 };
+
+export const mapArrayToObject = (array: any[], key: string) => {
+  const initialValue = {};
+  return array.reduce((obj, item) => {
+    return { ...obj, [item[key]]: item };
+  }, initialValue);
+};

@@ -44,6 +44,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     useState<ContentConsentTypeEnum>(ContentConsentTypeEnum.PhotoPermissions);
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [accept, setAccept] = useState(false);
+  const [children, setChildren] = useState(0);
 
   const { errors } = useFormState({
     control: consentFormControl,
@@ -56,6 +57,10 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
   const displayArticle = (key: ContentConsentTypeEnum, title: string) => {
     setContentConsentTypeEnum(key);
     setPresentArticle(true);
+  };
+
+  const handleChange = (value: string) => {
+    setChildren(Number(value));
   };
 
   return (
@@ -93,6 +98,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
             nameProp={'numberOfChildren'}
             placeholder={'e.g. 2'}
             type={'number'}
+            onChange={(e) => handleChange(e.target.value)}
             className="mt-4"
             error={
               !!errors.numberOfChildren ? errors.numberOfChildren : undefined
@@ -171,7 +177,11 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           onClick={() => {
             onSubmit(getConsentFormValues());
           }}
-          disabled={!accept || !!Object.keys(errors).length}
+          disabled={
+            !accept ||
+            !!Object.keys(errors).length ||
+            (multipleChildren && children === 0)
+          }
         />
       </div>
       <Article

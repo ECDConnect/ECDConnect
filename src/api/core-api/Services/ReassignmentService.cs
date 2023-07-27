@@ -131,7 +131,7 @@ namespace ECDLink.Core.Services
             )
         {
             var historyRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
-           
+
             try
             {
                 if (startDate.Date <= DateTime.Today.Date)//  DateTime.Now.AddDays(1))//for future dated reassignments/absentees
@@ -150,9 +150,9 @@ namespace ECDLink.Core.Services
                             ReassignedToUser = toUserId,
                             ReassignedToDate = startDate,
                             HierarchyToUser = toUserHierarchy,
-                            HierarchyBackToUser = fromUserHierarchy,
+                            HierarchyBackToUser = fromUserHierarchy
                         };
-
+                       
                         if (permanentAssign) history.ReassignedBackToDate = DateTime.Now; //if a permanent reassign, set the date of ReassignedBackToDate so it doesnt get picked up for reassignment from history
 
                         var historySaved = historyRepo.Insert(history);

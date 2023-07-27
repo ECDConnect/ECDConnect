@@ -58,7 +58,6 @@ import {
   step2ReAccreditationVisitSection,
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
-import { newGuid } from '@/utils/common/uuid.utils';
 import { options } from './reaccreditation/step-2/options';
 import ROUTES from '@/routes/routes';
 
@@ -82,8 +81,8 @@ export interface Rating {
 interface FormProps {
   visitId?: string;
   onBack: () => void;
-  setPqaRating: (rating: Rating) => void;
-  setReAccreditationRating: (rating: Rating) => void;
+  setPqaRating?: (rating: Rating) => void;
+  setReAccreditationRating?: (rating: Rating) => void;
 }
 
 export const currentActivityKey = 'selectedOption';
@@ -140,6 +139,11 @@ export const Form = ({
     ?.questions.find(
       (item) => item.question === step15ReAccreditationQuestions.question1
     )?.answer;
+
+  const newPqaVisit = timeline?.pQASiteVisits?.find(
+    (item) =>
+      !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
+  );
 
   const pqaRating1 = timeline?.pQARating1;
   const pqaRating2 = timeline?.pQARating2;
@@ -422,6 +426,7 @@ export const Form = ({
 
       const supportPayload: SupportVisitModelInput = {
         practitionerId,
+        // TODO: add schedule option
         plannedVisitDate: new Date(),
         isSupportCall: visitOrCallAnswer === callAnswer,
         // TODO: add schedule option
@@ -431,9 +436,11 @@ export const Form = ({
 
       const followUpPayload: FollowUpVisitModelInput = {
         practitionerId,
+        // TODO: add schedule option
         plannedVisitDate: new Date(),
         // TODO: add schedule option
         attended: true,
+        linkedVisitId: newPqaVisit?.id,
         followUpData: payload,
       };
 
@@ -449,7 +456,12 @@ export const Form = ({
         return onSubmitFollowUpVisit(followUpPayload, 're-accreditation');
       }
     },
-    [onSubmitFollowUpVisit, onSubmitSupportVisit, practitionerId]
+    [
+      newPqaVisit?.id,
+      onSubmitFollowUpVisit,
+      onSubmitSupportVisit,
+      practitionerId,
+    ]
   );
 
   const onSubmitPrePqa = useCallback(
@@ -491,7 +503,7 @@ export const Form = ({
       await appDispatch(
         pqaThunkActions.addVisitFormData({
           ...payload,
-          visitId: visitId?.includes('new') ? newGuid() : visitId,
+          visitId: visitId,
         })
       );
 
@@ -715,13 +727,13 @@ export const Form = ({
     if (rating.score === pqaRating?.score) return;
 
     setPqaRating(rating);
-    setPqaRatingForm(rating);
+    setPqaRatingForm?.(rating);
   };
 
   const onSetReAccreditationRating = (rating: Rating) => {
     if (rating.score === reAccreditationRating?.score) return;
 
-    setReAccreditationRatingForm(rating);
+    setReAccreditationRatingForm?.(rating);
     setReAccreditationRating(rating);
   };
 
