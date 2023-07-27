@@ -11,6 +11,12 @@ import { useHistory } from 'react-router';
 import { useTheme } from '@ecdlink/core';
 import WelcomeImage from '../../../assets/walktroughImage.png';
 import ROUTES from '@/routes/routes';
+import { useSelector } from 'react-redux';
+import {
+  practitionerActions,
+  practitionerSelectors,
+} from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
 
 const MOCKED_INCOMPLETE_DATA = {
   visit: {
@@ -52,6 +58,15 @@ export const SetupTrainee = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const { theme } = useTheme();
+  const appDispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const updatePractitionerSetupInitiated = () => {
+    const copy = Object.assign({}, practitioner);
+    copy.setupTraineeInitiated = true;
+
+    appDispatch(practitionerActions.updatePractitioner(copy));
+  };
 
   return (
     <>
@@ -131,7 +146,10 @@ export const SetupTrainee = () => {
               text="Start"
               textColor="white"
               icon="ArrowCircleRightIcon"
-              onClick={() => history?.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)}
+              onClick={() => {
+                history?.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                updatePractitionerSetupInitiated();
+              }}
             />
           </div>
         </div>

@@ -43,7 +43,11 @@ export const CompleteProfile: React.FC = () => {
             'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.'
           }
           actionText={'Get started'}
-          onActioned={() => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)}
+          onActioned={
+            practitioner?.setupTraineeInitiated
+              ? () => history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
+              : () => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)
+          }
         />
       </div>
     );
