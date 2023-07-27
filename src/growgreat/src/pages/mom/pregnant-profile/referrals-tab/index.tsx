@@ -14,7 +14,6 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import Clipboard from '@/assets/clipboardIcon.svg';
 import {
-  Fragment,
   useCallback,
   useEffect,
   useLayoutEffect,
@@ -73,6 +72,7 @@ export const ReferralsTab: React.FC = () => {
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
   const [showMarkAllButton, setShowMarkAllButton] = useState(true);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [isReferralsView, setIsReferralsView] = useState(true);
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
@@ -240,10 +240,10 @@ export const ReferralsTab: React.FC = () => {
   }, [isWalkthrough, walkthroughData.questions, wasWalkthrough]);
 
   useEffect(() => {
-    if (previousGroupedData === undefined && groupedData !== undefined) {
+    if (groupedData !== undefined) {
       return setAnswers(groupedData);
     }
-  }, [groupedData, previousGroupedData]);
+  }, [groupedData]);
 
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
@@ -259,13 +259,18 @@ export const ReferralsTab: React.FC = () => {
         });
 
         // setting the mark all done button visibility
-        let _showAllMarkButton = false;
+        let _showCelebration = false;
+        let totalCompleted = 0;
         for (const item of newState) {
-          if (!item.isCompleted) {
-            _showAllMarkButton = true;
+          if (item.isCompleted) {
+            totalCompleted++;
           }
         }
-        setShowMarkAllButton(_showAllMarkButton);
+
+        if (totalCompleted === referralsForMother?.length) {
+          _showCelebration = true;
+        }
+        setShowCelebration(_showCelebration);
 
         // saving the new state for data status record
         if (newState.length > 0) {
@@ -277,13 +282,12 @@ export const ReferralsTab: React.FC = () => {
         return newState;
       });
     },
-    [setReferralsInput, appDispatch]
+    [setReferralsInput, setShowCelebration, appDispatch]
   );
 
   const onOptionSelected = useCallback(
     (value, index) => {
       const currentQuestion = questions[index];
-
       const updatedAnswers = currentQuestion?.map((question) => {
         if (question.id === value.id) {
           return value;
@@ -300,7 +304,7 @@ export const ReferralsTab: React.FC = () => {
       handleSetReferrals?.(formattedQuestions);
       setAnswers(updatedQuestions);
     },
-    [handleSetReferrals, questions]
+    [handleSetReferrals, setAnswers, questions]
   );
 
   // change function for checkbox
@@ -320,10 +324,9 @@ export const ReferralsTab: React.FC = () => {
 
   // Mark all referrals for client
   const onMarkAll = useCallback(() => {
-    let currentQuestions: any;
     for (const section of sections) {
-      currentQuestions = questions[section.value];
-      for (const question of currentQuestions) {
+      let sectionQuestions = questions[section.value];
+      for (const question of sectionQuestions) {
         onOptionSelected({ ...question, isCompleted: true }, section.value);
       }
     }
@@ -386,6 +389,8 @@ export const ReferralsTab: React.FC = () => {
       />
     );
   }
+
+  // console.log('questions', questions);
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>
@@ -450,7 +455,7 @@ export const ReferralsTab: React.FC = () => {
             className="mb-4"
           />
 
-          {showMarkAllButton && (
+          {showMarkAllButton && !showCelebration && (
             <Button
               text="Mark all as done"
               icon="CheckCircleIcon"
@@ -501,7 +506,7 @@ export const ReferralsTab: React.FC = () => {
             ))}
 
           {/* Show success message when all referrals are selected */}
-          {(!showMarkAllButton ||
+          {(showCelebration ||
             (isWalkthrough && walkthroughState?.stepIndex !== 2)) && (
             <>
               {!isWalkthrough && (
