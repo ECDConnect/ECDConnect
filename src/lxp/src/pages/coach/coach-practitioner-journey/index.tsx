@@ -46,11 +46,11 @@ import {
   ScheduleProps,
   dateOptions,
   filterVisit,
-  sortVisit,
   timelineSteps,
 } from './timeline/timeline-steps';
 import {
   CalendarEventModel,
+  getAgeInYearsMonthsAndDays as getCurrentTimeInYearsMonthsAndDays,
   getFormattedDateInYearsMonthsAndDays,
   parseBool,
   useDialog,
@@ -337,17 +337,14 @@ export const CoachPractitionerJourney = () => {
     ) ?? [];
 
   const filteredPqaVisits = timeline?.pQASiteVisits?.filter(
-    (visit) =>
-      !pqaFormData?.some((item) => item.visitId === visit?.id) &&
-      !visit?.attended
+    (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
   );
   const uncompletedPqaVisits =
     filteredPqaVisits?.length && !isPQAFollowUp ? filteredPqaVisits : [];
 
   const filteredReAccreditionVisits = timeline?.reAccreditationVisits?.filter(
     (visit) =>
-      !reAccreditationFormData?.some((item) => item.visitId === visit?.id) &&
-      !visit?.attended
+      !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
   );
   const uncompletedReAccreditationVisits =
     (filteredReAccreditionVisits?.length && filteredReAccreditionVisits) ||
@@ -412,7 +409,6 @@ export const CoachPractitionerJourney = () => {
 
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
-    .sort(sortVisit)
     ?.map(
       (visit): MenuListDataItem<{ visitId?: string }> => ({
         showIcon: true,
@@ -511,6 +507,20 @@ export const CoachPractitionerJourney = () => {
     const isReAccreditationOrangeRating =
       currentReAccreditationRating?.rating?.overallRatingColor === 'Warning';
 
+    const isPqaGreenRating =
+      !isPqaOrangeRating &&
+      !isPqaRedRating &&
+      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate &&
+      !lastAttendedReAccreditationVisit?.insertedDate;
+    const isReAccreditationGreenRating =
+      !isReAccreditationOrangeRating &&
+      !isReAccreditationRedRating &&
+      !!lastAttendedReAccreditationVisit?.insertedDate;
+
+    const { years } = getCurrentTimeInYearsMonthsAndDays(
+      lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+    );
+
     if (
       (isPqaOrangeRating || isPqaRedRating) &&
       !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate
@@ -569,7 +579,81 @@ export const CoachPractitionerJourney = () => {
       );
     }
 
-    return <></>;
+    if (isPqaGreenRating || isReAccreditationGreenRating) {
+      return (
+        <Alert
+          className="mt-4"
+          type="success"
+          variant="flat"
+          title={
+            isPqaGreenRating
+              ? 'First PQA received'
+              : 'PQA re-accreditation awarded'
+          }
+          customMessage={
+            <div>
+              {isReAccreditationGreenRating && (
+                <Typography
+                  type="body"
+                  color="textDark"
+                  text={years > 1 ? `${years} years` : `${years} year`}
+                />
+              )}
+              <div className="flex justify-between">
+                <Typography
+                  className={isPqaGreenRating ? 'pt-2' : ''}
+                  type="help"
+                  color="textMid"
+                  text={new Date(
+                    isPqaGreenRating
+                      ? lastAttendedPqaVisitWithoutFollowUp.insertedDate
+                      : lastAttendedReAccreditationVisit?.insertedDate
+                  ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
+                />
+                <div className="ml-16 flex">
+                  <span className="text-successMain text-xl">●</span>
+                  <p
+                    className="text-textMid text-12 ml-2"
+                    style={{ marginTop: 6 }}
+                  >
+                    Green rating
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+          messageColor="textMid"
+          customIcon={<BalloonsIcon />}
+        />
+      );
+    }
+
+    return (
+      <Alert
+        className="mt-4"
+        type={
+          timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
+        }
+        variant="flat"
+        title={timeline?.smartSpaceLicenseStatus || ''}
+        message={
+          timeline?.smartSpaceLicenseDate
+            ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
+                'en-ZA',
+                dateLongMonthOptions
+              )
+            : ''
+        }
+        messageColor="textMid"
+        customIcon={
+          timeline?.smartSpaceLicenseColor === 'Success' ? (
+            <BalloonsIcon />
+          ) : (
+            <></>
+          )
+        }
+      />
+    );
   };
 
   useEffect(() => {
@@ -617,30 +701,6 @@ export const CoachPractitionerJourney = () => {
             />
           )}
           {renderAlert()}
-          <Alert
-            className="mt-4"
-            type={
-              timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
-            }
-            variant="flat"
-            title={timeline?.smartSpaceLicenseStatus || ''}
-            message={
-              timeline?.smartSpaceLicenseDate
-                ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
-                    'en-ZA',
-                    dateLongMonthOptions
-                  )
-                : ''
-            }
-            messageColor="textMid"
-            customIcon={
-              timeline?.smartSpaceLicenseColor === 'Success' ? (
-                <BalloonsIcon />
-              ) : (
-                <></>
-              )
-            }
-          />
           <Typography
             className="mt-4 mb-2"
             type="h4"

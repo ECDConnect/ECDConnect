@@ -354,18 +354,19 @@ export const SignUp: React.FC = () => {
               }
             />
           </div>
-          {/*           
-          <Button
-            id="gtm-register"
-            className={styles.formButton}
-            type="filled"
-            color="primary"
-            isLoading={isLoading}
-            disabled={!isOnline}
-            onClick={handleSubmit(submitForm)}
-          >
-            <Typography type="help" color="white" text={'Sign up'} />
-          </Button> */}
+          {
+            <Button
+              id="gtm-register"
+              className={styles.formButton}
+              type="filled"
+              color="primary"
+              isLoading={isLoading}
+              disabled={!isOnline}
+              onClick={handleSubmit(submitForm)}
+            >
+              <Typography type="help" color="white" text={'Sign up'} />
+            </Button>
+          }
 
           <Divider
             title={'Already have a CHW Connect account?'}
