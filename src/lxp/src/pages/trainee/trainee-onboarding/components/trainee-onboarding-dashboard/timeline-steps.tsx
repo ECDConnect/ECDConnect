@@ -79,9 +79,11 @@ export const setStep = (
   onView?: (text: string) => void,
   nextStep?: string
 ) => {
+  console.log({ status });
   const lincenceReceveid = 'Starter Licence received';
   const smartSpaceLincenceReceveid = 'SmartSpace Licence received';
   const consolidationMeetingScheduled = 'Consolidation meeting scheduled';
+  const consolidationMeetingAttended = 'Consolidation meeting attended';
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
@@ -101,7 +103,9 @@ export const setStep = (
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
-        (stepCompleted && status !== consolidationMeetingScheduled) ||
+        (stepCompleted &&
+          status !== consolidationMeetingScheduled &&
+          status !== consolidationMeetingAttended) ||
         nextStep === status
           ? true
           : false,
