@@ -18,16 +18,7 @@ namespace ECDLink.PostgresTenancy.Services
 
         public IEnumerable<TenantModel> GetAllTenants()
         {
-            var tenants = _repository.GetAll().ToList();
-
-            var tenantList = new List<TenantModel>();
-
-            foreach (var tenant in tenants)
-            {
-                tenantList.Add(Cast(tenant));
-            }
-
-            return tenantList;
+            return _repository.GetAll().Select(t => Cast(t)).ToList();
         }
 
         public TenantModel GetTenantById(string id)
@@ -86,7 +77,7 @@ namespace ECDLink.PostgresTenancy.Services
             return Cast(entity);
         }
 
-        private TenantModel Cast(TenantEntity tenantEntity)
+        private static TenantModel Cast(TenantEntity tenantEntity)
         {
             return new TenantModel
             {
