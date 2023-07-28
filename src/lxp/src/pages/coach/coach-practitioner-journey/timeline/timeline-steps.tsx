@@ -3,7 +3,6 @@ import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
 import { SupportVisits } from './support-visits-step';
 import { PrePqaVisits } from './pre-pqa-site-vists';
 import { RatingData } from '@/store/pqa/pqa.types';
-import { CalendarEventModel } from '@ecdlink/core';
 import { PQAVisits } from './pqa/step-accordion-content';
 import { getPqaStepData } from './pqa/step';
 import { ReAccreditationVisits } from './re-accreditation/step-accordion-content';
@@ -127,19 +126,22 @@ export const timelineSteps = ({
   );
 
   if (!!timeline.prePQASiteVisits?.length) {
+    const visit1 = timeline.prePQASiteVisits?.find((item) =>
+      item?.visitType?.name?.includes('pre_pqa_visit_1')
+    );
+    const visit2 = timeline.prePQASiteVisits?.find((item) =>
+      item?.visitType?.name?.includes('pre_pqa_visit_2')
+    );
+
     const date = visits?.some(
       (item) =>
         item?.visitType?.name?.includes('pre_pqa_visit_1') && item?.attended
     )
       ? new Date(
-          timeline.prePQASiteVisits?.find((item) =>
-            item?.visitType?.name?.includes('pre_pqa_visit_2')
-          )?.plannedVisitDate
+          visit2?.attended ? visit2?.insertedDate : visit2?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions)
       : new Date(
-          timeline.prePQASiteVisits?.find((item) =>
-            item?.visitType?.name?.includes('pre_pqa_visit_1')
-          )?.plannedVisitDate
+          visit1?.attended ? visit1.insertedDate : visit1?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions);
 
     const isLateDate =
@@ -157,7 +159,7 @@ export const timelineSteps = ({
 
     steps.push({
       title: 'Pre-PQA site visits',
-      subTitle: `By ${date}`,
+      subTitle: `${isAllCompleted ? '' : 'By '}${date}`,
       subTitleColor: stepType.color,
       type: stepType.type,
       inProgressStepIcon: isLateDate && 'ExclamationCircleIcon',

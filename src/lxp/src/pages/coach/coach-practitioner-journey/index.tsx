@@ -46,7 +46,6 @@ import {
   ScheduleProps,
   dateOptions,
   filterVisit,
-  sortVisit,
   timelineSteps,
 } from './timeline/timeline-steps';
 import {
@@ -337,17 +336,14 @@ export const CoachPractitionerJourney = () => {
     ) ?? [];
 
   const filteredPqaVisits = timeline?.pQASiteVisits?.filter(
-    (visit) =>
-      !pqaFormData?.some((item) => item.visitId === visit?.id) &&
-      !visit?.attended
+    (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
   );
   const uncompletedPqaVisits =
     filteredPqaVisits?.length && !isPQAFollowUp ? filteredPqaVisits : [];
 
   const filteredReAccreditionVisits = timeline?.reAccreditationVisits?.filter(
     (visit) =>
-      !reAccreditationFormData?.some((item) => item.visitId === visit?.id) &&
-      !visit?.attended
+      !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
   );
   const uncompletedReAccreditationVisits =
     (filteredReAccreditionVisits?.length && filteredReAccreditionVisits) ||
@@ -412,7 +408,6 @@ export const CoachPractitionerJourney = () => {
 
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
-    .sort(sortVisit)
     ?.map(
       (visit): MenuListDataItem<{ visitId?: string }> => ({
         showIcon: true,
