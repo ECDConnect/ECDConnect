@@ -170,8 +170,8 @@ export const Step18 = ({
 
     for (const learner of _allLearners) {
       if (
-        !currentClassProgrammes.some(
-          (item) => item?.classroomGroupId === learner?.classroomGroupId
+        !currentClassroomGroups.some(
+          (item) => item?.id === learner?.classroomGroupId
         )
       )
         continue;
@@ -181,40 +181,34 @@ export const Step18 = ({
       );
       const childUser = childUsers?.find((y) => y?.id === learner?.userId);
 
-      if (
-        child &&
-        child?.caregiverId &&
-        childUser?.firstName &&
-        childUser?.surname
-      ) {
+      if (child && childUser?.firstName && childUser?.surname) {
         filteredChildren.push(childUser);
       }
     }
 
-    const sortedChildren = filteredChildren
-      .filter((child) => {
-        if (child?.dateOfBirth === undefined) {
-          return false;
-        }
+    // TODO: check if this is necessary
+    // const sortedChildren = filteredChildren
+    //   .filter((child) => {
+    //     if (child?.dateOfBirth === undefined) {
+    //       return false;
+    //     }
 
-        const date = new Date(child?.dateOfBirth);
-        const minDate = new Date('1900-01-01');
-        const maxDate = new Date();
-        return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
-      })
-      .sort(
-        (a, b) =>
-          new Date(String(a?.dateOfBirth)).getTime() -
-          new Date(String(b?.dateOfBirth)).getTime()
-      );
-
-    setRegisteredChildren(sortedChildren);
+    //     const date = new Date(child?.dateOfBirth);
+    //     const minDate = new Date('1900-01-01');
+    //     const maxDate = new Date();
+    //     return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
+    //   })
+    //   .sort(
+    //     (a, b) =>
+    //       new Date(String(a?.dateOfBirth)).getTime() -
+    //       new Date(String(b?.dateOfBirth)).getTime()
+    //   );
+    setRegisteredChildren(filteredChildren);
   }, [
     allLearners,
     childUsers,
     children,
-    currentClassProgrammes,
-    currentClassroomGroups?.length,
+    currentClassroomGroups,
     previousClassroomGroups?.length,
   ]);
 
@@ -315,7 +309,7 @@ export const Step18 = ({
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${currentClassroomGroups[0].name}`
+              ? `classes at ${currentClassroomGroups[0].programmeType?.description}`
               : `classes assigned to ${name}`
           }
         />

@@ -115,6 +115,8 @@ export const Form = ({ onBack }: FormProps) => {
   const isEqualOrAfter98andEqualOrBefore168Days =
     pregnancyDay >= 98 && pregnancyDay <= 168;
 
+  const isEqualOrAfter196Days = pregnancyDay >= 196;
+
   const isIDDocumentStep =
     isFirstVisit ||
     (Boolean(IDDocumentFirstPreviousAnswer?.visitData?.questionAnswer) ===
@@ -232,7 +234,8 @@ export const Form = ({ onBack }: FormProps) => {
           isIDDocumentStep,
           isMaternalDistressFollowUp,
           isMaternalDistress,
-          IsHIVCareStep
+          IsHIVCareStep,
+          isEqualOrAfter196Days
         );
       case activitiesTypes.dangerSigns:
         return dangerSignsSteps(isDangerSignsFollowUpStep, isFirstVisit);

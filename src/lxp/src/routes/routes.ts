@@ -49,6 +49,7 @@ const ROUTES = {
     PRACTITIONER_LIST: '/practitioner-list',
     PRACTITIONER_CHILD_LIST: '/practitioner-child-list',
     PRACTITIONER_REASSIGN_CLASS: '/practitioner-reassign-class',
+    PRACTITIONER_REMOVE_FROM_PROGRAMME: '/remove-practitioner-from-programme',
     NOTES: '/notes',
   }),
   PRACTITIONER: addPrefix('/practitioner', {
@@ -86,6 +87,9 @@ const ROUTES = {
   DOWNLOAD_CHILD_PROGRESS_OBSERVATION_REPORTS:
     '/download-child-progress-observation-reports',
   COACH_REGISTRATION: '/coach-registration',
+  COACH_SMARTSPACE_CHECK: '/coach-smart-space-check',
+  COACH_FRANCHISE_AGREEMENT: '/coach-franchisor-agreement',
+  COACH_SELF_ASSESSMENT: '/coach-self-assessment',
   COACH: addPrefix('/coach', {
     ABOUT: addPrefix('/about', {
       SIGNATURE: '/signature',

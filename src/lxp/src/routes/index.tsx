@@ -81,6 +81,10 @@ import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journ
 import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
 import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
 import Calendar from '@/pages/calendar/calendar-home';
+import RemovePractitionerFromProgramme from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/remove-practitioner-from-programme';
+import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
+import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
+import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -245,6 +249,11 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME}
+        component={RemovePractitionerFromProgramme}
+      />
+      <Route
+        exact
         path={ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST}
         component={PrincipalPractitionerChildList}
       />
@@ -335,6 +344,21 @@ const AuthRoutes: React.FC = () => {
         component={ProgrammePlanningDailyRoutine}
       />
       <Route exact path={ROUTES.COACH.PROFILE.ROOT} component={CoachProfile} />
+      <Route
+        exact
+        path={ROUTES.COACH_SMARTSPACE_CHECK}
+        component={CoachSmartSpaceChecklist}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH_FRANCHISE_AGREEMENT}
+        component={CoachTraineeFranchisorAgreement}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH_SELF_ASSESSMENT}
+        component={CoachSelfAssessment}
+      />
       <Route
         exact
         path={ROUTES.COACH.PROFILE.EDIT}
