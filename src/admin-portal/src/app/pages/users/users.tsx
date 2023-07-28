@@ -11,7 +11,6 @@ export function Users() {
   });
 
   const getNavigationItems = () => {
-    console.log(data);
     if (
       data &&
       data.tenantContext &&

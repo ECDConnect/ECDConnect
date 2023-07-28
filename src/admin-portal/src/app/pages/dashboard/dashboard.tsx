@@ -14,10 +14,7 @@ export default function Dashboard() {
     fetchPolicy: 'cache-and-network',
   });
 
-  console.log(data);
-
   const getNavigationItems = () => {
-    console.log(data);
     if (
       data &&
       data.tenantContext &&
