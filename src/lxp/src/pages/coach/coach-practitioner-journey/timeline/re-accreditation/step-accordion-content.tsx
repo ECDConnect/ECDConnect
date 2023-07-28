@@ -36,11 +36,11 @@ export const ReAccreditationVisits = ({
     getCurrentReAccreditationRatingByUserId(practitionerId)
   );
   const lastAttendedReAccreditationVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(
-      practitionerId,
-      `reAccreditationVisits`,
-      're_accreditation_follow_up'
-    )
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: `reAccreditationVisits`,
+      followUpType: 're_accreditation_follow_up',
+    })
   );
   const lastAttendedReAccreditationFollowUpVisit = useSelector(
     getLastCoachAttendedFollowUpVisitByUserId(
