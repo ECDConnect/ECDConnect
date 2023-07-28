@@ -38,11 +38,13 @@ export const SupportVisitStep1 = ({
   const timeline = useSelector(getPractitionerTimelineByIdSelector(userId));
 
   const lastVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(
+    getLastCoachAttendedVisitByUserId({
       userId,
-      isPqaVisit ? 'pQASiteVisits' : 'reAccreditationVisits',
-      isPqaVisit ? 'pqa_visit_follow_up' : 're_accreditation_follow_up'
-    )
+      visitType: isPqaVisit ? 'pQASiteVisits' : 'reAccreditationVisits',
+      followUpType: isPqaVisit
+        ? 'pqa_visit_follow_up'
+        : 're_accreditation_follow_up',
+    })
   );
 
   const lastVisitDate = lastVisit
