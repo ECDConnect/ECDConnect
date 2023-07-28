@@ -644,8 +644,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         {
             IQueryable<Visit> totalVisitsMissed = _visitRepo.GetAll()
                     .Where(x => x.Attended == false
-                    && x.PlannedVisitDate >= startDate.Date
-                    && x.PlannedVisitDate <= endDate.Date);
+                    && x.IsActive == true
+                    && x.DueDate >= x.Infant.InsertedDate
+                    && x.DueDate <= DateTime.UtcNow
+                    && (x.PlannedVisitDate >= startDate.Date
+                        && x.PlannedVisitDate <= endDate.Date));
 
             if (type == Constants.GGSettings.client_mother)
             {
@@ -673,8 +676,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // TODO: Performance impact of multiple joins:     
                     && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
             }
-
-            return totalVisitsMissed.Count(); ;
+            return totalVisitsMissed.Count();
         }
 
         public int GetTotalVisitsOverdueForPeriod(
