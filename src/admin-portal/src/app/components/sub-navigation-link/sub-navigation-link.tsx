@@ -16,6 +16,7 @@ const SubNavigationLink: React.FC<menuItemProps> = ({ item }) => {
           : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
         'users-tabs flex h-14 items-center text-lg font-medium'
       )}
+      onClick={() => alert('')}
     >
       {item.name}
     </Link>
