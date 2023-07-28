@@ -35,17 +35,17 @@ export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) => {
 };
 
 export const getStepType = (color?: Maybe<string>): StepType => {
-  if (!color) return { type: 'todo' };
+  if (!color) return { type: 'todo', color: 'textMid' };
 
   switch (color.toLowerCase()) {
     case 'success':
-      return { type: 'completed' };
+      return { type: 'completed', color: 'textMid' };
     case 'warning':
       return { type: 'inProgress', color: 'alertMain' };
     case 'error':
       return { type: 'inProgress', color: 'errorMain' };
     default:
-      return { type: 'todo' };
+      return { type: 'todo', color: 'textMid' };
   }
 };
 
@@ -221,18 +221,27 @@ export const timelineSteps = ({
             color={stepType?.color}
             className="mr-4"
             text={`${subTitleText} ${new Date(
-              currentVisit?.plannedVisitDate
+              currentVisit?.attended
+                ? currentVisit.insertedDate
+                : currentVisit?.plannedVisitDate
             ).toLocaleDateString('en-ZA', dateOptions)}`}
           />
-
-          {ratingData?.icon}
-          <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+          {timeline.pQASiteVisits.some((item) => item?.attended) && (
+            <>
+              {ratingData?.icon}
+              <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+            </>
+          )}
         </div>
       ),
       inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
       type: stepType?.type,
       extraData: {
-        date: new Date(currentVisit?.plannedVisitDate),
+        date: new Date(
+          currentVisit?.attended
+            ? currentVisit?.insertedDate
+            : currentVisit?.plannedVisitDate
+        ),
       },
       showAccordion: true,
       accordionContent: (

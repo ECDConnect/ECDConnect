@@ -149,6 +149,7 @@ export const CoachPractitionerJourney = () => {
       'reAccreditationFollowUpVisitPreviousFormData'
     )
   );
+  const isFirstPqaVisit = timeline?.pQASiteVisits?.length === 1;
 
   const newPqaVisit = timeline?.pQASiteVisits?.find(
     (item) =>
@@ -174,6 +175,7 @@ export const CoachPractitionerJourney = () => {
     ) <= new Date();
 
   const isPQAFollowUp =
+    !isFirstPqaVisit &&
     !!newPqaVisit &&
     !lastAttendedPqaVisitWithoutFollowUp?.visitType?.name?.includes(
       visitTypes.pqa.thirdPQA.name
