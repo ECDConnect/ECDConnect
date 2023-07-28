@@ -9,11 +9,20 @@ import {
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P5 from '@/assets/pillar/p5.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState, useEffect } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { replaceBraces } from '@ecdlink/core';
 import { HealthPromotion } from '../../components/health-promotion';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/types';
+import { getVisitAnswersForInfantSelector } from '@/store/visit/visit.selectors';
+import {
+  getInfantNearestPreviousVisitByOrderDate,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '../../../../../infant-profile.types';
 
 export const HIVQuestion = `Is {client} HIV positive?`;
 export const HIVSection = 'HIV care & medication';
@@ -26,6 +35,22 @@ export const HIVCareAndMedicationStep = ({
   setEnableButton,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState<boolean | boolean[] | string>();
+
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
+
+  const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, visit)
+  );
+
+  const previousHIVAnswer = previousAnswers?.find(
+    (item) =>
+      item.question === HIVQuestion && item.visitId === previousVisit?.id
+  )?.questionAnswer;
 
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
@@ -60,6 +85,25 @@ export const HIVCareAndMedicationStep = ({
     [question, setEnableButton, setQuestions]
   );
 
+  useEffect(() => {
+    if (previousHIVAnswer === 'true') {
+      setAnswer(true);
+      setQuestions &&
+        setQuestions([
+          {
+            visitSection: HIVSection,
+            questions: [
+              {
+                question,
+                answer: true,
+              },
+            ],
+          },
+        ]);
+      setEnableButton?.(true);
+    }
+  }, [previousHIVAnswer, question, setEnableButton, setQuestions]);
+
   if (isTipPage) {
     return (
       <Dialog
@@ -91,14 +135,21 @@ export const HIVCareAndMedicationStep = ({
           buttonIcon="ChatIcon"
           onClick={() => setIsTip && setIsTip(true)}
         />
-        <Typography type="body" text={replaceBraces(question, caregiverName)} />
-        <ButtonGroup<boolean | string>
-          color="secondary"
-          type={ButtonGroupTypes.Button}
-          options={options}
-          onOptionSelected={onOptionSelected}
-        />
-        {answer === true && (
+        {previousHIVAnswer! !== 'true' && (
+          <>
+            <Typography
+              type="body"
+              text={replaceBraces(question, caregiverName)}
+            />
+            <ButtonGroup<boolean | string>
+              color="secondary"
+              type={ButtonGroupTypes.Button}
+              options={options}
+              onOptionSelected={onOptionSelected}
+            />
+          </>
+        )}
+        {(answer === true || previousHIVAnswer === 'true') && (
           <Alert
             type="warning"
             title={`${caregiverName} is HIV positive`}

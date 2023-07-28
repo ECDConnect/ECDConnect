@@ -63,8 +63,8 @@ export const ResourcesStep = ({
   const { years: ageYears, months: ageMonths } =
     getAgeInYearsMonthsAndDays(dateOfBirth);
 
-  const isChild6Months = useMemo(
-    () => !ageYears && ageMonths < 7,
+  const isChild9Months = useMemo(
+    () => !ageYears && ageMonths <= 9,
     [ageMonths, ageYears]
   );
 
@@ -140,7 +140,7 @@ export const ResourcesStep = ({
       );
     }
 
-    if (isChild6Months ? count < 7 : count < 8) {
+    if (isChild9Months ? count < 7 : count < 8) {
       return (
         <>
           <Alert
@@ -183,7 +183,7 @@ export const ResourcesStep = ({
         />
       </>
     );
-  }, [caregiverName, count, isChild6Months, name]);
+  }, [caregiverName, count, isChild9Months, name]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);

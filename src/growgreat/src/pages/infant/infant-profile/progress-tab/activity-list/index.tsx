@@ -347,7 +347,7 @@ export const ActivityList: React.FC = () => {
   const isHivCareStep = useMemo(
     () =>
       (isFirstVisit && !ageYears && ageMonths < 6) ||
-      previousHIVAnswer === 'true',
+      previousHIVAnswer !== 'false',
     [ageMonths, ageYears, isFirstVisit, previousHIVAnswer]
   );
 
@@ -357,7 +357,7 @@ export const ActivityList: React.FC = () => {
     isDewormingQuestion ||
     isImmunisationsStep;
 
-  const isDisplayPillar5 = isChildDocumentStep && isHivCareStep;
+  const isDisplayPillar5 = isChildDocumentStep || isHivCareStep;
 
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
