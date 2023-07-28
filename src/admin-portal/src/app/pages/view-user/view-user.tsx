@@ -877,7 +877,7 @@ export function ViewUser(props: any) {
                   <span className="text-successMain p-2 text-2xl">
                     {
                       summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalPregnantMoms
+                        ?.totalPregnantMomsWithNoIssues
                     }
                   </span>
                   pregnant moms are doing well & have no issues
@@ -886,7 +886,7 @@ export function ViewUser(props: any) {
                   <span className="text-successMain p-2 text-2xl">
                     {
                       summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalChildren
+                        ?.totalChildrenWithNoIssues
                     }
                   </span>
                   children are doing well & have no issues

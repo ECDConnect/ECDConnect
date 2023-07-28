@@ -199,7 +199,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // Mothers and Infants are folders.
             summary.totalFoldersOpened = motherManager.GetTotalNewClientsForPeriod(healthCareWorkerUserId, _startDate, _endDate);
 
-            // Pregnant Mom Visits cannot be missed and will only be overdue.
             summary.totalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_child, _startDate, _endDate);
             
             var motherVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_mother, _startDate, _endDate);
@@ -212,6 +211,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             // Pregnant Mom Visits cannot be missed and will only be overdue.
             summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(healthCareWorkerUserId, _startDate, _endDate);
             summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId, _startDate, _endDate); ;
+
+
+            summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithNoIssues(healthCareWorkerUserId, _startDate, _endDate);
+            summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId, _startDate, _endDate); ;
+
 
             return summary;
         }

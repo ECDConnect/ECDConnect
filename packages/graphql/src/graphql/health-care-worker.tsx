@@ -176,6 +176,8 @@ export const GetHealthCareWorkerSummaryForPeriod = gql`
       totalVisitsMissed
       totalPregnantMomsWithUrgentIssues
       totalCaregiversAndChildrenWithUrgentIssues
+      totalPregnantMomsWithNoIssues
+      totalChildrenWithNoIssues
       totalVisitsOverdue
       __typename
     }
