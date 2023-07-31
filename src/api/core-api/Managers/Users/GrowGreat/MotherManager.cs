@@ -650,17 +650,27 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 .Count();
         }
 
-        public int GetTotalNewMothersForPeriod(string id, DateTime startDate, DateTime endDate)
+        public int GetTotalNewClientsForPeriod(string id, DateTime startDate, DateTime endDate)
         {
-            var a = _motherRepo.GetAll()
+            var motherCount = _motherRepo.GetAll()
                 .Where(m => m.HealthCareWorker.UserId == id
                 && m.IsActive.Equals(true) 
                 && m.InsertedDate >= startDate
-                && m.InsertedDate <= endDate);
+                && m.InsertedDate <= endDate)
+                .Select(x => x.Id)
+                    .Distinct()
+                    .Count();
 
-            return a.Select(x => x.Id)
-                .Distinct()
-                .Count();
+            var infantCount = _infantRepo.GetAll()
+                .Where(i => i.Caregiver.HealthCareWorker.UserId == id
+                && i.IsActive.Equals(true)
+                && i.InsertedDate >= startDate
+                && i.InsertedDate <= endDate)
+                .Select(x => x.Id)
+                    .Distinct()
+                    .Count();
+
+            return motherCount + infantCount;
         }
 
         public int GetTotalPregnantMothers(
@@ -671,7 +681,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // Things that have been painted these color are urgent...
             var motherRepo = _repoFactory.CreateGenericRepository<Mother>();
             var mothers = motherRepo.GetAll()
-                .Where(m => m.HealthCareWorker.UserId == heathCareWorkerUserId);
+                .Where(m => m.IsActive == true
+                && m.HealthCareWorker.UserId == heathCareWorkerUserId);
 
             if (startDate is not null)
                 mothers = mothers.Where(m => m.InsertedDate >= startDate);

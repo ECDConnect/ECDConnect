@@ -316,9 +316,7 @@ export const Step17ReAccreditation = ({
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${
-                  currentClassroomGroups?.[0]?.name ?? 'Not provided'
-                }`
+              ? `classes at ${currentClassroomGroups[0].programmeType?.description}`
               : `classes assigned to ${name}`
           }
         />

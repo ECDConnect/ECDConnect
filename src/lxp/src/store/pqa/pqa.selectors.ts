@@ -180,15 +180,19 @@ export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
     } as RatingData;
   });
 
-export const getLastCoachAttendedVisitByUserId = (
-  userId: string,
-  visitType: VisitType,
-  followUpType: FollowUpType
-) =>
+export const getLastCoachAttendedVisitByUserId = ({
+  userId,
+  visitType,
+  followUpType,
+}: {
+  userId: string;
+  visitType: VisitType;
+  followUpType?: FollowUpType;
+}) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
     const attendedVisits = timeline?.[visitType]?.filter(
       (visit) =>
-        visit?.attended && !visit?.visitType?.name?.includes(followUpType)
+        visit?.attended && !visit?.visitType?.name?.includes(followUpType ?? '')
     );
 
     if (attendedVisits?.length === 0) {

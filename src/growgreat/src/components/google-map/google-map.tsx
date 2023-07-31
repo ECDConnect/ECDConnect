@@ -1,4 +1,4 @@
-import { ComponentBaseProps } from '@ecdlink/ui';
+import { ActionModal, ComponentBaseProps, DialogPosition } from '@ecdlink/ui';
 import { GoogleMap } from '@capacitor/google-maps';
 import {
   useRef,
@@ -9,11 +9,21 @@ import {
   useState,
   useEffect,
 } from 'react';
+import { useDialog } from '@ecdlink/core';
 
 export interface Address {
   long_name: string;
   short_name: string;
   types: string[];
+}
+
+const DEFAULT_LOCATION =
+  process.env.DEFAULT_LOCATION || '-26.1708687,27.9901695';
+
+enum GEOLOCATIONPOSITIONERRORCODES {
+  PERMISSION_DENIED = 1,
+  POSITION_UNAVAILABLE = 2,
+  TIMEOUT = 3,
 }
 
 interface GoogleApiResponse {
@@ -26,10 +36,45 @@ interface GoogleApiResponse {
 }
 
 function useGoogleMap(ref: MutableRefObject<HTMLElement> | any) {
-  const [longitude, setLongitude] = useState(0);
-  const [latitude, setLatitude] = useState(0);
+  const defaultLocation = DEFAULT_LOCATION.split(',');
+  const defaultLongitude =
+    defaultLocation.length === 2 && !isNaN(parseFloat(defaultLocation[1]))
+      ? parseFloat(defaultLocation[1])
+      : 0;
+  const defaultLatitude =
+    defaultLocation.length === 2 && !isNaN(parseFloat(defaultLocation[0]))
+      ? parseFloat(defaultLocation[0])
+      : 0;
+  const [longitude, setLongitude] = useState(defaultLongitude);
+  const [latitude, setLatitude] = useState(defaultLatitude);
   const [address, setAddress] = useState<Address[] | undefined>();
   const [markerChanged, setMarkerChanged] = useState(false);
+  const [currentPosition, setCurrentPosition] = useState(0);
+  const dialog = useDialog();
+
+  const alert = (message: string) => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <ActionModal
+          icon={'ExclamationCircleIcon'}
+          iconColor={'alertMain'}
+          iconBorderColor="alertBg"
+          importantText={message}
+          actionButtons={[
+            {
+              colour: 'primary',
+              text: 'Close',
+              onClick: onClose,
+              textColour: 'white',
+              type: 'filled',
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
 
   const getAddress = useCallback(() => {
     fetch(`https://maps.googleapis.com/maps/api/geocode/json?latlng=
@@ -97,15 +142,44 @@ function useGoogleMap(ref: MutableRefObject<HTMLElement> | any) {
   }, [markerChanged, getAddress, latitude, longitude, ref]);
 
   useLayoutEffect(() => {
-    navigator.geolocation.getCurrentPosition(({ coords }) => {
-      if (coords?.longitude) {
-        setLongitude(coords?.longitude);
+    navigator.geolocation.getCurrentPosition(
+      ({ coords }) => {
+        // if (coords?.longitude) {
+        //   setLongitude(coords?.longitude);
+        // }
+        // if (coords?.latitude) {
+        //   setLatitude(coords?.latitude);
+        // }
+      },
+      ({ code, message }) => {
+        if (code === GEOLOCATIONPOSITIONERRORCODES.PERMISSION_DENIED) {
+          console.warn('Current location: permission denied');
+          alert('Permission not granted.');
+        } else if (
+          code === GEOLOCATIONPOSITIONERRORCODES.POSITION_UNAVAILABLE
+        ) {
+          console.warn('Current location: position unavailable');
+          if (currentPosition < 5) {
+            setCurrentPosition(currentPosition + 1);
+          } else {
+            alert('Unable to determine current location.');
+          }
+        } else if (code === GEOLOCATIONPOSITIONERRORCODES.TIMEOUT) {
+          console.warn('Current location: timeout');
+          if (currentPosition < 5) {
+            setCurrentPosition(currentPosition + 1);
+          } else {
+            alert('Unable to determine current location (timeout).');
+          }
+        }
+      },
+      {
+        maximumAge: 0,
+        timeout: 5000,
+        enableHighAccuracy: true,
       }
-      if (coords?.latitude) {
-        setLatitude(coords?.latitude);
-      }
-    });
-  }, []);
+    );
+  }, [currentPosition]);
 
   useLayoutEffect(() => {
     initMaps();
