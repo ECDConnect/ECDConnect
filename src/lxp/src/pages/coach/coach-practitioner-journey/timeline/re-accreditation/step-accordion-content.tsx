@@ -5,7 +5,6 @@ import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import {
   getCurrentReAccreditationRatingByUserId,
-  getLastCoachAttendedFollowUpVisitByUserId,
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
@@ -42,12 +41,11 @@ export const ReAccreditationVisits = ({
       followUpType: 're_accreditation_follow_up',
     })
   );
-  const lastAttendedReAccreditationFollowUpVisit = useSelector(
-    getLastCoachAttendedFollowUpVisitByUserId(
-      practitionerId,
-      'reAccreditationVisits',
-      're_accreditation_follow_up'
-    )
+  const lastAttendedVisit = useSelector(
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: `reAccreditationVisits`,
+    })
   );
 
   const rating1 = timeline?.reAccreditationRating1;
@@ -58,31 +56,34 @@ export const ReAccreditationVisits = ({
   const currentFollowUpDeadline = rating3?.overallRating
     ? followUpDeadline.lastVisit
     : followUpDeadline.default;
+
+  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
+    (item) =>
+      !item?.attended &&
+      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+  );
+
   const isReAccreditationFollowUpDeadline =
     addDays(
       new Date(lastAttendedReAccreditationVisit?.insertedDate),
       currentFollowUpDeadline
     ) <= new Date();
-  const isNewVisit =
-    !rating3?.overallRating &&
-    timeline?.reAccreditationVisits?.some(
-      (item) =>
-        item?.attended &&
-        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-    ) &&
-    new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
-      new Date(lastAttendedReAccreditationVisit?.insertedDate);
+  const isFirstVisit = timeline?.reAccreditationVisits?.length === 1;
   const isReAccreditationFollowUp =
-    currentReAccreditationRating.rating?.overallRatingColor &&
-    currentReAccreditationRating.rating?.overallRatingColor !== 'Success' &&
+    !isFirstVisit &&
+    !!newReAccreditationVisit &&
     !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
       visitTypes.reaccreditation.third.name
     ) &&
-    !isNewVisit;
+    !lastAttendedVisit?.visitType?.name?.includes(
+      visitTypes.reaccreditation.followUp.name
+    );
 
   const mergedVisits = timeline?.reAccreditationVisits
     ? [
-        ...timeline.reAccreditationVisits,
+        ...(isFirstVisit
+          ? timeline.reAccreditationVisits
+          : timeline.reAccreditationVisits.filter((item) => item?.attended)),
         ...(isReAccreditationFollowUp
           ? [
               {
@@ -99,19 +100,8 @@ export const ReAccreditationVisits = ({
               } as Maybe<Visit>,
             ]
           : []),
-        ...(isNewVisit
-          ? [
-              {
-                id: newReAccreditationVisitId,
-                visitType: {
-                  description: `Annual re-accreditation PQA`,
-                  name: visitTypes.reaccreditation.first.name,
-                },
-                plannedVisitDate:
-                  lastAttendedReAccreditationFollowUpVisit?.insertedDate,
-                attended: false,
-              } as Maybe<Visit>,
-            ]
+        ...(!isFirstVisit && newReAccreditationVisit
+          ? [newReAccreditationVisit]
           : []),
       ]
     : [];
@@ -215,7 +205,7 @@ export const ReAccreditationVisits = ({
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(
-                    item.plannedVisitDate
+                    item.attended ? item.insertedDate : item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
             }

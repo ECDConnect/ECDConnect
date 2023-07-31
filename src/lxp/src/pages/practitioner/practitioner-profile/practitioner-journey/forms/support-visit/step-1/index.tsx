@@ -9,7 +9,7 @@ import {
   callAnswer,
   supportVisitQuestion2,
   supportVisitSharedQuestion,
-} from '@/pages/coach/coach-practitioner-journey/forms/general-support-visit';
+} from '@/pages/coach/coach-practitioner-journey/forms/general-support-visit/coaching-visit-or-call/constants';
 import { useLayoutEffect, useMemo } from 'react';
 
 import { DynamicFormProps } from '../../dynamic-form';

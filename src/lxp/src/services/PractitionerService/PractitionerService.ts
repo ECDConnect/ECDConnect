@@ -295,6 +295,7 @@ class PractitionerService {
             progress
             attendedChildProgress
             usePhotoInReport
+            setupTraineeInitiated
           }
         }
       `,

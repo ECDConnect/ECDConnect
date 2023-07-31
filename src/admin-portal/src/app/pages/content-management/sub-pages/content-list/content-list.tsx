@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import LanguageSelector from '../../../../components/language-selector/language-selector';
-import UiTable from '../../../../components/ui-table';
+import UiTable from '../../../../components/old-ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
   ContentManagementView,
@@ -195,9 +195,7 @@ export default function ContentList({
           title="Delete Content"
           message={`You are about to delete content that is part of the Collection ${type}, this can implicate data issues. Would you like to go ahead`}
           onCancel={onCancel}
-          btnText={
-            ['Yes, Delete Content', 'No, Cancel']
-          }
+          btnText={['Yes, Delete Content', 'No, Cancel']}
           onSubmit={() => {
             onSubmit();
 
