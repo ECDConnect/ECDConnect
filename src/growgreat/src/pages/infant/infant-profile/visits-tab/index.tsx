@@ -83,8 +83,6 @@ export const VisitsTab: React.FC = () => {
     getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
-  console.log('currentVisit', currentVisit);
-
   const { isLoading } = useThunkFetchCall(
     'infants',
     InfantActions.GET_INFANT_VISITS
