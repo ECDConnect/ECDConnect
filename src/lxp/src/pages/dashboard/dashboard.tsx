@@ -413,7 +413,9 @@ export const Dashboard: React.FC = () => {
   if (isTrainee) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
-      href: ROUTES.TRAINEE.SETUP_TRAINEE,
+      href: practitioner?.setupTraineeInitiated
+        ? ROUTES.TRAINEE.TRAINEE_ONBOARDING
+        : ROUTES.TRAINEE.SETUP_TRAINEE,
       icon: 'BriefcaseIcon',
       current: false,
       showDivider: true,
