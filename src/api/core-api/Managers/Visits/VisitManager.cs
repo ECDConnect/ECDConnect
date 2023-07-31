@@ -493,9 +493,25 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             else if (type == Constants.GGSettings.client_child)
             {
                 // returning visits only applicable after infant was registered
-                allVisits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.VisitType.Type == Constants.GGSettings.client_child &&
-                (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
-                OrderBy(y => y.PlannedVisitDate).ToList();
+                var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && 
+                                                      x.VisitType.Type == Constants.GGSettings.client_child && 
+                                                      x.VisitType.Name != Constants.GGSettings.additional_visits &&
+                                                     (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
+                                                     OrderBy(y => y.PlannedVisitDate).ToList();
+                var other_visits_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                                                                 x.VisitType.Type == Constants.GGSettings.client_child &&
+                                                                 x.VisitType.Name == Constants.GGSettings.additional_visits &&
+                                                                (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
+                                                                OrderBy(y => y.PlannedVisitDate).ToList();
+                var other_visits_no_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                                                                 x.VisitType.Type == Constants.GGSettings.client_child &&
+                                                                 x.VisitType.Name == Constants.GGSettings.additional_visits && x.DueDate.HasValue == false &&
+                                                                (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date)).
+                                                                OrderBy(y => y.PlannedVisitDate).ToList();
+
+                allVisits.AddRange(child_visits);
+                allVisits.AddRange(other_visits_due_date);
+                allVisits.AddRange(other_visits_no_due_date);
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
