@@ -71,6 +71,7 @@ export const PQAVisits = ({
 
   const isFirstVisit = timeline?.pQASiteVisits?.length === 1;
   const isPQAFollowUp =
+    !isFirstVisit &&
     !!newPqaVisit &&
     !lastAttendedPqaVisit?.visitType?.name?.includes(
       visitTypes.pqa.thirdPQA.name
@@ -98,7 +99,7 @@ export const PQAVisits = ({
               } as Maybe<Visit>,
             ]
           : []),
-        ...(newPqaVisit ? [newPqaVisit] : []),
+        ...(!isFirstVisit && newPqaVisit ? [newPqaVisit] : []),
       ]
     : [];
 

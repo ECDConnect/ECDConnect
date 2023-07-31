@@ -180,7 +180,8 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           disabled={
             !accept ||
             !!Object.keys(errors).length ||
-            (multipleChildren && children === 0)
+            (multipleChildren && children === 0) ||
+            multipleChildren === undefined
           }
         />
       </div>
