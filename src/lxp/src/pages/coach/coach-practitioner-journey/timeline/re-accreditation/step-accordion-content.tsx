@@ -205,7 +205,7 @@ export const ReAccreditationVisits = ({
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(
-                    item.plannedVisitDate
+                    item.attended ? item.insertedDate : item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
             }

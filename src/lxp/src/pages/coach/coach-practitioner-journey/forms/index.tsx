@@ -452,7 +452,7 @@ export const Form = ({
         linkedVisitId:
           type === 'pqa-follow-up-visit'
             ? newPqaVisit?.id
-            : newReAccreditationVisit,
+            : newReAccreditationVisit?.id,
         followUpData: payload,
       };
 
