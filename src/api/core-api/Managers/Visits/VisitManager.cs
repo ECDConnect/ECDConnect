@@ -494,7 +494,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 // returning visits only applicable after infant was registered
                 allVisits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.VisitType.Type == Constants.GGSettings.client_child &&
-                (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date || x.DueDate.HasValue && x.DueDate.Value.Date >= x.Infant.InsertedDate.Date)).
+                (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                 OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_practitioner)
