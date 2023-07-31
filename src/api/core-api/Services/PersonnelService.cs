@@ -884,7 +884,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     visit = _visitDataManager.MarkChecklistVisitStatus(visit.Id);
                 }
 
-                if (visit.Attended == true)
+                if (visit?.Attended == true)
                 {
                     timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
                     timeline.SmartSpaceChecklistColor = MetricsColorEnum.Success.ToString();
