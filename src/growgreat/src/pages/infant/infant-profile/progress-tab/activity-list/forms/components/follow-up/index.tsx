@@ -143,10 +143,6 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
-  const previousVisitStatus = useSelector(
-    getPreviousVisitInformationForInfantSelector
-  );
-
   useLayoutEffect(() => {
     // get data from previous visit
     if (
@@ -182,6 +178,9 @@ export const FollowUp = ({
 
   const printData = useSelector(GetInfantSummaryByPrioritySelector);
 
+  const previousVisitStatus = useSelector(
+    getPreviousVisitInformationForInfantSelector
+  );
   const getColorAndIcon = useCallback(
     (
       color: string

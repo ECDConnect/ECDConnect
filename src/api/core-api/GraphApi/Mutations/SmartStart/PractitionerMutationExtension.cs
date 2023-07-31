@@ -58,6 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;                    
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
+                    if (input.SetupTraineeInitiated != null) practitioner.SetupTraineeInitiated = input.SetupTraineeInitiated;
 
                     if (input.SiteAddress != null && input.SiteAddressId.HasValue)
                     {

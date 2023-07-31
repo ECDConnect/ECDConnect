@@ -1,3 +1,5 @@
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -8,10 +10,12 @@ namespace ECDLink.UrlShortner.Controllers
     public class ShortUrlController : ControllerBase
     {
         private readonly ShortUrlManager _manager;
+        private ISystemSetting<SecurityNotificationOptions> _options;
 
-        public ShortUrlController(ShortUrlManager manager)
+        public ShortUrlController(ShortUrlManager manager, ISystemSetting<SecurityNotificationOptions> optionAccessor)
         {
             _manager = manager;
+            _options = optionAccessor;
         }
 
         [HttpGet, Route("/{chunk}")]
@@ -21,7 +25,15 @@ namespace ECDLink.UrlShortner.Controllers
 
             if (string.IsNullOrWhiteSpace(redirect))
             {
-                throw new Exception("Error parsing Chunk");
+                var loginUrl = _options.Value.Login;
+
+                if (redirect == null)
+                    Console.WriteLine("ShortenRedirect: Error parsing chunk - redirect to {0}", loginUrl);
+                else
+                    Console.WriteLine("ShortenRedirect: Unknown chunk - redirect to {0}", loginUrl);
+
+                return Redirect(loginUrl);
+                //throw new Exception("Error parsing Chunk");
             }
 
             return Redirect(redirect);

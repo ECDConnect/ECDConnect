@@ -98,18 +98,18 @@ export const CoachingAndVisitOrCallStep = ({
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
   const lastAttendedPqaVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(
-      practitionerId,
-      'pQASiteVisits',
-      'pqa_visit_follow_up'
-    )
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: 'pQASiteVisits',
+      followUpType: 'pqa_visit_follow_up',
+    })
   );
   const lastAttendedReAccreditationVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(
-      practitionerId,
-      'reAccreditationVisits',
-      're_accreditation_follow_up'
-    )
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: 'reAccreditationVisits',
+      followUpType: 're_accreditation_follow_up',
+    })
   );
   const currentPqaRating = useSelector(
     getCurrentPQaRatingByUserId(practitionerId)

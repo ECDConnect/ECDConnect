@@ -155,6 +155,7 @@ export function ViewUser(props: any) {
   const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
     useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
       variables: {
+        userId: '',
         healthCareWorkerId: '',
         startDate: '',
         endDate: '',
@@ -165,7 +166,8 @@ export function ViewUser(props: any) {
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
-        healthCareWorkerId: props.location.state.userId ?? userId,
+        userId: props.location.state.userId ?? userId,
+        healthCareWorkerId: null,
         startDate: selectedRange[0]?.toISOString() ?? startDate.toISOString(),
         endDate: selectedRange[1]?.toISOString() ?? endDate.toISOString(),
       },
@@ -875,7 +877,7 @@ export function ViewUser(props: any) {
                   <span className="text-successMain p-2 text-2xl">
                     {
                       summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalPregnantMoms
+                        ?.totalPregnantMomsWithNoIssues
                     }
                   </span>
                   pregnant moms are doing well & have no issues
@@ -884,7 +886,7 @@ export function ViewUser(props: any) {
                   <span className="text-successMain p-2 text-2xl">
                     {
                       summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalChildren
+                        ?.totalChildrenWithNoIssues
                     }
                   </span>
                   children are doing well & have no issues

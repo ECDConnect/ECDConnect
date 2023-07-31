@@ -142,11 +142,11 @@ export const VisitsTab: React.FC = () => {
         return 'completed';
       }
 
-      if (item.visitType?.normalizedName === 'Day 7') {
-        if (infantAgeDays < 7 || infantAgeDays > 13) {
-          return 'todo';
-        }
-      }
+      // if (item.visitType?.normalizedName === 'Day 7') {
+      //   if (infantAgeDays < 7 || infantAgeDays > 13) {
+      //     return 'todo';
+      //   }
+      // }
       if (
         (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
         isMissedVisit ||

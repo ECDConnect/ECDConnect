@@ -2821,10 +2821,12 @@ export type HcwSummary = {
   totalCaregiversAndChildrenWithIssues: Scalars['Int'];
   totalCaregiversAndChildrenWithUrgentIssues: Scalars['Int'];
   totalChildren: Scalars['Int'];
+  totalChildrenWithNoIssues: Scalars['Int'];
   totalClientsVisited: Scalars['Int'];
   totalFoldersOpened: Scalars['Int'];
   totalPregnantMoms: Scalars['Int'];
   totalPregnantMomsWithIssues: Scalars['Int'];
+  totalPregnantMomsWithNoIssues: Scalars['Int'];
   totalPregnantMomsWithUrgentIssues: Scalars['Int'];
   totalVisitsMissed: Scalars['Int'];
   totalVisitsOverdue: Scalars['Int'];
@@ -11065,6 +11067,7 @@ export type QueryHealthCareWorkerSummaryForPeriodArgs = {
   endDate?: InputMaybe<Scalars['DateTime']>;
   healthCareWorkerId?: InputMaybe<Scalars['String']>;
   startDate?: InputMaybe<Scalars['DateTime']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryHealthCareWorkerVisitStatusArgs = {

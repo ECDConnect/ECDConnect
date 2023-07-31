@@ -15,6 +15,7 @@ export interface AlertProps extends ComponentBaseProps {
   type: AlertType;
   title?: string;
   titleColor?: Colours;
+  customMessage?: ReactElement;
   message?: string;
   messageColor?: Colours;
   customIcon?: ReactElement;

@@ -171,3 +171,4 @@ packages/.vscode/settings.json
 /*.code-workspace
 
 _data
+/src/api/.idea/*

@@ -9,6 +9,7 @@ export const Alert: React.FC<AlertProps> = ({
   titleColor,
   message,
   messageColor,
+  customMessage,
   customIcon,
   list,
   className,
@@ -48,6 +49,7 @@ export const Alert: React.FC<AlertProps> = ({
                 color={messageColor || styles.alertTextColor(type, variant)}
               />
             )}
+            {customMessage}
             {list && (
               <ul className={styles.list + `text-${listColor}`}>
                 {list.map((item: string, index: number) => (

@@ -288,6 +288,7 @@ class PQAService {
               attended
               comment
               dueDate
+              insertedDate
               visitType {
                 type
                 order

@@ -79,10 +79,10 @@ export default function ContentManagement() {
                 width: '15%'
               }}
             >
-              {/* <SubNavigationLink
+            <SubNavigationLink
                 key={`${item.name}-${new Date().getTime()}`}
                 item={item}
-              ></SubNavigationLink> */}
+              ></SubNavigationLink> 
             </div>
           ))}
         </div>

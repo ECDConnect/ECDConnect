@@ -396,9 +396,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // Ratings
             timeline.PQARating1 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
+
+
             if (timeline.PQARating1.ActualVisitDate != null) { 
+
                 if (timeline.PQARating1.OverallRatingColor != MetricsColorEnum.Success.ToString())
                 {
+                    // todo: _visitDataManager.AddNextPQAVisit(Constants.SSSettings.visitType_pqa_visit_2, );
+
                     Visit visit2 = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_pqa_visit_2);
 
                     if (visit2 == null)
@@ -874,7 +879,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Visit visit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
             if (visit != null)
             {
-                if (visit.Attended == true)
+                if (visit.Attended == false)
+                {
+                    visit = _visitDataManager.MarkChecklistVisitStatus(visit.Id);
+                }
+
+                if (visit?.Attended == true)
                 {
                     timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
                     timeline.SmartSpaceChecklistColor = MetricsColorEnum.Success.ToString();
