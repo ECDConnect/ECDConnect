@@ -494,7 +494,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 // returning visits only applicable after infant was registered
                 allVisits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.VisitType.Type == Constants.GGSettings.client_child &&
-                (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date || x.DueDate.HasValue && x.DueDate.Value.Date >= x.Infant.InsertedDate.Date)).
+                (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                 OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_practitioner)
@@ -644,8 +644,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         {
             IQueryable<Visit> totalVisitsMissed = _visitRepo.GetAll()
                     .Where(x => x.Attended == false
-                    && x.PlannedVisitDate >= startDate.Date
-                    && x.PlannedVisitDate <= endDate.Date);
+                    && x.IsActive == true
+                    && x.DueDate >= x.Infant.InsertedDate
+                    && x.DueDate <= DateTime.UtcNow
+                    && (x.PlannedVisitDate >= startDate.Date
+                        && x.PlannedVisitDate <= endDate.Date));
 
             if (type == Constants.GGSettings.client_mother)
             {
@@ -673,8 +676,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // TODO: Performance impact of multiple joins:     
                     && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
             }
-
-            return totalVisitsMissed.Count(); ;
+            return totalVisitsMissed.Count();
         }
 
         public int GetTotalVisitsOverdueForPeriod(
@@ -729,6 +731,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
                     && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.Color == MetricsColorEnum.Error.ToString()
                     && vsd.IsActive
                     && vsd.VisitData.IsActive
                     && vsd.VisitData.Visit.IsActive
@@ -759,6 +762,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
                     && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.Color == MetricsColorEnum.Warning.ToString()
                     && vsd.IsActive
                     && vsd.VisitData.IsActive
                     && vsd.VisitData.Visit.IsActive
@@ -777,6 +781,38 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 .GroupBy(vsd => vsd.VisitData.Visit.Mother.Id)
                 .Count();
         }
+        
+        public int GetTotalPregnantMothersWithNoIssues(
+            string heathCareWorkerUserId,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            var allMothers = _visitDataStatusRepo.GetAll()
+                .Include(vsd => vsd.VisitData)
+                    .ThenInclude(vd => vd.Visit.Mother)
+                        .ThenInclude(m => m.HealthCareWorker)
+                .Where(vsd => vsd.IsActive == true
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && (vsd.Color == MetricsColorEnum.None.ToString()
+                        || vsd.Color == MetricsColorEnum.Success.ToString())
+                    && vsd.IsActive
+                    && vsd.VisitData.IsActive
+                    && vsd.VisitData.Visit.IsActive
+                    && vsd.VisitData.Visit.Mother.IsActive
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive
+                    );
+
+            if (startDate is not null)
+                allMothers = allMothers.Where(vsd => vsd.InsertedDate >= startDate);
+
+            if (endDate is not null)
+                allMothers = allMothers.Where(vsd => vsd.InsertedDate <= endDate);
+
+            return allMothers
+                .GroupBy(vsd => vsd.VisitData.Visit.Mother.Id)
+                .Count();
+        }
+
 
 
         public int GetTotalCaregiversAndChildrenWithUrgentIssues(
@@ -792,6 +828,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 .Where(vsd =>
                     vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
                     && vsd.VisitData.Visit.Attended == true
+                    && vsd.Color == MetricsColorEnum.Error.ToString()
                     && vsd.InsertedDate >= startDate
                     && vsd.InsertedDate <= endDate
                     && vsd.IsActive
@@ -823,8 +860,40 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 .Where(vsd =>
                     vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
                     && vsd.VisitData.Visit.Attended == true
+                    && vsd.Color == MetricsColorEnum.Warning.ToString()
                     && vsd.InsertedDate >= startDate
                     && vsd.InsertedDate <= endDate
+                    && vsd.IsActive
+                    && vsd.VisitData.IsActive
+                    && vsd.VisitData.Visit.IsActive
+                    && vsd.VisitData.Visit.Infant.IsActive
+                    && vsd.VisitData.Visit.Infant.Caregiver.IsActive
+                    && vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.IsActive
+                    && vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.User.IsActive)
+                .Select(x => x.VisitData.Visit.Infant.Id)
+                .Distinct()
+                .Count();
+
+            return totalCaregiversAndChildrenWithIssues;
+        }
+
+        public int GetTotalCaregiversAndChildrenWithNoIssues(
+            string heathCareWorkerUserId,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var totalCaregiversAndChildrenWithIssues = _visitDataStatusRepo.GetAll()
+                .Include(vsd => vsd.VisitData)
+                    .ThenInclude(vd => vd.Visit.Infant)
+                        .ThenInclude(m => m.Caregiver)
+                            .ThenInclude(m => m.HealthCareWorker)
+                .Where(vsd =>
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Attended == true
+                    && vsd.InsertedDate >= startDate
+                    && vsd.InsertedDate <= endDate
+                    && (vsd.Color == MetricsColorEnum.None.ToString()
+                        || vsd.Color == MetricsColorEnum.Success.ToString())
                     && vsd.IsActive
                     && vsd.VisitData.IsActive
                     && vsd.VisitData.Visit.IsActive

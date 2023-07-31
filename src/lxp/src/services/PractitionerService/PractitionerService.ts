@@ -119,6 +119,7 @@ class PractitionerService {
                 attended
                 comment
                 dueDate
+                insertedDate
                 visitType {
                   type
                   order
