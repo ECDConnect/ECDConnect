@@ -4,7 +4,7 @@ import {
   ProgrammeDetails,
   ProgrammeObservations,
 } from './pre-pqa-visits';
-import { CoachingAndVisitOrCallStep } from './general-support-visit';
+import { CoachingAndVisitOrCallStep } from './general-support-visit/coaching-visit-or-call';
 import {
   Step1,
   Step2,
