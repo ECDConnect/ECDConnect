@@ -106,7 +106,9 @@ export const setStep = (
         (stepCompleted &&
           status !== consolidationMeetingScheduled &&
           status !== consolidationMeetingAttended) ||
-        nextStep === status
+        nextStep === status ||
+        (consolidationMeetingAttended && status === 'Get community support') ||
+        (consolidationMeetingAttended && status === 'Register 3 children')
           ? true
           : false,
       actionButtonText: stepCompleted ? 'View' : nextStepButtontext(status),
