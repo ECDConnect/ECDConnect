@@ -800,8 +800,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     && vsd.VisitData.Visit.IsActive
                     && vsd.VisitData.Visit.Mother.IsActive
                     && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive
-                    // Things that have been painted warning color are not as urgent as the ones painted an error color...
-                    && vsd.Color == MetricsColorEnum.Warning.ToString());
+                    );
 
             if (startDate is not null)
                 allMothers = allMothers.Where(vsd => vsd.InsertedDate >= startDate);
