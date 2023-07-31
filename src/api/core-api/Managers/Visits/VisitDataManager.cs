@@ -2,6 +2,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -9,6 +10,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.PTG;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -225,18 +227,37 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().Count();
-            if (count == 4)
+            var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().ToList();
+            if (completedSections.Count == 4)
+            {
+                MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
+            }
+            return true;
+        }
+        public Visit MarkChecklistVisitStatus(Guid visitId)
+        {
+            var programme = "Programme details";
+            var health = "Health, sanitation & safety";
+            var safety = "Safety - structure, space & area";
+            var space = "Space & emergency planning";
+
+            int programmeCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == programme).Count();
+            int healthCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == health && x.QuestionAnswer == "true").Count();
+            int safetyCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == safety && x.QuestionAnswer == "true").Count();
+            int spaceCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == space && x.QuestionAnswer == "true").Count();
+
+            if (programmeCount > 6 && healthCount == 7 && safetyCount == 10 && spaceCount == 4)
             {
                 // update the visit record to show attended/completed 
-                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
+                var entityToUpdate = _visitRepo.GetById(visitId);
                 entityToUpdate.UpdatedDate = DateTime.Now;
                 entityToUpdate.UpdatedBy = _applicationUserId;
                 entityToUpdate.Attended = true;
                 entityToUpdate.ActualVisitDate = DateTime.Now;
-                _visitRepo.Update(entityToUpdate);
+                return _visitRepo.Update(entityToUpdate);
             }
-                return true;
+
+            return null;
         }
 
         public Boolean AddCoachData(CMSVisitDataInputModel input)
@@ -302,6 +323,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
             }
+
+            if (input.VisitData.VisitName == Constants.SSSettings.smart_space_checklist)
+            {
+                var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().ToList();
+                if (completedSections.Count == 4)
+                {
+                    MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
+                }
+            }
+
             return true;
         }
 
@@ -452,24 +483,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (visit_type == "")
             {
-                PQAVisit =
-                    (
-                        from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
-                                                                        (y.Name == Constants.SSSettings.visitType_pqa_visit_1 ||
-                                                                         y.Name == Constants.SSSettings.visitType_pqa_visit_2 ||
-                                                                         y.Name == Constants.SSSettings.visitType_pqa_visit_3)) on visit.VisitTypeId equals visitType.Id
-                        select visit
+                PQAVisit =  _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && 
+                    (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_2 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_3)
                     ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
             } else
             {
-                PQAVisit =
-                    (
-                        from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
-                                                                        (y.Name == visit_type)) on visit.VisitTypeId equals visitType.Id
-                        select visit
-                    ).FirstOrDefault();
+                PQAVisit = _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.VisitType.Name == visit_type).FirstOrDefault();
+                var followUpForType = _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && 
+                                                                x.VisitType.Type == Constants.SSSettings.client_practitioner && 
+                                                                x.LinkedVisitId == PQAVisit.Id &&
+                                                                x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
+                if (followUpForType.Count > 0)
+                {
+                    PQAVisit = followUpForType.OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+                } 
             }
 
             if (PQAVisit != null) { 
@@ -643,6 +670,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             return rating;
+        }
+
+        public bool AddNextPQAVisit(string nextVisitType, string color)
+        {
+            return true;
         }
         public PQARating GetPractitionerReAccreditationRating(string userId, string visit_type = "") {
 
