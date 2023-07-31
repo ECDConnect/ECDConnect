@@ -138,37 +138,40 @@ public class IntegrationAPIManager
             RemoteChangesList changes = new RemoteChangesList();
             var remoteLogs = await GetColumnChangesBetweenDates(startDate, endDate);
             string[] excludes = { "Caregiver" };
-            foreach (var change in remoteLogs)
+            if (remoteLogs != null)
             {
-                UpdateLocalEntity updateEntity = new UpdateLocalEntity()
+                foreach (var change in remoteLogs)
                 {
-                    Guid = change.RecordChange.RecordGuid,
-                    RelatedGuid = change.RecordChange.RelatedEntityGuid,
-                    RelatedEntityType = change.RecordChange.RelatedEntityType,  //related is always the parent
-                    EntityColumn = change.Column,
-                    EntityType = change.Entity,
-                    LastUpdatedDateTime = change.DateTimeStamp,
-                    NewData = change.NewValue
-                };
-                switch (change.RecordChange.ChangeType)
-                {
-                    case SLChangeType.Delete:
-                    case SLChangeType.Deactivate:
-                        changes.Deletes.Add(updateEntity);
-                        break;
-                    case SLChangeType.Update:
-                        changes.Updates.Add(updateEntity);
-                        break;
-                    case SLChangeType.Insert:
-                    case SLChangeType.Create:
-                        if (!changes.Inserts.Where(x => string.Equals(x.Guid, updateEntity.Guid) && string.Equals(x.EntityType, updateEntity.EntityType)).Any())
-                        {  //do not insert inserts of the same kind and ids
-                            //exclude any entities in the xclude list from being added, they are usually associated
-                            if (!excludes.Contains(updateEntity.EntityType))
-                                changes.Inserts.Add(updateEntity);
-                        }
-                        break;
+                    UpdateLocalEntity updateEntity = new UpdateLocalEntity()
+                    {
+                        Guid = change.RecordChange.RecordGuid,
+                        RelatedGuid = change.RecordChange.RelatedEntityGuid,
+                        RelatedEntityType = change.RecordChange.RelatedEntityType,  //related is always the parent
+                        EntityColumn = change.Column,
+                        EntityType = change.Entity,
+                        LastUpdatedDateTime = change.DateTimeStamp,
+                        NewData = change.NewValue
+                    };
+                    switch (change.RecordChange.ChangeType)
+                    {
+                        case SLChangeType.Delete:
+                        case SLChangeType.Deactivate:
+                            changes.Deletes.Add(updateEntity);
+                            break;
+                        case SLChangeType.Update:
+                            changes.Updates.Add(updateEntity);
+                            break;
+                        case SLChangeType.Insert:
+                        case SLChangeType.Create:
+                            if (!changes.Inserts.Where(x => string.Equals(x.Guid, updateEntity.Guid) && string.Equals(x.EntityType, updateEntity.EntityType)).Any())
+                            {  //do not insert inserts of the same kind and ids
+                               //exclude any entities in the xclude list from being added, they are usually associated
+                                if (!excludes.Contains(updateEntity.EntityType))
+                                    changes.Inserts.Add(updateEntity);
+                            }
+                            break;
 
+                    }
                 }
             }
              return changes;

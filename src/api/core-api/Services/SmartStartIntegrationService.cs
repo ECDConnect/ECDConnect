@@ -712,12 +712,13 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationUpdates()
     {
+        int historyDays = 2;
         bool returnOK = false;
         _mappedEntities = await GetMappedEntities();
         _mappedColumns = await GetMappedColumns();
 
-        RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(-2), DateTime.Now);
-
+        RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays*-1), DateTime.Now);
+        
         if (changedColumns != null)
         {
             //run all inserts
@@ -758,11 +759,11 @@ public class SmartStartIntegrationService : IIntegrationService
                 foreach (var item in ids)
                 {
                     //Deletes
-                    await PushDeletes(item.Id.ToString(), 2);
+                    await PushDeletes(item.Id.ToString(), historyDays);
                     //Inserts
-                    await PushInserts(item.Id.ToString(), 2);
+                    await PushInserts(item.Id.ToString(), historyDays);
                     //Updates & Deactivates
-                    await PushUpdates(item.Id.ToString(), 2);
+                    await PushUpdates(item.Id.ToString(), historyDays);
                     returnOK = true;
                 }
             }

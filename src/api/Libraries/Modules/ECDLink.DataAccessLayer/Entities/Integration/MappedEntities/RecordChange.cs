@@ -12,6 +12,9 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public SLChangeType ChangeType { get; set; }
         public DateTime DateTimeStamp { get; set; }
         public string Status { get; set; }
+        public string RequestIndex { get; set; }
+        public string HttpStatusCode { get; set; }
+        public string Exception { get; set; }
 
     }
 }

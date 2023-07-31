@@ -12,6 +12,10 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public string NewValue { get; set; }
         public string Entity { get; set; }                
         public string Status { get; set; }
+        public string RequestIndex { get; set; }
+        public string HttpStatusCode { get; set; }
+        public string Exception { get; set; }
+
 
     }
 }
