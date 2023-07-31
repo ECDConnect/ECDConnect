@@ -14,6 +14,7 @@ import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import { classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
+import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -154,7 +155,18 @@ export function ContentManagement() {
               ))}
             </div>
           )}
-          <div className=" lg:min-w-0 lg:flex-1">
+
+
+          {(selectedType && languages?.GetAllLanguage && selectedContent) ? (
+            <ContentWorkflow
+              optionDefinitions={dataDefinitions.contentDefinitions}
+              contentView={selectedContent}
+              contentType={selectedType}
+              languages={languages.GetAllLanguage}
+              goBack={() => setSelectedContent(undefined)}
+              savedContent={() => refreshParent()}
+            />
+          ) : <div className=" lg:min-w-0 lg:flex-1">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
               <div
                 className="relative h-full rounded-xl bg-white p-12"
@@ -171,7 +183,7 @@ export function ContentManagement() {
                 )}
               </div>
             </div>
-          </div>{' '}
+          </div>}
         </>
       ) : (
         <ContentLoader />
