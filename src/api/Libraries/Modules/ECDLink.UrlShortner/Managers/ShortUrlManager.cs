@@ -32,15 +32,25 @@ namespace ECDLink.UrlShortner.Managers
             return WebEncoders.Base64UrlEncode(id.ToByteArray());
         }
 
-        private Guid GetId(string urlChunk)
+        private Guid? GetId(string urlChunk)
         {
+            if (string.IsNullOrEmpty(urlChunk)) return null;
             // Reverse our short url text back into an interger Id
-            return new Guid(WebEncoders.Base64UrlDecode(urlChunk));
+
+            try
+            {
+                return new Guid(WebEncoders.Base64UrlDecode(urlChunk));
+            }
+            catch (Exception)
+            {
+                return null;
+            }
         }
 
         public string GetRedirectFromChunk(string urlChunk)
         {
             var id = GetId(urlChunk);
+            if (id == null) return null;
 
             var shortUrl = _entities.SingleOrDefault(s => s.Id == id);
 

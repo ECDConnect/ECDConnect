@@ -22,11 +22,16 @@ namespace ECDLink.UrlShortner.Controllers
         public IActionResult ShortenRedirect([FromRoute] string chunk)
         {
             var redirect = _manager.GetRedirectFromChunk(chunk);
-            var loginUrl = _options.Value.Login;
 
             if (string.IsNullOrWhiteSpace(redirect))
             {
-                Console.WriteLine("Error parsing chunk - redirect to Login");
+                var loginUrl = _options.Value.Login;
+
+                if (redirect == null)
+                    Console.WriteLine("ShortenRedirect: Error parsing chunk - redirect to {0}", loginUrl);
+                else
+                    Console.WriteLine("ShortenRedirect: Unknown chunk - redirect to {0}", loginUrl);
+
                 return Redirect(loginUrl);
                 //throw new Exception("Error parsing Chunk");
             }
