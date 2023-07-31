@@ -26,14 +26,13 @@ import { Maybe } from 'graphql/jsutils/Maybe';
 import { currentActivityKey, visitIdKey } from '../..';
 import { addDays } from 'date-fns';
 import { followUpDeadline, getRatingData } from '../../../timeline/utils';
-
-export const visitOrCallQuestion =
-  'Did you visit the practitioner’s site, or did you have a support phone call?';
-export const callAnswer = 'Call';
-export const reAccreditationFollowUpQuestion =
-  'Is {client} ready for a follow-up reaccreditation visit?';
-export const supportVisitSharedQuestion = 'What next steps did you agree on?';
-export const supportVisitQuestion2 = 'The focus of this coaching visit was:';
+import {
+  callAnswer,
+  reAccreditationFollowUpQuestion,
+  supportVisitQuestion2,
+  supportVisitSharedQuestion,
+  visitOrCallQuestion,
+} from './constants';
 
 export const CoachingAndVisitOrCallStep = ({
   isView,

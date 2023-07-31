@@ -29,13 +29,17 @@ import {
   CmsVisitSectionInput,
   FollowUpVisitModelInput,
   InputMaybe,
+  ReAccreditationVisitModelInput,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import { useAppDispatch } from '@/store';
-import { callAnswer, visitOrCallQuestion } from './general-support-visit';
+import {
+  callAnswer,
+  visitOrCallQuestion,
+} from './general-support-visit/coaching-visit-or-call/constants';
 import {
   step11VisitSection,
   step16Question1,
@@ -143,6 +147,11 @@ export const Form = ({
   const newPqaVisit = timeline?.pQASiteVisits?.find(
     (item) =>
       !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
+  );
+  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
+    (item) =>
+      !item?.attended &&
+      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
   );
 
   const pqaRating1 = timeline?.pQARating1;
@@ -440,7 +449,10 @@ export const Form = ({
         plannedVisitDate: new Date(),
         // TODO: add schedule option
         attended: true,
-        linkedVisitId: newPqaVisit?.id,
+        linkedVisitId:
+          type === 'pqa-follow-up-visit'
+            ? newPqaVisit?.id
+            : newReAccreditationVisit?.id,
         followUpData: payload,
       };
 
@@ -457,10 +469,11 @@ export const Form = ({
       }
     },
     [
-      newPqaVisit?.id,
-      onSubmitFollowUpVisit,
-      onSubmitSupportVisit,
       practitionerId,
+      newPqaVisit?.id,
+      newReAccreditationVisit,
+      onSubmitSupportVisit,
+      onSubmitFollowUpVisit,
     ]
   );
 
@@ -518,13 +531,17 @@ export const Form = ({
 
   const onSubmitReAccreditation = useCallback(
     async ({ payload }: SubmitProps) => {
+      const content: ReAccreditationVisitModelInput = {
+        reAccreditationData: payload,
+      };
+
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 're-accreditation',
         })
       );
-      await appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
+      await appDispatch(pqaThunkActions.addReAccreditationVisitData(content));
 
       if (!isBasicSmartSpaceStandardsCompleted) {
         // TODO: add schedule feature
