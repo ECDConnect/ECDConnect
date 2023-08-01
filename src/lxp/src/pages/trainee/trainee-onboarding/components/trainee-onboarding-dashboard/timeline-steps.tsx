@@ -79,7 +79,6 @@ export const setStep = (
   onView?: (text: string) => void,
   nextStep?: string
 ) => {
-  console.log({ status });
   const lincenceReceveid = 'Starter Licence received';
   const smartSpaceLincenceReceveid = 'SmartSpace Licence received';
   const consolidationMeetingScheduled = 'Consolidation meeting scheduled';

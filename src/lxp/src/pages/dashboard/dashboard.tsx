@@ -521,7 +521,19 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin) {
+  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+    dashboardItems.splice(1, 0, {
+      title: 'Business',
+      titleIcon: 'BriefcaseIcon',
+      titleIconClassName: styles.businessIcon,
+      onActionClick: () => {
+        goToBusiness();
+      },
+      classNames: 'bg-uiBg',
+    });
+  }
+
+  if (isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',
@@ -594,6 +606,10 @@ export const Dashboard: React.FC = () => {
       return;
     }
     if (isTrainee) {
+      if (practitioner?.setupTraineeInitiated) {
+        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+        return;
+      }
       history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       return;
     }
