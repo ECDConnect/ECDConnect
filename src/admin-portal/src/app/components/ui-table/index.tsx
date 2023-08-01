@@ -174,7 +174,7 @@ export default function UiTable(
   const viewSelectedRow = (selectedRow: any) => {
     localStorage.setItem(
       'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
+      selectedRow?.userId ?? selectedRow.user?.id ?? selectedRow?.id
     );
 
     history.push({

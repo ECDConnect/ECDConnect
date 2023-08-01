@@ -167,7 +167,10 @@ export function ViewUser(props: any) {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
         userId: props.location.state.userId ?? userId,
-        healthCareWorkerId: null,
+        healthCareWorkerId:
+          chwData?.GetHealthCareWorkerById?.user?.id ??
+          props.location.state.userId ??
+          userId,
         startDate: selectedRange[0]?.toISOString() ?? startDate.toISOString(),
         endDate: selectedRange[1]?.toISOString() ?? endDate.toISOString(),
       },
