@@ -739,27 +739,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 />
               </Button>
             </div>
-            <div>
-              <Button
-                type="outlined"
-                color="primary"
-                className={styles.button}
-                disabled={
-                  !isValid || Boolean(checkedquestion(questions?.[0].question))
-                }
-                onClick={() => {
-                  setVisitSection(visitSection);
-                  onSubmit();
-                }}
-              >
-                {renderIcon('SaveIcon', styles.icon)}
-                <Typography
-                  type={'help'}
-                  text={'Save & exit'}
-                  color={'primary'}
-                />
-              </Button>
-            </div>
           </div>
         </div>
       </BannerWrapper>
