@@ -158,9 +158,6 @@ public class IntegrationAPIManager
                         case SLChangeType.Deactivate:
                             changes.Deletes.Add(updateEntity);
                             break;
-                        case SLChangeType.Update:
-                            changes.Updates.Add(updateEntity);
-                            break;
                         case SLChangeType.Insert:
                         case SLChangeType.Create:
                             if (!changes.Inserts.Where(x => string.Equals(x.Guid, updateEntity.Guid) && string.Equals(x.EntityType, updateEntity.EntityType)).Any())
@@ -170,7 +167,9 @@ public class IntegrationAPIManager
                                     changes.Inserts.Add(updateEntity);
                             }
                             break;
-
+                        default:
+                            changes.Updates.Add(updateEntity);
+                            break;
                     }
                 }
             }

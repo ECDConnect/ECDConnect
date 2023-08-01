@@ -9,7 +9,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public string RecordGuid { get; set; }
         public string RelatedEntityGuid { get; set; }
         public string RelatedEntityType { get; set; }
-        public SLChangeType ChangeType { get; set; }
+        public SLChangeType? ChangeType { get; set; } = SLChangeType.Update; 
         public DateTime DateTimeStamp { get; set; }
         public string Status { get; set; }
         public string RequestIndex { get; set; }

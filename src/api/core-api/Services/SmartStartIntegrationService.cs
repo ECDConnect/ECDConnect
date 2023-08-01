@@ -718,7 +718,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _mappedColumns = await GetMappedColumns();
 
         RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays*-1), DateTime.Now);
-        
+
         if (changedColumns != null)
         {
             //run all inserts
