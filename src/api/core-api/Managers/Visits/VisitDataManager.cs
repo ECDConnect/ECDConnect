@@ -471,35 +471,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return status;
         }
-        public PQARating GetPractitionerPQARating(string userId, string visit_type = "")
+        public PQARating GetPractitionerPQARating(Visit pqaVisit)
         {
             int totalSections = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
                                 Constants.SSSettings.step6_total + Constants.SSSettings.step7_total + Constants.SSSettings.step8_total;
             var totalScores = 0.0;
             var rating = new PQARating();
-            Visit PQAVisit = new Visit();
 
-            if (visit_type == "")
-            {
-                PQAVisit =  _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && 
-                    (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_2 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_3)
-                    ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
-            } else
-            {
-                PQAVisit = _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.VisitType.Name == visit_type).FirstOrDefault();
-                var followUpForType = _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && 
-                                                                x.VisitType.Type == Constants.SSSettings.client_practitioner && 
-                                                                x.LinkedVisitId == PQAVisit.Id &&
-                                                                x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
-                if (followUpForType.Count > 0)
-                {
-                    PQAVisit = followUpForType.OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-                } 
-            }
+            if (pqaVisit != null) {
 
-            if (PQAVisit != null) { 
-
-            List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == PQAVisit.Id).ToList();
+                rating.VisitTypeName = pqaVisit.VisitType.Name;
+                List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == pqaVisit.Id).ToList();
 
                 if (vData.Count > 0)
                 {
@@ -669,43 +651,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return rating;
         }
-
-        public bool AddNextPQAVisit(string nextVisitType, string color)
-        {
-            return true;
-        }
-        public PQARating GetPractitionerReAccreditationRating(string userId, string visit_type = "") {
+        
+        public PQARating GetPractitionerReAccreditationRating(Visit RAVisit) {
 
             PQARating rating = new PQARating();
 
             int totalSections = Constants.SSSettings.re_accreditation_A_total + Constants.SSSettings.re_accreditation_B_total +
                                 Constants.SSSettings.re_accreditation_C_total + Constants.SSSettings.re_accreditation_D_total;
             var totalScores = 0.0;
-
-            Visit RAVisit = new Visit();
-
-            if (visit_type == "")
-            {
-                RAVisit =
-                (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && 
-                                                                    (y.Name == Constants.SSSettings.visitType_re_accreditation_1 ||
-                                                                     y.Name == Constants.SSSettings.visitType_re_accreditation_2 ||
-                                                                     y.Name == Constants.SSSettings.visitType_re_accreditation_3)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
-
-            } else
-            {
-                RAVisit =
-                (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
-                                                                    (y.Name == visit_type)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
-            }
 
             if (RAVisit != null)
             {

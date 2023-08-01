@@ -54,6 +54,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public virtual ICollection<Visit> RequestedCoachVisits { get; set; }
         public virtual ICollection<PractitionerCoachCircle> CoachCircles { get; set; }
         public virtual ICollection<ClubMeetingRegister> ClubMeetings { get; set; }
+        public virtual ICollection<PQARating> PQARatings { get; set; }
+        public virtual ICollection<PQARating> ReAccreditationRatings { get; set; }
         public virtual PQARating PQARating1 { get; set; }
         public virtual PQARating PQARating2 { get; set; }
         public virtual PQARating PQARating3 { get; set; }
@@ -69,6 +71,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string OverallRating { get; set; }
         public string OverallRatingStars { get; set; }
         public string OverallRatingColor { get; set; }
+        public string VisitTypeName { get; set; }
         public DateTime? PlannedDate { get; set; }
         public DateTime? ActualVisitDate { get; set; }
         public virtual ICollection<PQARatingChild> Children { get; set; }

@@ -3859,6 +3859,13 @@ export type ListFilterInputTypeOfPqaRatingChildFilterInput = {
   some?: InputMaybe<PqaRatingChildFilterInput>;
 };
 
+export type ListFilterInputTypeOfPqaRatingFilterInput = {
+  all?: InputMaybe<PqaRatingFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<PqaRatingFilterInput>;
+  some?: InputMaybe<PqaRatingFilterInput>;
+};
+
 export type ListFilterInputTypeOfPointsLibraryFilterInput = {
   all?: InputMaybe<PointsLibraryFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -7051,6 +7058,7 @@ export type PqaRating = {
   overallScore: Scalars['Float'];
   plannedDate?: Maybe<Scalars['DateTime']>;
   visitName?: Maybe<Scalars['String']>;
+  visitTypeName?: Maybe<Scalars['String']>;
 };
 
 export type PqaRatingChild = {
@@ -7088,6 +7096,7 @@ export type PqaRatingFilterInput = {
   overallScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
   plannedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   visitName?: InputMaybe<StringOperationFilterInput>;
+  visitTypeName?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type PqaRatingInput = {
@@ -7099,6 +7108,7 @@ export type PqaRatingInput = {
   overallScore: Scalars['Float'];
   plannedDate?: InputMaybe<Scalars['DateTime']>;
   visitName?: InputMaybe<Scalars['String']>;
+  visitTypeName?: InputMaybe<Scalars['String']>;
 };
 
 export type PqaRatingSortInput = {
@@ -7109,6 +7119,7 @@ export type PqaRatingSortInput = {
   overallScore?: InputMaybe<SortEnumType>;
   plannedDate?: InputMaybe<SortEnumType>;
   visitName?: InputMaybe<SortEnumType>;
+  visitTypeName?: InputMaybe<SortEnumType>;
 };
 
 export type PqaSortInput = {
@@ -7752,6 +7763,7 @@ export type PractitionerTimeline = {
   pQARating1?: Maybe<PqaRating>;
   pQARating2?: Maybe<PqaRating>;
   pQARating3?: Maybe<PqaRating>;
+  pQARatings?: Maybe<Array<Maybe<PqaRating>>>;
   pQASiteVisits?: Maybe<Array<Maybe<Visit>>>;
   practiceLicenseColor?: Maybe<Scalars['String']>;
   practiceLicenseDate?: Maybe<Scalars['DateTime']>;
@@ -7766,6 +7778,7 @@ export type PractitionerTimeline = {
   reAccreditationRating1?: Maybe<PqaRating>;
   reAccreditationRating2?: Maybe<PqaRating>;
   reAccreditationRating3?: Maybe<PqaRating>;
+  reAccreditationRatings?: Maybe<Array<Maybe<PqaRating>>>;
   reAccreditationVisits?: Maybe<Array<Maybe<Visit>>>;
   requestedCoachVisits?: Maybe<Array<Maybe<Visit>>>;
   selfAssessmentColor?: Maybe<Scalars['String']>;
@@ -7800,6 +7813,7 @@ export type PractitionerTimelineFilterInput = {
   pQARating1?: InputMaybe<PqaRatingFilterInput>;
   pQARating2?: InputMaybe<PqaRatingFilterInput>;
   pQARating3?: InputMaybe<PqaRatingFilterInput>;
+  pQARatings?: InputMaybe<ListFilterInputTypeOfPqaRatingFilterInput>;
   pQASiteVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
   practiceLicenseColor?: InputMaybe<StringOperationFilterInput>;
   practiceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -7814,6 +7828,7 @@ export type PractitionerTimelineFilterInput = {
   reAccreditationRating1?: InputMaybe<PqaRatingFilterInput>;
   reAccreditationRating2?: InputMaybe<PqaRatingFilterInput>;
   reAccreditationRating3?: InputMaybe<PqaRatingFilterInput>;
+  reAccreditationRatings?: InputMaybe<ListFilterInputTypeOfPqaRatingFilterInput>;
   reAccreditationVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
   requestedCoachVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
   selfAssessmentColor?: InputMaybe<StringOperationFilterInput>;
@@ -7846,6 +7861,7 @@ export type PractitionerTimelineInput = {
   pQARating1?: InputMaybe<PqaRatingInput>;
   pQARating2?: InputMaybe<PqaRatingInput>;
   pQARating3?: InputMaybe<PqaRatingInput>;
+  pQARatings?: InputMaybe<Array<InputMaybe<PqaRatingInput>>>;
   pQASiteVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
   practiceLicenseColor?: InputMaybe<Scalars['String']>;
   practiceLicenseDate?: InputMaybe<Scalars['DateTime']>;
@@ -7860,6 +7876,7 @@ export type PractitionerTimelineInput = {
   reAccreditationRating1?: InputMaybe<PqaRatingInput>;
   reAccreditationRating2?: InputMaybe<PqaRatingInput>;
   reAccreditationRating3?: InputMaybe<PqaRatingInput>;
+  reAccreditationRatings?: InputMaybe<Array<InputMaybe<PqaRatingInput>>>;
   reAccreditationVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
   requestedCoachVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
   selfAssessmentColor?: InputMaybe<Scalars['String']>;
