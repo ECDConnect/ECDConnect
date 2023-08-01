@@ -127,6 +127,7 @@ export default function HealthCareWorkers() {
         currentPage,
         pageSize
       ),
+      fetchPolicy: 'network-only',
     });
   }, [
     provinceFilter,
