@@ -71,7 +71,7 @@ export default function ContentCompare({
 
   if (contentView && languages && currentContent) {
     return (
-      <div className="bg-uiMidDark lg:min-w-0 lg:flex-1">
+      <div className="bg-infoBb lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div className="relative h-full" style={{ minHeight: '36rem' }}>
             <div className="pb-5 sm:flex sm:items-center sm:justify-between">

@@ -245,7 +245,7 @@ export default function ContentList({
                     <button
                       onClick={() => displayCreatePanel()}
                       type="button"
-                      className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                      className="bg-uiMid hover:bg-secondary focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                     >
                       Create {camelCaseToSentanceCase(contentType.name)}
                     </button>

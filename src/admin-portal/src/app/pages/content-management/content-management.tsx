@@ -39,12 +39,15 @@ export function ContentManagement() {
   );
 
   useEffect(() => {
+    console.log(">>>>", dataTypes)
+
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
       setSelectedType(dataTypes.contentTypes[0]);
     } else if (dataTypes && dataTypes.contentTypes && selectedType) {
       const currentSelectedContent = dataTypes.contentTypes.find(
         (x) => x.id === selectedType.id
       );
+
       setSelectedType(currentSelectedContent);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -136,7 +139,7 @@ export function ContentManagement() {
       {dataTypes ? (
         <>
           {!selectedContent && (
-            <div className="flex flex-row bg-white">
+            <div className="flex flex-row bg-white justify-center w-full">
               {dataTypes?.contentTypes?.map((item: ContentTypeDto) => (
                 <div
                   key={item.id}
