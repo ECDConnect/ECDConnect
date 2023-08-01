@@ -394,7 +394,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
 
   if (
     completedHealthSanitationItems !== undefined &&
-    completedHealthSanitationItems! < 6
+    completedHealthSanitationItems! < 7
   ) {
     notificationItems.push({
       showIcon: true,
@@ -504,15 +504,8 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   }
 
   const allStepsCompleteFromDashboard = useMemo(
-    () =>
-      traineeCurrentVisit?.id &&
-      notificationItems?.length === 0 &&
-      notificationItemsLaterStage?.length === 0,
-    [
-      notificationItems?.length,
-      notificationItemsLaterStage?.length,
-      traineeCurrentVisit?.id,
-    ]
+    () => traineeCurrentVisit?.id && notificationItems?.length === 0,
+    [notificationItems?.length, traineeCurrentVisit?.id]
   );
 
   return activeStep !== SmartSpaceChecklisstStepsSteps.INITIAL ? (
@@ -579,7 +572,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             listItems={notificationItems}
             type={'MenuList'}
           />
-          {!allStepsCompleteFromDashboard && (
+          {notificationItemsLaterStage?.length > 0 && (
             <Typography
               className={'my-3'}
               color={'textDark'}

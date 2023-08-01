@@ -61,6 +61,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     ownTheProperty,
     unproclaimedLand,
     liveAtTheProperty,
+    r4bPhoto,
   } = useWatch<ProgrammeDetailsModel>({
     control: programmeFormControl,
     defaultValue: {},
@@ -133,6 +134,18 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     },
   ]);
   const visitSection = 'Programme details';
+
+  const completedItems = visitData
+    ?.filter((item) => item?.visitSection === visitSection)
+    .filter(
+      (item) =>
+        item?.questionAnswer === 'true' ||
+        (item?.questionAnswer !== ' ' &&
+          item?.questionAnswer !== 'false' &&
+          item?.questionAnswer !== '')
+    );
+
+  const disableSection = completedItems?.length === 7;
 
   const checkedquestion = (question: string) => {
     const isChecked = visitData?.find((item) => item?.question === question);
@@ -219,24 +232,61 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
       );
     }
 
-    if (checkedquestion(questions?.[5].question)?.questionAnswer) {
+    if (checkedquestion(questions?.[5]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'haveTheTitleDeeds',
         Boolean(checkedquestion(questions?.[5].question)?.questionAnswer)
       );
     }
 
-    if (checkedquestion(questions?.[6].question)?.questionAnswer) {
+    if (checkedquestion(questions?.[6]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'unproclaimedLand',
         Boolean(checkedquestion(questions?.[6].question)?.questionAnswer)
       );
     }
 
-    if (checkedquestion(questions?.[7].question)?.questionAnswer) {
+    if (checkedquestion(questions?.[7]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'r4bPhoto',
-        checkedquestion(questions?.[7].question)?.questionAnswer!
+        checkedquestion(questions?.[7]?.question)?.questionAnswer!
+      );
+
+      setR4bPhotoUrl(
+        checkedquestion(questions?.[7]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[8]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[8]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[9]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[9]?.question)?.questionAnswer!
+      );
+    }
+    if (checkedquestion(questions?.[10]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[10].question)?.questionAnswer!
+      );
+    }
+    if (checkedquestion(questions?.[11]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[11]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[12]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[12].question)?.questionAnswer!
       );
     }
   }, []);
@@ -306,6 +356,15 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
             color={'textDark'}
             className={'my-3'}
           />
+
+          {disableSection && (
+            <Alert
+              className="my-4"
+              type="warning"
+              title="You are viewing this form and cannot edit responses."
+              list={['This form should be filled in by the trainee.']}
+            />
+          )}
           <Typography
             type={'h4'}
             text={'Child protection and confidentiality'}
@@ -712,7 +771,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   setProgrammeFormValue('r4bPhoto', imageString);
                   triggerR4bForm();
                 }}
-                disabled={Boolean(checkedquestion(questions?.[8].question))}
+                // disabled={Boolean(checkedquestion(questions?.[8].question))}
               ></ImageInput>
             </>
           )}
@@ -766,11 +825,11 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         stretch
       >
         <div
-          className={`p-4 ${
-            Boolean(checkedquestion(questions?.[6].question))
-              ? 'pointer-events-none'
-              : ''
-          }`}
+        // className={`p-4 ${
+        //   Boolean(checkedquestion(questions?.[6].question))
+        //     ? 'pointer-events-none'
+        //     : ''
+        // }`}
         >
           <PhotoPrompt
             title={'Upload image'}
