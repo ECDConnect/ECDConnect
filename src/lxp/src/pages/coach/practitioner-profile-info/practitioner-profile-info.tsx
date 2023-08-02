@@ -147,7 +147,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       },
       text: '1',
       onActionClick: () =>
-        !onboardingNotCompleted
+        onboardingNotCompleted
           ? setShowTraineeDashboard(true)
           : history.push(
               ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
