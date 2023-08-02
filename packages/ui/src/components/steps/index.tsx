@@ -182,13 +182,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                     )}
                 </div>
               </div>
-              <div
-                style={
-                  item.showActionButton
-                    ? { width: '44%' }
-                    : { width: isOpen ? '70%' : '87%' }
-                }
-              >
+              <div style={{ width: isOpen ? '70%' : '87%' }} className="">
                 <Typography
                   type="body"
                   align="left"
@@ -211,7 +205,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                 {item.showAccordion && isOpen && item.accordionContent}
               </div>
               {item.showActionButton && (
-                <div className="flex w-32 justify-end">
+                <div className="absolute right-0 flex w-32 justify-end">
                   <Button
                     type={item?.actionButtonType || 'filled'}
                     color={item.actionButtonColor || 'primary'}

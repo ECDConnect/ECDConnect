@@ -172,7 +172,12 @@ export const CoachPractitionerJourney = () => {
       (item) => item.question === reAccreditationFollowUpQuestion
     )?.questionAnswer;
 
-  const pqaRating3 = timeline?.pQARating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating3 = pqaRatings?.[2];
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentPqaFollowUpDeadline = pqaRating3?.overallRating
