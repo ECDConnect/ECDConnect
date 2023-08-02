@@ -6,6 +6,7 @@ import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
   GetTenantContext,
+  SortEnumType,
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
@@ -15,6 +16,7 @@ import ContentList from './sub-pages/content-list/content-list';
 import { classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
+import { SearchIcon } from '@heroicons/react/solid';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -132,6 +134,35 @@ export function ContentManagement() {
     refrechDefinitions();
   };
 
+  const getVariables = (
+    search: string,
+    sortDescending: boolean,
+    currentPage: number,
+    pageSize: number
+  ) => {
+    return {
+      search: search,
+      order: [
+        { insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
+        { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
+      ],
+      pagingInput: {
+        pageNumber: currentPage,
+        pageSize: pageSize,
+        filterBy: [
+          {
+            fieldName: 'ADMINISTRATOR',
+            filterType: 'EQUALS',
+            value: 'true',
+          },
+        ],
+      },
+    };
+  };
+
+  const [searchValue, setSearchValue] = useState('');
+
+
   return (
     <div className="">
       {dataTypes ? (
@@ -169,10 +200,25 @@ export function ContentManagement() {
             />
           ) : <div className=" lg:min-w-0 lg:flex-1">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+
               <div
                 className="relative h-full rounded-xl bg-white p-12"
                 style={{ minHeight: '36rem' }}
               >
+                <div className="relative w-6/12">
+                  <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                    {searchValue === '' && (
+                      <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+                    )}
+                  </span>
+                  <input
+                    className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                    placeholder="     Search by title, section or content..."
+                    onChange={() => debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+                      setSearchValue(e.target.value || '');
+                    }, 150)}
+                  />
+                </div>
                 {selectedType && languages?.GetAllLanguage && (
                   <ContentList
                     optionDefinitions={dataDefinitions.contentDefinitions}
@@ -194,3 +240,7 @@ export function ContentManagement() {
 }
 
 export default ContentManagement;
+function debounce(arg0: (e: React.ChangeEvent<HTMLInputElement>) => void, arg1: number) {
+  throw new Error('Function not implemented.');
+}
+
