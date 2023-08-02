@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { UserRoutes } from '../../app.routes';
-import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
+import debounce from 'lodash.debounce';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
@@ -159,9 +158,14 @@ export function ContentManagement() {
       },
     };
   };
-
+  
   const [searchValue, setSearchValue] = useState('');
 
+
+
+  const searchContent = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value || '');
+  }, 150);
 
   return (
     <div className="">
@@ -200,12 +204,7 @@ export function ContentManagement() {
             />
           ) : <div className=" lg:min-w-0 lg:flex-1">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-
-              <div
-                className="relative h-full rounded-xl bg-white p-12"
-                style={{ minHeight: '36rem' }}
-              >
-                <div className="relative w-6/12">
+            <div className="relative w-full">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
                       <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
@@ -213,12 +212,14 @@ export function ContentManagement() {
                   </span>
                   <input
                     className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="     Search by title, section or content..."
-                    onChange={() => debounce((e: React.ChangeEvent<HTMLInputElement>) => {
-                      setSearchValue(e.target.value || '');
-                    }, 150)}
+                    placeholder="      Search by email or name..."
+                    onChange={()=>searchContent}
                   />
                 </div>
+              <div
+                className="relative h-full rounded-xl bg-white p-12"
+                style={{ minHeight: '36rem' }}
+              >
                 {selectedType && languages?.GetAllLanguage && (
                   <ContentList
                     optionDefinitions={dataDefinitions.contentDefinitions}
@@ -240,7 +241,4 @@ export function ContentManagement() {
 }
 
 export default ContentManagement;
-function debounce(arg0: (e: React.ChangeEvent<HTMLInputElement>) => void, arg1: number) {
-  throw new Error('Function not implemented.');
-}
 

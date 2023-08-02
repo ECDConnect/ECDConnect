@@ -147,12 +147,11 @@ export default function ContentList({
     });
   };
 
-  const viewEdit = (item?: any) => {
+  const viewSelectedRow = (item?: any) => {
     const model: ContentManagementView = {
       content: item,
       languageId: languageId,
     };
-    console.log(model);
     viewContent(model);
   };
 
@@ -269,7 +268,7 @@ export default function ContentList({
                     deleteAndRefresh
                   }
                   component={contentType.name}
-                  viewRow={hasPermission(PermissionEnum.update_static) && viewEdit}
+                  viewRow={hasPermission(PermissionEnum.update_static) && viewSelectedRow}
                 />
               </div>
             </div>
