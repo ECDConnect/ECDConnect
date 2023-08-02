@@ -7784,6 +7784,7 @@ export type PractitionerTimeline = {
   selfAssessmentColor?: Maybe<Scalars['String']>;
   selfAssessmentDate?: Maybe<Scalars['DateTime']>;
   selfAssessmentStatus?: Maybe<Scalars['String']>;
+  selfAssessmentVisits?: Maybe<Array<Maybe<Visit>>>;
   smartSpaceLicenseColor?: Maybe<Scalars['String']>;
   smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
@@ -7834,6 +7835,7 @@ export type PractitionerTimelineFilterInput = {
   selfAssessmentColor?: InputMaybe<StringOperationFilterInput>;
   selfAssessmentDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   selfAssessmentStatus?: InputMaybe<StringOperationFilterInput>;
+  selfAssessmentVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
   smartSpaceLicenseColor?: InputMaybe<StringOperationFilterInput>;
   smartSpaceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   smartSpaceLicenseStatus?: InputMaybe<StringOperationFilterInput>;
@@ -7882,6 +7884,7 @@ export type PractitionerTimelineInput = {
   selfAssessmentColor?: InputMaybe<Scalars['String']>;
   selfAssessmentDate?: InputMaybe<Scalars['DateTime']>;
   selfAssessmentStatus?: InputMaybe<Scalars['String']>;
+  selfAssessmentVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
   smartSpaceLicenseColor?: InputMaybe<Scalars['String']>;
   smartSpaceLicenseDate?: InputMaybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: InputMaybe<Scalars['String']>;

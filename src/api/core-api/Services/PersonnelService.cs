@@ -496,6 +496,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> support_visits = new List<Visit>();
             List<Visit> reaccreditation_visits = new List<Visit>();
             List<Visit> requested_coach_visits = new List<Visit>();
+            List<Visit> self_visits = new List<Visit>();
 
             foreach (Visit visit in visits)
             {
@@ -562,6 +563,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         support_visits.Add(visit);
                     }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
+                    {
+                        reaccreditation_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_self_assessment)
+                    {
+                        self_visits.Add(visit);
+                    }
                 }
             }
 
@@ -570,6 +579,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.SupportVisits = support_visits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.ReAccreditationVisits = reaccreditation_visits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.RequestedCoachVisits = requested_coach_visits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.SelfAssessmentVisits = self_visits.OrderBy(x => x.PlannedVisitDate).ToList();
 
             return timeline;
         }
