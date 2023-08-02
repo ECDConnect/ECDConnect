@@ -239,8 +239,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             visitModel.LinkedVisitId = input.LinkedVisitId;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
-            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            if (input.PlannedVisitDate.ToString() != "")
+            {
+                visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+                visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+
+            }
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -259,7 +263,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (pqaRating.OverallRatingColor != MetricsColorEnum.Success.ToString())
             {
                 VisitType followUpVisitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
-                DateTime deadlineDate = visit.ActualVisitDate.Value.AddDays(14);
+                DateTime deadlineDate = visit.InsertedDate.AddDays(14);
 
                 // check to see if visit exists
                 Visit accVisit = visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.PlannedVisitDate.Date == deadlineDate.Date && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
@@ -278,7 +282,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             } else
             {
-                DateTime deadlineDate = visit.ActualVisitDate.Value.AddYears(1);
+                DateTime deadlineDate = visit.PlannedVisitDate.AddYears(1);
 
                 // check to see if there is a accreditation record for the pqa visit for next year
                 Visit accVisit = visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id &&
