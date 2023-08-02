@@ -118,26 +118,7 @@ export default function ContentWorkflow({
           {!isCompareMode ? (
             <>
               <div className=" xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
-                <div
-                  key={'gobackToContentTypes'}
-                  onClick={() => goBack()}
-                  className={classNames(
-                    'bg-infoBb text-secondary just hover:bg-secondary group flex h-14 cursor-pointer items-center border-b px-4 text-md font-medium text-white hover:text-white'
-                  )}
-                >
-                  <ArrowLeftIcon width="20px" />
-                  <span className="pl-2">Content Types</span>
-                </div>
-                <div
-                  key={'compareLanguages'}
-                  onClick={() => setIsCompareMode(!isEdit)}
-                  className={classNames(
-                    'bg-secondary border-t-2 border-b-2 border-secondary group flex h-14 cursor-pointer items-center justify-between px-4 text-md font-medium text-white hover:text-white'
-                  )}
-                >
-                  Compare Languages
-                  <DocumentDuplicateIcon width="20px" />
-                </div>
+       
                 {languages.map((item: LanguageDto, index: number) => (
                   <div
                     key={index}
@@ -203,9 +184,11 @@ export default function ContentWorkflow({
                               currentContent?.contentValues
                             )}
                             contentType={contentType}
-                            cancelEdit={() => setIsEdit(!isEdit)}
+                            cancelEdit={() => goBack()}
                             savedContent={savedContent}
                             defaultLanguageId={defaultLanguageId}
+                            cancelCompare={()=> setIsCompareMode(!isEdit)}
+
                           />
                         </div>
                       )}

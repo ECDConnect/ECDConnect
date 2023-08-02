@@ -16,6 +16,8 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
+import { Alert, classNames } from '@ecdlink/ui';
+import { ArrowLeftIcon, DocumentDuplicateIcon, SaveAsIcon, XIcon } from '@heroicons/react/solid';
 
 export interface ContentViewProps {
   content: any;
@@ -26,6 +28,7 @@ export interface ContentViewProps {
   contentType: ContentTypeDto;
   cancelEdit: () => void;
   savedContent: () => void;
+  cancelCompare?: () => void;
 }
 
 export default function ContentEdit({
@@ -37,6 +40,7 @@ export default function ContentEdit({
   contentType,
   cancelEdit,
   savedContent,
+  cancelCompare
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit } = useForm();
@@ -158,23 +162,43 @@ export default function ContentEdit({
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
+              {cancelCompare && <button
+                type="button"
+                onClick={cancelCompare}
+                className=' inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-secondary hover:bg-uiMid focus:outline-none focus:ring-2 focus:ring-offset-2'
+              >
+                Compare Languages
+                <DocumentDuplicateIcon width="20px" className='pl-1' />
+              </button>
+              }
+              <button
+                type="submit"
+                className="ml-4 inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-secondary hover:bg-uiMid focus:outline-none focus:ring-2 focus:ring-offset-2"
+              >
+                Save Changes
+                <SaveAsIcon width="22px" className='pl-1' />
+
+              </button>
               <button
                 onClick={cancelEdit}
                 type="button"
-                className="mr-2 inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2"
+                className="ml-2 inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium bg-errorBg text-tertiary hover:bg-tertiary"
               >
-                View
-              </button>
-              <button
-                type="submit"
-                className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-uiMid focus:outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                Save
+
+                Cancel
+                <XIcon width="22px" className='pl-1' />
+
               </button>
             </div>
           </div>
-
           <div className="pt-4 pb-8">
+            {
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
+                type="info"
+              />
+            }
             <DynamicForm
               template={template}
               handleform={handleform}

@@ -71,7 +71,7 @@ export default function ContentCompare({
 
   if (contentView && languages && currentContent) {
     return (
-      <div className="bg-infoBb lg:min-w-0 lg:flex-1">
+      <div className=" lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div className="relative h-full" style={{ minHeight: '36rem' }}>
             <div className="pb-5 sm:flex sm:items-center sm:justify-between">
@@ -80,11 +80,12 @@ export default function ContentCompare({
                 languages
               </h3>
               <div className="flex flex-row">
+
                 <div>
                   <button
                     onClick={() => setIsEdit(!isEdit)}
                     type="button"
-                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-secondary hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
                   >
                     {isEdit ? 'Preview' : 'Edit'} content
                   </button>
@@ -94,11 +95,12 @@ export default function ContentCompare({
                   <button
                     onClick={cancelCompare}
                     type="button"
-                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-secondary hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
                   >
                     Cancel Compare
                   </button>
                 </div>
+
               </div>
             </div>
 
