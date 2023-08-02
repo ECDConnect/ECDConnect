@@ -397,36 +397,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // PQA Visits --------------------------
             List<Visit> allPqaVisits = _visitManager.GetPQAVisitsForPractitioner(userId);
             // Get rating for each visit for display in front-end
+            List<PQARating> _pqaRatings = new List<PQARating>();
             foreach (Visit visit in allPqaVisits)
             {
-                timeline.PQARatings.Add(_visitDataManager.GetPractitionerPQARating(visit));
+                _pqaRatings.Add(_visitDataManager.GetPractitionerPQARating(visit));
             }
-
-            // Manage new visits for ratings
-            PQARating latestPQARating = timeline.PQARatings.GetItemByIndex(0);
-            Visit lastPQAVisit = allPqaVisits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1).OrderByDescending(x => x.PlannedVisitDate).FirstOrDefault();
-
-            if (latestPQARating.VisitTypeName == Constants.SSSettings.visitType_pqa_visit_1 && latestPQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
-            {
-                _visitManager.AddNextReAccreditationVisit(practitioner.Id, (DateTime)lastPQAVisit.ActualVisitDate, lastPQAVisit.Id);
-            } else
-            {
-                _visitManager.AddNextPQAOrFollowUpVisit(latestPQARating.VisitTypeName, latestPQARating.OverallRatingColor, practitioner.Id, lastPQAVisit);
-            }
+            timeline.PQARatings = _pqaRatings;
+           
 
             // Re-accreditation --------------------------
             List<Visit> allAccreditationVisits = _visitManager.GetReAccreditationVisitsForPractitioner(userId);
+            List<PQARating> _accredRatings = new List<PQARating>();
             foreach (Visit visit in allPqaVisits)
             {
-                timeline.ReAccreditationRatings.Add(_visitDataManager.GetPractitionerReAccreditationRating(visit));
+                _accredRatings.Add(_visitDataManager.GetPractitionerReAccreditationRating(visit));
             }
-
-            PQARating latestReAccRating = timeline.ReAccreditationRatings.GetItemByIndex(0);
-            Visit lastReAccVisit = allPqaVisits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1).OrderByDescending(x => x.PlannedVisitDate).FirstOrDefault();
-            if (latestReAccRating.OverallRatingColor != MetricsColorEnum.Success.ToString())
-            {
-                _visitManager.AddNextReAccreditationOrFollowUpVisit(latestReAccRating.VisitTypeName, latestReAccRating.OverallRatingColor, practitioner.Id, lastReAccVisit);
-            }
+            timeline.ReAccreditationRatings = _accredRatings;
 
             // Starter license received
             License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
