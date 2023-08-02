@@ -574,6 +574,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
             }
 
+            // Self Assessment
+            if (self_visits.Count > 0)
+            {
+                Visit selfVisit = self_visits.OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+
+                timeline.SelfAssessmentStatus = Constants.SSSettings.self_assessment;
+                timeline.SelfAssessmentColor = MetricsColorEnum.Success.ToString();
+                timeline.SelfAssessmentDate = selfVisit?.ActualVisitDate;
+            }
+
             timeline.PrePQASiteVisits = pre_pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.PQASiteVisits = pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.SupportVisits = support_visits.OrderBy(x => x.PlannedVisitDate).ToList();
