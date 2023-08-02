@@ -47,16 +47,16 @@ namespace EcdLink.Api.CoreApi
 
             }
             //run these jobs regardless of environment
-            services.AddCronJob<ExpireInvitations>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryFiveMinutes;
-            });
-            services.AddCronJob<RevertReassignment>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryTenMinutes;
-            });
+            //services.AddCronJob<ExpireInvitations>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.EveryFiveMinutes;
+            //});
+            //services.AddCronJob<RevertReassignment>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.EveryTenMinutes;
+            //});
             //services.AddCronJob<PQAsClubsVisitsLicensesRegisters>(c =>
             //{
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
@@ -72,11 +72,11 @@ namespace EcdLink.Api.CoreApi
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
             //    c.CronExpression = CronTags.MidnightDaily;
             //});
-            services.AddCronJob<IntegrationChanges>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryTenMinutes;
-            });
+            //services.AddCronJob<IntegrationChanges>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.EveryTenMinutes;
+            //});
             //services.AddCronJob<IntegrationWeeklyAttendance>(c =>
             //{
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
