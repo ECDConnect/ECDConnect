@@ -1,3 +1,4 @@
+import { SA_CELL_REGEX } from '@ecdlink/ui';
 import * as Yup from 'yup';
 
 export interface ChildCaregiverInformationModel {
@@ -9,5 +10,7 @@ export interface ChildCaregiverInformationModel {
 }
 
 export const childCareGiverInformationSchema = Yup.object().shape({
-  phoneNumber: Yup.string().required(),
+  phoneNumber: Yup.string()
+    .required('Phone number is required')
+    .matches(SA_CELL_REGEX, 'Please enter a valid cell number'),
 });

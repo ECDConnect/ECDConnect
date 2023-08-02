@@ -19,7 +19,6 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -385,14 +384,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return practiManager.GetTraineeByUserId(userLicenseManager, userId);
         }
 
-        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, string userId)
+        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, string userId)
         {
-            return visitDataManager.GetPractitionerPQARating(userId);
+            Visit visit = visitManager.GetPQAVisitsForPractitioner(userId).FirstOrDefault();
+            return visit != null ? visitDataManager.GetPractitionerPQARating(visit): new PQARating();
         }
 
-        public PQARating GetPractitionerReAccreditationRating([Service] VisitDataManager visitDataManager, string userId)
+        public PQARating GetPractitionerReAccreditationRating([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, string userId)
         {
-            return visitDataManager.GetPractitionerReAccreditationRating(userId);
+            Visit visit = visitManager.GetReAccreditationVisitsForPractitioner(userId).FirstOrDefault();
+            return visit != null ? visitDataManager.GetPractitionerReAccreditationRating(visit) : new PQARating();
         }
 
         public List<PractitionerNotes> GetVisitNotesForPractitioner([Service] VisitDataManager visitDataManager, string userId)

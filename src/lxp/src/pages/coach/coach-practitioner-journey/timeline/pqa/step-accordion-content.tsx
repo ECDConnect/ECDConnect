@@ -55,9 +55,14 @@ export const PQAVisits = ({
       !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
   );
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating1 = pqaRatings?.[0];
+  const pqaRating2 = pqaRatings?.[1];
+  const pqaRating3 = pqaRatings?.[2];
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentFollowUpDeadline = pqaRating3?.overallRating

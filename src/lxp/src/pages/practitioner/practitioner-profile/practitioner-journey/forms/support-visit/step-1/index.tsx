@@ -9,7 +9,7 @@ import {
   callAnswer,
   supportVisitQuestion2,
   supportVisitSharedQuestion,
-} from '@/pages/coach/coach-practitioner-journey/forms/general-support-visit';
+} from '@/pages/coach/coach-practitioner-journey/forms/general-support-visit/coaching-visit-or-call/constants';
 import { useLayoutEffect, useMemo } from 'react';
 
 import { DynamicFormProps } from '../../dynamic-form';
@@ -19,7 +19,13 @@ import {
   dateLongMonthOptions,
 } from '../../../timeline/utils';
 import { PQAStateKeys } from '@/store/pqa/pqa.types';
-import { visitTypes as coachVisitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import {
+  visitTypes as coachVisitTypes,
+  maxNumberOfVisits,
+  visitTypes,
+} from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import { chunkArray } from '@ecdlink/core';
+import { Maybe, PqaRating } from '@ecdlink/graphql';
 
 export const SupportVisitStep1 = ({
   setEnableButton,
@@ -54,11 +60,29 @@ export const SupportVisitStep1 = ({
       )
     : '';
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
+  const filteredReAccreditationRatings =
+    timeline?.reAccreditationRatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+    filteredReAccreditationRatings,
+    maxNumberOfVisits
+  );
+  const reAccreditationRatingsFromCurrentYear =
+    subdividedReAccreditationRatings?.[
+      subdividedReAccreditationRatings.length - 1
+    ];
 
-  const reAccreditationRating1 = timeline?.reAccreditationRating1;
-  const reAccreditationRating2 = timeline?.reAccreditationRating2;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating1 = pqaRatings?.[0];
+  const pqaRating2 = pqaRatings?.[1];
+
+  const reAccreditationRating1 = reAccreditationRatingsFromCurrentYear?.[0];
+  const reAccreditationRating2 = reAccreditationRatingsFromCurrentYear?.[1];
 
   const pqaRating = pqaRating2?.overallRating
     ? pqaRating2.overallRatingColor

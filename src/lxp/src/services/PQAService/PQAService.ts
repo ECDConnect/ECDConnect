@@ -234,48 +234,6 @@ class PQAService {
             firstAidCourseColor
             firstAidCourseStatus
             firstAidDate
-            pQARating1 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
-            }
-            pQARating2 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
-            }
-            pQARating3 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
-            }
             prePQAVisitDate1
             prePQAVisitDate1Color
             prePQAVisitDate1Status
@@ -298,6 +256,22 @@ class PQAService {
               }
               eventId
             }
+            pQARatings {
+              actualVisitDate
+              children {
+                sectionRating
+                sectionRatingColor
+                sectionScore
+                visitSection
+              }
+              overallRating
+              overallRatingColor
+              overallRatingStars
+              overallScore
+              plannedDate
+              visitName
+              visitTypeName
+            }
             pQASiteVisits {
               id
               plannedVisitDate
@@ -318,6 +292,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              insertedDate
               visitType {
                 type
                 order
@@ -327,7 +302,7 @@ class PQAService {
               }
               eventId
             }
-            reAccreditationRating1 {
+            reAccreditationRatings {
               children {
                 sectionRating
                 sectionRatingColor
@@ -340,34 +315,7 @@ class PQAService {
               overallScore
               plannedDate
               visitName
-            }
-            reAccreditationRating2 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
-            }
-            reAccreditationRating3 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
+              visitTypeName
             }
             selfAssessmentColor
             selfAssessmentDate
