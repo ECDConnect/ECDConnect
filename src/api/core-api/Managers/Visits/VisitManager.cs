@@ -753,9 +753,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     && vsd.VisitData.IsActive
                     && vsd.VisitData.Visit.IsActive
                     && vsd.VisitData.Visit.Mother.IsActive
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive
-                    // Things that have been painted error color more urgent than the ones painted warning color...
-                    && vsd.Color == MetricsColorEnum.Error.ToString());
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive);
 
             if (startDate is not null)
                 allMothers = allMothers.Where(vsd => vsd.InsertedDate >= startDate);
@@ -773,11 +771,30 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime? startDate = null,
             DateTime? endDate = null)
         {
+            // Filter these out:
+            var allUrgentMotherIds = _visitDataStatusRepo.GetAll()
+                .Include(vsd => vsd.VisitData)
+                    .ThenInclude(vd => vd.Visit.Mother)
+                        .ThenInclude(m => m.HealthCareWorker)
+                .Where(vsd => vsd.IsActive == true
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.Type == Constants.GGSettings.visit_data_client_progress
+                    && vsd.Color == MetricsColorEnum.Error.ToString()
+                    && vsd.IsActive
+                    && vsd.VisitData.IsActive
+                    && vsd.VisitData.Visit.IsActive
+                    && vsd.VisitData.Visit.Mother.IsActive
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive)
+                .Distinct()
+                .Select(vsd => vsd.VisitData.Visit.Mother.Id)
+                .ToList();
+
             var allMothers = _visitDataStatusRepo.GetAll()
                 .Include(vsd => vsd.VisitData)
                     .ThenInclude(vd => vd.Visit.Mother)
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
+                    && !allUrgentMotherIds.Contains(vsd.VisitData.Visit.MotherId ?? Guid.Empty)
                     && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.Color == MetricsColorEnum.Warning.ToString()
@@ -785,9 +802,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     && vsd.VisitData.IsActive
                     && vsd.VisitData.Visit.IsActive
                     && vsd.VisitData.Visit.Mother.IsActive
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive
-                    // Things that have been painted warning color are not as urgent as the ones painted an error color...
-                    && vsd.Color == MetricsColorEnum.Warning.ToString());
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive);
 
             if (startDate is not null)
                 allMothers = allMothers.Where(vsd => vsd.InsertedDate >= startDate);
@@ -839,8 +854,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return noIssuesCount;
         }
 
-
-
         public int GetTotalCaregiversAndChildrenWithUrgentIssues(
             string heathCareWorkerUserId,
             DateTime startDate,
@@ -879,6 +892,29 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime startDate,
             DateTime endDate)
         {
+            var urgentInfantIds = _visitDataStatusRepo.GetAll()
+                .Include(vsd => vsd.VisitData)
+                    .ThenInclude(vd => vd.Visit.Infant)
+                        .ThenInclude(m => m.Caregiver)
+                            .ThenInclude(m => m.HealthCareWorker)
+                .Where(vsd =>
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.Type == Constants.GGSettings.visit_data_client_progress
+                    && vsd.VisitData.Visit.Attended == true
+                    && vsd.Color == MetricsColorEnum.Error.ToString()
+                    && vsd.InsertedDate >= startDate
+                    && vsd.InsertedDate <= endDate
+                    && vsd.IsActive
+                    && vsd.VisitData.IsActive
+                    && vsd.VisitData.Visit.IsActive
+                    && vsd.VisitData.Visit.Infant.IsActive
+                    && vsd.VisitData.Visit.Infant.Caregiver.IsActive
+                    && vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.IsActive
+                    && vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.User.IsActive)
+                .Select(x => x.VisitData.Visit.InfantId)
+                .Distinct()
+                .ToList();
+
             var totalCaregiversAndChildrenWithIssues = _visitDataStatusRepo.GetAll()
                 .Include(vsd => vsd.VisitData)
                     .ThenInclude(vd => vd.Visit.Infant)
@@ -886,6 +922,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
                     vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && !urgentInfantIds.Contains(vsd.VisitData.Visit.InfantId)
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
                     && vsd.Color == MetricsColorEnum.Warning.ToString()
