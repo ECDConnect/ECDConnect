@@ -10,7 +10,7 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useHistory, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
@@ -67,7 +67,6 @@ import {
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { options } from './reaccreditation/step-2/options';
-import ROUTES from '@/routes/routes';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -116,7 +115,6 @@ export const Form = ({
   >();
 
   const { isOnline } = useOnlineStatus();
-  const history = useHistory();
 
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
@@ -555,6 +553,11 @@ export const Form = ({
   const onSubmitReAccreditation = useCallback(
     async ({ payload }: SubmitProps) => {
       const content: ReAccreditationVisitModelInput = {
+        practitionerId,
+        // TODO: add schedule feature
+        plannedVisitDate: new Date(),
+        attended: true,
+        linkedVisitId: null,
         reAccreditationData: payload,
       };
 
@@ -568,15 +571,13 @@ export const Form = ({
 
       if (!isBasicSmartSpaceStandardsCompleted) {
         // TODO: add schedule feature
-        onBack?.();
-        return history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
+        return onBack?.();
       }
 
       showMessage({ message: 'Re-accreditation complete!' });
     },
     [
       appDispatch,
-      history,
       isBasicSmartSpaceStandardsCompleted,
       onBack,
       practitionerId,
