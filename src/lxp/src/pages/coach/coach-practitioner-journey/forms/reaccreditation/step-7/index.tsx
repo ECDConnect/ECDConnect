@@ -2,7 +2,6 @@ import {
   Alert,
   ButtonGroup,
   ButtonGroupTypes,
-  Checkbox,
   FormInput,
   Typography,
 } from '@ecdlink/ui';
@@ -10,12 +9,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import { Step7Map } from './map';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  parseBool,
-  replaceBraces,
-  usePrevious,
-  useSessionStorage,
-} from '@ecdlink/core';
+import { parseBool, usePrevious, useSessionStorage } from '@ecdlink/core';
 import { ReactComponent as OfflineIcon } from '@/assets/offline.svg';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { useSelector } from 'react-redux';
@@ -45,11 +39,6 @@ export const Step7ReAccreditation = ({
       question: 'Where is the programme site located?',
       answer: '',
     },
-    {
-      question:
-        'Please confirm {client}’s proof of ownership, lease or permission ',
-      answer: '',
-    },
   ]);
 
   const { isOnline } = useOnlineStatus();
@@ -72,10 +61,6 @@ export const Step7ReAccreditation = ({
     | SectionQuestions
     | undefined;
 
-  const firstName =
-    smartStarter?.user?.firstName ||
-    smartStarter?.firstName ||
-    'the SmartStarter';
   const options = [
     { text: 'Yes', value: true, disabled: isViewAnswers },
     { text: 'No', value: false, disabled: isViewAnswers },
@@ -127,13 +112,11 @@ export const Step7ReAccreditation = ({
       const isAllCompleted = updatedQuestions.every(
         (item) => String(item.answer).length > 1
       );
-      const isFirstAndLastCompleted =
-        updatedQuestions[0].answer !== '' &&
-        updatedQuestions[2].answer === true;
+      const isFirstCompleted = updatedQuestions[0].answer !== '';
       const isCompleted =
         updatedQuestions[0].answer === false
           ? isAllCompleted
-          : isFirstAndLastCompleted;
+          : isFirstCompleted;
       setEnableButton?.(isCompleted);
     },
     [questions, setEnableButton, setSectionQuestions]
@@ -266,23 +249,6 @@ export const Step7ReAccreditation = ({
         list={[
           'If you are offline, please select “Yes” above & explain how the trainee can update their address through Funda App.',
         ]}
-      />
-      <Typography
-        type="h4"
-        text={replaceBraces(questions[2].question, firstName)}
-        color="textDark"
-      />
-      <Typography
-        type="body"
-        text={`${firstName} does not own the property and lives at the property.`}
-        color="textMid"
-        className="my-4"
-      />
-      <Checkbox
-        description={`I have checked that ${firstName} has the required forms proving ownership/lease agreement/permission to use premises.`}
-        checked={Boolean(questions[2].answer)}
-        disabled={isViewAnswers}
-        onCheckboxChange={(event) => onOptionSelected(event.checked, 2)}
       />
     </div>
   );
