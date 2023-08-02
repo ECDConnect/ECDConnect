@@ -51,48 +51,6 @@ class PractitionerService {
               firstAidCourseColor
               firstAidCourseStatus
               firstAidDate
-              pQARating1 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
-              }
-              pQARating2 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
-              }
-              pQARating3 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
-              }
               prePQAVisitDate1
               prePQAVisitDate1Color
               prePQAVisitDate1Status
@@ -129,6 +87,22 @@ class PractitionerService {
                 }
                 eventId
               }
+              pQARatings {
+                actualVisitDate
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+                visitTypeName
+              }
               pQASiteVisits {
                 id
                 plannedVisitDate
@@ -149,6 +123,7 @@ class PractitionerService {
                 plannedVisitDate
                 attended
                 comment
+                insertedDate
                 visitType {
                   type
                   order
@@ -158,7 +133,7 @@ class PractitionerService {
                 }
                 eventId
               }
-              reAccreditationRating1 {
+              reAccreditationRatings {
                 children {
                   sectionRating
                   sectionRatingColor
@@ -171,34 +146,7 @@ class PractitionerService {
                 overallScore
                 plannedDate
                 visitName
-              }
-              reAccreditationRating2 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
-              }
-              reAccreditationRating3 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
+                visitTypeName
               }
               smartSpaceLicenseColor
               smartSpaceLicenseDate
