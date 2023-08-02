@@ -285,10 +285,9 @@ export const ActivityList: React.FC = () => {
     [isFirstVisit, previousBirthCertificateAnswer, previousCSGAnswer]
   );
 
-  const isMaternalDistressFollowUp = getIsFollowUp(
-    maternalDistressVisitSection,
-    activitiesTypes.careForMom
-  );
+  const isMaternalDistressFollowUp = !!previousAnswers
+    ?.filter((item) => item.visitSection === maternalDistressVisitSection)
+    ?.filter((item) => item.questionAnswer?.includes('true'))?.length;
 
   const isMaternalDistressScreening = useMemo(
     () => isFirstVisit && ageDays >= 49 && ageYears < 5,
@@ -582,6 +581,13 @@ export const ActivityList: React.FC = () => {
           visitId: previousVisit.id,
           visitName: activitiesTypes.pillar5,
           visitSection: HIVSection,
+        })
+      ).unwrap();
+      appDispatch(
+        visitThunkActions.getVisitAnswersForInfant({
+          visitId: previousVisit.id,
+          visitName: activitiesTypes.careForMom,
+          visitSection: maternalDistressVisitSection,
         })
       ).unwrap();
     }
