@@ -52,7 +52,7 @@ export default function TeamLeads() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/view-user',
+      pathname: '/users/view-user',
       state: {
         component: "team-leads",
         userId: selectedRow?.userId,

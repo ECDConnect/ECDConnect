@@ -70,7 +70,7 @@ export default function HealthCareWorkers() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/view-user',
+      pathname: '/users/view-user',
       state: {
         component: 'chw',
         userId: selectedRow?.userId,

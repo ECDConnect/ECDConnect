@@ -191,7 +191,7 @@ export default function ApplicationAdmins() {
       selectedRow?.userId ?? selectedRow?.id
     );
     history.push({
-      pathname: '/view-user',
+      pathname: '/users/view-user',
       state: {
         component: 'administrators',
         userId: selectedRow?.userId,
