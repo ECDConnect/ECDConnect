@@ -12,9 +12,15 @@ import { step10ReAccreditation } from '../step-10';
 import { step11ReAccreditation } from '../step-11';
 import { step12ReAccreditation } from '../step-12';
 import { useParams } from 'react-router';
-import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
+import {
+  PractitionerJourneyParams,
+  maxNumberOfVisits,
+  visitTypes,
+} from '../../../coach-practitioner-journey.types';
 import { useSelector } from 'react-redux';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+import { chunkArray } from '@ecdlink/core';
+import { Maybe, PqaRating } from '@ecdlink/graphql';
 
 export const reAccreditationVisitSectionStep16 = 'Step 16';
 export const reAccreditationQuestionStep16 = 'Summary of discussion';
@@ -38,9 +44,23 @@ export const Step16ReAccreditation = ({
     getPractitionerTimelineByIdSelector(practitionerId)
   );
 
-  const reAccreditationRating1 = timeline?.reAccreditationRating1;
-  const reAccreditationRating2 = timeline?.reAccreditationRating2;
-  const reAccreditationRating3 = timeline?.reAccreditationRating3;
+  // All years
+  const filteredReAccreditationRatings =
+    timeline?.reAccreditationRatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+    filteredReAccreditationRatings,
+    maxNumberOfVisits
+  );
+  const reAccreditationRatingsFromCurrentYear =
+    subdividedReAccreditationRatings?.[
+      subdividedReAccreditationRatings.length - 1
+    ];
+
+  const reAccreditationRating1 = reAccreditationRatingsFromCurrentYear?.[0];
+  const reAccreditationRating2 = reAccreditationRatingsFromCurrentYear?.[1];
+  const reAccreditationRating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
   const reAccreditationRatingColorList = [
     reAccreditationRating1?.overallRatingColor,

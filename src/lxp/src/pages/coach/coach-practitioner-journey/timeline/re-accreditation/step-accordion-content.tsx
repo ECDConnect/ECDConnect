@@ -1,4 +1,4 @@
-import { Visit, Maybe } from '@ecdlink/graphql';
+import { Visit, Maybe, PqaRating } from '@ecdlink/graphql';
 import { ScheduleProps, dateOptions, getStepType } from '../timeline-steps';
 import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
@@ -8,9 +8,13 @@ import {
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
-import { visitTypes } from '../../coach-practitioner-journey.types';
+import {
+  maxNumberOfVisits,
+  visitTypes,
+} from '../../coach-practitioner-journey.types';
 import { addDays } from 'date-fns';
 import { followUpDeadline, getRatingData } from '../utils';
+import { chunkArray } from '@ecdlink/core';
 
 interface ReAccreditationVisitsProps {
   isLoading: boolean;
@@ -48,9 +52,35 @@ export const ReAccreditationVisits = ({
     })
   );
 
-  const rating1 = timeline?.reAccreditationRating1;
-  const rating2 = timeline?.reAccreditationRating2;
-  const rating3 = timeline?.reAccreditationRating3;
+  // All years
+  const filteredReAccreditationRatings =
+    timeline?.reAccreditationRatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+    filteredReAccreditationRatings,
+    maxNumberOfVisits
+  );
+  const reAccreditationRatingsFromCurrentYear =
+    subdividedReAccreditationRatings?.[
+      subdividedReAccreditationRatings.length - 1
+    ];
+
+  const rating1 = reAccreditationRatingsFromCurrentYear?.[0];
+  const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
+  const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
+
+  const filteredReAccreditationVisits =
+    timeline?.reAccreditationVisits?.filter(
+      (item) =>
+        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationVisits = chunkArray<Maybe<Visit>>(
+    filteredReAccreditationVisits,
+    maxNumberOfVisits
+  );
+  const reAccreditationVisitsFromCurrentYear =
+    subdividedReAccreditationVisits?.[filteredReAccreditationVisits.length - 1];
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentFollowUpDeadline = rating3?.overallRating
@@ -68,7 +98,7 @@ export const ReAccreditationVisits = ({
       new Date(lastAttendedReAccreditationVisit?.insertedDate),
       currentFollowUpDeadline
     ) <= new Date();
-  const isFirstVisit = timeline?.reAccreditationVisits?.length === 1;
+  const isFirstVisit = reAccreditationVisitsFromCurrentYear?.length === 1;
   const isReAccreditationFollowUp =
     !isFirstVisit &&
     !!newReAccreditationVisit &&

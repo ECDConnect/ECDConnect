@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ReasonsForPractitionerLeaving,
+  chunkArray,
   parseBool,
   useDialog,
   usePrevious,
@@ -13,6 +14,7 @@ import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
+  maxNumberOfVisits,
   visitTypes,
 } from '../coach-practitioner-journey.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
@@ -29,6 +31,8 @@ import {
   CmsVisitSectionInput,
   FollowUpVisitModelInput,
   InputMaybe,
+  Maybe,
+  PqaRating,
   ReAccreditationVisitModelInput,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
@@ -154,13 +158,32 @@ export const Form = ({
       item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
   );
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
+  // All years
+  const filteredReAccreditationRatings =
+    timeline?.reAccreditationRatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+    filteredReAccreditationRatings,
+    maxNumberOfVisits
+  );
+  const reAccreditationRatingsFromCurrentYear =
+    subdividedReAccreditationRatings?.[
+      subdividedReAccreditationRatings.length - 1
+    ];
 
-  const reAccreditationRating1 = timeline?.reAccreditationRating1;
-  const reAccreditationRating2 = timeline?.reAccreditationRating2;
-  const reAccreditationRating3 = timeline?.reAccreditationRating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating1 = pqaRatings?.[0];
+  const pqaRating2 = pqaRatings?.[1];
+  const pqaRating3 = pqaRatings?.[2];
+
+  const reAccreditationRating1 = reAccreditationRatingsFromCurrentYear?.[0];
+  const reAccreditationRating2 = reAccreditationRatingsFromCurrentYear?.[1];
+  const reAccreditationRating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
   const pqaRatingColorList = [
     pqaRating1?.overallRatingColor,
