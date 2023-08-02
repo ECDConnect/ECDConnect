@@ -25,7 +25,7 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
   const [questions, setAnswers] = useState([
     {
       question:
-        'Have agreed to receive my stipend amount of R500 using FNB eWallet',
+        'have agreed to receive my stipend amount agreed upon using FNB eWallet.',
       answer: false,
     },
     {
@@ -85,13 +85,15 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
             className={'my-3'}
             color={'textDark'}
             type={'h2'}
-            text={'Payment options'}
+            text={'Commitment to receive start-up support with FNB eWallet'}
           />
           <Typography
             className={'my-3 w-11/12'}
             color={'textDark'}
             type={'h3'}
-            text={'Payment options'}
+            text={
+              'Please check to agree with the following and have your signature added:'
+            }
           />
           <div className="'flex items-center' w-full flex-row justify-start">
             <div
@@ -107,7 +109,7 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
                   practitioner?.user?.idNumber || '0000000000'
                 }; Cellphone: ${
                   practitioner?.user?.phoneNumber || '000000000'
-                })  have agreed to receive my stipend amount of R500 using FNB eWallet.`}
+                })  have agreed to receive my stipend amount agreed upon using FNB eWallet.`}
                 type="body"
                 color="textMid"
               />
@@ -121,9 +123,7 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
                 checked={questions?.[1].answer}
               />
               <Typography
-                text={
-                  'I confirm that if I lose/misplace my cell phone I will notify OrgName or my coach as soon as possible. I accept that if I do not communicate my change of details, the missed stipend will not be replaced..'
-                }
+                text={`I confirm that if I lose/misplace my cell phone I will notify the organisation providing the start-up support or my coach as soon as possible. I accept that if I do not communicate my change of details, the missed stipend will not be replaced.`}
                 type="body"
                 color={'textMid'}
               />
