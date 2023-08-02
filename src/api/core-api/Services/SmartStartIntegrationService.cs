@@ -2913,7 +2913,14 @@ public class SmartStartIntegrationService : IIntegrationService
                                                         jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
                                                         break;
                                                     default:
-                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                        if (valueToSend.Length <= (int)mappedColumnLine.ColumnValidationLimit)
+                                                        {
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                        }
+                                                        else
+                                                        {
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
+                                                        }
                                                         break;
                                                 }
                                                 validUpdate = true;
