@@ -208,7 +208,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             summary.totalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(healthCareWorkerUserId, _startDate, _endDate);
             summary.totalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(healthCareWorkerUserId, _startDate, _endDate);
 
-            // Pregnant Mom Visits cannot be missed and will only be overdue.
             summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(healthCareWorkerUserId, _startDate, _endDate);
             summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId, _startDate, _endDate); ;
 
