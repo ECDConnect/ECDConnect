@@ -63,6 +63,21 @@ export default function HealthCareWorkers() {
   const [pageSize, setPageSize] = useState(null);
   const [totalItemCount, setTotalItemCount] = useState(10);
 
+  const viewSelectedRow = (selectedRow: any) => {
+
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: '/view-user',
+      state: {
+        component: 'chw',
+        userId: selectedRow?.userId,
+      },
+    });
+
+  };
   const getVariables = (
     search: string,
     province: string,
@@ -439,9 +454,8 @@ export default function HealthCareWorkers() {
                     hasPermission(PermissionEnum.update_user) && sendInvite
                   }
                   searchInput={searchValue}
-                  viewRow={true}
-                  urlRow={'/view-user/'}
                   component={'chw'}
+                  viewRow={viewSelectedRow}
                 />
               </div>
             </div>

@@ -39,8 +39,6 @@ export function ContentManagement() {
   );
 
   useEffect(() => {
-    console.log(">>>>", dataTypes)
-
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
       setSelectedType(dataTypes.contentTypes[0]);
     } else if (dataTypes && dataTypes.contentTypes && selectedType) {
