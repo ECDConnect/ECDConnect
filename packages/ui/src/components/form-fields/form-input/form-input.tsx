@@ -208,10 +208,7 @@ export const FormInput = <T extends FieldValues>({
           <div className={styles.inputWrapper}>
             {getInputToRender()}
             {prefixIcon && (
-              <div
-                className={styles.iconWrapperLeft}
-                onClick={suffixIconAction}
-              >
+              <div className={styles.iconWrapperLeft}>
                 {!!prefixIcon && (
                   <span
                     className={`text-${
@@ -222,10 +219,10 @@ export const FormInput = <T extends FieldValues>({
               </div>
             )}
             {suffixIcon && (
-              <div className={styles.iconWrapper} onClick={suffixIconAction}>
+              <button className={styles.iconWrapper} onClick={suffixIconAction}>
                 {!!suffixIcon &&
                   renderIcon(suffixIcon, `h-5 w-5 text-${sufficIconColor}`)}
-              </div>
+              </button>
             )}
           </div>
 
