@@ -51,7 +51,7 @@ export const Step9 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
     ...previousDataStep4,
   ];
 
-  const isFilledSelfAssessment = !!previousDataStep2?.length;
+  const isFilledSelfAssessment = !!data?.length;
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
