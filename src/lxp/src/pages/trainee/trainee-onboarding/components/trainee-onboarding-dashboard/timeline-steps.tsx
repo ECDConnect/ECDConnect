@@ -100,6 +100,7 @@ export const setStep = (
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
     status !== smartSpaceLincenceReceveid;
+
   if (!!status) {
     return {
       title: status,
@@ -115,10 +116,14 @@ export const setStep = (
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
-        stepCompleted ||
-        (nextStep === status && starterLicenceReceived) ||
-        (consolidationMeetingAttended && status === 'Get community support') ||
-        (consolidationMeetingAttended && status === 'Register 3 children')
+        (stepCompleted ||
+          (nextStep === status &&
+            starterLicenceReceived &&
+            status !== consolidationMeetingStatus) ||
+          (consolidationMeetingAttended &&
+            status === 'Get community support') ||
+          (consolidationMeetingAttended && status === 'Register 3 children')) &&
+        status !== consolidationMeetingStatus
           ? true
           : false,
       actionButtonText: stepCompleted ? 'View' : nextStepButtontext(status),
