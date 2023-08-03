@@ -36,8 +36,6 @@ export const TraineeOnboarding = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [notificationStep]);
 
-  console.log({ notificationStep });
-
   const renderStep = (step: string) => {
     switch (step) {
       case 'Sign franchisee agreement':

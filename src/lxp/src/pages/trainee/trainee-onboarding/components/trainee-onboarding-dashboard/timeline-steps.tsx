@@ -100,7 +100,7 @@ export const setStep = (
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
     status !== smartSpaceLincenceReceveid;
-  console.log({ status });
+
   if (!!status) {
     return {
       title: status,
