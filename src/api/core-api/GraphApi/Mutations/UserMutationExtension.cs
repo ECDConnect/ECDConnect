@@ -424,7 +424,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
-            user.IsActive = false;
+           // user.IsActive = false;
             user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);

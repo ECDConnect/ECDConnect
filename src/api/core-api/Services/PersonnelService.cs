@@ -149,7 +149,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId);
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
-                var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+                var children = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
                 return children;
             }
             else return new List<Child>();
