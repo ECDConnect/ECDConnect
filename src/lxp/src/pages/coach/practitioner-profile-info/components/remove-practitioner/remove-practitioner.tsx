@@ -23,8 +23,8 @@ import {
   removePractionerModelSchema,
   initialRemovePractionerValues,
 } from '@/schemas/practitioner/remove-practioner';
-import * as styles from './remove-practioner.styles';
-import { RemovePractionerReasonsProps as RemovePractionerProps } from './remove-practioner.types';
+import * as styles from './remove-practitioner.styles';
+import { RemovePractionerProps } from './remove-practitioner.types';
 import {
   practitionerSelectors,
   practitionerThunkActions,
