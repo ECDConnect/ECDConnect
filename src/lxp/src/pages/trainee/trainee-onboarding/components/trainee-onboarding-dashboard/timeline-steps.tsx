@@ -167,15 +167,6 @@ export const timelineSteps = (
   );
   steps.push(
     setStep(
-      timeline?.smartSpaceLicenseStatus || 'SmartSpace Licence',
-      timeline?.smartSpaceLicenseDate,
-      timeline?.smartSpaceLicenseColor,
-      () => onView('SmartSpace Licence'),
-      nextStep
-    )
-  );
-  steps.push(
-    setStep(
       timeline?.consolidationMeetingStatus || 'Consolidation meeting scheduled',
       timeline?.consolidationMeetingDate || timeline?.consolidationDeadlineDate,
       timeline?.consolidationMeetingColor,
