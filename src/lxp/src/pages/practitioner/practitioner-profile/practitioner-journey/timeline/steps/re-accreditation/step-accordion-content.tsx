@@ -64,13 +64,12 @@ export const ReAccreditationVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    switch (item?.visitType?.name) {
-      case visitTypes.reaccreditation.third.name:
-        return rating3;
-      case visitTypes.reaccreditation.second.name:
-        return rating2;
-      default:
-        return rating1;
+    if (item?.id === rating3?.linkedVisitId) {
+      return rating3;
+    } else if (item?.id === rating2?.linkedVisitId) {
+      return rating2;
+    } else {
+      return rating1;
     }
   };
 

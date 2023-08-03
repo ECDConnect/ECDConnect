@@ -52,13 +52,12 @@ export const PQAVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    switch (item?.visitType?.name) {
-      case visitTypes.pqa.thirdPQA.name:
-        return pqaRating3;
-      case visitTypes.pqa.secondPQA.name:
-        return pqaRating2;
-      default:
-        return pqaRating1;
+    if (item?.id === pqaRating3?.linkedVisitId) {
+      return pqaRating3;
+    } else if (item?.id === pqaRating2?.linkedVisitId) {
+      return pqaRating2;
+    } else {
+      return pqaRating1;
     }
   };
 
