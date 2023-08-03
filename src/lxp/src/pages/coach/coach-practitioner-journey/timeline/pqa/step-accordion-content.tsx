@@ -9,7 +9,10 @@ import {
 } from '@/store/pqa/pqa.selectors';
 import { addDays } from 'date-fns';
 import { followUpDeadline, getRatingData } from '../utils';
-import { visitTypes } from '../../coach-practitioner-journey.types';
+import {
+  maxNumberOfVisits,
+  visitTypes,
+} from '../../coach-practitioner-journey.types';
 import { ScheduleProps, dateOptions, getStepType } from '../timeline-steps';
 
 interface PQAVisitsProps {
@@ -55,7 +58,7 @@ export const PQAVisits = ({
       (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
     ) ?? [];
   const isLastAttendedPqaVisit =
-    pqaVisits?.filter((item) => item?.attended)?.length === 3;
+    pqaVisits?.filter((item) => item?.attended)?.length === maxNumberOfVisits;
 
   const newPqaVisit = timeline?.pQASiteVisits?.find(
     (item) =>

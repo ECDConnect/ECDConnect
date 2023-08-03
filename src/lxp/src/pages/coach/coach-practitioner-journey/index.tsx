@@ -164,7 +164,7 @@ export const CoachPractitionerJourney = () => {
       (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
     ) ?? [];
   const isLastAttendedPqaVisit =
-    pqaVisits.filter((item) => item?.attended)?.length === 3;
+    pqaVisits.filter((item) => item?.attended)?.length === maxNumberOfVisits;
 
   const reAccreditationVisitsWithoutFollowUp =
     timeline?.reAccreditationVisits?.filter(
