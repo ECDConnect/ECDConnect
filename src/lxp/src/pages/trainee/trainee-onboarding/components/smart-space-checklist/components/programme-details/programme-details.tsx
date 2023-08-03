@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   ButtonGroup,
-  FormInput,
   Typography,
   ButtonGroupTypes,
   renderIcon,
@@ -13,6 +12,7 @@ import {
   ImageInput,
   Dialog,
   DialogPosition,
+  FormInput,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
@@ -495,7 +495,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
               onChange={(e) =>
                 onOptionSelected((e.target as HTMLInputElement).value, 3)
               }
-              onClick={() => setShowMap(true)}
               disabled={Boolean(checkedquestion(questions?.[3].question))}
               suffixIcon={'LocationMarkerIcon'}
               sufficIconColor="primary"
