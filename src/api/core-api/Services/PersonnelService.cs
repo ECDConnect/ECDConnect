@@ -242,9 +242,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var practitionerToPromote = _practiGenericRepo.GetByUserId(newPrincipalUserId);
             var practitionerToDemote = _practiGenericRepo.GetByUserId(oldPrincipalUserId);
+
+            var isRolePrincipal = practitionerToDemote.IsPrincipal.HasValue && practitionerToDemote.IsPrincipal.Value;
+            var isRoleFAA = practitionerToDemote.IsFundaAppAdmin.HasValue && practitionerToDemote.IsFundaAppAdmin.Value;
+
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
-                practitionerToPromote.IsPrincipal = true;
+                if (isRolePrincipal) practitionerToPromote.IsPrincipal = true;
+                if (isRoleFAA) practitionerToPromote.IsPrincipal = true;
                 practitionerToPromote.ShareInfo = true;
                 practitionerToPromote.PrincipalHierarchy = null;
                 practitionerToPromote.DateLinked = null;
@@ -252,7 +257,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerToPromote.DateAccepted = null;
                 _practiGenericRepo.Update(practitionerToPromote);
 
-                practitionerToDemote.IsPrincipal = false;
+                if (isRolePrincipal) practitionerToPromote.IsPrincipal = false;
+                if (isRoleFAA) practitionerToPromote.IsPrincipal = false;
                 practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;
@@ -281,11 +287,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user to principal
                 var userToPromote = userManager.FindByIdAsync(newPrincipalUserId).Result;
-                var result = userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
-                result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result;
+                IdentityResult result = null;
+                result = userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
+                if (isRolePrincipal) result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result;
+                if (isRoleFAA) result = userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result;
 
                 var userToDemote = userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result;
+                if (isRolePrincipal) result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result;
+                if (isRoleFAA) result = userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result;
                 result = userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;

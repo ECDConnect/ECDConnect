@@ -1272,6 +1272,41 @@ class PractitionerService {
     return response.data.data.removalDetailsForPractitioner;
   }
 
+  async getRemovalsForPractitioners(
+    userIds: string[]
+  ): Promise<PractitionerRemovalHistory[] | undefined> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query removalDetailsForPractitioners($userIds: [String]) {
+        removalDetailsForPractitioners(userIds: $userIds) {
+          dateOfRemoval
+          id
+          userId
+          reasonDetails
+          reasonForPractitionerLeavingProgrammeId
+          removedByUserId,
+          classReassignments {
+            id,
+            reassignedClass,
+            reassignedToPractitioner
+          }
+        }
+      }
+      `,
+      variables: {
+        userIds,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get practitioners removals Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.removalDetailsForPractitioners;
+  }
   async updateRemovePractitionerFromProgramme(
     removalId: string,
     reasonForPractitionerLeavingProgrammeId: string | undefined = undefined,
@@ -1344,6 +1379,37 @@ class PractitionerService {
     }
 
     return response.data.data.removeFromProgramme;
+  }
+
+  async switchPrincipal(
+    oldPrincipalUserId: string,
+    newPrincipalUserId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation switchPrincipal(
+        $oldPrincipalUserId: String
+        $newPrincipalUserId: String
+      ) {
+        switchPrincipal(
+          oldPrincipalUserId: $oldPrincipalUserId
+          newPrincipalUserId: $newPrincipalUserId
+        ) {
+        }
+      }  
+      `,
+      variables: {
+        oldPrincipalUserId,
+        newPrincipalUserId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Switch principal Failed - Server connection error');
+    }
+
+    return response.data.data.switchPrincipal;
   }
 }
 

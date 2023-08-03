@@ -187,7 +187,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public PractitionerReportDetails GetReportDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor, [Service] PersonnelService practiManager, IGenericRepositoryFactory repoFactory,
-    string userId)
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -413,6 +413,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 .Where(x => x.IsActive)
                 .OrderByDescending(x => x.InsertedDate)
                 .FirstOrDefault();
+
+            return result;
+        }
+        public List<PractitionerRemovalHistory> GetRemovalDetailsForPractitioners(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            IEnumerable<string> userIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+            var result = removalRepo.GetAll()
+                .Where(x => x.IsActive && userIds.Contains(x.UserId))
+                .ToList();
 
             return result;
         }
