@@ -88,6 +88,7 @@ class PractitionerService {
                 eventId
               }
               pQARatings {
+                linkedVisitId
                 actualVisitDate
                 children {
                   sectionRating
@@ -134,6 +135,7 @@ class PractitionerService {
                 eventId
               }
               reAccreditationRatings {
+                linkedVisitId
                 children {
                   sectionRating
                   sectionRatingColor

@@ -257,6 +257,7 @@ class PQAService {
               eventId
             }
             pQARatings {
+              linkedVisitId
               actualVisitDate
               children {
                 sectionRating
@@ -303,6 +304,7 @@ class PQAService {
               eventId
             }
             reAccreditationRatings {
+              linkedVisitId
               children {
                 sectionRating
                 sectionRatingColor

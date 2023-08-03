@@ -9,7 +9,10 @@ import {
 } from '@/store/pqa/pqa.selectors';
 import { addDays } from 'date-fns';
 import { followUpDeadline, getRatingData } from '../utils';
-import { visitTypes } from '../../coach-practitioner-journey.types';
+import {
+  maxNumberOfVisits,
+  visitTypes,
+} from '../../coach-practitioner-journey.types';
 import { ScheduleProps, dateOptions, getStepType } from '../timeline-steps';
 
 interface PQAVisitsProps {
@@ -50,6 +53,13 @@ export const PQAVisits = ({
     })
   );
 
+  const pqaVisits =
+    timeline?.pQASiteVisits?.filter(
+      (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
+    ) ?? [];
+  const isLastAttendedPqaVisit =
+    pqaVisits?.filter((item) => item?.attended)?.length === maxNumberOfVisits;
+
   const newPqaVisit = timeline?.pQASiteVisits?.find(
     (item) =>
       !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
@@ -78,9 +88,7 @@ export const PQAVisits = ({
   const isPQAFollowUp =
     !isFirstVisit &&
     !!newPqaVisit &&
-    !lastAttendedPqaVisit?.visitType?.name?.includes(
-      visitTypes.pqa.thirdPQA.name
-    ) &&
+    !isLastAttendedPqaVisit &&
     !lastAttendedVisit?.visitType?.name?.includes(visitTypes.pqa.followUp.name);
 
   const mergedVisits = timeline?.pQASiteVisits
@@ -123,13 +131,12 @@ export const PQAVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    switch (item?.visitType?.name) {
-      case visitTypes.pqa.thirdPQA.name:
-        return pqaRating3;
-      case visitTypes.pqa.secondPQA.name:
-        return pqaRating2;
-      default:
-        return pqaRating1;
+    if (item?.id === pqaRating3?.linkedVisitId) {
+      return pqaRating3;
+    } else if (item?.id === pqaRating2?.linkedVisitId) {
+      return pqaRating2;
+    } else {
+      return pqaRating1;
     }
   };
 
