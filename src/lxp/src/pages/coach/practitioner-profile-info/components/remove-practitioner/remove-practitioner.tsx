@@ -1,4 +1,4 @@
-import { ClassroomGroupDto, ReasonForLeavingDto } from '@ecdlink/core';
+import { ClassroomGroupDto, ReasonForLeavingDto, UserDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   BannerWrapper,
@@ -23,8 +23,8 @@ import {
   removePractionerModelSchema,
   initialRemovePractionerValues,
 } from '@/schemas/practitioner/remove-practioner';
-import * as styles from './remove-practioner.styles';
-import { RemovePractionerReasonsProps as RemovePractionerProps } from './remove-practioner.types';
+import * as styles from './remove-practitioner.styles';
+import { RemovePractionerProps } from './remove-practitioner.types';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -40,17 +40,18 @@ import {
   classroomsForCoachThunkActions,
 } from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
+import { userSelectors } from '@/store/user';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   onSuccess,
 }) => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
-  const user = useSelector(authSelectors.getAuthUser);
+  const authUser = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
   const reasonsForLeaving = useSelector(
-    staticDataSelectors.getReasonsForLeavingPractitioner
+    staticDataSelectors.getReasonsForPractitionerLeaving
   );
   const practitionerUserId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -62,6 +63,11 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   );
   const practitionerClassroom = coachClassrooms?.find(
     (item) => item.userId === practitionerUserId
+  );
+
+  const currentUser = useSelector(userSelectors.getUser) as UserDto;
+  const currentUserIsCoach = currentUser?.roles?.some(
+    (role) => role.name === 'Coach'
   );
 
   //Get list of practitioners for classroom
@@ -127,7 +133,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
 
   const classroomsGroupsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
-      user?.auth_token!
+      authUser?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
     setPractitionerClassroomGroups(classroomDetails);
     return classroomDetails;
@@ -149,7 +155,9 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
         }
       );
 
-      await new PractitionerService(user?.auth_token || '').RemovePractitioner(
+      await new PractitionerService(
+        authUser?.auth_token || ''
+      ).RemovePractitioner(
         practitioner?.userId!,
         formValues.removeReasonId,
         formValues.reasonDetail,
@@ -161,7 +169,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
       ).unwrap();
       await appDispatch(
         classroomsForCoachThunkActions.getClassroomForCoach({
-          id: user?.id!,
+          id: currentUser?.id!,
         })
       ).unwrap();
     }

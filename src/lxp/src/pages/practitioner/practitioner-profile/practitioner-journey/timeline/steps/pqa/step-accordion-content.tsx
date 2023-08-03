@@ -28,9 +28,14 @@ export const PQAVisits = ({
     (item) => !!item?.attended
   );
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating1 = pqaRatings?.[0];
+  const pqaRating2 = pqaRatings?.[1];
+  const pqaRating3 = pqaRatings?.[2];
 
   const sortedVisits = attendedPqaVisits?.sort((a, b) => {
     if (!a?.insertedDate && !b?.insertedDate) {

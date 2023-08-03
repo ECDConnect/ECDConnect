@@ -8,7 +8,7 @@ import {
 import { DocumentList, GetAllWorkflowStatus } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
-import UiTable from '../../components/ui-table';
+import UiTable from '../../components/old-ui-table';
 import { useUser } from '../../hooks/useUser';
 import DocumentPanel from './components/document-panel/document-panel';
 

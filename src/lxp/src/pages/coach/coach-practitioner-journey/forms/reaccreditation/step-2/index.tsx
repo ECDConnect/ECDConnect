@@ -18,6 +18,8 @@ import { usePrevious, useSessionStorage } from '@ecdlink/core';
 import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
+export const step2ReAccreditationVisitSection = 'Step 2';
+
 export const Step2ReAccreditation = ({
   smartStarter,
   isView,
@@ -39,7 +41,6 @@ export const Step2ReAccreditation = ({
     smartStarter?.user?.firstName ||
     smartStarter?.firstName ||
     'the SmartStarter';
-  const visitSection = 'Step 2';
 
   const [visitIdFromPractitionerJourney] = useSessionStorage(
     practitionerVisitIdKey
@@ -51,7 +52,7 @@ export const Step2ReAccreditation = ({
     getSectionsQuestionsByStep(
       visitIdFromPractitionerJourney ?? '',
       'reAccreditationPreviousFormData',
-      visitSection
+      step2ReAccreditationVisitSection
     )
   );
   const previousStatePreviousData = usePrevious(previousData) as
@@ -88,7 +89,7 @@ export const Step2ReAccreditation = ({
         setAnswers(updatedQuestion);
         return setSectionQuestions?.([
           {
-            visitSection: visitSection,
+            visitSection: step2ReAccreditationVisitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -99,7 +100,7 @@ export const Step2ReAccreditation = ({
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
-          visitSection: visitSection,
+          visitSection: step2ReAccreditationVisitSection,
           questions: [updatedQuestion],
         },
       ]);

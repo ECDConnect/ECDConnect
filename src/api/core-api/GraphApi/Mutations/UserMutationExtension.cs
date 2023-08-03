@@ -20,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ECDLink.Abstractrions.Constants;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -78,7 +79,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 FirstName = input.FirstName,
                 Surname = input.Surname,
                 FullName = $"{input.FirstName} {input.Surname}",
-                ContactPreference = input.ContactPreference,
+                ContactPreference = input.ContactPreference ?? MessageTypeConstants.SMS,
                 IsActive = true,
                 ProfileImageUrl = input.ProfileImageUrl,
                 TenantId = tenantId,
@@ -262,7 +263,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.FullName = $"{user.FirstName} {input.Surname}"; //use existing surname incase surname unchanged
             }
 
-            if (input.ContactPreference is not null
+            if (!string.IsNullOrWhiteSpace(input.ContactPreference)
                 && input.ContactPreference != user.ContactPreference)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "ContactPreference", ValueBefore = user.ContactPreference, ValueAfter = input.ContactPreference });
@@ -423,7 +424,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
-            user.IsActive = false;
+           // user.IsActive = false;
             user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);

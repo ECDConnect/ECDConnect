@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class BulkInvitationResult : IBulkInvitationResult
     {

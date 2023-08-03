@@ -101,7 +101,7 @@ export const Step18 = ({
   );
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const classroomGroups = allClassroomGroups.filter(
-    (x) => x.name !== NoPlaygroupClassroomType.name
+    (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
   const currentClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === smartStarter?.userId
@@ -110,17 +110,17 @@ export const Step18 = ({
     | ClassroomGroupDto[]
     | undefined;
 
-  const currentClassProgrammes = classProgrammes.filter((el) => {
-    return currentClassroomGroups.some((f) => {
-      return f.id === el.classroomGroupId;
+  const currentClassProgrammes = classProgrammes?.filter((el) => {
+    return currentClassroomGroups?.some((f) => {
+      return f?.id === el?.classroomGroupId;
     });
   });
 
-  const days = currentClassProgrammes.map((item) => item.meetingDay).sort();
+  const days = currentClassProgrammes?.map((item) => item?.meetingDay)?.sort();
 
   const stringDays = days
     // remove duplicates
-    .filter((element, index) => days.indexOf(element) === index)
+    .filter((element, index) => days?.indexOf(element) === index)
     .map((item) => numberToDayOfWeek(item, 'short'));
 
   const onOptionSelected = useCallback(
@@ -160,59 +160,55 @@ export const Step18 = ({
   );
 
   const handleChildren = useCallback(() => {
-    if (previousClassroomGroups?.length === currentClassroomGroups.length)
+    if (previousClassroomGroups?.length === currentClassroomGroups?.length)
       return;
 
     const filteredChildren = [];
-    const _allLearners = allLearners.filter(
-      (x) => !Boolean(x.stoppedAttendance)
+    const _allLearners = allLearners?.filter(
+      (x) => !Boolean(x?.stoppedAttendance)
     );
 
     for (const learner of _allLearners) {
       if (
-        learner.classroomGroupId !== currentClassProgrammes[0].classroomGroupId
+        !currentClassroomGroups.some(
+          (item) => item?.id === learner?.classroomGroupId
+        )
       )
         continue;
 
       const child = children?.find(
-        (child) => child.userId === learner.userId && child.isActive
+        (child) => child?.userId === learner?.userId && child?.isActive
       );
-      const childUser = childUsers?.find((y) => y.id === learner.userId);
+      const childUser = childUsers?.find((y) => y?.id === learner?.userId);
 
-      if (
-        child &&
-        child?.caregiverId &&
-        childUser?.firstName &&
-        childUser?.surname
-      ) {
+      if (child && childUser?.firstName && childUser?.surname) {
         filteredChildren.push(childUser);
       }
     }
 
-    const sortedChildren = filteredChildren
-      .filter((child) => {
-        if (child?.dateOfBirth === undefined) {
-          return false;
-        }
+    // TODO: check if this is necessary
+    // const sortedChildren = filteredChildren
+    //   .filter((child) => {
+    //     if (child?.dateOfBirth === undefined) {
+    //       return false;
+    //     }
 
-        const date = new Date(child?.dateOfBirth);
-        const minDate = new Date('1900-01-01');
-        const maxDate = new Date();
-        return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
-      })
-      .sort(
-        (a, b) =>
-          new Date(String(a?.dateOfBirth)).getTime() -
-          new Date(String(b?.dateOfBirth)).getTime()
-      );
-
-    setRegisteredChildren(sortedChildren);
+    //     const date = new Date(child?.dateOfBirth);
+    //     const minDate = new Date('1900-01-01');
+    //     const maxDate = new Date();
+    //     return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
+    //   })
+    //   .sort(
+    //     (a, b) =>
+    //       new Date(String(a?.dateOfBirth)).getTime() -
+    //       new Date(String(b?.dateOfBirth)).getTime()
+    //   );
+    setRegisteredChildren(filteredChildren);
   }, [
     allLearners,
     childUsers,
     children,
-    currentClassProgrammes,
-    currentClassroomGroups.length,
+    currentClassroomGroups,
     previousClassroomGroups?.length,
   ]);
 
@@ -252,7 +248,7 @@ export const Step18 = ({
   }, [
     isViewAnswers,
     previousData?.questions,
-    previousStatePreviousData?.questions.length,
+    previousStatePreviousData?.questions?.length,
     questions,
   ]);
 
@@ -307,9 +303,7 @@ export const Step18 = ({
       <Divider dividerType="dashed" />
       <div className="flex items-center gap-2">
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
-          {isPrincipal
-            ? currentClassProgrammes?.length
-            : currentClassroomGroups.length}
+          {currentClassroomGroups.length}
         </span>
         <Typography
           type="h4"
@@ -326,7 +320,11 @@ export const Step18 = ({
           type="body"
           text={isPrincipal ? 'Programme days' : 'Class days:'}
         />
-        <Typography color="textMid" type="body" text={stringDays.join(', ')} />
+        <Typography
+          color="textMid"
+          type="body"
+          text={stringDays.length ? stringDays.join(', ') : 'Not provided'}
+        />
       </div>
       <Divider dividerType="dashed" />
       <FormInput
@@ -337,14 +335,25 @@ export const Step18 = ({
         onChange={(e) => onOptionSelected(e.target.value, 0)}
         placeholder={'e.g. 4'}
       />
-      <FormInput
-        type="number"
-        label={questions[1].question}
-        value={questions[1].answer}
-        disabled={isViewAnswers}
-        onChange={(e) => onOptionSelected(e.target.value, 1)}
-        placeholder={'e.g. 3'}
-      />
+      <div>
+        <Typography type="h4" text={questions[1].question} color="textDark" />
+        <div className="flex">
+          <FormInput
+            type="number"
+            className="w-1/2"
+            value={questions[1].answer}
+            disabled={isViewAnswers}
+            onChange={(e) => onOptionSelected(e.target.value, 1)}
+            placeholder={'e.g. 3'}
+          />
+          <Typography
+            type="body"
+            text="hours"
+            color="textDark"
+            className="mt-4 ml-1"
+          />
+        </div>
+      </div>
       <div>
         <Typography
           type="h4"
@@ -356,7 +365,11 @@ export const Step18 = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           options={options}
-          selectedOptions={Boolean(questions[2].answer)}
+          selectedOptions={
+            questions[2].answer !== ''
+              ? Boolean(questions[2].answer)
+              : undefined
+          }
           onOptionSelected={(value) => onOptionSelected(value, 2)}
         />
       </div>

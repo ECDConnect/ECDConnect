@@ -23,13 +23,7 @@ import {
   visitTypes,
 } from './coach-practitioner-journey.types';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
-import {
-  Form,
-  Rating,
-  currentActivityKey,
-  isViewKey,
-  visitIdKey,
-} from './forms';
+import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
   PqaActions,
@@ -52,11 +46,11 @@ import {
   ScheduleProps,
   dateOptions,
   filterVisit,
-  sortVisit,
   timelineSteps,
 } from './timeline/timeline-steps';
 import {
   CalendarEventModel,
+  getAgeInYearsMonthsAndDays as getCurrentTimeInYearsMonthsAndDays,
   getFormattedDateInYearsMonthsAndDays,
   parseBool,
   useDialog,
@@ -69,24 +63,14 @@ import { addDays } from 'date-fns';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
 import { followUpDeadline } from './timeline/utils';
-import {
-  newReAccreditationFollowUpId,
-  newReAccreditationVisitId,
-} from './timeline/re-accreditation/step-accordion-content';
-import {
-  newPqaFollowUpId,
-  newPqaVisitId,
-} from './timeline/pqa/step-accordion-content';
-import { reAccreditationFollowUpQuestion } from './forms/general-support-visit';
+import { newReAccreditationFollowUpId } from './timeline/re-accreditation/step-accordion-content';
+import { newPqaFollowUpId } from './timeline/pqa/step-accordion-content';
+import { reAccreditationFollowUpQuestion } from './forms/general-support-visit/coaching-visit-or-call/constants';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
   const { state: routeState } =
     useLocation<CoachPractitionerJourneyPageState>();
-  const [pqaRating, setPqaRating] = useState<Rating | undefined>();
-  const [reAccreditationRating, setReAccreditationRating] = useState<
-    Rating | undefined
-  >();
   const selectedForm = window.sessionStorage.getItem(currentActivityKey);
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
@@ -128,26 +112,31 @@ export const CoachPractitionerJourney = () => {
   const currentReAccreditationRating = useSelector(
     getCurrentReAccreditationRatingByUserId(practitionerId)
   );
-  const lastAttendedPqaVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(
-      practitionerId,
-      'pQASiteVisits',
-      'pqa_visit_follow_up'
-    )
+  const lastAttendedPqaVisitWithoutFollowUp = useSelector(
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: 'pQASiteVisits',
+      followUpType: 'pqa_visit_follow_up',
+    })
   );
-  const lastAttendedPqaFollowUpVisit = useSelector(
-    getLastCoachAttendedFollowUpVisitByUserId(
-      practitionerId,
-      'pQASiteVisits',
-      'pqa_visit_follow_up'
-    )
+  const lastAttendedPqaVisit = useSelector(
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: 'pQASiteVisits',
+    })
+  );
+  const lastAttendedReAccreditationVisitWithoutFollowUp = useSelector(
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: 'reAccreditationVisits',
+      followUpType: 're_accreditation_follow_up',
+    })
   );
   const lastAttendedReAccreditationVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(
-      practitionerId,
-      'reAccreditationVisits',
-      're_accreditation_follow_up'
-    )
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: 'reAccreditationVisits',
+    })
   );
   const lastAttendedReAccreditationFollowUpVisit = useSelector(
     getLastCoachAttendedFollowUpVisitByUserId(
@@ -163,34 +152,32 @@ export const CoachPractitionerJourney = () => {
       'reAccreditationFollowUpVisitPreviousFormData'
     )
   );
+
+  const isFirstPqaVisit = timeline?.pQASiteVisits?.length === 1;
+  const isFirstReAccreditationVisit =
+    timeline?.reAccreditationVisits?.length === 1;
+
+  const newPqaVisit = timeline?.pQASiteVisits?.find(
+    (item) =>
+      !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
+  );
+  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
+    (item) =>
+      !item?.attended &&
+      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+  );
+
   const previousReAccreditationFollowUpAnswer =
     reAccreditationFollowUpAnswers?.find(
       (item) => item.question === reAccreditationFollowUpQuestion
     )?.questionAnswer;
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
-  const reAccreditationRating1 = timeline?.reAccreditationRating1;
-  const reAccreditationRating2 = timeline?.reAccreditationRating2;
-  const reAccreditationRating3 = timeline?.reAccreditationRating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
 
-  const pqaRatingColorList = [
-    pqaRating1?.overallRatingColor,
-    pqaRating2?.overallRatingColor,
-    pqaRating3?.overallRatingColor,
-    pqaRating?.color,
-  ];
-
-  const reAccreditationRatingColorList = [
-    reAccreditationRating1?.overallRatingColor,
-    reAccreditationRating2?.overallRatingColor,
-    reAccreditationRating3?.overallRatingColor,
-    reAccreditationRating?.color,
-  ];
-
-  const reAccreditationRatingOrangeColorCount =
-    reAccreditationRatingColorList.filter((item) => item === 'Warning').length;
+  const pqaRating3 = pqaRatings?.[2];
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentPqaFollowUpDeadline = pqaRating3?.overallRating
@@ -198,57 +185,35 @@ export const CoachPractitionerJourney = () => {
     : followUpDeadline.default;
   const isPQAFollowUpDeadline =
     addDays(
-      new Date(lastAttendedPqaVisit?.insertedDate),
+      new Date(lastAttendedPqaVisitWithoutFollowUp?.insertedDate),
       currentPqaFollowUpDeadline
     ) <= new Date();
+
   const isPQAFollowUp =
-    currentPqaRating.rating?.overallRating &&
-    !lastAttendedPqaVisit?.visitType?.name?.includes(
+    !isFirstPqaVisit &&
+    !!newPqaVisit &&
+    !lastAttendedPqaVisitWithoutFollowUp?.visitType?.name?.includes(
       visitTypes.pqa.thirdPQA.name
+    ) &&
+    !lastAttendedPqaVisit?.visitType?.name?.includes(
+      visitTypes.pqa.followUp.name
     );
 
   const currentReAccreditationFollowUpDeadline = followUpDeadline.default;
   const isReAccreditationFollowUpDeadline =
     addDays(
-      new Date(lastAttendedReAccreditationVisit?.insertedDate),
+      new Date(lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate),
       currentReAccreditationFollowUpDeadline
     ) <= new Date();
   const isReAccreditationFollowUp =
-    currentReAccreditationRating.rating?.overallRating &&
-    !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
+    !isFirstReAccreditationVisit &&
+    !!newReAccreditationVisit &&
+    !lastAttendedReAccreditationVisitWithoutFollowUp?.visitType?.name?.includes(
       visitTypes.reaccreditation.third.name
+    ) &&
+    !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
+      visitTypes.reaccreditation.followUp.name
     );
-
-  const isNewPqaVisitFromBadRating =
-    !pqaRatingColorList.some((item) => item === 'Success') &&
-    !pqaRating3?.overallRating &&
-    timeline?.pQASiteVisits?.every(
-      (item) =>
-        item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
-    ) &&
-    new Date(lastAttendedPqaFollowUpVisit?.insertedDate) >
-      new Date(lastAttendedPqaVisit?.insertedDate);
-
-  const isAllCompletedVisits = timeline?.pQASiteVisits
-    ?.filter(
-      (item) => !item?.visitType?.name?.includes(visitTypes.pqa.followUp.name)
-    )
-    ?.some((item) => !item?.attended);
-  const isNewPqaVisitFromBadReAccreditationRating =
-    isAllCompletedVisits && reAccreditationRatingOrangeColorCount === 2;
-
-  const isNewPqaVisit =
-    isNewPqaVisitFromBadRating || isNewPqaVisitFromBadReAccreditationRating;
-
-  const isReAccreditationNewVisit =
-    !reAccreditationRating3?.overallRating &&
-    timeline?.reAccreditationVisits?.every(
-      (item) =>
-        item?.attended &&
-        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-    ) &&
-    new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
-      new Date(lastAttendedReAccreditationVisit?.insertedDate);
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
@@ -263,6 +228,7 @@ export const CoachPractitionerJourney = () => {
     setShowForm(true);
   };
 
+  // TODO: check this rule
   const isReadyToReAccreditationVisit =
     previousReAccreditationFollowUpAnswer === 'true';
 
@@ -386,50 +352,19 @@ export const CoachPractitionerJourney = () => {
     (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
   );
   const uncompletedPqaVisits =
-    (filteredPqaVisits?.length && filteredPqaVisits) ||
-    // TODO: check if add this visit manually makes sense
-    (isNewPqaVisit
-      ? [
-          {
-            id: newPqaVisitId,
-            attended: false,
-            visitType: {
-              description: 'First PQA',
-              name: visitTypes.pqa.firstPQA.name,
-              order: 1,
-            },
-            // TODO add schedule
-            plannedVisitDate: new Date(),
-          } as Visit,
-        ]
-      : []);
+    filteredPqaVisits?.length && !isPQAFollowUp ? filteredPqaVisits : [];
 
-  const filteredReAccreditionVisits = timeline?.reAccreditationVisits?.filter(
+  const filteredReAccreditationVisits = timeline?.reAccreditationVisits?.filter(
     (visit) =>
-      !reAccreditationFormData?.some((item) => item.visitId === visit?.id) &&
-      !visit?.attended
+      !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
   );
   const uncompletedReAccreditationVisits =
-    (filteredReAccreditionVisits?.length && filteredReAccreditionVisits) ||
-    // TODO: check if add this visit manually makes sense
-    (isReadyToReAccreditationVisit || isReAccreditationNewVisit
-      ? [
-          {
-            id: newReAccreditationVisitId,
-            attended: false,
-            visitType: {
-              description: 'Annual re-accreditation PQA',
-              name: visitTypes.reaccreditation.first.name,
-              order: 1,
-            },
-            // TODO add schedule
-            plannedVisitDate: new Date(),
-          } as Visit,
-        ]
-      : []);
+    filteredReAccreditationVisits?.length && !isReAccreditationFollowUp
+      ? filteredReAccreditationVisits
+      : [];
 
   const uncompletedPqaFollowUpVisit =
-    isPQAFollowUpDeadline && isPQAFollowUp && !isNewPqaVisit
+    isPQAFollowUpDeadline && isPQAFollowUp
       ? [
           {
             id: newPqaFollowUpId,
@@ -465,14 +400,13 @@ export const CoachPractitionerJourney = () => {
   const uncompletedVisits = [
     ...uncompletedPrePqaVisits,
     ...uncompletedPqaVisits,
-    ...uncompletedReAccreditationVisits,
     ...uncompletedPqaFollowUpVisit,
+    ...uncompletedReAccreditationVisits,
     ...uncompletedReAccreditationFollowUpVisit,
   ];
 
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
-    .sort(sortVisit)
     ?.map(
       (visit): MenuListDataItem<{ visitId?: string }> => ({
         showIcon: true,
@@ -571,9 +505,23 @@ export const CoachPractitionerJourney = () => {
     const isReAccreditationOrangeRating =
       currentReAccreditationRating?.rating?.overallRatingColor === 'Warning';
 
+    const isPqaGreenRating =
+      !isPqaOrangeRating &&
+      !isPqaRedRating &&
+      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate &&
+      !lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate;
+    const isReAccreditationGreenRating =
+      !isReAccreditationOrangeRating &&
+      !isReAccreditationRedRating &&
+      !!lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate;
+
+    const { years } = getCurrentTimeInYearsMonthsAndDays(
+      lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+    );
+
     if (
       (isPqaOrangeRating || isPqaRedRating) &&
-      !!lastAttendedPqaVisit?.insertedDate
+      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate
     ) {
       return (
         <Alert
@@ -582,7 +530,7 @@ export const CoachPractitionerJourney = () => {
           title={isPqaRedRating ? 'Red PQA rating' : 'Orange PQA rating'}
           titleColor="textDark"
           message={new Date(
-            lastAttendedPqaVisit?.insertedDate
+            lastAttendedPqaVisitWithoutFollowUp?.insertedDate
           ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
           messageColor="textMid"
           customIcon={
@@ -600,7 +548,7 @@ export const CoachPractitionerJourney = () => {
 
     if (
       (isReAccreditationRedRating || isReAccreditationOrangeRating) &&
-      !!lastAttendedReAccreditationVisit?.insertedDate
+      !!lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
     ) {
       return (
         <Alert
@@ -613,7 +561,7 @@ export const CoachPractitionerJourney = () => {
           }
           titleColor="textDark"
           message={new Date(
-            lastAttendedReAccreditationVisit?.insertedDate
+            lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
           ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
           messageColor="textMid"
           customIcon={
@@ -629,7 +577,81 @@ export const CoachPractitionerJourney = () => {
       );
     }
 
-    return <></>;
+    if (isPqaGreenRating || isReAccreditationGreenRating) {
+      return (
+        <Alert
+          className="mt-4"
+          type="success"
+          variant="flat"
+          title={
+            isPqaGreenRating
+              ? 'First PQA received'
+              : 'PQA re-accreditation awarded'
+          }
+          customMessage={
+            <div>
+              {isReAccreditationGreenRating && (
+                <Typography
+                  type="body"
+                  color="textDark"
+                  text={years > 1 ? `${years} years` : `${years} year`}
+                />
+              )}
+              <div className="flex justify-between">
+                <Typography
+                  className={isPqaGreenRating ? 'pt-2' : ''}
+                  type="help"
+                  color="textMid"
+                  text={new Date(
+                    isPqaGreenRating
+                      ? lastAttendedPqaVisitWithoutFollowUp.insertedDate
+                      : lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+                  ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
+                />
+                <div className="ml-16 flex">
+                  <span className="text-successMain text-xl">●</span>
+                  <p
+                    className="text-textMid text-12 ml-2"
+                    style={{ marginTop: 6 }}
+                  >
+                    Green rating
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+          messageColor="textMid"
+          customIcon={<BalloonsIcon />}
+        />
+      );
+    }
+
+    return (
+      <Alert
+        className="mt-4"
+        type={
+          timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
+        }
+        variant="flat"
+        title={timeline?.smartSpaceLicenseStatus || ''}
+        message={
+          timeline?.smartSpaceLicenseDate
+            ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
+                'en-ZA',
+                dateLongMonthOptions
+              )
+            : ''
+        }
+        messageColor="textMid"
+        customIcon={
+          timeline?.smartSpaceLicenseColor === 'Success' ? (
+            <BalloonsIcon />
+          ) : (
+            <></>
+          )
+        }
+      />
+    );
   };
 
   useEffect(() => {
@@ -646,12 +668,7 @@ export const CoachPractitionerJourney = () => {
     (showForm && selectedForm === visitTypes.pqa.followUp.name)
   ) {
     return (
-      <Form
-        onBack={onFormBack}
-        visitId={currentVisit?.extraData?.visitId}
-        setPqaRating={setPqaRating}
-        setReAccreditationRating={setReAccreditationRating}
-      />
+      <Form onBack={onFormBack} visitId={currentVisit?.extraData?.visitId} />
     );
   }
 
@@ -682,30 +699,6 @@ export const CoachPractitionerJourney = () => {
             />
           )}
           {renderAlert()}
-          <Alert
-            className="mt-4"
-            type={
-              timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
-            }
-            variant="flat"
-            title={timeline?.smartSpaceLicenseStatus || ''}
-            message={
-              timeline?.smartSpaceLicenseDate
-                ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
-                    'en-ZA',
-                    dateLongMonthOptions
-                  )
-                : ''
-            }
-            messageColor="textMid"
-            customIcon={
-              timeline?.smartSpaceLicenseColor === 'Success' ? (
-                <BalloonsIcon />
-              ) : (
-                <></>
-              )
-            }
-          />
           <Typography
             className="mt-4 mb-2"
             type="h4"

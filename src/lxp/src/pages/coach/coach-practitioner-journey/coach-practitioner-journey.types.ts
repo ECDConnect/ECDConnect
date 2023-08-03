@@ -7,6 +7,8 @@ export interface CoachPractitionerJourneyPageState {
   actionParams?: any;
 }
 
+export const maxNumberOfVisits = 3;
+
 export const visitTypes = {
   supportVisit: 'General support visit',
   delicensing: 'Delicensing',

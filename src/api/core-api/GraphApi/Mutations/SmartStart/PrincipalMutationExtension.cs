@@ -127,12 +127,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return newPrincipal;
         }
 
-        public Practitioner SwitchPrincipal([Service] PersonnelService personnelManager,
+        public bool SwitchPrincipal([Service] PersonnelService personnelManager,
             [Service] UserManager<ApplicationUser> userManager,
             string oldPrincipalUserId, 
             string newPrincipalUserId)
         {
-            return personnelManager.SwitchPrincipal(userManager, oldPrincipalUserId, newPrincipalUserId);
+            var result = personnelManager.SwitchPrincipal(userManager, oldPrincipalUserId, newPrincipalUserId);
+            return result != null;
         }
 
         public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager, 

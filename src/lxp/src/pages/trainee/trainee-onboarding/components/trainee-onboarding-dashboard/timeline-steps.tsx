@@ -1,5 +1,8 @@
 import { Colours, StepItem } from '@ecdlink/ui';
 import { Maybe, TraineeOnBoardTimeline, Visit } from '@ecdlink/graphql';
+import { useSelector } from 'react-redux';
+import { TraineeState, traineeSelectors } from '@/store/trainee';
+import { store } from '@/store';
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -72,6 +75,10 @@ export const getStepType = (
 export const getStepDate = (date?: string) =>
   !!date ? `By ${new Date(date).toLocaleDateString('en-ZA', dateOptions)}` : '';
 
+const state = store.getState();
+const { trainee: traineDataState } = state;
+const traineeTimelineData = traineDataState?.traineeOnboardTimeline;
+
 export const setStep = (
   status?: Maybe<string>,
   date?: string,
@@ -79,9 +86,16 @@ export const setStep = (
   onView?: (text: string) => void,
   nextStep?: string
 ) => {
+  const startLicenceStatus = traineeTimelineData?.starterLicenseStatus;
+  const consolidationMeetingStatus =
+    traineeTimelineData?.consolidationMeetingStatus;
   const lincenceReceveid = 'Starter Licence received';
   const smartSpaceLincenceReceveid = 'SmartSpace Licence received';
-  const consolidationMeetingScheduled = 'Consolidation meeting scheduled';
+  const consolidationMeetingAttended =
+    consolidationMeetingStatus === 'Consolidation meeting attended';
+  const starterLicenceReceived =
+    startLicenceStatus === 'SmartSpace Licence received';
+
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
@@ -101,8 +115,10 @@ export const setStep = (
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
-        (stepCompleted && status !== consolidationMeetingScheduled) ||
-        nextStep === status
+        stepCompleted ||
+        (nextStep === status && starterLicenceReceived) ||
+        (consolidationMeetingAttended && status === 'Get community support') ||
+        (consolidationMeetingAttended && status === 'Register 3 children')
           ? true
           : false,
       actionButtonText: stepCompleted ? 'View' : nextStepButtontext(status),

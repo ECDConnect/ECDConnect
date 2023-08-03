@@ -1,8 +1,10 @@
-using AngleSharp.Dom;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -97,6 +99,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
                 return trainee;
             }
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Trainee UpdateTraineeAddress(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory, 
+            string userId,
+            TraineeAddressModel input)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var _traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
+
+            Trainee trainee = _traineeRepo.GetByUserId(userId);
+            trainee.HomeAddressLine1 = input.HomeAddressLine1;
+            trainee.HomeAddressLine2 = input.HomeAddressLine2;
+            trainee.HomeAddressLine3 = input.HomeAddressLine3;
+            trainee.HomeAddressPostalCode = input.HomeAddressPostalCode;
+            
+            return _traineeRepo.Update(trainee);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public License AddSmartSpaceLicenseForTrainee(
+            [Service] UserLicenseManager licenseManager,
+            string userId,
+            DateTime dateAwarded)
+        {
+            return licenseManager.AddSmartSpaceLicense(userId, dateAwarded);
         }
 
     }

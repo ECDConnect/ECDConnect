@@ -149,7 +149,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId);
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
-                var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+                var children = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
                 return children;
             }
             else return new List<Child>();
@@ -242,9 +242,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var practitionerToPromote = _practiGenericRepo.GetByUserId(newPrincipalUserId);
             var practitionerToDemote = _practiGenericRepo.GetByUserId(oldPrincipalUserId);
+
+            var isRolePrincipal = practitionerToDemote.IsPrincipal.HasValue && practitionerToDemote.IsPrincipal.Value;
+            var isRoleFAA = practitionerToDemote.IsFundaAppAdmin.HasValue && practitionerToDemote.IsFundaAppAdmin.Value;
+
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
-                practitionerToPromote.IsPrincipal = true;
+                if (isRolePrincipal) practitionerToPromote.IsPrincipal = true;
+                if (isRoleFAA) practitionerToPromote.IsPrincipal = true;
                 practitionerToPromote.ShareInfo = true;
                 practitionerToPromote.PrincipalHierarchy = null;
                 practitionerToPromote.DateLinked = null;
@@ -252,7 +257,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerToPromote.DateAccepted = null;
                 _practiGenericRepo.Update(practitionerToPromote);
 
-                practitionerToDemote.IsPrincipal = false;
+                if (isRolePrincipal) practitionerToPromote.IsPrincipal = false;
+                if (isRoleFAA) practitionerToPromote.IsPrincipal = false;
                 practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;
@@ -281,11 +287,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user to principal
                 var userToPromote = userManager.FindByIdAsync(newPrincipalUserId).Result;
-                var result = userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
-                result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result;
+                IdentityResult result = null;
+                result = userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
+                if (isRolePrincipal) result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result;
+                if (isRoleFAA) result = userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result;
 
                 var userToDemote = userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result;
+                if (isRolePrincipal) result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result;
+                if (isRoleFAA) result = userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result;
                 result = userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;
@@ -394,158 +403,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             PractitionerTimeline timeline = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
-            // Ratings
-            timeline.PQARating1 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
-            if (timeline.PQARating1.ActualVisitDate != null) { 
-                if (timeline.PQARating1.OverallRatingColor != MetricsColorEnum.Success.ToString())
-                {
-                    Visit visit2 = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_pqa_visit_2);
-
-                    if (visit2 == null)
-                    {
-                        DateTime deadlineDate; 
-                        if (timeline.PQARating1.OverallRatingColor == MetricsColorEnum.Error.ToString())
-                        {
-                            // Red rating follow up -- if the practitioner receives a red rating:
-                            // the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit +14 days
-                            deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddDays(14);
-                        }
-                        else
-                        {
-                            // Orange rating follow up -- if the practitioner receives an orange rating:
-                            // coach must schedule another First PQA visit when the practitioner is ready (as determined in the follow up visit flow); deadline = date of the last First PQA visit + 60 days
-                            deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddDays(60);
-                        }
-
-                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_2).FirstOrDefault();
-                        var visitModel = new VisitModel();
-                        visitModel.VisitType = visitType;
-                        visitModel.MotherId = null;
-                        visitModel.InfantId = null;
-                        visitModel.LinkedVisitId = null;
-                        visitModel.PractitionerId = practitioner.Id;
-                        visitModel.Attended = false;
-                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        _visitManager.AddVisitForPractitioner(visitModel);
-                    }
-                } else
-                {
-                    // Re-accreditation visit
-                    // deadline - First PQA green rating received date + 1 year
-                    Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
-
-                    if (reVisit == null)
-                    {
-                        var deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddYears(1);
-
-                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
-                        var visitModel = new VisitModel();
-                        visitModel.VisitType = visitType;
-                        visitModel.MotherId = null;
-                        visitModel.InfantId = null;
-                        visitModel.LinkedVisitId = null;
-                        visitModel.PractitionerId = practitioner.Id;
-                        visitModel.Attended = false;
-                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        _visitManager.AddVisitForPractitioner(visitModel);
-                    }
-                }
-            }
-
-            timeline.PQARating2 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_2);
-            if (timeline.PQARating2.ActualVisitDate != null)
+            // PQA Visits --------------------------
+            List<Visit> allPqaVisits = _visitManager.GetPQAVisitsForPractitioner(userId);
+            // Get rating for each visit for display in front-end
+            List<PQARating> _pqaRatings = new List<PQARating>();
+            foreach (Visit visit in allPqaVisits)
             {
-                if (timeline.PQARating2.OverallRatingColor != MetricsColorEnum.Success.ToString())
-                {
-                    Visit visit3 = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_pqa_visit_3);
-
-                    if (visit3 == null)
-                    {
-                        DateTime deadlineDate;
-                        if (timeline.PQARating2.OverallRatingColor == MetricsColorEnum.Error.ToString())
-                        {
-                            // Red rating follow up -- if the practitioner receives a red rating:
-                            // the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit +14 days
-                            deadlineDate = timeline.PQARating2.ActualVisitDate.Value.AddDays(14);
-                        }
-                        else
-                        {
-                            // Orange rating follow up -- if the practitioner receives an orange rating:
-                            // coach must schedule another First PQA visit when the practitioner is ready (as determined in the follow up visit flow); deadline = date of the last First PQA visit + 60 days
-                            deadlineDate = timeline.PQARating2.ActualVisitDate.Value.AddDays(60);
-                        }
-
-                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_3).FirstOrDefault();
-                        var visitModel = new VisitModel();
-                        visitModel.VisitType = visitType;
-                        visitModel.MotherId = null;
-                        visitModel.InfantId = null;
-                        visitModel.LinkedVisitId = null;
-                        visitModel.PractitionerId = practitioner.Id;
-                        visitModel.Attended = false;
-                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        _visitManager.AddVisitForPractitioner(visitModel);
-                    }
-                } 
-                else
-                {
-                    // Re-accreditation visit
-                    // deadline - First PQA green rating received date + 1 year
-                    Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
-
-                    if (reVisit == null)
-                    {
-                        var deadlineDate = timeline.PQARating2.ActualVisitDate.Value.AddYears(1);
-
-                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
-                        var visitModel = new VisitModel();
-                        visitModel.VisitType = visitType;
-                        visitModel.MotherId = null;
-                        visitModel.InfantId = null;
-                        visitModel.LinkedVisitId = null;
-                        visitModel.PractitionerId = practitioner.Id;
-                        visitModel.Attended = false;
-                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        _visitManager.AddVisitForPractitioner(visitModel);
-                    }
-                }
+                _pqaRatings.Add(_visitDataManager.GetPractitionerPQARating(visit));
             }
+            timeline.PQARatings = _pqaRatings;
+           
 
-            timeline.PQARating3 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
-            if (timeline.PQARating3.ActualVisitDate != null)
+            // Re-accreditation --------------------------
+            List<Visit> allAccreditationVisits = _visitManager.GetReAccreditationVisitsForPractitioner(userId);
+            List<PQARating> _accredRatings = new List<PQARating>();
+            foreach (Visit visit in allPqaVisits)
             {
-                if (timeline.PQARating3.OverallRatingColor == MetricsColorEnum.Success.ToString())
-                {
-                    // Re-accreditation visit
-                    // deadline - First PQA green rating received date + 1 year
-                    Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
-
-                    if (reVisit == null)
-                    {
-                        var deadlineDate = timeline.PQARating3.ActualVisitDate.Value.AddYears(1);
-
-                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
-                        var visitModel = new VisitModel();
-                        visitModel.VisitType = visitType;
-                        visitModel.MotherId = null;
-                        visitModel.InfantId = null;
-                        visitModel.LinkedVisitId = null;
-                        visitModel.PractitionerId = practitioner.Id;
-                        visitModel.Attended = false;
-                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        _visitManager.AddVisitForPractitioner(visitModel);
-                    }
-                }
+                _accredRatings.Add(_visitDataManager.GetPractitionerReAccreditationRating(visit));
             }
-            timeline.ReAccreditationRating1 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
-            timeline.ReAccreditationRating2 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_2);
-            timeline.ReAccreditationRating3 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_3);
-            
+            timeline.ReAccreditationRatings = _accredRatings;
 
             // Starter license received
             License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
@@ -629,6 +505,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> support_visits = new List<Visit>();
             List<Visit> reaccreditation_visits = new List<Visit>();
             List<Visit> requested_coach_visits = new List<Visit>();
+            List<Visit> self_visits = new List<Visit>();
 
             foreach (Visit visit in visits)
             {
@@ -668,22 +545,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
                     {
-                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
+                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
                         visit.OverallRatingColor = pqaRating.OverallRatingColor;
                         pqa_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_2)
-                    {
-                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_2);
-                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                        pqa_visits.Add(visit);
-                    }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_3)
-                    {
-                        PQARating rating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
-                        visit.OverallRatingColor = rating.OverallRatingColor;
-                        pqa_visits.Add(visit);
-                    }
+                    
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
                     {
                         pqa_visits.Add(visit);
@@ -694,26 +560,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
                     {
-                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
+                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
                         visit.OverallRatingColor = rating.OverallRatingColor;
-
-                       // var months = GetMonthDifference(today, visit.PlannedVisitDate);
-                       // if (months <= 3)
-                      //  {
-                            reaccreditation_visits.Add(visit);
-                       // }
-                    }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2)
-                    {
-                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_2);
-                        visit.OverallRatingColor = rating.OverallRatingColor;
-                        reaccreditation_visits.Add(visit);
-                    }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_3)
-                    {
-                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_3);
-                        visit.OverallRatingColor = rating.OverallRatingColor;
-                        reaccreditation_visits.Add(visit);
+                         reaccreditation_visits.Add(visit);
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
                     {
@@ -723,7 +572,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         support_visits.Add(visit);
                     }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
+                    {
+                        reaccreditation_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_self_assessment)
+                    {
+                        self_visits.Add(visit);
+                    }
                 }
+            }
+
+            // Self Assessment
+            if (self_visits.Count > 0)
+            {
+                Visit selfVisit = self_visits.OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+
+                timeline.SelfAssessmentStatus = Constants.SSSettings.self_assessment;
+                timeline.SelfAssessmentColor = MetricsColorEnum.Success.ToString();
+                timeline.SelfAssessmentDate = selfVisit?.ActualVisitDate;
             }
 
             timeline.PrePQASiteVisits = pre_pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
@@ -731,6 +598,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.SupportVisits = support_visits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.ReAccreditationVisits = reaccreditation_visits.OrderBy(x => x.PlannedVisitDate).ToList();
             timeline.RequestedCoachVisits = requested_coach_visits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.SelfAssessmentVisits = self_visits.OrderBy(x => x.PlannedVisitDate).ToList();
 
             return timeline;
         }
@@ -874,7 +742,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Visit visit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
             if (visit != null)
             {
-                if (visit.Attended == true)
+                if (visit.Attended == false)
+                {
+                    visit = _visitDataManager.MarkChecklistVisitStatus(visit.Id);
+                }
+
+                if (visit?.Attended == true)
                 {
                     timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
                     timeline.SmartSpaceChecklistColor = MetricsColorEnum.Success.ToString();

@@ -1,0 +1,1 @@
+CREATE INDEX aspnetusers_fullname_idx ON public."AspNetUsers" USING btree ("FullName", "IdNumber", "PhoneNumber", "Email")

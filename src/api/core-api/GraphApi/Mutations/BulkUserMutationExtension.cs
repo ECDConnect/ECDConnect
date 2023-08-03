@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
@@ -258,7 +259,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
                 catch (Exception ex)
                 {
-                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user.UserName}"));
+                    _logger.LogError(ex, $"Could not send invitation to user: {user?.UserName}");
+                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user?.UserName}"));
                 }
             }
 

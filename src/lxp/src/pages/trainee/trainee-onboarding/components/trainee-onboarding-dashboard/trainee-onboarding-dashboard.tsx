@@ -138,7 +138,7 @@ export const OnboardingTraineeDashboard: React.FC<
       title={'Business'}
       subTitle={today}
       color={'primary'}
-      onBack={() => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)}
+      onBack={() => history.push(ROUTES.DASHBOARD)}
       displayHelp={true}
       onHelp={displayTutorial}
       displayOffline={!isOnline}
