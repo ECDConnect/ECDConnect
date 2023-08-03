@@ -4567,11 +4567,9 @@ export type Mutation = {
   updateIncome?: Maybe<ResultReturnObject>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
-  updateInfantAdditionalDueDates: Scalars['Boolean'];
   updateInfantCaregiver?: Maybe<Infant>;
   updateInfantCaregiverAddress?: Maybe<Infant>;
   updateInfantCaregiverContactDetails?: Maybe<Infant>;
-  updateInfantDueDates: Scalars['Boolean'];
   updateInfographics?: Maybe<Infographics>;
   updateIntegrationAudit?: Maybe<IntegrationAudit>;
   updateIntegrationColumnMapping?: Maybe<IntegrationColumnMapping>;
@@ -4585,11 +4583,9 @@ export type Mutation = {
   updateMessageTemplate?: Maybe<MessageTemplate>;
   updateMoreInformation?: Maybe<MoreInformation>;
   updateMother?: Maybe<Mother>;
-  updateMotherAdditionalDueDates: Scalars['Boolean'];
   updateMotherAddress?: Maybe<Mother>;
   updateMotherContactDetails?: Maybe<Mother>;
   updateMotherDeliveryDate?: Maybe<Mother>;
-  updateMotherDueDates: Scalars['Boolean'];
   updateNavigation?: Maybe<Navigation>;
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
@@ -7018,6 +7014,7 @@ export type PqaRating = {
   __typename?: 'PQARating';
   actualVisitDate?: Maybe<Scalars['DateTime']>;
   children?: Maybe<Array<Maybe<PqaRatingChild>>>;
+  linkedVisitId?: Maybe<Scalars['String']>;
   overallRating?: Maybe<Scalars['String']>;
   overallRatingColor?: Maybe<Scalars['String']>;
   overallRatingStars?: Maybe<Scalars['String']>;
@@ -7055,6 +7052,7 @@ export type PqaRatingFilterInput = {
   actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   and?: InputMaybe<Array<PqaRatingFilterInput>>;
   children?: InputMaybe<ListFilterInputTypeOfPqaRatingChildFilterInput>;
+  linkedVisitId?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<PqaRatingFilterInput>>;
   overallRating?: InputMaybe<StringOperationFilterInput>;
   overallRatingColor?: InputMaybe<StringOperationFilterInput>;
@@ -7068,6 +7066,7 @@ export type PqaRatingFilterInput = {
 export type PqaRatingInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   children?: InputMaybe<Array<InputMaybe<PqaRatingChildInput>>>;
+  linkedVisitId?: InputMaybe<Scalars['String']>;
   overallRating?: InputMaybe<Scalars['String']>;
   overallRatingColor?: InputMaybe<Scalars['String']>;
   overallRatingStars?: InputMaybe<Scalars['String']>;
@@ -7079,6 +7078,7 @@ export type PqaRatingInput = {
 
 export type PqaRatingSortInput = {
   actualVisitDate?: InputMaybe<SortEnumType>;
+  linkedVisitId?: InputMaybe<SortEnumType>;
   overallRating?: InputMaybe<SortEnumType>;
   overallRatingColor?: InputMaybe<SortEnumType>;
   overallRatingStars?: InputMaybe<SortEnumType>;
