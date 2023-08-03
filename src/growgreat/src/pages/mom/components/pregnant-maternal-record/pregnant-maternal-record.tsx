@@ -137,6 +137,10 @@ export const PregnantMaternalCaseRecord: React.FC<
     }
   }, [isFromClientProfile]);
 
+  const handleDateChangeRaw = (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+  };
+
   return (
     <>
       <Typography
@@ -225,6 +229,9 @@ export const PregnantMaternalCaseRecord: React.FC<
               maxDate={dateAfter280days}
               renderCustomHeader={() => <div>Day</div>}
               onKeyDown={onKeyDown}
+              disabledKeyboardNavigation
+              onFocus={(e) => e.target.blur()}
+              onChangeRaw={(e) => handleDateChangeRaw(e)}
             />
             <DatePicker
               placeholderText={'Please select a date'}
@@ -239,6 +246,9 @@ export const PregnantMaternalCaseRecord: React.FC<
               showMonthYearPicker
               showPopperArrow={true}
               onKeyDown={onKeyDown}
+              disabledKeyboardNavigation
+              onFocus={(e) => e.target.blur()}
+              onChangeRaw={(e) => handleDateChangeRaw(e)}
             />
             <DatePicker
               placeholderText={'Please select a date'}
@@ -252,6 +262,9 @@ export const PregnantMaternalCaseRecord: React.FC<
               renderCustomHeader={() => <div>Year</div>}
               showYearPicker
               onKeyDown={onKeyDown}
+              disabledKeyboardNavigation
+              onFocus={(e) => e.target.blur()}
+              onChangeRaw={(e) => handleDateChangeRaw(e)}
             />
           </div>
           <Alert
