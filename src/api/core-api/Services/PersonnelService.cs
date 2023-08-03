@@ -753,6 +753,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitioner);
 
                 user.IsActive = false;
+                // TODO: Can a user re-enable themselves through multiple failed login attempts?
+                user.LockoutEnabled = true;
+                user.LockoutEnd = DateTime.MaxValue;
                 _userManager.UpdateAsync(user);
 
                 return true;

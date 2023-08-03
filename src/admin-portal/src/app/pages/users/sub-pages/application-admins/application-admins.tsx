@@ -8,12 +8,7 @@ import {
   usePanel,
   UserDto,
 } from '@ecdlink/core';
-import {
-  DeleteUser,
-  SortEnumType,
-  UserList,
-  getUserCount,
-} from '@ecdlink/graphql';
+import { SortEnumType, UserList, getUserCount } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -30,7 +25,6 @@ export default function ApplicationAdmins() {
   const [searchValue, setSearchValue] = useState('');
   const [tableData, setTableData] = useState<any[]>([]);
 
-  const [deleteUser] = useMutation(DeleteUser);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
   const panel = usePanel();
   const [statusFilter, setStatusFilter] = useState('active');
@@ -131,7 +125,7 @@ export default function ApplicationAdmins() {
   }, [searchValue, nameFilter]);
 
   useEffect(() => {
-    if (data && data.users) {
+    if (data?.users) {
       const copyItems = data.users;
       const modifiedData = copyItems.map(
         (obj: { [x: string]: any; __typename: any; roles: any }) => {
@@ -174,6 +168,7 @@ export default function ApplicationAdmins() {
             onSubmit();
             if (userCreated) {
               refetch();
+              // TODO: Use actual pagination when table component supports it.
               // refetchCount();
             }
           }}

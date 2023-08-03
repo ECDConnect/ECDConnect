@@ -406,6 +406,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var user = await userManager.FindByIdAsync(id);
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
 
+            if (user == default(ApplicationUser))
+            {
+                return false;
+            }
+
             // Don't let normal users disable admins...
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin)
@@ -419,11 +424,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            if (user == default(ApplicationUser))
-            {
-                return false;
-            }
-
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTime.MaxValue;
             user.IsActive = false;
             user.UpdatedDate = DateTime.UtcNow;
 
@@ -432,6 +434,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // Manage points for user
             pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
+
             return updateResult.Succeeded;
         }
 
