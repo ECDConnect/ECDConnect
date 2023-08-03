@@ -322,6 +322,21 @@ class PQAService {
             selfAssessmentColor
             selfAssessmentDate
             selfAssessmentStatus
+            selfAssessmentVisits {
+              id
+              plannedVisitDate
+              attended
+              comment
+              insertedDate
+              visitType {
+                type
+                order
+                name
+                normalizedName
+                description
+              }
+              eventId
+            }
             smartSpaceLicenseColor
             smartSpaceLicenseDate
             smartSpaceLicenseStatus

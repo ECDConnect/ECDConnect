@@ -378,8 +378,21 @@ export const CoachPractitionerJourney = () => {
   const filteredPqaVisits = timeline?.pQASiteVisits?.filter(
     (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
   );
-  const uncompletedPqaVisits =
-    filteredPqaVisits?.length && !isPQAFollowUp ? filteredPqaVisits : [];
+  const uncompletedPqaVisits = [
+    {
+      id: 'dummy-re-accreditation',
+      attended: false,
+      visitType: {
+        description: 'Annual re-accreditation PQA',
+        name: visitTypes.pqa.firstPQA.name,
+        order: 1,
+      },
+      // TODO add schedule
+      plannedVisitDate: new Date(),
+    } as Visit,
+  ];
+
+  // filteredPqaVisits?.length && !isPQAFollowUp ? filteredPqaVisits : [];
 
   const filteredReAccreditationVisits = timeline?.reAccreditationVisits?.filter(
     (visit) =>

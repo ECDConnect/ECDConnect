@@ -310,13 +310,13 @@ export const Step17ReAccreditation = ({
       <Divider dividerType="dashed" />
       <div className="flex items-center gap-2">
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
-          {currentClassroomGroups.length}
+          {currentClassroomGroups?.length}
         </span>
         <Typography
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${currentClassroomGroups[0].programmeType?.description}`
+              ? `classes at ${currentClassroomGroups?.[0]?.programmeType?.description}`
               : `classes assigned to ${name}`
           }
         />

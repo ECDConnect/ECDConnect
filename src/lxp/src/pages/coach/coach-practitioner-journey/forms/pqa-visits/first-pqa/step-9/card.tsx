@@ -1,28 +1,29 @@
+import { SelfAssessmentOptions } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms/self-assessment/index.types';
 import { Typography } from '@ecdlink/ui';
 
 interface SelfAssessmentCardProps {
   text: string;
-  ratingColor: 'Success' | 'Warning' | 'Error';
+  rating: string;
 }
 export const SelfAssessmentCard = ({
   text,
-  ratingColor,
+  rating,
 }: SelfAssessmentCardProps) => {
   const getRatingData = () => {
-    switch (ratingColor) {
-      case 'Error':
+    switch (rating) {
+      case SelfAssessmentOptions.Sometimes:
         return {
-          text: 'Sometimes',
+          text: rating,
           icon: <span className="text-errorMain text-xl">■</span>,
         };
-      case 'Warning':
+      case SelfAssessmentOptions.MostOfTheTime:
         return {
-          text: 'Most of the time',
+          text: rating,
           icon: <span className="text-alertMain text-12">▲</span>,
         };
       default:
         return {
-          text: 'All the time',
+          text: rating,
           icon: <span className="text-successMain text-xl">●</span>,
         };
     }
@@ -30,11 +31,7 @@ export const SelfAssessmentCard = ({
 
   return (
     <div>
-      <Typography
-        type="h4"
-        text="lorem ipsum lorem lorem ipsum"
-        color="textDark"
-      />
+      <Typography type="h4" text={text} color="textDark" />
       <span className="flex items-center gap-2">
         {getRatingData().icon}
         <Typography type="help" text={getRatingData().text} color="textMid" />

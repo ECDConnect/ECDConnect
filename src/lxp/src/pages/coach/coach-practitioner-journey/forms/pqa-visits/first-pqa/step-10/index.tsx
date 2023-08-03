@@ -2,12 +2,38 @@ import { Divider, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../../dynamic-form';
 import { useLayoutEffect } from 'react';
 import { Item } from './card';
+import { useSelector } from 'react-redux';
+import {
+  getPractitionerTimelineByIdSelector,
+  getSectionsQuestionsByStep,
+} from '@/store/pqa/pqa.selectors';
+import { selfAssessmentVisitSectionStep5 } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms/self-assessment';
+import { selfAssessmentStep5Options } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms/self-assessment/step-5/options';
+import { noneOption } from '../step-3/options';
 
 export const Step10 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
   const name = smartStarter?.user?.firstName || smartStarter?.firstName;
+  const practitionerId = smartStarter?.user?.id || smartStarter?.id || '';
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
 
-  // TODO: add N7
-  const isFilledSelfAssessment = true;
+  const selfAssessmentVisit = timeline?.selfAssessmentVisits?.[0];
+
+  const previousDataStep5 =
+    useSelector(
+      getSectionsQuestionsByStep(
+        selfAssessmentVisit?.id ?? '',
+        'selfAssessmentPreviousFormData',
+        selfAssessmentVisitSectionStep5
+      )
+    )?.questions ?? [];
+
+  const isFilledSelfAssessment = !!previousDataStep5?.length;
+
+  const answers = String(previousDataStep5?.[0]?.answer)?.split(
+    ','
+  ) as string[];
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
@@ -26,8 +52,20 @@ export const Step10 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
         color="textMid"
       />
       <Divider dividerType="dashed" className="my-4" />
+      <Typography
+        type="h4"
+        text="Which activities do you do every day?"
+        color="textDark"
+      />
       {isFilledSelfAssessment ? (
-        [0, 1, 2, 3, 4, 5].map((item) => <Item text="lorem ipsum" checked />)
+        selfAssessmentStep5Options
+          .filter((item) => item !== noneOption)
+          .map((item) => (
+            <Item
+              text={item}
+              checked={answers?.some((answer) => answer === item)}
+            />
+          ))
       ) : (
         <>
           <Typography

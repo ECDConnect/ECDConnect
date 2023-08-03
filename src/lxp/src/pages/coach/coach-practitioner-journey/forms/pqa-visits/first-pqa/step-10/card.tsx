@@ -6,11 +6,11 @@ interface ItemProps {
   checked: boolean;
 }
 export const Item = ({ text, checked }: ItemProps) => (
-  <div className="flex items-center gap-2">
+  <div className="mt-4 flex items-center gap-2">
     {checked ? (
-      <CheckCircleIcon className="text-successMain h-5 w-5" />
+      <CheckCircleIcon className="text-successMain h-7 w-7" />
     ) : (
-      <XCircleIcon className="text-errorMain h-5 w-5" />
+      <XCircleIcon className="text-errorMain h-7 w-7" />
     )}
     <Typography type="h4" text={text} color="textDark" />
   </div>
