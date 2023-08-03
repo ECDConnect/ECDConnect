@@ -158,7 +158,7 @@ export default function ContentEdit({
           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <h3 className="text-lg leading-6 font-medium text-gray-900">
-              {cancelEdit &&  camelCaseToSentanceCase(contentType.name ?? '') }
+                {cancelEdit && camelCaseToSentanceCase(contentType.name ?? '')}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
@@ -185,7 +185,7 @@ export default function ContentEdit({
             </div>
           </div>
           <div className="px-12 pt-6 bg-white rounded-xl">
-          { contentType.name === 'Consent' && 
+            {contentType.name === 'Consent' &&
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
@@ -203,7 +203,7 @@ export default function ContentEdit({
             type="submit"
             className="ml-4 inline-flex items-center px-14 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-secondary hover:bg-uiMid focus:outline-none focus:ring-2 focus:ring-offset-2"
           >
-            Save Changes
+            Save & publish
             <SaveAsIcon width="22px" className='pl-1' />
 
           </button>
