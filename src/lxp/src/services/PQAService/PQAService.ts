@@ -54,7 +54,7 @@ class PQAService {
         mutation AddReAccreditationVisitForPractitioner($input: ReAccreditationVisitModelInput) {
           addReAccreditationVisitForPractitioner(input: $input) {
               id, 
-              plannedVisitData
+              plannedVisitDate
           }        
         }
       `,
