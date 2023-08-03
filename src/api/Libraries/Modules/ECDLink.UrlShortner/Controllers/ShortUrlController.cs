@@ -1,5 +1,3 @@
-using ECDLink.Core.Services.Interfaces;
-using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -10,33 +8,51 @@ namespace ECDLink.UrlShortner.Controllers
     public class ShortUrlController : ControllerBase
     {
         private readonly ShortUrlManager _manager;
-        private ISystemSetting<SecurityNotificationOptions> _options;
 
-        public ShortUrlController(ShortUrlManager manager, ISystemSetting<SecurityNotificationOptions> optionAccessor)
+        public ShortUrlController(ShortUrlManager manager)
         {
             _manager = manager;
-            _options = optionAccessor;
         }
 
         [HttpGet, Route("/{chunk}")]
         public IActionResult ShortenRedirect([FromRoute] string chunk)
         {
-            var redirect = _manager.GetRedirectFromChunk(chunk);
-
-            if (string.IsNullOrWhiteSpace(redirect))
+            ShortUrlManager.REDIRECT_STATUS redirectStatus;
+            var url = _manager.GetRedirectFromChunk(chunk, out redirectStatus);
+            if (redirectStatus == ShortUrlManager.REDIRECT_STATUS.OK)
             {
-                var loginUrl = _options.Value.Login;
-
-                if (redirect == null)
-                    Console.WriteLine("ShortenRedirect: Error parsing chunk - redirect to {0}", loginUrl);
-                else
-                    Console.WriteLine("ShortenRedirect: Unknown chunk - redirect to {0}", loginUrl);
-
-                return Redirect(loginUrl);
-                //throw new Exception("Error parsing Chunk");
+                return Redirect(url);
+            }
+            
+            var id = _manager.GetId(chunk);
+            if (redirectStatus == ShortUrlManager.REDIRECT_STATUS.USED)
+            {
+                Console.WriteLine("ShortenRedirect: {0}: {1} used before - redirect to {2}", chunk, id, url);
+                return Redirect(url);
             }
 
-            return Redirect(redirect);
+            if (redirectStatus == ShortUrlManager.REDIRECT_STATUS.UNKNOWN) Console.WriteLine("ShortenRedirect: {0}: {1} unknown - return BadRequest (400)", chunk, id);
+            
+            if (redirectStatus == ShortUrlManager.REDIRECT_STATUS.INVALID) Console.WriteLine("ShortenRedirect: {0}: invalid - return BadRequest (400)", chunk);
+            //return BadRequest();
+
+            return GetUnknownPage();
+        }
+
+        private ContentResult GetUnknownPage()
+        {
+            var html = @"
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset=""utf-8"" />
+</head>
+<body style='font-family: sans-serif'>
+    <p>Unknown short url.</p>
+</body>
+</html>
+";
+            return base.Content(html, "text/html");
         }
     }
 }

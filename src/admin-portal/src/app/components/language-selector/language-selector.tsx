@@ -30,7 +30,11 @@ export const LanguageSelector = ({
 
   return (
     <Dropdown
-      fillType="clear"
+      fillType="filled"
+      textColor="white"
+      fillColor="secondary"
+      placeholder="Select Language"
+      labelColor="white"
       selectedValue={languageId}
       disabled={disabled}
       list={

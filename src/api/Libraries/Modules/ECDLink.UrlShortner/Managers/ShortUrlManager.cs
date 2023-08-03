@@ -15,6 +15,14 @@ namespace ECDLink.UrlShortner.Managers
 {
     public class ShortUrlManager
     {
+        public enum REDIRECT_STATUS
+        {
+            OK = 0,
+            INVALID = 1,
+            UNKNOWN = 2,
+            USED = 3
+        };
+
         private readonly AuthenticationDbContext _dbContext;
         private readonly DbSet<ShortenUrlEntity> _entities;
         private ISystemSetting<UrlShortnerOptions> _options;
@@ -32,7 +40,7 @@ namespace ECDLink.UrlShortner.Managers
             return WebEncoders.Base64UrlEncode(id.ToByteArray());
         }
 
-        private Guid? GetId(string urlChunk)
+        public Guid? GetId(string urlChunk)
         {
             if (string.IsNullOrEmpty(urlChunk)) return null;
             // Reverse our short url text back into an interger Id
@@ -47,19 +55,52 @@ namespace ECDLink.UrlShortner.Managers
             }
         }
 
-        public string GetRedirectFromChunk(string urlChunk)
+        public string GetRedirectFromChunk(string urlChunk, out REDIRECT_STATUS status)
         {
             var id = GetId(urlChunk);
-            if (id == null) return null;
-
-            var shortUrl = _entities.SingleOrDefault(s => s.Id == id);
-
-            if (shortUrl == default(ShortenUrlEntity))
+            if (id == null)
             {
-                return string.Empty;
+                status = REDIRECT_STATUS.INVALID;
+                return null;
             }
 
-            return shortUrl.URL;
+            var shortUrl = _entities.SingleOrDefault(s => s.Id == id);
+            
+            if (shortUrl == default(ShortenUrlEntity))
+            {
+                status = REDIRECT_STATUS.UNKNOWN;
+                return string.Empty;
+            }
+            
+            if (shortUrl.Clicked == 0)
+            {
+                status = REDIRECT_STATUS.OK;
+                return shortUrl.URL;
+            }
+
+            status = REDIRECT_STATUS.USED;
+            var url = "";
+            if (shortUrl.TenantId.HasValue && shortUrl.TenantId.Value != Guid.Empty)
+            {
+                var settings = _dbContext.SystemSettings.SingleOrDefault(x => x.TenantId == shortUrl.TenantId.Value && x.FullPath == "General.Callback.Security.Login");
+                if (settings != null)
+                {
+                    url = settings.Value;
+                }
+            }
+            if (string.IsNullOrEmpty(url))
+            {
+                var uri = new Uri(shortUrl.URL);
+                if (uri.AbsolutePath.Length > 1)
+                {
+                    url = shortUrl.URL.Replace(uri.AbsolutePath, "");
+                }
+                else
+                {
+                    url = shortUrl.URL;
+                }
+            }
+            return url;
         }
 
         public string GetUrlToken(string url, ApplicationUser user, string messageType)
@@ -91,7 +132,11 @@ namespace ECDLink.UrlShortner.Managers
 
             if (messages.Any())
             {
-                _entities.RemoveRange(messages);
+                //_entities.RemoveRange(messages);
+                foreach (var message in messages)
+                {
+                    message.Clicked++;
+                }
 
                 _dbContext.SaveChanges();
             }
@@ -99,17 +144,26 @@ namespace ECDLink.UrlShortner.Managers
 
         public int GetMessageCountForUser(string userId, string messageType)
         {
-            return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).Count();
+            return _entities
+                .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
+                .Count();
         }
+
         public string GetLastMessageDateForUser(string userId, string messageType)
         {
-            var selectedEntities = _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType))
+            var selectedEntities = _entities
+                .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
                 .OrderBy(x => x.InsertedDate);
             return selectedEntities?.LastOrDefault()?.InsertedDate.ToString();
         }
+
         public List<DateTime> GetAllMessageInvitesForUser(string userId, string messageType)
         {
-            return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).OrderBy(x => x.InsertedDate).Select(x => x.InsertedDate).ToList();
+            return _entities
+                .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType) && x.Clicked == 0)
+                .OrderBy(x => x.InsertedDate)
+                .Select(x => x.InsertedDate)
+                .ToList();
         }
     }
 }

@@ -130,9 +130,10 @@ export const Form = ({ onBack }: FormProps) => {
     isFirstVisit && isEqualOrAfter98andEqualOrBefore168Days;
 
   const isMaternalDistress =
-    pregnancyDay < 98 ||
-    (pregnancyDay >= 169 && pregnancyDay <= 196) ||
-    pregnancyDay > 197;
+    isFirstVisit &&
+    (pregnancyDay < 98 ||
+      (pregnancyDay >= 169 && pregnancyDay <= 196) ||
+      pregnancyDay > 197);
 
   const isMaternalDistressFollowUp = isFollowUp(
     maternalDistressVisitSection,
@@ -254,6 +255,8 @@ export const Form = ({ onBack }: FormProps) => {
     isIDDocumentStep,
     isMaternalDistressFollowUp,
     isMaternalDistress,
+    IsHIVCareStep,
+    isEqualOrAfter196Days,
     isDangerSignsFollowUpStep,
     referralsForMother?.length,
   ]);
