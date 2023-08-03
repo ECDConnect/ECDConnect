@@ -46,7 +46,8 @@ export function ContentManagement() {
       const currentSelectedContent = dataTypes.contentTypes.find(
         (x) => x.id === selectedType.id
       );
-
+      setSelectedType(currentSelectedContent);
+      console.log(currentSelectedContent)
       setSelectedType(currentSelectedContent);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -172,9 +173,10 @@ export function ContentManagement() {
       {dataTypes ? (
         <>
           {!selectedContent && (
-            <div className="flex flex-row  w-full overflow-x-scroll bg-white rounded-md">
+            <div className="flex flex-row  w-full overflow-auto bg-white rounded-md">
               {dataTypes?.contentTypes?.map((item: ContentTypeDto) => (
                 <div
+                  key={item.id}
                   className={
                     data?.tenantContext.applicationName === 'GrowGreat'
                       ? 'w-3/12 '
@@ -182,7 +184,6 @@ export function ContentManagement() {
                   }
                 >
                   <a
-                    key={item.id}
                     onClick={() => {
                       showGroupContentTypes(item);
                     }}

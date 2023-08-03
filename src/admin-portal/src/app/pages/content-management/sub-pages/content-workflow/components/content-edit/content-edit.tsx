@@ -153,7 +153,7 @@ export default function ContentEdit({
       <div className="flex flex-col rounded-md ">
         <form
           onSubmit={handleSubmit(onSubmit)}
-          className="space-y-8 "
+          className="space-y-4 "
         >
           <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
             <div className="ml-4 mt-2">
@@ -184,8 +184,8 @@ export default function ContentEdit({
               </button>}
             </div>
           </div>
-          <div className=" p-12 bg-white rounded-xl">
-          {cancelEdit && contentType.name === 'consent' && 
+          <div className="px-12 pt-6 bg-white rounded-xl">
+          { contentType.name === 'Consent' && 
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}

@@ -114,9 +114,9 @@ export default function ContentWorkflow({
   if (contentView && languages && currentContent && defaultLanguageId) {
     return (
       <div className="flex flex-col">
-        <div className="flex flex-row bg-white mb-6 overflow-x-scroll rounded-md">
+        <div className="flex flex-row bg-white mb-6 rounded-md overflow-auto">
 
-          {languages.map((item: LanguageDto, index: number) => (
+          { !isCompareMode && languages.map((item: LanguageDto, index: number) => (
 
             <div
               className={'w-3/12 '
@@ -157,7 +157,7 @@ export default function ContentWorkflow({
                             <div className="ml-4 mt-2">
                               <h3 className="text-md font-medium leading-6 text-gray-900">
                                 {camelCaseToSentanceCase(
-                                  contentType.name ?? ''
+                                  contentType.name + '-'+ contentType ?? ''
                                 )}
                               </h3>
                             </div>

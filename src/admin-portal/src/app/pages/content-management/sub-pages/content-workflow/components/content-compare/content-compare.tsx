@@ -31,14 +31,15 @@ export default function ContentCompare({
   contentType,
   languages,
   defaultLanguageId,
+  selectedLanguageId,
   cancelCompare,
   savedContent,
 }: ContentCompareProps) {
-  const [selectedFirstLanguageId, setselectedFirstLanguageId] =
-    useState<string>(contentView.languageId);
+  const [selectedFirstLanguageId, setSelectedFirstLanguageId] =
+    useState<string>(selectedLanguageId);
 
-  const [selectedSecondLanguageId, setselectedSecondLanguageId] =
-    useState<string>(contentView.languageId);
+  const [selectedSecondLanguageId, setSelectedSecondLanguageId] =
+    useState<string>(defaultLanguageId);
 
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [currentContent, setCurrentContent] = useState<ContentDto>();
@@ -88,7 +89,7 @@ export default function ContentCompare({
                     className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium bg-errorBg text-tertiary hover:bg-tertiary hover:text-white"
                   >
                     Cancel Compare
-                <XIcon width="22px" className='pl-1' />
+                    <XIcon width="22px" className='pl-1' />
 
                   </button>
                 </div>
@@ -101,12 +102,16 @@ export default function ContentCompare({
             >
               {/* FIRST LANGUAGE */}
               <div className="w-1/2 bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg">
-                <LanguageSelector
-                  disabled={false}
-                  languages={languages}
-                  currentLanguageId={selectedFirstLanguageId}
-                  selectLanguage={setselectedFirstLanguageId}
-                />
+                <div className=" flwx w-2/12">
+                  <LanguageSelector
+                    disabled={false}
+                    languages={languages}
+                    currentLanguageId={selectedFirstLanguageId}
+                    selectLanguage={setSelectedFirstLanguageId}
+
+                  />
+                </div>
+
 
                 <ContentEdit
                   optionDefinitions={optionDefinitions}
@@ -125,13 +130,14 @@ export default function ContentCompare({
               </div>
               {/* SECOND LANGUAGE */}
               <div className="w-1/2 ml-4 bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg ">
-                <LanguageSelector
-                  disabled={false}
-                  languages={languages}
-                  currentLanguageId={selectedSecondLanguageId}
-                  selectLanguage={setselectedSecondLanguageId}
-                />
-
+                <div className=" flex w-2/12 ">
+                  <LanguageSelector
+                    disabled={false}
+                    languages={languages}
+                    currentLanguageId={selectedSecondLanguageId}
+                    selectLanguage={setSelectedSecondLanguageId}
+                  />
+                </div>
                 <ContentEdit
                   optionDefinitions={optionDefinitions}
                   content={contentView.content}
@@ -140,7 +146,6 @@ export default function ContentCompare({
                     currentContent?.contentValues
                   )}
                   contentType={contentType}
-
                   savedContent={savedContent}
                   defaultLanguageId={defaultLanguageId}
                 />
