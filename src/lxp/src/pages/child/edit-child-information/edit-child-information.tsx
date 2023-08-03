@@ -35,7 +35,11 @@ import {
   caregiverSelectors,
   caregiverThunkActions,
 } from '@store/caregiver';
-import { childrenActions, childrenSelectors } from '@store/children';
+import {
+  childrenActions,
+  childrenSelectors,
+  childrenThunkActions,
+} from '@store/children';
 import {
   classroomsActions,
   classroomsThunkActions,
@@ -669,6 +673,12 @@ export const EditChildInformation: React.FC = () => {
           childHealthInformationForm?.healthConditions || '';
 
         appDispatch(childrenActions.updateChild(updateChild));
+        await appDispatch(
+          childrenThunkActions.updateChild({
+            child: updateChild,
+            id: String(updateChild.id),
+          })
+        ).unwrap();
       }
 
       setViewInfomationVisible(false);
