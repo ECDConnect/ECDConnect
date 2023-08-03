@@ -8,7 +8,7 @@ import {
   ButtonGroupTypes,
   FormInput,
 } from '@ecdlink/ui';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { useState } from 'react';
 import {
   EditConsentAgreementProps,
@@ -32,7 +32,8 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     setValue: setConsentFormValue,
     register: consentFormRegister,
     // reset: resetConsentFormValue,
-    // control: consentFormControl,
+    control: consentFormControl,
+    clearErrors,
   } = useForm<PregnantConsentModel>({
     resolver: yupResolver(pregnantConsentModelSchema),
     mode: 'onBlur',
@@ -43,6 +44,11 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
     useState<ContentConsentTypeEnum>(ContentConsentTypeEnum.PhotoPermissions);
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [accept, setAccept] = useState(false);
+  const [children, setChildren] = useState(0);
+
+  const { errors } = useFormState({
+    control: consentFormControl,
+  });
 
   const handleConsentAccept = () => {
     setConsentFormValue('hasConsent', !accept);
@@ -51,6 +57,10 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
   const displayArticle = (key: ContentConsentTypeEnum, title: string) => {
     setContentConsentTypeEnum(key);
     setPresentArticle(true);
+  };
+
+  const handleChange = (value: string) => {
+    setChildren(Number(value));
   };
 
   return (
@@ -72,6 +82,7 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
         <ButtonGroup<boolean>
           options={yesNoOptions}
           onOptionSelected={(value: boolean | boolean[]) => {
+            clearErrors();
             setMultipleChildren(value as boolean);
           }}
           color="secondary"
@@ -87,7 +98,11 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
             nameProp={'numberOfChildren'}
             placeholder={'e.g. 2'}
             type={'number'}
+            onChange={(e) => handleChange(e.target.value)}
             className="mt-4"
+            error={
+              !!errors.numberOfChildren ? errors.numberOfChildren : undefined
+            }
           ></FormInput>
         </div>
       )}
@@ -162,7 +177,12 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           onClick={() => {
             onSubmit(getConsentFormValues());
           }}
-          disabled={!accept}
+          disabled={
+            !accept ||
+            !!Object.keys(errors).length ||
+            (multipleChildren && children === 0) ||
+            multipleChildren === undefined
+          }
         />
       </div>
       <Article

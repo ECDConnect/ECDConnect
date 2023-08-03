@@ -155,6 +155,36 @@ export function getMotherNearestPreviousVisitByOrderDate(
 
   if (!visits?.length) return undefined;
 
+  if (currentVisit?.visitType?.name === 'additional_visits') {
+    const currentPlannedDate = new Date(currentVisit?.plannedVisitDate!);
+
+    const previousVisits = visits.filter(
+      (item) =>
+        item.attended &&
+        item.actualVisitDate !== null &&
+        new Date(item.actualVisitDate) < currentPlannedDate
+    );
+
+    if (previousVisits.length === 0) {
+      return undefined; // No previous date found
+    }
+
+    const nearestDateObject = previousVisits.reduce((previous, current) => {
+      if (
+        !previous ||
+        currentPlannedDate.getTime() -
+          new Date(current.actualVisitDate).getTime() <
+          currentPlannedDate.getTime() -
+            new Date(previous.actualVisitDate).getTime()
+      ) {
+        return current;
+      }
+      return previous;
+    });
+
+    return nearestDateObject;
+  }
+
   const currentOrderDate = currentVisit
     ? new Date(currentVisit?.orderDate!)
     : new Date();
@@ -192,9 +222,13 @@ export const getMotherFirstVisitSelector = (
 
   const filteredVisits = visits.filter((visit) => {
     const orderDate = new Date(visit.orderDate);
-    return orderDate.getFullYear() !== 0;
+    return (
+      orderDate.getFullYear() !== 0 &&
+      visit.attended &&
+      visit.visitType?.normalizedName !== 'Additional visits'
+    );
   });
-  const firstVisit = filteredVisits.reduce(
+  const firstVisit = filteredVisits?.reduce(
     (oldest: VisitDto | null, current: VisitDto) => {
       const currentPlannedVisitDate = new Date(current.orderDate);
       if (!oldest || currentPlannedVisitDate < new Date(oldest.orderDate)) {

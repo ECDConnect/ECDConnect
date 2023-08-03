@@ -13,8 +13,8 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { differenceInDays } from 'date-fns';
-import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { differenceInDays, differenceInCalendarMonths } from 'date-fns';
+import { replaceBraces } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { getIsInfantFirstVisitSelector } from '@/store/infant/infant.selectors';
 
@@ -25,7 +25,7 @@ export const ImmunisationsSupplementsDewormingStep = ({
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
     {
-      question: 'Did the baby have the 6 month immunisation?',
+      question: 'Did the baby have the {age} immunisation?',
       answer: undefined,
     },
     {
@@ -45,7 +45,11 @@ export const ImmunisationsSupplementsDewormingStep = ({
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
+  //const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
+  const ageMonths = differenceInCalendarMonths(
+    new Date(),
+    new Date(dateOfBirth)
+  );
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
 
   const caregiverName = useMemo(
@@ -71,6 +75,36 @@ export const ImmunisationsSupplementsDewormingStep = ({
   const is4Years = ageMonths >= 48 && ageMonths < 54;
   const is4AHalfYears = ageMonths >= 54 && ageMonths < 60;
   const is5Years = ageMonths >= 60;
+
+  const age = is6Week
+    ? '6 week'
+    : is10Week
+    ? '10 week'
+    : is14Week
+    ? '14 week'
+    : is6Month
+    ? '6 month'
+    : is9Month
+    ? '9 month'
+    : is12Month
+    ? '12 month'
+    : is18Month
+    ? '18 month'
+    : is2Years
+    ? '2 year'
+    : is2YearsAHalfYears
+    ? '2 and a half years'
+    : is3Years
+    ? '3 year'
+    : is3YearsAHalfYears
+    ? '3 and a half years'
+    : is4Years
+    ? '4 year'
+    : is4AHalfYears
+    ? '4 and a half years'
+    : is5Years
+    ? '5 year'
+    : '';
 
   const isImmunisationQuestion =
     isFirstVisit &&
@@ -196,7 +230,24 @@ export const ImmunisationsSupplementsDewormingStep = ({
                   />
                 </>
               )}
-              <Typography type="body" text={item.question} color="textDark" />
+              {index === 0 && (
+                <>
+                  <Typography
+                    type="body"
+                    text={replaceBraces(item.question, age)}
+                    color="textDark"
+                  />
+                </>
+              )}
+              {index > 0 && (
+                <>
+                  <Typography
+                    type="body"
+                    text={item.question}
+                    color="textDark"
+                  />
+                </>
+              )}
               <ButtonGroup<boolean>
                 color="secondary"
                 type={ButtonGroupTypes.Button}

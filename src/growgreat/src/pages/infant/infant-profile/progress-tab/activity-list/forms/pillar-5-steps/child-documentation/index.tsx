@@ -25,6 +25,15 @@ import {
 } from './child-documentation';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useFormState } from 'react-hook-form';
+import { useSelector } from 'react-redux';
+import {
+  getInfantNearestPreviousVisitByOrderDate,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
+import { getVisitAnswersForInfantSelector } from '@/store/visit/visit.selectors';
+import { InfantProfileParams } from '../../../../../infant-profile.types';
+import { useParams } from 'react-router';
+import { RootState } from '@/store/types';
 
 enum Question {
   one = 0,
@@ -37,21 +46,50 @@ enum Question {
 }
 
 export const birthCertificateQuestion = `Does {client} have a birth certificate?`;
+export const isCSGQuestion = `Is {client} receiving the CSG?`;
+export const isCSGQualifyQuestion = `Does {client} qualify for CSG?`;
+export const isCSGAppliedQuestion = `Has {client} applied for a CSG?`;
 export const childDocumentSection = 'Child documentation';
+export const clientIDNumberQuestion = '{client}’s ID number';
 
 export const ChildDocumentationStep = ({
   infant,
   setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
-  const { register: childDocumentRegister, control: childDocumentControl } =
-    useForm<ChildDocumentationModel>({
-      resolver: yupResolver(childDocumentationModelSchema),
-      mode: 'onBlur',
-      reValidateMode: 'onChange',
-    });
+  const {
+    register: childDocumentRegister,
+    control: childDocumentControl,
+    clearErrors,
+  } = useForm<ChildDocumentationModel>({
+    resolver: yupResolver(childDocumentationModelSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
 
   const { errors } = useFormState({ control: childDocumentControl });
+  const [hasBirthCertificate, setHasBirthCertificate] = useState(false);
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, visit)
+  );
+
+  const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
+  const previousBirthCertificateAnswer = previousAnswers?.find(
+    (item) =>
+      item.question === birthCertificateQuestion &&
+      item.visitId === previousVisit?.id
+  )?.questionAnswer;
+
+  const previousIDQuestionAnswer = previousAnswers?.find(
+    (item) =>
+      item.question === clientIDNumberQuestion &&
+      item.visitId === previousVisit?.id
+  )?.questionAnswer;
 
   const [questions, setAnswers] = useState([
     {
@@ -59,19 +97,19 @@ export const ChildDocumentationStep = ({
       answer: undefined as boolean | undefined,
     },
     {
-      question: '{client}’s ID number',
+      question: clientIDNumberQuestion,
       answer: undefined as string | undefined,
     },
     {
-      question: 'Is {client} receiving the CSG?',
+      question: isCSGQuestion,
       answer: undefined as boolean | undefined,
     },
     {
-      question: 'Does {client} qualify for CSG?',
+      question: isCSGQualifyQuestion,
       answer: undefined as boolean | undefined,
     },
     {
-      question: 'Has {client} applied for a CSG?',
+      question: isCSGAppliedQuestion,
       answer: undefined as boolean | undefined,
     },
     {
@@ -139,6 +177,15 @@ export const ChildDocumentationStep = ({
         return question;
       });
 
+      if (index === Question.one && value === false) {
+        [Question.two, Question.three, Question.seven].map((value) => {
+          return (updatedQuestions[value] = {
+            question: questions[value].question,
+            answer: undefined,
+          });
+        });
+      }
+
       if (index === Question.three) {
         [Question.four, Question.five, Question.six].map((value) => {
           return (updatedQuestions[value] = {
@@ -157,6 +204,41 @@ export const ChildDocumentationStep = ({
         });
       }
 
+      const filteredQuestions = updatedQuestions.filter(
+        (item) => item.answer !== undefined
+      );
+
+      setAnswers(updatedQuestions);
+      setQuestions?.([
+        {
+          visitSection: childDocumentSection,
+          questions: filteredQuestions,
+        },
+      ]);
+    },
+    [questions, setQuestions]
+  );
+
+  const setInitialAnswers = useCallback(
+    (hasBirthCertificate, idNumber) => {
+      const birthCertificateQuestion = questions[0];
+      const idNumberQuestion = questions[1];
+
+      let updatedQuestions = questions.map((question) => {
+        if (question.question === birthCertificateQuestion.question) {
+          return {
+            ...question,
+            answer: hasBirthCertificate,
+          };
+        }
+        if (question.question === idNumberQuestion.question) {
+          return {
+            ...question,
+            answer: idNumber,
+          };
+        }
+        return question;
+      });
       const filteredQuestions = updatedQuestions.filter(
         (item) => item.answer !== undefined
       );
@@ -218,24 +300,42 @@ export const ChildDocumentationStep = ({
     }
 
     const isAllCompleted =
-      questionOne.answer === false || (isCompleted && isBaseQuestionsCompleted);
+      questionOne.answer === false ||
+      (isCompleted && isBaseQuestionsCompleted && !errors.idNumber);
 
     setEnableButton?.(isAllCompleted);
   }, [
-    questionFive.answer,
+    questions,
+    questionThree.answer,
     questionFour.answer,
     questionOne.answer,
-    questionSevenAnswers?.length,
-    questionSix.answer,
-    questionThree.answer,
-    questions,
+    errors.idNumber,
     setEnableButton,
     isChildBefore1Year,
+    questionSix.answer,
+    questionFive.answer,
+    questionSevenAnswers?.length,
   ]);
 
   useEffect(() => {
     handleEnableButton();
   }, [handleEnableButton]);
+
+  useEffect(() => {
+    if (!!errors.idNumber) {
+      setEnableButton?.(false);
+    }
+  }, [errors.idNumber, setEnableButton]);
+
+  useEffect(() => {
+    if (
+      previousBirthCertificateAnswer &&
+      previousBirthCertificateAnswer === 'true'
+    ) {
+      setInitialAnswers(true, previousIDQuestionAnswer);
+      setHasBirthCertificate(true);
+    }
+  }, [previousBirthCertificateAnswer, previousIDQuestionAnswer]);
 
   return (
     <>
@@ -246,39 +346,48 @@ export const ChildDocumentationStep = ({
         hexBackgroundColor={activitiesColours.pillar5.secondaryColor}
       />
       <div className="flex flex-col p-4">
-        <Typography
-          type="h3"
-          text="Birth certificate"
-          color="textDark"
-          className="mb-4"
-        />
-        <Typography
-          type="body"
-          text={replaceBraces(questionOne.question, name)}
-          color="textDark"
-        />
-        <ButtonGroup<boolean>
-          color="secondary"
-          type={ButtonGroupTypes.Button}
-          options={options}
-          onOptionSelected={(value) => onOptionSelected(value, Question.one)}
-        />
+        {!hasBirthCertificate && (
+          <>
+            <Typography
+              type="h3"
+              text="Birth certificate"
+              color="textDark"
+              className="mb-4"
+            />
+            <Typography
+              type="body"
+              text={replaceBraces(questionOne.question, name)}
+              color="textDark"
+            />
+            <ButtonGroup<boolean>
+              color="secondary"
+              type={ButtonGroupTypes.Button}
+              options={options}
+              onOptionSelected={(value) => {
+                clearErrors();
+                onOptionSelected(value, Question.one);
+              }}
+            />
+          </>
+        )}
+        {!!questionOne.answer && !hasBirthCertificate && (
+          <FormInput
+            label={replaceBraces(questionTwo.question, name)}
+            subLabel="The ID number is needed to complete the profile."
+            placeholder="e.g 851201123456"
+            nameProp={'idNumber'}
+            type="number"
+            className="mt-4"
+            register={childDocumentRegister}
+            value={questionTwo.answer as string}
+            onChange={(event) => {
+              onOptionSelected(event.target.value, Question.two);
+            }}
+            error={!!errors.idNumber ? errors.idNumber : undefined}
+          ></FormInput>
+        )}
         {!!questionOne.answer && (
           <>
-            <FormInput
-              label={replaceBraces(questionTwo.question, name)}
-              subLabel="The ID number is needed to complete the profile."
-              placeholder="e.g 851201123456"
-              nameProp={'idNumber'}
-              type="number"
-              className="mt-4"
-              register={childDocumentRegister}
-              value={questionTwo.answer as string}
-              onChange={(event) =>
-                onOptionSelected(event.target.value, Question.two)
-              }
-              error={!!errors.idNumber ? errors.idNumber : undefined}
-            ></FormInput>
             <Typography
               type="h3"
               text="Child support grant (CSG)"
@@ -367,8 +476,7 @@ export const ChildDocumentationStep = ({
             ))}
             {questionSevenAnswers?.includes('Other') && (
               <FormInput
-                label={replaceBraces(questionTwo.question, name)}
-                subLabel="Provide more information"
+                label="Provide more information"
                 placeholder="Add details"
                 type="text"
                 textInputType="textarea"

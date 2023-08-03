@@ -24,3 +24,22 @@ export const sortDateFunction = (a: Date, b: Date) => {
 export const flatArray = (array: any[]): any[] => {
   return array.reduce((acc, val) => acc.concat(val), []);
 };
+
+export const mapArrayToObject = (array: any[], key: string) => {
+  const initialValue = {};
+  return array.reduce((obj, item) => {
+    return { ...obj, [item[key]]: item };
+  }, initialValue);
+};
+
+export function chunkArray<T>(array: T[], size: number) {
+  if (!Array.isArray(array)) {
+    return undefined;
+  }
+
+  const chunkedArray: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunkedArray.push(array.slice(i, i + size));
+  }
+  return chunkedArray;
+}

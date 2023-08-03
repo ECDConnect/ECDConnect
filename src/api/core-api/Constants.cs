@@ -386,6 +386,7 @@ namespace EcdLink.Api.CoreApi
             public const string attended_first_aid = "Attended first aid course";
             public const string not_attended_first_aid = "Did not attended first aid course";
             public const string child_progress_training = "Child progress training";
+            public const string self_assessment = "Self-assessment completed";
 
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
@@ -559,7 +560,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_moving6 = "Walks alone";
             public const string q_moving7 = "Uses fingers to feed themselves";
 
-            public const string q_immunisation = "Did the baby have the 6 month immunisation?";
+            public const string q_immunisation = "Did the baby have the {age} immunisation?";
             public const string q_vitamin_a = "Is Vitamin A up to date?";
             public const string q_deworming = "Is deworming up to date?";
             public const string q_birth_certificate = "Does {client} have a birth certificate?";

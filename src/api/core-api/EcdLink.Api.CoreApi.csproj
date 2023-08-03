@@ -14,6 +14,7 @@
     <None Remove="Tenancy\TempScripts\**" />
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
+    <None Remove="SQLUpgradeScripts" />
   </ItemGroup>
   
   <ItemGroup>

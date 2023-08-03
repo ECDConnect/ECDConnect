@@ -11,7 +11,7 @@ import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import UiTable from '../../components/ui-table';
+import UiTable from '../../components/old-ui-table';
 import { useUser } from '../../hooks/useUser';
 import RolePanel from './components/role-panel/role-panel';
 
@@ -82,6 +82,7 @@ export default function Roles() {
           title="Delete Role"
           message={`You are about to delete a Role, this can implicate data issues. Would you like to go ahead`}
           onCancel={onCancel}
+          btnText={['Yes, Delete Rule', 'No, Cancel']}
           onSubmit={() => {
             onSubmit();
 
@@ -121,7 +122,7 @@ export default function Roles() {
                 <button
                   onClick={displayRolePanel}
                   type="button"
-                  className="bg-primary hover:bg-uiLight focus:outline-none focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className="bg-secondary hover:bg-uiLight focus:outline-none focus:ring-secondary-500 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                 >
                   Create Role
                 </button>
@@ -143,6 +144,7 @@ export default function Roles() {
                     hasPermission(PermissionEnum.delete_system) &&
                     deleteRoleAndRefresh
                   }
+                  component={'roles'}
                 />
               </div>
             </div>

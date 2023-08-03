@@ -72,10 +72,36 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public int totalLastWeekNewClients { get; set; }
     }
 
+    public class HCWSummary
+    {
+        public DateTime startDate { get; set; }
+        public DateTime EndDate { get; set; }
+
+        public int totalPregnantMoms { get; set; }
+        public int totalChildren { get; set; }
+
+        public int totalClientsVisited { get; set; }
+        public int totalFoldersOpened { get; set; }
+
+        public int totalVisitsMissed { get; set; }
+        public int totalPregnantMomsWithUrgentIssues { get; set; }
+        public int totalCaregiversAndChildrenWithUrgentIssues { get; set; }
+
+        public int totalVisitsOverdue { get; set; }
+        public int totalPregnantMomsWithIssues { get; set; }
+        public int totalCaregiversAndChildrenWithIssues { get; set; }
+
+        public int totalPregnantMomsWithNoIssues { get; set; }
+        public int totalChildrenWithNoIssues { get; set; }
+    }
+
     public class HCWPointsEngine
     {
+        // TODO: This class breaks Hot Chocolate as it has no fields
+        // Why isn't is using EF navigations?
+        public bool ignored { get; set; }
         public virtual ICollection<PointsLibrary> PointsLibrary { get; set; }
         public virtual ICollection<PointsUserSummary> PointsUserSummary { get; set; }
     }
-    
+
 }

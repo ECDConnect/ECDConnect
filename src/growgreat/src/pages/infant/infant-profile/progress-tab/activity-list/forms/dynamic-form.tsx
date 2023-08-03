@@ -5,7 +5,7 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Button } from '@ecdlink/ui';
+import { ActionModal, DialogPosition, Button } from '@ecdlink/ui';
 import { InfantDto, usePrevious } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
 import {
@@ -24,7 +24,6 @@ import { GrowthMonitoring } from './pillar-1-steps';
 import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '../../../infant-profile.types';
 import { useDialog } from '@ecdlink/core';
-import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { DocumentActions } from '@/store/document/document.actions';

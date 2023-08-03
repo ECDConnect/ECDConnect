@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseBool, useDialog, usePrevious, useSnackbar } from '@ecdlink/core';
+import {
+  ReasonsForPractitionerLeaving,
+  chunkArray,
+  parseBool,
+  useDialog,
+  usePrevious,
+  useSnackbar,
+} from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
@@ -7,6 +14,7 @@ import { useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
+  maxNumberOfVisits,
   visitTypes,
 } from '../coach-practitioner-journey.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
@@ -23,13 +31,19 @@ import {
   CmsVisitSectionInput,
   FollowUpVisitModelInput,
   InputMaybe,
+  Maybe,
+  PqaRating,
+  ReAccreditationVisitModelInput,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import { useAppDispatch } from '@/store';
-import { callAnswer, visitOrCallQuestion } from './general-support-visit';
+import {
+  callAnswer,
+  visitOrCallQuestion,
+} from './general-support-visit/coaching-visit-or-call/constants';
 import {
   step11VisitSection,
   step16Question1,
@@ -39,6 +53,7 @@ import {
 import {
   PractitionerActions,
   deActivatePractitioner,
+  delicensePractitioner,
 } from '@/store/practitioner/practitioner.actions';
 import {
   delicensingQuestion2,
@@ -48,9 +63,10 @@ import { ChildrenDialog } from './dialog';
 import {
   step15ReAccreditationQuestions,
   step15ReAccreditationVisitSection,
+  step2ReAccreditationVisitSection,
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
-import { newGuid } from '@/utils/common/uuid.utils';
+import { options } from './reaccreditation/step-2/options';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -72,8 +88,8 @@ export interface Rating {
 interface FormProps {
   visitId?: string;
   onBack: () => void;
-  setPqaRating: (rating: Rating) => void;
-  setReAccreditationRating: (rating: Rating) => void;
+  setPqaRating?: (rating: Rating) => void;
+  setReAccreditationRating?: (rating: Rating) => void;
 }
 
 export const currentActivityKey = 'selectedOption';
@@ -118,19 +134,54 @@ export const Form = ({
   const step16Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step16VisitSection)
     ?.questions.find((item) => item.question === step16Question1)?.answer;
+  const step2ReAccreditationQuestionAnswers = sectionQuestions?.find(
+    (item) => item.visitSection === step2ReAccreditationVisitSection
+  )?.questions?.[0]?.answer as string[] | undefined;
+  const isBasicSmartSpaceStandardsCompleted =
+    step2ReAccreditationQuestionAnswers?.length === options.length;
+
   const step15ReAccreditationQuestion1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step15ReAccreditationVisitSection)
     ?.questions.find(
       (item) => item.question === step15ReAccreditationQuestions.question1
     )?.answer;
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
+  const newPqaVisit = timeline?.pQASiteVisits?.find(
+    (item) =>
+      !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
+  );
+  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
+    (item) =>
+      !item?.attended &&
+      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+  );
 
-  const reAccreditationRating1 = timeline?.reAccreditationRating1;
-  const reAccreditationRating2 = timeline?.reAccreditationRating2;
-  const reAccreditationRating3 = timeline?.reAccreditationRating3;
+  // All years
+  const filteredReAccreditationRatings =
+    timeline?.reAccreditationRatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+    filteredReAccreditationRatings,
+    maxNumberOfVisits
+  );
+  const reAccreditationRatingsFromCurrentYear =
+    subdividedReAccreditationRatings?.[
+      subdividedReAccreditationRatings.length - 1
+    ];
+
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating1 = pqaRatings?.[0];
+  const pqaRating2 = pqaRatings?.[1];
+  const pqaRating3 = pqaRatings?.[2];
+
+  const reAccreditationRating1 = reAccreditationRatingsFromCurrentYear?.[0];
+  const reAccreditationRating2 = reAccreditationRatingsFromCurrentYear?.[1];
+  const reAccreditationRating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
   const pqaRatingColorList = [
     pqaRating1?.overallRatingColor,
@@ -405,6 +456,7 @@ export const Form = ({
 
       const supportPayload: SupportVisitModelInput = {
         practitionerId,
+        // TODO: add schedule option
         plannedVisitDate: new Date(),
         isSupportCall: visitOrCallAnswer === callAnswer,
         // TODO: add schedule option
@@ -414,9 +466,14 @@ export const Form = ({
 
       const followUpPayload: FollowUpVisitModelInput = {
         practitionerId,
+        // TODO: add schedule option
         plannedVisitDate: new Date(),
         // TODO: add schedule option
         attended: true,
+        linkedVisitId:
+          type === 'pqa-follow-up-visit'
+            ? newPqaVisit?.id
+            : newReAccreditationVisit?.id,
         followUpData: payload,
       };
 
@@ -432,7 +489,13 @@ export const Form = ({
         return onSubmitFollowUpVisit(followUpPayload, 're-accreditation');
       }
     },
-    [onSubmitFollowUpVisit, onSubmitSupportVisit, practitionerId]
+    [
+      practitionerId,
+      newPqaVisit?.id,
+      newReAccreditationVisit,
+      onSubmitSupportVisit,
+      onSubmitFollowUpVisit,
+    ]
   );
 
   const onSubmitPrePqa = useCallback(
@@ -454,7 +517,7 @@ export const Form = ({
   );
 
   const onSubmitPqa = useCallback(
-    ({ payload, sections }: SubmitProps) => {
+    async ({ payload, sections }: SubmitProps) => {
       const step19Question2 = sections?.find((item) =>
         item?.questions?.some(
           (question) => question?.question === step19Question2Pqa
@@ -471,31 +534,55 @@ export const Form = ({
         })
       );
       // Create a new ID if it doesn't already exist
-      appDispatch(
+      await appDispatch(
         pqaThunkActions.addVisitFormData({
           ...payload,
-          visitId: visitId?.includes('new') ? newGuid() : visitId,
+          visitId: visitId,
         })
       );
 
       if (step19Question2Answer === 'true') {
-        displayChildrenDialog('First PQA visit');
+        return displayChildrenDialog('First PQA visit');
       }
+
+      showMessage({ message: 'First PQA visit complete!' });
     },
-    [appDispatch, displayChildrenDialog, practitionerId, visitId]
+    [appDispatch, displayChildrenDialog, practitionerId, showMessage, visitId]
   );
 
   const onSubmitReAccreditation = useCallback(
-    ({ payload }: SubmitProps) => {
+    async ({ payload }: SubmitProps) => {
+      const content: ReAccreditationVisitModelInput = {
+        practitionerId,
+        // TODO: add schedule feature
+        plannedVisitDate: new Date(),
+        attended: true,
+        linkedVisitId: null,
+        reAccreditationData: payload,
+      };
+
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 're-accreditation',
         })
       );
-      appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
+      await appDispatch(pqaThunkActions.addReAccreditationVisitData(content));
+
+      if (!isBasicSmartSpaceStandardsCompleted) {
+        // TODO: add schedule feature
+        return onBack?.();
+      }
+
+      showMessage({ message: 'Re-accreditation complete!' });
     },
-    [appDispatch, practitionerId]
+    [
+      appDispatch,
+      isBasicSmartSpaceStandardsCompleted,
+      onBack,
+      practitionerId,
+      showMessage,
+    ]
   );
 
   const onSubmit = useCallback(() => {
@@ -566,9 +653,38 @@ export const Form = ({
       ?.questions?.find((item) => item.question === delicensingQuestion2)
       ?.answer as string | undefined;
 
+    const collectedDocsQuestions = sectionQuestions
+      ?.find((item) => item.visitSection === delicensingStep1VisitSection)
+      ?.questions?.find((item) =>
+        item.question.endsWith(
+          'to return the items below and confirm that you have received them.'
+        )
+      )?.answer as string[] | [];
+
+    const collectedSSPlaykit = collectedDocsQuestions.some((answer) =>
+      answer.endsWith('SmartStart playkit')
+    );
+    const collectedSSHandbook = collectedDocsQuestions.some((answer) =>
+      answer.endsWith('SmartStart handbook')
+    );
+
     if (!!practitioner?.userId) {
       appDispatch(
-        deActivatePractitioner({ userId: practitioner?.userId, leavingComment })
+        deActivatePractitioner({
+          userId: practitioner?.userId,
+          reasonForPractitionerLeavingId:
+            ReasonsForPractitionerLeaving.DELICENSED,
+          leavingComment,
+        })
+      );
+      appDispatch(
+        delicensePractitioner({
+          userId: practitioner?.userId,
+          delicensedDate: new Date(),
+          delicensedComment: leavingComment,
+          collectedSSHandbook,
+          collectedSSPlaykit,
+        })
       );
     }
   };
@@ -629,6 +745,7 @@ export const Form = ({
         isToShowStep1: true,
         isToShowStep16: true,
         isToRemoveSmartStarter,
+        isBasicSmartSpaceStandardsCompleted,
       });
     }
 
@@ -639,19 +756,25 @@ export const Form = ({
       isToRemoveSmartStarter,
       isToShowStep17: true,
     });
-  }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
+  }, [
+    activityName,
+    isBasicSmartSpaceStandardsCompleted,
+    isStep11AnswerTrue,
+    isToRemoveSmartStarter,
+    visitName,
+  ]);
 
   const onSetPqaRating = (rating: Rating) => {
     if (rating.score === pqaRating?.score) return;
 
     setPqaRating(rating);
-    setPqaRatingForm(rating);
+    setPqaRatingForm?.(rating);
   };
 
   const onSetReAccreditationRating = (rating: Rating) => {
     if (rating.score === reAccreditationRating?.score) return;
 
-    setReAccreditationRatingForm(rating);
+    setReAccreditationRatingForm?.(rating);
     setReAccreditationRating(rating);
   };
 
@@ -725,6 +848,11 @@ export const Form = ({
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
+        submitButton={
+          !isBasicSmartSpaceStandardsCompleted
+            ? { text: 'Save & next', icon: 'SaveIcon' }
+            : undefined
+        }
         setPqaRating={onSetPqaRating}
         setReAccreditationRating={onSetReAccreditationRating}
         isLoading={
@@ -732,6 +860,7 @@ export const Form = ({
           isLoadingSupportVisit ||
           isLoadingDeactivate ||
           isLoadingPqaFollowUpVisit ||
+          isLoadingReAccreditationVisit ||
           isLoadingReAccreditationFollowUpVisit
         }
         secondaryButton={

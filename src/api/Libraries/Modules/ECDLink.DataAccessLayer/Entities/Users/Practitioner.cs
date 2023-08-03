@@ -90,6 +90,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [NotMapped]
         public virtual PractitionerTimeline timeline  { get; set; }
 
+        public bool? SetupTraineeInitiated { get; set; }
+
     }
 
     public interface PractitionerJoin<TKey>

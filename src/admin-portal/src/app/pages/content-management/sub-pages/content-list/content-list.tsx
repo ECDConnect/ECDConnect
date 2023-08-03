@@ -67,6 +67,8 @@ export default function ContentList({
           displayFields.push(x.fieldName);
       });
 
+      console.log(displayFields);
+
       setDisplayFields(displayFields);
     }
   }, [contentType]);
@@ -145,12 +147,11 @@ export default function ContentList({
     });
   };
 
-  const viewEdit = (item?: any) => {
+  const viewSelectedRow = (item?: any) => {
     const model: ContentManagementView = {
       content: item,
       languageId: languageId,
     };
-    console.log(model);
     viewContent(model);
   };
 
@@ -193,6 +194,7 @@ export default function ContentList({
           title="Delete Content"
           message={`You are about to delete content that is part of the Collection ${type}, this can implicate data issues. Would you like to go ahead`}
           onCancel={onCancel}
+          btnText={['Yes, Delete Content', 'No, Cancel']}
           onSubmit={() => {
             onSubmit();
 
@@ -238,11 +240,11 @@ export default function ContentList({
               </div>
               <div className="flex flex-col">
                 <div className="mt-1 ml-4">
-                  {hasPermission(PermissionEnum.create_static) && (
+                  {hasPermission(PermissionEnum.create_static) && contentType.name !== 'Consent' && (
                     <button
                       onClick={() => displayCreatePanel()}
                       type="button"
-                      className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                      className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                     >
                       Create {camelCaseToSentanceCase(contentType.name)}
                     </button>
@@ -260,13 +262,13 @@ export default function ContentList({
                     return { field: item, use: item };
                   })}
                   rows={tableData}
-                  editRow={
-                    hasPermission(PermissionEnum.update_static) && viewEdit
-                  }
+              
                   deleteRow={
                     hasPermission(PermissionEnum.delete_static) &&
                     deleteAndRefresh
                   }
+                  component={contentType.name}
+                  viewRow={hasPermission(PermissionEnum.update_static) && viewSelectedRow}
                 />
               </div>
             </div>

@@ -1,7 +1,7 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
@@ -187,7 +187,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public PractitionerReportDetails GetReportDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor, [Service] PersonnelService practiManager, IGenericRepositoryFactory repoFactory,
-    string userId)
+            string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -345,29 +345,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return practitionerColleagues;
         }
 
-
-        public int GetPractitionerInviteCount([Service] IHttpContextAccessor contextAccessor,
+        public int GetPractitionerInviteCount(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            var messageType = "invitation";
-            return shortUrlManager.GetMessageCountForUser(userId, messageType);
+            return shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
         }
 
-        public string GetLastPractitionerInviteDate([Service] IHttpContextAccessor contextAccessor,
+        public string GetLastPractitionerInviteDate(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            var messageType = "invitation";
-            return shortUrlManager.GetLastMessageDateForUser(userId, messageType);
+            return shortUrlManager.GetLastMessageDateForUser(userId, TemplateTypeConstants.Invitation);
         }
 
-        public List<System.DateTime> GetAllPractitionerInvites([Service] IHttpContextAccessor contextAccessor,
+        public List<System.DateTime> GetAllPractitionerInvites(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            var messageType = "invitation";
-            return shortUrlManager.GetAllMessageInvitesForUser(userId, messageType);
+            return shortUrlManager.GetAllMessageInvitesForUser(userId, TemplateTypeConstants.Invitation);
         }
 
         public List<Visit> GetPractitionerVisits([Service] VisitManager visitManager, string userId)
@@ -381,21 +377,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public Trainee GetTraineeByUserId(
-    [Service] PersonnelService practiManager,
-    [Service] UserLicenseManager userLicenseManager,
-    string userId)
+            [Service] PersonnelService practiManager,
+            [Service] UserLicenseManager userLicenseManager,
+            string userId)
         {
             return practiManager.GetTraineeByUserId(userLicenseManager, userId);
         }
 
-        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, string userId)
+        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, string userId)
         {
-            return visitDataManager.GetPractitionerPQARating(userId);
+            Visit visit = visitManager.GetPQAVisitsForPractitioner(userId).FirstOrDefault();
+            return visit != null ? visitDataManager.GetPractitionerPQARating(visit): new PQARating();
         }
 
-        public PQARating GetPractitionerReAccreditationRating([Service] VisitDataManager visitDataManager, string userId)
+        public PQARating GetPractitionerReAccreditationRating([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, string userId)
         {
-            return visitDataManager.GetPractitionerReAccreditationRating(userId);
+            Visit visit = visitManager.GetReAccreditationVisitsForPractitioner(userId).FirstOrDefault();
+            return visit != null ? visitDataManager.GetPractitionerReAccreditationRating(visit) : new PQARating();
         }
 
         public List<PractitionerNotes> GetVisitNotesForPractitioner([Service] VisitDataManager visitDataManager, string userId)
@@ -403,7 +401,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return visitDataManager.GetVisitNotesForPractitioner(userId);
         }
 
+        public PractitionerRemovalHistory GetRemovalDetailsForPractitioner(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory, 
+            string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
 
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+            var result = removalRepo.GetListByUserId(userId)
+                .Where(x => x.IsActive)
+                .OrderByDescending(x => x.InsertedDate)
+                .FirstOrDefault();
+
+            return result;
+        }
+        public List<PractitionerRemovalHistory> GetRemovalDetailsForPractitioners(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            IEnumerable<string> userIds)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+            var result = removalRepo.GetAll()
+                .Where(x => x.IsActive && userIds.Contains(x.UserId))
+                .ToList();
+
+            return result;
+        }
     }
-
 }

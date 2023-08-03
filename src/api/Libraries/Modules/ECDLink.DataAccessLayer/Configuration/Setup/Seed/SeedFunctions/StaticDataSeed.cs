@@ -11,7 +11,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
 {
     public class StaticDataSeed
     {
-
         public StaticDataSeed(IServiceProvider serviceProvider)
         {
             SeedAttendingReasons<ProgrammeAttendanceReason>(serviceProvider);
@@ -28,6 +27,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             SeedAuditLogType<AuditLogType>(serviceProvider);
             SeedSystemSettings<SystemSetting>(serviceProvider);
             SeedReasonForPractitionerLeaving<ReasonForPractitionerLeaving>(serviceProvider);
+            SeedReasonForPractitionerLeavingProgramme<ReasonForPractitionerLeavingProgramme>(serviceProvider);
         }
 
         private void SeedNoteType<T>(IServiceProvider serviceProvider)
@@ -234,6 +234,21 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             var repo = repositoryFactory.CreateRepository<T>();
 
             var reasons = ReasonsForPractitionerLeavingSeed<T>.GetReasonForPractitionerLeavingSeed();
+
+            foreach (var reason in reasons)
+            {
+                repo.Insert(reason);
+            }
+        }
+
+        private void SeedReasonForPractitionerLeavingProgramme<T>(IServiceProvider serviceProvider)
+          where T : ReasonForPractitionerLeavingProgramme, new()
+        {
+            var repositoryFactory = serviceProvider.GetService<IGenericRepositoryFactory>();
+
+            var repo = repositoryFactory.CreateRepository<T>();
+
+            var reasons = ReasonsForPractitionerLeavingProgrammeSeed<T>.GetReasonsForPractitionerLeavingProgrammeSeed();
 
             foreach (var reason in reasons)
             {

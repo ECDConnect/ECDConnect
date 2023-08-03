@@ -3,7 +3,7 @@ import { NavigationDto, PermissionEnum, usePanel } from '@ecdlink/core';
 import { GetAllNavigation } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import UiTable from '../../../../components/ui-table';
+import UiTable from '../../../../components/old-ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import NavigationPanel from './components/navigation-panel/navigation-panel';
 

@@ -33,6 +33,7 @@ namespace ECDLink.DataAccessLayer.Context
     public class AuthenticationDbContext : IdentityDbContext<ApplicationUser> //AuditIdentityDbContext<ApplicationUser>
     {
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
+        public DbSet<MessageLog> MessageLogs { get; set; }
         public DbSet<UserGrant> UserGrants { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentType> DocumentTypes { get; set; }
@@ -45,6 +46,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<ReasonForLeaving> ReasonsForLeaving { get; set; }
         public DbSet<ReasonForPractitionerLeaving> ReasonsForPractionerLeaving { get; set; }
+        public DbSet<ReasonForPractitionerLeavingProgramme> ReasonsForPractionerLeavingProgramme { get; set; }
         public DbSet<ShortenUrlEntity> ShortUrls { get; set; }
         public DbSet<UserConsent> UserConsents { get; set; }
         public DbSet<Absentees> Absents { get; set; }
@@ -52,6 +54,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<SL_Ingestion_User> SL_Ingestion_Users { get; set; }
         public DbSet<SL_Ingestion_User_Update> SL_Ingestion_Users_Update { get; set; }
         public DbSet<SystemLog> SystemLogs { get; set; }
+        public DbSet<PractitionerRemovalHistory> PractitionerRemovalHistories { get; set; }
 
         // Notes
         public DbSet<Note> Notes { get; set; }

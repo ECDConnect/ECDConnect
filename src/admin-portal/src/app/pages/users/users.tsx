@@ -11,7 +11,6 @@ export function Users() {
   });
 
   const getNavigationItems = () => {
-    console.log(data);
     if (
       data &&
       data.tenantContext &&
@@ -19,59 +18,27 @@ export function Users() {
     ) {
       return [
         {
-          name: 'All Users',
-          href: '/users/application',
+          name: 'All Roles',
+          href: '/users/all-roles',
         },
         {
-          name: 'Application Users',
-          href: '/users/application',
-        },
-        {
-          name: 'Clinics',
-          href: '/users/clinics',
+          name: 'CHWs',
+          href: '/users/health-care-worker',
         },
         {
           name: 'Team Leads',
           href: '/users/team-leads',
         },
         {
-          name: 'Health Care Worker',
-          href: '/users/health-care-worker',
-        },
-        {
-          name: 'Mothers',
-          href: '/users/mother',
-        },
-        {
-          name: 'Children',
-          href: '/users/infant',
+          name: 'Administrators',
+          href: '/users/admins',
         },
       ];
     } else {
       return [
         {
-          name: 'All Users',
-          href: '/users/',
-        },
-        {
-          name: 'Application Users',
-          href: '/users/application',
-        },
-        {
-          name: 'Franchisors',
-          href: '/users/franchisors',
-        },
-        {
-          name: 'Coaches',
-          href: '/users/coaches',
-        },
-        {
-          name: 'Practitioners',
-          href: '/users/practitioners',
-        },
-        {
-          name: 'Children',
-          href: '/users/children',
+          name: 'Administrators',
+          href: '/users/admins',
         },
       ];
     }
@@ -81,6 +48,8 @@ export function Users() {
 
   const history = useHistory();
   useEffect(() => {
+    localStorage.removeItem('selectedUser');
+
     // GO TO DEFAULT ROUTE
     async function init() {
       history.push(navigation[0].href);
@@ -89,18 +58,28 @@ export function Users() {
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  const userSelected = localStorage.getItem('selectedUser');
+  console.log(window.location.pathname)
   return (
     <div className="">
       <div className="flex justify-center bg-white ">
-        {navigation.map((item) => (
-          <div className="w-3/12 ">
-            <SubNavigationLink
-              key={`${item.name}-${new Date().getTime()}`}
-              item={item}
-            ></SubNavigationLink>
-          </div>
-        ))}
+        {window.location.pathname !== '/users/view-user' &&
+          navigation.map((item) => (
+            <div
+              className={
+                data?.tenantContext.applicationName === 'GrowGreat'
+                  ? 'w-3/12 '
+                  : 'w-full'
+              }
+            >
+              <SubNavigationLink
+                key={`${item.name}-${new Date().getTime()}`}
+                item={item}
+               
+              ></SubNavigationLink>
+            </div>
+          ))
+        }
       </div>
 
       <div className=" lg:min-w-0 lg:flex-1">

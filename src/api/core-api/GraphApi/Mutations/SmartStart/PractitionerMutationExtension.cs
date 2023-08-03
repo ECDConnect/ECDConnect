@@ -1,13 +1,14 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Api.CoreApi.Services;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -22,6 +23,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
@@ -55,6 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;                    
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
+                    if (input.SetupTraineeInitiated != null) practitioner.SetupTraineeInitiated = input.SetupTraineeInitiated;
 
                     if (input.SiteAddress != null && input.SiteAddressId.HasValue)
                     {
@@ -246,8 +250,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
          [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
-            var messageType = "invitation";
-            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, messageType);
+            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
 
             // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)
@@ -264,7 +267,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public async Task<bool> RemovePractitioner([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
-            [Service] PersonnelService personnelManager,
+            [Service] PersonnelService personnelService,
             UserManager<ApplicationUser> userManager,
             string practitionerId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
@@ -275,7 +278,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             if (!string.IsNullOrEmpty(newPrincipalId))
             {
-                personnelManager.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
+                personnelService.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
             }
 
             //Reassign all the classes for the practitioner as indicated            
@@ -288,30 +291,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
             }
 
-            practitioner.DateToBeRemoved = DateTime.Now;
-            practitioner.DateAccepted = null;
-            practitioner.DateLinked = null;
-            practitioner.IsLeaving = true;
-            //update and clear the principals details
-            practitioner.PrincipalHierarchy = null;
-            practitioner.CoachHierarchy = null;
-            practitioner.ShareInfo = false;
-            practitioner.ReasonForPractitionerLeavingId = Guid.Parse(reasonForPractitionerLeavingId);
-            practitioner.ReasonForLeavingDetails = reasonDetails;
-            
-            //update practitioner with column changes
-            practitionerRepo.Update(practitioner);
-
-            //Delete user
-            user.IsActive = false;
-            var updateResult = await userManager.UpdateAsync(user);
-
-            return updateResult.Succeeded;
+            return personnelService.DeActivatePractitioner(practitionerId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
-        public bool DeActivatePractitioner([Service] PersonnelService personnelService, string userId, string leavingComment)
+        public bool DeActivatePractitioner([Service] PersonnelService personnelService,
+            string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
-            return personnelService.DeActivatePractitioner(userId, leavingComment);
+            return personnelService.DeActivatePractitioner(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
 
         public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)
@@ -319,5 +305,107 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return userLicenseManager.DelicenseUser(input);
         }
 
+        public bool RemoveFromProgramme(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IAbsenteeService absenteeService,
+            string practitionerUserId, string classroomId, string reasonForPractitionerLeavingProgrammeId, string reasonDetails, DateTime dateOfRemoval, List<ClassroomGroupReassignments> classroomGroupReassignments)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            // Save the removal history
+            var history = new PractitionerRemovalHistory
+            {
+                UserId = practitionerUserId,
+                ClassroomId = Guid.Parse(classroomId),
+                RemovedByUserId = uId,
+                ReasonForPractitionerLeavingProgrammeId = Guid.Parse(reasonForPractitionerLeavingProgrammeId),
+                ReasonDetails = reasonDetails,
+                DateOfRemoval = dateOfRemoval,
+            };
+
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+            var removalHistory = removalRepo.Insert(history);
+
+            //Reassign all the classes for the practitioner as indicated
+            foreach (var reassignment in classroomGroupReassignments)
+            {
+                if (reassignment.ClassroomGroupId == null || reassignment.PractitionerId == null)
+                {
+                    return false;
+                }
+                absenteeService.AddAbsenteeForPractitioner(uId, practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, removalHistory.Id);
+            }
+
+            return true;
+        }
+        public bool UpdateRemovalFromProgramme(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IAbsenteeService absenteeService,
+            string removalId, string reasonForPractitionerLeavingProgrammeId, string reasonDetails, DateTime dateOfRemoval, List<ClassroomGroupReassignments> classroomGroupReassignments)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+            var removal = removalRepo.GetById(Guid.Parse(removalId));
+
+            removal.ReasonForPractitionerLeavingProgrammeId = Guid.Parse(reasonForPractitionerLeavingProgrammeId);
+            removal.ReasonDetails = reasonDetails;
+            removal.DateOfRemoval = dateOfRemoval;
+
+            removalRepo.Update(removal);
+
+            var absenteeRepo = repoFactory.CreateGenericRepository<Absentees>(userContext: uId);
+            //Create an absentee entry for each reassigned class, so they can be reassigned later
+            foreach (var reassignment in classroomGroupReassignments)
+            {
+                if (reassignment.ClassroomGroupId == null || reassignment.PractitionerId == null)
+                {
+                    return false;
+                }
+
+                if(reassignment.Id == null)
+                {
+                    absenteeService.AddAbsenteeForPractitioner(uId, removal.UserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, removal.Id);
+                }
+                else
+                {
+                    var absentee = absenteeRepo.GetById(Guid.Parse(reassignment.Id));
+                    absentee.AbsentDate = dateOfRemoval;
+                    absentee.ReassignedClass = reassignment.ClassroomGroupId;
+                    absentee.ReassignedToPractitioner = reassignment.PractitionerId;
+                    absenteeRepo.Update(absentee);
+                }
+            }
+
+            return true;
+        }
+
+        public bool CancelRemovalFromProgramme(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string removalId)
+        {
+            var removalGuid = Guid.Parse(removalId);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+            var removal = removalRepo.GetById(removalGuid);
+
+            removal.IsActive = false;
+
+            removalRepo.Update(removal);
+
+            var absenteeRepo = repoFactory.CreateGenericRepository<Absentees>(userContext: uId);
+            var absentees = absenteeRepo.GetAll().Where(x => x.PractitionerRemovalHistoryId == removalGuid).ToList();
+            {
+                foreach (var absentee in absentees)
+                {
+                    absentee.IsActive = false;
+                    absenteeRepo.Update(absentee);
+                }
+            }
+
+            return true;
+        }
     }
 }

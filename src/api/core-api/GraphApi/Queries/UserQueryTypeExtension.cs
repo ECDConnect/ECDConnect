@@ -4,7 +4,6 @@ using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
-using ECDLink.EGraphQL.ObjectTypes.Input;
 using ECDLink.Moodle.Managers;
 using ECDLink.Moodle.Models;
 using ECDLink.Security;
@@ -20,6 +19,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.Abstractrions.GraphQL.Attributes;
+using Microsoft.AspNetCore.Http;
+using ECDLink.Security.Extensions;
+using HotChocolate.Data;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -35,49 +37,143 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
+        [UseSorting]
         public async Task<IQueryable<ApplicationUser>> GetUsersAsync(
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IGenericRepositoryFactory repoFactory,
-            PagedQueryInput? pagingInput = null)
+            [Service] IHttpContextAccessor httpContextAccessor,
+            PagedQueryInput? pagingInput = null,
+            string search = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
             var usersQuery = userManager.Users
                 .Where(u => u.TenantId == tenantId)
                 .AsNoTracking();
 
+            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
+
             usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
-            usersQuery = PaginationHelper.AddSorting(
-                pagingInput?.SortBy,
-                usersQuery,
-                // Set default sort by column.
-                new SortByField[] { new SortByField(nameof(ApplicationUser.FullName).ToString()) });
+            usersQuery = AddDefaultUserSearch(search, usersQuery);
 
-            if (pagingInput is not null)
-                usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize, usersQuery);
+            if (pagingInput is not null && pagingInput.PageSize is not null)
+                usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize ?? 1, usersQuery);
 
             return usersQuery;
         }
 
+        private static IQueryable<ApplicationUser> AddDefaultUserSearch(string search, IQueryable<ApplicationUser> usersQuery)
+        {
+            if (!string.IsNullOrWhiteSpace(search))
+                usersQuery = usersQuery
+                    .Where(h => EF.Functions.ILike(h.FullName, $"%{search}%")
+                    || EF.Functions.ILike(h.IdNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.PhoneNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.Email, $"%{search}%"));
+            return usersQuery;
+        }
+
+        private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(UserManager<ApplicationUser> userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
+        {
+            if (!userIsAdmin)
+            {
+                var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
+                var adminUserIds = adminUsers
+                    .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
+                    .Select(r => r.Id)
+                    .ToList();
+
+                usersQuery = usersQuery.Where(u => !adminUserIds.Contains(u.Id));
+            }
+
+            return usersQuery;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        // TODO: Move paging code into a "Pagination" service
+        // TODO: Builder pattern for query?
+        public async Task<int> GetCountUsersAsync(
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            PagedQueryInput? pagingInput = null,
+            string search = null)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+
+            var usersQuery = userManager.Users
+                .Where(u => u.TenantId == tenantId)
+                .AsNoTracking();
+
+            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
+
+            usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
+            usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
+            usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
+            usersQuery = AddDefaultUserSearch(search, usersQuery);
+
+            return usersQuery.Count();
+        }
+
         // Can this become generic?
-        private IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+        private IQueryable<ApplicationUser> AddProvinceFilter(
+            IGenericRepositoryFactory repoFactory,
+            PagedQueryInput pagingInput,
+            IQueryable<ApplicationUser> usersQuery)
         {
             if (pagingInput is null)
                 return usersQuery;
 
             var provinceFilters = pagingInput.FilterBy?
-                .Where(f => f.FieldName == nameof(SiteAddress.Province))
-                .Select(f => f.Value)
+                .Where(f => f.FieldName.ToLowerInvariant() == nameof(SiteAddress.Province).ToLowerInvariant())
                 .ToList();
 
             if (provinceFilters?.Any() ?? false)
             {
                 using var provinceRepo = repoFactory.CreateGenericRepository<Province>();
-                var provinceIds = provinceRepo.GetAll()
-                    .Where(p => provinceFilters.Contains(p.Description))
-                    .Select(p => p.Id).ToList();
+                var provinces = provinceRepo.GetAll()
+                    .Where(p =>
+                    (p.TenantId == null || p.TenantId == TenantExecutionContext.Tenant.Id)
+                    && p.IsActive);
+
+                var provinceIds = new List<Guid>();
+
+                foreach (var provinceFilter in provinceFilters)
+                {
+                    if (provinceFilter.FilterType == InputFilterComparer.Equals)
+                    {
+                        var provinceId = provinces.FirstOrDefault(p => p.Description == provinceFilter.Value)?.Id;
+                        if (provinceId is not null && provinceId != Guid.Empty)
+                            provinceIds.Add(provinceId ?? Guid.Empty);
+                    }
+                    else if (provinceFilter.FilterType == InputFilterComparer.Contains)
+                    {
+                        var provinceIdsToAdd = provinces
+                            .Where(p => p.Description.Contains(provinceFilter.Value))
+                            .Select(p => p.Id)
+                            .ToList();
+                        provinceIds.AddRange(provinceIdsToAdd);
+                    }
+                    else if (provinceFilter.FilterType == InputFilterComparer.ILike)
+                    {
+                        var provinceIdsToAdd = provinces
+                            .Where(p => EF.Functions.ILike(p.Description, $"%{provinceFilter.Value}%"))
+                            .Select(p => p.Id)
+                            .ToList();
+                        provinceIds.AddRange(provinceIdsToAdd);
+                    }
+                }
+
 
                 return usersQuery
                     .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
@@ -123,53 +219,54 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            var user = userManager.FindByIdAsync(userId).Result;
+            var user = await userManager.FindByIdAsync(userId);
+
+            if (user is null || !user.IsActive)
+            {
+                return default(ApplicationUser);
+            }
 
             var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
 
-            if (user != null)
+            //Franchisor
+            if (roles.Any(x => x.Name.Contains(Roles.FRANCHISOR)))
             {
-                //Franchisor
-                if (roles.Any(x => x.Name.Contains(Roles.FRANCHISOR)))
+                var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: user.Id);
+                user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);
+            }
+            //Coach
+            if (roles.Any(x => x.Name.Contains(Roles.COACH)))
+            {
+                var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: user.Id);
+                user.coachObjectData = coachRepo.GetByUserId(user.Id);
+            }
+            //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
+            if (roles.Any(x => x.Name.Contains(Roles.PRINCIPAL) || x.Name.Contains(Roles.PRACTITIONER)))
+            {
+                var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: user.Id);
+                var userData = practiRepo.GetByUserId(user.Id);
+                if (userData != null)
                 {
-                    var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: user.Id);
-                    user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);
-                }
-                //Coach
-                if (roles.Any(x => x.Name.Contains(Roles.COACH)))
-                {
-                    var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: user.Id);
-                    user.coachObjectData = coachRepo.GetByUserId(user.Id);
-                }
-                //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
-                if (roles.Any(x => x.Name.Contains(Roles.PRINCIPAL) || x.Name.Contains(Roles.PRACTITIONER)))
-                {
-                    var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: user.Id);
-                    var userData = practiRepo.GetByUserId(user.Id);
-                    if (userData != null)
+                    if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)
                     {
-                        if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)
-                        {
-                            user.practitionerObjectData = null;
-                            user.principalObjectData = userData;
-                        }
-                        else
-                        {
-                            user.principalObjectData = null;
-                            user.practitionerObjectData = userData;
-                        }
+                        user.practitionerObjectData = null;
+                        user.principalObjectData = userData;
+                    }
+                    else
+                    {
+                        user.principalObjectData = null;
+                        user.practitionerObjectData = userData;
                     }
                 }
-                //Child
-                if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
-                {
-                    var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
-                    user.childObjectData = childRepo.GetByUserId(user.Id);
-                }
-
-                return user.IsActive ? user : default(ApplicationUser);
             }
-            return default(ApplicationUser);
+            //Child
+            if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
+            {
+                var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
+                user.childObjectData = childRepo.GetByUserId(user.Id);
+            }
+
+            return user;
         }
 
         public UserByToken GetUserByToken(

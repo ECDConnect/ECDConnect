@@ -15,18 +15,19 @@ import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
+import { PasswordInput } from '../../password-input/password-input';
 
 interface RouteParams {
-  userId: string;
+  resetToken: string;
 }
 
 export default function Register(props: RouteComponentProps<RouteParams>) {
-  const { registerUser } = useAuth();
+  const { registerUser, logout } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { userId } = useParams<RouteParams>();
+  const { resetToken } = useParams<RouteParams>();
 
   const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(registerSchema),
@@ -40,6 +41,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const { errors, isValid } = formState;
+  const formValues = getValues();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -47,15 +49,19 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
     setShowPassword(!showPassword);
   };
 
-  const registerNewUser = async () => {
-    const formValues = getValues();
+  const termsState = watch('acceptedTerms');
+  const acceptedTerms = termsState && isValid;
 
+  console.log(resetToken);
+
+  const registerNewUser = async () => {
     if (isValid) {
       setIsLoading(true);
       const body: RegisterRequestModel = {
-        email: formValues.email,
+        username: formValues.username,
         password: formValues.password,
-        acceptedTerms: formValues.acceptedTerms,
+        token: resetToken,
+        // acceptedTerms: formValues.acceptedTerms,
       };
       const isAuthenticated = await registerUser(body, Config.authApi).catch(
         () => {
@@ -66,7 +72,8 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
 
       if (isAuthenticated) {
         setIsLoading(false);
-        history.push('/dashboard');
+        logout();
+        history.push('/');
       } else {
         setIsLoading(false);
         setDisplayError(true);
@@ -93,9 +100,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-2xl">
-            Register for Funda App
-          </h2>
+          <h2 className="font-h1 textLight mt-6 text-2xl">Register</h2>
         </div>
         <div className="mt-8">
           <div className="mt-6">
@@ -103,10 +108,10 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               <div>
                 <FormField
                   label={'Email address *'}
-                  nameProp={'email'}
+                  nameProp={'username'}
                   type="email"
                   register={register}
-                  error={errors.email?.message}
+                  error={errors.username?.message}
                   instructions={[
                     'Make sure to use the same address where you received the invitation email.',
                   ]}
@@ -115,50 +120,26 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               </div>
 
               <div className="space-y-1">
-                <FormField
-                  label={'Password *'}
+                <PasswordInput
+                  label={'Password'}
                   nameProp={'password'}
+                  sufficIconColor="black"
+                  value={formValues.password}
                   register={register}
-                  type="password"
-                  error={errors.password?.message}
-                  instructions={[
-                    'At least 8 characters',
-                    'At least 1 number',
-                    'At least 1 capital letter',
-                  ]}
-                  showPassword={showPassword}
-                  togglePasswordVisibility={togglePasswordVisibility}
+                  strengthMeterVisible={true}
+                  className="mb-9 "
                 />
               </div>
-              <div className="-mx-1 flex">
-                {[...Array(4)].map((_, i) => (
-                  <div className="w-1/4 px-1" key={i}>
-                    <div
-                      className={`h-2 rounded-xl transition-colors ${
-                        i < passwordScore
-                          ? passwordScore <= 1
-                            ? 'bg-red-400'
-                            : passwordScore <= 2
-                            ? 'bg-yellow-400'
-                            : passwordScore <= 4
-                            ? 'bg-green-500'
-                            : 'bg-yellow-400'
-                          : 'bg-gray-200'
-                      }`}
-                    ></div>
-                  </div>
-                ))}
-              </div>
-
               <Divider></Divider>
               <div className="flex">
                 <div>
                   <FormField
                     label={'Terms and conditions *'}
-                    nameProp={'terms'}
+                    nameProp={'acceptedTerms'}
                     type="checkbox"
                     register={register}
-                    instructions={['I accept the terms and conditions']}
+                    instructions={['']}
+                    error={errors.acceptedTerms?.message}
                   />
                 </div>
               </div>
@@ -177,7 +158,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
-                  disabled={!isValid}
+                  disabled={!acceptedTerms}
                   onClick={registerNewUser}
                 >
                   <Typography

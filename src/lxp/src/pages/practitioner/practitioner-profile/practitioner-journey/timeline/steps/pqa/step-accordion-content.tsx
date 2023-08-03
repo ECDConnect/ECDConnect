@@ -28,9 +28,14 @@ export const PQAVisits = ({
     (item) => !!item?.attended
   );
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating1 = pqaRatings?.[0];
+  const pqaRating2 = pqaRatings?.[1];
+  const pqaRating3 = pqaRatings?.[2];
 
   const sortedVisits = attendedPqaVisits?.sort((a, b) => {
     if (!a?.insertedDate && !b?.insertedDate) {
@@ -47,13 +52,12 @@ export const PQAVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    switch (item?.visitType?.name) {
-      case visitTypes.pqa.thirdPQA.name:
-        return pqaRating3;
-      case visitTypes.pqa.secondPQA.name:
-        return pqaRating2;
-      default:
-        return pqaRating1;
+    if (item?.id === pqaRating3?.linkedVisitId) {
+      return pqaRating3;
+    } else if (item?.id === pqaRating2?.linkedVisitId) {
+      return pqaRating2;
+    } else {
+      return pqaRating1;
     }
   };
 

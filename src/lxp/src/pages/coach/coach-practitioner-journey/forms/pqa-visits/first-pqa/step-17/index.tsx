@@ -12,7 +12,10 @@ import { step8TotalScore, step8VisitSection } from '../step-8';
 import { step16Question1, step16VisitSection } from '../step-16';
 import { ReactComponent as RedRating } from '@/assets/red_rating.svg';
 import { useParams } from 'react-router';
-import { PractitionerJourneyParams } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import {
+  PractitionerJourneyParams,
+  visitTypes,
+} from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import { useSelector } from 'react-redux';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 
@@ -38,9 +41,14 @@ export const Step17 = ({
     getPractitionerTimelineByIdSelector(practitionerId)
   );
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating1 = pqaRatings?.[0];
+  const pqaRating2 = pqaRatings?.[1];
+  const pqaRating3 = pqaRatings?.[2];
 
   const pqaRatingColorList = [
     pqaRating1?.overallRatingColor,

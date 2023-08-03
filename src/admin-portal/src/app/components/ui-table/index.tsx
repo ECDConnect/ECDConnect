@@ -1,23 +1,44 @@
-import { classNames } from '@ecdlink/ui';
+import { Button, Typography, classNames } from '@ecdlink/ui';
 import Fuse from 'fuse.js';
-import debounce from 'lodash.debounce';
-import { useEffect, useRef, useState } from 'react';
+import {
+  ChangeEvent,
+  Key,
+  ReactChild,
+  ReactFragment,
+  ReactPortal,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
+import { Link, useHistory } from 'react-router-dom';
+import { useLazyQuery, useMutation } from '@apollo/client';
+import { sentInviteToMultipleUsers } from '@ecdlink/graphql';
+import { ReactI18NextChild } from 'react-i18next';
+import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
+import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 
-export default function UiTable({
-  columns = [],
-  rows = [],
-  options = {},
-  urlRow,
-  sendRow,
-  editRow,
-  deleteRow,
-  viewRow,
-}: UiTableProps) {
+export default function UiTable(
+  {
+    columns = [],
+    rows = [],
+    options = {},
+    urlRow,
+    searchInput,
+    component,
+    viewRow,
+
+  }: UiTableProps
+) {
+  const history = useHistory();
+  const [inviteRows, setInviteRows] = useState<boolean>(false);
+  const { setNotification, clearNotification } = useNotifications();
+
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
   const [searchRows, setSearchRows] = useState<any[]>([]);
+  const [selectedRows, setSelectedRows] = useState([]);
   const searchKeys = useRef(columns.map(({ field }) => field));
   const fuseOptions = {
     keys: searchKeys.current,
@@ -26,6 +47,44 @@ export default function UiTable({
     distance: 0,
   };
   const fuse = useRef(new Fuse(rows, fuseOptions));
+
+  const [sendInvitations, { loading: invitationsLoading }] = useMutation(
+    sentInviteToMultipleUsers,
+    {
+      variables: {
+        userIds: [],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const inviteUsers = () => {
+    sendInvitations({
+      variables: {
+        userIds: selectedRows,
+      },
+    })
+      .then((res) => {
+        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+            setNotification({
+              title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+              variant: NOTIFICATION.ERROR,
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to send invitations',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  };
 
   useEffect(() => {
     fuse.current = new Fuse(rows, fuseOptions);
@@ -37,24 +96,52 @@ export default function UiTable({
   useEffect(() => {
     setSearchRows(getSearchResults());
     setLastUpdate(Date.now());
+    setSearchValue(searchInput);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
-
-  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value || '');
-  }, 150);
+  }, [searchInput]);
 
   const getSearchResults = () => {
     if (!searchValue) {
       return rows;
     }
-
     return fuse.current.search(searchValue).map((result) => result.item);
   };
 
   const makeColumns = (cols: any[] = []) => {
-    cols.push({ field: '_action', use: ' ' });
-    return [...columns, ...cols];
+    const selectColumn = {
+      field: 'select',
+      use: '',
+      Header: 'Select',
+      accessor: '', // Set the accessor value based on your data structure
+      Cell: null,
+    };
+    if (component === 'Consent' || component === 'roles') {
+      return [...columns];
+    }
+    const columnsWithSelect = [selectColumn, ...cols];
+    return [...columnsWithSelect, ...columns];
+  };
+
+  const handleRowSelect = (
+    event: ChangeEvent<HTMLInputElement>,
+    row: { id: any }
+  ) => {
+    const selectedRowId = row.id;
+    const isChecked = event.target.checked;
+
+    if (selectedRows.length === 0) {
+      setInviteRows(!inviteRows);
+    }
+
+    setSelectedRows((prevSelectedRows) => {
+      if (isChecked) {
+        return [...prevSelectedRows, selectedRowId];
+      } else {
+        return prevSelectedRows.filter(
+          (selectedRow) => selectedRow !== selectedRowId
+        );
+      }
+    });
   };
 
   const makeRows = () => {
@@ -64,128 +151,106 @@ export default function UiTable({
 
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
-      row._action = (
-        <div className="flex justify-center">
-          {viewRow && (
-            <Icon
-              key={`viewRow_${rowKey}`}
-              icon="SearchIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
-              onClick={() => viewRow(row)}
-            />
-          )}
-          {editRow && (
-            <Icon
-              key={`editRow${rowKey}`}
-              icon="PencilAltIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
-              onClick={() => editRow(row)}
-            />
-          )}
-          {urlRow && (
-            <Icon
-              key={`urlRow${rowKey}`}
-              icon="PencilAltIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
-              onClick={() => urlRow(row)}
-            />
-          )}
-          {sendRow && (
-            <Icon
-              key={`sendRow${rowKey}`}
-              icon="MailIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
-              onClick={() => sendRow(row)}
-            />
-          )}
-          {deleteRow && (
-            <Icon
-              key={`deleteRow${rowKey}`}
-              icon="TrashIcon"
-              className="ml-2 text-gray-400 cursor-pointer"
-              height="20px"
-              color="transparent"
-              onClick={() => deleteRow(row)}
-            />
-          )}
-        </div>
-      );
+      const rowWithCheckbox = {
+        ...row,
+      };
+
       ++rowKey;
       return row;
     });
   };
 
-  const formatDate = (value) => {
+  const formatDate = (value: string | number | Date) => {
     try {
-      // date stored in UTC add 2 hours
       const date = new Date(value);
-      date.setHours(date.getHours() + 2);
-      return new Date(value)
-        .toString()
-        .replace(' GMT+0200 (South Africa Standard Time)', '');
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear());
+      return `${day}/${month}/${year}`;
     } catch (e) {
-      return 'N/A';
+      return '';
     }
   };
 
-  const renderFormat = (row, column, display_value) => {
+
+  const renderFormat = (row: any, column: any, display_value: any) => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return column.field === columns[0].field ? display_value : <></>;
     }
+    let rowValue: any;
 
-    let rowValue;
-
-    if (typeof display_value === 'boolean') {
+    const checkboxCell = (
+      <input
+        type="checkbox"
+        className="form-checkbox text-primary border-gray-30 focus:border-secondary focus:outline h-5 w-5 rounded "
+        checked={selectedRows.includes(row.id)}
+        onChange={(event) => handleRowSelect(event, row)}
+      />
+    );
+    if (
+      column.field === 'select' &&
+      component !== 'Consent' &&
+      component !== 'roles'
+    ) {
+      return checkboxCell;
+    } else if (typeof display_value === 'boolean') {
       rowValue = (
-        <div className="flex ml-5">
+        <div className="ml-1 flex cursor-pointer">
           {display_value ? (
-            <Icon
-              icon="CheckCircleIcon"
-              className="ml-1 text-successMain"
-              height="20px"
-              color="transparent"
-            />
+            <p className="text-successMain ">Active</p>
           ) : (
-            <Icon
-              icon="XCircleIcon"
-              className="ml-1 text-errorMain"
-              height="20px"
-              color="transparent"
-            />
+            <p className="text-errorMain text-normal">Inactive</p>
           )}
         </div>
       );
-    } else if (column.field.match(/created|createdAt|updated|updatedAt/)) {
+    } else if (
+      column.field.match(/created|createdAt|updated|insertedDate|updatedAt/)
+    ) {
       rowValue = (
-        <span className="overflow-ellipsis">{formatDate(display_value)}</span>
+        <span
+          className="cursor-pointer overflow-ellipsis"
+          onClick={() => {
+            component !== 'team-leads' && viewRow(row)
+          }}
+        >
+          {formatDate(display_value)}
+        </span>
       );
     } else if (column.type === 'array') {
       rowValue = (
-        <div className="ml-4 flex items-center flex-row flex-wrap">
-          {display_value &&
-            display_value.map((item) => (
+        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
+          {display_value?.map(
+            (item: {
+              [x: string]:
+              | boolean
+              | ReactChild
+              | ReactFragment
+              | ReactPortal
+              | Iterable<ReactI18NextChild>;
+              id: Key;
+            }) => (
               <div
                 key={item.id}
-                className="text-xs rounded-full py-1 px-3 m-1 bg-uiMid text-white"
+                className={
+                  `${item[column.displayProperty] === 'Administrator'
+                    ? 'bg-tertiary'
+                    : item[column.displayProperty] === 'Practitioner'
+                      ? 'bg-secondary'
+                      : 'bg-primary'
+                  }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                }
               >
                 {item[column.displayProperty]}
               </div>
-            ))}
+            )
+          )}
         </div>
       );
     } else if (column.type === 'workflowStatus') {
       rowValue = (
         <span
           className={classNames(
-            'px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white',
+            'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white ',
             display_value && display_value[0].statusColor
           )}
         >
@@ -195,40 +260,67 @@ export default function UiTable({
     } else {
       rowValue =
         typeof display_value === 'string' ? (
-          <div className="inline-block overflow-ellipsis">{display_value}</div>
+          <div className="inline-block overflow-ellipsis ">
+            <span>{display_value}</span>
+          </div>
         ) : (
-          display_value
+          <div>{display_value}</div>
         );
     }
-    return rowValue;
+
+    return (
+      <div
+        onClick={() => {
+          component !== 'team-leads' && viewRow(row);
+        }}
+        className={'cursor-pointer'}
+      >
+        {rowValue}{' '}
+      </div>
+    );
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-lg shadow-lg table-top">
-      <div className="relative p-2 px-4 text-gray-400 bg-gray-50 focus-within:text-gray-600">
-        <input
-          className="block w-full py-2 pl-8 pr-3 leading-5 text-gray-900 placeholder-gray-600 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary focus:ring-white focus:border-white sm:text-sm"
-          placeholder="Search..."
-          onChange={search}
-        />
-        <span className="inset-y-1/2 left-6 absolute input-group-text flex items-center text-base font-normal text-gray-600 text-center whitespace-nowrap rounded">
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            data-prefix="fas"
-            data-icon="search"
-            className="w-4"
-            role="img"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 512 512"
-          >
-            <path
-              fill="currentColor"
-              d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
-            ></path>
-          </svg>
-        </span>
-      </div>
+    <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
+      {selectedRows?.length >= 1 && (
+        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2">
+          <div className="w-4/12">
+            <p className="text-md pl-4 text-white">
+              {selectedRows?.length} Selected
+            </p>
+          </div>
+          <div className="flex w-6/12 flex-row items-center">
+            <Button
+              className="mr-4 rounded-xl px-6 py-0"
+              type="filled"
+              isLoading={invitationsLoading}
+              color="secondary"
+              onClick={inviteUsers}
+            >
+              <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
+              <Typography type="help" color="white" text="Resend Invitations" />
+            </Button>
+
+            <Button
+              className="mr-4 rounded-xl px-6 py-0"
+              type="outlined"
+              // isLoading={isLoading}
+              color="tertiary"
+            // onClick={deactivateUser}
+            >
+              <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
+                {' '}
+              </TrashIcon>
+              <Typography
+                type="help"
+                color="tertiary"
+                text={'Deactivate User'}
+              ></Typography>
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Table
         key={`table-${lastUpdate}`}
         row_render={renderFormat}
@@ -244,33 +336,33 @@ export default function UiTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: `text-gray-900 border-b-2 border-gray-100`,
-            table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
+            table_row: ` mb-10 border-b-2 border-secondary `,
+            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-infoBb text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
           },
           table_body: {
             main: ``,
-            table_row: 'border-none  ',
+            // table_row: 'border-none bg-secondary ',
+            table_row: 'border-none py-6 bg-infoBb',
+
             table_data:
-              'truncate w-24 px-6 pt-3 pb-3 text-sm font-medium text-gray-900 border-b border-gray-100',
+              'truncate w-20 px-6 pt-2 pb-2 text-sm font-medium text-gray-900 border-b border-gray-100',
           },
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${
-                rows.length < 10 ? 'hidden' : ''
-              } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${rows.length < 10 ? 'hidden' : ''
+                } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
-            page_numbers: `page-numbers z-10 text-primary relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
+            page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
           },
         }}
         columns={makeColumns()}
         rows={makeRows()}
-        per_page={options.per_page || 10}
+        per_page={10}
         no_content_text="-"
         striped
         bordered
-        hovered={false}
       />
     </div>
   );

@@ -172,7 +172,9 @@ const visitSlice = createSlice({
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const updatedDataIndex = state.moreInformation?.findIndex(
-        (item) => item.id === action.payload.id
+        (item) =>
+          item.visit === action.payload.visit &&
+          item.type === action.payload.type
       );
 
       if (
@@ -235,13 +237,23 @@ const visitSlice = createSlice({
         : action.payload;
     });
     builder.addCase(getVisitAnswersForMother.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
       const mergedDate = !!state.visitAnswersForMother?.length
         ? [...state.visitAnswersForMother, ...action.payload]
         : [];
 
       state.visitAnswersForMother = !!mergedDate.length
         ? mergedDate.filter((item, index) => {
-            return index === mergedDate.findIndex((obj) => obj.id === item.id);
+            return (
+              index ===
+              mergedDate.findIndex(
+                (obj) =>
+                  obj.visitSection === item.visitSection &&
+                  obj.visitId === item.visitId &&
+                  obj.visitName === item.visitName
+              )
+            );
           })
         : action.payload;
     });

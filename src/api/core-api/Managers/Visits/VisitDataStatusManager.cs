@@ -1062,9 +1062,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // REFERRALS && G9 FOR ALL
-            if (wIndicator != "Normal" && lIndicator != "Normal" && mIndicator != "Normal") {
+            if (wIndicator != "Normal" || lIndicator != "Normal" || mIndicator != "Normal") {
                 // Referrals
-                comment = firstName + Constants.GGSettings.growth_referral + "<li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li>";
+                comment = firstName + Constants.GGSettings.growth_referral;
+                if (wIndicator != "Normal")
+                {
+                    comment += "<li>" + wIndicator + "</li>";
+                }
+                if (lIndicator != "Normal")
+                {
+                    comment += "<li>" + lIndicator + "</li>";
+                }
+                if (mIndicator != "Normal")
+                {
+                    comment += "<li>" + mIndicator + "</li>";
+                }
                 AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
             }
 
@@ -1370,19 +1382,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean AddAdditionalVisit(string clientId, string userType, string comment)
         {
-            Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
-                                                          x.VisitType.Name == _additionalVisitType.Name &&
-                                                          x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
-                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null)).FirstOrDefault();
-
             Visit visitRecord = _visitRepo.GetById(new Guid(_visitId));
             //Only add additional visits if the visit is not already an additional visit
             if (visitRecord != null && visitRecord.VisitType.Name != _additionalVisitType.Name)
             {
-
+                // Only 1 additional visit per planned visit allowed
+                Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
+                                                          x.VisitType.Name == _additionalVisitType.Name &&
+                                                          x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
+                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null)).FirstOrDefault();
                 if (record == null)
                 {
-
                     DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
                     if (nextVisitDate == default(DateTime))
                     {

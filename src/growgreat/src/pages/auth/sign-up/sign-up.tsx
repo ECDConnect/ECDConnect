@@ -40,6 +40,7 @@ import bannerTwo from '@/assets/sign-up-carousel/bannerTwox2.png';
 import bannerThree from '@/assets/sign-up-carousel/bannerThreex2.png';
 import bannerFour from '@/assets/sign-up-carousel/bannerFourx2.png';
 import * as styles from '@/pages/auth/sign-up/sign-up.styles';
+import ROUTES from '@/routes/routes';
 
 const headerSlide: HeaderSlide[] = [
   {
@@ -94,7 +95,7 @@ export const SignUp: React.FC = () => {
   const { theme } = useTheme();
   const queryParams = useQueryParams(location.search);
   const authToken = queryParams.getValue('token');
-  const { isOnline, Offline } = useOnlineStatus();
+  const { isOnline } = useOnlineStatus();
 
   useEffect(() => {
     async function init() {
@@ -118,7 +119,7 @@ export const SignUp: React.FC = () => {
   const submitForm = async (formValue: SignUpModel) => {
     const valid = await signUpSchema.isValid(formValue);
 
-    if (!valid) return;
+    if (!valid && !isLoading) return;
 
     setIsLoading(true);
 
@@ -148,10 +149,7 @@ export const SignUp: React.FC = () => {
     { cellphone, username, password }: SignUpModel,
     token: string
   ) => {
-    setIsLoading(true);
-
-    setIsLoading(false);
-    history.push('/verify-phone', {
+    history.push(ROUTES.VERIFY_PHONE, {
       phoneNumber: cellphone,
       password: password,
       username,
@@ -356,18 +354,19 @@ export const SignUp: React.FC = () => {
               }
             />
           </div>
-          {/*           
-          <Button
-            id="gtm-register"
-            className={styles.formButton}
-            type="filled"
-            color="primary"
-            isLoading={isLoading}
-            disabled={!isOnline}
-            onClick={handleSubmit(submitForm)}
-          >
-            <Typography type="help" color="white" text={'Sign up'} />
-          </Button> */}
+          {
+            <Button
+              id="gtm-register"
+              className={styles.formButton}
+              type="filled"
+              color="primary"
+              isLoading={isLoading}
+              disabled={!isOnline}
+              onClick={handleSubmit(submitForm)}
+            >
+              <Typography type="help" color="white" text={'Sign up'} />
+            </Button>
+          }
 
           <Divider
             title={'Already have a CHW Connect account?'}
@@ -433,13 +432,13 @@ export const SignUp: React.FC = () => {
             ]}
           />
         </Dialog>
-        <Offline>
+        {!isOnline && (
           <Alert
             className={'mt-5 mb-3'}
             title="Your internet connection is unstable."
             type={'warning'}
           />
-        </Offline>
+        )}
       </BannerWrapper>
     </div>
   );

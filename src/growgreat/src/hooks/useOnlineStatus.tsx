@@ -1,10 +1,8 @@
 import React, { useState, useContext } from 'react';
-import { Detector, Offline, Online, PollingConfig } from 'react-detect-offline';
+import { Detector, PollingConfig } from 'react-detect-offline';
 
 const OnlineStatusContext = React.createContext({
   isOnline: false,
-  Offline,
-  Online,
 });
 
 export const OnlineStatusProvider: React.FC<{
@@ -16,8 +14,6 @@ export const OnlineStatusProvider: React.FC<{
 
   const value = {
     isOnline: onlineStatus,
-    Offline,
-    Online,
   };
   let safeInterval = interval < 1000 ? 1000 : interval;
   let safeTimeout = timeout < 1 ? 1 : timeout;
