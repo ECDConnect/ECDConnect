@@ -1,8 +1,7 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using HotChocolate;
+﻿using HotChocolate;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class UserImportModel
     {

@@ -107,8 +107,8 @@ const showNotification = (
 
 export function ViewUser(props: any) {
   const currentDate = new Date();
-  const startDate = currentDate;
-  const endDate = subDays(currentDate, 30);
+  const startDate = subDays(currentDate, 30);
+  const endDate = currentDate;
 
   const [successNotification, setSucessNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
@@ -155,7 +155,8 @@ export function ViewUser(props: any) {
   const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
     useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
       variables: {
-        healthCareWorkerUserId: '',
+        userId: '',
+        healthCareWorkerId: '',
         startDate: '',
         endDate: '',
       },
@@ -165,7 +166,11 @@ export function ViewUser(props: any) {
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
-        healthCareWorkerUserId: props.location.state.userId ?? userId,
+        userId: props.location.state.userId ?? userId,
+        healthCareWorkerId:
+          chwData?.GetHealthCareWorkerById?.user?.id ??
+          props.location.state.userId ??
+          userId,
         startDate: selectedRange[0]?.toISOString() ?? startDate.toISOString(),
         endDate: selectedRange[1]?.toISOString() ?? endDate.toISOString(),
       },
@@ -213,7 +218,8 @@ export function ViewUser(props: any) {
             onSubmit();
             deleteUser({
               variables: {
-                id: userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
+                id:
+                  userData?.userById?.id ?? chwData.GetHealthCareWorkerById.id,
               },
             })
               .then((response: any) => {
@@ -377,7 +383,7 @@ export function ViewUser(props: any) {
     await updateUser({
       variables: {
         id:
-          userData?.userById.id ??
+          userData?.userById?.id ??
           chwData?.GetHealthCareWorkerById?.user.id ??
           teamLeadData?.user.id,
         input: userInputModel,
@@ -407,7 +413,7 @@ export function ViewUser(props: any) {
       await resetUserPassword({
         variables: {
           id:
-            userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
+            userData?.userById?.id ?? chwData?.GetHealthCareWorkerById?.user.id,
           newPassword: passwordForm.password,
         },
       }).then(() => {
@@ -874,7 +880,7 @@ export function ViewUser(props: any) {
                   <span className="text-successMain p-2 text-2xl">
                     {
                       summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalPregnantMoms
+                        ?.totalPregnantMomsWithNoIssues
                     }
                   </span>
                   pregnant moms are doing well & have no issues
@@ -883,7 +889,7 @@ export function ViewUser(props: any) {
                   <span className="text-successMain p-2 text-2xl">
                     {
                       summaryData?.healthCareWorkerSummaryForPeriod
-                        ?.totalChildren
+                        ?.totalChildrenWithNoIssues
                     }
                   </span>
                   children are doing well & have no issues

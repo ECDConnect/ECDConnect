@@ -27,3 +27,6 @@ export const circleIconDiv =
 export const absentCard = 'w-11/12 bg-uiBg rounded-xl mt-4';
 export const absentCardTitle = 'mt-6 ml-4';
 export const absentCardSubTitle = 'mt-4 ml-4';
+
+export const removalCard = 'w-11/12 bg-errorBg rounded-xl mt-4';
+export const removalCardTitle = 'mt-6 ml-4 text-errorMain';

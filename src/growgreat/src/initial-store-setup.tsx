@@ -16,7 +16,7 @@ import { settingActions, settingThunkActions } from '@/store/settings';
 import { staticDataActions, staticDataThunkActions } from '@/store/static-data';
 import { userActions, userSelectors, userThunkActions } from '@/store/user';
 import { analyticsActions } from '@/store/analytics';
-import { infantThunkActions } from '@/store/infant';
+import { infantActions, infantThunkActions } from '@/store/infant';
 import { useSelector } from 'react-redux';
 import {
   healthCareWorkerSelectors,
@@ -120,6 +120,7 @@ function InitialStoreSetup(props: Props) {
     await appDispatch(caregiverActions.resetCaregiverState());
     await appDispatch(documentActions.resetDocumentsState());
     await appDispatch(motherActions.resetMotherState());
+    await appDispatch(infantActions.resetInfantState());
   };
 
   async function initStoreSetup() {

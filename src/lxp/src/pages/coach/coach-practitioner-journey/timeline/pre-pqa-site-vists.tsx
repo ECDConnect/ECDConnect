@@ -91,10 +91,11 @@ export const PrePqaVisits = ({
               color={getStepType(String(color))?.color || 'textMid'}
               text={
                 !!visit?.plannedVisitDate
-                  ? `By ${new Date(visit.plannedVisitDate).toLocaleDateString(
-                      'en-ZA',
-                      dateOptions
-                    )}`
+                  ? `${visit?.attended ? '' : 'By '}${new Date(
+                      visit?.attended
+                        ? visit.insertedDate
+                        : visit.plannedVisitDate
+                    ).toLocaleDateString('en-ZA', dateOptions)}`
                   : ''
               }
             />

@@ -1,19 +1,30 @@
-import { useQuery } from '@apollo/client';
-import { ContentTypeDto } from '@ecdlink/core';
+import { useEffect, useState } from 'react';
+import { useHistory } from 'react-router-dom';
+import { UserRoutes } from '../../app.routes';
+import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
+import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
+  GetAllLanguage,
+  GetTenantContext,
   contentDefinitions,
   contentTypes,
-  GetAllLanguage,
 } from '@ecdlink/graphql';
-import { classNames } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
-import ContentLoader from '../../components/content-loader/content-loader';
+import { ContentTypeDto } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
+import { classNames } from '@ecdlink/ui';
+import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 
-export default function ContentManagement() {
+export function ContentManagement() {
+  const [selectedType, setSelectedType] = useState<ContentTypeDto>();
+  const [selectedContent, setSelectedContent] =
+    useState<ContentManagementView>();
+
+  const { data } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const { data: languages } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
   });
@@ -27,10 +38,6 @@ export default function ContentManagement() {
     }
   );
 
-  const [selectedType, setSelectedType] = useState<ContentTypeDto>();
-  const [selectedContent, setSelectedContent] =
-    useState<ContentManagementView>();
-
   useEffect(() => {
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
       setSelectedType(dataTypes.contentTypes[0]);
@@ -43,6 +50,68 @@ export default function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
+  const getNavigationItems = () => {
+    console.log(data);
+    if (
+      data &&
+      data.tenantContext &&
+      data.tenantContext.applicationName === 'GrowGreat'
+    ) {
+      return [
+        {
+          name: 'All Roles',
+          // href: '/',
+        },
+        {
+          name: 'CHWs',
+          // href: '/',
+        },
+        {
+          name: 'Team Leads',
+          // href: '/',
+        },
+        {
+          name: 'Administrators',
+          // href: '/',
+        },
+      ];
+    } else {
+      return [
+        {
+          name: 'Administrators',
+          href: '/content-management',
+        },
+        {
+          name: 'Administrators',
+          // href: '/',
+        },
+        {
+          name: 'Administrators',
+          // href: '/',
+        },
+        {
+          name: 'Administrators',
+          // href: '/',
+        },
+      ];
+    }
+  };
+
+  const navigation = getNavigationItems();
+
+  const history = useHistory();
+  useEffect(() => {
+    localStorage.removeItem('selectedUser');
+
+    // GO TO DEFAULT ROUTE
+    async function init() {
+      history.push(navigation[0].href);
+    }
+
+    init().catch(console.error);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const showGroupContentTypes = (item: ContentTypeDto) => {
     setSelectedType(item);
   };
@@ -52,7 +121,6 @@ export default function ContentManagement() {
       const currentType = dataTypes.contentTypes.find(
         (x: ContentTypeDto) => x.id === selectedType?.id
       );
-
       setSelectedType(currentType);
       setSelectedContent(contentManagementView);
     });
@@ -63,42 +131,13 @@ export default function ContentManagement() {
     refrechDefinitions();
   };
 
-  if (
-    dataTypes &&
-    dataTypes.contentTypes &&
-    dataDefinitions &&
-    dataDefinitions.contentDefinitions
-  ) {
-    return (
-      <div className="flex flex-col">
-        <div className="flex justify-center bg-white ">
-          {dataTypes.contentTypes.map((item) => (
-            <div
-              style={{
-                width: '15%',
-              }}
-            >
-              <SubNavigationLink
-                key={`${item.name}-${new Date().getTime()}`}
-                item={item}
-              ></SubNavigationLink>
-            </div>
-          ))}
-        </div>
-        {!selectedContent && (
-          <div className="min-w-0 flex-1 rounded bg-white bg-white shadow xl:flex">
-            <div className="xl:border-uiMidDark border-b border-gray-200 xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
-              {/* <div
-                key={"contentGroupCreate"}
-                onClick={() => displayPanel()}
-                className={classNames(
-                  "bg-uiMid text-white group flex items-center justify-between just px-4 text-sm font-medium h-14 cursor-pointer"
-                )}
-              >
-                Create Content Type
-                <PlusCircleIcon width="20px" />
-              </div> */}
-              {dataTypes.contentTypes.map((item: ContentTypeDto) => (
+  return (
+    <div className="">
+      {dataTypes ? (
+        <>
+          {!selectedContent && (
+            <div className="flex flex-row bg-white">
+              {dataTypes?.contentTypes?.map((item: ContentTypeDto) => (
                 <div
                   key={item.id}
                   onClick={() => {
@@ -106,8 +145,8 @@ export default function ContentManagement() {
                   }}
                   className={classNames(
                     selectedType?.id === item.id
-                      ? 'bg-uiMidDark text-white'
-                      : 'text-textMid hover:bg-uiMidDark hover:text-white',
+                      ? 'bg-infoBb text-secondary border-b-secondary border-b-2  bg-white'
+                      : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                     'group flex h-14 cursor-pointer items-center px-4 text-sm font-medium'
                   )}
                 >
@@ -115,10 +154,24 @@ export default function ContentManagement() {
                 </div>
               ))}
             </div>
+          )}
 
-            <div className="bg-uiMidDark lg:min-w-0 lg:flex-1">
+          {selectedType && languages?.GetAllLanguage && selectedContent ? (
+            <ContentWorkflow
+              optionDefinitions={dataDefinitions.contentDefinitions}
+              contentView={selectedContent}
+              contentType={selectedType}
+              languages={languages.GetAllLanguage}
+              goBack={() => setSelectedContent(undefined)}
+              savedContent={() => refreshParent()}
+            />
+          ) : (
+            <div className=" lg:min-w-0 lg:flex-1">
               <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                <div
+                  className="relative h-full rounded-xl bg-white p-12"
+                  style={{ minHeight: '36rem' }}
+                >
                   {selectedType && languages?.GetAllLanguage && (
                     <ContentList
                       optionDefinitions={dataDefinitions.contentDefinitions}
@@ -126,27 +179,18 @@ export default function ContentManagement() {
                       languages={languages.GetAllLanguage}
                       viewContent={getContentValues}
                       refreshParent={() => refreshParent()}
-                    />
+                    ></ContentList>
                   )}
                 </div>
               </div>
             </div>
-          </div>
-        )}
-
-        {selectedType && languages?.GetAllLanguage && selectedContent && (
-          <ContentWorkflow
-            optionDefinitions={dataDefinitions.contentDefinitions}
-            contentView={selectedContent}
-            contentType={selectedType}
-            languages={languages.GetAllLanguage}
-            goBack={() => setSelectedContent(undefined)}
-            savedContent={() => refreshParent()}
-          />
-        )}
-      </div>
-    );
-  } else {
-    return <ContentLoader />;
-  }
+          )}
+        </>
+      ) : (
+        <ContentLoader />
+      )}
+    </div>
+  );
 }
+
+export default ContentManagement;

@@ -17,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class Absentees<TKey> : EntityBase<TKey>,
-        ApplicationUserJoin, ITrackableType
+        ApplicationUserJoin, PractitionerRemovalHistoryJoin<Guid?>, ITrackableType
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]
@@ -32,6 +32,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [GraphQLIgnore]
         public virtual Practitioner Practitioner { get; set; }
         public virtual Programme Program { get; set; }
+
+        [GraphQLIgnore]
+        public Guid? PractitionerRemovalHistoryId { get; set; }
+
+        [GraphQLIgnore, ForeignKey(nameof(PractitionerRemovalHistoryId))]
+        public virtual PractitionerRemovalHistory PractitionerRemovalHistory { get; set; }
 
     }
 

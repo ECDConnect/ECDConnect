@@ -1,5 +1,5 @@
 import { Alert, Divider, FormInput, Typography } from '@ecdlink/ui';
-import { useCallback, useState, ChangeEvent, useEffect } from 'react';
+import { useCallback, useState, ChangeEvent, useEffect, useMemo } from 'react';
 import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import { useSelector } from 'react-redux';
 import {
@@ -149,6 +149,34 @@ export const Step6ReAccreditation = ({
     previousStatePreviousData?.questions.length,
   ]);
 
+  const renderAlertList = useMemo(() => {
+    const programmeType = toCamelCase(
+      currentClassroomGroups[0]?.programmeType?.description ?? ''
+    );
+
+    if (programmeType === 'playgroup') {
+      return [
+        'Playgroups can have a maximum of 12 children at a time.',
+        'Every child must have at least 1 square metre of free space each to play in.',
+        'There should be 10 children to every 1 adult in the programme.',
+      ];
+    }
+
+    if (programmeType === 'dayMother') {
+      return [
+        'Day mothers can have a maximum of 6 children at a time.',
+        'Every child must have at least 1 square metre of free space each to play in.',
+        'There should be 10 children to every 1 adult in the programme.',
+      ];
+    }
+
+    return [
+      'Preschools can have a maximum of 20 children at a time.',
+      'Every child must have at least 1 square metre of free space each to play in.',
+      'There should be 10 children to every 1 adult in the programme.',
+    ];
+  }, [currentClassroomGroups]);
+
   useEffect(() => {
     handleViewMode();
   }, [handleViewMode]);
@@ -233,11 +261,7 @@ export const Step6ReAccreditation = ({
         className="mt-4"
         type="info"
         title="Check the capacity above before tapping Next. How is programme capacity calculated?"
-        list={[
-          'Playgroups can have a maximum of 12 children at a time.',
-          'Every child must have at least 1 square metre of free space each to play in.',
-          'There should be 10 children to every 1 adult in the programme.',
-        ]}
+        list={renderAlertList}
       />
     </div>
   );

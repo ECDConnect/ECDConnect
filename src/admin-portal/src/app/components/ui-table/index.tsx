@@ -114,7 +114,6 @@ export default function UiTable(
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
-    console.log('>>>', columns);
 
     const columnsWithSelect = [selectColumn, ...cols];
     return component !== 'consent' || component !== 'roles'
@@ -175,7 +174,7 @@ export default function UiTable(
   const viewSelectedRow = (selectedRow: any) => {
     localStorage.setItem(
       'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
+      selectedRow?.userId ?? selectedRow.user?.id ?? selectedRow?.id
     );
 
     history.push({

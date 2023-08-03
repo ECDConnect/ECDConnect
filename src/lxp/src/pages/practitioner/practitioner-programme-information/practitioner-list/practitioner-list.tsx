@@ -1,4 +1,4 @@
-import { PractitionerDto, useTheme } from '@ecdlink/core';
+import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Typography,
@@ -8,19 +8,18 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { PractitionerColleagues } from '@ecdlink/graphql';
+import {
+  PractitionerColleagues,
+  PractitionerRemovalHistory,
+} from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
-// import ROUTES from '@routes/routes';
 import * as styles from './practitioner-list.styles';
 import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { PractitionerListProps } from './practitioner-list.types';
 import { renderIcon } from '@ecdlink/ui';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { EditPractitioner } from './edit-practitioner/edit-practitioner';
 import { userSelectors } from '@store/user';
 import { PractitionerService } from '@/services/PractitionerService';
@@ -28,6 +27,8 @@ import { authSelectors } from '@/store/auth';
 import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
 import { useAppDispatch } from '@store';
+import EditRemovePractitionerFromProgrammePrompt from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const history = useHistory();
@@ -39,9 +40,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const isPrincipal = practitioner?.isPrincipal === true;
-  const practitionersList = practitioners?.filter(
-    (item) => item.userId !== practitioner?.userId
-  );
   const practitionerId = practitioner?.user?.id;
   const [editPractitionerVisible, setEditiPractitionerVisible] =
     useState(false);
@@ -51,6 +49,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   );
   const [colleagueProfile, setColleagueProfile] = useState({});
   const appDispatch = useAppDispatch();
+  const classroom = useSelector(classroomsSelectors?.getClassroom);
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
@@ -90,33 +89,47 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
     }
   }, [otherColleagues, user?.firstName]);
 
-  const removePractitioner = async (practitioner: PractitionerDto) => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerRegistered(practitioner?.userId!, false);
-    await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
-    ).unwrap();
-    history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
+  const [removingPractitionerId, setRemovingPractitionerId] = useState<
+    string | undefined
+  >(undefined);
+  const [existingRemovals, setExisitingRemovals] = useState<
+    PractitionerRemovalHistory[]
+  >([]);
+
+  const getRemovalsForPractitioners = async () => {
+    if (practitioners) {
+      const removalDetails = await new PractitionerService(
+        userAuth?.auth_token!
+      ).getRemovalsForPractitioners(
+        practitioners!.map((x) => x.userId as string)
+      );
+      setExisitingRemovals(removalDetails || []);
+      return removalDetails;
+    }
+  };
+
+  useEffect(() => {
+    getRemovalsForPractitioners();
+  }, [practitioners]);
+
+  const cancelPractitionerRemoval = async () => {
+    const removalId = existingRemovals?.find(
+      (x) => x.userId == removingPractitionerId
+    )?.id;
+    if (removalId) {
+      await new PractitionerService(
+        userAuth?.auth_token || ''
+      ).cancelRemovePractitionerFromProgramme(removalId);
+      setExisitingRemovals(
+        existingRemovals.filter((x) => x.userId !== removingPractitionerId)
+      );
+      setRemovingPractitionerId(undefined);
+    }
   };
 
   const stackedListItems: ActionListDataItem[] =
-    practitionersList && practitionersList?.length! > 0
-      ? practitionersList?.map((item) => {
+    practitioners && practitioners?.length! > 0
+      ? practitioners?.map((item) => {
           return {
             title: item?.user?.fullName ? item?.user?.fullName : '',
             subTitle: item?.isPrincipal
@@ -127,8 +140,28 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
             switchTextStyles: true,
             actionName: 'Remove',
             actionIcon: 'PencilIcon',
+            buttonType: !!practitioners.length ? 'filled' : 'ghost',
             onActionClick: () => {
-              removePractitioner(item);
+              const userId = item?.userId || '';
+              if (item?.isPrincipal && userId === practitioner?.userId) {
+                if (!!practitioners.length) {
+                  history.push(ROUTES.PRINCIPAL.SWAP_PRINCIPAL);
+                }
+              } else {
+                const existingRemoval = existingRemovals?.find(
+                  (x) => x.userId === userId
+                );
+                if (existingRemoval) {
+                  setRemovingPractitionerId(userId);
+                } else {
+                  history.push(
+                    ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
+                    {
+                      practitionerId: userId,
+                    }
+                  );
+                }
+              }
             }, // Disabled the editPractitioner view state
           };
         })
@@ -242,6 +275,33 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
           </div>
         </>
       </>
+      <Dialog
+        className={'mb-16 px-4'}
+        stretch={true}
+        visible={!!removingPractitionerId}
+        position={DialogPosition.Bottom}
+      >
+        <EditRemovePractitionerFromProgrammePrompt
+          practitioner={practitioner}
+          classroomName={classroom?.name || ''}
+          removalDetails={
+            existingRemovals?.find(
+              (x) => x.userId === removingPractitionerId
+            ) as PractitionerRemovalHistory
+          }
+          onEdit={() => {
+            history.push(ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME, {
+              practitionerId: removingPractitionerId,
+            });
+          }}
+          onCancel={() => {
+            cancelPractitionerRemoval();
+          }}
+          onClose={() => {
+            setRemovingPractitionerId(undefined);
+          }}
+        />
+      </Dialog>
     </div>
   );
 };

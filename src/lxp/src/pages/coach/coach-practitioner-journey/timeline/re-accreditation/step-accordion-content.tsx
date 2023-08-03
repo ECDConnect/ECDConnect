@@ -1,17 +1,20 @@
-import { Visit, Maybe } from '@ecdlink/graphql';
+import { Visit, Maybe, PqaRating } from '@ecdlink/graphql';
 import { ScheduleProps, dateOptions, getStepType } from '../timeline-steps';
 import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import {
   getCurrentReAccreditationRatingByUserId,
-  getLastCoachAttendedFollowUpVisitByUserId,
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
-import { visitTypes } from '../../coach-practitioner-journey.types';
+import {
+  maxNumberOfVisits,
+  visitTypes,
+} from '../../coach-practitioner-journey.types';
 import { addDays } from 'date-fns';
 import { followUpDeadline, getRatingData } from '../utils';
+import { chunkArray } from '@ecdlink/core';
 
 interface ReAccreditationVisitsProps {
   isLoading: boolean;
@@ -36,53 +39,81 @@ export const ReAccreditationVisits = ({
     getCurrentReAccreditationRatingByUserId(practitionerId)
   );
   const lastAttendedReAccreditationVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(
-      practitionerId,
-      `reAccreditationVisits`,
-      're_accreditation_follow_up'
-    )
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: `reAccreditationVisits`,
+      followUpType: 're_accreditation_follow_up',
+    })
   );
-  const lastAttendedReAccreditationFollowUpVisit = useSelector(
-    getLastCoachAttendedFollowUpVisitByUserId(
-      practitionerId,
-      'reAccreditationVisits',
-      're_accreditation_follow_up'
-    )
+  const lastAttendedVisit = useSelector(
+    getLastCoachAttendedVisitByUserId({
+      userId: practitionerId,
+      visitType: `reAccreditationVisits`,
+    })
   );
 
-  const rating1 = timeline?.reAccreditationRating1;
-  const rating2 = timeline?.reAccreditationRating2;
-  const rating3 = timeline?.reAccreditationRating3;
+  // All years
+  const filteredReAccreditationRatings =
+    timeline?.reAccreditationRatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+    filteredReAccreditationRatings,
+    maxNumberOfVisits
+  );
+  const reAccreditationRatingsFromCurrentYear =
+    subdividedReAccreditationRatings?.[
+      subdividedReAccreditationRatings.length - 1
+    ];
+
+  const rating1 = reAccreditationRatingsFromCurrentYear?.[0];
+  const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
+  const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
+
+  const filteredReAccreditationVisits =
+    timeline?.reAccreditationVisits?.filter(
+      (item) =>
+        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationVisits = chunkArray<Maybe<Visit>>(
+    filteredReAccreditationVisits,
+    maxNumberOfVisits
+  );
+  const reAccreditationVisitsFromCurrentYear =
+    subdividedReAccreditationVisits?.[filteredReAccreditationVisits.length - 1];
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentFollowUpDeadline = rating3?.overallRating
     ? followUpDeadline.lastVisit
     : followUpDeadline.default;
+
+  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
+    (item) =>
+      !item?.attended &&
+      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+  );
+
   const isReAccreditationFollowUpDeadline =
     addDays(
       new Date(lastAttendedReAccreditationVisit?.insertedDate),
       currentFollowUpDeadline
     ) <= new Date();
-  const isNewVisit =
-    !rating3?.overallRating &&
-    timeline?.reAccreditationVisits?.some(
-      (item) =>
-        item?.attended &&
-        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-    ) &&
-    new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
-      new Date(lastAttendedReAccreditationVisit?.insertedDate);
+  const isFirstVisit = reAccreditationVisitsFromCurrentYear?.length === 1;
   const isReAccreditationFollowUp =
-    currentReAccreditationRating.rating?.overallRatingColor &&
-    currentReAccreditationRating.rating?.overallRatingColor !== 'Success' &&
+    !isFirstVisit &&
+    !!newReAccreditationVisit &&
     !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
       visitTypes.reaccreditation.third.name
     ) &&
-    !isNewVisit;
+    !lastAttendedVisit?.visitType?.name?.includes(
+      visitTypes.reaccreditation.followUp.name
+    );
 
   const mergedVisits = timeline?.reAccreditationVisits
     ? [
-        ...timeline.reAccreditationVisits,
+        ...(isFirstVisit
+          ? timeline.reAccreditationVisits
+          : timeline.reAccreditationVisits.filter((item) => item?.attended)),
         ...(isReAccreditationFollowUp
           ? [
               {
@@ -99,19 +130,8 @@ export const ReAccreditationVisits = ({
               } as Maybe<Visit>,
             ]
           : []),
-        ...(isNewVisit
-          ? [
-              {
-                id: newReAccreditationVisitId,
-                visitType: {
-                  description: `Annual re-accreditation PQA`,
-                  name: visitTypes.reaccreditation.first.name,
-                },
-                plannedVisitDate:
-                  lastAttendedReAccreditationFollowUpVisit?.insertedDate,
-                attended: false,
-              } as Maybe<Visit>,
-            ]
+        ...(!isFirstVisit && newReAccreditationVisit
+          ? [newReAccreditationVisit]
           : []),
       ]
     : [];
@@ -215,7 +235,7 @@ export const ReAccreditationVisits = ({
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(
-                    item.plannedVisitDate
+                    item.attended ? item.insertedDate : item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
             }
