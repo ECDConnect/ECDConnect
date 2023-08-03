@@ -21,6 +21,7 @@ import { useUser } from '../../../../hooks/useUser';
 import UserPanelCreate from '../../components/user-panel-create/user-panel-create';
 import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import { Dropdown } from '@ecdlink/ui';
+import { useHistory } from 'react-router';
 
 export default function ApplicationAdmins() {
   const [nameFilter, setNameFilter] = useState(true);
@@ -181,6 +182,23 @@ export default function ApplicationAdmins() {
       ),
     });
   };
+  const history = useHistory();
+
+  const viewSelectedRow = (selectedRow: any) => {
+
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: '/users/view-user',
+      state: {
+        component: 'administrators',
+        userId: selectedRow?.userId,
+      },
+    });
+
+  };
 
   const mapUserTableItem = (user: UserDto) => {
     return {
@@ -241,11 +259,10 @@ export default function ApplicationAdmins() {
                             onClick={() =>
                               setShowDropDownFilter(!showDropDownFilter)
                             }
-                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                              !showDropDownFilter
+                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
                                 ? 'bg-secondary text-white'
                                 : 'text-secondary border-secondary border-2 bg-white'
-                            } hover:text-secondary hover:bg-white `}
+                              } hover:text-secondary hover:bg-white `}
                             id="menu-button"
                             aria-expanded={showDropDownFilter}
                             aria-haspopup={showDropDownFilter}
@@ -254,11 +271,10 @@ export default function ApplicationAdmins() {
                               ? 'Filter by status'
                               : statusFilter}
                             <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${
-                                !showDropDownFilter
+                              className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
                                   ? 'hover:text-secondary text-white'
                                   : 'text-secondary hover:text-white'
-                              }`}
+                                }`}
                               viewBox="0 0 20 20"
                               fill="currentColor"
                               aria-hidden="true"
@@ -375,7 +391,7 @@ export default function ApplicationAdmins() {
                     { field: 'insertedDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}
-                  urlRow={'/view-user'}
+                  viewRow={viewSelectedRow}
                   rows={tableData}
                   sendRow={true}
                   searchInput={searchValue}

@@ -14,6 +14,11 @@ a.users-tabs {
   justify-content: center !important;
 }
 
+a.consent-tabs{
+  width:180px !important;
+  justify-content: center !important;
+}
+
 .h_iframe iframe {
   width: 100%;
   height: 100%;
