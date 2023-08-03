@@ -210,7 +210,7 @@ export default function UiTable(
         <span
           className="cursor-pointer overflow-ellipsis"
           onClick={() => {
-            viewRow(row)
+            component !== 'team-leads' && viewRow(row)
           }}
         >
           {formatDate(display_value)}

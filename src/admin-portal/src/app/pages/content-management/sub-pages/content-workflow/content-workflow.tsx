@@ -114,28 +114,35 @@ export default function ContentWorkflow({
   if (contentView && languages && currentContent && defaultLanguageId) {
     return (
       <div className="flex flex-col">
-        <div className="min-w-0 flex-1 rounded bg-white bg-white shadow xl:flex">
+        <div className="flex flex-row bg-white mb-6 overflow-x-scroll rounded-md">
+
+          {languages.map((item: LanguageDto, index: number) => (
+
+            <div
+              className={'w-3/12 '
+              }
+            >
+              <a
+                key={index}
+                onClick={() => {
+                  setSelectedLanguageId(item.id ?? '');
+                }}
+                className={classNames(
+                  selectedLanguageId === item.id
+                    ? 'bg-infoBb text-secondary border-b-secondary border-b-2   '
+                    : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
+                  'users-tabs flex h-14 items-center text-md font-medium'
+                )}
+              >
+                {item.description}
+
+              </a>
+            </div>
+          ))}
+        </div>
+        <div className="min-w-0 flex-1 rounded xl:flex">
           {!isCompareMode ? (
             <>
-              <div className=" xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
-       
-                {languages.map((item: LanguageDto, index: number) => (
-                  <div
-                    key={index}
-                    onClick={() => {
-                      setSelectedLanguageId(item.id ?? '');
-                    }}
-                    className={classNames(
-                      selectedLanguageId === item.id
-                      ? 'bg-infoBb text-secondary border-b-secondary border-b-2  bg-white'
-                      : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
-                    'group flex h-14 cursor-pointer items-center px-4 text-md font-medium'
-                    )}
-                  >
-                    {item.description}
-                  </div>
-                ))}
-              </div>
 
               <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
                 <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
@@ -143,7 +150,7 @@ export default function ContentWorkflow({
                     className="relative h-full"
                     style={{ minHeight: "36rem" }}
                   >
-                    <div className="rounded-lg border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
+                    <div className="rounded-lg border-b px-4 py-5 sm:px-6">
                       {isEdit ? (
                         <div>
                           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
@@ -187,7 +194,7 @@ export default function ContentWorkflow({
                             cancelEdit={() => goBack()}
                             savedContent={savedContent}
                             defaultLanguageId={defaultLanguageId}
-                            cancelCompare={()=> setIsCompareMode(!isEdit)}
+                            cancelCompare={() => setIsCompareMode(!isEdit)}
 
                           />
                         </div>
