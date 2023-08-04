@@ -203,7 +203,6 @@ export const WeightAndLengthFormStep = ({
             type={'number'}
             min={0}
             maxLength={5}
-            error={!!errors.weightAtBirth ? errors.weightAtBirth : undefined}
           ></FormInput>
           <Typography
             type="body"
@@ -230,9 +229,6 @@ export const WeightAndLengthFormStep = ({
                 type={'number'}
                 min={0}
                 maxLength={6}
-                error={
-                  !!errors.lengthAtBirth ? errors.lengthAtBirth : undefined
-                }
               ></FormInput>
               <Typography
                 type="body"
