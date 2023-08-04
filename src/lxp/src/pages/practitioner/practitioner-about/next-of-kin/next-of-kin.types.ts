@@ -1,6 +1,6 @@
 import { UserDto } from '@/../../../packages/core/lib';
 
-export interface EditCellPhoneNUmberProps {
-  setAddNextToKin?: any;
+export interface EditCellPhoneNumberProps {
+  setAddNextOfKin?: any;
   user?: UserDto;
 }

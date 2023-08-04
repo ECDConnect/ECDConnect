@@ -9,7 +9,10 @@ import {
 } from '@/store/pqa/pqa.selectors';
 import { addDays } from 'date-fns';
 import { followUpDeadline, getRatingData } from '../utils';
-import { visitTypes } from '../../coach-practitioner-journey.types';
+import {
+  maxNumberOfVisits,
+  visitTypes,
+} from '../../coach-practitioner-journey.types';
 import { ScheduleProps, dateOptions, getStepType } from '../timeline-steps';
 
 interface PQAVisitsProps {
@@ -50,14 +53,26 @@ export const PQAVisits = ({
     })
   );
 
+  const pqaVisits =
+    timeline?.pQASiteVisits?.filter(
+      (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
+    ) ?? [];
+  const isLastAttendedPqaVisit =
+    pqaVisits?.filter((item) => item?.attended)?.length === maxNumberOfVisits;
+
   const newPqaVisit = timeline?.pQASiteVisits?.find(
     (item) =>
       !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
   );
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating1 = pqaRatings?.[0];
+  const pqaRating2 = pqaRatings?.[1];
+  const pqaRating3 = pqaRatings?.[2];
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentFollowUpDeadline = pqaRating3?.overallRating
@@ -73,9 +88,7 @@ export const PQAVisits = ({
   const isPQAFollowUp =
     !isFirstVisit &&
     !!newPqaVisit &&
-    !lastAttendedPqaVisit?.visitType?.name?.includes(
-      visitTypes.pqa.thirdPQA.name
-    ) &&
+    !isLastAttendedPqaVisit &&
     !lastAttendedVisit?.visitType?.name?.includes(visitTypes.pqa.followUp.name);
 
   const mergedVisits = timeline?.pQASiteVisits
@@ -118,13 +131,12 @@ export const PQAVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    switch (item?.visitType?.name) {
-      case visitTypes.pqa.thirdPQA.name:
-        return pqaRating3;
-      case visitTypes.pqa.secondPQA.name:
-        return pqaRating2;
-      default:
-        return pqaRating1;
+    if (item?.id === pqaRating3?.linkedVisitId) {
+      return pqaRating3;
+    } else if (item?.id === pqaRating2?.linkedVisitId) {
+      return pqaRating2;
+    } else {
+      return pqaRating1;
     }
   };
 

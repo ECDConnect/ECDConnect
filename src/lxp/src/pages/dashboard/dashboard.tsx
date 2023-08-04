@@ -413,7 +413,9 @@ export const Dashboard: React.FC = () => {
   if (isTrainee) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
-      href: ROUTES.TRAINEE.SETUP_TRAINEE,
+      href: practitioner?.setupTraineeInitiated
+        ? ROUTES.TRAINEE.TRAINEE_ONBOARDING
+        : ROUTES.TRAINEE.SETUP_TRAINEE,
       icon: 'BriefcaseIcon',
       current: false,
       showDivider: true,
@@ -519,7 +521,19 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin) {
+  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+    dashboardItems.splice(1, 0, {
+      title: 'Business',
+      titleIcon: 'BriefcaseIcon',
+      titleIconClassName: styles.businessIcon,
+      onActionClick: () => {
+        goToBusiness();
+      },
+      classNames: 'bg-uiBg',
+    });
+  }
+
+  if (isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',
@@ -592,6 +606,10 @@ export const Dashboard: React.FC = () => {
       return;
     }
     if (isTrainee) {
+      if (practitioner?.setupTraineeInitiated) {
+        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+        return;
+      }
       history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       return;
     }

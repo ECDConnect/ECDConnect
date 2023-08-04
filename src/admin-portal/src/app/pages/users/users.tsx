@@ -58,24 +58,26 @@ export function Users() {
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
+  const userSelected = localStorage.getItem('selectedUser');
+  console.log(window.location.pathname);
   return (
     <div className="">
       <div className="flex justify-center bg-white ">
-        {navigation.map((item) => (
-          <div
-            className={
-              data?.tenantContext.applicationName === 'GrowGreat'
-                ? 'w-3/12 '
-                : 'w-full'
-            }
-          >
-            <SubNavigationLink
-              key={`${item.name}-${new Date().getTime()}`}
-              item={item}
-            ></SubNavigationLink>
-          </div>
-        ))}
+        {window.location.pathname !== '/users/view-user' &&
+          navigation.map((item) => (
+            <div
+              className={
+                data?.tenantContext.applicationName === 'GrowGreat'
+                  ? 'w-3/12 '
+                  : 'w-full'
+              }
+            >
+              <SubNavigationLink
+                key={`${item.name}-${new Date().getTime()}`}
+                item={item}
+              ></SubNavigationLink>
+            </div>
+          ))}
       </div>
 
       <div className=" lg:min-w-0 lg:flex-1">

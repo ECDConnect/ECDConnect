@@ -4,10 +4,11 @@ import Pregnant from '@/assets/pregnant.svg';
 import { useLayoutEffect, useMemo } from 'react';
 import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { useSelector } from 'react-redux';
-import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import { getVisitAnswersForInfantSelector } from '@/store/visit/visit.selectors';
 import { DynamicFormProps } from '../../../dynamic-form';
-import { activitiesTypes } from '../../../../activities-list';
-import { maternalDistressVisitSection } from '..';
+import { maternalDistressQuestion3, maternalDistressVisitSection } from '..';
+import { format } from 'date-fns';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 
 export const MaternalDistressFollowUpStep = ({
   infant,
@@ -18,28 +19,15 @@ export const MaternalDistressFollowUpStep = ({
     [infant?.caregiver?.firstName]
   );
 
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForInfantSelector
+  const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
+  const list =
+    previousAnswers
+      ?.filter((item) => item.visitSection === maternalDistressVisitSection)
+      ?.filter((item) => item.questionAnswer?.includes('true')) ?? [];
+
+  const isSuicideAlert = list?.some((item) =>
+    item.question?.includes(maternalDistressQuestion3)
   );
-
-  const followUp = useMemo(() => {
-    const followUp = previousVisit?.visitDataStatus?.find(
-      (item) =>
-        item?.section === maternalDistressVisitSection &&
-        item.visitData?.visitName === activitiesTypes.careForMom
-    )?.comment;
-
-    const [, message, list] = followUp?.match(/(.+?)(<.*>)/) ?? [];
-
-    const tempEl = document.createElement('div');
-    tempEl.innerHTML = list;
-
-    const sentences = (Array.from(tempEl.querySelectorAll('li'), (li) =>
-      li?.textContent?.trim()
-    ) || []) as string[];
-
-    return { message: `${caregiverName} ${message}`, list: sentences };
-  }, [caregiverName, previousVisit?.visitDataStatus]);
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
@@ -55,11 +43,25 @@ export const MaternalDistressFollowUpStep = ({
       <Alert
         className="m-4"
         type="warning"
-        title={followUp.message}
+        title={`When you visited ${caregiverName} on ${format(
+          new Date(list?.[0]?.insertedDate),
+          'd MMMM yyyy'
+        )}, she was experiencing the following:`}
         titleColor="textDark"
-        list={followUp.list}
+        listColor="textMid"
+        list={list?.map((item) => item.question?.split('?')?.[0] || '')}
         customIcon={<PollyTime className="w-16" />}
       />
+      {isSuicideAlert && (
+        <Alert
+          className="mx-4"
+          type="warning"
+          title={`Follow up and find out if ${caregiverName} got support from the clinic, their friends, or family.`}
+          customIcon={
+            <ExclamationCircleIcon className="text-alertMain h-auto w-24" />
+          }
+        />
+      )}
     </>
   );
 };

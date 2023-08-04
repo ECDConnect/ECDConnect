@@ -1,5 +1,6 @@
 import { Colours, StepItem } from '@ecdlink/ui';
 import { Maybe, TraineeOnBoardTimeline, Visit } from '@ecdlink/graphql';
+import { store } from '@/store';
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -72,18 +73,24 @@ export const getStepType = (
 export const getStepDate = (date?: string) =>
   !!date ? `By ${new Date(date).toLocaleDateString('en-ZA', dateOptions)}` : '';
 
+const state = store.getState();
+const { trainee: traineDataState } = state;
+const traineeTimelineData = traineDataState?.traineeOnboardTimeline;
 export const setStep = (
   status?: Maybe<string>,
   date?: string,
   color?: Maybe<string>,
   onView?: (text: string) => void,
-  nextStep?: string
+  nextStep?: string,
+  consolidationMeetingDataStatus?: Maybe<string>
 ) => {
-  console.log({ status });
+  const startLicenceStatus = traineeTimelineData?.starterLicenseStatus;
   const lincenceReceveid = 'Starter Licence received';
   const smartSpaceLincenceReceveid = 'SmartSpace Licence received';
-  const consolidationMeetingScheduled = 'Consolidation meeting scheduled';
-  const consolidationMeetingAttended = 'Consolidation meeting attended';
+  const consolidationMeetingAttended =
+    consolidationMeetingDataStatus === 'Consolidation meeting attended';
+  const starterLicenceReceived =
+    startLicenceStatus === 'SmartSpace Licence received';
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
@@ -103,10 +110,12 @@ export const setStep = (
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
-        (stepCompleted &&
-          status !== consolidationMeetingScheduled &&
-          status !== consolidationMeetingAttended) ||
-        nextStep === status
+        (stepCompleted ||
+          (nextStep === status && starterLicenceReceived) ||
+          (consolidationMeetingAttended &&
+            status === 'Get community support') ||
+          (consolidationMeetingAttended && status === 'Register 3 children')) &&
+        status !== 'Consolidation meeting attended'
           ? true
           : false,
       actionButtonText: stepCompleted ? 'View' : nextStepButtontext(status),
@@ -140,26 +149,18 @@ export const timelineSteps = (
   isLoading: boolean,
   isOnline: boolean,
   visits?: Maybe<Visit>[],
-  nextStep?: string
+  nextStep?: string,
+  consolidationMeetingDataStatus?: Maybe<string> | undefined
 ): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
-
   steps.push(
     setStep(
       timeline?.starterLicenseStatus || 'Starter Licence',
       timeline?.starterLicenseDate,
       timeline?.starterLicenseColor,
       () => onView('Starter Licence'),
-      nextStep
-    )
-  );
-  steps.push(
-    setStep(
-      timeline?.smartSpaceLicenseStatus || 'SmartSpace Licence',
-      timeline?.smartSpaceLicenseDate,
-      timeline?.smartSpaceLicenseColor,
-      () => onView('SmartSpace Licence'),
-      nextStep
+      nextStep,
+      consolidationMeetingDataStatus
     )
   );
   steps.push(
@@ -168,7 +169,8 @@ export const timelineSteps = (
       timeline?.consolidationMeetingDate || timeline?.consolidationDeadlineDate,
       timeline?.consolidationMeetingColor,
       () => onView('Consolidation meeting scheduled'),
-      nextStep
+      nextStep,
+      consolidationMeetingDataStatus
     )
   );
   steps.push(
@@ -178,7 +180,8 @@ export const timelineSteps = (
         timeline?.smartSpaceChecklistDeadlineDate,
       timeline?.smartSpaceChecklistColor,
       () => onView('Fill in the SmartSpace checklist'),
-      nextStep
+      nextStep,
+      consolidationMeetingDataStatus
     )
   );
   steps.push(
@@ -187,7 +190,8 @@ export const timelineSteps = (
       timeline?.communitySupportDate || timeline?.communitySupportDeadlineDate,
       timeline?.communitySupportColor,
       () => onView('Get community support'),
-      nextStep
+      nextStep,
+      consolidationMeetingDataStatus
     )
   );
   steps.push(
@@ -197,7 +201,8 @@ export const timelineSteps = (
         timeline?.threeChildrenRegisteredDeadlineDate,
       timeline?.threeChildrenRegisteredColor,
       () => onView('Register 3 children'),
-      nextStep
+      nextStep,
+      consolidationMeetingDataStatus
     )
   );
   steps.push(
@@ -206,7 +211,8 @@ export const timelineSteps = (
       timeline?.sSCoachVisitDate || timeline?.sSCoachVisitDeadlineDate,
       timeline?.sSCoachVisitColor,
       () => onView('SmartSpace visit from coach'),
-      nextStep
+      nextStep,
+      consolidationMeetingDataStatus
     )
   );
   steps.push(
@@ -216,7 +222,8 @@ export const timelineSteps = (
         timeline?.signFranchiseeAgreementDeadlineDate,
       timeline?.signFranchiseeAgreementColor,
       () => onView('Sign franchisee agreement'),
-      nextStep
+      nextStep,
+      consolidationMeetingDataStatus
     )
   );
   steps.push(
@@ -227,7 +234,8 @@ export const timelineSteps = (
         timeline?.signStartUpSupportAgreementDeadlineDate,
       timeline?.signStartUpSupportAgreementColor,
       () => onView('Sign start-up support agreement'),
-      nextStep
+      nextStep,
+      consolidationMeetingDataStatus
     )
   );
 

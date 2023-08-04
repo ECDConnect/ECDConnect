@@ -7,6 +7,8 @@ export interface CoachPractitionerJourneyPageState {
   actionParams?: any;
 }
 
+export const maxNumberOfVisits = 3;
+
 export const visitTypes = {
   supportVisit: 'General support visit',
   delicensing: 'Delicensing',
@@ -24,8 +26,6 @@ export const visitTypes = {
   pqa: {
     includes: 'pqa_visit',
     firstPQA: { name: 'pqa_visit_1', description: 'First PQA' },
-    secondPQA: { name: 'pqa_visit_2', description: 'First PQA' },
-    thirdPQA: { name: 'pqa_visit_3', description: 'First PQA' },
     followUp: {
       name: 'pqa_visit_follow_up',
       description: 'Follow-up visit',

@@ -1,3 +1,4 @@
+using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -1313,9 +1314,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                 ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
 
                                 // get pga rating
-                                PQARating pqaRating1 = visitDataManager.GetPractitionerPQARating(user.UserId, Constants.SSSettings.visitType_pqa_visit_1);
-                                PQARating pqaRating2 = visitDataManager.GetPractitionerPQARating(user.UserId, Constants.SSSettings.visitType_pqa_visit_2);
-                                PQARating pqaRating3 = visitDataManager.GetPractitionerPQARating(user.UserId, Constants.SSSettings.visitType_pqa_visit_3);
+                                List<Visit> allPqaVisits = visitManager.GetPQAVisitsForPractitioner(user.UserId);
+                                Visit visit1 = allPqaVisits.GetItemByIndex(0);
+                                Visit visit2 = allPqaVisits.GetItemByIndex(1);
+                                Visit visit3 = allPqaVisits.GetItemByIndex(2);
+                                PQARating pqaRating1 = visit1 != null ? visitDataManager.GetPractitionerPQARating(visit1) : new PQARating();
+                                PQARating pqaRating2 = visit2 != null ? visitDataManager.GetPractitionerPQARating(visit2) : new PQARating();
+                                PQARating pqaRating3 = visit3 != null ? visitDataManager.GetPractitionerPQARating(visit3) : new PQARating();
 
                                 // 2. When there are 2 red ratings delicence
                                 int redRating = 0;

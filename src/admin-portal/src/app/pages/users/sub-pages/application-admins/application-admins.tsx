@@ -16,6 +16,7 @@ import { useUser } from '../../../../hooks/useUser';
 import UserPanelCreate from '../../components/user-panel-create/user-panel-create';
 import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import { Dropdown } from '@ecdlink/ui';
+import { useHistory } from 'react-router';
 
 export default function ApplicationAdmins() {
   const [nameFilter, setNameFilter] = useState(true);
@@ -174,6 +175,21 @@ export default function ApplicationAdmins() {
           }}
         />
       ),
+    });
+  };
+  const history = useHistory();
+
+  const viewSelectedRow = (selectedRow: any) => {
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: '/users/view-user',
+      state: {
+        component: 'administrators',
+        userId: selectedRow?.userId,
+      },
     });
   };
 
@@ -370,7 +386,7 @@ export default function ApplicationAdmins() {
                     { field: 'insertedDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}
-                  urlRow={'/view-user'}
+                  viewRow={viewSelectedRow}
                   rows={tableData}
                   sendRow={true}
                   searchInput={searchValue}

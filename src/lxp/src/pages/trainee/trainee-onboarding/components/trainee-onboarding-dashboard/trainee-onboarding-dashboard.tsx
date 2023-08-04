@@ -69,7 +69,7 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title !== 'SmartSpace Licence'
   );
 
-  const extradataTimeValue = Object.values(uncompletedSteps?.[0].extraData!);
+  const extradataTimeValue = Object.values(uncompletedSteps?.[0]?.extraData!);
 
   const checkOverdueDate = differenceInDays(
     new Date(),
@@ -82,7 +82,9 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus
   ).filter((item) => item?.type === 'completed');
 
   const stepperCount = timelineSteps(
@@ -91,7 +93,9 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus
   ).length;
 
   const completedFlow = stepperCount - 2 === completedSteps?.length;
@@ -138,7 +142,7 @@ export const OnboardingTraineeDashboard: React.FC<
       title={'Business'}
       subTitle={today}
       color={'primary'}
-      onBack={() => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)}
+      onBack={() => history.push(ROUTES.DASHBOARD)}
       displayHelp={true}
       onHelp={displayTutorial}
       displayOffline={!isOnline}
@@ -256,7 +260,8 @@ export const OnboardingTraineeDashboard: React.FC<
                   isOnline,
                   // @ts-ignore
                   undefined,
-                  nextStep?.title
+                  nextStep?.title,
+                  timeline?.consolidationMeetingStatus
                 )}
                 typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
               />
@@ -275,7 +280,9 @@ export const OnboardingTraineeDashboard: React.FC<
                         false,
                         isOnline,
                         // @ts-ignore
-                        undefined
+                        undefined,
+                        '',
+                        timeline?.consolidationMeetingStatus
                       ).length && i + 1 <= completedSteps?.length
                         ? '#26ACAF'
                         : '#D4EEEF',

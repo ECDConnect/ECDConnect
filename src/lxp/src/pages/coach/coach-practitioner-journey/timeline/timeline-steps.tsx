@@ -243,7 +243,19 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
-      showAccordion: true,
+      showActionButton: timeline.pQASiteVisits.length === 1,
+      actionButtonText: 'Schedule',
+      actionButtonType: 'outlined',
+      actionButtonTextColor: 'primary',
+      actionButtonIcon: 'CalendarIcon',
+      actionButtonIconStartPosition: 'start',
+      actionButtonOnClick: () =>
+        onScheduleOrStart({
+          visit: currentVisit!,
+          visitEventId: currentVisit?.eventId,
+          eventType: 'First PQA',
+        }),
+      showAccordion: timeline.pQASiteVisits.length > 1,
       accordionContent: (
         <PQAVisits
           isLoading={isLoading}
@@ -273,21 +285,42 @@ export const timelineSteps = ({
             color={stepType?.color}
             className="mr-4"
             text={`${subTitleText} ${new Date(
-              currentVisit?.plannedVisitDate
+              currentVisit?.attended
+                ? currentVisit.insertedDate
+                : currentVisit?.plannedVisitDate
             ).toLocaleDateString('en-ZA', dateOptions)}`}
           />
-
-          {ratingData?.icon}
-          <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+          {timeline.reAccreditationVisits.some((item) => item?.attended) && (
+            <>
+              {ratingData?.icon}
+              <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+            </>
+          )}
         </div>
       ),
       subTitleColor: stepType?.color,
       type: stepType?.type,
       inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
       extraData: {
-        date: new Date(currentVisit?.plannedVisitDate),
+        date: new Date(
+          currentVisit?.attended
+            ? currentVisit.insertedDate
+            : currentVisit?.plannedVisitDate
+        ),
       },
-      showAccordion: true,
+      showActionButton: timeline.reAccreditationVisits.length === 1,
+      actionButtonText: 'Schedule',
+      actionButtonType: 'outlined',
+      actionButtonTextColor: 'primary',
+      actionButtonIcon: 'CalendarIcon',
+      actionButtonIconStartPosition: 'start',
+      actionButtonOnClick: () =>
+        onScheduleOrStart({
+          visit: currentVisit!,
+          visitEventId: currentVisit?.eventId,
+          eventType: 'ReAccreditation',
+        }),
+      showAccordion: timeline.reAccreditationVisits.length > 1,
       accordionContent: (
         <ReAccreditationVisits
           isLoading={isLoading}

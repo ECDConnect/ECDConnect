@@ -12,6 +12,8 @@ import { DynamicFormProps } from '../../dynamic-form';
 import { Fragment, useCallback, useState } from 'react';
 
 export const maternalDistressVisitSection = 'Maternal distress screening';
+export const maternalDistressQuestion3 =
+  'Had thoughts and plans to harm yourself or commit suicide?';
 
 export const MaternalDistressScreeningStep = ({
   infant,
@@ -28,7 +30,7 @@ export const MaternalDistressScreeningStep = ({
       answer: '',
     },
     {
-      question: 'Had thoughts and plans to harm yourself or commit suicide?',
+      question: maternalDistressQuestion3,
       answer: '',
     },
   ]);
