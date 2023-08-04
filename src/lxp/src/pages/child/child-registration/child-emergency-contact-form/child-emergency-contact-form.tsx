@@ -61,7 +61,7 @@ export const ChildEmergencyContactForm: React.FC<
     control: childEmergencyContactFormControl,
   } = useForm<ChildEmergencyContactFormModel>({
     resolver: yupResolver(childEmergencyContactFormSchema),
-    mode: 'onBlur',
+    mode: 'onChange',
     defaultValues: childEmergencyContactForm,
   });
 

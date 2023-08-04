@@ -17,7 +17,7 @@ import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import LanguageSelector from '../../../../components/language-selector/language-selector';
-import UiTable from '../../../../components/old-ui-table';
+import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
   ContentManagementView,
@@ -147,12 +147,11 @@ export default function ContentList({
     });
   };
 
-  const viewEdit = (item?: any) => {
+  const viewSelectedRow = (item?: any) => {
     const model: ContentManagementView = {
       content: item,
       languageId: languageId,
     };
-    console.log(model);
     viewContent(model);
   };
 
@@ -241,15 +240,16 @@ export default function ContentList({
               </div>
               <div className="flex flex-col">
                 <div className="mt-1 ml-4">
-                  {hasPermission(PermissionEnum.create_static) && (
-                    <button
-                      onClick={() => displayCreatePanel()}
-                      type="button"
-                      className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                    >
-                      Create {camelCaseToSentanceCase(contentType.name)}
-                    </button>
-                  )}
+                  {hasPermission(PermissionEnum.create_static) &&
+                    contentType.name !== 'Consent' && (
+                      <button
+                        onClick={() => displayCreatePanel()}
+                        type="button"
+                        className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                      >
+                        Create {camelCaseToSentanceCase(contentType.name)}
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
@@ -263,14 +263,15 @@ export default function ContentList({
                     return { field: item, use: item };
                   })}
                   rows={tableData}
-                  editRow={
-                    hasPermission(PermissionEnum.update_static) && viewEdit
-                  }
                   deleteRow={
                     hasPermission(PermissionEnum.delete_static) &&
                     deleteAndRefresh
                   }
-                  component={'consent'}
+                  component={contentType.name}
+                  viewRow={
+                    hasPermission(PermissionEnum.update_static) &&
+                    viewSelectedRow
+                  }
                 />
               </div>
             </div>

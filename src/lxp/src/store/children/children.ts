@@ -65,6 +65,9 @@ const childrenSlice = createSlice({
     deactivateChild: (state, action: PayloadAction<ChildDto>) => {
       if (!state.children || !state.childUser) return;
 
+      const isOnline = navigator.onLine;
+      const payloadUpdated = { ...action.payload, isOnline };
+
       const childIndex = state.children.findIndex(
         (child) => child.id === action.payload.id
       );
@@ -77,7 +80,7 @@ const childrenSlice = createSlice({
 
       if (childUserIndex < 0) return;
 
-      state.children[childIndex].isActive = false;
+      state.children[childIndex] = payloadUpdated;
       state.childUser[childUserIndex].isActive = false;
     },
   },

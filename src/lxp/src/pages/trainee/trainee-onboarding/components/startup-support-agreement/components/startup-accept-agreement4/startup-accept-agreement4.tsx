@@ -163,7 +163,7 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
                 checked={questions?.[3].answer}
               />
               <Typography
-                text={`I acknowledge that I have provided the correct cell number in the contract, and that OrgName will not be held liable should the cell number provided be incorrect.`}
+                text={`I acknowledge that I have provided the correct cell number in the contract, and the organisation providing the start-up support will not be held liable should the cell number provided be incorrect.`}
                 type="body"
                 color={'textMid'}
               />

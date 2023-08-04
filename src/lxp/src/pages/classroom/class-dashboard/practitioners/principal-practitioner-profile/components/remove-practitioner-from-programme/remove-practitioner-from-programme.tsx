@@ -1,6 +1,7 @@
 import {
   ClassroomGroupDto,
   ReasonForLeavingDto,
+  ReasonsForPractitionerLeavingProgramme,
   mapArrayToObject,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -77,8 +78,6 @@ export const RemovePractitionerFromProgramme: React.FC<
     [practitionerUserId, practitioner, practitioners]
   );
 
-  const otherReasonId = '7049458d-cd48-4e74-883d-9b984e65feee';
-
   const [reasonDetailsVisible, setReasonDetailsVisible] =
     useState<boolean>(false);
 
@@ -95,7 +94,7 @@ export const RemovePractitionerFromProgramme: React.FC<
     defaultValues: initialRemovePractionerFromProgrammeValues,
   });
 
-  const { isValid } = useFormState({
+  const { isValid, errors } = useFormState({
     control: removePractionerFormControl,
   });
 
@@ -239,6 +238,7 @@ export const RemovePractitionerFromProgramme: React.FC<
         title={`Remove ${practitioner?.user?.firstName}`}
         color={'primary'}
         displayOffline={!isOnline}
+        onBack={() => history.goBack()}
       >
         <div className="py-4' px-4">
           <Typography
@@ -266,7 +266,9 @@ export const RemovePractitionerFromProgramme: React.FC<
             onChange={(item) => {
               setRemovePractionerFormValues('removeReasonId', item);
               triggerRemovePractionerForm();
-              setReasonDetailsVisible(item === otherReasonId);
+              setReasonDetailsVisible(
+                item === ReasonsForPractitionerLeavingProgramme.OTHER
+              );
             }}
           />
           {reasonDetailsVisible && (
@@ -278,7 +280,7 @@ export const RemovePractitionerFromProgramme: React.FC<
               nameProp={'reasonDetail'}
               hint={'Optional'}
               placeholder={'E.g. Found the daily routine too difficult'}
-              onChange={() => triggerRemovePractionerForm()}
+              error={errors.reasonDetail}
             />
           )}
           <label className="text-md mt-2 mb-1 block w-11/12 font-medium text-gray-700">
@@ -296,10 +298,12 @@ export const RemovePractitionerFromProgramme: React.FC<
                   date ? date.toString() : ''
                 );
               }}
+              minDate={new Date()}
               dateFormat="EEE, dd MMM yyyy"
             />
           </div>
-          {practitionerClassroomGroups &&
+          {!!practitionerClassroomGroups &&
+            !!practitionerClassroomGroups.length &&
             practitionersList &&
             practitionersList.length && (
               <div>
@@ -448,7 +452,9 @@ export const RemovePractitionerFromProgramme: React.FC<
           onProceed={() => {
             handleFormSubmit(getRemovePractionerFormValues());
             setRemovePractionerPromptVisible(false);
-            history.push(ROUTES.DASHBOARD);
+            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+              practitionerId: practitionerUserId,
+            });
           }}
           onClose={() => setRemovePractionerPromptVisible(false)}
         />

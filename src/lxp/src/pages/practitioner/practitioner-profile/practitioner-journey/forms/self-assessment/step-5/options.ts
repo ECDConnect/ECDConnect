@@ -1,6 +1,6 @@
 export const noneOption = 'None';
 
-export const options = [
+export const selfAssessmentStep5Options = [
   'Greeting time',
   'Message board',
   'Small group activity',

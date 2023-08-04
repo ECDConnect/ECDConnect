@@ -45,6 +45,20 @@ export default function TeamLeads() {
     },
   });
 
+  const viewSelectedRow = (selectedRow: any) => {
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: '/users/view-user',
+      state: {
+        component: 'team-leads',
+        userId: selectedRow?.userId,
+      },
+    });
+  };
+
   const getVariables = (
     search: string,
     province: string,
@@ -293,9 +307,9 @@ export default function TeamLeads() {
                       { field: 'isActive', use: 'Active' },
                     ]}
                     rows={tableData}
-                    urlRow={'/view-user/'}
                     searchInput={searchValue}
                     component="team-leads"
+                    viewRow={viewSelectedRow}
                   />
                 </div>
               </div>
