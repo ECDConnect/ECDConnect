@@ -110,7 +110,7 @@ export default function ForgotPassword() {
                   <Typography
                     type="help"
                     color="white"
-                    text={'Send link'}
+                    text={'Resend link'}
                   ></Typography>
                 </Button>
               </div>

@@ -166,6 +166,7 @@ export function ContentManagement() {
 
   const searchContent = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
+    console.log(e.target.value)
   }, 150);
 
   return (

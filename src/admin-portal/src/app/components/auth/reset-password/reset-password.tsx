@@ -175,7 +175,7 @@ export default function ResetPassword() {
                     <Typography
                       type="help"
                       color="white"
-                      text={'Send link'}
+                      text={'Reset password'}
                     ></Typography>
                   </Button>
                 </div>
