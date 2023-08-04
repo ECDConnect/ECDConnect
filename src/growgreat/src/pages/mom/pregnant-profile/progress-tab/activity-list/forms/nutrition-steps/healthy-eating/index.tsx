@@ -34,7 +34,7 @@ export const HealthyEatingStep = ({
     getPreviousVisitInformationForInfantSelector
   );
 
-  const isFirstVisit = !previousVisit?.visitDataStatus?.length!;
+  const isFirstVisit = !previousVisit?.visitDataStatus?.length;
   const pregnancyDay = getPregnancyDay(mother?.expectedDateOfDelivery!);
   const showVideo = pregnancyDay >= 98 && pregnancyDay <= 168;
 
