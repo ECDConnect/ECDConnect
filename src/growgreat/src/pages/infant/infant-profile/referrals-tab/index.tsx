@@ -59,6 +59,7 @@ export const ReferralsTab: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const [showMarkAllButton, setShowMarkAllButton] = useState(true);
+  const [showCelebration, setShowCelebration] = useState(false);
   const [isReferralsView, setIsReferralsView] = useState(true);
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
@@ -171,13 +172,18 @@ export const ReferralsTab: React.FC = () => {
         });
 
         // setting the mark all done button visibility
-        let _showAllMarkButton = false;
+        let _showCelebration = false;
+        let totalCompleted = 0;
         for (const item of newState) {
-          if (!item.isCompleted) {
-            _showAllMarkButton = true;
+          if (item.isCompleted) {
+            totalCompleted++;
           }
         }
-        setShowMarkAllButton(_showAllMarkButton);
+
+        if (totalCompleted === referralsForInfant?.length) {
+          _showCelebration = true;
+        }
+        setShowCelebration(_showCelebration);
 
         // saving the new state for data status record
         if (newState.length > 0) {
@@ -190,7 +196,7 @@ export const ReferralsTab: React.FC = () => {
         return newState;
       });
     },
-    [setReferralsInput, appDispatch]
+    [appDispatch, referralsForInfant?.length]
   );
 
   // group data under sections
@@ -273,10 +279,10 @@ export const ReferralsTab: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (previousGroupedData === undefined && groupedData !== undefined) {
+    if (groupedData !== undefined) {
       return setAnswers(groupedData);
     }
-  }, [groupedData, previousGroupedData]);
+  }, [groupedData]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -298,7 +304,7 @@ export const ReferralsTab: React.FC = () => {
       handleSetReferrals?.(formattedQuestions);
       setAnswers(updatedQuestions);
     },
-    [handleSetReferrals, questions]
+    [handleSetReferrals, setAnswers, questions]
   );
 
   // change function for checkbox
@@ -318,21 +324,38 @@ export const ReferralsTab: React.FC = () => {
 
   // Mark all referrals for client
   const onMarkAll = useCallback(() => {
-    let currentQuestions: any;
-    for (const section of sections) {
-      currentQuestions = questions[section.value];
-      for (const question of currentQuestions) {
-        const referral = questions[section.value].find(
-          (item) => item.comment === question.comment
-        );
+    // Call setAnswers with a function to update the state
+    setAnswers((prevState) => {
+      // Create a copy of the previous state
+      const updatedAnswers = { ...prevState };
 
-        return onOptionSelected(
-          { ...referral, isCompleted: true },
-          section.value
-        );
+      // Iterate through each section
+      for (const section of sections) {
+        const sectionIndex = section.value;
+        const sectionQuestions = questions[sectionIndex];
+
+        // Update all questions within the section, marking them as completed
+        const updatedSectionQuestions = sectionQuestions.map((question) => ({
+          ...question,
+          isCompleted: true,
+        }));
+
+        // Update the answers with the new set of questions for this section
+        updatedAnswers[sectionIndex] = updatedSectionQuestions;
       }
-    }
-  }, [onOptionSelected, sections, questions]);
+
+      const formattedQuestions = sections.flatMap((section) =>
+        updatedAnswers[section.value].map((item) => ({
+          id: item.id,
+          isCompleted: item.isCompleted as any,
+        }))
+      );
+
+      handleSetReferrals?.(formattedQuestions);
+
+      return updatedAnswers;
+    });
+  }, [sections, handleSetReferrals, questions]);
 
   const onShowBackReferrals = useCallback(() => {
     if (isToGetPreviousVisitStatusData) {
@@ -447,7 +470,7 @@ export const ReferralsTab: React.FC = () => {
             className="mb-4"
           />
 
-          {showMarkAllButton && (
+          {showMarkAllButton && !showCelebration && (
             <Button
               text="Mark all as done"
               icon="CheckCircleIcon"
@@ -460,44 +483,45 @@ export const ReferralsTab: React.FC = () => {
             />
           )}
 
-          {sections?.map((section) => (
-            <div className="flex flex-col gap-2" key={section?.value}>
-              <Typography
-                type="h3"
-                text={section?.label || ''}
-                color="textDark"
-              />
-              {questions?.[section.value]?.map(
-                (item: VisitDataStatus, index) => (
-                  <div
-                    id={
-                      index === 0
-                        ? getStringFromClassNameOrId(referralsSteps[0].target)
-                        : ''
-                    }
-                  >
-                    <CheckboxGroup
-                      id={item?.id}
-                      key={item?.id}
-                      title={item?.comment || ''}
-                      titleColours="textMid"
-                      checked={item?.isCompleted}
-                      name={section?.value || ''}
-                      value={item?.comment || ''}
-                      description={format(
-                        new Date(item.insertedDate),
-                        'dd MMM yyyy'
-                      )}
-                      onChange={(event) => onCheckboxChange(event)}
-                    />
-                  </div>
-                )
-              )}
-            </div>
-          ))}
+          {sections &&
+            sections?.map((section) => (
+              <div className="flex flex-col gap-2" key={section?.value}>
+                <Typography
+                  type="h3"
+                  text={section?.label || ''}
+                  color="textDark"
+                />
+                {questions?.[section.value]?.map(
+                  (item: VisitDataStatus, index) => (
+                    <div
+                      id={
+                        index === 0
+                          ? getStringFromClassNameOrId(referralsSteps[0].target)
+                          : ''
+                      }
+                    >
+                      <CheckboxGroup
+                        id={item?.id}
+                        key={item?.id}
+                        title={item?.comment || ''}
+                        titleColours="textMid"
+                        checked={item?.isCompleted}
+                        name={section?.value || ''}
+                        value={item?.comment || ''}
+                        description={format(
+                          new Date(item.insertedDate),
+                          'dd MMM yyyy'
+                        )}
+                        onChange={(event) => onCheckboxChange(event)}
+                      />
+                    </div>
+                  )
+                )}
+              </div>
+            ))}
 
           {/* Show success message when all referrals are selected */}
-          {(!showMarkAllButton ||
+          {(showCelebration ||
             (isWalkthrough && walkthroughState?.stepIndex !== 2)) && (
             <>
               {!isWalkthrough && (
