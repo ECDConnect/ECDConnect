@@ -54,7 +54,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
 
   const allowTracking = (!!isPrincipal && !!isPrincipalChild) || !isPrincipal;
   const hideInprogressReports =
-    (!!isPrincipal && !!isPrincipalChild) || !isPrincipal;
+    !(!!isPrincipal && !!isPrincipalChild) || !isPrincipal;
 
   const currentChildUser = useSelector(
     childrenSelectors.getChildUserById(currentChild?.userId)

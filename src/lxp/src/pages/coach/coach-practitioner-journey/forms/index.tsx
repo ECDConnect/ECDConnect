@@ -37,7 +37,7 @@ import {
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { PqaActions } from '@/store/pqa/pqa.actions';
+import { PqaActions, getVisitDataForVisitId } from '@/store/pqa/pqa.actions';
 import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import { useAppDispatch } from '@/store';
 import {
@@ -777,6 +777,23 @@ export const Form = ({
     setReAccreditationRatingForm?.(rating);
     setReAccreditationRating(rating);
   };
+
+  const getSelfAssessment = useCallback(async () => {
+    const selfAssessmentVisit = timeline?.selfAssessmentVisits?.[0];
+
+    if (!selfAssessmentVisit) return;
+
+    await appDispatch(
+      getVisitDataForVisitId({
+        visitId: selfAssessmentVisit?.id,
+        visitType: 'self-assessment',
+      })
+    );
+  }, [appDispatch, timeline?.selfAssessmentVisits]);
+
+  useEffect(() => {
+    getSelfAssessment();
+  }, [getSelfAssessment]);
 
   useEffect(() => {
     if (

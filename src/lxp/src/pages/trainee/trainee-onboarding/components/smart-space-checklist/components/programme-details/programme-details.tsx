@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   ButtonGroup,
-  FormInput,
   Typography,
   ButtonGroupTypes,
   renderIcon,
@@ -13,6 +12,7 @@ import {
   ImageInput,
   Dialog,
   DialogPosition,
+  FormInput,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
@@ -134,7 +134,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     },
   ]);
   const visitSection = 'Programme details';
-
   const completedItems = visitData
     ?.filter((item) => item?.visitSection === visitSection)
     .filter(
@@ -145,7 +144,9 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           item?.questionAnswer !== '')
     );
 
-  const disableSection = completedItems?.length === 7;
+  const disableSection = completedItems?.length
+    ? completedItems?.length >= 6
+    : false;
 
   const checkedquestion = (question: string) => {
     const isChecked = visitData?.find((item) => item?.question === question);
@@ -233,10 +234,11 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     }
 
     if (checkedquestion(questions?.[5]?.question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'haveTheTitleDeeds',
-        Boolean(checkedquestion(questions?.[5].question)?.questionAnswer)
-      );
+      const answer =
+        checkedquestion(questions?.[5].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('haveTheTitleDeeds', answer);
     }
 
     if (checkedquestion(questions?.[6]?.question)?.questionAnswer) {
@@ -495,7 +497,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
               onChange={(e) =>
                 onOptionSelected((e.target as HTMLInputElement).value, 3)
               }
-              onClick={() => setShowMap(true)}
               disabled={Boolean(checkedquestion(questions?.[3].question))}
               suffixIcon={'LocationMarkerIcon'}
               sufficIconColor="primary"
@@ -595,7 +596,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 </div>
               </div>
             )}
-            {liveAtTheProperty === true && (
+            {liveAtTheProperty === true && !disableSection && (
               <>
                 <Alert
                   className="mb-4"
@@ -633,7 +634,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
               </>
             )}
             {liveAtTheProperty === false && (
-              <>
+              <div className={disableSection ? 'pointer-events-none' : ''}>
                 <Alert
                   className="mb-4"
                   type="info"
@@ -667,7 +668,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   }}
                   disabled={Boolean(checkedquestion(questions?.[10].question))}
                 ></ImageInput>
-              </>
+              </div>
             )}
           </>
           {haveTheTitleDeeds === false && ownTheProperty === true && (
@@ -726,7 +727,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
             ></ImageInput>
           )}
 
-          {unproclaimedLand === false && (
+          {unproclaimedLand === false && !disableSection && (
             <Alert
               className="mb-4"
               type="warning"
@@ -739,7 +740,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           )}
 
           {unproclaimedLand === true && (
-            <>
+            <div className={disableSection ? 'pointer-events-none' : ''}>
               <Alert
                 className="mb-4"
                 type="info"
@@ -771,9 +772,8 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   setProgrammeFormValue('r4bPhoto', imageString);
                   triggerR4bForm();
                 }}
-                // disabled={Boolean(checkedquestion(questions?.[8].question))}
               ></ImageInput>
-            </>
+            </div>
           )}
           <div>
             <div>
@@ -824,13 +824,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         position={DialogPosition.Bottom}
         stretch
       >
-        <div
-        // className={`p-4 ${
-        //   Boolean(checkedquestion(questions?.[6].question))
-        //     ? 'pointer-events-none'
-        //     : ''
-        // }`}
-        >
+        <div>
           <PhotoPrompt
             title={'Upload image'}
             onClose={() => setPhotoActionBarVisible(false)}

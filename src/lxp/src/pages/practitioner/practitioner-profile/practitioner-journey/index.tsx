@@ -111,8 +111,16 @@ export const PractitionerJourney = ({
         return item;
       });
     } else {
+      const selfAssessmentVisit = timeline?.selfAssessmentVisits?.[0];
+
       await appDispatch(
         getVisitDataForVisitId({ visitId: visit?.id, visitType })
+      );
+      await appDispatch(
+        getVisitDataForVisitId({
+          visitId: selfAssessmentVisit?.id,
+          visitType: 'self-assessment',
+        })
       );
     }
 

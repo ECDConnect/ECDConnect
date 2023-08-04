@@ -2,6 +2,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
@@ -49,14 +50,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private VisitManager _visitManager;
         private UserLicenseManager _userLicenseManager;
         private UserManager<ApplicationUser> _userManager;
+        private IReassignmentService _reassignmentService;
         
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            
             VisitDataManager visitDataManager,
             VisitManager visitManager,
-            UserLicenseManager userLicenseManager)
+            UserLicenseManager userLicenseManager,
+            [Service] IReassignmentService reassignmentService,
+            UserManager<ApplicationUser> userManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -80,6 +85,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
             _userLicenseManager = userLicenseManager;
+            _reassignmentService = reassignmentService;
+            _userManager = userManager;
         }
 
 
@@ -176,7 +183,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         }
 
         public PrincipalClassroom GetClassroomDetailsForPractitioner(
-    string userId)
+            string userId)
         {                       
             PrincipalClassroom principalClassroom = new PrincipalClassroom();
             var practitioner = _practiGenericRepo.GetByUserId(userId);
@@ -283,6 +290,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 {
                     classroom.UserId = practitionerToPromote.UserId;
                     _classRepo.Update(classroom);
+                }
+
+                //Swap the unsure class if there is one
+                var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId).Where(x => x.Name == "Unsure").FirstOrDefault();
+                if(unsureClassroomGroup != null)
+                {
+                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId, practitionerToPromote.UserId, "Practitioner removed by coach", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
@@ -605,7 +619,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         public bool DeActivatePractitioner(string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
-            var practitioner = _practiGenericRepo.GetAll().Where(x => x.User.Id == userId).FirstOrDefault();
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
             var user = _userManager.FindByIdAsync(userId).Result;
 
             if (practitioner != null && user != null)
@@ -621,7 +635,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitioner);
 
                 user.IsActive = false;
-                _userManager.UpdateAsync(user);
+                var userResult = _userManager.UpdateAsync(user).Result;
+
+                // Remove any roles
+                var roles = _userManager.GetRolesAsync(user).Result;
+                foreach (var role in roles)
+                {
+                    var result = _userManager.RemoveFromRoleAsync(user, role).Result;
+                }
 
                 return true;
             }
