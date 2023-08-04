@@ -69,11 +69,18 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title !== 'SmartSpace Licence'
   );
 
-  const extradataTimeValue = Object.values(uncompletedSteps?.[0]?.extraData!);
+  console.log({ uncompletedSteps });
+
+  const extradataTimeValue =
+    uncompletedSteps?.length > 0 &&
+    Object.values(uncompletedSteps?.[0]?.extraData!);
+  console.log({ extradataTimeValue });
 
   const checkOverdueDate = differenceInDays(
     new Date(),
-    new Date(extradataTimeValue[0] as Date)
+    new Date(
+      extradataTimeValue ? (extradataTimeValue?.[0] as Date) : new Date()
+    )
   );
 
   const completedSteps = timelineSteps(

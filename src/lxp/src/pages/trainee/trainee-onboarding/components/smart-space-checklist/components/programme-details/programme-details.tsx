@@ -134,6 +134,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     },
   ]);
   const visitSection = 'Programme details';
+
   const completedItems = visitData
     ?.filter((item) => item?.visitSection === visitSection)
     .filter(
@@ -227,10 +228,11 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     }
 
     if (checkedquestion(questions?.[4].question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'ownTheProperty',
-        Boolean(checkedquestion(questions?.[4].question)?.questionAnswer)
-      );
+      const answer =
+        checkedquestion(questions?.[4].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('ownTheProperty', answer);
     }
 
     if (checkedquestion(questions?.[5]?.question)?.questionAnswer) {
