@@ -5927,7 +5927,7 @@ export type MutationRemovePractitionerArgs = {
     Array<InputMaybe<ClassroomGroupReassignmentsInput>>
   >;
   newPrincipalId?: InputMaybe<Scalars['String']>;
-  practitionerId?: InputMaybe<Scalars['String']>;
+  practitionerUserId?: InputMaybe<Scalars['String']>;
   reasonDetails?: InputMaybe<Scalars['String']>;
   reasonForPractitionerLeavingId?: InputMaybe<Scalars['String']>;
 };
