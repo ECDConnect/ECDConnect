@@ -233,6 +233,23 @@ export const timelineSteps = ({
     });
   }
 
+  if (timeline.selfAssessmentVisits?.length) {
+    const visit = timeline.selfAssessmentVisits?.[0];
+
+    steps.push({
+      title: visit?.visitType?.description,
+      subTitle: new Date(
+        visit?.insertedDate ? visit.insertedDate : visit?.plannedVisitDate
+      ).toLocaleDateString('en-ZA', dateOptions),
+      type: visit?.insertedDate ? 'completed' : 'todo',
+      extraData: {
+        date: new Date(
+          visit?.insertedDate ? visit.insertedDate : visit?.plannedVisitDate
+        ),
+      },
+    });
+  }
+
   const formattedSteps = steps
     .filter((object) => Object.keys(object).length !== 0)
     .sort(

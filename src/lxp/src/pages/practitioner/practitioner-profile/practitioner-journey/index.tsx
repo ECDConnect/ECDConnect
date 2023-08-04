@@ -74,7 +74,8 @@ export const PractitionerJourney = ({
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   // TODO: add rules
-  const uncompletedSelfAssessment = true
+  const uncompletedSelfAssessment = !timeline?.selfAssessmentVisits?.[0]
+    ?.attended
     ? [
         {
           id: 'self-assessment',
