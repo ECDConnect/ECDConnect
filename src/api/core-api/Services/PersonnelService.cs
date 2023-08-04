@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 {
@@ -617,7 +618,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return timeline;
         }
 
-        public bool DeActivatePractitioner(string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
+        public async Task<bool> DeActivatePractitionerAsync(string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
             var user = _userManager.FindByIdAsync(userId).Result;
@@ -637,8 +638,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 user.IsActive = false;
                 user.LockoutEnabled = true;
                 user.LockoutEnd = DateTime.MaxValue;
-                var userResult = _userManager.UpdateAsync(user).Result;
-                return true;
+                var userResult = await _userManager.UpdateAsync(user);
+
+                return userResult?.Succeeded ?? false;
             }
             return false;
         }
