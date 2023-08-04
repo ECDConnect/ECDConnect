@@ -26,6 +26,7 @@ export const getChildAlertModel = (
   classroomGroups?: ClassroomGroupDto[],
   classProgrammes?: ClassProgrammeDto[],
   childReports?: ChildProgressReportSummaryModel[],
+  attendedChildProgressTraining?: boolean,
   userRole: 'practitioner' | 'coach' = 'practitioner'
 ) => {
   const today = new Date();
@@ -65,7 +66,7 @@ export const getChildAlertModel = (
     new Date(child?.insertedDate!)
   );
 
-  if (!report) {
+  if (attendedChildProgressTraining && !report) {
     if (daysSinceInsertedDate > 30) {
       alert = 'error';
       alertMessage = 'Progress report overdue';
