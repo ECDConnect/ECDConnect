@@ -184,7 +184,7 @@ export default function ContentEdit({
               </button>}
             </div>
           </div>
-          <div className="px-12 pt-6 bg-white rounded-xl">
+          <div className="px-12 pt-6 bg-white rounded-xl pb-8">
             {contentType.name === 'Consent' &&
               <Alert
                 className="mt-2 mb-2 rounded-md"

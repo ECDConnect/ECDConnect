@@ -217,7 +217,7 @@ export function ContentManagement() {
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
 
               <div
-                className="relative h-full rounded-xl bg-white p-12"
+                className="relative h-full rounded-xl bg-white px-14 py-12"
                 style={{ minHeight: '36rem' }}
               >
                 <div className="relative w-6/12">
