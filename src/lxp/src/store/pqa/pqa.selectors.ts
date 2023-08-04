@@ -216,10 +216,16 @@ export const getLastCoachAttendedVisitByUserId = ({
   followUpType?: FollowUpType;
 }) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const attendedVisits = timeline?.[visitType]?.filter(
-      (visit) =>
-        visit?.attended && !visit?.visitType?.name?.includes(followUpType ?? '')
-    );
+    const attendedVisits = timeline?.[visitType]?.filter((visit) => {
+      if (followUpType) {
+        return (
+          visit?.attended &&
+          !visit?.visitType?.name?.includes(followUpType ?? '')
+        );
+      }
+
+      return visit?.attended;
+    });
 
     if (attendedVisits?.length === 0) {
       return null;
