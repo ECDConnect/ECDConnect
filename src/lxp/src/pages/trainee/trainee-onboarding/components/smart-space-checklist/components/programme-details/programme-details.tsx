@@ -487,21 +487,28 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 ></Controller>
               </div>
             </div>
-
-            <FormInput<ProgrammeDetailsModel>
-              label={questions?.[3].question}
-              register={programmeFormRegister}
-              nameProp={'programmeAddress'}
-              placeholder={'Tap to add address'}
-              type={'text'}
-              onChange={(e) =>
-                onOptionSelected((e.target as HTMLInputElement).value, 3)
-              }
-              disabled={Boolean(checkedquestion(questions?.[3].question))}
-              suffixIcon={'LocationMarkerIcon'}
-              sufficIconColor="primary"
-              suffixIconAction={() => setShowMap(true)}
-            ></FormInput>
+            <div
+              className={`${
+                Boolean(checkedquestion(questions?.[4].question))
+                  ? 'pointer-events-none'
+                  : ''
+              }`}
+            >
+              <FormInput<ProgrammeDetailsModel>
+                label={questions?.[3].question}
+                register={programmeFormRegister}
+                nameProp={'programmeAddress'}
+                placeholder={'Tap to add address'}
+                type={'text'}
+                onChange={(e) =>
+                  onOptionSelected((e.target as HTMLInputElement).value, 3)
+                }
+                disabled={true}
+                suffixIcon={'LocationMarkerIcon'}
+                sufficIconColor="primary"
+                suffixIconAction={() => setShowMap(true)}
+              ></FormInput>
+            </div>
 
             <div className={'w-full'}>
               <label className={styles.label}>{questions?.[4].question}</label>
