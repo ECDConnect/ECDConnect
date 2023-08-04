@@ -23,6 +23,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 {
@@ -617,7 +618,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return timeline;
         }
 
-        public bool DeActivatePractitioner(string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
+        public async Task<bool> DeActivatePractitionerAsync(string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
             var practitioner = _practiGenericRepo.GetByUserId(userId);
             var user = _userManager.FindByIdAsync(userId).Result;
@@ -635,16 +636,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitioner);
 
                 user.IsActive = false;
-                var userResult = _userManager.UpdateAsync(user).Result;
+                user.LockoutEnabled = true;
+                user.LockoutEnd = DateTime.MaxValue;
+                var userResult = await _userManager.UpdateAsync(user);
 
-                // Remove any roles
-                var roles = _userManager.GetRolesAsync(user).Result;
-                foreach (var role in roles)
-                {
-                    var result = _userManager.RemoveFromRoleAsync(user, role).Result;
-                }
-
-                return true;
+                return userResult?.Succeeded ?? false;
             }
             return false;
         }

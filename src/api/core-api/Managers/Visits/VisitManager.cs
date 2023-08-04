@@ -772,7 +772,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime? endDate = null)
         {
             // Filter these out:
-            var allUrgentMotherIds = _visitDataStatusRepo.GetAll()
+            var allUrgentMothers = _visitDataStatusRepo.GetAll()
                 .Include(vsd => vsd.VisitData)
                     .ThenInclude(vd => vd.Visit.Mother)
                         .ThenInclude(m => m.HealthCareWorker)
@@ -784,10 +784,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     && vsd.VisitData.IsActive
                     && vsd.VisitData.Visit.IsActive
                     && vsd.VisitData.Visit.Mother.IsActive
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive)
-                .Distinct()
-                .Select(vsd => vsd.VisitData.Visit.Mother.Id)
-                .ToList();
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.IsActive);
+
+            if (startDate is not null)
+                allUrgentMothers = allUrgentMothers.Where(vsd => vsd.InsertedDate >= startDate);
+
+            if (endDate is not null)
+                allUrgentMothers = allUrgentMothers.Where(vsd => vsd.InsertedDate <= endDate);
+
+            var allUrgentMotherIds = allUrgentMothers.Select(vsd => vsd.VisitData.Visit.Mother.Id)
+                .ToList()
+                .Distinct();
 
             var allMothers = _visitDataStatusRepo.GetAll()
                 .Include(vsd => vsd.VisitData)
@@ -892,6 +899,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime startDate,
             DateTime endDate)
         {
+            // Filter out these:
             var urgentInfantIds = _visitDataStatusRepo.GetAll()
                 .Include(vsd => vsd.VisitData)
                     .ThenInclude(vd => vd.Visit.Infant)

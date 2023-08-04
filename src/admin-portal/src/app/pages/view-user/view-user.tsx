@@ -199,6 +199,11 @@ export function ViewUser(props: any) {
   const dialog = useDialog();
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
+  const isNotLockedOut = (user) => {
+    if (!user) return true;
+    return !user?.lockoutEnd || user?.lockoutEnd < new Date();
+  };
+
   const deactivateUser = async () => {
     dialog({
       // blocking: true,
@@ -208,7 +213,7 @@ export function ViewUser(props: any) {
           title="Deactivate User"
           btnText={['Yes, Deactivate User', 'No, Cancel']}
           message={`${
-            chwData?.GetHealthCareWorkerById.user?.firstName ??
+            chwData?.GetHealthCareWorkerById?.user?.firstName ??
             userData.userById.fullName
           } will lose their access to ${
             data?.tenantContext.applicationName
@@ -531,22 +536,13 @@ export function ViewUser(props: any) {
             </div>
           </div>
           {/* End main area */}
-          {!userData &&
-            chwData &&
-            !chwData?.GetHealthCareWorkerById?.user?.isActive && (
-              <Alert
-                className="mt-5 mb-3"
-                message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
-                type="error"
-                // customIcon={<SaveIcon></SaveIcon>}
-              />
-            )}
-          {!chwData && userData && !userData?.userById?.isActive && (
+          {!isNotLockedOut(
+            userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
+          ) && (
             <Alert
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
               type="error"
-              // customIcon={<SaveIcon></SaveIcon>}
             />
           )}
         </div>
@@ -903,24 +899,27 @@ export function ViewUser(props: any) {
 
         <div className="flex w-full justify-between  pl-4">
           <div className="flex w-10/12 flex-row  pl-4">
-            {hasPermission(PermissionEnum.delete_user) && (
-              <Button
-                className={'mt-3 mr-2 w-4/12 rounded-md'}
-                type="outlined"
-                // isLoading={isLoading}
-                color="tertiary"
-                onClick={deactivateUser}
-              >
-                <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
-                  {' '}
-                </TrashIcon>
-                <Typography
-                  type="help"
+            {hasPermission(PermissionEnum.delete_user) &&
+              isNotLockedOut(
+                userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
+              ) && (
+                <Button
+                  className={'mt-3 mr-2 w-4/12 rounded-md'}
+                  type="outlined"
+                  // isLoading={isLoading}
                   color="tertiary"
-                  text={'Deactivate User'}
-                ></Typography>
-              </Button>
-            )}
+                  onClick={deactivateUser}
+                >
+                  <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
+                    {' '}
+                  </TrashIcon>
+                  <Typography
+                    type="help"
+                    color="tertiary"
+                    text={'Deactivate User'}
+                  ></Typography>
+                </Button>
+              )}
             {
               <Button
                 className={'mt-3 w-4/12 rounded-md'}

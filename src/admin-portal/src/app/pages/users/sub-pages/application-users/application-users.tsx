@@ -44,7 +44,6 @@ export default function ApplicationUsers() {
   const history = useHistory();
 
   const viewSelectedRow = (selectedRow: any) => {
-
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -56,7 +55,6 @@ export default function ApplicationUsers() {
         userId: selectedRow?.userId,
       },
     });
-
   };
 
   const getVariables = (

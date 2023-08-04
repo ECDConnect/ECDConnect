@@ -220,6 +220,7 @@ export type ApplicationUser = {
   language?: Maybe<Language>;
   languageId?: Maybe<Scalars['UUID']>;
   lastSeen: Scalars['DateTime'];
+  lockoutEnd?: Maybe<Scalars['DateTime']>;
   nextOfKinContactNumber?: Maybe<Scalars['String']>;
   nextOfKinFirstName?: Maybe<Scalars['String']>;
   nextOfKinSurname?: Maybe<Scalars['String']>;
@@ -278,6 +279,7 @@ export type ApplicationUserFilterInput = {
   language?: InputMaybe<LanguageFilterInput>;
   languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   lastSeen?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  lockoutEnd?: InputMaybe<ComparableNullableOfDateTimeOffsetOperationFilterInput>;
   nextOfKinContactNumber?: InputMaybe<StringOperationFilterInput>;
   nextOfKinFirstName?: InputMaybe<StringOperationFilterInput>;
   nextOfKinSurname?: InputMaybe<StringOperationFilterInput>;
@@ -335,6 +337,7 @@ export type ApplicationUserInput = {
   language?: InputMaybe<LanguageInput>;
   languageId?: InputMaybe<Scalars['UUID']>;
   lastSeen: Scalars['DateTime'];
+  lockoutEnd?: InputMaybe<Scalars['DateTime']>;
   nextOfKinContactNumber?: InputMaybe<Scalars['String']>;
   nextOfKinFirstName?: InputMaybe<Scalars['String']>;
   nextOfKinSurname?: InputMaybe<Scalars['String']>;
@@ -390,6 +393,7 @@ export type ApplicationUserSortInput = {
   language?: InputMaybe<LanguageSortInput>;
   languageId?: InputMaybe<SortEnumType>;
   lastSeen?: InputMaybe<SortEnumType>;
+  lockoutEnd?: InputMaybe<SortEnumType>;
   nextOfKinContactNumber?: InputMaybe<SortEnumType>;
   nextOfKinFirstName?: InputMaybe<SortEnumType>;
   nextOfKinSurname?: InputMaybe<SortEnumType>;
@@ -1935,6 +1939,21 @@ export type ComparableInt32OperationFilterInput = {
   nin?: InputMaybe<Array<Scalars['Int']>>;
   nlt?: InputMaybe<Scalars['Int']>;
   nlte?: InputMaybe<Scalars['Int']>;
+};
+
+export type ComparableNullableOfDateTimeOffsetOperationFilterInput = {
+  eq?: InputMaybe<Scalars['DateTime']>;
+  gt?: InputMaybe<Scalars['DateTime']>;
+  gte?: InputMaybe<Scalars['DateTime']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['DateTime']>>>;
+  lt?: InputMaybe<Scalars['DateTime']>;
+  lte?: InputMaybe<Scalars['DateTime']>;
+  neq?: InputMaybe<Scalars['DateTime']>;
+  ngt?: InputMaybe<Scalars['DateTime']>;
+  ngte?: InputMaybe<Scalars['DateTime']>;
+  nin?: InputMaybe<Array<InputMaybe<Scalars['DateTime']>>>;
+  nlt?: InputMaybe<Scalars['DateTime']>;
+  nlte?: InputMaybe<Scalars['DateTime']>;
 };
 
 export type ComparableNullableOfDateTimeOperationFilterInput = {

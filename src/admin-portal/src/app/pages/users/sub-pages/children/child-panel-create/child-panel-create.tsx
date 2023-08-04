@@ -44,7 +44,7 @@ export default function ChildPanelCreate(props: UserPanelCreateProps) {
   });
 
   useEffect(() => {
-    if (roleData && roleData.roles) {
+    if (roleData?.roles) {
       addUserRole();
     }
   }, [roleData]);

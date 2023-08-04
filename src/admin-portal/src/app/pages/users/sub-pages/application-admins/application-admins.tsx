@@ -8,12 +8,7 @@ import {
   usePanel,
   UserDto,
 } from '@ecdlink/core';
-import {
-  DeleteUser,
-  SortEnumType,
-  UserList,
-  getUserCount,
-} from '@ecdlink/graphql';
+import { SortEnumType, UserList, getUserCount } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -31,7 +26,6 @@ export default function ApplicationAdmins() {
   const [searchValue, setSearchValue] = useState('');
   const [tableData, setTableData] = useState<any[]>([]);
 
-  const [deleteUser] = useMutation(DeleteUser);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
   const panel = usePanel();
   const [statusFilter, setStatusFilter] = useState('active');
@@ -132,7 +126,7 @@ export default function ApplicationAdmins() {
   }, [searchValue, nameFilter]);
 
   useEffect(() => {
-    if (data && data.users) {
+    if (data?.users) {
       const copyItems = data.users;
       const modifiedData = copyItems.map(
         (obj: { [x: string]: any; __typename: any; roles: any }) => {
@@ -175,6 +169,7 @@ export default function ApplicationAdmins() {
             onSubmit();
             if (userCreated) {
               refetch();
+              // TODO: Use actual pagination when table component supports it.
               // refetchCount();
             }
           }}
@@ -185,7 +180,6 @@ export default function ApplicationAdmins() {
   const history = useHistory();
 
   const viewSelectedRow = (selectedRow: any) => {
-
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -197,7 +191,6 @@ export default function ApplicationAdmins() {
         userId: selectedRow?.userId,
       },
     });
-
   };
 
   const mapUserTableItem = (user: UserDto) => {
@@ -259,10 +252,11 @@ export default function ApplicationAdmins() {
                             onClick={() =>
                               setShowDropDownFilter(!showDropDownFilter)
                             }
-                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
+                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
+                              !showDropDownFilter
                                 ? 'bg-secondary text-white'
                                 : 'text-secondary border-secondary border-2 bg-white'
-                              } hover:text-secondary hover:bg-white `}
+                            } hover:text-secondary hover:bg-white `}
                             id="menu-button"
                             aria-expanded={showDropDownFilter}
                             aria-haspopup={showDropDownFilter}
@@ -271,10 +265,11 @@ export default function ApplicationAdmins() {
                               ? 'Filter by status'
                               : statusFilter}
                             <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
+                              className={`-mr-1 h-5 w-5 hover:text-white ${
+                                !showDropDownFilter
                                   ? 'hover:text-secondary text-white'
                                   : 'text-secondary hover:text-white'
-                                }`}
+                              }`}
                               viewBox="0 0 20 20"
                               fill="currentColor"
                               aria-hidden="true"

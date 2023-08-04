@@ -46,7 +46,6 @@ export default function TeamLeads() {
   });
 
   const viewSelectedRow = (selectedRow: any) => {
-
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -54,11 +53,10 @@ export default function TeamLeads() {
     history.push({
       pathname: '/users/view-user',
       state: {
-        component: "team-leads",
+        component: 'team-leads',
         userId: selectedRow?.userId,
       },
     });
-
   };
 
   const getVariables = (

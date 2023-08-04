@@ -64,7 +64,6 @@ export default function HealthCareWorkers() {
   const [totalItemCount, setTotalItemCount] = useState(10);
 
   const viewSelectedRow = (selectedRow: any) => {
-
     localStorage.setItem(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
@@ -76,7 +75,6 @@ export default function HealthCareWorkers() {
         userId: selectedRow?.userId,
       },
     });
-
   };
   const getVariables = (
     search: string,
