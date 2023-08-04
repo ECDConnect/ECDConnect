@@ -41,6 +41,7 @@ export type PQAState = {
   followUpVisitFormData?: FormData[];
   reAccreditationFollowUpVisitFormData?: FormData[];
   selfAssessmentFormData?: FormData[];
+  selfAssessmentPreviousFormData?: PreviousFormData[];
 };
 
 export type FollowUpType = 'pqa_visit_follow_up' | 're_accreditation_follow_up';
@@ -53,7 +54,8 @@ export type PQAStateKeys =
   | 'supportVisitPreviousFormData'
   | 'pqaPreviousFormData'
   | 'reAccreditationPreviousFormData'
-  | 'pqaFollowUpPreviousFormData';
+  | 'pqaFollowUpPreviousFormData'
+  | 'selfAssessmentPreviousFormData';
 
 export type PQAFormType =
   | 'pre-pqa'

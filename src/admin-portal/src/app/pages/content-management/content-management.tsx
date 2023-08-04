@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { UserRoutes } from '../../app.routes';
-import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
+import debounce from 'lodash.debounce';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
   GetTenantContext,
+  SortEnumType,
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
@@ -15,6 +15,7 @@ import ContentList from './sub-pages/content-list/content-list';
 import { classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
+import { SearchIcon } from '@heroicons/react/solid';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -45,6 +46,8 @@ export function ContentManagement() {
       const currentSelectedContent = dataTypes.contentTypes.find(
         (x) => x.id === selectedType.id
       );
+      setSelectedType(currentSelectedContent);
+      console.log(currentSelectedContent);
       setSelectedType(currentSelectedContent);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -131,26 +134,66 @@ export function ContentManagement() {
     refrechDefinitions();
   };
 
+  const getVariables = (
+    search: string,
+    sortDescending: boolean,
+    currentPage: number,
+    pageSize: number
+  ) => {
+    return {
+      search: search,
+      order: [
+        { insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
+        { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
+      ],
+      pagingInput: {
+        pageNumber: currentPage,
+        pageSize: pageSize,
+        filterBy: [
+          {
+            fieldName: 'ADMINISTRATOR',
+            filterType: 'EQUALS',
+            value: 'true',
+          },
+        ],
+      },
+    };
+  };
+
+  const [searchValue, setSearchValue] = useState('');
+
+  const searchContent = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value || '');
+  }, 150);
+
   return (
     <div className="">
       {dataTypes ? (
         <>
           {!selectedContent && (
-            <div className="flex flex-row bg-white">
+            <div className="flex w-full  flex-row overflow-auto rounded-md bg-white">
               {dataTypes?.contentTypes?.map((item: ContentTypeDto) => (
                 <div
                   key={item.id}
-                  onClick={() => {
-                    showGroupContentTypes(item);
-                  }}
-                  className={classNames(
-                    selectedType?.id === item.id
-                      ? 'bg-infoBb text-secondary border-b-secondary border-b-2  bg-white'
-                      : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
-                    'group flex h-14 cursor-pointer items-center px-4 text-sm font-medium'
-                  )}
+                  className={
+                    data?.tenantContext.applicationName === 'GrowGreat'
+                      ? 'w-3/12 '
+                      : 'w-5/12 px-4'
+                  }
                 >
-                  {item.description}
+                  <a
+                    onClick={() => {
+                      showGroupContentTypes(item);
+                    }}
+                    className={classNames(
+                      selectedType?.id === item.id
+                        ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
+                        : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
+                      'consent-tabs text-md flex h-14 items-center font-medium'
+                    )}
+                  >
+                    {item.description}
+                  </a>
                 </div>
               ))}
             </div>
@@ -172,6 +215,18 @@ export function ContentManagement() {
                   className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
                 >
+                  <div className="relative w-6/12">
+                    <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                      {searchValue === '' && (
+                        <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+                      )}
+                    </span>
+                    <input
+                      className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                      placeholder="      Search by email or name..."
+                      onChange={() => searchContent}
+                    />
+                  </div>
                   {selectedType && languages?.GetAllLanguage && (
                     <ContentList
                       optionDefinitions={dataDefinitions.contentDefinitions}

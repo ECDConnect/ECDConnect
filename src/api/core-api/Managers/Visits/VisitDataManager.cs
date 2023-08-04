@@ -546,6 +546,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (pqaVisit != null) {
 
                 rating.VisitTypeName = pqaVisit.VisitType.Name;
+                rating.LinkedVisitId = pqaVisit.LinkedVisitId.ToString();
                 List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == pqaVisit.Id).ToList();
 
                 if (vData.Count > 0)
@@ -727,6 +728,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (RAVisit != null)
             {
+                rating.VisitTypeName = RAVisit.VisitType.Name;
+                rating.LinkedVisitId = RAVisit.LinkedVisitId.ToString();
+
                 List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == RAVisit.Id).ToList();
 
                 if (vData.Count > 0)

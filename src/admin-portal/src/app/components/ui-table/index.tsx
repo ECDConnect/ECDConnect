@@ -19,17 +19,15 @@ import { ReactI18NextChild } from 'react-i18next';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 
-export default function UiTable(
-  {
-    columns = [],
-    rows = [],
-    options = {},
-    urlRow,
-    searchInput,
-    component,
-  }: UiTableProps,
-  props
-) {
+export default function UiTable({
+  columns = [],
+  rows = [],
+  options = {},
+  urlRow,
+  searchInput,
+  component,
+  viewRow,
+}: UiTableProps) {
   const history = useHistory();
   const [inviteRows, setInviteRows] = useState<boolean>(false);
   const { setNotification, clearNotification } = useNotifications();
@@ -114,11 +112,11 @@ export default function UiTable(
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
-
+    if (component === 'Consent' || component === 'roles') {
+      return [...columns];
+    }
     const columnsWithSelect = [selectColumn, ...cols];
-    return component !== 'consent' || component !== 'roles'
-      ? [...columnsWithSelect, ...columns]
-      : [...columns];
+    return [...columnsWithSelect, ...columns];
   };
 
   const handleRowSelect = (
@@ -171,21 +169,6 @@ export default function UiTable(
     }
   };
 
-  const viewSelectedRow = (selectedRow: any) => {
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow.user?.id ?? selectedRow?.id
-    );
-
-    history.push({
-      pathname: urlRow,
-      state: {
-        component: component,
-        userId: selectedRow?.userId,
-      },
-    });
-  };
-
   const renderFormat = (row: any, column: any, display_value: any) => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return column.field === columns[0].field ? display_value : <></>;
@@ -202,7 +185,7 @@ export default function UiTable(
     );
     if (
       column.field === 'select' &&
-      component !== 'consent' &&
+      component !== 'Consent' &&
       component !== 'roles'
     ) {
       return checkboxCell;
@@ -223,7 +206,7 @@ export default function UiTable(
         <span
           className="cursor-pointer overflow-ellipsis"
           onClick={() => {
-            component !== 'team-leads' && viewSelectedRow(row);
+            component !== 'team-leads' && viewRow(row);
           }}
         >
           {formatDate(display_value)}
@@ -285,7 +268,7 @@ export default function UiTable(
     return (
       <div
         onClick={() => {
-          component !== 'team-leads' && viewSelectedRow(row);
+          component !== 'team-leads' && viewRow(row);
         }}
         className={'cursor-pointer'}
       >

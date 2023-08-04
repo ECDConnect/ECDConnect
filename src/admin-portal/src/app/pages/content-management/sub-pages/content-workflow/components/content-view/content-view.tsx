@@ -91,7 +91,7 @@ export default function ContentView({
           return (
             <div className={contentWrapper}>
               {getFieldHeader(field)}
-              <div className="bg-uiBg relative">
+              <div className="bg-infoBb relative">
                 <div className="relative">
                   {isVideoExtension ? (
                     <video src={item.value} controls className="h-60" />

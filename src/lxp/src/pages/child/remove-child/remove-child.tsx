@@ -22,7 +22,11 @@ import {
   removeChildModelSchema,
 } from '@schemas/child/remove-child/remove-child';
 import { useAppDispatch } from '@store';
-import { childrenActions, childrenSelectors } from '@store/children';
+import {
+  childrenActions,
+  childrenSelectors,
+  childrenThunkActions,
+} from '@store/children';
 import { classroomsActions } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import { analyticsActions } from '@store/analytics';
@@ -83,6 +87,12 @@ export const RemoveChild: React.FC = () => {
     const updatedChild = { ...child };
     updatedChild.isActive = false;
     appDispatch(childrenActions.deactivateChild(updatedChild));
+    appDispatch(
+      childrenThunkActions.updateChild({
+        child: updatedChild,
+        id: String(updatedChild.id),
+      })
+    );
     appDispatch(
       classroomsActions.deactivateClassroomGroupLearner(updatedChild)
     );

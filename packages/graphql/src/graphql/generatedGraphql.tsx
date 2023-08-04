@@ -220,6 +220,7 @@ export type ApplicationUser = {
   language?: Maybe<Language>;
   languageId?: Maybe<Scalars['UUID']>;
   lastSeen: Scalars['DateTime'];
+  lockoutEnd?: Maybe<Scalars['DateTime']>;
   nextOfKinContactNumber?: Maybe<Scalars['String']>;
   nextOfKinFirstName?: Maybe<Scalars['String']>;
   nextOfKinSurname?: Maybe<Scalars['String']>;
@@ -278,6 +279,7 @@ export type ApplicationUserFilterInput = {
   language?: InputMaybe<LanguageFilterInput>;
   languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   lastSeen?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  lockoutEnd?: InputMaybe<ComparableNullableOfDateTimeOffsetOperationFilterInput>;
   nextOfKinContactNumber?: InputMaybe<StringOperationFilterInput>;
   nextOfKinFirstName?: InputMaybe<StringOperationFilterInput>;
   nextOfKinSurname?: InputMaybe<StringOperationFilterInput>;
@@ -335,6 +337,7 @@ export type ApplicationUserInput = {
   language?: InputMaybe<LanguageInput>;
   languageId?: InputMaybe<Scalars['UUID']>;
   lastSeen: Scalars['DateTime'];
+  lockoutEnd?: InputMaybe<Scalars['DateTime']>;
   nextOfKinContactNumber?: InputMaybe<Scalars['String']>;
   nextOfKinFirstName?: InputMaybe<Scalars['String']>;
   nextOfKinSurname?: InputMaybe<Scalars['String']>;
@@ -390,6 +393,7 @@ export type ApplicationUserSortInput = {
   language?: InputMaybe<LanguageSortInput>;
   languageId?: InputMaybe<SortEnumType>;
   lastSeen?: InputMaybe<SortEnumType>;
+  lockoutEnd?: InputMaybe<SortEnumType>;
   nextOfKinContactNumber?: InputMaybe<SortEnumType>;
   nextOfKinFirstName?: InputMaybe<SortEnumType>;
   nextOfKinSurname?: InputMaybe<SortEnumType>;
@@ -1935,6 +1939,21 @@ export type ComparableInt32OperationFilterInput = {
   nin?: InputMaybe<Array<Scalars['Int']>>;
   nlt?: InputMaybe<Scalars['Int']>;
   nlte?: InputMaybe<Scalars['Int']>;
+};
+
+export type ComparableNullableOfDateTimeOffsetOperationFilterInput = {
+  eq?: InputMaybe<Scalars['DateTime']>;
+  gt?: InputMaybe<Scalars['DateTime']>;
+  gte?: InputMaybe<Scalars['DateTime']>;
+  in?: InputMaybe<Array<InputMaybe<Scalars['DateTime']>>>;
+  lt?: InputMaybe<Scalars['DateTime']>;
+  lte?: InputMaybe<Scalars['DateTime']>;
+  neq?: InputMaybe<Scalars['DateTime']>;
+  ngt?: InputMaybe<Scalars['DateTime']>;
+  ngte?: InputMaybe<Scalars['DateTime']>;
+  nin?: InputMaybe<Array<InputMaybe<Scalars['DateTime']>>>;
+  nlt?: InputMaybe<Scalars['DateTime']>;
+  nlte?: InputMaybe<Scalars['DateTime']>;
 };
 
 export type ComparableNullableOfDateTimeOperationFilterInput = {
@@ -4567,11 +4586,9 @@ export type Mutation = {
   updateIncome?: Maybe<ResultReturnObject>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
-  updateInfantAdditionalDueDates: Scalars['Boolean'];
   updateInfantCaregiver?: Maybe<Infant>;
   updateInfantCaregiverAddress?: Maybe<Infant>;
   updateInfantCaregiverContactDetails?: Maybe<Infant>;
-  updateInfantDueDates: Scalars['Boolean'];
   updateInfographics?: Maybe<Infographics>;
   updateIntegrationAudit?: Maybe<IntegrationAudit>;
   updateIntegrationColumnMapping?: Maybe<IntegrationColumnMapping>;
@@ -4585,11 +4602,9 @@ export type Mutation = {
   updateMessageTemplate?: Maybe<MessageTemplate>;
   updateMoreInformation?: Maybe<MoreInformation>;
   updateMother?: Maybe<Mother>;
-  updateMotherAdditionalDueDates: Scalars['Boolean'];
   updateMotherAddress?: Maybe<Mother>;
   updateMotherContactDetails?: Maybe<Mother>;
   updateMotherDeliveryDate?: Maybe<Mother>;
-  updateMotherDueDates: Scalars['Boolean'];
   updateNavigation?: Maybe<Navigation>;
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
@@ -5931,7 +5946,7 @@ export type MutationRemovePractitionerArgs = {
     Array<InputMaybe<ClassroomGroupReassignmentsInput>>
   >;
   newPrincipalId?: InputMaybe<Scalars['String']>;
-  practitionerId?: InputMaybe<Scalars['String']>;
+  practitionerUserId?: InputMaybe<Scalars['String']>;
   reasonDetails?: InputMaybe<Scalars['String']>;
   reasonForPractitionerLeavingId?: InputMaybe<Scalars['String']>;
 };
@@ -7018,6 +7033,7 @@ export type PqaRating = {
   __typename?: 'PQARating';
   actualVisitDate?: Maybe<Scalars['DateTime']>;
   children?: Maybe<Array<Maybe<PqaRatingChild>>>;
+  linkedVisitId?: Maybe<Scalars['String']>;
   overallRating?: Maybe<Scalars['String']>;
   overallRatingColor?: Maybe<Scalars['String']>;
   overallRatingStars?: Maybe<Scalars['String']>;
@@ -7055,6 +7071,7 @@ export type PqaRatingFilterInput = {
   actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   and?: InputMaybe<Array<PqaRatingFilterInput>>;
   children?: InputMaybe<ListFilterInputTypeOfPqaRatingChildFilterInput>;
+  linkedVisitId?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<PqaRatingFilterInput>>;
   overallRating?: InputMaybe<StringOperationFilterInput>;
   overallRatingColor?: InputMaybe<StringOperationFilterInput>;
@@ -7068,6 +7085,7 @@ export type PqaRatingFilterInput = {
 export type PqaRatingInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   children?: InputMaybe<Array<InputMaybe<PqaRatingChildInput>>>;
+  linkedVisitId?: InputMaybe<Scalars['String']>;
   overallRating?: InputMaybe<Scalars['String']>;
   overallRatingColor?: InputMaybe<Scalars['String']>;
   overallRatingStars?: InputMaybe<Scalars['String']>;
@@ -7079,6 +7097,7 @@ export type PqaRatingInput = {
 
 export type PqaRatingSortInput = {
   actualVisitDate?: InputMaybe<SortEnumType>;
+  linkedVisitId?: InputMaybe<SortEnumType>;
   overallRating?: InputMaybe<SortEnumType>;
   overallRatingColor?: InputMaybe<SortEnumType>;
   overallRatingStars?: InputMaybe<SortEnumType>;

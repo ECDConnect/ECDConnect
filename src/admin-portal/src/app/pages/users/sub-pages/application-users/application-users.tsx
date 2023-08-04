@@ -19,6 +19,7 @@ import UiTable from '../../../../components/ui-table';
 import { SearchIcon, ChevronDownIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
 import CustomDateRangePicker from '../../../../components/date-picker';
+import { useHistory } from 'react-router';
 
 export default function ApplicationUsers() {
   const [searchValue, setSearchValue] = useState('');
@@ -40,6 +41,21 @@ export default function ApplicationUsers() {
   //   { insertedDate : sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
   //   { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc }
   // ]);
+  const history = useHistory();
+
+  const viewSelectedRow = (selectedRow: any) => {
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: '/users/view-user',
+      state: {
+        component: 'administrators',
+        userId: selectedRow?.userId,
+      },
+    });
+  };
 
   const getVariables = (
     search: string,
@@ -316,8 +332,8 @@ export default function ApplicationUsers() {
                     { field: 'isActive', use: 'Status' },
                   ]}
                   rows={tableData}
-                  urlRow={'/view-user/'}
                   component={'administrators'}
+                  viewRow={viewSelectedRow}
                 />
               </div>
             </div>

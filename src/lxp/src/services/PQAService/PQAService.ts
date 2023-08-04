@@ -54,7 +54,7 @@ class PQAService {
         mutation AddReAccreditationVisitForPractitioner($input: ReAccreditationVisitModelInput) {
           addReAccreditationVisitForPractitioner(input: $input) {
               id, 
-              plannedVisitData
+              plannedVisitDate
           }        
         }
       `,
@@ -257,6 +257,7 @@ class PQAService {
               eventId
             }
             pQARatings {
+              linkedVisitId
               actualVisitDate
               children {
                 sectionRating
@@ -303,6 +304,7 @@ class PQAService {
               eventId
             }
             reAccreditationRatings {
+              linkedVisitId
               children {
                 sectionRating
                 sectionRatingColor
@@ -320,6 +322,21 @@ class PQAService {
             selfAssessmentColor
             selfAssessmentDate
             selfAssessmentStatus
+            selfAssessmentVisits {
+              id
+              plannedVisitDate
+              attended
+              comment
+              insertedDate
+              visitType {
+                type
+                order
+                name
+                normalizedName
+                description
+              }
+              eventId
+            }
             smartSpaceLicenseColor
             smartSpaceLicenseDate
             smartSpaceLicenseStatus

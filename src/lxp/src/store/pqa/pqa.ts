@@ -278,6 +278,13 @@ const pqaSlice = createSlice({
           action,
           stateType: 'reAccreditationPreviousFormData',
         });
+      } else if (visitType === 'self-assessment') {
+        addPreviousFormData({
+          state,
+          visitId,
+          action,
+          stateType: 'selfAssessmentPreviousFormData',
+        });
       } else
         addPreviousFormData({
           state,

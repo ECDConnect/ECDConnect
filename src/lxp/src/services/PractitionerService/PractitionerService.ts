@@ -88,6 +88,7 @@ class PractitionerService {
                 eventId
               }
               pQARatings {
+                linkedVisitId
                 actualVisitDate
                 children {
                   sectionRating
@@ -134,6 +135,7 @@ class PractitionerService {
                 eventId
               }
               reAccreditationRatings {
+                linkedVisitId
                 children {
                   sectionRating
                   sectionRatingColor
@@ -147,6 +149,21 @@ class PractitionerService {
                 plannedDate
                 visitName
                 visitTypeName
+              }
+              selfAssessmentVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                insertedDate
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+                eventId
               }
               smartSpaceLicenseColor
               smartSpaceLicenseDate
@@ -846,6 +863,7 @@ class PractitionerService {
     classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
+    console.log('classroomGroupReassignments', classroomGroupReassignments);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation removePractitioner(

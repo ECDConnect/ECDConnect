@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var user = await userManager.FindByIdAsync(userId);
 
-            if (user is null || !user.IsActive)
+            if (user is null)
             {
                 return default(ApplicationUser);
             }

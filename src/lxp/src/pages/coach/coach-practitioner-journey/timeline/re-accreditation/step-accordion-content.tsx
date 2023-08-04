@@ -82,6 +82,10 @@ export const ReAccreditationVisits = ({
   const reAccreditationVisitsFromCurrentYear =
     subdividedReAccreditationVisits?.[filteredReAccreditationVisits.length - 1];
 
+  const isLastAttendedReAccreditationVisit =
+    reAccreditationVisitsFromCurrentYear?.filter((item) => item?.attended)
+      ?.length === maxNumberOfVisits;
+
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentFollowUpDeadline = rating3?.overallRating
     ? followUpDeadline.lastVisit
@@ -102,9 +106,7 @@ export const ReAccreditationVisits = ({
   const isReAccreditationFollowUp =
     !isFirstVisit &&
     !!newReAccreditationVisit &&
-    !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
-      visitTypes.reaccreditation.third.name
-    ) &&
+    !isLastAttendedReAccreditationVisit &&
     !lastAttendedVisit?.visitType?.name?.includes(
       visitTypes.reaccreditation.followUp.name
     );
@@ -151,13 +153,12 @@ export const ReAccreditationVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    switch (item?.visitType?.name) {
-      case visitTypes.reaccreditation.third.name:
-        return rating3;
-      case visitTypes.reaccreditation.second.name:
-        return rating2;
-      default:
-        return rating1;
+    if (item?.id === rating3?.linkedVisitId) {
+      return rating3;
+    } else if (item?.id === rating2?.linkedVisitId) {
+      return rating2;
+    } else {
+      return rating1;
     }
   };
 
