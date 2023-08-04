@@ -35,7 +35,10 @@ export const Step16ReAccreditation = ({
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState('');
 
-  const firstName = smartStarter?.user?.firstName || 'the smartStarter';
+  const firstName =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the smartStarter';
   const fullName = `${firstName} ${smartStarter?.user?.surname || ''}`;
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
@@ -160,6 +163,7 @@ export const Step16ReAccreditation = ({
     }
     return (
       <Rating
+        name={firstName}
         sectionQuestions={sectionQuestions}
         sections={sections}
         isToRemoveSmartStarter={isToRemoveSmartStarter}
