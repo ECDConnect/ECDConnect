@@ -97,6 +97,7 @@ export const Dashboard: React.FC = () => {
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
+  const hasConsent = practitioner?.shareInfo;
   const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
   const isTrainee = practitioner?.isTrainee;
 
@@ -587,7 +588,8 @@ export const Dashboard: React.FC = () => {
         (classroomGroup && classroomGroup.length > 0)) &&
         isRegistered &&
         isProgress &&
-        isProgress > 0) ||
+        isProgress > 0 &&
+        hasConsent) ||
       isTrainee
     ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
