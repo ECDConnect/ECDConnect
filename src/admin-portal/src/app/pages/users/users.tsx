@@ -40,6 +40,14 @@ export function Users() {
           name: 'Administrators',
           href: '/users/admins',
         },
+        {
+          name: 'Practitioners',
+          href: '/users/practitioners',
+        },
+        {
+          name: 'Children',
+          href: '/users/children',
+        },
       ];
     }
   };
@@ -59,7 +67,7 @@ export function Users() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
   const userSelected = localStorage.getItem('selectedUser');
-  console.log(window.location.pathname)
+  console.log(window.location.pathname);
   return (
     <div className="">
       <div className="flex justify-center bg-white ">
@@ -75,11 +83,9 @@ export function Users() {
               <SubNavigationLink
                 key={`${item.name}-${new Date().getTime()}`}
                 item={item}
-               
               ></SubNavigationLink>
             </div>
-          ))
-        }
+          ))}
       </div>
 
       <div className=" lg:min-w-0 lg:flex-1">
