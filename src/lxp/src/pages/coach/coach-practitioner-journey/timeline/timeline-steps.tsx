@@ -243,7 +243,8 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
-      showActionButton: timeline.pQASiteVisits.length === 1,
+      showActionButton:
+        timeline.pQASiteVisits.length === 1 && !currentVisit?.attended,
       actionButtonText: 'Schedule',
       actionButtonType: 'outlined',
       actionButtonTextColor: 'primary',
@@ -308,7 +309,8 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
-      showActionButton: timeline.reAccreditationVisits.length === 1,
+      showActionButton:
+        timeline.reAccreditationVisits.length === 1 && !currentVisit?.attended,
       actionButtonText: 'Schedule',
       actionButtonType: 'outlined',
       actionButtonTextColor: 'primary',

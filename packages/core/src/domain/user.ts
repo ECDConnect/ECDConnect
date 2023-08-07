@@ -15,4 +15,5 @@ export interface User extends EntityCacheBase {
   contactPreference: string;
   genderId: number;
   raceId?: number;
+  lockoutEnd?: Date;
 }

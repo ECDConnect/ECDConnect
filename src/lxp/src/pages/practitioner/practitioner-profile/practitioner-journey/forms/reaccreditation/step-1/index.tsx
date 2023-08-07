@@ -25,6 +25,11 @@ export const ReAccreditationSummaryStep1 = ({
   setEnableButton,
   smartStarter,
 }: DynamicFormProps) => {
+  const firstName =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the smartStarter';
+
   const visitId = window.sessionStorage.getItem(practitionerVisitIdKey) || '';
 
   const { isLoading } = useThunkFetchCall(
@@ -114,7 +119,11 @@ export const ReAccreditationSummaryStep1 = ({
         color="textMid"
       />
       <Divider dividerType="dashed" className="my-4" />
-      <Rating sections={sections} sectionQuestions={sectionQuestions} />
+      <Rating
+        name={firstName}
+        sections={sections}
+        sectionQuestions={sectionQuestions}
+      />
       <Note
         title="Summary of discussion"
         body={summaryNote?.answer ? String(summaryNote?.answer) : '---'}

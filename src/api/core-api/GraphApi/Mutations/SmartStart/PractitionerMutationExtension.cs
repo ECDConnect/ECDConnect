@@ -291,13 +291,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
             }
 
-            return personnelService.DeActivatePractitioner(practitionerUserId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
+            return await personnelService.DeActivatePractitionerAsync(practitionerUserId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
-        public bool DeActivatePractitioner([Service] PersonnelService personnelService,
+        public async Task<bool> DeActivatePractitioner([Service] PersonnelService personnelService,
             string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
-            return personnelService.DeActivatePractitioner(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
+            return await personnelService.DeActivatePractitionerAsync(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
 
         public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)

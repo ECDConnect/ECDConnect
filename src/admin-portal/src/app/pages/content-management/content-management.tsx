@@ -47,7 +47,7 @@ export function ContentManagement() {
         (x) => x.id === selectedType.id
       );
       setSelectedType(currentSelectedContent);
-      console.log(currentSelectedContent)
+      console.log(currentSelectedContent);
       setSelectedType(currentSelectedContent);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -162,8 +162,6 @@ export function ContentManagement() {
 
   const [searchValue, setSearchValue] = useState('');
 
-
-
   const searchContent = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
     console.log(e.target.value)
@@ -174,7 +172,7 @@ export function ContentManagement() {
       {dataTypes ? (
         <>
           {!selectedContent && (
-            <div className="flex flex-row  w-full overflow-auto bg-white rounded-md">
+            <div className="flex w-full  flex-row overflow-auto rounded-md bg-white">
               {dataTypes?.contentTypes?.map((item: ContentTypeDto) => (
                 <div
                   key={item.id}
@@ -192,20 +190,17 @@ export function ContentManagement() {
                       selectedType?.id === item.id
                         ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
-                      'consent-tabs flex h-14 items-center text-md font-medium'
+                      'consent-tabs text-md flex h-14 items-center font-medium'
                     )}
                   >
                     {item.description}
-
                   </a>
                 </div>
-
               ))}
             </div>
           )}
 
-
-          {(selectedType && languages?.GetAllLanguage && selectedContent) ? (
+          {selectedType && languages?.GetAllLanguage && selectedContent ? (
             <ContentWorkflow
               optionDefinitions={dataDefinitions.contentDefinitions}
               contentView={selectedContent}
@@ -214,37 +209,38 @@ export function ContentManagement() {
               goBack={() => setSelectedContent(undefined)}
               savedContent={() => refreshParent()}
             />
-          ) : <div className=" lg:min-w-0 lg:flex-1">
-            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-
-              <div
-                className="relative h-full rounded-xl bg-white px-14 py-12"
-                style={{ minHeight: '36rem' }}
-              >
-                <div className="relative w-6/12">
-                  <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                    {searchValue === '' && (
-                      <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-                    )}
-                  </span>
-                  <input
-                    className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="      Search by email or name..."
-                    onChange={() => searchContent}
-                  />
+          ) : (
+            <div className=" lg:min-w-0 lg:flex-1">
+              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+                <div
+                  className="relative h-full rounded-xl bg-white p-12"
+                  style={{ minHeight: '36rem' }}
+                >
+                  <div className="relative w-6/12">
+                    <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                      {searchValue === '' && (
+                        <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+                      )}
+                    </span>
+                    <input
+                      className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                      placeholder="      Search by email or name..."
+                      onChange={() => searchContent}
+                    />
+                  </div>
+                  {selectedType && languages?.GetAllLanguage && (
+                    <ContentList
+                      optionDefinitions={dataDefinitions.contentDefinitions}
+                      contentType={selectedType}
+                      languages={languages.GetAllLanguage}
+                      viewContent={getContentValues}
+                      refreshParent={() => refreshParent()}
+                    ></ContentList>
+                  )}
                 </div>
-                {selectedType && languages?.GetAllLanguage && (
-                  <ContentList
-                    optionDefinitions={dataDefinitions.contentDefinitions}
-                    contentType={selectedType}
-                    languages={languages.GetAllLanguage}
-                    viewContent={getContentValues}
-                    refreshParent={() => refreshParent()}
-                  ></ContentList>
-                )}
               </div>
             </div>
-          </div>}
+          )}
         </>
       ) : (
         <ContentLoader />
@@ -254,4 +250,3 @@ export function ContentManagement() {
 }
 
 export default ContentManagement;
-

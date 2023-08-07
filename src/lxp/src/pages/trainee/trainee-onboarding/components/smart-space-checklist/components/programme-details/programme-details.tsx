@@ -134,6 +134,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     },
   ]);
   const visitSection = 'Programme details';
+
   const completedItems = visitData
     ?.filter((item) => item?.visitSection === visitSection)
     .filter(
@@ -227,10 +228,11 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     }
 
     if (checkedquestion(questions?.[4].question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'ownTheProperty',
-        Boolean(checkedquestion(questions?.[4].question)?.questionAnswer)
-      );
+      const answer =
+        checkedquestion(questions?.[4].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('ownTheProperty', answer);
     }
 
     if (checkedquestion(questions?.[5]?.question)?.questionAnswer) {
@@ -267,10 +269,11 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     }
 
     if (checkedquestion(questions?.[9]?.question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'r4bPhoto',
-        checkedquestion(questions?.[9]?.question)?.questionAnswer!
-      );
+      const answer =
+        checkedquestion(questions?.[9].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('liveAtTheProperty', answer);
     }
     if (checkedquestion(questions?.[10]?.question)?.questionAnswer) {
       setProgrammeFormValue(
@@ -487,21 +490,28 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 ></Controller>
               </div>
             </div>
-
-            <FormInput<ProgrammeDetailsModel>
-              label={questions?.[3].question}
-              register={programmeFormRegister}
-              nameProp={'programmeAddress'}
-              placeholder={'Tap to add address'}
-              type={'text'}
-              onChange={(e) =>
-                onOptionSelected((e.target as HTMLInputElement).value, 3)
-              }
-              disabled={Boolean(checkedquestion(questions?.[3].question))}
-              suffixIcon={'LocationMarkerIcon'}
-              sufficIconColor="primary"
-              suffixIconAction={() => setShowMap(true)}
-            ></FormInput>
+            <div
+              className={`${
+                Boolean(checkedquestion(questions?.[4].question))
+                  ? 'pointer-events-none'
+                  : ''
+              }`}
+            >
+              <FormInput<ProgrammeDetailsModel>
+                label={questions?.[3].question}
+                register={programmeFormRegister}
+                nameProp={'programmeAddress'}
+                placeholder={'Tap to add address'}
+                type={'text'}
+                onChange={(e) =>
+                  onOptionSelected((e.target as HTMLInputElement).value, 3)
+                }
+                disabled={true}
+                suffixIcon={'LocationMarkerIcon'}
+                sufficIconColor="primary"
+                suffixIconAction={() => setShowMap(true)}
+              ></FormInput>
+            </div>
 
             <div className={'w-full'}>
               <label className={styles.label}>{questions?.[4].question}</label>

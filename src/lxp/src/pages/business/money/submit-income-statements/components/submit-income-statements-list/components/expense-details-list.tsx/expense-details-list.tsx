@@ -2,30 +2,30 @@ import { Typography, Card, StackedList, BannerWrapper } from '@ecdlink/ui';
 import React from 'react';
 import { useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useSelector } from 'react-redux';
 import {
-  getChildName,
   incomesValueFunc,
   numberWithSpaces,
 } from '@/utils/statements/statements-utils';
 import { MonthStatementsDetailsState } from '../month-statements-details.types';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
-import { PreschoolFeesChildListProps } from './preschool-fees-child-list.types';
-import { childrenSelectors } from '@/store/children';
+import { format } from 'date-fns';
+import { ExpenseDetailsListProps } from './expense-details-list.types';
 
-export const PreschoolsFeesChildList: React.FC<PreschoolFeesChildListProps> = ({
-  setShowPreschoolDetails,
-  preschoolFees,
+export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
+  hideDetails,
+  statementTitle,
+  incomeStatements,
 }) => {
   const location = useLocation<MonthStatementsDetailsState>();
-  const children = useSelector(childrenSelectors.getChildren);
   const statementMonth = Number(location?.state?.month) - 1 || 0;
-  const statementTitle = `Preschool fees`;
   const { isOnline } = useOnlineStatus();
 
-  const preschoolListDetailsItems = preschoolFees?.map((item) => {
+  // TODO better mapping, or pass in mapped items
+  const incomeListDetailsItems = incomeStatements?.map((item) => {
     return {
-      title: getChildName(item?.childUserId!, children!),
+      title: !!item.description
+        ? item.description
+        : format(Date.parse(item.datePaid || ''), 'dd/MM/yyyy'),
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
@@ -45,7 +45,7 @@ export const PreschoolsFeesChildList: React.FC<PreschoolFeesChildListProps> = ({
       renderBorder={true}
       title={`View ${getMonthName(Number(statementMonth))} preschool statement`}
       color={'primary'}
-      onBack={() => setShowPreschoolDetails(false)}
+      onBack={hideDetails}
       displayOffline={!isOnline}
     >
       <div className="flex flex-col justify-center p-4">
@@ -61,13 +61,13 @@ export const PreschoolsFeesChildList: React.FC<PreschoolFeesChildListProps> = ({
           type="body"
           weight="bold"
           color="textMid"
-          text={`${getMonthName(Number(statementMonth))} income`}
+          text={`${getMonthName(Number(statementMonth))} expenses`}
         />
-        {preschoolListDetailsItems && (
+        {incomeListDetailsItems && (
           <StackedList
             className="mt-4 flex w-full flex-col"
             type="MenuList"
-            listItems={preschoolListDetailsItems}
+            listItems={incomeListDetailsItems}
           />
         )}
         <Card
@@ -81,7 +81,7 @@ export const PreschoolsFeesChildList: React.FC<PreschoolFeesChildListProps> = ({
             className="w-8/12"
           />
           <Typography
-            text={`R ${String(incomesValueFunc(preschoolFees))}`}
+            text={`R ${String(incomesValueFunc(incomeStatements))}`}
             color={'white'}
             type="h4"
             className="mr-12 w-4/12 text-right"

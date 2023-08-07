@@ -240,15 +240,16 @@ export default function ContentList({
               </div>
               <div className="flex flex-col">
                 <div className="mt-1 ml-4">
-                  {hasPermission(PermissionEnum.create_static) && contentType.name !== 'Consent' && (
-                    <button
-                      onClick={() => displayCreatePanel()}
-                      type="button"
-                      className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                    >
-                      Create {camelCaseToSentanceCase(contentType.name)}
-                    </button>
-                  )}
+                  {hasPermission(PermissionEnum.create_static) &&
+                    contentType.name !== 'Consent' && (
+                      <button
+                        onClick={() => displayCreatePanel()}
+                        type="button"
+                        className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                      >
+                        Create {camelCaseToSentanceCase(contentType.name)}
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
@@ -262,13 +263,15 @@ export default function ContentList({
                     return { field: item, use: item };
                   })}
                   rows={tableData}
-              
                   deleteRow={
                     hasPermission(PermissionEnum.delete_static) &&
                     deleteAndRefresh
                   }
                   component={contentType.name}
-                  viewRow={hasPermission(PermissionEnum.update_static) && viewSelectedRow}
+                  viewRow={
+                    hasPermission(PermissionEnum.update_static) &&
+                    viewSelectedRow
+                  }
                 />
               </div>
             </div>
