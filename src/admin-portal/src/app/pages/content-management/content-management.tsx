@@ -47,14 +47,11 @@ export function ContentManagement() {
         (x) => x.id === selectedType.id
       );
       setSelectedType(currentSelectedContent);
-      console.log(currentSelectedContent);
-      setSelectedType(currentSelectedContent);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
   const getNavigationItems = () => {
-    console.log(data);
     if (
       data &&
       data.tenantContext &&
