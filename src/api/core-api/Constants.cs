@@ -310,6 +310,7 @@ namespace EcdLink.Api.CoreApi
             public const string step16_q4 = "Are there too many children attending the SmartStart programme?";
             public const string step16_q5 = "Are there enough assistants for the programme?";
 
+            public const string step_8_section = "Step 8";
             public const string step_8_re_accreditation = "A. The learning environment & use of the SmartStart routine";
             public const string step_10_re_accreditation = "B. Programme implementation";
             public const string step_11_re_accreditation = "C. Records";
@@ -327,7 +328,8 @@ namespace EcdLink.Api.CoreApi
             public const string step8_re_accreditation_a10 = "Story time: there was story time (at least 20 minutes).";
             public const string step8_re_accreditation_a11 = "Large group time: there was large group time (at least 15 minutes).";
             public const string step8_re_accreditation_a12 = "Message board: the message board is up to date.";
-            
+
+            public const string step_10_section = "Step 10";
             public const string step_10_re_accreditation_q1 = "Adults speak and act warmly & respectfully to children.";
             public const string step_10_re_accreditation_q2 = "Adults offer individual attention to children, and give encouragement.";
             public const string step_10_re_accreditation_q3 = "Adults use calm and appropriate methods to keep order, and do not use harsh words, a raised voice or physical methods.";
@@ -338,7 +340,8 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation_q8 = "Adults join in as a partner in children's play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
             public const string step_10_re_accreditation_q9 = "Adults use appropriate activities and materials for the different ages and stages of children.";
             public const string step_10_re_accreditation_q10 = "During story time there is lots of conversation and children are encouraged to take part and ask questions.";
-            
+
+            public const string step_11_section = "Step 11";
             public const string step_11_re_accreditation_a1 = "Register: the attendance register is up to date.";
             public const string step_11_re_accreditation_a2 = "Planning: weekly reflection and planning notes are completed and filed.";
             public const string step_11_re_accreditation_a3 = "Activities: planning notes are filed and show a variety of small and large group activities are being used.";
@@ -346,6 +349,7 @@ namespace EcdLink.Api.CoreApi
             public const string step_11_re_accreditation_a5 = "Accidents: there is an accident register.";
             public const string step_11_re_accreditation_a6 = "Caregiver meetings: there are attendance registers for the last two monthly caregiver meetings.";
 
+            public const string step_12_section = "Step 12";
             public const string step_12_re_accreditation_a1 = "Caregiver meetings: the franchisee is organising monthly caregiver meetings (at least 6 in the last year).";
             public const string step_12_re_accreditation_a2 = "Club meetings: the franchisee is attending monthly club meetings (at least 9 in the last year).";
             public const string step_12_re_accreditation_a3 = "Age range: all or nearly all (more than 80%) of the children are aged three and four years old.";
