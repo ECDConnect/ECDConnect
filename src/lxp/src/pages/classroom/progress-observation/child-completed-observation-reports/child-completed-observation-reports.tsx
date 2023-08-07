@@ -53,8 +53,6 @@ export const ChildCompletedObservationReports: React.FC = () => {
   );
 
   const allowTracking = (!!isPrincipal && !!isPrincipalChild) || !isPrincipal;
-  const hideInprogressReports =
-    !(!!isPrincipal && !!isPrincipalChild) || !isPrincipal;
 
   const currentChildUser = useSelector(
     childrenSelectors.getChildUserById(currentChild?.userId)
@@ -436,7 +434,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
               />
               <div className="flex flex-col">
                 {inProgressAndCompleteReports().map((report, idx) => {
-                  if (hideInprogressReports) return null;
+                  if (!!isPrincipal && !isPrincipalChild) return null;
                   const firstObservation = report.reportingPeriod === 'First';
                   const formattedDate = `${new Date(
                     report.displayDate
