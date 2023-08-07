@@ -207,23 +207,21 @@ export const FormInput = <T extends FieldValues>({
           {hint && <label className={styles.hintStyle}>{hint}</label>}
           <div className={styles.inputWrapper}>
             {getInputToRender()}
-            {prefixIcon && (
-              <div className={styles.iconWrapperLeft}>
-                {!!prefixIcon && (
-                  <span
-                    className={`text-${
-                      disabled ? 'textLight' : 'textDark'
-                    } align-center items-center pl-1 font-semibold`}
-                  ></span>
-                )}
-              </div>
-            )}
-            {suffixIcon && (
-              <button className={styles.iconWrapper} onClick={suffixIconAction}>
-                {!!suffixIcon &&
-                  renderIcon(suffixIcon, `h-5 w-5 text-${sufficIconColor}`)}
-              </button>
-            )}
+            <div className={styles.iconWrapperLeft} onClick={suffixIconAction}>
+              {!!prefixIcon && (
+                <span
+                  className={`text-${
+                    disabled ? 'textLight' : 'textDark'
+                  } align-center items-center pl-1 font-semibold`}
+                >
+                  R
+                </span>
+              )}
+            </div>
+            <div className={styles.iconWrapper} onClick={suffixIconAction}>
+              {!!suffixIcon &&
+                renderIcon(suffixIcon, `h-5 w-5 text-${sufficIconColor}`)}
+            </div>
           </div>
 
           <span className="text-errorMain text-xs"> {error?.message} </span>

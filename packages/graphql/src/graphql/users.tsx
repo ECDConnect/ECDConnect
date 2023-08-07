@@ -22,6 +22,7 @@ export const UserList = gql`
       genderId
       phoneNumber
       insertedDate
+      lockoutEnd
       roles {
         id
         name
@@ -54,6 +55,7 @@ export const GetUserById = gql`
       raceId
       languageId
       insertedDate
+      lockoutEnd
       roles {
         id
         name
@@ -119,6 +121,12 @@ export const RemoveUserFromRoles = gql`
 export const DeleteUser = gql`
   mutation deleteUser($id: String!) {
     deleteUser(id: $id)
+  }
+`;
+
+export const EnableUser = gql`
+  mutation enableUser($id: String!) {
+    enableUser(id: $id)
   }
 `;
 

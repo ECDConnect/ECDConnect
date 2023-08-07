@@ -77,7 +77,7 @@ export default function ContentCompare({
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div className="relative h-full" style={{ minHeight: '36rem' }}>
             <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-              <h3 className="text-lg leading-6 font-medium ">
+              <h3 className="text-lg font-medium leading-6 ">
                 {camelCaseToSentanceCase(contentType.name ?? '')} - Compare
                 languages
               </h3>
@@ -86,32 +86,29 @@ export default function ContentCompare({
                   <button
                     onClick={cancelCompare}
                     type="button"
-                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium bg-errorBg text-tertiary hover:bg-tertiary hover:text-white"
+                    className="bg-errorBg text-tertiary hover:bg-tertiary inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
                   >
                     Cancel Compare
-                    <XIcon width="22px" className='pl-1' />
-
+                    <XIcon width="22px" className="pl-1" />
                   </button>
                 </div>
               </div>
             </div>
 
             <div
-              className="flex flex-row justify-items-stretch relative"
+              className="relative flex flex-row justify-items-stretch"
               style={{ minHeight: '36rem' }}
             >
               {/* FIRST LANGUAGE */}
-              <div className="w-1/2 bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg">
+              <div className="w-1/2 rounded-lg border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
                 <div className=" flwx w-2/12">
                   <LanguageSelector
                     disabled={false}
                     languages={languages}
                     currentLanguageId={selectedFirstLanguageId}
                     selectLanguage={setSelectedFirstLanguageId}
-
                   />
                 </div>
-
 
                 <ContentEdit
                   optionDefinitions={optionDefinitions}
@@ -121,15 +118,12 @@ export default function ContentCompare({
                     currentContent?.contentValues
                   )}
                   contentType={contentType}
-
                   savedContent={savedContent}
                   defaultLanguageId={defaultLanguageId}
-
                 />
-
               </div>
               {/* SECOND LANGUAGE */}
-              <div className="w-1/2 ml-4 bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg ">
+              <div className="ml-4 w-1/2 rounded-lg border-b border-gray-200 bg-white px-4 py-5 sm:px-6 ">
                 <div className=" flex w-2/12 ">
                   <LanguageSelector
                     disabled={false}
