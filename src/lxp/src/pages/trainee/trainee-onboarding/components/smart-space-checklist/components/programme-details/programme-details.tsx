@@ -269,10 +269,11 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     }
 
     if (checkedquestion(questions?.[9]?.question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'r4bPhoto',
-        checkedquestion(questions?.[9]?.question)?.questionAnswer!
-      );
+      const answer =
+        checkedquestion(questions?.[9].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('liveAtTheProperty', answer);
     }
     if (checkedquestion(questions?.[10]?.question)?.questionAnswer) {
       setProgrammeFormValue(
