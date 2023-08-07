@@ -542,34 +542,57 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         }
                         pre_pqa_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
-                    {
-                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
-                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                        pqa_visits.Add(visit);
-                    }
                     
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
                     {
-                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
-                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                        pqa_visits.Add(visit);
+                        if (visit.PlannedVisitDate.Date > today.Date)
+                        {
+                            timeline.PrePQAVisitDate2Status = Constants.SSSettings.second_site_visit;
+                            timeline.PrePQAVisitDate2Color = MetricsColorEnum.Success.ToString();
+                            timeline.PrePQAVisitDate2 = visit.PlannedVisitDate;
+                        }
+                        else
+                        {
+                            timeline.PrePQAVisitDate2Status = Constants.SSSettings.second_site_visit;
+                            timeline.PrePQAVisitDate2Color = MetricsColorEnum.Warning.ToString();
+                            timeline.PrePQAVisitDate2 = visit.PlannedVisitDate;
+                        }
+                        pre_pqa_visits.Add(visit);
+                    }
+
+                    // do not return any pqa visits if the pre pqa visits are not done.
+                    // first pqa visit is created when SmartSpace licence is received + 3 months
+                    if (timeline.PrePQAVisitDate1 != null && timeline.PrePQAVisitDate2 != null) { 
+
+                        if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                        {
+                            PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
+                            visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                            pqa_visits.Add(visit);
+                        }
+                    
+                        if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
+                        {
+                            PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
+                            visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                            pqa_visits.Add(visit);
+                        }
+                        if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
+                        {
+                            PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
+                            visit.OverallRatingColor = rating.OverallRatingColor;
+                            reaccreditation_visits.Add(visit);
+                        }
+                        if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
+                        {
+                            PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
+                            visit.OverallRatingColor = rating.OverallRatingColor;
+                            reaccreditation_visits.Add(visit);
+                        }
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit)
                     {
                         requested_coach_visits.Add(visit);
-                    }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
-                    {
-                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
-                        visit.OverallRatingColor = rating.OverallRatingColor;
-                        reaccreditation_visits.Add(visit);
-                    }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
-                    {
-                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
-                        visit.OverallRatingColor = rating.OverallRatingColor;
-                        reaccreditation_visits.Add(visit);
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_support || visit.VisitType.Name == Constants.SSSettings.visitType_call)
                     {
