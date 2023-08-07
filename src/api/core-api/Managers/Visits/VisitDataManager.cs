@@ -741,10 +741,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 if (vData.Count > 0)
                 {
-                    List<VisitData> stepA = vData.Where(x => x.VisitSection == Constants.SSSettings.step_8_re_accreditation).ToList();
-                    List<VisitData> stepB = vData.Where(x => x.VisitSection == Constants.SSSettings.step_10_re_accreditation).ToList();
-                    List<VisitData> stepC = vData.Where(x => x.VisitSection == Constants.SSSettings.step_11_re_accreditation).ToList();
-                    List<VisitData> stepD = vData.Where(x => x.VisitSection == Constants.SSSettings.step_12_re_accreditation).ToList();
+                    List<VisitData> stepA = vData.Where(x => x.VisitSection == Constants.SSSettings.step_8_section).ToList();
+                    List<VisitData> stepB = vData.Where(x => x.VisitSection == Constants.SSSettings.step_10_section).ToList();
+                    List<VisitData> stepC = vData.Where(x => x.VisitSection == Constants.SSSettings.step_11_section).ToList();
+                    List<VisitData> stepD = vData.Where(x => x.VisitSection == Constants.SSSettings.step_12_section).ToList();
 
 
                     // Section A
