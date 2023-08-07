@@ -200,7 +200,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
             }
 
-            if (input.VisitData.VisitName == Constants.SSSettings.pqa_visit)
+            if (input.VisitData.VisitName == Constants.SSSettings.visitType_pqa_visit_1)
             {
                 // PQA Rating
                 Practitioner practitioner = _practitionerRepo.GetByUserId(input.PractitionerId);
@@ -229,6 +229,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         visitModel.LinkedVisitId = pqaVisit.Id;
                         visitModel.PractitionerId = practitioner.Id;
                         visitModel.Attended = false;
+                        visitModel.Risk = Constants.GGSettings.normal_risk;
                         visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
                         visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
                         _visitRepo.Insert(visitModel);
@@ -251,6 +252,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         visitModel.LinkedVisitId = pqaVisit.Id;
                         visitModel.PractitionerId = practitioner.Id;
                         visitModel.Attended = false;
+                        visitModel.Risk = Constants.GGSettings.normal_risk;
                         visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate.Date, CultureInfo.InvariantCulture);
                         visitModel.DueDate = Convert.ToDateTime(deadlineDate.Date, CultureInfo.InvariantCulture);
                         _visitRepo.Insert(visitModel);
@@ -547,17 +549,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 rating.VisitTypeName = pqaVisit.VisitType.Name;
                 rating.LinkedVisitId = pqaVisit.LinkedVisitId.ToString();
+                rating.Children = new List<PQARatingChild>();
                 List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == pqaVisit.Id).ToList();
+                double step5Score = -1;
 
                 if (vData.Count > 0)
                 {
-                    List<VisitData> step2 = vData.Where(x => x.VisitSection == Constants.SSSettings.step2).ToList();
-                    List<VisitData> step3 = vData.Where(x => x.VisitSection == Constants.SSSettings.step3 && x.Question == Constants.SSSettings.step3_q1).ToList();
-                    List<VisitData> step4 = vData.Where(x => x.VisitSection == Constants.SSSettings.step4 && x.Question != Constants.SSSettings.step3_q1).ToList();
-                    List<VisitData> step5 = vData.Where(x => x.VisitSection == Constants.SSSettings.step5).ToList();
-                    List<VisitData> step6 = vData.Where(x => x.VisitSection == Constants.SSSettings.step6).ToList();
-                    List<VisitData> step7 = vData.Where(x => x.VisitSection == Constants.SSSettings.step7).ToList();
-                    List<VisitData> step8 = vData.Where(x => x.VisitSection == Constants.SSSettings.step8).ToList();
+                    List<VisitData> step2 = vData.Where(x => x.VisitSection == Constants.SSSettings.step2_section).ToList();
+                    List<VisitData> step3 = vData.Where(x => x.VisitSection == Constants.SSSettings.step3_section && x.Question == Constants.SSSettings.step3_q1).ToList();
+                    List<VisitData> step4 = vData.Where(x => x.VisitSection == Constants.SSSettings.step4_section && x.Question != Constants.SSSettings.step3_q1).ToList();
+                    List<VisitData> step5 = vData.Where(x => x.VisitSection == Constants.SSSettings.step5_section).ToList();
+                    List<VisitData> step6 = vData.Where(x => x.VisitSection == Constants.SSSettings.step6_section).ToList();
+                    List<VisitData> step7 = vData.Where(x => x.VisitSection == Constants.SSSettings.step7_section).ToList();
+                    List<VisitData> step8 = vData.Where(x => x.VisitSection == Constants.SSSettings.step8_section).ToList();
 
                     if (step2.Count > 0)
                     {
@@ -571,7 +575,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step2_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step2_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
 
                     }
 
@@ -587,7 +591,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step3_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStep3RatingColor(child.SectionScore);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     if (step4.Count > 0)
@@ -602,7 +606,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step4_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step4_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     if (step5.Count > 0)
@@ -617,7 +621,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step5_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step5_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
+                        step5Score = child.SectionScore;
                     }
 
                     if (step6.Count > 0)
@@ -632,7 +637,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step6_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step6_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     if (step7.Count > 0)
@@ -647,7 +652,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step7_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step7_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     if (step8.Count > 0)
@@ -662,9 +667,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step8_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step8_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
-
 
                     // overall rating calc
                     rating.OverallScore = totalScores;
@@ -706,7 +710,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // 2. if the score for step 5 of the PQA(ie, section 3, use case 9) was less than 5
                     // 3. if the user did NOT re-issue the SmartSpace license(use case 16)
                     // (4.note that if the user selected ""Yes"" to the first question in use case 21, then the scenario in use case 23 applies - please see use case 23 above for that red rating case, not covered here) 
-                    if (rating.OverallScore < 18 || rating.Children.GetItemByIndex(4).SectionScore < 5 ||
+
+                    if (rating.OverallScore < 18 || (step5Score > 0 && step5Score < 5) ||
                         (step14_q1 != null && step14_q1.QuestionAnswer == Constants.GGSettings.answer_no) ||
                         (step16_q1 != null && step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes))
                     {
@@ -730,6 +735,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 rating.VisitTypeName = RAVisit.VisitType.Name;
                 rating.LinkedVisitId = RAVisit.LinkedVisitId.ToString();
+                rating.Children = new List<PQARatingChild>();
 
                 List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == RAVisit.Id).ToList();
 
@@ -861,7 +867,29 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             int score = 0;
             foreach (VisitData record in records)
             {
-                score = score + Int32.Parse(record.QuestionAnswer);
+                if (record.QuestionAnswer.StartsWith("1 -"))
+                {
+                    score++;
+                } 
+                else if (record.QuestionAnswer.StartsWith("2 -"))
+                {
+                    score += 2;
+                }
+
+                if (record.VisitSection == Constants.SSSettings.step3_section)
+                {
+                    if (record.QuestionAnswer != "None")
+                    {
+                        var arrItems = record.QuestionAnswer.Split(",");
+                        if (arrItems.Length == 3)
+                        {
+                            score++;
+                        } else if (arrItems.Length > 7)
+                        {
+                            score += 2;
+                        }
+                    }
+                }
             }
 
             return score;
