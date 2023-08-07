@@ -187,14 +187,14 @@ export default function ContentEdit({
               )}
             </div>
           </div>
-          <div className="rounded-xl bg-white px-12 pt-6">
-            {contentType.name === 'Consent' && (
+          <div className="px-12 pt-6 bg-white rounded-xl pb-8">
+            {contentType.name === 'Consent' &&
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
-              />
-            )}
+              />}
+            )
             <DynamicForm
               template={template}
               handleform={handleform}
@@ -206,8 +206,9 @@ export default function ContentEdit({
             type="submit"
             className="bg-secondary hover:bg-uiMid focus:outline-none ml-4 inline-flex items-center rounded-md border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
           >
-            Save Changes
-            <SaveAsIcon width="22px" className="pl-1" />
+            Save & publish
+            <SaveAsIcon width="22px" className='pl-1' />
+
           </button>
         </form>
       </div>

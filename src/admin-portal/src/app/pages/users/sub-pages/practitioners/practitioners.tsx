@@ -24,7 +24,7 @@ import {
 import { Fragment, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
-import UiTable from '../../../../components/ui-table';
+import UiTable from '../../../../components/old-ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import PractitionerPanelCreate from './components/practitioner-panel-create/practitioner-panel-create';
 import PractitionerPanelEdit from './components/practitioner-panel-edit/practitioner-panel-edit';
