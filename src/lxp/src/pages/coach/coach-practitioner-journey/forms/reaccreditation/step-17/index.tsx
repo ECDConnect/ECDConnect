@@ -66,6 +66,7 @@ export const Step17ReAccreditation = ({
     smartStarter?.user?.firstName ||
     smartStarter?.firstName ||
     'the SmartStarter';
+  const userId = smartStarter?.user?.id || smartStarter?.id || '';
 
   const [visitIdFromPractitionerJourney] = useSessionStorage(
     practitionerVisitIdKey
@@ -93,7 +94,6 @@ export const Step17ReAccreditation = ({
   ];
 
   const children = useSelector(childrenSelectors.getChildren);
-  const childUsers = useSelector(childrenSelectors.getChildUsers);
   const allLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
@@ -105,9 +105,13 @@ export const Step17ReAccreditation = ({
   const classroomGroups = allClassroomGroups?.filter(
     (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
-  const currentClassroomGroups = classroomGroups?.filter(
-    (item) => item?.userId === smartStarter?.userId
-  );
+  const classroomId = classroomGroups.find(
+    (item) => item.userId === userId
+  )?.classroomId;
+
+  const currentClassroomGroups = isPrincipal
+    ? classroomGroups.filter((item) => item.classroomId === classroomId)
+    : classroomGroups.filter((item) => item?.userId === userId);
   const previousClassroomGroups = usePrevious(currentClassroomGroups) as
     | ClassroomGroupDto[]
     | undefined;
@@ -169,52 +173,24 @@ export const Step17ReAccreditation = ({
 
     for (const learner of _allLearners) {
       if (
-        !currentClassProgrammes.some(
-          (item) => item?.classroomGroupId === learner?.classroomGroupId
+        !currentClassroomGroups.some(
+          (item) => item?.id === learner?.classroomGroupId
         )
       )
         continue;
+      const childUser = children?.find((y) => y?.userId === learner?.userId);
 
-      const child = children?.find(
-        (child) => child?.userId === learner?.userId && child?.isActive
-      );
-      const childUser = childUsers?.find((y) => y?.id === learner?.userId);
-
-      if (
-        child &&
-        child?.caregiverId &&
-        childUser?.firstName &&
-        childUser?.surname
-      ) {
+      if (childUser) {
         filteredChildren.push(childUser);
       }
     }
 
-    const sortedChildren = filteredChildren
-      .filter((child) => {
-        if (child?.dateOfBirth === undefined) {
-          return false;
-        }
-
-        const date = new Date(child?.dateOfBirth);
-        const minDate = new Date('1900-01-01');
-        const maxDate = new Date();
-        return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
-      })
-      .sort(
-        (a, b) =>
-          new Date(String(a?.dateOfBirth)).getTime() -
-          new Date(String(b?.dateOfBirth)).getTime()
-      );
-
-    setRegisteredChildren(sortedChildren);
+    setRegisteredChildren(filteredChildren);
   }, [
     allLearners,
-    childUsers,
     children,
-    currentClassProgrammes,
     currentClassroomGroups,
-    previousClassroomGroups,
+    previousClassroomGroups?.length,
   ]);
 
   const handleViewMode = useCallback(() => {

@@ -29,12 +29,14 @@ import {
 import { MonthStatementsDetailsState } from './month-statements-details.types';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
-import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees-child-list';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
 import { useAppDispatch } from '@/store';
+import { IncomeDetailsList } from './income-details-list.tsx/income-details-list';
+import { ExpenseDetailsList } from './expense-details-list.tsx/expense-details-list';
+
 interface ReportDetailsForPractitionerData {
   classroomGroupName: string;
   name: string;
@@ -66,6 +68,23 @@ export const MonthStatementsDetails: React.FC = () => {
   };
 
   const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
+  const [showStartupSupportDetails, setShowStartupSupportDetails] =
+    useState(false);
+  const [showDonationsOrVouchersDetails, setShowDonationsOrVouchersDetails] =
+    useState(false);
+  const [showDbeSubsidyDetails, setShowDbeSubsidyDetails] = useState(false);
+  const [showOtherIncomeDetails, setShowOtherIncomeDetails] = useState(false);
+
+  const [showRentDetails, setShowRentDetails] = useState(false);
+  const [showFoodDetails, setShowFoodDetails] = useState(false);
+  const [showLearningMaterialsDetails, setShowLearningMaterialsDetails] =
+    useState(false);
+  const [showMaintenanceDetails, setShowMaintenaceDetails] = useState(false);
+  const [showOtherExpensesDetails, setShowOtherExpensesDetails] =
+    useState(false);
+  const [showUtilitiesDetails, setShowUtilitiesDetails] = useState(false);
+  const [showSalaryDetails, setShowSalaryDetails] = useState(false);
+
   const offlineIncome = useSelector(statementsSelectors.getIncome);
   const lowerCase = (str: any) => str[0].toLowerCase() + str.slice(1);
   const offlineIncomeLowerCase = useMemo(() => {
@@ -174,11 +193,11 @@ export const MonthStatementsDetails: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   // Income values
-  const [preschoolFees, setPreschoolFees] = useState<any>([]);
-  const [startupSupport, setStartupSupport] = useState<any>([]);
-  const [donationsOrVouchers, setDonationsOrVouchers] = useState<any>([]);
-  const [dbeSubsidy, setDbeSubsidy] = useState<any>([]);
-  const [otherIncomeValues, setOtherIncomeValues] = useState<any>([]);
+  const [preschoolFees, setPreschoolFees] = useState<any[]>([]);
+  const [startupSupport, setStartupSupport] = useState<any[]>([]);
+  const [donationsOrVouchers, setDonationsOrVouchers] = useState<any[]>([]);
+  const [dbeSubsidy, setDbeSubsidy] = useState<any[]>([]);
+  const [otherIncomeValues, setOtherIncomeValues] = useState<any[]>([]);
 
   const [rent, setRent] = useState<any>([]);
   const [food, setFood] = useState<any>([]);
@@ -199,6 +218,7 @@ export const MonthStatementsDetails: React.FC = () => {
     const dbeSubsidyValue: IncomeStatementsDto[] = [];
     const otherValue: IncomeStatementsDto[] = [];
 
+    console.log('offlineFilteredIncome', offlineFilteredIncome);
     offlineFilteredIncome?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
         preschoolValue.push(item);
@@ -360,7 +380,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowStartupSupportDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(startupSupport)}`,
       notRounded: true,
@@ -371,7 +391,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowDonationsOrVouchersDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(donationsOrVouchers)}`,
       notRounded: true,
@@ -382,7 +402,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowDbeSubsidyDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(dbeSubsidy)}`,
       notRounded: true,
@@ -393,7 +413,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowOtherIncomeDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(otherIncomeValues)}`,
       notRounded: true,
@@ -407,7 +427,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowRentDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(rent)}`,
       notRounded: true,
@@ -418,7 +438,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowSalaryDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(salary)}`,
       notRounded: true,
@@ -429,7 +449,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowFoodDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(food)}`,
       notRounded: true,
@@ -440,7 +460,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowLearningMaterialsDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(learningMaterials)}`,
       notRounded: true,
@@ -451,7 +471,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowMaintenaceDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(maintenance)}`,
       notRounded: true,
@@ -462,7 +482,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowOtherExpensesDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(otherExpenseValues)}`,
       notRounded: true,
@@ -473,7 +493,7 @@ export const MonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => {},
+      onActionClick: () => setShowUtilitiesDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(utilities)}`,
       notRounded: true,
@@ -637,9 +657,132 @@ export const MonthStatementsDetails: React.FC = () => {
         visible={showPreschoolDetails}
         position={DialogPosition.Full}
       >
-        <PreschoolsFeesChildList
-          setShowPreschoolDetails={setShowPreschoolDetails}
-          preschoolFees={preschoolFees}
+        <IncomeDetailsList
+          hideDetails={() => setShowPreschoolDetails(false)}
+          incomeStatements={preschoolFees}
+          statementTitle="Preschool fees"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showStartupSupportDetails}
+        position={DialogPosition.Full}
+      >
+        <IncomeDetailsList
+          hideDetails={() => setShowStartupSupportDetails(false)}
+          incomeStatements={startupSupport}
+          statementTitle="Startup support"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showDonationsOrVouchersDetails}
+        position={DialogPosition.Full}
+      >
+        <IncomeDetailsList
+          hideDetails={() => setShowDonationsOrVouchersDetails(false)}
+          incomeStatements={donationsOrVouchers}
+          statementTitle="Donations or vouchers"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showDbeSubsidyDetails}
+        position={DialogPosition.Full}
+      >
+        <IncomeDetailsList
+          hideDetails={() => setShowDbeSubsidyDetails(false)}
+          incomeStatements={dbeSubsidy}
+          statementTitle="DBE Subsidy"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showOtherIncomeDetails}
+        position={DialogPosition.Full}
+      >
+        <IncomeDetailsList
+          hideDetails={() => setShowOtherIncomeDetails(false)}
+          incomeStatements={otherIncomeValues}
+          statementTitle="Other income"
+        />
+      </Dialog>
+
+      <Dialog
+        stretch={true}
+        visible={showRentDetails}
+        position={DialogPosition.Full}
+      >
+        <ExpenseDetailsList
+          hideDetails={() => setShowRentDetails(false)}
+          incomeStatements={rent}
+          statementTitle="Rent"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showFoodDetails}
+        position={DialogPosition.Full}
+      >
+        <ExpenseDetailsList
+          hideDetails={() => setShowFoodDetails(false)}
+          incomeStatements={food}
+          statementTitle="Food"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showLearningMaterialsDetails}
+        position={DialogPosition.Full}
+      >
+        <ExpenseDetailsList
+          hideDetails={() => setShowLearningMaterialsDetails(false)}
+          incomeStatements={learningMaterials}
+          statementTitle="Learning materials"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showMaintenanceDetails}
+        position={DialogPosition.Full}
+      >
+        <ExpenseDetailsList
+          hideDetails={() => setShowMaintenaceDetails(false)}
+          incomeStatements={maintenance}
+          statementTitle="Maintenance"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showOtherExpensesDetails}
+        position={DialogPosition.Full}
+      >
+        <ExpenseDetailsList
+          hideDetails={() => setShowOtherExpensesDetails(false)}
+          incomeStatements={otherExpenseValues}
+          statementTitle="Other Expenses"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showUtilitiesDetails}
+        position={DialogPosition.Full}
+      >
+        <ExpenseDetailsList
+          hideDetails={() => setShowUtilitiesDetails(false)}
+          incomeStatements={utilities}
+          statementTitle="Utilities"
+        />
+      </Dialog>
+      <Dialog
+        stretch={true}
+        visible={showSalaryDetails}
+        position={DialogPosition.Full}
+      >
+        <ExpenseDetailsList
+          hideDetails={() => setShowSalaryDetails(false)}
+          incomeStatements={salary}
+          statementTitle="Salary"
         />
       </Dialog>
     </>

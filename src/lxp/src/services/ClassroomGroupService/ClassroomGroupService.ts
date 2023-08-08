@@ -48,6 +48,23 @@ class ClassroomGroupService {
             classroomId
             name
             userId
+            classroom {
+              id
+              siteAddress {
+                  name
+                  addressLine1
+                  addressLine2
+                  addressLine3
+                  postalCode
+                  province {
+                      description
+                  }
+              }
+              name
+              numberPractitioners
+              numberOfAssistants
+              numberOfOtherAssistants
+            }
             programmeTypeId
             programmeType {
               id
