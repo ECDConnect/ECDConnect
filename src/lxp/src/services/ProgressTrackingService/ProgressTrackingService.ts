@@ -120,6 +120,8 @@ class ProgressTrackingService {
           name
           description
           imageUrl  
+          imageUrlDim
+          imageUrlDone
         }
       }        
       `,

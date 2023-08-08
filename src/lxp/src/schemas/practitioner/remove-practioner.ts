@@ -6,6 +6,7 @@ export interface RemovePractionerModel {
   reasonDetail: string;
   requirePrincipal: boolean;
   newPrincipalId: string | undefined;
+  requireClassReassignments: boolean;
   reassignedClassrooms: { [id: string]: string | undefined };
 }
 
@@ -14,6 +15,7 @@ export const initialRemovePractionerValues: RemovePractionerModel = {
   reasonDetail: '',
   requirePrincipal: false,
   newPrincipalId: undefined,
+  requireClassReassignments: true,
   reassignedClassrooms: {},
 };
 
@@ -27,11 +29,14 @@ export const removePractionerModelSchema = Yup.object().shape({
     is: true,
     then: Yup.string().required('Required'),
   }),
-  reassignedClassrooms: Yup.object().test(
-    'is-valid',
-    'Must reasign all classes',
-    (reassignedClassrooms) => {
-      return Object.values(reassignedClassrooms).every((x) => !!x && x != '');
-    }
-  ),
+  reassignedClassrooms: Yup.object().when('requireClassReassignments', {
+    is: true,
+    then: Yup.object().test(
+      'is-valid',
+      'Must reasign all classes',
+      (reassignedClassrooms) => {
+        return Object.values(reassignedClassrooms).every((x) => !!x && x != '');
+      }
+    ),
+  }),
 });

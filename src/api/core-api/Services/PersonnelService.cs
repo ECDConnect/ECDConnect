@@ -256,8 +256,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
-                if (isRolePrincipal) practitionerToPromote.IsPrincipal = true;
-                if (isRoleFAA) practitionerToPromote.IsPrincipal = true;
+                if (isRolePrincipal) { practitionerToPromote.IsPrincipal = true; }
+                if (isRoleFAA) { practitionerToPromote.IsPrincipal = true; }
                 practitionerToPromote.ShareInfo = true;
                 practitionerToPromote.PrincipalHierarchy = null;
                 practitionerToPromote.DateLinked = null;
@@ -265,13 +265,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerToPromote.DateAccepted = null;
                 _practiGenericRepo.Update(practitionerToPromote);
 
-                if (isRolePrincipal) practitionerToPromote.IsPrincipal = false;
-                if (isRoleFAA) practitionerToPromote.IsPrincipal = false;
+                if (isRolePrincipal) { practitionerToDemote.IsPrincipal = false; }
+                if (isRoleFAA) { practitionerToDemote.IsPrincipal = false; }
                 practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;
                 practitionerToDemote.DateAccepted = DateTime.Now;
-                practitionerToPromote.DateAccepted = DateTime.Now;
+                practitionerToDemote.DateAccepted = DateTime.Now;
                 _practiGenericRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies and assign new
@@ -297,19 +297,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
                 {
-                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId, practitionerToPromote.UserId, "Practitioner removed by coach", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
+                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId, practitionerToPromote.UserId, "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
                 var userToPromote = userManager.FindByIdAsync(newPrincipalUserId).Result;
                 IdentityResult result = null;
                 result = userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
-                if (isRolePrincipal) result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result;
-                if (isRoleFAA) result = userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result;
+                if (isRolePrincipal) { result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; }
+                if (isRoleFAA) { result = userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; }
 
                 var userToDemote = userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                if (isRolePrincipal) result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result;
-                if (isRoleFAA) result = userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result;
+                if (isRolePrincipal) { result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; }
+                if (isRoleFAA) { result = userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; }
                 result = userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;
