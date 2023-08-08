@@ -1,7 +1,7 @@
 import { FormInput, Button, BannerWrapper, Typography } from '@ecdlink/ui';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { EditCellPhoneNUmberProps } from './next-to-kin.types';
+import { EditCellPhoneNumberProps } from './next-of-kin.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   EditNextOfKinModel,
@@ -12,8 +12,8 @@ import { useAppDispatch } from '@store';
 import { userActions, userThunkActions } from '@store/user';
 import { cloneDeep } from 'lodash';
 
-export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
-  setAddNextToKin,
+export const NextOfKin: React.FC<EditCellPhoneNumberProps> = ({
+  setAddNextOfKin: setAddNextToKin,
   user,
 }) => {
   const { isOnline } = useOnlineStatus();
@@ -36,12 +36,14 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
   const {
     getValues: getNextOfKinInfoFormValues,
     register: nextOfKinInfoFormRegister,
+    formState: nextOfKinFormState,
   } = useForm({
     resolver: yupResolver(editNextOfKinSchema),
     defaultValues: getDefaultFormvalues(),
-    mode: 'onBlur',
-    reValidateMode: 'onChange',
+    mode: 'onChange',
   });
+
+  const { isValid, errors } = nextOfKinFormState;
 
   const savePractitionerUserData = () => {
     const practitionerForm = getNextOfKinInfoFormValues();
@@ -92,6 +94,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
                 nameProp={'name'}
                 placeholder="First name"
                 className="w-full"
+                error={errors.name}
                 register={nextOfKinInfoFormRegister}
               />
               <FormInput<EditNextOfKinModel>
@@ -108,6 +111,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
                 nameProp={'cellphone'}
                 placeholder="e.g 012 345 6789"
                 className="w-full"
+                error={errors.cellphone}
                 register={nextOfKinInfoFormRegister}
               />
             </div>
@@ -120,6 +124,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"
+                disabled={!isValid}
                 onClick={() => {
                   // handleChangePractitionerInfo();
                   savePractitionerUserData();

@@ -172,7 +172,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
       userAuth?.auth_token || ''
     ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
     setExisitingRemoval(undefined);
-    console.log('Canceled');
   };
 
   return (

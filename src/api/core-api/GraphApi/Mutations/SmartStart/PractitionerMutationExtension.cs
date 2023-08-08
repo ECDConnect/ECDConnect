@@ -58,6 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;                    
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
+                    if (input.SetupTraineeInitiated != null) practitioner.SetupTraineeInitiated = input.SetupTraineeInitiated;
 
                     if (input.SiteAddress != null && input.SiteAddressId.HasValue)
                     {
@@ -268,21 +269,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IReassignmentService reassignmentService,
             [Service] PersonnelService personnelService,
             UserManager<ApplicationUser> userManager,
-            string practitionerId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
+            string practitionerUserId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUserId);
             var user = await userManager.FindByIdAsync(practitioner.UserId);
 
             if (!string.IsNullOrEmpty(newPrincipalId))
             {
-                personnelService.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
+                personnelService.SwitchPrincipal(userManager, practitionerUserId, newPrincipalId);
             }
 
             //Reassign all the classes for the practitioner as indicated            
             foreach (var reassignment in classroomGroupReassignments)
-            {
+            {                
                 if (reassignment.ClassroomGroupId == null || reassignment.PractitionerId == null)
                 {
                     return false;
@@ -290,13 +291,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
             }
 
-            return personnelService.DeActivatePractitioner(practitionerId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
+            return await personnelService.DeActivatePractitionerAsync(practitionerUserId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
-        public bool DeActivatePractitioner([Service] PersonnelService personnelService,
+        public async Task<bool> DeActivatePractitioner([Service] PersonnelService personnelService,
             string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
-            return personnelService.DeActivatePractitioner(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
+            return await personnelService.DeActivatePractitionerAsync(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
 
         public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)

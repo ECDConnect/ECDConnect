@@ -31,3 +31,15 @@ export const mapArrayToObject = (array: any[], key: string) => {
     return { ...obj, [item[key]]: item };
   }, initialValue);
 };
+
+export function chunkArray<T>(array: T[], size: number) {
+  if (!Array.isArray(array)) {
+    return undefined;
+  }
+
+  const chunkedArray: T[][] = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunkedArray.push(array.slice(i, i + size));
+  }
+  return chunkedArray;
+}

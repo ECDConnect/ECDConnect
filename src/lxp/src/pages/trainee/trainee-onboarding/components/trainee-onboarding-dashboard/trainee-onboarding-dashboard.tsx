@@ -69,11 +69,18 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title !== 'SmartSpace Licence'
   );
 
-  const extradataTimeValue = Object.values(uncompletedSteps?.[0].extraData!);
+  console.log({ uncompletedSteps });
+
+  const extradataTimeValue =
+    uncompletedSteps?.length > 0 &&
+    Object.values(uncompletedSteps?.[0]?.extraData!);
+  console.log({ extradataTimeValue });
 
   const checkOverdueDate = differenceInDays(
     new Date(),
-    new Date(extradataTimeValue[0] as Date)
+    new Date(
+      extradataTimeValue ? (extradataTimeValue?.[0] as Date) : new Date()
+    )
   );
 
   const completedSteps = timelineSteps(
@@ -82,7 +89,9 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus
   ).filter((item) => item?.type === 'completed');
 
   const stepperCount = timelineSteps(
@@ -91,7 +100,9 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus
   ).length;
 
   const completedFlow = stepperCount - 2 === completedSteps?.length;
@@ -138,7 +149,7 @@ export const OnboardingTraineeDashboard: React.FC<
       title={'Business'}
       subTitle={today}
       color={'primary'}
-      onBack={() => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)}
+      onBack={() => history.push(ROUTES.DASHBOARD)}
       displayHelp={true}
       onHelp={displayTutorial}
       displayOffline={!isOnline}
@@ -256,7 +267,8 @@ export const OnboardingTraineeDashboard: React.FC<
                   isOnline,
                   // @ts-ignore
                   undefined,
-                  nextStep?.title
+                  nextStep?.title,
+                  timeline?.consolidationMeetingStatus
                 )}
                 typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
               />
@@ -275,7 +287,9 @@ export const OnboardingTraineeDashboard: React.FC<
                         false,
                         isOnline,
                         // @ts-ignore
-                        undefined
+                        undefined,
+                        '',
+                        timeline?.consolidationMeetingStatus
                       ).length && i + 1 <= completedSteps?.length
                         ? '#26ACAF'
                         : '#D4EEEF',

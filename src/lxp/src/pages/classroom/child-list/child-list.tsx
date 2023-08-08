@@ -315,7 +315,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
                 attendanceData,
                 getAllClassroomGroups,
                 classroomGroupProgrammes,
-                childReportsOne
+                childReportsOne,
+                practitioner?.attendedChildProgress || false
               );
               const childUserDocumentsTwo = documents?.filter(
                 (x) => x.userId === b.userId
@@ -332,7 +333,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
                 attendanceData,
                 getAllClassroomGroups,
                 classroomGroupProgrammes,
-                childReportsTwo
+                childReportsTwo,
+                practitioner?.attendedChildProgress || false
               );
               return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
             }
@@ -402,7 +404,8 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       attendanceData,
       getAllClassroomGroups,
       classroomGroupProgrammes,
-      reports
+      reports,
+      practitioner?.attendedChildProgress || false
     );
 
     return {

@@ -35,7 +35,7 @@ export const ChildCaregiverInformation: React.FC<
     defaultValues: childCareGiverInformation,
   });
 
-  const { isValid } = careGiverInformationFormState;
+  const { isValid, errors } = careGiverInformationFormState;
 
   const handleFormSubmit = () => {
     if (isValid && onSubmit) {
@@ -76,6 +76,7 @@ export const ChildCaregiverInformation: React.FC<
         nameProp={'phoneNumber'}
         placeholder={'E.g. 082 345 6789'}
         disabled={canEdit}
+        error={errors['phoneNumber']}
       />
       <div className={'py-2'}>
         <Divider></Divider>

@@ -32,6 +32,7 @@ export interface UserDto extends EntityBase {
   emailConfirmed?: boolean;
   isImported?: boolean;
   isOnline?: boolean;
+  lockoutEnd?: Date;
   principalObjectData?: {
     isPrincipal?: boolean;
   };

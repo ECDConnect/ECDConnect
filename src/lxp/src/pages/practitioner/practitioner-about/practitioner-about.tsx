@@ -35,7 +35,7 @@ import {
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
-import { NextToKin } from './next-to-kin/next-to-kin';
+import { NextOfKin } from './next-of-kin/next-of-kin';
 import { coachSelectors } from '@/store/coach';
 import { contentReportSelectors } from '@/store/content/report';
 import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
@@ -410,7 +410,7 @@ export const PractitionerAbout: React.FC = () => {
         <EditEmail setEditEmail={setEditEmail} user={user} />
       </Dialog>
       <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
-        <NextToKin setAddNextToKin={setAddNextToKin} user={user} />
+        <NextOfKin setAddNextOfKin={setAddNextToKin} user={user} />
       </Dialog>
       <BannerWrapper
         showBackground={true}
