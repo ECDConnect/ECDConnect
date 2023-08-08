@@ -210,7 +210,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // if green, then we add our first re-accreditation record
                 if (pqaRating.OverallRatingColor == MetricsColorEnum.Success.ToString())
                 {
-                    DateTime deadlineDate = pqaVisit.ActualVisitDate.Value.AddYears(1);
+                    DateTime deadlineDate = pqaVisit.PlannedVisitDate.AddYears(1);
 
                     // check to see if there is a accreditation record for the pqa visit for next year
                     Visit accVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id &&
