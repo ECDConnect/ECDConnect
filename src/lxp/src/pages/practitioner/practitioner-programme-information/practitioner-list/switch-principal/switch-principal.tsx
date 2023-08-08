@@ -81,9 +81,6 @@ export const SwitchPrincipal: React.FC<SwapPrincipalProps> = () => {
     control: removePractionerFormControl,
   });
 
-  const [removePractionerPromptVisible, setRemovePractionerPromptVisible] =
-    useState<boolean>(false);
-
   const handleFormSubmit = async (formValues: SwitchPrincipalModel) => {
     if (isValid) {
       await new PractitionerService(authUser?.auth_token || '').switchPrincipal(
@@ -156,7 +153,10 @@ export const SwitchPrincipal: React.FC<SwapPrincipalProps> = () => {
             <Divider></Divider>
           </div>
           <Button
-            onClick={() => setRemovePractionerPromptVisible(true)}
+            onClick={() => {
+              handleFormSubmit(getSwitchPrincipalFormValues());
+              history.push(ROUTES.DASHBOARD);
+            }}
             className="w-full"
             size="small"
             color="errorMain"
@@ -188,22 +188,6 @@ export const SwitchPrincipal: React.FC<SwapPrincipalProps> = () => {
           </Button>
         </div>
       </BannerWrapper>
-      <Dialog
-        className={'mb-16 px-4'}
-        stretch={true}
-        visible={removePractionerPromptVisible}
-        position={DialogPosition.Bottom}
-      >
-        <SwapPrincipalPrompt
-          practitioner={practitioner}
-          onProceed={() => {
-            handleFormSubmit(getSwitchPrincipalFormValues());
-            setRemovePractionerPromptVisible(false);
-            history.push(ROUTES.DASHBOARD);
-          }}
-          onClose={() => setRemovePractionerPromptVisible(false)}
-        />
-      </Dialog>
     </>
   );
 };

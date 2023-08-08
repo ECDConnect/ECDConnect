@@ -474,7 +474,5 @@ namespace ECDLink.Core.Services
 
             return reAssigned;
         }
-
-
     }
 }

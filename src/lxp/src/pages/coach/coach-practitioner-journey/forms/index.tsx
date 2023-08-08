@@ -550,8 +550,16 @@ export const Form = ({
       }
 
       showMessage({ message: 'First PQA visit complete!' });
+      onBack();
     },
-    [appDispatch, displayChildrenDialog, practitionerId, showMessage, visitId]
+    [
+      appDispatch,
+      displayChildrenDialog,
+      practitionerId,
+      showMessage,
+      visitId,
+      onBack,
+    ]
   );
 
   const onSubmitReAccreditation = useCallback(
@@ -579,6 +587,7 @@ export const Form = ({
       }
 
       showMessage({ message: 'Re-accreditation complete!' });
+      onBack();
     },
     [
       appDispatch,
@@ -898,7 +907,7 @@ export const Form = ({
         // TODO: add schedule integration
         {...(visitName === visitTypes.pqa.followUp.name && {
           submitButton: {
-            text: 'Start your next visit',
+            text: 'Save',
             icon: 'ArrowCircleRightIcon',
           },
         })}
