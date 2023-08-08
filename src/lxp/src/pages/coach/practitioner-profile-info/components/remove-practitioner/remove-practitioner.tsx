@@ -154,6 +154,12 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioner]);
 
+  useEffect(() => {
+    if (!practitionersForClass || !practitionersForClass.length) {
+      setRemovePractionerFormValues('requireClassReassignments', false);
+    }
+  }, [practitionersForClass]);
+
   const handleFormSubmit = async (formValues: RemovePractionerModel) => {
     if (isValid) {
       const reassignments = Object.keys(formValues.reassignedClassrooms).map(
