@@ -69,6 +69,7 @@ export const TraineeOnboarding = () => {
           <OnboardingTraineeDashboard
             setNotificationStep={setNotificationStep}
             setIsSmartChecklist={setIsSmartChecklist}
+            practitioner={practitioner}
           />
         );
     }

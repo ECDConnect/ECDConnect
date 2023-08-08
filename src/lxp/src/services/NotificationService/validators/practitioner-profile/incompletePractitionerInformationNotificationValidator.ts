@@ -76,7 +76,14 @@ export class IncompletePractitionerInformationNotificationValidator
         (!addedByPrincipal && practitionerState?.practitioner?.progress === 0);
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
-      if (isTrainee && completedSteps?.length < 7) {
+      if (
+        (isTrainee &&
+          practitionerState?.practitioner?.isOnStipend &&
+          completedSteps?.length < 7) ||
+        (isTrainee &&
+          practitionerState?.practitioner?.isOnStipend !== true &&
+          completedSteps?.length < 6)
+      ) {
         return [
           {
             reference: `trainee-profile`,
