@@ -406,10 +406,13 @@ export const ChildCompletedObservationReports: React.FC = () => {
                               return (
                                 <td className="p-2" key={`${idx + 1}`}>
                                   <div className={'flex flex-row items-center'}>
-                                    <img
-                                      src={achievedLevel?.imageUrl}
-                                      alt="achieved level"
-                                    />
+                                    {!!achievedLevel &&
+                                      !!achievedLevel.imageUrl && (
+                                        <img
+                                          src={achievedLevel?.imageUrl}
+                                          alt="achieved level"
+                                        />
+                                      )}
                                     <Typography
                                       type={'body'}
                                       color={'textDark'}
