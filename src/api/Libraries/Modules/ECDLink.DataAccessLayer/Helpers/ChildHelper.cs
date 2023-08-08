@@ -14,8 +14,11 @@ namespace ECDLink.DataAccessLayer.Services
                 ApplicationUserHelper.AnonymizeUser(child.User);
             }
 
-            //Anonymise linked Caregiver
-            AnonymiseCaregiver(child.Caregiver);
+            if (child.CaregiverId != null)
+            {
+                //Anonymise linked Caregiver
+                AnonymiseCaregiver(child.Caregiver);
+            }
         }
 
         public static void AnonymiseCaregiver(Caregiver caregiver)
