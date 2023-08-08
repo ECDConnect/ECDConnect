@@ -40,6 +40,14 @@ export function Users() {
           name: 'Administrators',
           href: '/users/admins',
         },
+        {
+          name: 'Practitioners',
+          href: '/users/practitioners',
+        },
+        {
+          name: 'Children',
+          href: '/users/children',
+        },
       ];
     }
   };
