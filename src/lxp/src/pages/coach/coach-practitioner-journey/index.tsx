@@ -20,6 +20,7 @@ import {
   CoachPractitionerJourneyPageState,
   PractitionerJourneyParams,
   generalSupportVisitTypes,
+  maxNumberOfVisits,
   visitTypes,
 } from './coach-practitioner-journey.types';
 import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
@@ -50,13 +51,18 @@ import {
 } from './timeline/timeline-steps';
 import {
   CalendarEventModel,
+  chunkArray,
   getAgeInYearsMonthsAndDays as getCurrentTimeInYearsMonthsAndDays,
   getFormattedDateInYearsMonthsAndDays,
   parseBool,
   useDialog,
   usePrevious,
 } from '@ecdlink/core';
-import { UpdateVisitPlannedVisitDateModelInput, Visit } from '@ecdlink/graphql';
+import {
+  Maybe,
+  UpdateVisitPlannedVisitDateModelInput,
+  Visit,
+} from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ExclamationIcon } from '@heroicons/react/solid';
 import { addDays } from 'date-fns';
@@ -153,6 +159,31 @@ export const CoachPractitionerJourney = () => {
     )
   );
 
+  const pqaVisits =
+    timeline?.pQASiteVisits?.filter(
+      (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
+    ) ?? [];
+  const isLastAttendedPqaVisit =
+    pqaVisits.filter((item) => item?.attended)?.length === maxNumberOfVisits;
+
+  const reAccreditationVisitsWithoutFollowUp =
+    timeline?.reAccreditationVisits?.filter(
+      (item) =>
+        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationVisits = chunkArray<Maybe<Visit>>(
+    reAccreditationVisitsWithoutFollowUp,
+    maxNumberOfVisits
+  );
+  const reAccreditationVisitsFromCurrentYear =
+    subdividedReAccreditationVisits?.[
+      subdividedReAccreditationVisits.length - 1
+    ];
+
+  const isLastAttendedReAccreditationVisit =
+    reAccreditationVisitsFromCurrentYear?.filter((item) => item?.attended)
+      ?.length === maxNumberOfVisits;
+
   const isFirstPqaVisit = timeline?.pQASiteVisits?.length === 1;
   const isFirstReAccreditationVisit =
     timeline?.reAccreditationVisits?.length === 1;
@@ -172,7 +203,12 @@ export const CoachPractitionerJourney = () => {
       (item) => item.question === reAccreditationFollowUpQuestion
     )?.questionAnswer;
 
-  const pqaRating3 = timeline?.pQARating3;
+  const pqaRatings =
+    timeline?.pQARatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+    ) ?? [];
+
+  const pqaRating3 = pqaRatings?.[2];
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentPqaFollowUpDeadline = pqaRating3?.overallRating
@@ -187,9 +223,7 @@ export const CoachPractitionerJourney = () => {
   const isPQAFollowUp =
     !isFirstPqaVisit &&
     !!newPqaVisit &&
-    !lastAttendedPqaVisitWithoutFollowUp?.visitType?.name?.includes(
-      visitTypes.pqa.thirdPQA.name
-    ) &&
+    !isLastAttendedPqaVisit &&
     !lastAttendedPqaVisit?.visitType?.name?.includes(
       visitTypes.pqa.followUp.name
     );
@@ -203,9 +237,7 @@ export const CoachPractitionerJourney = () => {
   const isReAccreditationFollowUp =
     !isFirstReAccreditationVisit &&
     !!newReAccreditationVisit &&
-    !lastAttendedReAccreditationVisitWithoutFollowUp?.visitType?.name?.includes(
-      visitTypes.reaccreditation.third.name
-    ) &&
+    !isLastAttendedReAccreditationVisit &&
     !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
       visitTypes.reaccreditation.followUp.name
     );

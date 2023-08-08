@@ -10,6 +10,12 @@ import {
   PQAStateKeys,
 } from './pqa.types';
 import { getSectionQuestions } from '@/pages/practitioner/practitioner-profile/practitioner-journey/utils';
+import {
+  maxNumberOfVisits,
+  visitTypes,
+} from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import { chunkArray } from '@ecdlink/core';
+import { Maybe, PqaRating } from '@ecdlink/graphql';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
   return createSelector(
@@ -130,9 +136,14 @@ export const getSectionsQuestionsByStep = (
 
 export const getCurrentPQaRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const pqaRating1 = timeline?.pQARating1;
-    const pqaRating2 = timeline?.pQARating2;
-    const pqaRating3 = timeline?.pQARating3;
+    const pqaRatings =
+      timeline?.pQARatings?.filter(
+        (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
+      ) ?? [];
+
+    const pqaRating1 = pqaRatings?.[0];
+    const pqaRating2 = pqaRatings?.[1];
+    const pqaRating3 = pqaRatings?.[2];
 
     if (pqaRating3?.overallRating) {
       return {
@@ -156,9 +167,24 @@ export const getCurrentPQaRatingByUserId = (userId: string) =>
 
 export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const rating1 = timeline?.reAccreditationRating1;
-    const rating2 = timeline?.reAccreditationRating2;
-    const rating3 = timeline?.reAccreditationRating3;
+    // All years
+    const filteredReAccreditationRatings =
+      timeline?.reAccreditationRatings?.filter(
+        (item) =>
+          item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+      ) ?? [];
+    const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+      filteredReAccreditationRatings,
+      maxNumberOfVisits
+    );
+    const reAccreditationRatingsFromCurrentYear =
+      subdividedReAccreditationRatings?.[
+        subdividedReAccreditationRatings.length - 1
+      ];
+
+    const rating1 = reAccreditationRatingsFromCurrentYear?.[0];
+    const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
+    const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
     if (rating3?.overallRating) {
       return {
@@ -190,10 +216,16 @@ export const getLastCoachAttendedVisitByUserId = ({
   followUpType?: FollowUpType;
 }) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const attendedVisits = timeline?.[visitType]?.filter(
-      (visit) =>
-        visit?.attended && !visit?.visitType?.name?.includes(followUpType ?? '')
-    );
+    const attendedVisits = timeline?.[visitType]?.filter((visit) => {
+      if (followUpType) {
+        return (
+          visit?.attended &&
+          !visit?.visitType?.name?.includes(followUpType ?? '')
+        );
+      }
+
+      return visit?.attended;
+    });
 
     if (attendedVisits?.length === 0) {
       return null;

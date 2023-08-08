@@ -297,7 +297,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className=" rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               User Detail
@@ -327,7 +327,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Address Detail
@@ -340,7 +340,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Password

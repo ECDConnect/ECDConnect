@@ -1,4 +1,9 @@
-import { ClassroomGroupDto, ReasonForLeavingDto, UserDto } from '@ecdlink/core';
+import {
+  ClassroomGroupDto,
+  ReasonForLeavingDto,
+  ReasonsForPractitionerLeaving,
+  UserDto,
+} from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   BannerWrapper,
@@ -23,8 +28,8 @@ import {
   removePractionerModelSchema,
   initialRemovePractionerValues,
 } from '@/schemas/practitioner/remove-practioner';
-import * as styles from './remove-practioner.styles';
-import { RemovePractionerReasonsProps as RemovePractionerProps } from './remove-practioner.types';
+import * as styles from './remove-practitioner.styles';
+import { RemovePractionerProps } from './remove-practitioner.types';
 import {
   practitionerSelectors,
   practitionerThunkActions,
@@ -66,9 +71,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   );
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  const currentUserIsCoach = currentUser?.roles?.some(
-    (role) => role.name === 'Coach'
-  );
 
   //Get list of practitioners for classroom
   const practitionersForClass = useMemo<
@@ -101,8 +103,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     );
   }, [practitionerUserId, practitioner, practitioners]);
 
-  const otherReasonId = '528d108a-b70a-4cbb-943e-f799cecceba6';
-
   const [reasonDetailsVisible, setReasonDetailsVisible] =
     useState<boolean>(false);
   const {
@@ -117,7 +117,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     defaultValues: initialRemovePractionerValues,
   });
 
-  const { isValid } = useFormState({
+  const { isValid, errors } = useFormState({
     control: removePractionerFormControl,
   });
 
@@ -135,11 +135,21 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     const classroomDetails = await new PractitionerService(
       authUser?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
-    setPractitionerClassroomGroups(classroomDetails);
+    const filteredClasses = classroomDetails.filter((x) => x.name != 'Unsure');
+    setPractitionerClassroomGroups(filteredClasses);
+    var mappedClasses = filteredClasses.reduce((obj, val) => {
+      return { ...obj, [val.id!]: undefined };
+    }, {});
+    setRemovePractionerFormValues('reassignedClassrooms', mappedClasses);
+    triggerRemovePractionerForm();
     return classroomDetails;
   };
 
   useEffect(() => {
+    if (practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) {
+      setRemovePractionerFormValues('requirePrincipal', true);
+    }
+
     classroomsGroupsForPractitioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioner]);
@@ -168,6 +178,9 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
         practitionerThunkActions.getAllPractitioners({})
       ).unwrap();
       await appDispatch(
+        practitionerThunkActions.getPractitionersForCoach({})
+      ).unwrap();
+      await appDispatch(
         classroomsForCoachThunkActions.getClassroomForCoach({
           id: currentUser?.id!,
         })
@@ -183,6 +196,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
         renderBorder={true}
         title={`Remove ${practitioner?.user?.firstName}`}
         color={'primary'}
+        onBack={() => history.goBack()}
         displayOffline={!isOnline}
       >
         <div className="flex w-full justify-center">
@@ -221,7 +235,9 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             onChange={(item) => {
               setRemovePractionerFormValues('removeReasonId', item);
               triggerRemovePractionerForm();
-              setReasonDetailsVisible(item === otherReasonId);
+              setReasonDetailsVisible(
+                item === ReasonsForPractitionerLeaving.OTHER
+              );
             }}
           />
           {reasonDetailsVisible && (
@@ -234,14 +250,16 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
               hint={'Optional'}
               placeholder={'E.g. Found the daily routine too difficult'}
               onChange={() => triggerRemovePractionerForm()}
+              error={errors.reasonDetail}
             />
           )}
           {(practitioner?.isFundaAppAdmin || practitioner?.isPrincipal) &&
-            practitionerClassroom && (
+            !!practitionerClassroom &&
+            !!practitionersForClass.length && (
               <div>
                 <Dropdown
                   placeholder={'Select practitioner'}
-                  list={practitionersForClass || []}
+                  list={practitionersForClass}
                   fillType="clear"
                   label={`Which practitioner will take over as ${
                     practitioner?.isFundaAppAdmin ? 'FAA' : 'principal'
@@ -263,51 +281,63 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                 </div>
               </div>
             )}
-          {practitionerClassroomGroups && (
-            <div>
-              <Divider dividerType="dashed" className="my-4" />
-              <Typography
-                type={'h1'}
-                text={`Reassign ${practitioner?.user?.firstName} classes`}
-                color={'primary'}
-                className={'pt-1'}
-              />
-              <label className={classNames(styles.label, 'mt-4')}>
-                {`${practitioner?.user?.firstName} is still assigned to ${
-                  practitionerClassroomGroups.length
-                } ${
-                  practitionerClassroomGroups.length > 1 ? 'classes' : 'class'
-                }`}
-              </label>
-              <ul>
-                {practitionerClassroomGroups.map(
-                  (classroomGroup: ClassroomGroupDto) => {
-                    return (
-                      <li key={classroomGroup.id}>
-                        <Dropdown
-                          placeholder={'Select practitioner'}
-                          list={practitionersForClass || []}
-                          fillType="clear"
-                          label={`Which practitioner will teach ${classroomGroup.name}?`}
-                          fullWidth
-                          className={'mt-3 w-11/12'}
-                          onChange={(item: string) => {
-                            setRemovePractionerFormValues(
-                              'reassignedClassrooms',
-                              {
-                                ...reassignedClassrooms,
-                                [classroomGroup.id as string]: item,
-                              }
-                            );
-                          }}
-                        />
-                      </li>
-                    );
-                  }
+          {practitionerClassroomGroups &&
+            !!practitionersForClass.length &&
+            !!practitionerClassroomGroups.length && (
+              <div>
+                <Divider dividerType="dashed" className="my-4" />
+                <Typography
+                  type={'h1'}
+                  text={`Reassign ${practitioner?.user?.firstName} classes`}
+                  color={'primary'}
+                  className={'pt-1'}
+                />
+                <label className={classNames(styles.label, 'mt-4')}>
+                  {`${practitioner?.user?.firstName} is still assigned to ${
+                    practitionerClassroomGroups.length
+                  } ${
+                    practitionerClassroomGroups.length > 1 ? 'classes' : 'class'
+                  }`}
+                </label>
+                <ul>
+                  {practitionerClassroomGroups.map(
+                    (classroomGroup: ClassroomGroupDto) => {
+                      return (
+                        <li key={classroomGroup.id}>
+                          <Dropdown
+                            placeholder={'Select practitioner'}
+                            list={practitionersForClass || []}
+                            fillType="clear"
+                            label={`Which practitioner will teach ${classroomGroup.name}?`}
+                            fullWidth
+                            className={'mt-3 w-11/12'}
+                            onChange={(item: string) => {
+                              setRemovePractionerFormValues(
+                                'reassignedClassrooms',
+                                {
+                                  ...reassignedClassrooms,
+                                  [classroomGroup.id as string]: item,
+                                }
+                              );
+                              triggerRemovePractionerForm();
+                            }}
+                          />
+                        </li>
+                      );
+                    }
+                  )}
+                </ul>
+                {!!errors.reassignedClassrooms && (
+                  <div className="flex w-full justify-center">
+                    <Alert
+                      className="mt-10 w-11/12 rounded-xl"
+                      type={'error'}
+                      title={'You must reassign all classes'}
+                    />
+                  </div>
                 )}
-              </ul>
-            </div>
-          )}
+              </div>
+            )}
           <div className={'py-4'}>
             <Divider></Divider>
           </div>

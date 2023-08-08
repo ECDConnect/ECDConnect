@@ -243,7 +243,20 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
-      showAccordion: true,
+      showActionButton:
+        timeline.pQASiteVisits.length === 1 && !currentVisit?.attended,
+      actionButtonText: 'Schedule',
+      actionButtonType: 'outlined',
+      actionButtonTextColor: 'primary',
+      actionButtonIcon: 'CalendarIcon',
+      actionButtonIconStartPosition: 'start',
+      actionButtonOnClick: () =>
+        onScheduleOrStart({
+          visit: currentVisit!,
+          visitEventId: currentVisit?.eventId,
+          eventType: 'First PQA',
+        }),
+      showAccordion: timeline.pQASiteVisits.length > 1,
       accordionContent: (
         <PQAVisits
           isLoading={isLoading}
@@ -296,7 +309,20 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
-      showAccordion: true,
+      showActionButton:
+        timeline.reAccreditationVisits.length === 1 && !currentVisit?.attended,
+      actionButtonText: 'Schedule',
+      actionButtonType: 'outlined',
+      actionButtonTextColor: 'primary',
+      actionButtonIcon: 'CalendarIcon',
+      actionButtonIconStartPosition: 'start',
+      actionButtonOnClick: () =>
+        onScheduleOrStart({
+          visit: currentVisit!,
+          visitEventId: currentVisit?.eventId,
+          eventType: 'ReAccreditation',
+        }),
+      showAccordion: timeline.reAccreditationVisits.length > 1,
       accordionContent: (
         <ReAccreditationVisits
           isLoading={isLoading}

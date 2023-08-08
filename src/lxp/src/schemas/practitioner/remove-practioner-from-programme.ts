@@ -1,3 +1,4 @@
+import { ReasonsForPractitionerLeavingProgramme } from '@ecdlink/core';
 import * as Yup from 'yup';
 
 export interface RemovePractionerFromProgrammeModel {
@@ -25,9 +26,16 @@ export const initialRemovePractionerFromProgrammeValues: RemovePractionerFromPro
 
 export const removePractitionerFromProgrammeModelSchema = Yup.object().shape({
   removeReasonId: Yup.string().required().min(1),
-  //removalDate: Yup.date().required(),
-  // reasonDetail: Yup.array().when('removeReasonId', {
-  //   is: '4755d392-abcf-4dbe-aeda-b094ef1657e5', // Is there an actual Id???
-  //   then: Yup.string().required('Reason details are required'),
-  // }),
+  removalDate: Yup.date().required().min(new Date()),
+  reasonDetail: Yup.string().when('removeReasonId', {
+    is: ReasonsForPractitionerLeavingProgramme.OTHER,
+    then: Yup.string().required('Reason details are required'),
+  }),
+  reassignedClassrooms: Yup.object().test(
+    'is-valid',
+    'Must reasign all classes',
+    (reassignedClassrooms) => {
+      return Object.values(reassignedClassrooms).every((x) => !!x && x != '');
+    }
+  ),
 });

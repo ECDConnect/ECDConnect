@@ -6,8 +6,10 @@ import {
 } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useEffect, useState } from 'react';
-import { noneOption, options } from './options';
+import { noneOption, selfAssessmentStep5Options } from './options';
 import { usePrevious } from '@ecdlink/core';
+
+export const selfAssessmentVisitSectionStep5 = 'Step 5';
 
 export const Step5 = ({
   setSectionQuestions,
@@ -18,7 +20,9 @@ export const Step5 = ({
       title: string;
       disabled?: boolean;
     }[]
-  >(options.map((item) => ({ title: item, disabled: false })));
+  >(
+    selfAssessmentStep5Options.map((item) => ({ title: item, disabled: false }))
+  );
   const [question, setAnswers] = useState({
     question: 'Which activities do you do every day?',
     answer: [] as (string | number | undefined)[],
@@ -26,8 +30,6 @@ export const Step5 = ({
 
   const answers = question.answer as string[];
   const previousAnswers = usePrevious(answers) as string[] | undefined;
-
-  const visitSection = 'Step 5';
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -42,7 +44,7 @@ export const Step5 = ({
         setEnableButton?.(true);
         return setSectionQuestions?.([
           {
-            visitSection: visitSection,
+            visitSection: selfAssessmentVisitSectionStep5,
             questions: [updatedQuestion],
           },
         ]);
@@ -54,7 +56,7 @@ export const Step5 = ({
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
-          visitSection: visitSection,
+          visitSection: selfAssessmentVisitSectionStep5,
           questions: [updatedQuestion],
         },
       ]);
@@ -82,7 +84,7 @@ export const Step5 = ({
       setAnswers(updatedQuestion);
       setSectionQuestions?.([
         {
-          visitSection: visitSection,
+          visitSection: selfAssessmentVisitSectionStep5,
           questions: [updatedQuestion],
         },
       ]);

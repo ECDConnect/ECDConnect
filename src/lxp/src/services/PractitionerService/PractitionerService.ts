@@ -51,48 +51,6 @@ class PractitionerService {
               firstAidCourseColor
               firstAidCourseStatus
               firstAidDate
-              pQARating1 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
-              }
-              pQARating2 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
-              }
-              pQARating3 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
-              }
               prePQAVisitDate1
               prePQAVisitDate1Color
               prePQAVisitDate1Status
@@ -129,6 +87,23 @@ class PractitionerService {
                 }
                 eventId
               }
+              pQARatings {
+                linkedVisitId
+                actualVisitDate
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+                visitTypeName
+              }
               pQASiteVisits {
                 id
                 plannedVisitDate
@@ -149,6 +124,7 @@ class PractitionerService {
                 plannedVisitDate
                 attended
                 comment
+                insertedDate
                 visitType {
                   type
                   order
@@ -158,7 +134,8 @@ class PractitionerService {
                 }
                 eventId
               }
-              reAccreditationRating1 {
+              reAccreditationRatings {
+                linkedVisitId
                 children {
                   sectionRating
                   sectionRatingColor
@@ -171,34 +148,22 @@ class PractitionerService {
                 overallScore
                 plannedDate
                 visitName
+                visitTypeName
               }
-              reAccreditationRating2 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
+              selfAssessmentVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                insertedDate
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
                 }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
-              }
-              reAccreditationRating3 {
-                children {
-                  sectionRating
-                  sectionRatingColor
-                  sectionScore
-                  visitSection
-                }
-                overallRating
-                overallRatingColor
-                overallRatingStars
-                overallScore
-                plannedDate
-                visitName
+                eventId
               }
               smartSpaceLicenseColor
               smartSpaceLicenseDate
@@ -898,6 +863,7 @@ class PractitionerService {
     classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
+    console.log('classroomGroupReassignments', classroomGroupReassignments);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation removePractitioner(
@@ -1324,6 +1290,41 @@ class PractitionerService {
     return response.data.data.removalDetailsForPractitioner;
   }
 
+  async getRemovalsForPractitioners(
+    userIds: string[]
+  ): Promise<PractitionerRemovalHistory[] | undefined> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query removalDetailsForPractitioners($userIds: [String]) {
+        removalDetailsForPractitioners(userIds: $userIds) {
+          dateOfRemoval
+          id
+          userId
+          reasonDetails
+          reasonForPractitionerLeavingProgrammeId
+          removedByUserId,
+          classReassignments {
+            id,
+            reassignedClass,
+            reassignedToPractitioner
+          }
+        }
+      }
+      `,
+      variables: {
+        userIds,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get practitioners removals Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.removalDetailsForPractitioners;
+  }
   async updateRemovePractitionerFromProgramme(
     removalId: string,
     reasonForPractitionerLeavingProgrammeId: string | undefined = undefined,
@@ -1396,6 +1397,37 @@ class PractitionerService {
     }
 
     return response.data.data.removeFromProgramme;
+  }
+
+  async switchPrincipal(
+    oldPrincipalUserId: string,
+    newPrincipalUserId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation switchPrincipal(
+        $oldPrincipalUserId: String
+        $newPrincipalUserId: String
+      ) {
+        switchPrincipal(
+          oldPrincipalUserId: $oldPrincipalUserId
+          newPrincipalUserId: $newPrincipalUserId
+        ) {
+        }
+      }  
+      `,
+      variables: {
+        oldPrincipalUserId,
+        newPrincipalUserId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Switch principal Failed - Server connection error');
+    }
+
+    return response.data.data.switchPrincipal;
   }
 }
 
