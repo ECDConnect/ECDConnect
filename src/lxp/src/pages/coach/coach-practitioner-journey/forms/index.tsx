@@ -903,7 +903,7 @@ export const Form = ({
         // TODO: add schedule integration
         {...(visitName === visitTypes.pqa.followUp.name && {
           submitButton: {
-            text: 'Start your next visit',
+            text: 'Save',
             icon: 'ArrowCircleRightIcon',
           },
         })}
