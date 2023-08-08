@@ -746,7 +746,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     List<VisitData> stepC = vData.Where(x => x.VisitSection == Constants.SSSettings.step_11_section).ToList();
                     List<VisitData> stepD = vData.Where(x => x.VisitSection == Constants.SSSettings.step_12_section).ToList();
 
-
                     // Section A
                     if (stepA.Count > 0)
                     {
@@ -760,7 +759,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_A_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_A_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     // Section B
@@ -768,25 +767,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         var child = new PQARatingChild();
                         child.VisitSection = stepB.GetItemByIndex(0).VisitSection;
-                        var stepBScore = 0;
-                        foreach (VisitData vRecord in stepB)
-                        {
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q1) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q2) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q3) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q4) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q5) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q6) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q7) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q8) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q9) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q10) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                        }
-                        child.SectionScore = (stepBScore);
+                        child.SectionScore = stepB.Select(x => Int32.Parse(x.QuestionAnswer)).Sum();
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_B_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_B_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     // Section C
@@ -798,7 +783,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_C_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_C_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     // Section D
@@ -810,7 +795,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_D_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_D_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
                 }
 
@@ -899,14 +884,40 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             int score = 0;
             Boolean parsedValue;
 
+
             foreach (VisitData record in records)
             {
-                if (Boolean.TryParse(record.QuestionAnswer, out parsedValue))
+                if (record.VisitSection == Constants.SSSettings.step_8_section)
                 {
-                    if (parsedValue)
-                    {
-                        score++;
-                    }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a1) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a2) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a3) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a4) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a5) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a6) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a7) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a8) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a9) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a10) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a11) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a12) != -1) { score++; }
+                } else if (record.VisitSection == Constants.SSSettings.step_11_section)
+                {
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a1) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a2) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a3) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a4) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a5) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a6) != -1) { score++; }
+                }
+                else if (record.VisitSection == Constants.SSSettings.step_12_section)
+                {
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a1) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a2) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a3) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a4) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a5) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a6) != -1) { score++; }
                 }
             }
 

@@ -427,12 +427,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _pqaRatings.Add(_visitDataManager.GetPractitionerPQARating(visit));
             }
             timeline.PQARatings = _pqaRatings;
-           
 
             // Re-accreditation --------------------------
             List<Visit> allAccreditationVisits = _visitManager.GetReAccreditationVisitsForPractitioner(userId);
             List<PQARating> _accredRatings = new List<PQARating>();
-            foreach (Visit visit in allPqaVisits)
+            foreach (Visit visit in allAccreditationVisits)
             {
                 _accredRatings.Add(_visitDataManager.GetPractitionerReAccreditationRating(visit));
             }
@@ -515,6 +514,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // PQA visits
             List <Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
+
             List<Visit> pre_pqa_visits = new List<Visit>();
             List<Visit> pqa_visits = new List<Visit>();
             List<Visit> support_visits = new List<Visit>();
@@ -522,7 +522,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> requested_coach_visits = new List<Visit>();
             List<Visit> self_visits = new List<Visit>();
 
-            foreach (Visit visit in visits)
+           foreach (Visit visit in visits)
             {
                 if (visit != null)
                 {
