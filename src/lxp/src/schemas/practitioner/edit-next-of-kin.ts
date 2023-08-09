@@ -16,8 +16,7 @@ export const initialEditPractitionerValues: EditNextOfKinModel = {
 
 export const editNextOfKinSchema = Yup.object().shape({
   name: Yup.string(),
-  cellphone: Yup.string().matches(
-    SA_CELL_REGEX,
-    'Please enter a valid cellphone number'
-  ),
+  cellphone: Yup.string()
+    .required('Phone number is required')
+    .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
 });

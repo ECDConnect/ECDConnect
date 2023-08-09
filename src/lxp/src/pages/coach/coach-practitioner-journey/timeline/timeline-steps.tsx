@@ -3,7 +3,6 @@ import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
 import { SupportVisits } from './support-visits-step';
 import { PrePqaVisits } from './pre-pqa-site-vists';
 import { RatingData } from '@/store/pqa/pqa.types';
-import { CalendarEventModel } from '@ecdlink/core';
 import { PQAVisits } from './pqa/step-accordion-content';
 import { getPqaStepData } from './pqa/step';
 import { ReAccreditationVisits } from './re-accreditation/step-accordion-content';
@@ -36,17 +35,17 @@ export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) => {
 };
 
 export const getStepType = (color?: Maybe<string>): StepType => {
-  if (!color) return { type: 'todo' };
+  if (!color) return { type: 'todo', color: 'textMid' };
 
   switch (color.toLowerCase()) {
     case 'success':
-      return { type: 'completed' };
+      return { type: 'completed', color: 'textMid' };
     case 'warning':
       return { type: 'inProgress', color: 'alertMain' };
     case 'error':
       return { type: 'inProgress', color: 'errorMain' };
     default:
-      return { type: 'todo' };
+      return { type: 'todo', color: 'textMid' };
   }
 };
 
@@ -127,19 +126,22 @@ export const timelineSteps = ({
   );
 
   if (!!timeline.prePQASiteVisits?.length) {
+    const visit1 = timeline.prePQASiteVisits?.find((item) =>
+      item?.visitType?.name?.includes('pre_pqa_visit_1')
+    );
+    const visit2 = timeline.prePQASiteVisits?.find((item) =>
+      item?.visitType?.name?.includes('pre_pqa_visit_2')
+    );
+
     const date = visits?.some(
       (item) =>
         item?.visitType?.name?.includes('pre_pqa_visit_1') && item?.attended
     )
       ? new Date(
-          timeline.prePQASiteVisits?.find((item) =>
-            item?.visitType?.name?.includes('pre_pqa_visit_2')
-          )?.plannedVisitDate
+          visit2?.attended ? visit2?.insertedDate : visit2?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions)
       : new Date(
-          timeline.prePQASiteVisits?.find((item) =>
-            item?.visitType?.name?.includes('pre_pqa_visit_1')
-          )?.plannedVisitDate
+          visit1?.attended ? visit1.insertedDate : visit1?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions);
 
     const isLateDate =
@@ -157,7 +159,7 @@ export const timelineSteps = ({
 
     steps.push({
       title: 'Pre-PQA site visits',
-      subTitle: `By ${date}`,
+      subTitle: `${isAllCompleted ? '' : 'By '}${date}`,
       subTitleColor: stepType.color,
       type: stepType.type,
       inProgressStepIcon: isLateDate && 'ExclamationCircleIcon',
@@ -219,20 +221,42 @@ export const timelineSteps = ({
             color={stepType?.color}
             className="mr-4"
             text={`${subTitleText} ${new Date(
-              currentVisit?.plannedVisitDate
+              currentVisit?.attended
+                ? currentVisit.insertedDate
+                : currentVisit?.plannedVisitDate
             ).toLocaleDateString('en-ZA', dateOptions)}`}
           />
-
-          {ratingData?.icon}
-          <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+          {timeline.pQASiteVisits.some((item) => item?.attended) && (
+            <>
+              {ratingData?.icon}
+              <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+            </>
+          )}
         </div>
       ),
       inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
       type: stepType?.type,
       extraData: {
-        date: new Date(currentVisit?.plannedVisitDate),
+        date: new Date(
+          currentVisit?.attended
+            ? currentVisit?.insertedDate
+            : currentVisit?.plannedVisitDate
+        ),
       },
-      showAccordion: true,
+      showActionButton:
+        timeline.pQASiteVisits.length === 1 && !currentVisit?.attended,
+      actionButtonText: 'Schedule',
+      actionButtonType: 'outlined',
+      actionButtonTextColor: 'primary',
+      actionButtonIcon: 'CalendarIcon',
+      actionButtonIconStartPosition: 'start',
+      actionButtonOnClick: () =>
+        onScheduleOrStart({
+          visit: currentVisit!,
+          visitEventId: currentVisit?.eventId,
+          eventType: 'First PQA',
+        }),
+      showAccordion: timeline.pQASiteVisits.length > 1,
       accordionContent: (
         <PQAVisits
           isLoading={isLoading}
@@ -262,21 +286,43 @@ export const timelineSteps = ({
             color={stepType?.color}
             className="mr-4"
             text={`${subTitleText} ${new Date(
-              currentVisit?.plannedVisitDate
+              currentVisit?.attended
+                ? currentVisit.insertedDate
+                : currentVisit?.plannedVisitDate
             ).toLocaleDateString('en-ZA', dateOptions)}`}
           />
-
-          {ratingData?.icon}
-          <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+          {timeline.reAccreditationVisits.some((item) => item?.attended) && (
+            <>
+              {ratingData?.icon}
+              <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+            </>
+          )}
         </div>
       ),
       subTitleColor: stepType?.color,
       type: stepType?.type,
       inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
       extraData: {
-        date: new Date(currentVisit?.plannedVisitDate),
+        date: new Date(
+          currentVisit?.attended
+            ? currentVisit.insertedDate
+            : currentVisit?.plannedVisitDate
+        ),
       },
-      showAccordion: true,
+      showActionButton:
+        timeline.reAccreditationVisits.length === 1 && !currentVisit?.attended,
+      actionButtonText: 'Schedule',
+      actionButtonType: 'outlined',
+      actionButtonTextColor: 'primary',
+      actionButtonIcon: 'CalendarIcon',
+      actionButtonIconStartPosition: 'start',
+      actionButtonOnClick: () =>
+        onScheduleOrStart({
+          visit: currentVisit!,
+          visitEventId: currentVisit?.eventId,
+          eventType: 'ReAccreditation',
+        }),
+      showAccordion: timeline.reAccreditationVisits.length > 1,
       accordionContent: (
         <ReAccreditationVisits
           isLoading={isLoading}

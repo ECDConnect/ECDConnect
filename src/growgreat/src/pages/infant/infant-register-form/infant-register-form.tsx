@@ -89,7 +89,9 @@ export const InfantRegisterForm: React.FC = () => {
     useState<MothertContactInformationModel>();
   const [address, setAddress] = useState<string>();
   const [isAlreadyClient, setIsAlreadyClient] = useState<any>(null);
-  const [multipleChildren, setMultipleChildren] = useState(false);
+  const [multipleChildren, setMultipleChildren] = useState<
+    boolean | undefined
+  >();
   const [activeStep, setActiveStep] = useState(
     InfantRegisterSteps.consentAgreement
   );

@@ -62,7 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
             usersQuery = AddDefaultUserSearch(search, usersQuery);
 
-            if (pagingInput is not null)
+            if (pagingInput is not null && pagingInput.PageSize is not null)
                 usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize ?? 1, usersQuery);
 
             return usersQuery;
@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var user = await userManager.FindByIdAsync(userId);
 
-            if (user is null || !user.IsActive)
+            if (user is null)
             {
                 return default(ApplicationUser);
             }

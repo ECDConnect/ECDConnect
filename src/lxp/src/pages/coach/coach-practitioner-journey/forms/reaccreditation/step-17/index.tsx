@@ -66,6 +66,7 @@ export const Step17ReAccreditation = ({
     smartStarter?.user?.firstName ||
     smartStarter?.firstName ||
     'the SmartStarter';
+  const userId = smartStarter?.user?.id || smartStarter?.id || '';
 
   const [visitIdFromPractitionerJourney] = useSessionStorage(
     practitionerVisitIdKey
@@ -93,7 +94,6 @@ export const Step17ReAccreditation = ({
   ];
 
   const children = useSelector(childrenSelectors.getChildren);
-  const childUsers = useSelector(childrenSelectors.getChildUsers);
   const allLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
@@ -103,34 +103,38 @@ export const Step17ReAccreditation = ({
   );
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const classroomGroups = allClassroomGroups?.filter(
-    (x) => x.name !== NoPlaygroupClassroomType.name
+    (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
-  const currentClassroomGroups = classroomGroups.filter(
-    (item) => item?.userId === smartStarter?.userId
-  );
+  const classroomId = classroomGroups.find(
+    (item) => item.userId === userId
+  )?.classroomId;
+
+  const currentClassroomGroups = isPrincipal
+    ? classroomGroups.filter((item) => item.classroomId === classroomId)
+    : classroomGroups.filter((item) => item?.userId === userId);
   const previousClassroomGroups = usePrevious(currentClassroomGroups) as
     | ClassroomGroupDto[]
     | undefined;
 
   const currentClassProgrammes = classProgrammes?.filter((el) => {
-    return currentClassroomGroups.some((f) => {
+    return currentClassroomGroups?.some((f) => {
       return f?.id === el?.classroomGroupId;
     });
   });
 
-  const days = currentClassProgrammes.map((item) => item?.meetingDay).sort();
+  const days = currentClassProgrammes?.map((item) => item?.meetingDay).sort();
 
   const stringDays = days
     // remove duplicates
-    .filter((element, index) => days.indexOf(element) === index)
-    .map((item) => numberToDayOfWeek(item, 'short'));
+    ?.filter((element, index) => days.indexOf(element) === index)
+    ?.map((item) => numberToDayOfWeek(item, 'short'));
 
   const wasAssistant = !!questions[2].answer;
   const isAllQuestions =
-    questions.length === 5 && questions.every((item) => item.answer !== '');
+    questions.length === 5 && questions?.every((item) => item.answer !== '');
   const is3Questions = questions
     .slice(0, 3)
-    .every((item) => item.answer !== '');
+    .every((item) => item?.answer !== '');
   const isAllCompleted = wasAssistant ? isAllQuestions : is3Questions;
 
   const onOptionSelected = useCallback(
@@ -164,66 +168,39 @@ export const Step17ReAccreditation = ({
 
     const filteredChildren = [];
     const _allLearners = allLearners?.filter(
-      (x) => !Boolean(x.stoppedAttendance)
+      (x) => !Boolean(x?.stoppedAttendance)
     );
 
     for (const learner of _allLearners) {
       if (
-        learner?.classroomGroupId !==
-        currentClassProgrammes[0]?.classroomGroupId
+        !currentClassroomGroups.some(
+          (item) => item?.id === learner?.classroomGroupId
+        )
       )
         continue;
+      const childUser = children?.find((y) => y?.userId === learner?.userId);
 
-      const child = children?.find(
-        (child) => child?.userId === learner?.userId && child?.isActive
-      );
-      const childUser = childUsers?.find((y) => y?.id === learner?.userId);
-
-      if (
-        child &&
-        child?.caregiverId &&
-        childUser?.firstName &&
-        childUser?.surname
-      ) {
+      if (childUser) {
         filteredChildren.push(childUser);
       }
     }
 
-    const sortedChildren = filteredChildren
-      .filter((child) => {
-        if (child?.dateOfBirth === undefined) {
-          return false;
-        }
-
-        const date = new Date(child?.dateOfBirth);
-        const minDate = new Date('1900-01-01');
-        const maxDate = new Date();
-        return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
-      })
-      .sort(
-        (a, b) =>
-          new Date(String(a?.dateOfBirth)).getTime() -
-          new Date(String(b?.dateOfBirth)).getTime()
-      );
-
-    setRegisteredChildren(sortedChildren);
+    setRegisteredChildren(filteredChildren);
   }, [
     allLearners,
-    childUsers,
     children,
-    currentClassProgrammes,
     currentClassroomGroups,
-    previousClassroomGroups,
+    previousClassroomGroups?.length,
   ]);
 
   const handleViewMode = useCallback(() => {
     if (
       isViewAnswers &&
-      previousData?.questions.length !==
-        previousStatePreviousData?.questions.length
+      previousData?.questions?.length !==
+        previousStatePreviousData?.questions?.length
     ) {
       const updatedQuestions = questions.map((question) => {
-        const correspondingQuestion = previousData?.questions.find(
+        const correspondingQuestion = previousData?.questions?.find(
           (secondQuestion) => secondQuestion?.question === question.question
         );
 
@@ -309,18 +286,13 @@ export const Step17ReAccreditation = ({
       <Divider dividerType="dashed" />
       <div className="flex items-center gap-2">
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
-          {isPrincipal
-            ? currentClassProgrammes?.length
-            : currentClassroomGroups?.length}
+          {currentClassroomGroups?.length}
         </span>
         <Typography
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${
-                  currentClassroomGroups?.[0]?.programmeType?.description ??
-                  'Not provided'
-                }`
+              ? `classes at ${currentClassroomGroups?.[0]?.programmeType?.description}`
               : `classes assigned to ${name}`
           }
         />
@@ -342,14 +314,25 @@ export const Step17ReAccreditation = ({
         onChange={(e) => onOptionSelected(e.target.value, 0)}
         placeholder={'e.g. 4'}
       />
-      <FormInput
-        type="number"
-        label={questions[1].question}
-        value={questions[1].answer}
-        disabled={isViewAnswers}
-        onChange={(e) => onOptionSelected(e.target.value, 1)}
-        placeholder={'e.g. 3'}
-      />
+      <div>
+        <Typography type="h4" text={questions[1].question} color="textDark" />
+        <div className="flex">
+          <FormInput
+            type="number"
+            className="w-1/2"
+            value={questions[1].answer}
+            disabled={isViewAnswers}
+            onChange={(e) => onOptionSelected(e.target.value, 1)}
+            placeholder={'e.g. 3'}
+          />
+          <Typography
+            type="body"
+            text="hours"
+            color="textDark"
+            className="mt-4 ml-1"
+          />
+        </div>
+      </div>
       <div>
         <Typography
           type="h4"

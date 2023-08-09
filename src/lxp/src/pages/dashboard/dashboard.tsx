@@ -99,6 +99,7 @@ export const Dashboard: React.FC = () => {
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
+  const hasConsent = practitioner?.shareInfo;
   const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
   const isTrainee = practitioner?.isTrainee;
 
@@ -144,6 +145,9 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
     await appDispatch(
       staticDataThunkActions.getReasonsForPractitionerLeaving({})
+    ).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getReasonsForPractitionerLeavingProgramme({})
     ).unwrap();
     await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
@@ -415,6 +419,18 @@ export const Dashboard: React.FC = () => {
     });
   }
 
+  if (isTrainee) {
+    navigation?.splice(3, 0, {
+      name: NavigationTypes.Business,
+      href: practitioner?.setupTraineeInitiated
+        ? ROUTES.TRAINEE.TRAINEE_ONBOARDING
+        : ROUTES.TRAINEE.SETUP_TRAINEE,
+      icon: 'BriefcaseIcon',
+      current: false,
+      showDivider: true,
+    });
+  }
+
   const navigationForCoach: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -526,6 +542,18 @@ export const Dashboard: React.FC = () => {
     });
   }
 
+  if (isTrainee) {
+    dashboardItems.splice(1, 0, {
+      title: 'Business',
+      titleIcon: 'BriefcaseIcon',
+      titleIconClassName: styles.businessIcon,
+      onActionClick: () => {
+        goToBusiness();
+      },
+      classNames: 'bg-uiBg',
+    });
+  }
+
   useEffect(() => {
     if (shouldUserSync) {
       dialog({
@@ -568,7 +596,8 @@ export const Dashboard: React.FC = () => {
         (classroomGroup && classroomGroup.length > 0)) &&
         isRegistered &&
         isProgress &&
-        isProgress > 0) ||
+        isProgress > 0 &&
+        hasConsent) ||
       isTrainee
     ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
@@ -582,11 +611,15 @@ export const Dashboard: React.FC = () => {
   };
 
   const goToBusiness = () => {
-    if (isPrincipal || isFundaAppAdmin) {
+    if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
       history.push(ROUTES.BUSINESS);
       return;
     }
     if (isTrainee) {
+      if (practitioner?.setupTraineeInitiated) {
+        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+        return;
+      }
       history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       return;
     }

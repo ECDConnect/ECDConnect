@@ -48,7 +48,7 @@ const PublicRoutes: React.FC = () => {
       <Route exact path="/" component={Login} />
       <Route exact path="/register/:resetToken" component={Register} />
       <Route exact path="/forgot-password" component={ForgotPassword} />
-      <Route exact path="/reset/:resetToken/:email" component={ResetPassword} />
+      <Route exact path="/reset/:resetToken" component={ResetPassword} />
       <Route path={`/ecd-terms`} component={TermsPage}></Route>
     </Switch>
   );
@@ -69,7 +69,6 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/settings`} component={Settings}></Route>
       <Route path={`/data`} component={StaticData}></Route>
       <Route path={`/profile`} component={Profile}></Route>
-      <Route path={`/view-user`} component={ViewUser}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={`/documents`} component={Documents}></Route>
@@ -97,7 +96,7 @@ const UserRoutes: React.FC = () => {
       <Route path={`/users/roles`} component={Roles}></Route>
       <Route path={`/users/all-roles`} component={ApplicationUsers}></Route>
       <Route path={`/users/roles`} component={Roles}></Route>
-
+      <Route path={`/users/view-user`} component={ViewUser}></Route>
       <Route path={`/users/admins`} component={ApplicationAdmins}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>

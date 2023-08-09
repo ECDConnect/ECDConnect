@@ -324,7 +324,7 @@ export const ClassDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (showAttendanceTutorial && !attendanceTutorialComplete) {
+    if (showAttendanceTutorial && !attendanceTutorialComplete && !isTrainee) {
       handleAttendanceTutorial();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

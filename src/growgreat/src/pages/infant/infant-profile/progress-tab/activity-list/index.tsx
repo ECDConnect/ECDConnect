@@ -52,7 +52,7 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { InfantProfileParams } from '../../infant-profile.types';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, differenceInCalendarMonths } from 'date-fns';
 import { getAgeInYearsMonthsAndDays, usePrevious } from '@ecdlink/core';
 import { documentSelectors } from '@/store/document';
 import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
@@ -67,6 +67,7 @@ import {
 } from './forms/pillar-5-steps/hiv-care-and-medication';
 import {
   birthCertificateQuestion,
+  isCSGQuestion,
   childDocumentSection,
 } from './forms/pillar-5-steps/child-documentation';
 import { maternalDistressVisitSection } from './forms/care-for-mom-steps/maternal-distress-screening';
@@ -114,6 +115,26 @@ export const ActivityList: React.FC = () => {
     getCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;
 
+  const appDispatch = useAppDispatch();
+
+  useLayoutEffect(() => {
+    appDispatch(
+      visitThunkActions.getCompletedVisitsForVisitId({
+        visitId,
+      })
+    ).unwrap();
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForInfant({
+        visitId,
+      })
+    ).unwrap();
+  }, [visitId, appDispatch]);
+
+  const { isLoading } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
+  );
+
   const previousCurrentVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
@@ -121,7 +142,6 @@ export const ActivityList: React.FC = () => {
   const previousVisit = useSelector((state: RootState) =>
     getInfantNearestPreviousVisitByOrderDate(state, visit)
   );
-  const appDispatch = useAppDispatch();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -139,15 +159,13 @@ export const ActivityList: React.FC = () => {
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
-  const { months: ageMonths, years: ageYears } =
-    getAgeInYearsMonthsAndDays(dateOfBirth);
+  const ageMonths = differenceInCalendarMonths(
+    new Date(),
+    new Date(dateOfBirth)
+  );
+  const { years: ageYears } = getAgeInYearsMonthsAndDays(dateOfBirth);
 
   const isChildAfter49Days = useMemo(() => ageDays >= 50, [ageDays]);
-
-  const { isLoading } = useThunkFetchCall(
-    'visits',
-    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
-  );
 
   const isLargeName =
     (infant?.user?.firstName || '').length +
@@ -247,21 +265,29 @@ export const ActivityList: React.FC = () => {
     [ageDays, ageMonths, ageYears, isFirstVisit]
   );
 
-  const previousChildDocumentAnswer = previousAnswers?.find(
+  const previousBirthCertificateAnswer = previousAnswers?.find(
     (item) =>
       item.question === birthCertificateQuestion &&
       item.visitId === previousVisit?.id
   )?.questionAnswer;
 
+  const previousCSGAnswer = previousAnswers?.find(
+    (item) =>
+      item.question === isCSGQuestion && item.visitId === previousVisit?.id
+  )?.questionAnswer;
+
   const isChildDocumentStep = useMemo(
-    () => isFirstVisit || previousChildDocumentAnswer === 'false',
-    [isFirstVisit, previousChildDocumentAnswer]
+    () =>
+      isFirstVisit ||
+      previousBirthCertificateAnswer === 'false' ||
+      (previousBirthCertificateAnswer === 'true' &&
+        previousCSGAnswer === 'false'),
+    [isFirstVisit, previousBirthCertificateAnswer, previousCSGAnswer]
   );
 
-  const isMaternalDistressFollowUp = getIsFollowUp(
-    maternalDistressVisitSection,
-    activitiesTypes.careForMom
-  );
+  const isMaternalDistressFollowUp = !!previousAnswers
+    ?.filter((item) => item.visitSection === maternalDistressVisitSection)
+    ?.filter((item) => item.questionAnswer?.includes('true'))?.length;
 
   const isMaternalDistressScreening = useMemo(
     () => isFirstVisit && ageDays >= 49 && ageYears < 5,
@@ -347,7 +373,7 @@ export const ActivityList: React.FC = () => {
   const isHivCareStep = useMemo(
     () =>
       (isFirstVisit && !ageYears && ageMonths < 6) ||
-      previousHIVAnswer === 'true',
+      previousHIVAnswer !== 'false',
     [ageMonths, ageYears, isFirstVisit, previousHIVAnswer]
   );
 
@@ -357,7 +383,7 @@ export const ActivityList: React.FC = () => {
     isDewormingQuestion ||
     isImmunisationsStep;
 
-  const isDisplayPillar5 = isChildDocumentStep && isHivCareStep;
+  const isDisplayPillar5 = isChildDocumentStep || isHivCareStep;
 
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
@@ -395,6 +421,7 @@ export const ActivityList: React.FC = () => {
     isDisplayCareForBaby,
     infant?.caregiver?.relation?.description,
     isDisplayPillar3,
+    isDisplayPillar5,
   ]);
 
   const { completedForms, uncompletedForms, followUpForm, stepperCount } =
@@ -525,19 +552,6 @@ export const ActivityList: React.FC = () => {
 
   useLayoutEffect(() => {
     appDispatch(
-      visitThunkActions.getCompletedVisitsForVisitId({
-        visitId,
-      })
-    ).unwrap();
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForInfant({
-        visitId,
-      })
-    );
-  }, [visitId, appDispatch]);
-
-  useLayoutEffect(() => {
-    appDispatch(
       visitThunkActions.getVisitAnswersForInfant({
         visitId,
         visitName: activitiesTypes.pillar2,
@@ -567,6 +581,13 @@ export const ActivityList: React.FC = () => {
           visitId: previousVisit.id,
           visitName: activitiesTypes.pillar5,
           visitSection: HIVSection,
+        })
+      ).unwrap();
+      appDispatch(
+        visitThunkActions.getVisitAnswersForInfant({
+          visitId: previousVisit.id,
+          visitName: activitiesTypes.careForMom,
+          visitSection: maternalDistressVisitSection,
         })
       ).unwrap();
     }

@@ -22,6 +22,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ECDLink.Abstractrions.Constants;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -80,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 FirstName = input.FirstName,
                 Surname = input.Surname,
                 FullName = $"{input.FirstName} {input.Surname}",
-                ContactPreference = input.ContactPreference,
+                ContactPreference = input.ContactPreference ?? MessageTypeConstants.SMS,
                 IsActive = true,
                 ProfileImageUrl = input.ProfileImageUrl,
                 TenantId = tenantId,
@@ -264,7 +265,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.FullName = $"{user.FirstName} {input.Surname}"; //use existing surname incase surname unchanged
             }
 
-            if (input.ContactPreference is not null
+            if (!string.IsNullOrWhiteSpace(input.ContactPreference)
                 && input.ContactPreference != user.ContactPreference)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "ContactPreference", ValueBefore = user.ContactPreference, ValueAfter = input.ContactPreference });
@@ -407,6 +408,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var user = await userManager.FindByIdAsync(id);
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
 
+            if (user == default(ApplicationUser))
+            {
+                return false;
+            }
+
             // Don't let normal users disable admins...
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin)
@@ -420,11 +426,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            if (user == default(ApplicationUser))
-            {
-                return false;
-            }
-
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTime.MaxValue;
             user.IsActive = false;
             user.UpdatedDate = DateTime.UtcNow;
 
@@ -433,6 +436,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // Manage points for user
             pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
+
             return updateResult.Succeeded;
         }
 

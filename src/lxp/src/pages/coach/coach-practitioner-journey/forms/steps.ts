@@ -4,7 +4,7 @@ import {
   ProgrammeDetails,
   ProgrammeObservations,
 } from './pre-pqa-visits';
-import { CoachingAndVisitOrCallStep } from './general-support-visit';
+import { CoachingAndVisitOrCallStep } from './general-support-visit/coaching-visit-or-call';
 import {
   Step1,
   Step2,
@@ -91,10 +91,12 @@ export const getReAccreditationSteps = ({
   isToShowStep1,
   isToShowStep16,
   isToRemoveSmartStarter,
+  isBasicSmartSpaceStandardsCompleted,
 }: {
   isToShowStep1: boolean;
   isToShowStep16: boolean;
   isToRemoveSmartStarter: boolean;
+  isBasicSmartSpaceStandardsCompleted: boolean;
 }) => [
   ...(isToShowStep1 ? [Step1ReAccreditation] : []),
   Step2ReAccreditation,
@@ -103,14 +105,18 @@ export const getReAccreditationSteps = ({
   Step5ReAccreditation,
   Step6ReAccreditation,
   Step7ReAccreditation,
-  Step8ReAccreditation,
-  Step9ReAccreditation,
-  Step10ReAccreditation,
-  Step11ReAccreditation,
-  Step12ReAccreditation,
-  Step13ReAccreditation,
-  Step14ReAccreditation,
-  Step15ReAccreditation,
+  ...(isBasicSmartSpaceStandardsCompleted
+    ? [
+        Step8ReAccreditation,
+        Step9ReAccreditation,
+        Step10ReAccreditation,
+        Step11ReAccreditation,
+        Step12ReAccreditation,
+        Step13ReAccreditation,
+        Step14ReAccreditation,
+        Step15ReAccreditation,
+      ]
+    : []),
   ...(isToShowStep16 ? [Step16ReAccreditation] : []),
   ...(isToRemoveSmartStarter ? [] : [Step17ReAccreditation]),
 ];

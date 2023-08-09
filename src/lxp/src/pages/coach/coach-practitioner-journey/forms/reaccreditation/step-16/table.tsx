@@ -15,6 +15,8 @@ import {
 } from '../step-15';
 import { DynamicFormProps, Question } from '../../dynamic-form';
 import { Rating as RatingType } from '../..';
+import { step2ReAccreditationVisitSection } from '../step-2';
+import { options } from '../step-2/options';
 
 interface Section {
   questions?: Question[];
@@ -22,6 +24,7 @@ interface Section {
 }
 
 export interface TableProps {
+  name: string;
   sectionQuestions: DynamicFormProps['sectionQuestions'];
   sections: {
     section1: Section;
@@ -34,11 +37,18 @@ export interface TableProps {
 }
 
 export const Rating = ({
+  name,
   sections,
   sectionQuestions,
   isToRemoveSmartStarter,
   setReAccreditationRating,
 }: TableProps) => {
+  const step2ReAccreditationQuestionAnswers = sectionQuestions?.find(
+    (item) => item.visitSection === step2ReAccreditationVisitSection
+  )?.questions?.[0]?.answer as string[] | undefined;
+  const isBasicSmartSpaceStandardsCompleted =
+    step2ReAccreditationQuestionAnswers?.length === options.length;
+
   const step15Questions = sectionQuestions?.find(
     (item) => item.visitSection === step15ReAccreditationVisitSection
   )?.questions;
@@ -112,7 +122,9 @@ export const Rating = ({
     .reduce((total, number) => total + number, 0);
 
   const isRedFlagSmartSpaceLicence = step15Question1Answer === true;
-  const isOrangeQuestion2 = step15Question2Answer === true;
+  const isRedFlagSmartSpaceCertificateWithdrawn =
+    !isBasicSmartSpaceStandardsCompleted;
+  const isOrangeQuestion2 = step15Question2Answer === false;
   const isOrangeQuestion3 = step15Question3Answer === true;
   const isOrangeQuestion4 = step15Question4Answer === false;
 
@@ -145,10 +157,10 @@ export const Rating = ({
   ];
 
   const getBadge = () => {
-    if (rating >= 39) {
+    if (rating >= 39 && !isOrangeFlag) {
       return <FourStars />;
     }
-    if (rating >= 33 && rating <= 38) {
+    if (rating >= 33 && rating <= 38 && !isOrangeFlag) {
       return <ThreeStars />;
     }
 
@@ -197,7 +209,7 @@ export const Rating = ({
           {isOrangeFlag && (
             <Typography
               type="h4"
-              text="Although your score is greater than 1star, the rating is 1 star because of the following observations:"
+              text="Although your score is greater than 1 star, the rating is 1 star because of the following observations:"
             />
           )}
         </>
@@ -209,9 +221,9 @@ export const Rating = ({
     return (
       <>
         <div className="rounded-10 bg-errorBg mb-4 flex items-center p-4">
-          {isToRemoveSmartStarter ? (
+          {isToRemoveSmartStarter || isRedFlagSmartSpaceCertificateWithdrawn ? (
             <>
-              <RedRating className="mr-2 h-auto w-12" />
+              <RedRating className="mr-4 h-auto w-12" />
               <Typography
                 text="Red rating"
                 type="h4"
@@ -224,11 +236,13 @@ export const Rating = ({
               {getBadge()}
             </>
           )}
-          <p
-            className={`bg-errorDark ml-auto rounded-2xl p-1 font-semibold text-white`}
-          >
-            {rating}/44
-          </p>
+          {!isRedFlagSmartSpaceCertificateWithdrawn && (
+            <p
+              className={`bg-errorDark ml-auto rounded-2xl p-1 font-semibold text-white`}
+            >
+              {rating}/44
+            </p>
+          )}
         </div>
       </>
     );
@@ -257,28 +271,43 @@ export const Rating = ({
           )}
         </ul>
       )}
-      <table className="text-textDark mb-6 w-full border border-gray-100">
-        <thead>
-          <tr className="bg-uiBg border-blue-accent3 border-b text-left">
-            <th className={'w-3/4 py-4 px-6'}>SECTION</th>
-            <th>SCORE</th>
-          </tr>
-        </thead>
-        <tbody>
-          {body.map((item, index) => (
-            <tr
-              key={`${item.section}->${item.score}`}
-              className={classNames(
-                'text-sm',
-                index % 2 === 0 ? '' : 'bg-uiBg'
-              )}
-            >
-              <td className={'py-4 px-6'}>{item.section}</td>
-              <td className="mt-5 ">{item.score}</td>
+      {isRedFlagSmartSpaceCertificateWithdrawn ? (
+        <>
+          <Typography
+            type="h4"
+            color="textDark"
+            text={`${name} received an automatic red rating because:`}
+          />
+          <ul className="ml-5 mb-4 list-disc">
+            <li className="text-textMid">
+              The programme’s SmartSpace certificate has been withdrawn.
+            </li>
+          </ul>
+        </>
+      ) : (
+        <table className="text-textDark mb-6 w-full border border-gray-100">
+          <thead>
+            <tr className="bg-uiBg border-blue-accent3 border-b text-left">
+              <th className={'w-3/4 py-4 px-6'}>SECTION</th>
+              <th>SCORE</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {body.map((item, index) => (
+              <tr
+                key={`${item.section}->${item.score}`}
+                className={classNames(
+                  'text-sm',
+                  index % 2 === 0 ? '' : 'bg-uiBg'
+                )}
+              >
+                <td className={'py-4 px-6'}>{item.section}</td>
+                <td className="mt-5 ">{item.score}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </>
   );
 };

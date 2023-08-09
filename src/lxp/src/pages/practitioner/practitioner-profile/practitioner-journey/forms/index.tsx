@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DynamicForm,
   DynamicFormProps,
@@ -15,7 +15,13 @@ import {
 } from './steps';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { parseBool, useDialog, useSessionStorage } from '@ecdlink/core';
+import {
+  parseBool,
+  useDialog,
+  usePrevious,
+  useSessionStorage,
+  useSnackbar,
+} from '@ecdlink/core';
 import { visitTypes } from '../index.types';
 import {
   CmsVisitDataInputModelInput,
@@ -34,6 +40,8 @@ import {
 } from '@/pages/coach/coach-practitioner-journey/forms/steps';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 import { step11VisitSection } from '@/pages/coach/coach-practitioner-journey/forms/pqa-visits/first-pqa';
+import { step2ReAccreditationVisitSection } from '@/pages/coach/coach-practitioner-journey/forms/reaccreditation';
+import { options } from '@/pages/coach/coach-practitioner-journey/forms/reaccreditation/step-2/options';
 
 export const practitionerVisitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
@@ -51,6 +59,14 @@ export const Form = ({ onBack }: FormProps) => {
     useState<SectionQuestions[]>();
   const [isViewDetails, setIsViewDetails] = useState(false);
 
+  const { isLoading } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_SELF_ASSESSMENT_FOR_PRACTITIONER
+  );
+  const wasLoading = usePrevious(isLoading);
+
+  const { showMessage } = useSnackbar();
+
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
   const isViewPqaOrReAccreditation =
@@ -60,6 +76,16 @@ export const Form = ({ onBack }: FormProps) => {
 
   const [visitId] = useSessionStorage(practitionerVisitIdKey);
 
+  const step2PreviousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitId ?? '',
+      'reAccreditationPreviousFormData',
+      step2ReAccreditationVisitSection
+    )
+  );
+  const isStep2AllCompleted =
+    String(step2PreviousData?.questions?.[0]?.answer)?.split('.,')?.length ===
+    options.length;
   const previousData = useSelector(
     getSectionsQuestionsByStep(
       visitId ?? '',
@@ -127,6 +153,7 @@ export const Form = ({ onBack }: FormProps) => {
         isToShowStep1: false,
         isToShowStep16: false,
         isToRemoveSmartStarter: false,
+        isBasicSmartSpaceStandardsCompleted: isStep2AllCompleted,
       });
     }
 
@@ -137,7 +164,7 @@ export const Form = ({ onBack }: FormProps) => {
 
     setTitle('Self-assessment');
     return selfAssessmentSteps;
-  }, [activityName, isViewDetails, pqaStep11Answer]);
+  }, [activityName, isStep2AllCompleted, isViewDetails, pqaStep11Answer]);
 
   const isHideSteps = isView && currentSteps.length === 1;
 
@@ -261,6 +288,16 @@ export const Form = ({ onBack }: FormProps) => {
 
       return undefined;
     }, [isView, isViewPqaOrReAccreditation]);
+
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      onBack();
+      showMessage({
+        type: 'success',
+        message: 'Self-assessment submitted successfully',
+      });
+    }
+  }, [isLoading, onBack, showMessage, wasLoading]);
 
   return (
     <BannerWrapper

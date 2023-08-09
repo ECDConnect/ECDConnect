@@ -3,6 +3,7 @@ import logo from '../../../assets/Logo-ECDConnect-white.svg';
 import { ArrowLeftIcon, XIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 import { Typography } from '@ecdlink/ui';
+import { Config } from '@ecdlink/core';
 
 export function TermsPage(props: any) {
   const [content, setContent] = useState(null);
@@ -10,10 +11,7 @@ export function TermsPage(props: any) {
 
   useEffect(() => {
     var myHeaders = new Headers();
-    myHeaders.append(
-      'Referer',
-      'https://ecd-connect-newportal-fe.azurewebsites.net/'
-    );
+    myHeaders.append('Referer', Config.authApi);
     myHeaders.append('Content-Type', 'application/json');
 
     var raw = JSON.stringify({
@@ -26,7 +24,7 @@ export function TermsPage(props: any) {
         'query openConsent($locale: String, $type: String) {  openConsent(locale: $locale, type: $type) {    id    name    type    description  }}',
     });
 
-    fetch('https://ecd-connect-newportal-api.azurewebsites.net/graphql/', {
+    fetch(Config.graphQlApi, {
       method: 'POST',
       headers: myHeaders,
       body: raw,

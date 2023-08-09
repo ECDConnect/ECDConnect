@@ -76,7 +76,7 @@ export const WeightAndLengthFormStep = ({
   }, [lengthAtBirth]);
 
   const isCheckedHeight = useMemo(() => {
-    return height && Number(height) > 0;
+    return height && Number(height) > 0 && Number(height) <= 250;
   }, [height]);
 
   const dialog = useDialog();

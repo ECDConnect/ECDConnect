@@ -7,5 +7,6 @@ export * from './province.dto';
 export * from './race.dto';
 export * from './reason-for-leaving.dto';
 export * from './reason-for-practitioner-leaving.dto';
+export * from './reason-for-practitioner-leaving-programme.dto';
 export * from './relation.dto';
 export * from './workflow-status.dto';

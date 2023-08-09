@@ -1,12 +1,16 @@
-import { Visit, Maybe } from '@ecdlink/graphql';
+import { Visit, Maybe, PqaRating } from '@ecdlink/graphql';
 import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { dateOptions, getStepType } from '../../utils';
-import { visitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import {
+  maxNumberOfVisits,
+  visitTypes,
+} from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import { getRatingData } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 import { ViewEvent } from '../../timeline-steps';
+import { chunkArray } from '@ecdlink/core';
 
 interface ReAccreditationVisitsProps {
   isLoading: boolean;
@@ -27,9 +31,23 @@ export const ReAccreditationVisits = ({
     (item) => !!item?.attended
   );
 
-  const rating1 = timeline?.reAccreditationRating1;
-  const rating2 = timeline?.reAccreditationRating2;
-  const rating3 = timeline?.reAccreditationRating3;
+  // All years
+  const filteredReAccreditationRatings =
+    timeline?.reAccreditationRatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+    filteredReAccreditationRatings,
+    maxNumberOfVisits
+  );
+  const reAccreditationRatingsFromCurrentYear =
+    subdividedReAccreditationRatings?.[
+      subdividedReAccreditationRatings.length - 1
+    ];
+
+  const rating1 = reAccreditationRatingsFromCurrentYear?.[0];
+  const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
+  const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
   const sortedVisits = attendedReAccreditationVisits?.sort((a, b) => {
     if (!a?.insertedDate && !b?.insertedDate) {
@@ -46,13 +64,12 @@ export const ReAccreditationVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    switch (item?.visitType?.name) {
-      case visitTypes.reaccreditation.third.name:
-        return rating3;
-      case visitTypes.reaccreditation.second.name:
-        return rating2;
-      default:
-        return rating1;
+    if (item?.id === rating3?.linkedVisitId) {
+      return rating3;
+    } else if (item?.id === rating2?.linkedVisitId) {
+      return rating2;
+    } else {
+      return rating1;
     }
   };
 

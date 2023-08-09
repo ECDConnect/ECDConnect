@@ -115,6 +115,8 @@ export const Form = ({ onBack }: FormProps) => {
   const isEqualOrAfter98andEqualOrBefore168Days =
     pregnancyDay >= 98 && pregnancyDay <= 168;
 
+  const isEqualOrAfter196Days = pregnancyDay >= 196;
+
   const isIDDocumentStep =
     isFirstVisit ||
     (Boolean(IDDocumentFirstPreviousAnswer?.visitData?.questionAnswer) ===
@@ -128,9 +130,10 @@ export const Form = ({ onBack }: FormProps) => {
     isFirstVisit && isEqualOrAfter98andEqualOrBefore168Days;
 
   const isMaternalDistress =
-    pregnancyDay < 98 ||
-    (pregnancyDay >= 169 && pregnancyDay <= 196) ||
-    pregnancyDay > 197;
+    isFirstVisit &&
+    (pregnancyDay < 98 ||
+      (pregnancyDay >= 169 && pregnancyDay <= 196) ||
+      pregnancyDay > 197);
 
   const isMaternalDistressFollowUp = isFollowUp(
     maternalDistressVisitSection,
@@ -232,7 +235,8 @@ export const Form = ({ onBack }: FormProps) => {
           isIDDocumentStep,
           isMaternalDistressFollowUp,
           isMaternalDistress,
-          IsHIVCareStep
+          IsHIVCareStep,
+          isEqualOrAfter196Days
         );
       case activitiesTypes.dangerSigns:
         return dangerSignsSteps(isDangerSignsFollowUpStep, isFirstVisit);
@@ -251,6 +255,8 @@ export const Form = ({ onBack }: FormProps) => {
     isIDDocumentStep,
     isMaternalDistressFollowUp,
     isMaternalDistress,
+    IsHIVCareStep,
+    isEqualOrAfter196Days,
     isDangerSignsFollowUpStep,
     referralsForMother?.length,
   ]);

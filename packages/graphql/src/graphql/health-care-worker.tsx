@@ -34,6 +34,7 @@ export const GetAllHealthCareWorker = gql`
         genderId
         phoneNumber
         insertedDate
+        lockoutEnd
         roles {
           id
           name
@@ -82,6 +83,7 @@ export const GetHealthCareWorkerByUserId = gql`
         phoneNumber
         profileImageUrl
         insertedDate
+        lockoutEnd
         roles {
           id
           name
@@ -156,12 +158,14 @@ export const HealthCareWorkerTemplate = gql`
 
 export const GetHealthCareWorkerSummaryForPeriod = gql`
   query (
-    $healthCareWorkerUserId: String
+    $userId: String
+    $healthCareWorkerId: String
     $startDate: DateTime
     $endDate: DateTime
   ) {
     healthCareWorkerSummaryForPeriod(
-      userId: $healthCareWorkerUserId
+      userId: $userId
+      healthCareWorkerId: $healthCareWorkerId
       startDate: $startDate
       endDate: $endDate
     ) {
@@ -174,7 +178,10 @@ export const GetHealthCareWorkerSummaryForPeriod = gql`
       totalVisitsMissed
       totalPregnantMomsWithUrgentIssues
       totalCaregiversAndChildrenWithUrgentIssues
+      totalPregnantMomsWithNoIssues
+      totalChildrenWithNoIssues
       totalVisitsOverdue
+      __typename
     }
   }
 `;

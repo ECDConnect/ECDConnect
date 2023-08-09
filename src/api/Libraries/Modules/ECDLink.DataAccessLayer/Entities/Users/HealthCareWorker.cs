@@ -90,6 +90,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public int totalVisitsOverdue { get; set; }
         public int totalPregnantMomsWithIssues { get; set; }
         public int totalCaregiversAndChildrenWithIssues { get; set; }
+
+        public int totalPregnantMomsWithNoIssues { get; set; }
+        public int totalChildrenWithNoIssues { get; set; }
     }
 
     public class HCWPointsEngine

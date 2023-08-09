@@ -31,16 +31,10 @@ export const ProgressLevelBar: React.FC<ProgressLevelBarProps> = ({
           var imageUrl = '';
           if (level.imageUrl) {
             if (index + 1 < currentLevel)
-              imageUrl =
-                level.imageUrl.slice(0, level.imageUrl.length - 4) +
-                '-done' +
-                level.imageUrl.slice(level.imageUrl.length - 4);
+              imageUrl = level.imageUrlDone || level.imageUrl;
             if (index + 1 === currentLevel) imageUrl = level.imageUrl;
             if (index + 1 > currentLevel)
-              imageUrl =
-                level.imageUrl.slice(0, level.imageUrl.length - 4) +
-                '-dim' +
-                level.imageUrl.slice(level.imageUrl.length - 4);
+              imageUrl = level.imageUrlDim || level.imageUrl;
           }
           return (
             <div
