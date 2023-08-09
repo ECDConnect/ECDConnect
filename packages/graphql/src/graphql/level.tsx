@@ -7,6 +7,8 @@ export const GetAllProgressTrackingLevel = gql`
       title
       description
       imageUrl
+      imageUrlDim
+      imageUrlDone
     }
   }
 `;
@@ -18,6 +20,8 @@ export const GetProgressTrackingLevelId = gql`
       title
       description
       imageUrl
+      imageUrlDim
+      imageUrlDone
     }
   }
 `;

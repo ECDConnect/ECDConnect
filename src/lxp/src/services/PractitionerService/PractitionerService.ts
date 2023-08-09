@@ -261,6 +261,7 @@ class PractitionerService {
             attendedChildProgress
             usePhotoInReport
             setupTraineeInitiated
+            isOnStipend
           }
         }
       `,
@@ -329,6 +330,7 @@ class PractitionerService {
             progress
             attendedChildProgress
             usePhotoInReport
+            IsOnStipend
           }
         }
       `,
@@ -863,7 +865,7 @@ class PractitionerService {
     classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    console.log('classroomGroupReassignments', classroomGroupReassignments);
+
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation removePractitioner(
