@@ -424,46 +424,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public List<VisitData> GetVisitAnswersForClient(string visitId, string visitName, string visitSection) {
 
-            List<VisitData> vData = new List<VisitData>();
-            vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == visitName && y.VisitSection == visitSection) on visit.Id equals visitData.VisitId
-                select visitData
-            ).ToList();
-
-            return vData;
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Id.ToString() == visitId && x.VisitName == visitName && x.VisitSection == visitSection).OrderBy(x => x.Visit.PlannedVisitDate).ToList();
         }
         public List<string> GetCompletedVisitsForVisitId(string visitId) {
 
-            List<string> vData = new List<string>();
-                vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                select visitData
-            ).Select(y => y.VisitName).Distinct().ToList();
-
-            return vData;
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Id.ToString() == visitId).OrderBy(x => x.Visit.PlannedVisitDate).Select(y => y.VisitName).Distinct().ToList();
         }
         public List<VisitData> GetVisitDataForVisitId(string visitId)
         {
-            return (
-                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                select visitData
-            ).ToList();
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Id.ToString() == visitId).OrderBy(x => x.Visit.PlannedVisitDate).ToList();
         }
         public List<VisitData> GetGrowthDataForInfant(string id) {
 
-              List<VisitData> vData = new List<VisitData>();
-              vData = (
-                  from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderByDescending(x => x.PlannedVisitDate)
-                  join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || 
-                                                                       y.Question == Constants.GGSettings.q_length || 
-                                                                       y.Question == Constants.GGSettings.q_muac) on visit.Id equals visitData.VisitId
-                  select visitData
-              ).ToList();
-
-              return vData;
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Infant.UserId == id && x.QuestionAnswer != "undefined" &&
+                                                (x.Question == Constants.GGSettings.q_weight || x.Question == Constants.GGSettings.q_length || x.Question == Constants.GGSettings.q_muac)).ToList();
         }
         public int GetTotalGrowthInfantsForWeek(string id, Boolean currentWeek)
         {
