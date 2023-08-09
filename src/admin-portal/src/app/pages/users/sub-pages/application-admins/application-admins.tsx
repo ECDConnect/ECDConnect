@@ -33,7 +33,7 @@ export default function ApplicationAdmins() {
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
   const [selectedPage, setSelectedPage] = useState<number>(1);
-  const [selectedPageSize, setSelectedPageSize] = useState<number>(100);
+  const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
 
   let userStatus = statusFilter === 'active' ? true : false;
 
@@ -56,11 +56,6 @@ export default function ApplicationAdmins() {
       },
     };
   };
-
-  const { data: userCountData } = useQuery(getUserCount, {
-    variables: getCountVariables(''),
-    fetchPolicy: 'cache-and-network',
-  });
 
   const getVariables = (
     search: string,
@@ -113,7 +108,7 @@ export default function ApplicationAdmins() {
       searchValue,
       nameFilter,
       selectedPage,
-      userCountData?.countUsers ?? selectedPageSize
+      selectedPageSize
     );
     getAllUsers({
       variables: getUserQueryVariables,
@@ -130,7 +125,12 @@ export default function ApplicationAdmins() {
       const copyItems = data.users;
       const modifiedData = copyItems.map(
         (obj: { [x: string]: any; __typename: any; roles: any }) => {
-          const { __typename: _, roles, ...rest } = obj;
+          const newUserData = {
+            ...obj,
+            displayColumnIdPassportEmail:
+              obj?.email || obj?.userName || obj?.idNumber || '',
+          };
+          const { __typename: _, roles, ...rest } = newUserData;
           const modifiedRoles = roles.map(
             (role: { [x: string]: any; __typename: any }) => {
               const { __typename: __, ...roleRest } = role;
@@ -381,7 +381,10 @@ export default function ApplicationAdmins() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'email', use: 'Email' },
+                    {
+                      field: 'displayColumnIdPassportEmail',
+                      use: 'Email/Username/Id',
+                    },
                     { field: 'fullName', use: 'name' },
                     { field: 'insertedDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Active' },
@@ -392,7 +395,7 @@ export default function ApplicationAdmins() {
                   searchInput={searchValue}
                   options={{
                     per_page: selectedPageSize,
-                    rows: userCountData?.userCount,
+                    rows: tableData?.length,
                   }}
                   component={'administrators'}
                 />
