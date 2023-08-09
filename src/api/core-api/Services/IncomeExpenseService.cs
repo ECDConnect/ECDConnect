@@ -23,6 +23,7 @@ using ECDLink.DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 
 namespace ECDLink.Core.Services
 {
@@ -462,6 +463,19 @@ namespace ECDLink.Core.Services
             return isStatementSubmitted;
         }
 
+        private DateTime? GetLastSubmittedDate(string userId)
+        {
+            bool isStatementSubmitted = false;
+            var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
+
+            var row = statementsRepo.GetAll() //get all rows for year to date
+                    .Where(x => string.Equals(x.UserId, userId))
+                   .OrderByDescending(y => y.SubmittedDate)
+                   .Select(y => y.SubmittedDate)
+                    .FirstOrDefault();
+            return row;            
+        }
+
         public List<StatementsExpenseType> GetAllStatementExpenseTypes(string userId, int year, int month)
         {
             // Only return types linked to expenses for params
@@ -819,31 +833,43 @@ namespace ECDLink.Core.Services
             return SubmitStatement(statement, true);
         }
 
-        public List<string> GetUnsubmittedStatements()
+        public Dictionary<string, DateTime> GetUnsubmittedStatements()
         {
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
+
             //find statements that have not been submitted for the previous month, assuming the SW runs the <<forceSubmitDay>> of the following month,
             //not having a statement for any users but have income/expenses mean they have not submitted and needs to be auto submit.
-            List<string> allPractitionersToCheck = GetPractitionersDueStatements();
-            List<string> allDuePractitioners = allPractitionersToCheck.Copy(); //copy and yank from this list to prevent issues with foreach loop
+            List<Practitioner> allPractitionersToCheck = GetPractitionersDueStatements();
+            Dictionary<string, DateTime> allDuePractitioners = new Dictionary<string, DateTime>();
             foreach (var practitioner in allPractitionersToCheck)
             {
-                if (IsSubmitted(practitioner, submitPeriod.Start.Year, submitPeriod.Start.Month))
+                if (IsSubmitted(practitioner.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month))
                 {
-                    allDuePractitioners.Remove(practitioner);
+                    allDuePractitioners.Add(practitioner.UserId, submitPeriod.Start);
+                } else
+                {
+                    //get last submitted date
+                    DateTime? lastDate = GetLastSubmittedDate(practitioner.UserId);
+
+                    if (lastDate == null)
+                    {
+                        allDuePractitioners.Add(practitioner.UserId, submitPeriod.Start);
+                    } else
+                    {
+                        allDuePractitioners.Add(practitioner.UserId, (DateTime)lastDate);
+                    }
                 }
             }
             return allDuePractitioners;
         }
 
-        public List<string> GetPractitionersDueStatements()
+        public List<Practitioner> GetPractitionersDueStatements()
         {
             //find all users that are principal and/or FAA that were created before the start of the  submission period, as they would be due statements for stipends
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-            var allDuePracs =pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date && x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315").Select(x => x.UserId).ToList();
+            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date && x.UserId == "4a715da0-b50a-4246-9f0a-5a99fb7e13ab").ToList();
 
-            return allDuePracs;
         }
     }
     #endregion

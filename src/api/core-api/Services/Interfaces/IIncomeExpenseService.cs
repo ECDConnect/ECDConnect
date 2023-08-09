@@ -1,4 +1,6 @@
 ﻿using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Entities.Users;
+using System;
 using System.Collections.Generic;
 
 namespace ECDLink.Core.Services.Interfaces
@@ -16,7 +18,7 @@ namespace ECDLink.Core.Services.Interfaces
         StatementsStartupSupport UpdateStartupSupport(StatementsStartupSupport model);
         bool SubmitStatement(StatementsSubmit model, bool autoSubmitted = false);
         bool AutoSubmitStatement(string userId, int year, int month);
-        List<string> GetUnsubmittedStatements();
-        List<string> GetPractitionersDueStatements();
+        Dictionary<string, DateTime> GetUnsubmittedStatements();        
+        List<Practitioner> GetPractitionersDueStatements();
     }
 }

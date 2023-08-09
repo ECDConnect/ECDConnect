@@ -82,14 +82,13 @@ StatementsSubmit input)
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
         public ResultReturnObject AutoSubmitStatement([Service] IncomeExpenseService incomeManager)
         {
-            //TODO: pull from system settings
-            //run previous months unsubmitted
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsDueSubmits = incomeManager.GetUnsubmittedStatements();
 
-            foreach (var userId in pracsDueSubmits)
+            foreach (var pracData in pracsDueSubmits)
             {
-                incomeManager.AutoSubmitStatement(userId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+                DateTime duePeriod  = pracData.Value;
+                incomeManager.AutoSubmitStatement(pracData.Key, duePeriod.Year, duePeriod.Month);
             }
             return new ResultReturnObject() { ResultMessage = "OK" };
         }
