@@ -34,4 +34,5 @@ export interface PractitionerDto extends EntityBase {
   attendedChildProgress?: boolean;
   usePhotoInReport?: string;
   setupTraineeInitiated?: boolean;
+  isOnStipend?: boolean;
 }
