@@ -45,7 +45,7 @@ namespace EcdLink.Api.CoreApi.Documents
 
         public bool DeleteUserDocument(string userId, FileTypeEnum fileType)
         {
-            var repo = _repositoryFactory.CreateRepository<Document>();
+            var repo = _repositoryFactory.CreateRepository<Document>(userContext: userId);
 
             var documents = repo.GetAll()
                                 .Where(x => string.Equals(x.UserId, userId)

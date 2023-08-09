@@ -56,7 +56,7 @@ import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-l
 import ROUTES from './routes';
 import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
 import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
-import { RemovePractioner } from '@/pages/coach/practitioner-profile-info/components/remove-practinioner/remove-practioner';
+import { RemovePractioner } from '@/pages/coach/practitioner-profile-info/components/remove-practitioner/remove-practitioner';
 import { SetupPrincipal } from '@/pages/principal/setup-principal/setup-principal';
 import { PrincipalPractitionerProfileInfo } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/principal-practitioner-profile';
 import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-child-list/principal-practitioner-child-list';
@@ -81,6 +81,11 @@ import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journ
 import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
 import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
 import Calendar from '@/pages/calendar/calendar-home';
+import RemovePractitionerFromProgramme from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/remove-practitioner-from-programme';
+import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
+import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
+import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
+import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -245,6 +250,16 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         exact
+        path={ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME}
+        component={RemovePractitionerFromProgramme}
+      />
+      <Route
+        exact
+        path={ROUTES.PRINCIPAL.SWAP_PRINCIPAL}
+        component={SwitchPrincipal}
+      />
+      <Route
+        exact
         path={ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST}
         component={PrincipalPractitionerChildList}
       />
@@ -335,6 +350,21 @@ const AuthRoutes: React.FC = () => {
         component={ProgrammePlanningDailyRoutine}
       />
       <Route exact path={ROUTES.COACH.PROFILE.ROOT} component={CoachProfile} />
+      <Route
+        exact
+        path={ROUTES.COACH_SMARTSPACE_CHECK}
+        component={CoachSmartSpaceChecklist}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH_FRANCHISE_AGREEMENT}
+        component={CoachTraineeFranchisorAgreement}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH_SELF_ASSESSMENT}
+        component={CoachSelfAssessment}
+      />
       <Route
         exact
         path={ROUTES.COACH.PROFILE.EDIT}

@@ -60,7 +60,8 @@ export const getPregnancyCareSteps = (
   isIDDocumentStep: boolean,
   isMaternalDistressFollowUp: boolean,
   isMaternalDistress: boolean,
-  isHIVCareStep: boolean
+  isHIVCareStep: boolean,
+  isEqualOrAfter196Days: boolean
 ) => {
   const defaultScreens = [
     WeightAndLengthResultStep,
@@ -74,7 +75,9 @@ export const getPregnancyCareSteps = (
     ...(isAlcoholUseStep ? [AlcoholUseStep] : []),
     ...(isHIVCareStep ? [HivCareAndMedicationStep] : []),
     ...(isIDDocumentStep ? [IdDocumentStep] : []),
-    ...(isEqualOrAfter98andEqualOrBefore168Days ? [BirthPreparationStep] : []),
+    ...(isEqualOrAfter98andEqualOrBefore168Days || isEqualOrAfter196Days
+      ? [BirthPreparationStep]
+      : []),
     ...(isEqualOrAfter98andEqualOrBefore168Days ? [InfantCareStep] : []),
   ];
 

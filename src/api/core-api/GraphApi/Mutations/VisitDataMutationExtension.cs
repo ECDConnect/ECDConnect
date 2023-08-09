@@ -6,7 +6,6 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {

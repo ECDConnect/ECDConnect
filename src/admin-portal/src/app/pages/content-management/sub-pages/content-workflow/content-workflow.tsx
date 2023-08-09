@@ -114,71 +114,44 @@ export default function ContentWorkflow({
   if (contentView && languages && currentContent && defaultLanguageId) {
     return (
       <div className="flex flex-col">
-        <div className="min-w-0 flex-1 rounded bg-white bg-white shadow xl:flex">
+        <div className="mb-6 flex flex-row overflow-auto rounded-md bg-white">
+          {!isCompareMode &&
+            languages.map((item: LanguageDto, index: number) => (
+              <div className={'w-3/12 '}>
+                <a
+                  key={index}
+                  onClick={() => {
+                    setSelectedLanguageId(item.id ?? '');
+                  }}
+                  className={classNames(
+                    selectedLanguageId === item.id
+                      ? 'bg-infoBb text-secondary border-b-secondary border-b-2   '
+                      : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
+                    'users-tabs text-md flex h-14 items-center font-medium'
+                  )}
+                >
+                  {item.description}
+                </a>
+              </div>
+            ))}
+        </div>
+        <div className="min-w-0 flex-1 rounded xl:flex">
           {!isCompareMode ? (
             <>
-              <div className="xl:border-uiMidDark border-b border-gray-200 xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
-                <div
-                  key={'gobackToContentTypes'}
-                  onClick={() => goBack()}
-                  className={classNames(
-                    'bg-uiMid just hover:bg-uiMidDark group flex h-14 cursor-pointer items-center border-b px-4 text-sm font-medium text-white hover:text-white'
-                  )}
-                >
-                  <ArrowLeftIcon width="20px" />
-                  <span className="pl-2">Content Types</span>
-                </div>
-                <div
-                  key={'compareLanguages'}
-                  onClick={() => setIsCompareMode(!isEdit)}
-                  className={classNames(
-                    'bg-uiMid just hover:bg-uiMidDark group flex h-14 cursor-pointer items-center justify-between px-4 text-sm font-medium text-white hover:text-white'
-                  )}
-                >
-                  Compare Languages
-                  <DocumentDuplicateIcon width="20px" />
-                </div>
-                {languages.map((item: LanguageDto, index: number) => (
-                  <div
-                    key={index}
-                    onClick={() => {
-                      setSelectedLanguageId(item.id ?? '');
-                    }}
-                    className={classNames(
-                      selectedLanguageId === item.id
-                        ? 'bg-uiMidDark text-white'
-                        : 'text-textMid hover:bg-uiMidDark hover:text-white',
-                      'group flex h-14 cursor-pointer items-center justify-between px-4 text-sm font-medium'
-                    )}
-                  >
-                    {item.description}
-
-                    {checkIfLanguageTranslated(item.id ?? '') ? (
-                      <CheckCircleIcon
-                        className="text-successMain"
-                        width="20px"
-                      />
-                    ) : (
-                      <XCircleIcon className="text-alertMain" width="20px" />
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="bg-uiMidDark lg:min-w-0 lg:flex-1 ">
+              <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
                 <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
                   <div
                     className="relative h-full"
                     style={{ minHeight: '36rem' }}
                   >
-                    <div className="rounded-lg border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
-                      {!isEdit ? (
+                    <div className="rounded-lg border-b px-4 py-5 sm:px-6">
+                      {isEdit ? (
                         <div>
                           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
                             <div className="ml-4 mt-2">
-                              <h3 className="text-lg font-medium leading-6 text-gray-900">
+                              <h3 className="text-md font-medium leading-6 text-gray-900">
                                 {camelCaseToSentanceCase(
-                                  contentType.name ?? ''
+                                  contentType.name + '-' + contentType ?? ''
                                 )}
                               </h3>
                             </div>
@@ -186,9 +159,9 @@ export default function ContentWorkflow({
                               <button
                                 onClick={() => setIsEdit(!isEdit)}
                                 type="button"
-                                className="bg-uiMid hover:bg-primary focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                                className="bg-uiMid hover:bg-secondary focus:outline-none text-md inline-flex items-center rounded-md border border-transparent px-4 py-2.5 font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                               >
-                                {isEdit ? 'Preview' : 'Edit'} content
+                                {!isEdit ? 'Preview' : 'Edit'} content
                               </button>
                             </div>
                           </div>
@@ -212,9 +185,10 @@ export default function ContentWorkflow({
                               currentContent?.contentValues
                             )}
                             contentType={contentType}
-                            cancelEdit={() => setIsEdit(!isEdit)}
+                            cancelEdit={() => goBack()}
                             savedContent={savedContent}
                             defaultLanguageId={defaultLanguageId}
+                            cancelCompare={() => setIsCompareMode(!isEdit)}
                           />
                         </div>
                       )}

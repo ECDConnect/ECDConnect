@@ -18,7 +18,7 @@ namespace ECDLink.Abstractrions.GraphQL.Attributes
         }
         public int? PageSize { 
             get => pageSize;
-            set => pageSize = value >= 1 ? value : DEFAULT_PAGESIZE; 
+            set => pageSize = value >= 1 ? value : null;
         }
 
         public PagedQueryInput()

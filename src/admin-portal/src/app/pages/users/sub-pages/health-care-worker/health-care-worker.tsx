@@ -60,8 +60,22 @@ export default function HealthCareWorkers() {
   const [clinicFilter, setClinicFilter] = useState('');
   const [sortDescending, setSortDescending] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(null);
+  const [totalItemCount, setTotalItemCount] = useState(10);
 
+  const viewSelectedRow = (selectedRow: any) => {
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: '/users/view-user',
+      state: {
+        component: 'chw',
+        userId: selectedRow?.userId,
+      },
+    });
+  };
   const getVariables = (
     search: string,
     province: string,
@@ -69,7 +83,7 @@ export default function HealthCareWorkers() {
     clinic: string,
     sortDescending: boolean,
     currentPage: number,
-    pageSize: number
+    pageSize: number | null
   ) => {
     return {
       provinceSearch: province,
@@ -88,14 +102,16 @@ export default function HealthCareWorkers() {
     };
   };
 
-  const { data: chwCountData } = useQuery(getHealthCareWorkerCount, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      search: '',
-      clinicSearch: '',
-      provinceSearch: '',
-    },
-  });
+  // TODO: fetch count when the total was implemented
+  // const [getAllHealthCareWorkersCount, {data: chwCountData }] = useLazyQuery(
+  //   getHealthCareWorkerCount, {
+  //   fetchPolicy: 'cache-and-network',
+  //   variables: {
+  //     search: '',
+  //     clinicSearch: '',
+  //     provinceSearch: '',
+  //   },
+  // });
 
   const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(
     GetAllHealthCareWorker,
@@ -107,7 +123,7 @@ export default function HealthCareWorkers() {
         teamLeadFilter,
         sortDescending,
         currentPage,
-        pageSize
+        null
       ),
       fetchPolicy: 'network-only',
     }
@@ -122,8 +138,9 @@ export default function HealthCareWorkers() {
         teamLeadFilter,
         sortDescending,
         currentPage,
-        chwCountData?.countHealthCareWorkers
+        pageSize
       ),
+      fetchPolicy: 'network-only',
     });
   }, [
     provinceFilter,
@@ -133,7 +150,6 @@ export default function HealthCareWorkers() {
     currentPage,
     pageSize,
     sortDescending,
-    chwCountData,
   ]);
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
@@ -174,6 +190,7 @@ export default function HealthCareWorkers() {
   const mapUserTableItem = (item: any) => {
     return {
       ...item,
+      userId: item.user?.id,
       fullName: `${item.user?.fullName}`,
       isActive: item.user?.isActive,
       idNumber: item.user?.idNumber,
@@ -186,6 +203,8 @@ export default function HealthCareWorkers() {
       const copyItems = data.allHealthCareWorkers.map(
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
       );
+      // TODO: Move this when the UITable supports setting a length.
+      setTotalItemCount(data.allHealthCareWorkers.length);
       setTableData(copyItems);
       // let userStatus = statusFilter === 'active' ? true : false;
       // setTableData(
@@ -434,9 +453,8 @@ export default function HealthCareWorkers() {
                     hasPermission(PermissionEnum.update_user) && sendInvite
                   }
                   searchInput={searchValue}
-                  viewRow={true}
-                  urlRow={'/view-user/'}
                   component={'chw'}
+                  viewRow={viewSelectedRow}
                 />
               </div>
             </div>

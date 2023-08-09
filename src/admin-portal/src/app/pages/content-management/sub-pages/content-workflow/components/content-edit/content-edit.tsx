@@ -16,6 +16,13 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
+import { Alert, classNames } from '@ecdlink/ui';
+import {
+  ArrowLeftIcon,
+  DocumentDuplicateIcon,
+  SaveAsIcon,
+  XIcon,
+} from '@heroicons/react/solid';
 
 export interface ContentViewProps {
   content: any;
@@ -24,8 +31,9 @@ export interface ContentViewProps {
   contentValues: ContentValueDto[];
   optionDefinitions: ContentDefinitionModelDto[];
   contentType: ContentTypeDto;
-  cancelEdit: () => void;
   savedContent: () => void;
+  cancelEdit?: () => void;
+  cancelCompare?: () => void;
 }
 
 export default function ContentEdit({
@@ -37,6 +45,7 @@ export default function ContentEdit({
   contentType,
   cancelEdit,
   savedContent,
+  cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit } = useForm();
@@ -146,35 +155,47 @@ export default function ContentEdit({
 
   if (contentType && contentValues && template && !loading) {
     return (
-      <div className="flex flex-col">
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="space-y-8 divide-y divide-gray-200"
-        >
-          <div className="-ml-4 -mt-2 flex items-center justify-between flex-wrap sm:flex-nowrap">
+      <div className="flex flex-col rounded-md ">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
+          <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                {camelCaseToSentanceCase(contentType.name ?? '')}
+              <h3 className="text-lg font-medium leading-6 text-gray-900">
+                {cancelEdit && camelCaseToSentanceCase(contentType.name ?? '')}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              <button
-                onClick={cancelEdit}
-                type="button"
-                className="mr-2 inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                View
-              </button>
-              <button
-                type="submit"
-                className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-uiMid focus:outline-none focus:ring-2 focus:ring-offset-2"
-              >
-                Save
-              </button>
+              {cancelCompare && (
+                <button
+                  type="button"
+                  onClick={cancelCompare}
+                  className=" bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                >
+                  Compare Languages
+                  <DocumentDuplicateIcon width="20px" className="pl-1" />
+                </button>
+              )}
+
+              {cancelEdit && (
+                <button
+                  onClick={cancelEdit}
+                  type="button"
+                  className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
+                >
+                  Cancel
+                  <XIcon width="22px" className="pl-1" />
+                </button>
+              )}
             </div>
           </div>
-
-          <div className="pt-4 pb-8">
+          <div className="rounded-xl bg-white px-12 pt-6 pb-8">
+            {contentType.name === 'Consent' && (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
+                type="info"
+              />
+            )}
+            )
             <DynamicForm
               template={template}
               handleform={handleform}
@@ -182,6 +203,13 @@ export default function ContentEdit({
               defaultLanguageId={defaultLanguageId}
             />
           </div>
+          <button
+            type="submit"
+            className="bg-secondary hover:bg-uiMid focus:outline-none ml-4 inline-flex items-center rounded-md border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+          >
+            Save & publish
+            <SaveAsIcon width="22px" className="pl-1" />
+          </button>
         </form>
       </div>
     );

@@ -4,7 +4,6 @@ using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
-using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
@@ -16,6 +15,7 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Data;
+using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -160,40 +160,59 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] VisitManager visitManager,
             [Service] InfantManager infantManager,
             [Service] MotherManager motherManager,
+            IGenericRepositoryFactory repoFactory,
             string userId,
+            string healthCareWorkerId,
             DateTime? startDate = null,
             DateTime? endDate = null)
         {
-            // TODO: Verify these
-            // Take given date or take start of this week.
-            var _startDate = startDate ?? DateTimeExtensions.StartOfWeek(startDate ?? DateTime.Today, DayOfWeek.Monday);
-            // Take given date or use end of this week.
-            var _endDate = endDate ?? _startDate.Add(TimeSpan.FromDays(7).Subtract(TimeSpan.FromMilliseconds(1)));
+            // Take given date or take now with 30 days back
+            var _endDate = (endDate?.ToUniversalTime() ?? DateTime.UtcNow).Date.AddDays(1).Subtract(TimeSpan.FromMicroseconds(1));
+            DateTime _startDate = DateTime.UtcNow;
+
+            if (startDate >= endDate)
+            {
+                var a = _startDate;
+                _startDate = _endDate.Date;
+                _endDate = a;
+            }
+            else
+                _startDate = (startDate?.ToUniversalTime().Date ?? DateTime.UtcNow.Date.Subtract(TimeSpan.FromDays(30)));
+
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>();
+            Guid.TryParse(healthCareWorkerId, out Guid hcwId);
+            var communityHealthWorker = healthCareWorkerRepo.GetById(hcwId);
+
+            var healthCareWorkerUserId = communityHealthWorker?.UserId ?? userId;
+
+            if (healthCareWorkerUserId is null)
+                throw new QueryException("User does not exist.");
 
             HCWSummary summary = new HCWSummary();
 
             // TODO: its meant to be filtered to the current date range: , _startDate, _endDate);
-            summary.totalPregnantMoms = motherManager.GetTotalPregnantMothers(userId, _startDate, _endDate);
-            summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(userId, _startDate, _endDate);
-            
-            
-            //var mothersAdnChildren = new string[] { Constants.GGSettings.client_mother, Constants.GGSettings.client_child };
-            //summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(userId, mothersAdnChildren, startDate, endDate);
-            summary.totalClientsVisited = summary.totalPregnantMoms + summary.totalChildren;
+            summary.totalPregnantMoms = motherManager.GetTotalPregnantMothers(healthCareWorkerUserId, _startDate, _endDate);
+            summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(healthCareWorkerUserId, _startDate, _endDate);
 
-            // Mothers are folders.
-            summary.totalFoldersOpened = motherManager.GetTotalNewMothersForPeriod(userId, _startDate, _endDate);
+            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(healthCareWorkerUserId, null, _startDate, _endDate);
 
-            // Pregnant Mom Visits cannot be missed and will only be overdue.
-            summary.totalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(userId, Constants.GGSettings.client_child, _startDate, _endDate);
+            // Mothers and Infants are folders.
+            summary.totalFoldersOpened = motherManager.GetTotalNewClientsForPeriod(healthCareWorkerUserId, _startDate, _endDate);
 
-            summary.totalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(userId, _startDate, _endDate);
-            summary.totalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(userId, _startDate, _endDate);
-            
-            // Pregnant Mom Visits cannot be missed and will only be overdue.
-            summary.totalVisitsOverdue = visitManager.GetTotalVisitsMissedForPeriod(userId, Constants.GGSettings.client_mother, _startDate, _endDate);
-            summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(userId, _startDate, _endDate);
-            summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(userId, _startDate, _endDate); ;
+            summary.totalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_child, _startDate, _endDate);
+
+            var motherVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_mother, _startDate, _endDate);
+            var infantVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_mother, _startDate, _endDate);
+            summary.totalVisitsOverdue = motherVisitsOverdue + infantVisitsOverdue;
+
+            summary.totalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(healthCareWorkerUserId, _startDate, _endDate);
+            summary.totalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(healthCareWorkerUserId, _startDate, _endDate);
+
+            summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(healthCareWorkerUserId, _startDate, _endDate);
+            summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId, _startDate, _endDate); ;
+
+            summary.totalPregnantMomsWithNoIssues = visitManager.GetTotalPregnantMothersWithNoIssues(healthCareWorkerUserId, _startDate, _endDate);
+            summary.totalChildrenWithNoIssues = visitManager.GetTotalCaregiversAndChildrenWithNoIssues(healthCareWorkerUserId, _startDate, _endDate); ;
 
             return summary;
         }

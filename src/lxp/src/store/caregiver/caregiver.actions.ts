@@ -83,16 +83,16 @@ export const upsertCareGivers = createAsyncThunk<
         for (const caregiver of caregivers) {
           const input = mapCaregiver(caregiver);
 
-          if (caregiver.siteAddress) {
-            const addressInput = mapSiteAddress(caregiver.siteAddress);
-            await new SiteAddressService(
-              userAuth?.auth_token
-            ).updateSiteAddress(caregiver.siteAddress.id ?? '', addressInput);
-
-            input.SiteAddressId = addressInput.Id;
-          }
-
           if (caregiver?.isOnline === false) {
+            if (caregiver.siteAddress) {
+              const addressInput = mapSiteAddress(caregiver.siteAddress);
+              await new SiteAddressService(
+                userAuth?.auth_token
+              ).updateSiteAddress(caregiver.siteAddress.id ?? '', addressInput);
+
+              input.SiteAddressId = addressInput.Id;
+            }
+
             await new CaregiverService(userAuth?.auth_token).updateCareGiver(
               caregiver.id ?? '',
               input

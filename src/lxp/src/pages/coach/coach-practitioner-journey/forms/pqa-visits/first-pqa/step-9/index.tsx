@@ -1,12 +1,57 @@
 import { Divider, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../../dynamic-form';
-import { useLayoutEffect } from 'react';
+import { Fragment, useLayoutEffect } from 'react';
+import { SelfAssessmentCard } from './card';
+import { useSelector } from 'react-redux';
+import {
+  getPractitionerTimelineByIdSelector,
+  getSectionsQuestionsByStep,
+} from '@/store/pqa/pqa.selectors';
+import {
+  selfAssessmentVisitSectionStep2,
+  selfAssessmentVisitSectionStep3,
+  selfAssessmentVisitSectionStep4,
+} from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms/self-assessment';
 
 export const Step9 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
   const name = smartStarter?.user?.firstName || smartStarter?.firstName;
+  const userId = smartStarter?.user?.id || smartStarter?.id || '';
+  const timeline = useSelector(getPractitionerTimelineByIdSelector(userId));
 
-  // TODO: add N7
-  const isFilledSelfAssessment = false;
+  const selfAssessmentVisit = timeline?.selfAssessmentVisits?.[0];
+
+  const previousDataStep2 =
+    useSelector(
+      getSectionsQuestionsByStep(
+        selfAssessmentVisit?.id ?? '',
+        'selfAssessmentPreviousFormData',
+        selfAssessmentVisitSectionStep2
+      )
+    )?.questions ?? [];
+  const previousDataStep3 =
+    useSelector(
+      getSectionsQuestionsByStep(
+        selfAssessmentVisit?.id ?? '',
+        'selfAssessmentPreviousFormData',
+        selfAssessmentVisitSectionStep3
+      )
+    )?.questions ?? [];
+  const previousDataStep4 =
+    useSelector(
+      getSectionsQuestionsByStep(
+        selfAssessmentVisit?.id ?? '',
+        'selfAssessmentPreviousFormData',
+        selfAssessmentVisitSectionStep4
+      )
+    )?.questions ?? [];
+
+  const data = [
+    ...previousDataStep2,
+    ...previousDataStep3,
+    ...previousDataStep4,
+  ];
+
+  const isFilledSelfAssessment = !!data?.length;
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
@@ -26,7 +71,15 @@ export const Step9 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
       />
       <Divider dividerType="dashed" className="my-4" />
       {isFilledSelfAssessment ? (
-        <>{/* TODO: add N7 */}</>
+        data?.map((item) => (
+          <Fragment key={item.question}>
+            <SelfAssessmentCard
+              text={item?.question}
+              rating={String(item?.answer)}
+            />
+            <Divider dividerType="dashed" className="my-4" />
+          </Fragment>
+        ))
       ) : (
         <>
           <Typography

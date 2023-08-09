@@ -190,7 +190,7 @@ export const PregnantDetails: React.FC<EditPregnantDetailsProps> = ({
                         .filter((x) => x.id && x.firstName?.length! > 0)
                         .map((item) => {
                           return {
-                            label: item.firstName!,
+                            label: item.firstName! + ' ' + item.surname!,
                             value: item.id,
                           };
                         })) ||

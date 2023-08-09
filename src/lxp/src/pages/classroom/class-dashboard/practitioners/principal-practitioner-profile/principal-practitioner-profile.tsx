@@ -12,35 +12,33 @@ import {
   StatusChip,
   Typography,
   Card,
+  Alert,
 } from '@ecdlink/ui';
-import { NoteTypeEnum } from '@ecdlink/graphql';
+import { NoteTypeEnum, PractitionerRemovalHistory } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './principal-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './principal-practitioner-profile.styles';
 import ROUTES from '@routes/routes';
-import { PhoneIcon } from '@heroicons/react/solid';
+import { PhoneIcon, XCircleIcon } from '@heroicons/react/solid';
 import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { classroomsSelectors } from '@/store/classroom';
-import { useAppDispatch } from '@store';
 import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
-import { PractitionerService } from '@/services/PractitionerService';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import { getMonth } from 'date-fns';
+import { PractitionerService } from '@/services/PractitionerService';
+import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
+import { formatDateLong } from '@/utils/common/date.utils';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
-  const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
@@ -133,28 +131,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     );
   };
 
-  const removePractitioner = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
+  const [editRemovalDialogVisable, setEditRemovalDialogVisable] =
+    useState<boolean>(false);
+  const [existingRemoval, setExisitingRemoval] = useState<
+    PractitionerRemovalHistory | undefined
+  >();
+
+  const getRemovalForPractitioner = async () => {
+    const removalDetails = await new PractitionerService(
       userAuth?.auth_token!
-    ).UpdatePractitionerRegistered(practitioner?.userId!, false);
-    await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
-    ).unwrap();
-    history.push(ROUTES.CLASSROOM);
+    ).getRemovalForPractitioner(practitioner?.userId!);
+    setExisitingRemoval(removalDetails);
+
+    return removalDetails;
   };
 
   const classroomsMetrics = async () => {
@@ -174,8 +163,16 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   useEffect(() => {
     classroomsMetrics();
+    getRemovalForPractitioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const cancelPractitionerRemoval = async () => {
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
+    setExisitingRemoval(undefined);
+  };
 
   return (
     <>
@@ -271,6 +268,50 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             </div>
           </BannerWrapper>
           <div className="flex flex-wrap justify-center">
+            {existingRemoval && (
+              <Card className={styles.removalCard}>
+                <div className="mt-2 mr-4 flex items-center">
+                  <div className="mx-4 mt-2 mb-4 flex w-full items-center">
+                    <XCircleIcon
+                      className="text-errorMain h-5 w-5"
+                      aria-hidden="true"
+                    />
+                    <Typography
+                      type={'body'}
+                      color="errorMain"
+                      text={`${
+                        practitioner?.user?.firstName
+                      } will be removed on ${
+                        existingRemoval?.dateOfRemoval
+                          ? formatDateLong(
+                              new Date(existingRemoval?.dateOfRemoval)
+                            )
+                          : ''
+                      }`}
+                      className={styles.absentCardSubTitle}
+                    />
+                  </div>
+                  <Button
+                    size="small"
+                    shape="normal"
+                    color="primary"
+                    type="filled"
+                    onClick={() => setEditRemovalDialogVisable(true)}
+                  >
+                    {renderIcon(
+                      'PencilIcon',
+                      'w-5 h-5 color-primary text-primary mr-2'
+                    )}
+                    <Typography
+                      type="body"
+                      className="mr-4"
+                      color="white"
+                      text={'Edit'}
+                    ></Typography>
+                  </Button>
+                </div>
+              </Card>
+            )}
             <Card className={styles.absentCard}>
               <div className={styles.absentCardTitle}>
                 <Typography
@@ -632,28 +673,61 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               </Dialog>
             </div>
             <Divider dividerType="dashed" className="my-4" />
-            <div className="flex w-full justify-center">
-              <Button
-                type="outlined"
-                color="primary"
-                className={'mt-6 mb-6 w-11/12'}
-                onClick={removePractitioner}
-              >
-                {renderIcon(
-                  'UsersIcon',
-                  'w-5 h-5 color-primary text-primary mr-2'
-                )}
-                <Typography
-                  type="body"
-                  className="mr-4"
+            {!existingRemoval && (
+              <div className="flex w-full justify-center">
+                <Button
+                  type="outlined"
                   color="primary"
-                  text={'Remove practitioner'}
-                ></Typography>
-              </Button>
-            </div>
+                  className={'mt-6 mb-6 w-11/12'}
+                  onClick={() =>
+                    history.push(
+                      ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
+                      {
+                        practitionerId,
+                      }
+                    )
+                  }
+                >
+                  {renderIcon(
+                    'UsersIcon',
+                    'w-5 h-5 color-primary text-primary mr-2'
+                  )}
+                  <Typography
+                    type="body"
+                    className="mr-4"
+                    color="primary"
+                    text={'Remove practitioner'}
+                  ></Typography>
+                </Button>
+              </div>
+            )}
           </>
         </div>
       )}
+      <Dialog
+        className={'mb-16 px-4'}
+        stretch={true}
+        visible={editRemovalDialogVisable}
+        position={DialogPosition.Bottom}
+      >
+        <EditRemovePractitionerFromProgrammePrompt
+          practitioner={practitioner}
+          classroomName={classroom?.name || ''}
+          removalDetails={existingRemoval as PractitionerRemovalHistory}
+          onEdit={() => {
+            history.push(ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME, {
+              practitionerId,
+            });
+          }}
+          onCancel={() => {
+            cancelPractitionerRemoval();
+            setEditRemovalDialogVisable(false);
+          }}
+          onClose={() => {
+            setEditRemovalDialogVisable(false);
+          }}
+        />
+      </Dialog>
     </>
   );
 };

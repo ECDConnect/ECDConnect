@@ -348,46 +348,45 @@ export const Step19 = ({
         color="textDark"
       />
       {hasChildren && currentClassroomGroups.length > 1 && (
-        <div className="flex flex-row justify-between overflow-x-auto px-4 pt-4">
-          <SearchDropDown<any>
-            displayMenuOverlay
-            menuItemClassName="w-11/12 left-4"
-            className={'mr-1'}
-            disabled={isViewAnswers}
-            options={
-              (classroomGroups && isPrincipal
-                ? currentClassroomGroups.map((x) => {
-                    return {
-                      id: x.id ?? '',
-                      value: x,
-                      label: x.name,
-                      disabled: false,
-                    };
-                  })
-                : classroomGroups.map((x) => {
-                    return {
-                      id: x.id ?? '',
-                      value: x,
-                      label: x.name,
-                      disabled: false,
-                    };
-                  })) || []
-            }
-            onChange={(value) => onFilterItemsChanges(value)}
-            placeholder={'Class'}
-            pluralSelectionText={'Classes'}
-            color={'secondary'}
-            selectedOptions={selectedClassroomGroups.map((x) => ({
-              id: x.id ?? '',
-              value: x,
-              label: x.name,
-            }))}
-            info={{
-              name: `Filter by:${filterInfo?.filterName}`,
-              hint: filterInfo?.filterHint || '',
-            }}
-          />
-        </div>
+        <SearchDropDown<any>
+          displayMenuOverlay
+          menuItemClassName="w-11/12 left-4"
+          className="ml-2"
+          disabled={isViewAnswers}
+          options={
+            (classroomGroups && isPrincipal
+              ? currentClassroomGroups.map((x) => {
+                  return {
+                    id: x.id ?? '',
+                    value: x,
+                    label: x.name,
+                    disabled: false,
+                  };
+                })
+              : classroomGroups.map((x) => {
+                  return {
+                    id: x.id ?? '',
+                    value: x,
+                    label: x.name,
+                    disabled: false,
+                  };
+                })) || []
+          }
+          onChange={(value) => onFilterItemsChanges(value)}
+          placeholder={'Class'}
+          pluralSelectionText={'Classes'}
+          color={'secondary'}
+          multiple
+          selectedOptions={selectedClassroomGroups.map((x) => ({
+            id: x.id ?? '',
+            value: x,
+            label: x.name,
+          }))}
+          info={{
+            name: `Filter by:${filterInfo?.filterName}`,
+            hint: filterInfo?.filterHint || '',
+          }}
+        />
       )}
       <Divider dividerType="dashed" className="m-4" />
       {hasChildren && (
@@ -413,7 +412,7 @@ export const Step19 = ({
         return (
           <div
             id={`attendanceList${selectedGroup.id}`}
-            className={`overflow-y-auto ${hasChildren && 'pb-6'}`}
+            className={` ${hasChildren && 'pb-6'}`}
           >
             <ClassProgrammeAttendanceList
               key={`class_attendance_list_${idx}`}
@@ -434,7 +433,7 @@ export const Step19 = ({
           </div>
         );
       })}
-      <div className="mx-4">
+      <div className="mx-4 mb-4">
         <Typography
           type="h4"
           text={replaceBraces(questions[1].question, name)}
@@ -445,7 +444,11 @@ export const Step19 = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           options={options}
-          selectedOptions={Boolean(questions[1].answer)}
+          selectedOptions={
+            questions[1].answer !== ''
+              ? Boolean(questions[1].answer)
+              : undefined
+          }
           onOptionSelected={(value) => onOptionSelected(value, 1)}
         />
         {questions[1].answer !== '' && (

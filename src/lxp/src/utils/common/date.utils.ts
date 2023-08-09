@@ -10,6 +10,12 @@ import {
   parseISO,
 } from 'date-fns';
 
+const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+};
+
 export const isWorkingDay = (date: Date, holidays: HolidayDto[]) => {
   const holidaysAsDaysOfYears = holidays.map((x) =>
     getDayOfYear(parseISO(x.day))
@@ -57,4 +63,8 @@ export const calculateFullAge = (dob: Date) => {
     end: new Date(),
   });
   return { years: years ?? 0, months: months ?? 0, days: days ?? 0 };
+};
+
+export const formatDateLong = (date: Date) => {
+  return new Date(date).toLocaleDateString('en-ZA', dateLongMonthOptions);
 };

@@ -9,11 +9,13 @@ import { useSelector } from 'react-redux';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import ROUTES from '@/routes/routes';
+import { useSnackbar } from '@ecdlink/core';
 
 export const PractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
 > = ({ practitioner, classroom }) => {
   const history = useHistory();
+  const { showMessage } = useSnackbar();
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
@@ -39,6 +41,9 @@ export const PractitionerNotRegistered: React.FC<
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
     history.push(ROUTES.CLASSROOM);
+    showMessage({
+      message: `${practitioner?.user?.firstName} removed`,
+    });
   };
 
   const callForHelp = () => {

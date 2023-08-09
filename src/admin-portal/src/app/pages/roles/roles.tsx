@@ -11,7 +11,7 @@ import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import UiTable from '../../components/ui-table';
+import UiTable from '../../components/old-ui-table';
 import { useUser } from '../../hooks/useUser';
 import RolePanel from './components/role-panel/role-panel';
 

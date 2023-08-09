@@ -79,6 +79,7 @@ export const ChildRegistration: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitionerUserId = practitioner?.userId;
   const isPrincipal = practitioner?.isPrincipal === true;
+  const isTrainee = practitioner?.isTrainee;
 
   const existingLearner = useSelector(
     classroomsSelectors.getChildLearner(existingChild)
@@ -358,6 +359,11 @@ export const ChildRegistration: React.FC = () => {
     childInputModel.insertedBy = user?.fullName;
 
     await updateChild(childInputModel);
+
+    if (isTrainee) {
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
+      return;
+    }
 
     history.push(ROUTES.CLASSROOM);
   };

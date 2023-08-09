@@ -31,6 +31,7 @@ export const GetAllTeamLead = gql`
         contactPreference
         genderId
         phoneNumber
+        lockoutEnd
         roles {
           id
           name

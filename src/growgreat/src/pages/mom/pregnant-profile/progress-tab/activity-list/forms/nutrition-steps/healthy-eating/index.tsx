@@ -27,9 +27,9 @@ export const HealthyEatingStep = ({
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const videoSection = 'Healthy eating';
 
-  const nutritionAnswers = sectionQuestions?.[1]?.questions?.[0]
-    ?.answer as string[];
-
+  const nutritionAnswers = sectionQuestions?.[1]
+    ? (sectionQuestions?.[1]?.questions?.[0]?.answer as string[])
+    : (sectionQuestions?.[0]?.questions?.[0]?.answer as string[]);
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
@@ -65,7 +65,7 @@ export const HealthyEatingStep = ({
   }, [isFirstVisit, name, setIsTip, showVideo]);
 
   const renderHealthyFoodAlerts = useMemo(() => {
-    if (nutritionAnswers.length <= 1) {
+    if (nutritionAnswers?.length <= 1) {
       return (
         <div className="flex flex-col gap-4 p-4">
           <Alert
