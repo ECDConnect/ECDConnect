@@ -256,8 +256,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
-                if (isRolePrincipal) practitionerToPromote.IsPrincipal = true;
-                if (isRoleFAA) practitionerToPromote.IsPrincipal = true;
+                if (isRolePrincipal) { practitionerToPromote.IsPrincipal = true; }
+                if (isRoleFAA) { practitionerToPromote.IsPrincipal = true; }
                 practitionerToPromote.ShareInfo = true;
                 practitionerToPromote.PrincipalHierarchy = null;
                 practitionerToPromote.DateLinked = null;
@@ -265,13 +265,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerToPromote.DateAccepted = null;
                 _practiGenericRepo.Update(practitionerToPromote);
 
-                if (isRolePrincipal) practitionerToPromote.IsPrincipal = false;
-                if (isRoleFAA) practitionerToPromote.IsPrincipal = false;
+                if (isRolePrincipal) { practitionerToDemote.IsPrincipal = false; }
+                if (isRoleFAA) { practitionerToDemote.IsPrincipal = false; }
                 practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;
                 practitionerToDemote.DateAccepted = DateTime.Now;
-                practitionerToPromote.DateAccepted = DateTime.Now;
+                practitionerToDemote.DateAccepted = DateTime.Now;
                 _practiGenericRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies and assign new
@@ -297,19 +297,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
                 {
-                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId, practitionerToPromote.UserId, "Practitioner removed by coach", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
+                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId, practitionerToPromote.UserId, "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
                 var userToPromote = userManager.FindByIdAsync(newPrincipalUserId).Result;
                 IdentityResult result = null;
                 result = userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
-                if (isRolePrincipal) result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result;
-                if (isRoleFAA) result = userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result;
+                if (isRolePrincipal) { result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; }
+                if (isRoleFAA) { result = userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; }
 
                 var userToDemote = userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                if (isRolePrincipal) result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result;
-                if (isRoleFAA) result = userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result;
+                if (isRolePrincipal) { result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; }
+                if (isRoleFAA) { result = userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; }
                 result = userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;
@@ -427,12 +427,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _pqaRatings.Add(_visitDataManager.GetPractitionerPQARating(visit));
             }
             timeline.PQARatings = _pqaRatings;
-           
 
             // Re-accreditation --------------------------
             List<Visit> allAccreditationVisits = _visitManager.GetReAccreditationVisitsForPractitioner(userId);
             List<PQARating> _accredRatings = new List<PQARating>();
-            foreach (Visit visit in allPqaVisits)
+            foreach (Visit visit in allAccreditationVisits)
             {
                 _accredRatings.Add(_visitDataManager.GetPractitionerReAccreditationRating(visit));
             }
@@ -514,95 +513,70 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.ClubMeetings = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id).ToList();
 
             // PQA visits
-            List <Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
-            List<Visit> pre_pqa_visits = new List<Visit>();
-            List<Visit> pqa_visits = new List<Visit>();
-            List<Visit> support_visits = new List<Visit>();
-            List<Visit> reaccreditation_visits = new List<Visit>();
-            List<Visit> requested_coach_visits = new List<Visit>();
-            List<Visit> self_visits = new List<Visit>();
+            List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
+            visits = visits.OrderBy(x => x.InsertedDate).ToList();
 
-            foreach (Visit visit in visits)
+            List<Visit> pre_pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2).ToList();
+            List<Visit> pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
+            List<Visit> reaccreditation_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
+            List<Visit> support_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
+            List<Visit> requested_coach_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
+            List<Visit> self_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
+
+            foreach (Visit visit in pqa_visits)
             {
-                if (visit != null)
+                PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
+                visit.OverallRatingColor = pqaRating.OverallRatingColor;
+            }
+
+            foreach (Visit visit in reaccreditation_visits)
+            {
+                PQARating pqaRating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
+                visit.OverallRatingColor = pqaRating.OverallRatingColor;
+            }
+
+            foreach (Visit visit in pre_pqa_visits)
+            {
+                if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
                 {
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
+                    if (visit.PlannedVisitDate.Date > today.Date)
                     {
-                        if (visit.PlannedVisitDate.Date > today.Date)
-                        {
-                            timeline.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
-                            timeline.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
-                            timeline.PrePQAVisitDate1 = visit.PlannedVisitDate;
-                        }
-                        else
-                        {
-                            timeline.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
-                            timeline.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
-                            timeline.PrePQAVisitDate1 = visit.PlannedVisitDate;
-                        }
-                        pre_pqa_visits.Add(visit);
+                        timeline.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
+                        timeline.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
+                        timeline.PrePQAVisitDate1 = visit.PlannedVisitDate;
                     }
-                    
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
+                    else
                     {
-                        if (visit.PlannedVisitDate.Date > today.Date)
-                        {
-                            timeline.PrePQAVisitDate2Status = Constants.SSSettings.second_site_visit;
-                            timeline.PrePQAVisitDate2Color = MetricsColorEnum.Success.ToString();
-                            timeline.PrePQAVisitDate2 = visit.PlannedVisitDate;
-                        }
-                        else
-                        {
-                            timeline.PrePQAVisitDate2Status = Constants.SSSettings.second_site_visit;
-                            timeline.PrePQAVisitDate2Color = MetricsColorEnum.Warning.ToString();
-                            timeline.PrePQAVisitDate2 = visit.PlannedVisitDate;
-                        }
-                        pre_pqa_visits.Add(visit);
-                    }
-
-                    // do not return any pqa visits if the pre pqa visits are not done.
-                    // first pqa visit is created when SmartSpace licence is received + 3 months
-                    if (timeline.PrePQAVisitDate1 != null && timeline.PrePQAVisitDate2 != null) { 
-
-                        if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
-                        {
-                            PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
-                            visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                            pqa_visits.Add(visit);
-                        }
-                    
-                        if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
-                        {
-                            PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
-                            visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                            pqa_visits.Add(visit);
-                        }
-                        if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
-                        {
-                            PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
-                            visit.OverallRatingColor = rating.OverallRatingColor;
-                            reaccreditation_visits.Add(visit);
-                        }
-                        if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
-                        {
-                            PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
-                            visit.OverallRatingColor = rating.OverallRatingColor;
-                            reaccreditation_visits.Add(visit);
-                        }
-                    }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit)
-                    {
-                        requested_coach_visits.Add(visit);
-                    }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_support || visit.VisitType.Name == Constants.SSSettings.visitType_call)
-                    {
-                        support_visits.Add(visit);
-                    }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_self_assessment)
-                    {
-                        self_visits.Add(visit);
+                        timeline.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
+                        timeline.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
+                        timeline.PrePQAVisitDate1 = visit.PlannedVisitDate;
                     }
                 }
+                    
+                if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
+                {
+                    if (visit.PlannedVisitDate.Date > today.Date)
+                    {
+                        timeline.PrePQAVisitDate2Status = Constants.SSSettings.second_site_visit;
+                        timeline.PrePQAVisitDate2Color = MetricsColorEnum.Success.ToString();
+                        timeline.PrePQAVisitDate2 = visit.PlannedVisitDate;
+                    }
+                    else
+                    {
+                        timeline.PrePQAVisitDate2Status = Constants.SSSettings.second_site_visit;
+                        timeline.PrePQAVisitDate2Color = MetricsColorEnum.Warning.ToString();
+                        timeline.PrePQAVisitDate2 = visit.PlannedVisitDate;
+                    }
+                }
+            }
+
+            // do not return any pqa visits if the pre pqa visits are not done.
+            // first pqa visit is created when SmartSpace licence is received + 3 months
+            var pre_pqa_visits_completed = pre_pqa_visits.Where(x => x.Attended == false).FirstOrDefault();
+            if (pre_pqa_visits_completed != null)
+            {
+                pqa_visits = new List<Visit>();
+                reaccreditation_visits = new List<Visit>();
             }
 
             // Self Assessment

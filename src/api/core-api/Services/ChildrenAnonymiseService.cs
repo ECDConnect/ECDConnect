@@ -1,11 +1,14 @@
 ﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.DataAccessLayer.Services;
+using HotChocolate;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,15 +20,18 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly IDocumentManagementService _documentManagementService;
         private readonly HierarchyEngine _hierarchyEngine;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public ChildrenAnonymiseService(
             IGenericRepositoryFactory repositoryFactory,
             IDocumentManagementService documentManagementService,
-            HierarchyEngine hierarchyEngine)
+            HierarchyEngine hierarchyEngine,
+            [Service] UserManager<ApplicationUser> userManager)
         {
             _repositoryFactory = repositoryFactory;
             _documentManagementService = documentManagementService;
             _hierarchyEngine = hierarchyEngine;
+            _userManager = userManager;
         }
 
         public void AnonymiseChild()
@@ -33,35 +39,29 @@ namespace EcdLink.Api.CoreApi.Services
             var adminId = _hierarchyEngine.GetAdminUserId();
 
             var childRepo = _repositoryFactory.CreateRepository<Child>(userContext: adminId);
-            var workflowRepo = _repositoryFactory.CreateRepository<WorkflowStatus>();
-            var workflowStatus = workflowRepo.GetAll()
-                                        .Where(x => x.EnumId == WorkflowStatusEnum.ChildDeactivated)
-                                        .OrderBy(x => x.Id)
-                                        .FirstOrDefault();
 
-
-            foreach (var child in GetChildrenToRemove(childRepo))
+            var children = GetChildrenToRemove(childRepo);
+            foreach (var child in children)
             {
-                ChildHelper.AnonymiseChild(child);
-
-                child.WorkflowStatusId = workflowStatus?.Id ?? null;
-
                 childRepo.Update(child);
 
                 childRepo.Delete(child.Id);
 
-                RemoveChildDocuments(child);
+                RemoveChildDocuments(child, adminId);
+
+                _userManager.DeleteAsync(child.User);
+
             }
         }
 
-        private void RemoveChildDocuments(Child child)
+        private void RemoveChildDocuments(Child child, string accessUserId)
         {
             // Remove Document
             // Remove photo
             // Remove bith documents
-            _documentManagementService.DeleteUserDocument(child.UserId, FileTypeEnum.ChildBirthCertificate);
-            _documentManagementService.DeleteUserDocument(child.UserId, FileTypeEnum.ChildClinicCard);
-            _documentManagementService.DeleteUserDocument(child.UserId, FileTypeEnum.ChildRegistrationForm);
+            _documentManagementService.DeleteUserDocument(accessUserId, FileTypeEnum.ChildBirthCertificate);
+            _documentManagementService.DeleteUserDocument(accessUserId, FileTypeEnum.ChildClinicCard);
+            _documentManagementService.DeleteUserDocument(accessUserId, FileTypeEnum.ChildRegistrationForm);
         }
 
         private List<Child> GetChildrenToRemove(IGenericRepository<Child, Guid> childRepo)
@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.Services
             // Removed child where status is pending (not all required information saved)
             // and they were inserted within the last 30 days
             return childRepo.GetAll()
-                        .Where(c => c.IsActive && c.WorkflowStatus.EnumId == WorkflowStatusEnum.ChildPending
+                        .Where(c => c.IsActive && c.CaregiverId.Equals(null)
                                     && c.InsertedDate <= expiryTime).ToList();
         }
 

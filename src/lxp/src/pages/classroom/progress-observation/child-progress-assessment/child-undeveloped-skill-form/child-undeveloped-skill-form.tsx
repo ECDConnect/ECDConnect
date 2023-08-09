@@ -1,12 +1,12 @@
 import { ProgressTrackingSkillDto } from '@ecdlink/core';
 import {
   Button,
-  CoreRadioGroup,
   Typography,
   RadioGroupOption,
   classNames,
   renderIcon,
   Alert,
+  Radio,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -125,15 +125,22 @@ export const ChildUndevelopedSkillForm: React.FC<
                 />
               </div>
             )}
-            <CoreRadioGroup
-              options={skillsRadioGroupOptions}
-              colour="uiBg"
-              selectedOptionBackgroundColor={'infoBb'}
-              onChange={onSkillSelected}
-              currentValue={
-                selectedUndevelopedSkill?.id || supportSkillId || -1
-              }
-            />
+            <fieldset className="flex flex-col gap-2">
+              {skillsRadioGroupOptions.map((item) => (
+                <Radio
+                  variant="slim"
+                  key={`skill-${item.value}`}
+                  description={item.label}
+                  value={item.value}
+                  checked={
+                    item.id ===
+                    (selectedUndevelopedSkill?.id || supportSkillId || -1)
+                  }
+                  disabled={false}
+                  onChange={(event) => onSkillSelected(item.id)}
+                />
+              ))}
+            </fieldset>
           </div>
         )}
       </div>

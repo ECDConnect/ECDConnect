@@ -2,7 +2,7 @@ import {
   ClassroomGroupDto,
   ReasonForLeavingDto,
   ReasonsForPractitionerLeavingProgramme,
-  mapArrayToObject,
+  useSnackbar,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -48,6 +48,7 @@ export const RemovePractitionerFromProgramme: React.FC<
   RemovePractionerFromProgrammeProps
 > = () => {
   const appDispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
   const history = useHistory();
   const authUser = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -134,6 +135,11 @@ export const RemovePractitionerFromProgramme: React.FC<
       authUser?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
     setPractitionerClassroomGroups(classroomDetails);
+    var mappedClasses = classroomDetails.reduce((obj, val) => {
+      return { ...obj, [val.id!]: undefined };
+    }, {});
+    setRemovePractionerFormValues('reassignedClassrooms', mappedClasses);
+    triggerRemovePractionerForm();
     return classroomDetails;
   };
 
@@ -297,6 +303,7 @@ export const RemovePractitionerFromProgramme: React.FC<
                   'removalDate',
                   date ? date.toString() : ''
                 );
+                triggerRemovePractionerForm();
               }}
               minDate={new Date()}
               dateFormat="EEE, dd MMM yyyy"
@@ -340,7 +347,6 @@ export const RemovePractitionerFromProgramme: React.FC<
                           fullWidth
                           className={'mt-3 w-11/12'}
                           onChange={(item: any) => {
-                            triggerRemovePractionerForm();
                             const existingReassignments =
                               getRemovePractionerFormValues()
                                 .reassignedClassrooms || {};
@@ -387,6 +393,7 @@ export const RemovePractitionerFromProgramme: React.FC<
                             setExistingRemovalReassignments(
                               updatedReassignments
                             );
+                            triggerRemovePractionerForm();
                           }}
                         />
                       </li>
@@ -454,6 +461,9 @@ export const RemovePractitionerFromProgramme: React.FC<
             setRemovePractionerPromptVisible(false);
             history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
               practitionerId: practitionerUserId,
+            });
+            showMessage({
+              message: `${practitioner?.user?.firstName} removed`,
             });
           }}
           onClose={() => setRemovePractionerPromptVisible(false)}

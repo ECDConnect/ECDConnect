@@ -28,7 +28,7 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
   const incomeListDetailsItems = incomeStatements?.map((item) => {
     return {
       title: item?.childUserId
-        ? getChildName(item?.childUserId!, children!)
+        ? getChildName(item?.childUserId!, children!) || 'Child not found' // Child may have been removed so we won't have the name
         : format(Date.parse(item.dateReceived || ''), 'dd/MM/yyyy'),
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitleStyle:
