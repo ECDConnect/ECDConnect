@@ -453,8 +453,8 @@ namespace ECDLink.Core.Services
                     .Where(x => string.Equals(x.UserId, userId) && string.Equals(x.Year, year) && x.Submitted == true && x.IsActive == true)
                     .ToList();
             if (month > 0) //filter into months if we need to focus on a specific month
-            {
-                rows = rows.Where(y => string.Equals(y.Month, month)).ToList();
+            {                
+                rows = rows.Where(y => y.Month >= month).ToList();
             }
             if (rows.Count > 0)
             {
@@ -823,7 +823,8 @@ namespace ECDLink.Core.Services
 
 
             }
-            _pointsEngineService.CalculateIncomeStatements(_applicationUserId, DateTime.UtcNow);
+            if (!autoSubmitted)
+                _pointsEngineService.CalculateIncomeStatements(model.UserId, DateTime.UtcNow);
             return retVal;
         }
 
@@ -843,7 +844,7 @@ namespace ECDLink.Core.Services
             Dictionary<string, DateTime> allDuePractitioners = new Dictionary<string, DateTime>();
             foreach (var practitioner in allPractitionersToCheck)
             {
-                if (IsSubmitted(practitioner.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month))
+                if (!IsSubmitted(practitioner.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month))
                 {
                     allDuePractitioners.Add(practitioner.UserId, submitPeriod.Start);
                 } else
@@ -856,7 +857,24 @@ namespace ECDLink.Core.Services
                         allDuePractitioners.Add(practitioner.UserId, submitPeriod.Start);
                     } else
                     {
-                        allDuePractitioners.Add(practitioner.UserId, (DateTime)lastDate);
+                        DateTime dateperiodToSubmit = (DateTime)lastDate;
+
+                        int calcMonths = 0;
+                        //check how many months to go back to catch up autosubmits to start of year
+                        for (int i = dateperiodToSubmit.Month; i <= submitPeriod.Start.Month; i++)
+                        {
+                            dateperiodToSubmit = dateperiodToSubmit.AddMonths(calcMonths);
+                            if (dateperiodToSubmit.Month == submitPeriod.Start.Month && dateperiodToSubmit.Year == submitPeriod.Start.Year)
+                            {
+                                allDuePractitioners.Add(practitioner.UserId, dateperiodToSubmit);
+                                break;
+                            } else {
+
+                                allDuePractitioners.Add(practitioner.UserId, dateperiodToSubmit);
+                            }
+                            calcMonths++;
+                        }
+                        //allDuePractitioners.Add(practitioner.UserId, dateperiodToSubmit.AddMonths(1));
                     }
                 }
             }
@@ -868,7 +886,7 @@ namespace ECDLink.Core.Services
             //find all users that are principal and/or FAA that were created before the start of the  submission period, as they would be due statements for stipends
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date && x.UserId == "4a715da0-b50a-4246-9f0a-5a99fb7e13ab").ToList();
+            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date && x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315").ToList();
 
         }
     }
