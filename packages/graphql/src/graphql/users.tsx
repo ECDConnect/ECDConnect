@@ -158,7 +158,6 @@ export const GetHealthCareWorkerHighlights = gql`
     }
   }
 `;
-
 export const healthCareWorkerVisitStatus = gql`
   query ($userId: String) {
     healthCareWorkerVisitStatus(userId: $userId) {
@@ -172,6 +171,14 @@ export const healthCareWorkerVisitStatus = gql`
 export const sentInviteToMultipleUsers = gql`
   mutation SendBulkInviteToPortal($userIds: [String]) {
     sendBulkInviteToPortal(userIds: $userIds) {
+      success
+      failed
+    }
+  }
+`;
+export const deleteMultipleUsers = gql`
+  mutation BulkDeleteUser($ids: [String]) {
+    BulkDeleteUser(ids: $ids) {
       success
       failed
     }
