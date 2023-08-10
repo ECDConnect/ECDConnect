@@ -45,6 +45,16 @@ namespace EcdLink.Api.CoreApi
                 c.TimeZoneInfo = TimeZoneInfo.Local;
                 c.CronExpression = CronTags.MidnightDaily;
             });
+            services.AddCronJob<IntegrationChanges>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.EveryTwentyMinutes;
+            });
+            services.AddCronJob<AttendanceWeekly>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.NinePmEveryFriday;
+            });
         }
     }
 }

@@ -7,9 +7,10 @@ namespace ECDLink.Security.Extensions
     public static class HttpContextExtension
     {
         public static ApplicationIdentityUser GetUser(this HttpContext context)
-         {
-            return context.Items[SecurityConstants.ContextKeys.User] as ApplicationIdentityUser;
+        {
+            return context != null ? context.Items[SecurityConstants.ContextKeys.User] as ApplicationIdentityUser : null;
         }
+
 
         public static bool IsAdmin(this HttpContext context)
         {

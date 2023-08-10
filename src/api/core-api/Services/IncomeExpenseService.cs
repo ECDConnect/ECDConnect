@@ -24,6 +24,7 @@ using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Hierarchy;
 
 namespace ECDLink.Core.Services
 {
@@ -48,6 +49,7 @@ namespace ECDLink.Core.Services
         private IFileService _fileService;
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
+        private HierarchyEngine _hierarchyEngine;
 
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
@@ -58,14 +60,16 @@ namespace ECDLink.Core.Services
             [Service] PersonnelService personnelService,
             ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
             ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate, 
-            IPointsEngineService pointsEngineService
+            IPointsEngineService pointsEngineService,
+            HierarchyEngine hierarchyEngine
             )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _hierarchyEngine = hierarchyEngine;
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
             _submitStartDate = submitStartDate;
-            _submitEndDate = submitEndDate;
+            _submitEndDate = submitEndDate;            
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);

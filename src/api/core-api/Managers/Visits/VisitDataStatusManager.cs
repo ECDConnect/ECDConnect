@@ -2,6 +2,7 @@
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -19,6 +20,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepositoryFactory _repoFactory;
         private VisitManager _visitManager;
         private VisitBackReferralManager _visitBackReferralManager;
+        private HierarchyEngine _hierarchyEngine;
 
         private VisitType _additionalVisitType;
         private string _applicationUserId;
@@ -50,13 +52,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             VisitManager visitManager,
-            VisitBackReferralManager visitBackReferralManager) {
+            VisitBackReferralManager visitBackReferralManager,
+            HierarchyEngine hierarchyEngine) {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitManager = visitManager;
             _visitBackReferralManager = visitBackReferralManager;
+            _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
 
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);

@@ -16,8 +16,4 @@
     <ProjectReference Include="..\..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="WeeklyRunners\" />
-  </ItemGroup>
-
 </Project>
