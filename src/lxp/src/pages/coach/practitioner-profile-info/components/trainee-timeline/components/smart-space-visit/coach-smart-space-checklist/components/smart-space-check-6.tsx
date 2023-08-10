@@ -14,7 +14,7 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { traineeSelectors } from '@/store/trainee';
 import { useSelector } from 'react-redux';
@@ -58,6 +58,10 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
     traineeSelectors.getTraineeSmartSpaceAddress
   );
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const traineePropertyOwnAnswer = useSelector(
+    traineeSelectors.getTraineePropertyOwn
+  );
+
   const [questions, setAnswers] = useState([
     {
       question: 'Is this address correct?',
@@ -211,7 +215,11 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       />
       <Typography
         type={'body'}
-        text={'Nothando owns the property and has the title deeds.'}
+        text={
+          traineePropertyOwnAnswer
+            ? (traineePropertyOwnAnswer as string)
+            : 'Nothando owns the property and has the title deeds.'
+        }
         color={'textMid'}
         className={'my-3'}
       />
