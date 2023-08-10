@@ -13,7 +13,7 @@ import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { Chart, DataSetType, WeightOrHeightForAgeProps } from './chart';
+import { DataSetType, GrowthChart, WeightOrHeightForAgeProps } from './chart';
 
 import {
   weightLengthAndHeightFormQuestions,
@@ -60,6 +60,12 @@ import { GrowthMonitoring } from '../..';
 interface GrowthStatus {
   length: VisitData[];
   weight: VisitData[];
+}
+
+interface xAxisData {
+  y: any;
+  x: number;
+  name?: string;
 }
 
 const Card = ({
@@ -138,6 +144,7 @@ export const WeightAndLengthResultStep = ({
   const [suffix, setSuffix] = useState<string>('d');
 
   const growthData = useSelector(getGrowthDataForInfantSelector);
+
   const uniqueGrowthData = useMemo(
     () =>
       growthData?.filter((object, index, array) => {
@@ -282,7 +289,7 @@ export const WeightAndLengthResultStep = ({
           return { value: 'growth faltering', statusType: 'warning' };
         }
     }
-  }, [weightAlertResult, length, height]);
+  }, [weightAlertResult, length, height, weightIncreased]);
 
   const lengthOrHeightMonitoring = useMemo((): GrowthMonitoring['length'] => {
     switch (lengthOrHeightAlertResult) {
@@ -297,7 +304,6 @@ export const WeightAndLengthResultStep = ({
 
   const WeightAlert = useCallback(() => {
     let WeightAlert = <Fragment />;
-
     switch (weightAlertResult) {
       case 'SD2':
         // normally showing overweight, but different rules when only weight is available
@@ -428,7 +434,7 @@ export const WeightAndLengthResultStep = ({
         break;
     }
     return WeightAlert;
-  }, [name, weightAlertResult, length, height]);
+  }, [name, weightAlertResult, length, height, caregiverName, weightIncreased]);
 
   const LengthOrHeightAlert = useCallback(() => {
     let LengthOrHeightAlert = <Fragment />;
@@ -512,42 +518,11 @@ export const WeightAndLengthResultStep = ({
   }, [infant?.gender?.description]);
 
   function getScale(age: number, date: number[], input: number[]) {
-    //let startIndex = Math.max(0, date.indexOf(age) - 4);
-    //let endIndex = Math.min(startIndex + 6, date.length);
-    //return input.slice(startIndex, endIndex);
-
-    // EC-915 - start x-axis at zero + scale numbers
-    // break age into chunks of 6 if age is more than 6
-    var maxIndex = age;
-    var numberOfChunks = maxIndex <= 6 ? maxIndex : 6;
-    var chunkSize = parseInt(
-      (Math.floor(maxIndex) / numberOfChunks).toPrecision(1)
-    );
-    chunkSize = maxIndex <= 6 ? 1 : Math.ceil(maxIndex) / numberOfChunks;
-    var ageNumbers = [0]; // start with zero
-    var counter = 0;
-
-    for (var i = 0; i < numberOfChunks; i++) {
-      var max = counter + chunkSize;
-      if (i === numberOfChunks) {
-        max = maxIndex;
-      }
-      counter += chunkSize;
-      if (max < age) {
-        ageNumbers.push(Math.floor(max));
-      }
-    }
-
-    ageNumbers.push(age);
-    ageNumbers.sort((n1, n2) => n1 - n2);
-
-    // mapping the age chunks to the dataset
-    var endResult = [];
-    for (var j = 0; j < ageNumbers.length; j++) {
-      endResult.push(input[ageNumbers[j]]);
-    }
-
-    return endResult;
+    // first implementation - not working
+    // let startIndex = Math.max(0, date.indexOf(age) - 4);
+    // let endIndex = Math.min(startIndex + 6, date.length);
+    // return input.slice(startIndex, endIndex);
+    return input.slice(0, age + 1);
   }
 
   const getChartData = useCallback(
@@ -897,6 +872,226 @@ export const WeightAndLengthResultStep = ({
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
 
+  const xAxisWeigthMapData = useMemo(() => {
+    var mapData: xAxisData[] = [];
+
+    const dateOfBirth = infant?.user?.dateOfBirth as string;
+    const {
+      years: ageYears,
+      months: ageMonthsPart,
+      days: ageDays,
+    } = getAgeInYearsMonthsAndDays(dateOfBirth);
+    const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
+    const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
+
+    var _x = 0;
+    var i = 0;
+    if (growthData) {
+      for (i = 0; i < growthData.length; i++) {
+        if (
+          growthData[i].question === 'Weight' &&
+          growthData[i].questionAnswer !== 'undefined' &&
+          growthData[i].visit?.visitType?.name !== 'additional_visits'
+        ) {
+          if (growthData[i].visit?.visitType?.name === 'day_3') {
+            _x = 3;
+            if (suffix === 'w') {
+              _x = 0.3;
+            } else if (suffix === 'm') {
+              _x = 0.03;
+            } else if (suffix === 'y') {
+              _x = 0.003;
+            }
+          } else if (growthData[i].visit?.visitType?.name === 'day_7') {
+            _x = 7;
+            if (suffix === 'w') {
+              _x = 1;
+            } else if (suffix === 'm') {
+              _x = 0.07;
+            } else if (suffix === 'y') {
+              _x = 0.007;
+            }
+          } else if (growthData[i].visit?.visitType?.name === 'week_2') {
+            _x = 2;
+            if (suffix === 'm') {
+              _x = 0.2;
+            } else if (suffix === 'y') {
+              _x = 0.02;
+            }
+          } else if (growthData[i].visit?.visitType?.name === 'week_4') {
+            _x = 4;
+            if (suffix === 'm') {
+              _x = 0.4;
+            } else if (suffix === 'y') {
+              _x = 0.04;
+            }
+          } else if (growthData[i].visit?.visitType?.name === 'week_7_to_8') {
+            _x = 8;
+            if (suffix === 'm') {
+              _x = 0.8;
+            } else if (suffix === 'y') {
+              _x = 0.08;
+            }
+          } else if (growthData[i].visit?.visitType?.name === '3_months') {
+            _x = 3;
+          } else if (growthData[i].visit?.visitType?.name === '4_months') {
+            _x = 4;
+          } else if (growthData[i].visit?.visitType?.name === '5_months') {
+            _x = 5;
+          } else if (growthData[i].visit?.visitType?.name === '9_months') {
+            _x = 9;
+          } else if (growthData[i].visit?.visitType?.name === '12_months') {
+            _x = 12;
+          } else if (growthData[i].visit?.visitType?.name === '15_months') {
+            _x = 15;
+          } else if (growthData[i].visit?.visitType?.name === '18_months') {
+            _x = 18;
+          } else if (growthData[i].visit?.visitType?.name === '21_months') {
+            _x = 21;
+          } else if (growthData[i].visit?.visitType?.name === '24_months') {
+            _x = 24;
+          } else if (growthData[i].visit?.visitType?.name === '5_years') {
+            _x = 5;
+          }
+          mapData.push({
+            y: parseFloat(growthData[i].questionAnswer as string),
+            x: _x,
+            name: growthData[i].visit?.visitType?.name as string,
+          });
+        }
+      }
+      // add birth weight
+      var _y = 0;
+      if (infant?.weightAtBirth != null) {
+        _y = infant?.weightAtBirth;
+      }
+      mapData?.unshift({ y: _y, x: 0, name: 'birth' });
+      // add new weight
+      if (suffix === 'd') {
+        _x = ageDays;
+      } else if (suffix === 'w') {
+        _x = ageWeeks;
+      } else if (suffix === 'm') {
+        _x = ageMonths;
+      } else if (suffix === 'y') {
+        _x = ageYears;
+      }
+      mapData?.push({ y: weight, x: _x, name: 'new' });
+    }
+
+    return mapData;
+  }, [growthData, infant, weight, suffix]);
+
+  const xAxisHeightMapData = useMemo(() => {
+    var mapData: xAxisData[] = [];
+
+    const dateOfBirth = infant?.user?.dateOfBirth as string;
+    const {
+      years: ageYears,
+      months: ageMonthsPart,
+      days: ageDays,
+    } = getAgeInYearsMonthsAndDays(dateOfBirth);
+    const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
+    const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
+
+    var _x = 0;
+    var i = 0;
+    if (growthData) {
+      for (i = 0; i < growthData.length; i++) {
+        if (
+          growthData[i].question === 'Length' &&
+          growthData[i].questionAnswer !== 'undefined' &&
+          growthData[i].visit?.visitType?.name !== 'additional_visits'
+        ) {
+          if (growthData[i].visit?.visitType?.name === 'day_3') {
+            _x = 3;
+            if (suffix === 'w') {
+              _x = 0.3;
+            } else if (suffix === 'm') {
+              _x = 0.03;
+            } else if (suffix === 'y') {
+              _x = 0.003;
+            }
+          } else if (growthData[i].visit?.visitType?.name === 'day_7') {
+            _x = 7;
+            if (suffix === 'w') {
+              _x = 1;
+            } else if (suffix === 'm') {
+              _x = 0.07;
+            } else if (suffix === 'y') {
+              _x = 0.007;
+            }
+          } else if (growthData[i].visit?.visitType?.name === 'week_2') {
+            _x = 2;
+            if (suffix === 'm') {
+              _x = 0.2;
+            } else if (suffix === 'y') {
+              _x = 0.02;
+            }
+          } else if (growthData[i].visit?.visitType?.name === 'week_4') {
+            _x = 4;
+            if (suffix === 'm') {
+              _x = 0.4;
+            } else if (suffix === 'y') {
+              _x = 0.04;
+            }
+          } else if (growthData[i].visit?.visitType?.name === 'week_7_to_8') {
+            _x = 8;
+            if (suffix === 'm') {
+              _x = 0.8;
+            } else if (suffix === 'y') {
+              _x = 0.08;
+            }
+          } else if (growthData[i].visit?.visitType?.name === '3_months') {
+            _x = 3;
+          } else if (growthData[i].visit?.visitType?.name === '4_months') {
+            _x = 4;
+          } else if (growthData[i].visit?.visitType?.name === '5_months') {
+            _x = 5;
+          } else if (growthData[i].visit?.visitType?.name === '9_months') {
+            _x = 9;
+          } else if (growthData[i].visit?.visitType?.name === '12_months') {
+            _x = 12;
+          } else if (growthData[i].visit?.visitType?.name === '15_months') {
+            _x = 15;
+          } else if (growthData[i].visit?.visitType?.name === '18_months') {
+            _x = 18;
+          } else if (growthData[i].visit?.visitType?.name === '21_months') {
+            _x = 21;
+          } else if (growthData[i].visit?.visitType?.name === '24_months') {
+            _x = 24;
+          } else if (growthData[i].visit?.visitType?.name === '5_years') {
+            _x = 5;
+          }
+          mapData.push({
+            y: parseFloat(growthData[i].questionAnswer as string),
+            x: _x,
+            name: growthData[i].visit?.visitType?.name as string,
+          });
+        }
+      }
+      // add birth length
+      var _y = 0;
+      if (infant?.lengthAtBirth != null) {
+        _y = infant?.lengthAtBirth;
+      }
+      mapData?.unshift({ y: _y, x: 0, name: 'birth' });
+
+      // add new weight
+      if (suffix === 'd') {
+        _x = ageDays;
+      } else if (suffix === 'w') {
+        _x = ageWeeks;
+      } else if (suffix === 'm') {
+        _x = ageMonths;
+      } else if (suffix === 'y') {
+        _x = ageYears;
+      }
+      mapData?.push({ y: length || height, x: _x, name: 'new' });
+    }
+    return mapData;
+  }, [growthData, infant, length, height, suffix]);
+
   return (
     <>
       <Header
@@ -935,7 +1130,8 @@ export const WeightAndLengthResultStep = ({
           )}
         </div>
         <Typography type="h3" color="textDark" text="Weight for age (kg)" />
-        <Chart
+        <GrowthChart
+          xAxisMapData={xAxisWeigthMapData}
           infantName={name}
           result={weightResult}
           data={weightAxios as WeightOrHeightForAgeProps}
@@ -950,7 +1146,8 @@ export const WeightAndLengthResultStep = ({
               color="textDark"
               text={`${length ? 'Length' : 'Height'} for age (cm)`}
             />
-            <Chart
+            <GrowthChart
+              xAxisMapData={xAxisHeightMapData}
               infantName={name}
               result={lengthOrHeightResult}
               data={lengthAxios as WeightOrHeightForAgeProps}

@@ -286,13 +286,15 @@ class Visit {
               id
               orderDate
               plannedVisitDate
+              visitType {
+                name
+              }
             }
           }
         }
       `,
       variables: {
         id: infantId,
-        // '6c2bc4ab-f06e-44d1-adee-be91dd98e1b0',
       },
     });
 
