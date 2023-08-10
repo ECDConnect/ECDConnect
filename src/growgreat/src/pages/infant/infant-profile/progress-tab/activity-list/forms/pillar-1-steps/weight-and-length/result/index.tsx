@@ -216,6 +216,16 @@ export const WeightAndLengthResultStep = ({
     [answers]
   );
 
+  const _subTitle = useMemo(() => {
+    let subTitle = 'Weight & length';
+
+    if (length === 0 && height === 0) {
+      subTitle = 'Weight';
+    }
+
+    return subTitle;
+  }, [length, height]);
+
   const weightIncreased = useMemo(() => {
     let bIncreased = false;
     var weightHistory: number[] = [];
@@ -1099,7 +1109,7 @@ export const WeightAndLengthResultStep = ({
         iconHexBackgroundColor="#8CDBDF"
         hexBackgroundColor="#a2dadd4d"
         title="Growth monitoring"
-        subTitle="Weight & length"
+        subTitle={_subTitle}
       />
       <div className="relative flex flex-col gap-3 p-4">
         <Alert
