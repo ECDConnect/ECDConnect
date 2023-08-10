@@ -1046,7 +1046,7 @@ export const WeightAndLengthResultStep = ({
     });
 
     return mapData;
-  }, [infant, weight, suffix]);
+  }, [getMapData, infant, weight, suffix]);
 
   const xAxisHeightMapData = useMemo(() => {
     var mapData: xAxisData[] = getMapData('Length');
@@ -1091,7 +1091,7 @@ export const WeightAndLengthResultStep = ({
     });
 
     return mapData;
-  }, [infant, length, height, suffix]);
+  }, [getMapData, infant, length, height, suffix]);
 
   return (
     <>
