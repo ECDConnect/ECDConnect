@@ -76,13 +76,6 @@ export default function ApplicationUsers() {
     };
   };
 
-  const { data: userCountData } = useQuery(getUserCount, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      search: '',
-    },
-  });
-
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: getVariables(searchValue, sortDescending, selectedPage, 100),
     fetchPolicy: 'network-only',
@@ -120,10 +113,10 @@ export default function ApplicationUsers() {
         searchValue,
         sortDescending,
         selectedPage,
-        selectedPageSize ?? userCountData?.countUsers ?? 100
+        selectedPageSize
       ),
     });
-  }, [searchValue, nameFilter, userCountData, sortDescending, selectedPage]);
+  }, [searchValue, nameFilter, sortDescending, selectedPage]);
 
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -131,9 +124,12 @@ export default function ApplicationUsers() {
     if (data && data.users) {
       const copyItems = data.users;
       const modifiedData = copyItems.map((obj) => {
-        obj.displayColumnIdPassportEmail =
-          obj?.userName ?? obj?.idNumber ?? obj?.email ?? null;
-        const { __typename: _, roles, ...rest } = obj;
+        const newUserData = {
+          ...obj,
+          displayColumnIdPassportEmail:
+            obj?.userName || obj?.idNumber || obj?.email || '',
+        };
+        const { __typename: _, roles, ...rest } = newUserData;
         const modifiedRoles = roles.map((role) => {
           const { __typename: __, ...roleRest } = role;
           return roleRest;

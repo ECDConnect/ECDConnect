@@ -4,14 +4,14 @@ export interface LoadingSpinnerProps {
 
 export const ContentLoader = ({ className }: LoadingSpinnerProps) => {
   return (
-    <div className="h-full flex  justify-center items-center">
+    <div className="flex h-full  items-center justify-center">
       <div
-        className={`flex flex-col justify-center items-center px-1 ${className}`}
+        className={`flex flex-col items-center justify-center px-1 ${className}`}
       >
         <div
-          className={`h-28 w-28 animate-spinner rounded-full border-4 border-t-4 border-t-secondary border-white`}
+          className={`animate-spinner border-t-secondary h-28 w-28 rounded-full border-4 border-t-4 border-white`}
         ></div>
-        <div className="mt-4 text-secondary">loading ....</div>
+        <div className="text-secondary mt-4">loading ....</div>
       </div>
     </div>
   );
