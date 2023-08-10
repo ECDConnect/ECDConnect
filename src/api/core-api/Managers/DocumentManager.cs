@@ -1,9 +1,11 @@
 ﻿using DinkToPdf;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Tenancy.Context;
@@ -20,9 +22,10 @@ namespace EcdLink.Api.CoreApi.Managers
 
     public class DocumentManager
     {
-
-        public DocumentManager()
+        private IntegrationLogManager _logManager;
+        public DocumentManager(IntegrationLogManager logManager)
         {
+            _logManager = logManager;
         }
 
         //
@@ -171,6 +174,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 }
                 catch (Exception e)
                 {
+                    await _logManager.IntegrationLog("SaveIncomeStatementPDF Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SaveIncomeStatementPDF");
                     return null;
                 }
             }
@@ -233,6 +237,8 @@ namespace EcdLink.Api.CoreApi.Managers
                 }
                 catch (Exception e)
                 {
+
+                    await _logManager.IntegrationLog("SaveAttendancePDF Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SaveAttendancePDF");
                     return null;
                 }
             }
