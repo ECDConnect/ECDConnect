@@ -42,6 +42,10 @@ import {
 
 import { getAgeInYearsMonthsAndDays, toCamelCase } from '@ecdlink/core';
 import {
+  addDays,
+  addMonths,
+  addWeeks,
+  addYears,
   differenceInDays,
   differenceInMonths,
   differenceInWeeks,
@@ -66,6 +70,7 @@ interface xAxisData {
   y: any;
   x: number;
   name?: string;
+  date: Date;
 }
 
 const Card = ({
@@ -882,9 +887,125 @@ export const WeightAndLengthResultStep = ({
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
 
-  const xAxisWeigthMapData = useMemo(() => {
-    var mapData: xAxisData[] = [];
+  const getMapData = useCallback(
+    (question) => {
+      var mapData: xAxisData[] = [];
 
+      const dateOfBirth = infant?.user?.dateOfBirth as string;
+      const {
+        years: ageYears,
+        months: ageMonthsPart,
+        days: ageDays,
+      } = getAgeInYearsMonthsAndDays(dateOfBirth);
+      const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
+      const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
+      var _x = 0;
+      var i = 0;
+      if (growthData) {
+        for (i = 0; i < growthData.length; i++) {
+          if (
+            growthData[i].question === question &&
+            growthData[i].questionAnswer !== 'undefined' &&
+            growthData[i].questionAnswer !== ''
+          ) {
+            if (growthData[i].visit?.visitType?.name === 'day_3') {
+              _x = 3;
+              if (suffix === 'w') {
+                _x = 0.3;
+              } else if (suffix === 'm') {
+                _x = 0.03;
+              } else if (suffix === 'y') {
+                _x = 0.003;
+              }
+            } else if (growthData[i].visit?.visitType?.name === 'day_7') {
+              _x = 7;
+              if (suffix === 'w') {
+                _x = 1;
+              } else if (suffix === 'm') {
+                _x = 0.07;
+              } else if (suffix === 'y') {
+                _x = 0.007;
+              }
+            } else if (growthData[i].visit?.visitType?.name === 'week_2') {
+              _x = 2;
+              if (suffix === 'm') {
+                _x = 0.2;
+              } else if (suffix === 'y') {
+                _x = 0.02;
+              }
+            } else if (growthData[i].visit?.visitType?.name === 'week_4') {
+              _x = 4;
+              if (suffix === 'm') {
+                _x = 0.4;
+              } else if (suffix === 'y') {
+                _x = 0.04;
+              }
+            } else if (growthData[i].visit?.visitType?.name === 'week_7_to_8') {
+              _x = 8;
+              if (suffix === 'm') {
+                _x = 0.8;
+              } else if (suffix === 'y') {
+                _x = 0.08;
+              }
+            } else if (growthData[i].visit?.visitType?.name === '3_months') {
+              _x = 3;
+            } else if (growthData[i].visit?.visitType?.name === '4_months') {
+              _x = 4;
+            } else if (growthData[i].visit?.visitType?.name === '5_months') {
+              _x = 5;
+            } else if (growthData[i].visit?.visitType?.name === '9_months') {
+              _x = 9;
+            } else if (growthData[i].visit?.visitType?.name === '12_months') {
+              _x = 12;
+            } else if (growthData[i].visit?.visitType?.name === '15_months') {
+              _x = 15;
+            } else if (growthData[i].visit?.visitType?.name === '18_months') {
+              _x = 18;
+            } else if (growthData[i].visit?.visitType?.name === '21_months') {
+              _x = 21;
+            } else if (growthData[i].visit?.visitType?.name === '24_months') {
+              _x = 24;
+            } else if (growthData[i].visit?.visitType?.name === '5_years') {
+              _x = 5;
+            } else if (
+              growthData[i].visit?.visitType?.name === 'additional_visits'
+            ) {
+              var additional_date = new Date(
+                growthData[i].visit?.plannedVisitDate
+              );
+              var startDate = new Date(dateOfBirth);
+              var endDate = addMonths(startDate, ageMonths);
+              if (suffix === 'd') {
+                endDate = addDays(startDate, ageDays);
+                _x = ageDays - differenceInDays(endDate, additional_date);
+              } else if (suffix === 'w') {
+                endDate = addWeeks(startDate, ageWeeks);
+                _x = ageWeeks - differenceInWeeks(endDate, additional_date);
+              } else if (suffix === 'm') {
+                endDate = addMonths(startDate, ageMonths);
+                _x = ageMonths - differenceInMonths(endDate, additional_date);
+              } else if (suffix === 'y') {
+                endDate = addYears(startDate, ageYears);
+                _x = ageYears - differenceInYears(endDate, additional_date);
+              }
+            }
+            mapData.push({
+              y: parseFloat(growthData[i].questionAnswer as string),
+              x: _x,
+              name: growthData[i].visit?.visitType?.name as string,
+              date: new Date(growthData[i].visit?.plannedVisitDate),
+            });
+          }
+        }
+      }
+
+      return mapData;
+    },
+    [growthData, infant, suffix]
+  );
+
+  const xAxisWeigthMapData = useMemo(() => {
+    var mapData: xAxisData[] = getMapData('Weight');
     const dateOfBirth = infant?.user?.dateOfBirth as string;
     const {
       years: ageYears,
@@ -894,106 +1015,41 @@ export const WeightAndLengthResultStep = ({
     const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
     const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
-    var _x = 0;
-    var i = 0;
-    if (growthData) {
-      for (i = 0; i < growthData.length; i++) {
-        if (
-          growthData[i].question === 'Weight' &&
-          growthData[i].questionAnswer !== 'undefined' &&
-          growthData[i].visit?.visitType?.name !== 'additional_visits'
-        ) {
-          if (growthData[i].visit?.visitType?.name === 'day_3') {
-            _x = 3;
-            if (suffix === 'w') {
-              _x = 0.3;
-            } else if (suffix === 'm') {
-              _x = 0.03;
-            } else if (suffix === 'y') {
-              _x = 0.003;
-            }
-          } else if (growthData[i].visit?.visitType?.name === 'day_7') {
-            _x = 7;
-            if (suffix === 'w') {
-              _x = 1;
-            } else if (suffix === 'm') {
-              _x = 0.07;
-            } else if (suffix === 'y') {
-              _x = 0.007;
-            }
-          } else if (growthData[i].visit?.visitType?.name === 'week_2') {
-            _x = 2;
-            if (suffix === 'm') {
-              _x = 0.2;
-            } else if (suffix === 'y') {
-              _x = 0.02;
-            }
-          } else if (growthData[i].visit?.visitType?.name === 'week_4') {
-            _x = 4;
-            if (suffix === 'm') {
-              _x = 0.4;
-            } else if (suffix === 'y') {
-              _x = 0.04;
-            }
-          } else if (growthData[i].visit?.visitType?.name === 'week_7_to_8') {
-            _x = 8;
-            if (suffix === 'm') {
-              _x = 0.8;
-            } else if (suffix === 'y') {
-              _x = 0.08;
-            }
-          } else if (growthData[i].visit?.visitType?.name === '3_months') {
-            _x = 3;
-          } else if (growthData[i].visit?.visitType?.name === '4_months') {
-            _x = 4;
-          } else if (growthData[i].visit?.visitType?.name === '5_months') {
-            _x = 5;
-          } else if (growthData[i].visit?.visitType?.name === '9_months') {
-            _x = 9;
-          } else if (growthData[i].visit?.visitType?.name === '12_months') {
-            _x = 12;
-          } else if (growthData[i].visit?.visitType?.name === '15_months') {
-            _x = 15;
-          } else if (growthData[i].visit?.visitType?.name === '18_months') {
-            _x = 18;
-          } else if (growthData[i].visit?.visitType?.name === '21_months') {
-            _x = 21;
-          } else if (growthData[i].visit?.visitType?.name === '24_months') {
-            _x = 24;
-          } else if (growthData[i].visit?.visitType?.name === '5_years') {
-            _x = 5;
-          }
-          mapData.push({
-            y: parseFloat(growthData[i].questionAnswer as string),
-            x: _x,
-            name: growthData[i].visit?.visitType?.name as string,
-          });
-        }
-      }
-      // add birth weight
-      var _y = 0;
-      if (infant?.weightAtBirth != null) {
-        _y = infant?.weightAtBirth;
-      }
-      mapData?.unshift({ y: _y, x: 0, name: 'birth' });
-      // add new weight
-      if (suffix === 'd') {
-        _x = ageDays;
-      } else if (suffix === 'w') {
-        _x = ageWeeks;
-      } else if (suffix === 'm') {
-        _x = ageMonths;
-      } else if (suffix === 'y') {
-        _x = ageYears;
-      }
-      mapData?.push({ y: weight, x: _x, name: 'new' });
+    // add birth weight
+    var _y = 0;
+    var startDate = new Date(dateOfBirth);
+    if (infant?.weightAtBirth != null) {
+      _y = infant?.weightAtBirth;
     }
+    mapData?.unshift({ y: _y, x: 0, name: 'birth', date: startDate });
+    // add new weight
+    var _x = 0;
+    var endDate: Date = new Date();
+    if (suffix === 'd') {
+      _x = ageDays;
+      endDate = addDays(startDate, ageDays);
+    } else if (suffix === 'w') {
+      _x = ageWeeks;
+      endDate = addWeeks(startDate, ageWeeks);
+    } else if (suffix === 'm') {
+      _x = ageMonths;
+      endDate = addMonths(startDate, ageMonths);
+    } else if (suffix === 'y') {
+      _x = ageYears;
+      endDate = addYears(startDate, ageYears);
+    }
+    mapData?.push({ y: weight, x: _x, name: 'new', date: endDate });
+
+    // sort on date and then value
+    mapData.sort(function (a, b) {
+      return a.date.getTime() - b.date.getTime() || a.x - b.x;
+    });
 
     return mapData;
-  }, [growthData, infant, weight, suffix]);
+  }, [getMapData, infant, weight, suffix]);
 
   const xAxisHeightMapData = useMemo(() => {
-    var mapData: xAxisData[] = [];
+    var mapData: xAxisData[] = getMapData('Length');
 
     const dateOfBirth = infant?.user?.dateOfBirth as string;
     const {
@@ -1004,103 +1060,38 @@ export const WeightAndLengthResultStep = ({
     const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
     const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
-    var _x = 0;
-    var i = 0;
-    if (growthData) {
-      for (i = 0; i < growthData.length; i++) {
-        if (
-          growthData[i].question === 'Length' &&
-          growthData[i].questionAnswer !== 'undefined' &&
-          growthData[i].visit?.visitType?.name !== 'additional_visits'
-        ) {
-          if (growthData[i].visit?.visitType?.name === 'day_3') {
-            _x = 3;
-            if (suffix === 'w') {
-              _x = 0.3;
-            } else if (suffix === 'm') {
-              _x = 0.03;
-            } else if (suffix === 'y') {
-              _x = 0.003;
-            }
-          } else if (growthData[i].visit?.visitType?.name === 'day_7') {
-            _x = 7;
-            if (suffix === 'w') {
-              _x = 1;
-            } else if (suffix === 'm') {
-              _x = 0.07;
-            } else if (suffix === 'y') {
-              _x = 0.007;
-            }
-          } else if (growthData[i].visit?.visitType?.name === 'week_2') {
-            _x = 2;
-            if (suffix === 'm') {
-              _x = 0.2;
-            } else if (suffix === 'y') {
-              _x = 0.02;
-            }
-          } else if (growthData[i].visit?.visitType?.name === 'week_4') {
-            _x = 4;
-            if (suffix === 'm') {
-              _x = 0.4;
-            } else if (suffix === 'y') {
-              _x = 0.04;
-            }
-          } else if (growthData[i].visit?.visitType?.name === 'week_7_to_8') {
-            _x = 8;
-            if (suffix === 'm') {
-              _x = 0.8;
-            } else if (suffix === 'y') {
-              _x = 0.08;
-            }
-          } else if (growthData[i].visit?.visitType?.name === '3_months') {
-            _x = 3;
-          } else if (growthData[i].visit?.visitType?.name === '4_months') {
-            _x = 4;
-          } else if (growthData[i].visit?.visitType?.name === '5_months') {
-            _x = 5;
-          } else if (growthData[i].visit?.visitType?.name === '9_months') {
-            _x = 9;
-          } else if (growthData[i].visit?.visitType?.name === '12_months') {
-            _x = 12;
-          } else if (growthData[i].visit?.visitType?.name === '15_months') {
-            _x = 15;
-          } else if (growthData[i].visit?.visitType?.name === '18_months') {
-            _x = 18;
-          } else if (growthData[i].visit?.visitType?.name === '21_months') {
-            _x = 21;
-          } else if (growthData[i].visit?.visitType?.name === '24_months') {
-            _x = 24;
-          } else if (growthData[i].visit?.visitType?.name === '5_years') {
-            _x = 5;
-          }
-          mapData.push({
-            y: parseFloat(growthData[i].questionAnswer as string),
-            x: _x,
-            name: growthData[i].visit?.visitType?.name as string,
-          });
-        }
-      }
-      // add birth length
-      var _y = 0;
-      if (infant?.lengthAtBirth != null) {
-        _y = infant?.lengthAtBirth;
-      }
-      mapData?.unshift({ y: _y, x: 0, name: 'birth' });
-
-      // add new weight
-      if (suffix === 'd') {
-        _x = ageDays;
-      } else if (suffix === 'w') {
-        _x = ageWeeks;
-      } else if (suffix === 'm') {
-        _x = ageMonths;
-      } else if (suffix === 'y') {
-        _x = ageYears;
-      }
-      mapData?.push({ y: length || height, x: _x, name: 'new' });
+    // add birth length
+    var _y = 0;
+    var startDate = new Date(dateOfBirth);
+    if (infant?.lengthAtBirth != null) {
+      _y = infant?.lengthAtBirth;
     }
+    mapData?.unshift({ y: _y, x: 0, name: 'birth', date: startDate });
+    // add new length
+    var _x = 0;
+    var endDate: Date = new Date();
+    if (suffix === 'd') {
+      _x = ageDays;
+      endDate = addDays(startDate, ageDays);
+    } else if (suffix === 'w') {
+      _x = ageWeeks;
+      endDate = addWeeks(startDate, ageWeeks);
+    } else if (suffix === 'm') {
+      _x = ageMonths;
+      endDate = addMonths(startDate, ageMonths);
+    } else if (suffix === 'y') {
+      _x = ageYears;
+      endDate = addYears(startDate, ageYears);
+    }
+    mapData?.push({ y: length || height, x: _x, name: 'new', date: endDate });
+
+    // sort on date and then value
+    mapData.sort(function (a, b) {
+      return a.date.getTime() - b.date.getTime() || a.x - b.x;
+    });
+
     return mapData;
-  }, [growthData, infant, length, height, suffix]);
+  }, [getMapData, infant, length, height, suffix]);
 
   return (
     <>
