@@ -14,7 +14,7 @@ import Table from 'react-tailwind-table';
 import Icon from '../icon';
 import { Link, useHistory } from 'react-router-dom';
 import { useLazyQuery, useMutation } from '@apollo/client';
-import { sentInviteToMultipleUsers } from '@ecdlink/graphql';
+import { deleteMultipleUsers, sentInviteToMultipleUsers } from '@ecdlink/graphql';
 import { ReactI18NextChild } from 'react-i18next';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
@@ -54,6 +54,44 @@ export default function UiTable({
       fetchPolicy: 'network-only',
     }
   );
+
+  const [deactivateUsers, { loading: deactivatingLoading }] = useMutation(
+    deleteMultipleUsers,
+    {
+      variables: {
+        ids: [],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
+
+  const deactivateMultipleUsers = () => {
+    deactivateUsers({
+      variables: {
+        ids: selectedRows,
+      },
+    })
+      .then((res) => {
+        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Deactivated ${res.data?.sendBulkInviteToPortal?.success.length} Users!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+            setNotification({
+              title: ` Failed to Deactivate ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+              variant: NOTIFICATION.ERROR,
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to send invitations',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  };
 
   const inviteUsers = () => {
     sendInvitations({
@@ -218,20 +256,19 @@ export default function UiTable({
           {display_value?.map(
             (item: {
               [x: string]:
-                | boolean
-                | ReactChild
-                | ReactFragment
-                | ReactPortal
-                | Iterable<ReactI18NextChild>;
+              | boolean
+              | ReactChild
+              | ReactFragment
+              | ReactPortal
+              | Iterable<ReactI18NextChild>;
               id: Key;
             }) => (
               <div
                 key={item.id}
                 className={
-                  `${
-                    item[column.displayProperty] === 'Administrator'
-                      ? 'bg-tertiary'
-                      : item[column.displayProperty] === 'Practitioner'
+                  `${item[column.displayProperty] === 'Administrator'
+                    ? 'bg-tertiary'
+                    : item[column.displayProperty] === 'Practitioner'
                       ? 'bg-secondary'
                       : 'bg-primary'
                   }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
@@ -286,7 +323,7 @@ export default function UiTable({
               {selectedRows?.length} Selected
             </p>
           </div>
-          <div className="flex w-6/12 flex-row items-center">
+          <div >
             <Button
               className="mr-4 rounded-xl px-6 py-0"
               type="filled"
@@ -301,9 +338,9 @@ export default function UiTable({
             <Button
               className="mr-4 rounded-xl px-6 py-0"
               type="outlined"
-              // isLoading={isLoading}
+              isLoading={deactivatingLoading}
               color="tertiary"
-              // onClick={deactivateUser}
+              onClick={deactivateMultipleUsers}
             >
               <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
                 {' '}
@@ -347,9 +384,8 @@ export default function UiTable({
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${
-                rows.length < 10 ? 'hidden' : ''
-              } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${rows.length < 10 ? 'hidden' : ''
+                } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
             page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,

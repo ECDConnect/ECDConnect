@@ -158,6 +158,7 @@ export const GetHealthCareWorkerHighlights = gql`
     }
   }
 `;
+
 export const healthCareWorkerVisitStatus = gql`
   query ($userId: String) {
     healthCareWorkerVisitStatus(userId: $userId) {
