@@ -391,7 +391,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
             isLoadingInfantCount ||
             isLoadingUpdateInfantCaregiver ||
             isLoadingEventRecord ||
-            (!multipleChildrenArray && !isValid) ||
+            (!multipleChildrenArray?.length && !isValid) ||
             (isAlreadyClient && !getMotherDetailsFormValues('id')) ||
             (!isAlreadyClient && !getMotherDetailsFormValues('age')) ||
             (!isCaregiver &&

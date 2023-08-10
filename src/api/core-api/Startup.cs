@@ -12,6 +12,8 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
+using ECDLink.Api.CoreApi.Services;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.AzureStorage;
 using ECDLink.ContentManagement;
 using ECDLink.Core;
@@ -157,6 +159,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IIntegrationService, IntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
+            services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();
             services.AddTransient<IntegrationHelperManager>();

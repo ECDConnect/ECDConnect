@@ -19,6 +19,7 @@ import UiTable from '../../../../components/ui-table';
 import { SearchIcon, ChevronDownIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
 import CustomDateRangePicker from '../../../../components/date-picker';
+import { useHistory } from 'react-router';
 
 export default function ApplicationUsers() {
   const [searchValue, setSearchValue] = useState('');
@@ -40,6 +41,21 @@ export default function ApplicationUsers() {
   //   { insertedDate : sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
   //   { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc }
   // ]);
+  const history = useHistory();
+
+  const viewSelectedRow = (selectedRow: any) => {
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    history.push({
+      pathname: '/users/view-user',
+      state: {
+        component: 'administrators',
+        userId: selectedRow?.userId,
+      },
+    });
+  };
 
   const getVariables = (
     search: string,
@@ -59,13 +75,6 @@ export default function ApplicationUsers() {
       },
     };
   };
-
-  const { data: userCountData } = useQuery(getUserCount, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      search: '',
-    },
-  });
 
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: getVariables(searchValue, sortDescending, selectedPage, 100),
@@ -104,10 +113,10 @@ export default function ApplicationUsers() {
         searchValue,
         sortDescending,
         selectedPage,
-        selectedPageSize ?? userCountData?.countUsers ?? 100
+        selectedPageSize
       ),
     });
-  }, [searchValue, nameFilter, userCountData, sortDescending, selectedPage]);
+  }, [searchValue, nameFilter, sortDescending, selectedPage]);
 
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -115,9 +124,12 @@ export default function ApplicationUsers() {
     if (data && data.users) {
       const copyItems = data.users;
       const modifiedData = copyItems.map((obj) => {
-        obj.displayColumnIdPassportEmail =
-          obj?.userName ?? obj?.idNumber ?? obj?.email ?? null;
-        const { __typename: _, roles, ...rest } = obj;
+        const newUserData = {
+          ...obj,
+          displayColumnIdPassportEmail:
+            obj?.userName || obj?.idNumber || obj?.email || '',
+        };
+        const { __typename: _, roles, ...rest } = newUserData;
         const modifiedRoles = roles.map((role) => {
           const { __typename: __, ...roleRest } = role;
           return roleRest;
@@ -316,8 +328,8 @@ export default function ApplicationUsers() {
                     { field: 'isActive', use: 'Status' },
                   ]}
                   rows={tableData}
-                  urlRow={'/view-user/'}
                   component={'administrators'}
+                  viewRow={viewSelectedRow}
                 />
               </div>
             </div>

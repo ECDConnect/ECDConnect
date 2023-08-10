@@ -2,6 +2,8 @@ import { Alert, Divider, Radio, Typography } from '@ecdlink/ui';
 import { Fragment, useLayoutEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
 
+export const selfAssessmentVisitSectionStep3 = 'Step 3';
+
 export const Step3 = ({
   setEnableButton,
   setSectionQuestions,
@@ -30,8 +32,6 @@ export const Step3 = ({
 
   const options = ['Sometimes', 'Most of the time', 'All the time'];
 
-  const visitSection = 'Step 3';
-
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,
     questionName: string
@@ -51,7 +51,7 @@ export const Step3 = ({
     setAnswers(updatedQuestions);
     setSectionQuestions?.([
       {
-        visitSection,
+        visitSection: selfAssessmentVisitSectionStep3,
         questions: updatedQuestions,
       },
     ]);

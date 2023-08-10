@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   DynamicForm,
   DynamicFormProps,
@@ -15,7 +15,13 @@ import {
 } from './steps';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { parseBool, useDialog, useSessionStorage } from '@ecdlink/core';
+import {
+  parseBool,
+  useDialog,
+  usePrevious,
+  useSessionStorage,
+  useSnackbar,
+} from '@ecdlink/core';
 import { visitTypes } from '../index.types';
 import {
   CmsVisitDataInputModelInput,
@@ -52,6 +58,14 @@ export const Form = ({ onBack }: FormProps) => {
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [isViewDetails, setIsViewDetails] = useState(false);
+
+  const { isLoading } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_SELF_ASSESSMENT_FOR_PRACTITIONER
+  );
+  const wasLoading = usePrevious(isLoading);
+
+  const { showMessage } = useSnackbar();
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
@@ -274,6 +288,16 @@ export const Form = ({ onBack }: FormProps) => {
 
       return undefined;
     }, [isView, isViewPqaOrReAccreditation]);
+
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      onBack();
+      showMessage({
+        type: 'success',
+        message: 'Self-assessment submitted successfully',
+      });
+    }
+  }, [isLoading, onBack, showMessage, wasLoading]);
 
   return (
     <BannerWrapper

@@ -47,7 +47,7 @@ export const DietFormStep = ({
     getAgeInYearsMonthsAndDays(dateOfBirth);
 
   const isChild6Months = useMemo(
-    () => !ageYears && ageMonths < 7,
+    () => !ageYears && ageMonths < 10,
     [ageMonths, ageYears]
   );
 

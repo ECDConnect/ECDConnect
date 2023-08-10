@@ -12,6 +12,8 @@ import {
 import { isPractitionerAttendanceMissingForLearner } from '../classroom/attendance/track-attendance-utils';
 import {
   getChildAttendancePercentageAtPlaygroup,
+  getReportingPeriod,
+  isInFinalMonthOfReportingPeriod,
   isMatchingReportingPeriods,
 } from './child-profile-utils';
 import { differenceInDays } from 'date-fns';
@@ -26,6 +28,7 @@ export const getChildAlertModel = (
   classroomGroups?: ClassroomGroupDto[],
   classProgrammes?: ClassProgrammeDto[],
   childReports?: ChildProgressReportSummaryModel[],
+  attendedChildProgressTraining?: boolean,
   userRole: 'practitioner' | 'coach' = 'practitioner'
 ) => {
   const today = new Date();
@@ -59,19 +62,28 @@ export const getChildAlertModel = (
   const report = childReports?.find((x) =>
     isMatchingReportingPeriods(new Date(x.reportDate), today)
   );
+  const reportingPeriod = getReportingPeriod(today, false);
+
+  const isCurrentlyInReportingOverduePeriod = isInFinalMonthOfReportingPeriod(
+    reportingPeriod.monthName,
+    today
+  );
 
   const daysSinceInsertedDate = differenceInDays(
     new Date(),
     new Date(child?.insertedDate!)
   );
 
-  if (!report) {
-    if (daysSinceInsertedDate > 30) {
-      alert = 'error';
-      alertMessage = 'Progress report overdue';
+  if (
+    attendedChildProgressTraining &&
+    !report &&
+    isCurrentlyInReportingOverduePeriod &&
+    daysSinceInsertedDate > 30
+  ) {
+    alert = 'error';
+    alertMessage = 'Progress report overdue';
 
-      return { status: alert, message: alertMessage, severity: 1 };
-    }
+    return { status: alert, message: alertMessage, severity: 1 };
   }
 
   const userBirthDocument = userDocuments?.find(

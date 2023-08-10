@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   ButtonGroup,
-  FormInput,
   Typography,
   ButtonGroupTypes,
   renderIcon,
@@ -13,6 +12,7 @@ import {
   ImageInput,
   Dialog,
   DialogPosition,
+  FormInput,
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
@@ -61,6 +61,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     ownTheProperty,
     unproclaimedLand,
     liveAtTheProperty,
+    r4bPhoto,
   } = useWatch<ProgrammeDetailsModel>({
     control: programmeFormControl,
     defaultValue: {},
@@ -133,6 +134,20 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     },
   ]);
   const visitSection = 'Programme details';
+
+  const completedItems = visitData
+    ?.filter((item) => item?.visitSection === visitSection)
+    .filter(
+      (item) =>
+        item?.questionAnswer === 'true' ||
+        (item?.questionAnswer !== ' ' &&
+          item?.questionAnswer !== 'false' &&
+          item?.questionAnswer !== '')
+    );
+
+  const disableSection = completedItems?.length
+    ? completedItems?.length >= 6
+    : false;
 
   const checkedquestion = (question: string) => {
     const isChecked = visitData?.find((item) => item?.question === question);
@@ -213,30 +228,70 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     }
 
     if (checkedquestion(questions?.[4].question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'ownTheProperty',
-        Boolean(checkedquestion(questions?.[4].question)?.questionAnswer)
-      );
+      const answer =
+        checkedquestion(questions?.[4].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('ownTheProperty', answer);
     }
 
-    if (checkedquestion(questions?.[5].question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'haveTheTitleDeeds',
-        Boolean(checkedquestion(questions?.[5].question)?.questionAnswer)
-      );
+    if (checkedquestion(questions?.[5]?.question)?.questionAnswer) {
+      const answer =
+        checkedquestion(questions?.[5].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('haveTheTitleDeeds', answer);
     }
 
-    if (checkedquestion(questions?.[6].question)?.questionAnswer) {
+    if (checkedquestion(questions?.[6]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'unproclaimedLand',
         Boolean(checkedquestion(questions?.[6].question)?.questionAnswer)
       );
     }
 
-    if (checkedquestion(questions?.[7].question)?.questionAnswer) {
+    if (checkedquestion(questions?.[7]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'r4bPhoto',
-        checkedquestion(questions?.[7].question)?.questionAnswer!
+        checkedquestion(questions?.[7]?.question)?.questionAnswer!
+      );
+
+      setR4bPhotoUrl(
+        checkedquestion(questions?.[7]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[8]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[8]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[9]?.question)?.questionAnswer) {
+      const answer =
+        checkedquestion(questions?.[9].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('liveAtTheProperty', answer);
+    }
+    if (checkedquestion(questions?.[10]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[10].question)?.questionAnswer!
+      );
+    }
+    if (checkedquestion(questions?.[11]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[11]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[12]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[12].question)?.questionAnswer!
       );
     }
   }, []);
@@ -306,6 +361,15 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
             color={'textDark'}
             className={'my-3'}
           />
+
+          {disableSection && (
+            <Alert
+              className="my-4"
+              type="warning"
+              title="You are viewing this form and cannot edit responses."
+              list={['This form should be filled in by the trainee.']}
+            />
+          )}
           <Typography
             type={'h4'}
             text={'Child protection and confidentiality'}
@@ -426,22 +490,28 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 ></Controller>
               </div>
             </div>
-
-            <FormInput<ProgrammeDetailsModel>
-              label={questions?.[3].question}
-              register={programmeFormRegister}
-              nameProp={'programmeAddress'}
-              placeholder={'Tap to add address'}
-              type={'text'}
-              onChange={(e) =>
-                onOptionSelected((e.target as HTMLInputElement).value, 3)
-              }
-              onClick={() => setShowMap(true)}
-              disabled={Boolean(checkedquestion(questions?.[3].question))}
-              suffixIcon={'LocationMarkerIcon'}
-              sufficIconColor="primary"
-              suffixIconAction={() => setShowMap(true)}
-            ></FormInput>
+            <div
+              className={`${
+                Boolean(checkedquestion(questions?.[4].question))
+                  ? 'pointer-events-none'
+                  : ''
+              }`}
+            >
+              <FormInput<ProgrammeDetailsModel>
+                label={questions?.[3].question}
+                register={programmeFormRegister}
+                nameProp={'programmeAddress'}
+                placeholder={'Tap to add address'}
+                type={'text'}
+                onChange={(e) =>
+                  onOptionSelected((e.target as HTMLInputElement).value, 3)
+                }
+                disabled={true}
+                suffixIcon={'LocationMarkerIcon'}
+                sufficIconColor="primary"
+                suffixIconAction={() => setShowMap(true)}
+              ></FormInput>
+            </div>
 
             <div className={'w-full'}>
               <label className={styles.label}>{questions?.[4].question}</label>
@@ -536,7 +606,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 </div>
               </div>
             )}
-            {liveAtTheProperty === true && (
+            {liveAtTheProperty === true && !disableSection && (
               <>
                 <Alert
                   className="mb-4"
@@ -574,7 +644,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
               </>
             )}
             {liveAtTheProperty === false && (
-              <>
+              <div className={disableSection ? 'pointer-events-none' : ''}>
                 <Alert
                   className="mb-4"
                   type="info"
@@ -608,7 +678,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   }}
                   disabled={Boolean(checkedquestion(questions?.[10].question))}
                 ></ImageInput>
-              </>
+              </div>
             )}
           </>
           {haveTheTitleDeeds === false && ownTheProperty === true && (
@@ -667,7 +737,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
             ></ImageInput>
           )}
 
-          {unproclaimedLand === false && (
+          {unproclaimedLand === false && !disableSection && (
             <Alert
               className="mb-4"
               type="warning"
@@ -680,7 +750,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           )}
 
           {unproclaimedLand === true && (
-            <>
+            <div className={disableSection ? 'pointer-events-none' : ''}>
               <Alert
                 className="mb-4"
                 type="info"
@@ -712,9 +782,8 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   setProgrammeFormValue('r4bPhoto', imageString);
                   triggerR4bForm();
                 }}
-                disabled={Boolean(checkedquestion(questions?.[8].question))}
               ></ImageInput>
-            </>
+            </div>
           )}
           <div>
             <div>
@@ -736,27 +805,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   type={'help'}
                   text={'Save & continue'}
                   color={'white'}
-                />
-              </Button>
-            </div>
-            <div>
-              <Button
-                type="outlined"
-                color="primary"
-                className={styles.button}
-                disabled={
-                  !isValid || Boolean(checkedquestion(questions?.[0].question))
-                }
-                onClick={() => {
-                  setVisitSection(visitSection);
-                  onSubmit();
-                }}
-              >
-                {renderIcon('SaveIcon', styles.icon)}
-                <Typography
-                  type={'help'}
-                  text={'Save & exit'}
-                  color={'primary'}
                 />
               </Button>
             </div>
@@ -786,15 +834,9 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         position={DialogPosition.Bottom}
         stretch
       >
-        <div
-          className={`p-4 ${
-            Boolean(checkedquestion(questions?.[6].question))
-              ? 'pointer-events-none'
-              : ''
-          }`}
-        >
+        <div>
           <PhotoPrompt
-            title={'R4b photo'}
+            title={'Upload image'}
             onClose={() => setPhotoActionBarVisible(false)}
             onAction={(imageUrl: string) => {
               setPhotoUrl(imageUrl);

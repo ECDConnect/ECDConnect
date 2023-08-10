@@ -2,6 +2,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -11,6 +12,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
@@ -19,12 +21,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
+
         private VisitDataStatusManager _visitDataStatusManager;
         private VisitDataStatusManager_Practitioner _visitDataStatusManager_practitioner;
         private IPointsEngineService _pointsEngineService;
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
         private string _applicationUserId;
 
@@ -45,6 +49,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
+            _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
         }
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
@@ -194,6 +199,67 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
             }
+
+            if (input.VisitData.VisitName == Constants.SSSettings.visitType_pqa_visit_1)
+            {
+                // PQA Rating
+                Practitioner practitioner = _practitionerRepo.GetByUserId(input.PractitionerId);
+                Visit pqaVisit = _visitRepo.GetById(new Guid(input.VisitId));
+                PQARating pqaRating = GetPractitionerPQARating(pqaVisit);
+
+                // if green, then we add our first re-accreditation record
+                if (pqaRating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                {
+                    DateTime deadlineDate = pqaVisit.PlannedVisitDate.AddYears(1);
+
+                    // check to see if there is a accreditation record for the pqa visit for next year
+                    Visit accVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id &&
+                                                                x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 &&
+                                                                x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                                                x.LinkedVisitId == pqaVisit.Id &&
+                                                                x.PlannedVisitDate.Year == deadlineDate.Year).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+                    if (accVisit != null)
+                    {
+                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+
+                        var visitModel = new Visit();
+                        visitModel.VisitType = visitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = pqaVisit.Id;
+                        visitModel.PractitionerId = practitioner.Id;
+                        visitModel.Attended = false;
+                        visitModel.Risk = Constants.GGSettings.normal_risk;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        _visitRepo.Insert(visitModel);
+                    }
+
+                } else
+                {
+                    // Add first follow-up
+                    DateTime deadlineDate = pqaVisit.ActualVisitDate.Value.AddDays(14);
+                    VisitType followUpVisitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
+
+                    // check to see if visit exists
+                    Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.PlannedVisitDate.Date == deadlineDate.Date && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
+                    if (visit == null)
+                    {
+                        var visitModel = new Visit();
+                        visitModel.VisitType = followUpVisitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = pqaVisit.Id;
+                        visitModel.PractitionerId = practitioner.Id;
+                        visitModel.Attended = false;
+                        visitModel.Risk = Constants.GGSettings.normal_risk;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate.Date, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(deadlineDate.Date, CultureInfo.InvariantCulture);
+                        _visitRepo.Insert(visitModel);
+                    }
+
+                }
+            }
             return true;
         }
         public Boolean AddTraineeVisitData(CMSVisitDataInputModel input)
@@ -225,18 +291,38 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().Count();
-            if (count == 4)
+            var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().ToList();
+            if (completedSections.Count == 4)
+            {
+                MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
+            }
+            return true;
+        }
+        public Visit MarkChecklistVisitStatus(Guid visitId)
+        {
+            var programme = "Programme details";
+            var health = "Health, sanitation & safety";
+            var safety = "Safety - structure, space & area";
+            var space = "Space & emergency planning";
+
+            int programmeCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == programme).Count();
+            int healthCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == health && x.QuestionAnswer == "true").Count();
+            int safetyCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == safety && x.QuestionAnswer == "true").Count();
+            int spaceCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == space && x.QuestionAnswer == "true").Count();
+
+            // EC-1359 - remove spacecount which is not compulsory
+            if (programmeCount > 6 && healthCount == 7 && safetyCount == 10)
             {
                 // update the visit record to show attended/completed 
-                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
+                var entityToUpdate = _visitRepo.GetById(visitId);
                 entityToUpdate.UpdatedDate = DateTime.Now;
                 entityToUpdate.UpdatedBy = _applicationUserId;
                 entityToUpdate.Attended = true;
                 entityToUpdate.ActualVisitDate = DateTime.Now;
-                _visitRepo.Update(entityToUpdate);
+                return _visitRepo.Update(entityToUpdate);
             }
-                return true;
+
+            return null;
         }
 
         public Boolean AddCoachData(CMSVisitDataInputModel input)
@@ -302,6 +388,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
             }
+
+            if (input.VisitData.VisitName == Constants.SSSettings.smart_space_checklist)
+            {
+                var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().ToList();
+                if (completedSections.Count == 4)
+                {
+                    MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
+                }
+            }
+
             return true;
         }
 
@@ -328,46 +424,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public List<VisitData> GetVisitAnswersForClient(string visitId, string visitName, string visitSection) {
 
-            List<VisitData> vData = new List<VisitData>();
-            vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == visitName && y.VisitSection == visitSection) on visit.Id equals visitData.VisitId
-                select visitData
-            ).ToList();
-
-            return vData;
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Id.ToString() == visitId && x.VisitName == visitName && x.VisitSection == visitSection).OrderBy(x => x.Visit.PlannedVisitDate).ToList();
         }
         public List<string> GetCompletedVisitsForVisitId(string visitId) {
 
-            List<string> vData = new List<string>();
-                vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                select visitData
-            ).Select(y => y.VisitName).Distinct().ToList();
-
-            return vData;
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Id.ToString() == visitId).OrderBy(x => x.Visit.PlannedVisitDate).Select(y => y.VisitName).Distinct().ToList();
         }
         public List<VisitData> GetVisitDataForVisitId(string visitId)
         {
-            return (
-                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
-                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                select visitData
-            ).ToList();
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Id.ToString() == visitId).OrderBy(x => x.Visit.PlannedVisitDate).ToList();
         }
         public List<VisitData> GetGrowthDataForInfant(string id) {
 
-              List<VisitData> vData = new List<VisitData>();
-              vData = (
-                  from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderByDescending(x => x.PlannedVisitDate)
-                  join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || 
-                                                                       y.Question == Constants.GGSettings.q_length || 
-                                                                       y.Question == Constants.GGSettings.q_muac) on visit.Id equals visitData.VisitId
-                  select visitData
-              ).ToList();
-
-              return vData;
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Infant.UserId == id && x.QuestionAnswer != "undefined" &&
+                                                (x.Question == Constants.GGSettings.q_weight || x.Question == Constants.GGSettings.q_length || x.Question == Constants.GGSettings.q_muac)).ToList();
         }
         public int GetTotalGrowthInfantsForWeek(string id, Boolean currentWeek)
         {
@@ -442,49 +512,30 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return status;
         }
-        public PQARating GetPractitionerPQARating(string userId, string visit_type = "")
+        public PQARating GetPractitionerPQARating(Visit pqaVisit)
         {
             int totalSections = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
                                 Constants.SSSettings.step6_total + Constants.SSSettings.step7_total + Constants.SSSettings.step8_total;
             var totalScores = 0.0;
             var rating = new PQARating();
-            Visit PQAVisit = new Visit();
 
-            if (visit_type == "")
-            {
-                PQAVisit =
-                    (
-                        from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
-                                                                        (y.Name == Constants.SSSettings.visitType_pqa_visit_1 ||
-                                                                         y.Name == Constants.SSSettings.visitType_pqa_visit_2 ||
-                                                                         y.Name == Constants.SSSettings.visitType_pqa_visit_3)) on visit.VisitTypeId equals visitType.Id
-                        select visit
-                    ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
-            } else
-            {
-                PQAVisit =
-                    (
-                        from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
-                                                                        (y.Name == visit_type)) on visit.VisitTypeId equals visitType.Id
-                        select visit
-                    ).FirstOrDefault();
-            }
+            if (pqaVisit != null) {
 
-            if (PQAVisit != null) { 
-
-            List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == PQAVisit.Id).ToList();
+                rating.VisitTypeName = pqaVisit.VisitType.Name;
+                rating.LinkedVisitId = pqaVisit.LinkedVisitId.ToString();
+                rating.Children = new List<PQARatingChild>();
+                List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == pqaVisit.Id).ToList();
+                double step5Score = -1;
 
                 if (vData.Count > 0)
                 {
-                    List<VisitData> step2 = vData.Where(x => x.VisitSection == Constants.SSSettings.step2).ToList();
-                    List<VisitData> step3 = vData.Where(x => x.VisitSection == Constants.SSSettings.step3 && x.Question == Constants.SSSettings.step3_q1).ToList();
-                    List<VisitData> step4 = vData.Where(x => x.VisitSection == Constants.SSSettings.step4 && x.Question != Constants.SSSettings.step3_q1).ToList();
-                    List<VisitData> step5 = vData.Where(x => x.VisitSection == Constants.SSSettings.step5).ToList();
-                    List<VisitData> step6 = vData.Where(x => x.VisitSection == Constants.SSSettings.step6).ToList();
-                    List<VisitData> step7 = vData.Where(x => x.VisitSection == Constants.SSSettings.step7).ToList();
-                    List<VisitData> step8 = vData.Where(x => x.VisitSection == Constants.SSSettings.step8).ToList();
+                    List<VisitData> step2 = vData.Where(x => x.VisitSection == Constants.SSSettings.step2_section).ToList();
+                    List<VisitData> step3 = vData.Where(x => x.VisitSection == Constants.SSSettings.step3_section && x.Question == Constants.SSSettings.step3_q1).ToList();
+                    List<VisitData> step4 = vData.Where(x => x.VisitSection == Constants.SSSettings.step4_section && x.Question != Constants.SSSettings.step3_q1).ToList();
+                    List<VisitData> step5 = vData.Where(x => x.VisitSection == Constants.SSSettings.step5_section).ToList();
+                    List<VisitData> step6 = vData.Where(x => x.VisitSection == Constants.SSSettings.step6_section).ToList();
+                    List<VisitData> step7 = vData.Where(x => x.VisitSection == Constants.SSSettings.step7_section).ToList();
+                    List<VisitData> step8 = vData.Where(x => x.VisitSection == Constants.SSSettings.step8_section).ToList();
 
                     if (step2.Count > 0)
                     {
@@ -498,7 +549,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step2_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step2_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
 
                     }
 
@@ -514,7 +565,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step3_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStep3RatingColor(child.SectionScore);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     if (step4.Count > 0)
@@ -529,7 +580,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step4_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step4_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     if (step5.Count > 0)
@@ -544,7 +595,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step5_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step5_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
+                        step5Score = child.SectionScore;
                     }
 
                     if (step6.Count > 0)
@@ -559,7 +611,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step6_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step6_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     if (step7.Count > 0)
@@ -574,7 +626,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step7_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step7_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     if (step8.Count > 0)
@@ -589,9 +641,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step8_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step8_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
-
 
                     // overall rating calc
                     rating.OverallScore = totalScores;
@@ -633,7 +684,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // 2. if the score for step 5 of the PQA(ie, section 3, use case 9) was less than 5
                     // 3. if the user did NOT re-issue the SmartSpace license(use case 16)
                     // (4.note that if the user selected ""Yes"" to the first question in use case 21, then the scenario in use case 23 applies - please see use case 23 above for that red rating case, not covered here) 
-                    if (rating.OverallScore < 18 || rating.Children.GetItemByIndex(4).SectionScore < 5 ||
+
+                    if (rating.OverallScore < 18 || (step5Score > 0 && step5Score < 5) ||
                         (step14_q1 != null && step14_q1.QuestionAnswer == Constants.GGSettings.answer_no) ||
                         (step16_q1 != null && step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes))
                     {
@@ -644,7 +696,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return rating;
         }
-        public PQARating GetPractitionerReAccreditationRating(string userId, string visit_type = "") {
+        
+        public PQARating GetPractitionerReAccreditationRating(Visit RAVisit) {
 
             PQARating rating = new PQARating();
 
@@ -652,49 +705,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                 Constants.SSSettings.re_accreditation_C_total + Constants.SSSettings.re_accreditation_D_total;
             var totalScores = 0.0;
 
-            Visit RAVisit = new Visit();
-
-            if (visit_type == "")
-            {
-                RAVisit =
-                (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && 
-                                                                    (y.Name == Constants.SSSettings.visitType_re_accreditation_1 ||
-                                                                     y.Name == Constants.SSSettings.visitType_re_accreditation_2 ||
-                                                                     y.Name == Constants.SSSettings.visitType_re_accreditation_3)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
-
-            } else
-            {
-                RAVisit =
-                (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
-                                                                    (y.Name == visit_type)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
-            }
-
             if (RAVisit != null)
             {
+                rating.VisitTypeName = RAVisit.VisitType.Name;
+                rating.LinkedVisitId = RAVisit.LinkedVisitId.ToString();
+                rating.Children = new List<PQARatingChild>();
+
                 List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == RAVisit.Id).ToList();
 
                 if (vData.Count > 0)
                 {
-                    List<VisitData> stepA = vData.Where(x => x.VisitSection == Constants.SSSettings.step_8_re_accreditation).ToList();
-                    List<VisitData> stepB = vData.Where(x => x.VisitSection == Constants.SSSettings.step_10_re_accreditation).ToList();
-                    List<VisitData> stepC = vData.Where(x => x.VisitSection == Constants.SSSettings.step_11_re_accreditation).ToList();
-                    List<VisitData> stepD = vData.Where(x => x.VisitSection == Constants.SSSettings.step_12_re_accreditation).ToList();
-
-                    rating.VisitName = stepA.GetItemByIndex(0).VisitName;
-                    rating.PlannedDate = stepA.GetItemByIndex(0).Visit.PlannedVisitDate;
-                    rating.ActualVisitDate = stepA.GetItemByIndex(0).Visit.ActualVisitDate;
+                    List<VisitData> stepA = vData.Where(x => x.VisitSection == Constants.SSSettings.step_8_section).ToList();
+                    List<VisitData> stepB = vData.Where(x => x.VisitSection == Constants.SSSettings.step_10_section).ToList();
+                    List<VisitData> stepC = vData.Where(x => x.VisitSection == Constants.SSSettings.step_11_section).ToList();
+                    List<VisitData> stepD = vData.Where(x => x.VisitSection == Constants.SSSettings.step_12_section).ToList();
 
                     // Section A
                     if (stepA.Count > 0)
                     {
+                        rating.VisitName = stepA.GetItemByIndex(0).VisitName;
+                        rating.PlannedDate = stepA.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        rating.ActualVisitDate = stepA.GetItemByIndex(0).Visit.ActualVisitDate;
 
                         var child = new PQARatingChild();
                         child.VisitSection = stepA.GetItemByIndex(0).VisitSection;
@@ -702,7 +733,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_A_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_A_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     // Section B
@@ -710,25 +741,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         var child = new PQARatingChild();
                         child.VisitSection = stepB.GetItemByIndex(0).VisitSection;
-                        var stepBScore = 0;
-                        foreach (VisitData vRecord in stepB)
-                        {
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q1) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q2) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q3) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q4) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q5) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q6) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q7) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q8) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q9) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                            if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q10) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
-                        }
-                        child.SectionScore = (stepBScore);
+                        child.SectionScore = stepB.Select(x => Int32.Parse(x.QuestionAnswer)).Sum();
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_B_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_B_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     // Section C
@@ -740,7 +757,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_C_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_C_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
 
                     // Section D
@@ -752,7 +769,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_D_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_D_total) * 100);
                         rating.Children.Add(child);
-                        totalScores = totalScores + child.SectionScore;
+                        totalScores += child.SectionScore;
                     }
                 }
 
@@ -809,7 +826,29 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             int score = 0;
             foreach (VisitData record in records)
             {
-                score = score + Int32.Parse(record.QuestionAnswer);
+                if (record.QuestionAnswer.StartsWith("1 -"))
+                {
+                    score++;
+                } 
+                else if (record.QuestionAnswer.StartsWith("2 -"))
+                {
+                    score += 2;
+                }
+
+                if (record.VisitSection == Constants.SSSettings.step3_section)
+                {
+                    if (record.QuestionAnswer != "None")
+                    {
+                        var arrItems = record.QuestionAnswer.Split(",");
+                        if (arrItems.Length == 3)
+                        {
+                            score++;
+                        } else if (arrItems.Length > 7)
+                        {
+                            score += 2;
+                        }
+                    }
+                }
             }
 
             return score;
@@ -819,14 +858,40 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             int score = 0;
             Boolean parsedValue;
 
+
             foreach (VisitData record in records)
             {
-                if (Boolean.TryParse(record.QuestionAnswer, out parsedValue))
+                if (record.VisitSection == Constants.SSSettings.step_8_section)
                 {
-                    if (parsedValue)
-                    {
-                        score++;
-                    }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a1) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a2) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a3) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a4) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a5) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a6) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a7) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a8) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a9) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a10) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a11) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step8_re_accreditation_a12) != -1) { score++; }
+                } else if (record.VisitSection == Constants.SSSettings.step_11_section)
+                {
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a1) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a2) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a3) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a4) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a5) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_11_re_accreditation_a6) != -1) { score++; }
+                }
+                else if (record.VisitSection == Constants.SSSettings.step_12_section)
+                {
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a1) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a2) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a3) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a4) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a5) != -1) { score++; }
+                    if (record.QuestionAnswer.IndexOf(Constants.SSSettings.step_12_re_accreditation_a6) != -1) { score++; }
                 }
             }
 

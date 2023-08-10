@@ -49,6 +49,8 @@ const ROUTES = {
     PRACTITIONER_LIST: '/practitioner-list',
     PRACTITIONER_CHILD_LIST: '/practitioner-child-list',
     PRACTITIONER_REASSIGN_CLASS: '/practitioner-reassign-class',
+    PRACTITIONER_REMOVE_FROM_PROGRAMME: '/remove-practitioner-from-programme',
+    SWAP_PRINCIPAL: '/swap-principal',
     NOTES: '/notes',
   }),
   PRACTITIONER: addPrefix('/practitioner', {

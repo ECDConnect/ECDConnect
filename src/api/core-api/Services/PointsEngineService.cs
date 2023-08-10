@@ -1236,9 +1236,6 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool CalculateChildrenRegistrationRemoval(string userId, DateTime today)
         {
-            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
-            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac2).FirstOrDefault();
-
             Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
@@ -1247,6 +1244,9 @@ namespace EcdLink.Api.CoreApi.Services
 
                 if (childCount > 0)
                 {
+                    List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
+                    PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac2).FirstOrDefault();
+
                     PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
                     int activityPoints = childCount * activity.Points;
 

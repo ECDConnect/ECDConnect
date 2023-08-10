@@ -22,15 +22,17 @@ import { traineeSelectors } from '@/store/trainee';
 import ROUTES from '@/routes/routes';
 import { CoachVisitInfo } from './components/coach-visit-info';
 import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
+import { PractitionerDto } from '@ecdlink/core';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
   setIsSmartChecklist?: any;
+  practitioner?: PractitionerDto;
 }
 
 export const OnboardingTraineeDashboard: React.FC<
   OnboardingTraineeDashboardProps
-> = ({ setNotificationStep, setIsSmartChecklist }) => {
+> = ({ setNotificationStep, setIsSmartChecklist, practitioner }) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const today = format(new Date(), 'EEEE, d LLLL');
@@ -53,6 +55,7 @@ export const OnboardingTraineeDashboard: React.FC<
 
     setNotificationStep(notificationStep);
   };
+  const isOnStipend = practitioner?.isOnStipend;
 
   const uncompletedSteps = timelineSteps(
     timeline!,
@@ -60,7 +63,10 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
   ).filter(
     (item) =>
       item?.type !== 'completed' &&
@@ -69,11 +75,15 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title !== 'SmartSpace Licence'
   );
 
-  const extradataTimeValue = Object.values(uncompletedSteps?.[0].extraData!);
+  const extradataTimeValue =
+    uncompletedSteps?.length > 0 &&
+    Object.values(uncompletedSteps?.[0]?.extraData!);
 
   const checkOverdueDate = differenceInDays(
     new Date(),
-    new Date(extradataTimeValue[0] as Date)
+    new Date(
+      extradataTimeValue ? (extradataTimeValue?.[0] as Date) : new Date()
+    )
   );
 
   const completedSteps = timelineSteps(
@@ -82,7 +92,10 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
   ).filter((item) => item?.type === 'completed');
 
   const stepperCount = timelineSteps(
@@ -91,7 +104,10 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
   ).length;
 
   const completedFlow = stepperCount - 2 === completedSteps?.length;
@@ -138,7 +154,7 @@ export const OnboardingTraineeDashboard: React.FC<
       title={'Business'}
       subTitle={today}
       color={'primary'}
-      onBack={() => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)}
+      onBack={() => history.push(ROUTES.DASHBOARD)}
       displayHelp={true}
       onHelp={displayTutorial}
       displayOffline={!isOnline}
@@ -256,7 +272,9 @@ export const OnboardingTraineeDashboard: React.FC<
                   isOnline,
                   // @ts-ignore
                   undefined,
-                  nextStep?.title
+                  nextStep?.title,
+                  timeline?.consolidationMeetingStatus,
+                  isOnStipend
                 )}
                 typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
               />
@@ -275,7 +293,10 @@ export const OnboardingTraineeDashboard: React.FC<
                         false,
                         isOnline,
                         // @ts-ignore
-                        undefined
+                        undefined,
+                        '',
+                        timeline?.consolidationMeetingStatus,
+                        isOnStipend
                       ).length && i + 1 <= completedSteps?.length
                         ? '#26ACAF'
                         : '#D4EEEF',

@@ -66,6 +66,8 @@ export const Step18 = ({
     smartStarter?.user?.firstName ||
     smartStarter?.firstName ||
     'the SmartStarter';
+  const userId = smartStarter?.user?.id || smartStarter?.id || '';
+
   const isPrincipal = smartStarter?.isPrincipal === true;
 
   const [visitIdFromPractitionerJourney] = useSessionStorage(
@@ -91,7 +93,6 @@ export const Step18 = ({
   ];
 
   const children = useSelector(childrenSelectors.getChildren);
-  const childUsers = useSelector(childrenSelectors.getChildUsers);
   const allLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
@@ -103,9 +104,13 @@ export const Step18 = ({
   const classroomGroups = allClassroomGroups.filter(
     (x) => x?.name !== NoPlaygroupClassroomType?.name
   );
-  const currentClassroomGroups = classroomGroups.filter(
-    (item) => item?.userId === smartStarter?.userId
-  );
+  const classroomId = classroomGroups.find(
+    (item) => item.userId === userId
+  )?.classroomId;
+
+  const currentClassroomGroups = isPrincipal
+    ? classroomGroups.filter((item) => item.classroomId === classroomId)
+    : classroomGroups.filter((item) => item?.userId === userId);
   const previousClassroomGroups = usePrevious(currentClassroomGroups) as
     | ClassroomGroupDto[]
     | undefined;
@@ -170,51 +175,40 @@ export const Step18 = ({
 
     for (const learner of _allLearners) {
       if (
-        !currentClassProgrammes.some(
-          (item) => item?.classroomGroupId === learner?.classroomGroupId
+        !currentClassroomGroups.some(
+          (item) => item?.id === learner?.classroomGroupId
         )
       )
         continue;
+      const childUser = children?.find((y) => y?.userId === learner?.userId);
 
-      const child = children?.find(
-        (child) => child?.userId === learner?.userId && child?.isActive
-      );
-      const childUser = childUsers?.find((y) => y?.id === learner?.userId);
-
-      if (
-        child &&
-        child?.caregiverId &&
-        childUser?.firstName &&
-        childUser?.surname
-      ) {
+      if (childUser) {
         filteredChildren.push(childUser);
       }
     }
 
-    const sortedChildren = filteredChildren
-      .filter((child) => {
-        if (child?.dateOfBirth === undefined) {
-          return false;
-        }
+    // TODO: check if this is necessary
+    // const sortedChildren = filteredChildren
+    //   .filter((child) => {
+    //     if (child?.dateOfBirth === undefined) {
+    //       return false;
+    //     }
 
-        const date = new Date(child?.dateOfBirth);
-        const minDate = new Date('1900-01-01');
-        const maxDate = new Date();
-        return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
-      })
-      .sort(
-        (a, b) =>
-          new Date(String(a?.dateOfBirth)).getTime() -
-          new Date(String(b?.dateOfBirth)).getTime()
-      );
-
-    setRegisteredChildren(sortedChildren);
+    //     const date = new Date(child?.dateOfBirth);
+    //     const minDate = new Date('1900-01-01');
+    //     const maxDate = new Date();
+    //     return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
+    //   })
+    //   .sort(
+    //     (a, b) =>
+    //       new Date(String(a?.dateOfBirth)).getTime() -
+    //       new Date(String(b?.dateOfBirth)).getTime()
+    //   );
+    setRegisteredChildren(filteredChildren);
   }, [
     allLearners,
-    childUsers,
     children,
-    currentClassProgrammes,
-    currentClassroomGroups?.length,
+    currentClassroomGroups,
     previousClassroomGroups?.length,
   ]);
 
@@ -315,7 +309,7 @@ export const Step18 = ({
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${currentClassroomGroups[0].name}`
+              ? `classes at ${currentClassroomGroups?.[0]?.classroom?.name}`
               : `classes assigned to ${name}`
           }
         />

@@ -12,6 +12,7 @@ import LanguageSelector from '../../../../../../components/language-selector/lan
 import { ContentManagementView } from '../../../../content-management-models';
 import ContentEdit from '../content-edit/content-edit';
 import ContentView from '../content-view/content-view';
+import { XIcon } from '@heroicons/react/solid';
 
 export interface ContentCompareProps {
   contentView: ContentManagementView;
@@ -30,14 +31,15 @@ export default function ContentCompare({
   contentType,
   languages,
   defaultLanguageId,
+  selectedLanguageId,
   cancelCompare,
   savedContent,
 }: ContentCompareProps) {
-  const [selectedFirstLanguageId, setselectedFirstLanguageId] =
-    useState<string>(contentView.languageId);
+  const [selectedFirstLanguageId, setSelectedFirstLanguageId] =
+    useState<string>(selectedLanguageId);
 
-  const [selectedSecondLanguageId, setselectedSecondLanguageId] =
-    useState<string>(contentView.languageId);
+  const [selectedSecondLanguageId, setSelectedSecondLanguageId] =
+    useState<string>(defaultLanguageId);
 
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [currentContent, setCurrentContent] = useState<ContentDto>();
@@ -71,106 +73,76 @@ export default function ContentCompare({
 
   if (contentView && languages && currentContent) {
     return (
-      <div className="bg-uiMidDark lg:min-w-0 lg:flex-1">
+      <div className=" lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
           <div className="relative h-full" style={{ minHeight: '36rem' }}>
             <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-              <h3 className="text-lg leading-6 font-medium text-white">
+              <h3 className="text-lg font-medium leading-6 ">
                 {camelCaseToSentanceCase(contentType.name ?? '')} - Compare
                 languages
               </h3>
               <div className="flex flex-row">
-                <div>
-                  <button
-                    onClick={() => setIsEdit(!isEdit)}
-                    type="button"
-                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
-                  >
-                    {isEdit ? 'Preview' : 'Edit'} content
-                  </button>
-                </div>
-
                 <div className="ml-4">
                   <button
                     onClick={cancelCompare}
                     type="button"
-                    className="inline-flex items-center px-4 py-2.5 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                    className="bg-errorBg text-tertiary hover:bg-tertiary inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
                   >
                     Cancel Compare
+                    <XIcon width="22px" className="pl-1" />
                   </button>
                 </div>
               </div>
             </div>
 
             <div
-              className="flex flex-row justify-items-stretch relative"
+              className="relative flex flex-row justify-items-stretch"
               style={{ minHeight: '36rem' }}
             >
               {/* FIRST LANGUAGE */}
-              <div className="w-1/2 bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg">
-                <LanguageSelector
-                  disabled={false}
-                  languages={languages}
-                  currentLanguageId={selectedFirstLanguageId}
-                  selectLanguage={setselectedFirstLanguageId}
-                />
+              <div className="w-1/2 rounded-lg border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
+                <div className=" flwx w-2/12">
+                  <LanguageSelector
+                    disabled={false}
+                    languages={languages}
+                    currentLanguageId={selectedFirstLanguageId}
+                    selectLanguage={setSelectedFirstLanguageId}
+                  />
+                </div>
 
-                {!isEdit ? (
-                  <ContentView
-                    optionDefinitions={optionDefinitions}
-                    contentValues={getOrderedContentValues(
-                      currentContent?.contentValues
-                    )}
-                    selectedLanguageId={selectedFirstLanguageId}
-                    contentType={contentType}
-                  />
-                ) : (
-                  <ContentEdit
-                    optionDefinitions={optionDefinitions}
-                    content={contentView.content}
-                    selectedLanguageId={selectedFirstLanguageId}
-                    contentValues={getOrderedContentValues(
-                      currentContent?.contentValues
-                    )}
-                    contentType={contentType}
-                    cancelEdit={() => setIsEdit(!isEdit)}
-                    savedContent={savedContent}
-                    defaultLanguageId={defaultLanguageId}
-                  />
-                )}
+                <ContentEdit
+                  optionDefinitions={optionDefinitions}
+                  content={contentView.content}
+                  selectedLanguageId={selectedFirstLanguageId}
+                  contentValues={getOrderedContentValues(
+                    currentContent?.contentValues
+                  )}
+                  contentType={contentType}
+                  savedContent={savedContent}
+                  defaultLanguageId={defaultLanguageId}
+                />
               </div>
               {/* SECOND LANGUAGE */}
-              <div className="w-1/2 ml-4 bg-white px-4 py-5 border-b border-gray-200 sm:px-6 rounded-lg">
-                <LanguageSelector
-                  disabled={false}
-                  languages={languages}
-                  currentLanguageId={selectedSecondLanguageId}
-                  selectLanguage={setselectedSecondLanguageId}
+              <div className="ml-4 w-1/2 rounded-lg border-b border-gray-200 bg-white px-4 py-5 sm:px-6 ">
+                <div className=" flex w-2/12 ">
+                  <LanguageSelector
+                    disabled={false}
+                    languages={languages}
+                    currentLanguageId={selectedSecondLanguageId}
+                    selectLanguage={setSelectedSecondLanguageId}
+                  />
+                </div>
+                <ContentEdit
+                  optionDefinitions={optionDefinitions}
+                  content={contentView.content}
+                  selectedLanguageId={selectedSecondLanguageId}
+                  contentValues={getOrderedContentValues(
+                    currentContent?.contentValues
+                  )}
+                  contentType={contentType}
+                  savedContent={savedContent}
+                  defaultLanguageId={defaultLanguageId}
                 />
-
-                {!isEdit ? (
-                  <ContentView
-                    optionDefinitions={optionDefinitions}
-                    contentValues={getOrderedContentValues(
-                      currentContent?.contentValues
-                    )}
-                    selectedLanguageId={selectedSecondLanguageId}
-                    contentType={contentType}
-                  />
-                ) : (
-                  <ContentEdit
-                    optionDefinitions={optionDefinitions}
-                    content={contentView.content}
-                    selectedLanguageId={selectedSecondLanguageId}
-                    contentValues={getOrderedContentValues(
-                      currentContent?.contentValues
-                    )}
-                    contentType={contentType}
-                    cancelEdit={() => setIsEdit(!isEdit)}
-                    savedContent={savedContent}
-                    defaultLanguageId={defaultLanguageId}
-                  />
-                )}
               </div>
             </div>
           </div>

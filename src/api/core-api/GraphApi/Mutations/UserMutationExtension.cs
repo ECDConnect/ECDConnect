@@ -406,6 +406,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var user = await userManager.FindByIdAsync(id);
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
 
+            if (user == default(ApplicationUser))
+            {
+                return false;
+            }
+
             // Don't let normal users disable admins...
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin)
@@ -419,11 +424,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            if (user == default(ApplicationUser))
-            {
-                return false;
-            }
-
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTime.MaxValue;
             user.IsActive = false;
             user.UpdatedDate = DateTime.UtcNow;
 
@@ -432,7 +434,80 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // Manage points for user
             pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
+
             return updateResult.Succeeded;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
+        public async Task<BulkDeactivateResult> BulkDeleteUser(
+          [Service] IHttpContextAccessor httpContextAccessor,
+          IGenericRepositoryFactory repoFactory,
+          [Service] IPointsEngineService pointsEngineService,
+          UserManager<ApplicationUser> userManager,
+          List<string> ids)
+        {
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var currentUser = await userManager.FindByIdAsync(currentUserId);
+            var executorIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+
+            if (ids is null || ids.Count == 0)
+            {
+                return new BulkDeactivateResult();
+            }
+
+            var users = userManager.Users.Where(u => ids.Contains(u.Id)).ToList();
+            
+            if (users is null || users.Count == 0)
+            {
+                return new BulkDeactivateResult();
+            }
+            
+            var success = new List<string>();
+            var failed = new List<string>();
+
+            foreach (var user in users)
+            {
+                // Don't let normal users disable admins...
+                var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
+                if (isAdmin)
+                {
+                    if (!executorIsAdmin)
+                    {
+                        failed.Add(user.Id);
+                        continue;
+                    }
+                }
+
+                user.LockoutEnabled = true;
+                user.LockoutEnd = DateTime.MaxValue;
+                user.IsActive = false;
+                user.UpdatedDate = DateTime.UtcNow;
+
+                var updateResult = await userManager.UpdateAsync(user);
+                
+                if (updateResult.Succeeded)
+                {
+                    // Manage points for user
+                    var isPractitioner = await userManager.IsInRoleAsync(user, Roles.PRACTITIONER);
+                    if (isPractitioner)
+                        pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
+
+                    // Remove any roles
+                    var roles = userManager.GetRolesAsync(user).Result;
+                    foreach (var role in roles)
+                    {
+                        var result = userManager.RemoveFromRoleAsync(user, role).Result;
+                    }
+
+                    success.Add(user.Id);
+                    DoAudit(currentUserId, repoFactory, null, user.Id, "Delete"); 
+                } else
+                {
+                    failed.Add(user.Id);
+                }
+            }
+
+            return new BulkDeactivateResult() { Failed = failed, Success = success };
         }
 
         // TODO: Shouldn't we check Hierarchy here?

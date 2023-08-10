@@ -239,7 +239,8 @@ export const PrincipalPractitionerChildList: React.FC<
               attendanceData,
               classroomGroups,
               classroomGroupProgrammes,
-              childReportsOne
+              childReportsOne,
+              practitioner?.attendedChildProgress || false
             );
             const childUserDocumentsTwo = documents?.filter(
               (x) => x.userId === b.userId
@@ -256,7 +257,8 @@ export const PrincipalPractitionerChildList: React.FC<
               attendanceData,
               classroomGroups,
               classroomGroupProgrammes,
-              childReportsTwo
+              childReportsTwo,
+              practitioner?.attendedChildProgress || false
             );
             return childAlertOne.severity > childAlertTwo.severity ? 1 : -1;
           }
@@ -313,7 +315,8 @@ export const PrincipalPractitionerChildList: React.FC<
       attendanceData,
       classroomGroups,
       classroomGroupProgrammes,
-      reports
+      reports,
+      practitioner?.attendedChildProgress || false
     );
 
     return {

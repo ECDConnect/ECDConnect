@@ -5,7 +5,7 @@ interface AddressMapProps {
   onClose: () => void;
   onSubmit: (address: string) => void;
 }
-const COMPONENT_HEIGHT = 280;
+const COMPONENT_HEIGHT = 100;
 
 const getInfo = (address: Address[] | undefined, type: string) =>
   address?.find((item) =>
@@ -18,7 +18,6 @@ export const AddressMap: React.FC<AddressMapProps> = ({
 }) => {
   const [address, setAddress] = useState<Address[]>();
   const [formattedAddress, setFormattedAddress] = useState('');
-
   const saveAddress = () => {
     onSubmit(formattedAddress);
     onClose();

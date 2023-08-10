@@ -54,7 +54,7 @@ class PQAService {
         mutation AddReAccreditationVisitForPractitioner($input: ReAccreditationVisitModelInput) {
           addReAccreditationVisitForPractitioner(input: $input) {
               id, 
-              plannedVisitData
+              plannedVisitDate
           }        
         }
       `,
@@ -234,48 +234,6 @@ class PQAService {
             firstAidCourseColor
             firstAidCourseStatus
             firstAidDate
-            pQARating1 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
-            }
-            pQARating2 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
-            }
-            pQARating3 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
-            }
             prePQAVisitDate1
             prePQAVisitDate1Color
             prePQAVisitDate1Status
@@ -288,6 +246,7 @@ class PQAService {
               attended
               comment
               dueDate
+              insertedDate
               visitType {
                 type
                 order
@@ -296,6 +255,23 @@ class PQAService {
                 description
               }
               eventId
+            }
+            pQARatings {
+              linkedVisitId
+              actualVisitDate
+              children {
+                sectionRating
+                sectionRatingColor
+                sectionScore
+                visitSection
+              }
+              overallRating
+              overallRatingColor
+              overallRatingStars
+              overallScore
+              plannedDate
+              visitName
+              visitTypeName
             }
             pQASiteVisits {
               id
@@ -317,6 +293,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              insertedDate
               visitType {
                 type
                 order
@@ -326,7 +303,8 @@ class PQAService {
               }
               eventId
             }
-            reAccreditationRating1 {
+            reAccreditationRatings {
+              linkedVisitId
               children {
                 sectionRating
                 sectionRatingColor
@@ -339,38 +317,26 @@ class PQAService {
               overallScore
               plannedDate
               visitName
-            }
-            reAccreditationRating2 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
-            }
-            reAccreditationRating3 {
-              children {
-                sectionRating
-                sectionRatingColor
-                sectionScore
-                visitSection
-              }
-              overallRating
-              overallRatingColor
-              overallRatingStars
-              overallScore
-              plannedDate
-              visitName
+              visitTypeName
             }
             selfAssessmentColor
             selfAssessmentDate
             selfAssessmentStatus
+            selfAssessmentVisits {
+              id
+              plannedVisitDate
+              attended
+              comment
+              insertedDate
+              visitType {
+                type
+                order
+                name
+                normalizedName
+                description
+              }
+              eventId
+            }
             smartSpaceLicenseColor
             smartSpaceLicenseDate
             smartSpaceLicenseStatus
