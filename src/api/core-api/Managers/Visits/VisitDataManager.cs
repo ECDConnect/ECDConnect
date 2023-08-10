@@ -437,7 +437,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public List<VisitData> GetGrowthDataForInfant(string id) {
 
             return _visitDataRepo.GetAll().Where(x => x.Visit.Infant.UserId == id && x.QuestionAnswer != "undefined" &&
-                                                (x.Question == Constants.GGSettings.q_weight || x.Question == Constants.GGSettings.q_length || x.Question == Constants.GGSettings.q_muac)).ToList();
+                                                (x.Question == Constants.GGSettings.q_weight || x.Question == Constants.GGSettings.q_length || x.Question == Constants.GGSettings.q_muac))
+                .OrderBy(x => x.Visit.PlannedVisitDate).ToList();
         }
         public int GetTotalGrowthInfantsForWeek(string id, Boolean currentWeek)
         {
