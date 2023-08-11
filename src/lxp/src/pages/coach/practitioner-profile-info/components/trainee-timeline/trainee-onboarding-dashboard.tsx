@@ -38,7 +38,7 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const [showSteps, setShowSteps] = useState(true);
-  console.log({ timeline });
+
   const onView = async (notificationStep: string) => {
     if (notificationStep === 'Fill in the SmartSpace checklist') {
       setIsSmartChecklist(true);
