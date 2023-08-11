@@ -413,6 +413,7 @@ class PractitionerService {
             progress
             attendedChildProgress
             usePhotoInReport
+            isOnStipend
           }
         }
       `,

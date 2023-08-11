@@ -1,5 +1,7 @@
+import ROUTES from '@/routes/routes';
 import { PractitionerDto } from '@ecdlink/core';
 import { Button, Typography, renderIcon } from '@ecdlink/ui';
+import { useHistory } from 'react-router';
 
 interface CoachSelfAssessment1Props {
   practitioner: PractitionerDto;
@@ -13,6 +15,7 @@ export const CoachSelfAssessment1: React.FC<CoachSelfAssessment1Props> = ({
   practitioner,
   handleNextSection,
 }) => {
+  const history = useHistory();
   return (
     <div className="p-4">
       <Typography
@@ -59,7 +62,11 @@ export const CoachSelfAssessment1: React.FC<CoachSelfAssessment1Props> = ({
               type="outlined"
               color="primary"
               className="mt-1 mb-2 w-full"
-              onClick={() => {}}
+              onClick={() =>
+                history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+                  practitionerId: practitioner?.userId,
+                })
+              }
             >
               {renderIcon('DownloadIcon', 'mr-2 text-white w-5 bg-primary')}
               <Typography
