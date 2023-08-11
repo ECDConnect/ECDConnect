@@ -214,9 +214,10 @@ export const OnboardingTraineeDashboard: React.FC<
                 type="filled"
                 color="primary"
                 className="mt-4 mb-2 w-full"
-                onClick={() =>
-                  history.push(ROUTES.DASHBOARD, { isFromTraineeFlow: true })
-                }
+                onClick={() => {
+                  history.push(ROUTES.DASHBOARD, { isFromTraineeFlow: true });
+                  window.location.reload();
+                }}
               >
                 {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
                 <Typography

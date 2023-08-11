@@ -223,6 +223,8 @@ class PractitionerService {
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              idNumber
+              phoneNumber
             }
             siteAddress {
               id
@@ -291,6 +293,8 @@ class PractitionerService {
               surname
               fullName
               email
+              idNumber
+              phoneNumber
               isSouthAfricanCitizen
               verifiedByHomeAffairs
               gender {

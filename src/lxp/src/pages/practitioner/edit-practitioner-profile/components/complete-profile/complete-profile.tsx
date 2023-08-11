@@ -14,7 +14,7 @@ export const CompleteProfile: React.FC = () => {
   const history = useHistory();
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const { isOnline } = useOnlineStatus();
-
+  console.log({ timeline });
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -23,6 +23,17 @@ export const CompleteProfile: React.FC = () => {
     // @ts-ignore
     undefined
   ).filter((item) => item?.type === 'completed');
+
+  console.log(
+    timelineSteps(
+      timeline!,
+      () => {},
+      false,
+      isOnline,
+      // @ts-ignore
+      undefined
+    )
+  );
 
   const hasPractitionerRole = userData?.roles?.some(
     (role) => role.name === 'Practitioner'
