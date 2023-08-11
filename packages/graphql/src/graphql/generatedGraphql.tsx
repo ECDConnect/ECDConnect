@@ -92,6 +92,7 @@ export type ActionItemMissedProgressReportsDisplay = {
   __typename?: 'ActionItemMissedProgressReportsDisplay';
   color?: Maybe<Scalars['String']>;
   currentReportingPeriodEnd: Scalars['DateTime'];
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   nextReportingPeriodEnd: Scalars['DateTime'];
@@ -184,6 +185,7 @@ export type AddChildTokenModelInput = {
 export type AgeSpreadDisplay = {
   __typename?: 'AgeSpreadDisplay';
   color?: Maybe<Scalars['String']>;
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -1009,6 +1011,7 @@ export type ChildInput = {
 export type ChildProgressDisplay = {
   __typename?: 'ChildProgressDisplay';
   color?: Maybe<Scalars['String']>;
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -1222,6 +1225,7 @@ export type ClassProgrammeSortInput = {
 export type ClassReassignmentDisplay = {
   __typename?: 'ClassReassignmentDisplay';
   color?: Maybe<Scalars['String']>;
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -4586,9 +4590,11 @@ export type Mutation = {
   updateIncome?: Maybe<ResultReturnObject>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
+  updateInfantAdditionalDueDates: Scalars['Boolean'];
   updateInfantCaregiver?: Maybe<Infant>;
   updateInfantCaregiverAddress?: Maybe<Infant>;
   updateInfantCaregiverContactDetails?: Maybe<Infant>;
+  updateInfantDueDates: Scalars['Boolean'];
   updateInfographics?: Maybe<Infographics>;
   updateIntegrationAudit?: Maybe<IntegrationAudit>;
   updateIntegrationColumnMapping?: Maybe<IntegrationColumnMapping>;
@@ -4602,9 +4608,11 @@ export type Mutation = {
   updateMessageTemplate?: Maybe<MessageTemplate>;
   updateMoreInformation?: Maybe<MoreInformation>;
   updateMother?: Maybe<Mother>;
+  updateMotherAdditionalDueDates: Scalars['Boolean'];
   updateMotherAddress?: Maybe<Mother>;
   updateMotherContactDetails?: Maybe<Mother>;
   updateMotherDeliveryDate?: Maybe<Mother>;
+  updateMotherDueDates: Scalars['Boolean'];
   updateNavigation?: Maybe<Navigation>;
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
@@ -6945,6 +6953,7 @@ export type NoteTypeSortInput = {
 export type NotificationDisplay = {
   __typename?: 'NotificationDisplay';
   color?: Maybe<Scalars['String']>;
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -8411,12 +8420,16 @@ export type ProgressTrackingLevel = {
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   imageUrl?: Maybe<Scalars['String']>;
+  imageUrlDim?: Maybe<Scalars['String']>;
+  imageUrlDone?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
 };
 
 export type ProgressTrackingLevelInput = {
   description?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
+  imageUrlDim?: InputMaybe<Scalars['String']>;
+  imageUrlDone?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
 };
 

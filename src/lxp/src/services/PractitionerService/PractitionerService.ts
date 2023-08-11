@@ -11,6 +11,7 @@ import {
   LicenseModelInput,
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
+  NotificationDisplay,
   PractitionerInput,
   PractitionerRemovalHistory,
 } from '@ecdlink/graphql';
@@ -950,14 +951,20 @@ class PractitionerService {
     return response.data.data.removeFromProgramme;
   }
 
-  async displayMetrics(type: string): Promise<PractitionerDto[]> {
+  async displayMetrics(type: string): Promise<NotificationDisplay[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query displayMetrics($type: String) {
         displayMetrics(type: $type) {
-      subject icon color message notes userId userType 
-      
+          subject
+          icon
+          color
+          message
+          notes
+          userId
+          userType 
+          groupingName     
         }
       }
       `,
@@ -981,7 +988,13 @@ class PractitionerService {
       query: `
       query classroomActionItems($practitionerId: String) {
         classroomActionItems(practitionerId: $practitionerId) {
-          subject icon color message notes userId userType
+          subject
+          icon
+          color
+          message
+          notes
+          userId
+          userType
         }
       }
       `,
