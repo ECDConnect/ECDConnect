@@ -1,6 +1,7 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -32,6 +33,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
             return docs;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<MessageLog> GetAllNotifications(
+    [Service] IHttpContextAccessor contextAccessor,
+    IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: userId);
+            List<MessageLog> logs = dbRepo.GetAll().ToList();
+            return logs;
+        }
+
+        public List<MessageTemplate> GetAllTemplates(
+[Service] IHttpContextAccessor contextAccessor,
+IGenericRepositoryFactory repoFactory, string templateId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
+            List<MessageTemplate> templates = dbRepo.GetAll().ToList();
+            if (templateId != null)
+                templates.Where(x => string.Equals(x.Id, templateId));
+            return templates;
         }
 
     }
