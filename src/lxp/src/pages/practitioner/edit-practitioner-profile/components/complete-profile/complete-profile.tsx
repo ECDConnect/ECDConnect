@@ -14,7 +14,7 @@ export const CompleteProfile: React.FC = () => {
   const history = useHistory();
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const { isOnline } = useOnlineStatus();
-  console.log({ timeline });
+
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
