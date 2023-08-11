@@ -27,7 +27,7 @@ public class IncomeStatementsAutoSubmit : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
-            //await service.IntegrationUpdates();
+            await service.AutoSubmitStatements();
         }
     }
 }

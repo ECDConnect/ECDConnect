@@ -782,6 +782,22 @@ public class SmartStartIntegrationService : IIntegrationService
         return returnOK;
     }
 
+    public async Task<bool> AutoSubmitStatements()
+    {
+        bool returnOK = false;
+        StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
+        var pracsDueSubmits = _incomeManager.GetUnsubmittedStatements();
+
+        foreach (var pracData in pracsDueSubmits)
+        {
+            DateTime duePeriod = pracData.Value;
+            _incomeManager.AutoSubmitStatement(pracData.Key, duePeriod.Year, duePeriod.Month);
+            returnOK = true;
+        }
+
+        return returnOK;
+    }
+
     public async Task<bool> IntegrationByTrainees()
     {
         _mappedEntities = await GetMappedEntities();

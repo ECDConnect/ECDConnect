@@ -20,15 +20,13 @@ public class IncomeStatementSubmit : CronJobService
         : base(config.CronExpression, config.TimeZoneInfo)
     {
         _scopeFactory = scopeFactory;
-        //_scheduler = scheduler;
     }
 
     public override async Task DoWork(CancellationToken cancellationToken)
     {
         using (var scope = _scopeFactory.CreateScope())
         {
-            //var scheduledTask = await _scheduler.GetTaskResults(_jobId);
-            TenancyContext.SetTenantContext(scope);//, scheduledTask.TenantId.ToString()
+            TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
             await service.IntegrationStatementsData();

@@ -802,22 +802,23 @@ namespace ECDLink.Core.Services
 
                 try
                 {
-                    if (rows>0) //dont create or send empty docs
-                    {
-                        //statement update
-                        submittedStatement.ExpenseTotal = allExpenses;
-                        submittedStatement.IncomeTotal = allIncome;
-                        submittedStatement.Balance = Math.Round(allIncome - allExpenses, 2);
-                        submittedStatement.UpdatedDate = DateTime.Now;
-                        submittedStatement.UpdatedBy = _applicationUserId;
 
-                        //try generating autosubmit doc
+                    //statement update
+                    submittedStatement.ExpenseTotal = allExpenses;
+                    submittedStatement.IncomeTotal = allIncome;
+                    submittedStatement.Balance = Math.Round(allIncome - allExpenses, 2);
+                    submittedStatement.UpdatedDate = DateTime.Now;
+                    submittedStatement.UpdatedBy = _applicationUserId;
+
+                    //try generating autosubmit doc
+                    if (rows > 0) //dont create or send empty docs
+                    {
                         Task<Document> pdfDoc = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFFile(_contextAccessor, _fileService, this, _documentManager, _personnelService, _userManager, _repoFactory, model.UserId, model.Year, model.Month);
                         if (pdfDoc != null)
                             submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
-
-                        statementRepo.Insert(submittedStatement);
                     }
+                    statementRepo.Insert(submittedStatement);
+                    
                 }
                 catch (Exception e)
                 {
@@ -890,7 +891,7 @@ namespace ECDLink.Core.Services
             //find all users that are principal and/or FAA that were created before the start of the  submission period, as they would be due statements for stipends
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date && x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315").ToList();
+            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).ToList();
 
         }
     }
