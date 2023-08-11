@@ -216,7 +216,7 @@ class PractitionerService {
             user {
               gender {
                 description
-              }fix/fix/fix-missing-info
+              }
               firstName
               surname
               fullName
