@@ -3,17 +3,11 @@ using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -49,51 +43,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return motherManager.UpdateMotherDeliveryDate(id, expectedDateOfDelivery);
         }
 
-        /* Temp function*/
-        public Boolean UpdateMotherDueDates(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-             [Service] MotherManager motherManager
-          )
-        {
-            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visitTypeID = "7ec10a6e-917b-11ed-a1eb-0242ac120002";
-
-            List<Visit> visits = visitRepo.GetAll().Where(x => x.MotherId != null && x.VisitTypeId.ToString() != visitTypeID && x.DueDate == null).OrderBy(x => x.InfantId).OrderBy(y => y.PlannedVisitDate).ToList();
-
-            foreach (var item in visits)
-            {
-                motherManager.UpdateDueDates(item.MotherId.ToString());
-            }
-
-            return true;
-        }
-
-        public Boolean UpdateMotherAdditionalDueDates(
-            [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory,
-             [Service] InfantManager infantManager
-          )
-        {
-            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visitTypeID = "7ec10a6e-917b-11ed-a1eb-0242ac1200022";
-
-            List<Visit> visits = visitRepo.GetAll().Where(x => x.MotherId != null && x.VisitTypeId.ToString() == visitTypeID && x.DueDate == null && x.LinkedVisitId != null).OrderBy(x => x.MotherId).ToList();
-
-            foreach (var item in visits)
-            {
-                var linkedVisit = visitRepo.GetAll().Where(x => x.Id == item.LinkedVisitId).FirstOrDefault();
-                if (linkedVisit != null)
-                {
-                    item.PlannedVisitDate = linkedVisit.PlannedVisitDate;
-                    item.DueDate = linkedVisit.DueDate;
-                    visitRepo.Update(item);
-                }
-            }
-
-            return true;
-        }
     }
 }
