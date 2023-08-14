@@ -40,7 +40,7 @@ namespace ECDLink.AzureStorage.Blob
             }
         }
 
-        public async Task<DocumentModel> UploadBase64StringFile(string base64stringFile, string fileName, FileTypeEnum fileType)
+        public async Task<DocumentModel> UploadBase64StringFileAsync(string base64stringFile, string fileName, FileTypeEnum fileType)
         {
             // TODO: Security, js injection at least.
             try
@@ -67,6 +67,52 @@ namespace ECDLink.AzureStorage.Blob
                 ValidateFileType(fileStream);
 
                 await blobClient.UploadAsync(fileStream);
+
+                fileStream.Dispose();
+
+                var fileUrl = blobClient.Uri.AbsoluteUri;
+
+                return new DocumentModel
+                {
+                    Name = fileName,
+                    Url = fileUrl,
+                    Reference = fileReference
+                };
+            }
+            catch (Exception e)
+            {
+
+                throw;
+            }
+        }
+
+        public DocumentModel UploadBase64StringFile(string base64stringFile, string fileName, FileTypeEnum fileType)
+        {
+            // TODO: Security, js injection at least.
+            try
+            {// TODO: \$”{guid}_profile_image/generic file name”
+                var fileReference = fileName;
+
+                var container = EnumHelper.GetDescription(fileType);
+                var blobContainer = BlobClient.GetBlobContainerClient(container);
+                blobContainer.CreateIfNotExists();
+                blobContainer.SetAccessPolicy(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
+
+                var blobClient = blobContainer.GetBlobClient(fileName);
+
+                if (!blobClient.Exists())
+                {
+                    fileReference = $"{Guid.NewGuid()}_{fileName}";
+                    blobClient = blobContainer.GetBlobClient(fileReference);
+                }
+
+                var bytes = Convert.FromBase64String(base64stringFile);
+
+                using MemoryStream fileStream = new MemoryStream(bytes);
+
+                ValidateFileType(fileStream);
+
+                blobClient.Upload(fileStream);
 
                 fileStream.Dispose();
 
