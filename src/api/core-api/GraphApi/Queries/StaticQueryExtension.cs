@@ -1,14 +1,17 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
@@ -19,19 +22,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public StaticQueryExtension()
         {
         }
-
+        [UseSorting]
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Document> GetAllDocument(
+        public IQueryable<Document> GetAllDocument(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            string userId)
+            string userId,
+            string[] showOnlyTypes,
+            PagedQueryInput pagingInput)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var dbRepo = repoFactory.CreateRepository<Document>(userContext: uId);
-            List<Document> docs = dbRepo.GetAll().ToList();
+            var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
+            var docsQuery = docRepo.GetAll();
 
+            var languagesRepo = repoFactory.CreateRepository<Language>(userContext: uId);
+            var languages = languagesRepo.GetAll().ToList();
 
-            return docs;
+            if (!string.IsNullOrWhiteSpace(userId))
+                docsQuery = docsQuery.Where(x => x.UserId == userId);
+            
+            if (showOnlyTypes is not null && showOnlyTypes.Length > 0)
+                docsQuery = docsQuery
+                    .Include(d => d.DocumentType)
+                    .Where(x => showOnlyTypes.Contains(x.DocumentType.Name));
+
+            if (pagingInput?.FilterBy is not null)
+            {
+                docsQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, docsQuery);
+            }
+
+            return docsQuery;
         }
 
     }
