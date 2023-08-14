@@ -30,6 +30,11 @@ export function ContentManagement() {
     fetchPolicy: 'cache-and-network',
   });
   const { data: dataTypes, refetch } = useQuery(contentTypes, {
+    variables: {
+      search: '',
+      searchInContent: null,
+      isVisiblePortal: true,
+    },
     fetchPolicy: 'cache-and-network',
   });
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
@@ -161,7 +166,6 @@ export function ContentManagement() {
 
   const searchContent = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
-    console.log(e.target.value);
   }, 150);
 
   return (

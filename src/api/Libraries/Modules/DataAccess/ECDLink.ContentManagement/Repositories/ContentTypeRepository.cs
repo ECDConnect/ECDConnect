@@ -2,6 +2,7 @@ using ECDLink.ContentManagement.Entities;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +19,7 @@ namespace ECDLink.ContentManagement.Repositories
             _context = context;
         }
 
-        public IEnumerable<ContentType> GetAll()
+        public IQueryable<ContentType> GetAll()
         {
             // Can probably inject Id and fields
             Guid tenantId = TenantExecutionContext.Tenant.Id;
@@ -27,8 +28,7 @@ namespace ECDLink.ContentManagement.Repositories
                 .ThenInclude(x => x.ContentValues)
                   .ThenInclude(x => x.ContentTypeField)
               .Include(x => x.Fields)
-                .ThenInclude(x => x.FieldType)
-              .ToList();
+                .ThenInclude(x => x.FieldType);
         }
 
         public ContentType GetById(int id)
@@ -57,6 +57,50 @@ namespace ECDLink.ContentManagement.Repositories
             var content = contentType.Content.Where(x => x.ContentValues.Any(z => z.LocaleId == localId)).OrderBy(x => x.Id).FirstOrDefault();
 
             return content != null ? true : false;
+        }
+
+        public IQueryable<ContentType> GetAll(string search, bool? searchInContent = null)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            IQueryable<ContentType> result = null;
+
+            if (searchInContent == true)
+            {
+                var contentValuesIds = _context.ContentValues.Where(cv =>
+                    (cv.TenantId == null || cv.TenantId == tenantId)
+                    && EF.Functions.ILike(cv.Value, $"%{search}%"))
+                .Select(cv => cv.Id);
+
+                result = _context.ContentTypes
+                    .Include(x => x.Content)
+                        .ThenInclude(x => x.ContentValues)
+                            .ThenInclude(x => x.ContentTypeField)
+                    .Include(x => x.Fields)
+                        .ThenInclude(x => x.FieldType)
+                    .Where(ct =>
+                    (ct.TenantId == null || ct.TenantId == tenantId)
+                    && ct.IsActive == true
+                    && (EF.Functions.ILike(ct.Name, $"%{search}%")
+                        || EF.Functions.ILike(ct.Description, $"%{search}%")
+                        || ct.Content.Any(c => c.IsActive && c.ContentValues.Any(cv => contentValuesIds.Contains(cv.Id))))
+                    );
+            }
+            else
+            {
+                result = _context.ContentTypes
+                    .Include(x => x.Content)
+                        .ThenInclude(x => x.ContentValues)
+                            .ThenInclude(x => x.ContentTypeField)
+                    .Include(x => x.Fields)
+                        .ThenInclude(x => x.FieldType)
+                    .Where(ct =>
+                    (ct.TenantId == null || ct.TenantId == tenantId)
+                    && ct.IsActive == true
+                    && (EF.Functions.ILike(ct.Name, $"%{search}%")
+                        || EF.Functions.ILike(ct.Description, $"%{search}%"))
+                    );
+            }
+            return result;
         }
     }
 }
