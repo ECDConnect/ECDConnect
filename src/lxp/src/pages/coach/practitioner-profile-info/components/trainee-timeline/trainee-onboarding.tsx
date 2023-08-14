@@ -19,8 +19,6 @@ export const TraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
   practitioner,
 }) => {
   const [notificationStep, setNotificationStep] = useState('');
-  const history = useHistory();
-  const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
   const [isSmartChecklist, setIsSmartChecklist] = useState(false);
 
@@ -53,6 +51,7 @@ export const TraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
           <OnboardingTraineeDashboard
             setNotificationStep={setNotificationStep}
             setIsSmartChecklist={setIsSmartChecklist}
+            practitioner={practitioner}
           />
         );
     }
