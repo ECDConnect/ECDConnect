@@ -295,9 +295,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return metrics;
         }
 
-        // THIS IS ONLY FETCHING PROGRESS NOTIFICATION INFO FOR THE FIRST CLASS GROUP OF THE PRACTITIONER. THEY COULD HAVE MULTIPLE!!!!
-        // Is this at a classroom level? Is it only for principals? 
-        // Should it return per classroom group? Should notifications be grouped?
+        // THIS IS ONLY FETCHING PROGRESS NOTIFICATION INFO FOR THE FIRST CLASS GROUP OF THE PRACTITIONER
+        // TODO - Need to update this to handle all classroom groups not just the first
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<NotificationDisplay>> GetClassroomActionItems(
             IGenericRepositoryFactory repoFactory,
@@ -941,78 +940,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return progressHistory;
         }
 
-        //private async Task<int> GetMissedReports(IGenericRepositoryFactory repoFactory, string practitionerId, ApplicationIdentityUser user, IGenericRepository<Child, Guid> childRepo, string practitionerHieracry, ClassroomGroup classroomGroup, List<NotificationDisplay> notifications, DateTime currentDate, DateTime reportPeriodStart, DateTime reportPeriodEnd, DateTime reportDueStart, DateTime reportDueEnd, DateTime reportOverDueStart, DateTime reportOverDueEnd, int missedReportCount)
-        //{
-        //    // None of the below is needed if the reports aren't due yet.
-        //    if (currentDate >= reportPeriodStart)
-        //    {
-
-        //        var progressReports = await repoFactory.CreateRepository<ChildProgressReport>(userContext: user.Id)
-        //            .GetAll()
-        //            .Where(x =>
-        //                    x.ClassroomGroupId == classroomGroup.Id
-        //                    && x.ReportDate.ToUniversalTime() >= reportDueStart
-        //                    && x.ReportDate.ToUniversalTime() <= reportOverDueEnd
-        //                    && x.IsActive == true)
-        //            .OrderBy(x => x.ReportDate)
-        //            .ToListAsync();
-
-        //        var dueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportDueStart && r.ReportDate <= reportDueEnd) ?? 0;
-        //        var overdueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportOverDueStart && r.ReportDate <= reportOverDueEnd) ?? 0;
-
-        //        var childCount = await childRepo.GetAll().CountAsync(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHieracry));
-
-        //        missedReportCount = childCount - (dueReportsSubmitted + overdueReportsSubmitted);
-
-        //        // Rule:
-        //        // Show this action as soon as at least 1 of a practitioner's child progress reports become overdue
-        //        // Note: once the reporting deadline has passed (31 July for June reporting period; and 20 December for the November reporting period),
-        //        // remove this action item -- if reports were missed, they will show up as the action item in the row below."
-
-        //        if (overdueReportsSubmitted > 0
-        //            && currentDate >= reportOverDueEnd)
-        //        {
-        //            notifications.Add(new NotificationDisplay()
-        //            {
-        //                Subject = $"{overdueReportsSubmitted} overdue progress reports",
-        //                // TODO: Warnings or errors?
-        //                Icon = MetricsIconEnum.Error.ToString(),
-        //                Color = MetricsColorEnum.Error.ToString(),
-        //                Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
-        //                Notes = "",
-        //                UserId = Guid.Parse(practitionerId),
-        //                // TODO: Principal?
-        //                UserType = "practitioner"
-        //            });
-        //        }
-
-        //        // Rule:
-        //        // Show only if the practitioner did not submit reports for the
-        //        // January to June reporting period by the deadline(31 July) or for the 
-        //        // July to November reporting period by the deadline(20 Dec)
-
-        //        if (missedReportCount > 0
-        //            && currentDate >= reportOverDueEnd)
-        //        {
-        //            notifications.Add(new NotificationDisplay()
-        //            {
-        //                Subject = $"{missedReportCount} missed progress reports",
-        //                // TODO: Warnings or errors?
-        //                Icon = MetricsIconEnum.Error.ToString(),
-        //                Color = MetricsColorEnum.Error.ToString(),
-        //                Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
-        //                Notes = "",
-        //                UserId = Guid.Parse(practitionerId),
-        //                // TODO: Principal?
-        //                UserType = "practitioner"
-        //            });
-        //        }
-        //        // End Get Due/Overdue Reports
-        //    }
-
-        //    return missedReportCount;
-        //}
-
         private (int dueReportsSubmitted, int missedReportCount, int overdueReportsSubmitted) GetChildProgressReportStatusCountsForPractitioner(
             IGenericRepositoryFactory repoFactory,
             string userId,
@@ -1020,7 +947,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             IEnumerable<Guid> classroomGroupIds,
             DateTime currentDate)
         {
-            // TODO CHECK ON THESE DATES!!! When do we display the notifications until???
             DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
             var isPeriod1 = previousMonthStart.Month <= 7;
@@ -1149,8 +1075,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             IGenericRepositoryFactory repoFactory,
             string type)
         {
-
-            Console.WriteLine("BACKEND");
             var uId = contextAccessor.HttpContext.GetUser().Id;
 
             switch (type)
@@ -1172,7 +1096,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         type).ToList();
                     return practitionerResults;
                 default:
-                    return new List<NotificationDisplay>(); // TIHS SHOULD 400
+                    return new List<NotificationDisplay>(); // THIS SHOULD 400
             }
         }
 
@@ -1669,8 +1593,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 // MISSED 3 CLUB MEETINGS
 
                 #region LESS THAN 5 CHILDREN REGISTERED                
-                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList(); // TODO: WHAT DOES IT MEAN IF A PRACTITIONER IS ASSIGNED TO MORE THAN ONE CLASSROOM????
-                if (practitionerClassrooms.Count() > 0) Console.WriteLine($"More than one classroom {practitioner.UserId}");
+                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
                 var classroom = practitionerClassrooms.FirstOrDefault();
 
                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
