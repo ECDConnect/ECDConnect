@@ -16,6 +16,26 @@ export default function Documents() {
   const { hasPermission } = useUser();
 
   const { data: documentData, refetch } = useQuery(DocumentList, {
+    variables: {
+      showOnlyTypes: ['MaternalCaseRecord', 'RoadToHealthBook'],
+      order: [{ updatedDate: 'DESC' }],
+      pagingInput: null,
+      // TODO: Use date filter and pagination:
+      // {
+      //   filterBy: [
+      //     {
+      //       fieldName: "insertedDate",
+      //       filterType: "LESS_THAN_OR_EQUAL",
+      //       value: "2023-06-06T00:00:00.000+02:00"
+      //     },
+      //     {
+      //       fieldName: "insertedDate",
+      //       filterType: "GREATER_THAN_OR_EQUAL",
+      //       value: "2023-06-04T00:00:00.000+02:00"
+      //     }
+      //   ]
+      // }
+    },
     fetchPolicy: 'cache-and-network',
   });
   const { data: workflowStatuses } = useQuery(GetAllWorkflowStatus, {
@@ -25,24 +45,22 @@ export default function Documents() {
   const [tableData, setTableData] = useState<any[]>([]);
 
   useEffect(() => {
-    if (documentData && documentData.GetAllDocument) {
-      const copyItems = documentData.GetAllDocument.map(
-        (item: DocumentDto) => ({
-          ...item,
-          fullName: item.user
-            ? `${item.user?.firstName} ${item.user?.surname}`
-            : 'System',
-          type: item.documentType?.name,
-          status: item.workflowStatus?.description,
-          createddate:
-            item.insertedDate !== null
-              ? new Date(item.insertedDate).toISOString()
-              : '',
-          _view: undefined,
-          _edit: undefined,
-          _url: undefined,
-        })
-      );
+    if (documentData && documentData.allDocument) {
+      const copyItems = documentData.allDocument.map((item: DocumentDto) => ({
+        ...item,
+        fullName: item.user
+          ? `${item.user?.firstName} ${item.user?.surname}`
+          : 'System',
+        type: item.documentType?.name,
+        status: item.workflowStatus?.description,
+        createddate:
+          item.insertedDate !== null
+            ? new Date(item.insertedDate).toISOString()
+            : '',
+        _view: undefined,
+        _edit: undefined,
+        _url: undefined,
+      }));
       setTableData(copyItems);
     }
   }, [documentData]);

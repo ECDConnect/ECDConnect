@@ -519,6 +519,12 @@ export type BooleanOperationFilterInput = {
   neq?: InputMaybe<Scalars['Boolean']>;
 };
 
+export type BulkDeactivateResult = {
+  __typename?: 'BulkDeactivateResult';
+  failed?: Maybe<Array<Maybe<Scalars['String']>>>;
+  success?: Maybe<Array<Maybe<Scalars['String']>>>;
+};
+
 export type BulkInvitationResult = {
   __typename?: 'BulkInvitationResult';
   failed?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -2088,8 +2094,10 @@ export type ContentType = {
   id: Scalars['Int'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isVisiblePortal: Scalars['Boolean'];
   metaData?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  portalDisplayOrder: Scalars['Int'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -2108,6 +2116,19 @@ export type ContentTypeField = {
   isActive: Scalars['Boolean'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+};
+
+export type ContentTypeSortInput = {
+  description?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  isVisiblePortal?: InputMaybe<SortEnumType>;
+  metaData?: InputMaybe<SortEnumType>;
+  name?: InputMaybe<SortEnumType>;
+  portalDisplayOrder?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
 };
 
 export type ContentValue = {
@@ -4277,6 +4298,8 @@ export type Mutation = {
   addVisitBackReferral?: Maybe<VisitBackReferral>;
   addVisitData: Scalars['Boolean'];
   autoSubmitStatement?: Maybe<ResultReturnObject>;
+  autoSubmitStatements: Scalars['Boolean'];
+  bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   cancelRemovalFromProgramme: Scalars['Boolean'];
   contentTypeImport: Scalars['Boolean'];
   correctDuplicateHierarchies: Scalars['Boolean'];
@@ -4590,11 +4613,9 @@ export type Mutation = {
   updateIncome?: Maybe<ResultReturnObject>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
-  updateInfantAdditionalDueDates: Scalars['Boolean'];
   updateInfantCaregiver?: Maybe<Infant>;
   updateInfantCaregiverAddress?: Maybe<Infant>;
   updateInfantCaregiverContactDetails?: Maybe<Infant>;
-  updateInfantDueDates: Scalars['Boolean'];
   updateInfographics?: Maybe<Infographics>;
   updateIntegrationAudit?: Maybe<IntegrationAudit>;
   updateIntegrationColumnMapping?: Maybe<IntegrationColumnMapping>;
@@ -4608,11 +4629,9 @@ export type Mutation = {
   updateMessageTemplate?: Maybe<MessageTemplate>;
   updateMoreInformation?: Maybe<MoreInformation>;
   updateMother?: Maybe<Mother>;
-  updateMotherAdditionalDueDates: Scalars['Boolean'];
   updateMotherAddress?: Maybe<Mother>;
   updateMotherContactDetails?: Maybe<Mother>;
   updateMotherDeliveryDate?: Maybe<Mother>;
-  updateMotherDueDates: Scalars['Boolean'];
   updateNavigation?: Maybe<Navigation>;
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
@@ -4841,6 +4860,10 @@ export type MutationAddVisitBackReferralArgs = {
 
 export type MutationAddVisitDataArgs = {
   input?: InputMaybe<CmsVisitDataInputModelInput>;
+};
+
+export type MutationBulkDeleteUserArgs = {
+  ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 export type MutationCancelRemovalFromProgrammeArgs = {
@@ -8420,16 +8443,12 @@ export type ProgressTrackingLevel = {
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   imageUrl?: Maybe<Scalars['String']>;
-  imageUrlDim?: Maybe<Scalars['String']>;
-  imageUrlDone?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
 };
 
 export type ProgressTrackingLevelInput = {
   description?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
-  imageUrlDim?: InputMaybe<Scalars['String']>;
-  imageUrlDone?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
 };
 
@@ -10344,6 +10363,9 @@ export type QueryAllContentLanguagesArgs = {
 };
 
 export type QueryAllDocumentArgs = {
+  order?: InputMaybe<Array<DocumentSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  showOnlyTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -10571,6 +10593,14 @@ export type QueryCompletedVisitsForVisitIdArgs = {
 
 export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
   contentTypeId: Scalars['Int'];
+};
+
+export type QueryContentTypesArgs = {
+  isVisiblePortal?: InputMaybe<Scalars['Boolean']>;
+  order?: InputMaybe<Array<ContentTypeSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  search?: InputMaybe<Scalars['String']>;
+  searchInContent?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type QueryCountAbsenteesArgs = {
@@ -12441,6 +12471,7 @@ export type StatementsIncomeStatement = {
   month: Scalars['Int'];
   notes?: Maybe<Scalars['String']>;
   period?: Maybe<Scalars['String']>;
+  relatedDocumentId?: Maybe<Scalars['String']>;
   submitted: Scalars['Boolean'];
   submittedDate: Scalars['DateTime'];
   updatedBy?: Maybe<Scalars['String']>;
@@ -12463,6 +12494,7 @@ export type StatementsIncomeStatementFilterInput = {
   notes?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<StatementsIncomeStatementFilterInput>>;
   period?: InputMaybe<StringOperationFilterInput>;
+  relatedDocumentId?: InputMaybe<StringOperationFilterInput>;
   submitted?: InputMaybe<BooleanOperationFilterInput>;
   submittedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
@@ -12482,6 +12514,7 @@ export type StatementsIncomeStatementInput = {
   Month: Scalars['Int'];
   Notes?: InputMaybe<Scalars['String']>;
   Period?: InputMaybe<Scalars['String']>;
+  RelatedDocumentId?: InputMaybe<Scalars['String']>;
   Submitted: Scalars['Boolean'];
   SubmittedDate: Scalars['DateTime'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -12501,6 +12534,7 @@ export type StatementsIncomeStatementSortInput = {
   month?: InputMaybe<SortEnumType>;
   notes?: InputMaybe<SortEnumType>;
   period?: InputMaybe<SortEnumType>;
+  relatedDocumentId?: InputMaybe<SortEnumType>;
   submitted?: InputMaybe<SortEnumType>;
   submittedDate?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
