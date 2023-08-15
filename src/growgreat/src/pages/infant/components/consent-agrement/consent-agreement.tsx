@@ -84,6 +84,9 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           onOptionSelected={(value: boolean | boolean[]) => {
             clearErrors();
             setMultipleChildren(value as boolean);
+            if (value === false) {
+              setConsentFormValue('numberOfChildren', undefined);
+            }
           }}
           color="secondary"
           type={ButtonGroupTypes.Button}

@@ -165,9 +165,16 @@ export const PregnantMaternalCaseRecord: React.FC<
           />
           <ButtonGroup<boolean>
             options={yesNoOptions}
-            onOptionSelected={(value: boolean | boolean[]) =>
-              setHasMaternalCaseRecord(value as boolean)
-            }
+            onOptionSelected={(value: boolean | boolean[]) => {
+              setHasMaternalCaseRecord(value as boolean);
+              if (value === true) {
+                setPregnantMaternalCaseRecordFormValue(
+                  'notHaveAMaternalRecord',
+                  false
+                );
+                setConfirmHasNoRecord(false);
+              }
+            }}
             color="secondary"
             type={ButtonGroupTypes.Button}
             className={'mt-2 w-full'}

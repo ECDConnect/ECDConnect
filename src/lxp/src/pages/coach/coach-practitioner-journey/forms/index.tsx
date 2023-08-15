@@ -237,8 +237,6 @@ export const Form = ({
     PractitionerActions.DEACTIVATE_PRACTITIONER
   );
 
-  const wasLoading = usePrevious(isLoading);
-  const wasLoadingReAccreditation = usePrevious(isLoadingReAccreditationVisit);
   const wasLoadingDeactivate = usePrevious(isLoadingDeactivate);
 
   const isStep11AnswerTrue =
@@ -577,6 +575,8 @@ export const Form = ({
       );
       await appDispatch(pqaThunkActions.addReAccreditationVisitData(content));
 
+      if (isToRemoveSmartStarter) return;
+
       if (!isBasicSmartSpaceStandardsCompleted) {
         // TODO: add schedule feature
         return onBack?.();
@@ -588,6 +588,7 @@ export const Form = ({
     [
       appDispatch,
       isBasicSmartSpaceStandardsCompleted,
+      isToRemoveSmartStarter,
       onBack,
       practitionerId,
       showMessage,
@@ -803,23 +804,6 @@ export const Form = ({
   useEffect(() => {
     getSelfAssessment();
   }, [getSelfAssessment]);
-
-  useEffect(() => {
-    if (
-      !isToRemoveSmartStarter &&
-      ((wasLoading && !isLoading) ||
-        (wasLoadingReAccreditation && !isLoadingReAccreditationVisit))
-    ) {
-      onBack?.();
-    }
-  }, [
-    isToRemoveSmartStarter,
-    isLoading,
-    wasLoading,
-    onBack,
-    wasLoadingReAccreditation,
-    isLoadingReAccreditationVisit,
-  ]);
 
   useEffect(() => {
     if (wasLoadingDeactivate && !isLoadingDeactivate) {
