@@ -22,6 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public StaticQueryExtension()
         {
         }
+
         [UseSorting]
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public IQueryable<Document> GetAllDocument(
@@ -34,9 +35,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
             var docsQuery = docRepo.GetAll();
-
-            var languagesRepo = repoFactory.CreateRepository<Language>(userContext: uId);
-            var languages = languagesRepo.GetAll().ToList();
 
             if (!string.IsNullOrWhiteSpace(userId))
                 docsQuery = docsQuery.Where(x => x.UserId == userId);
