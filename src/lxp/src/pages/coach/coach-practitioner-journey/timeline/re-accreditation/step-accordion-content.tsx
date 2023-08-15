@@ -70,6 +70,10 @@ export const ReAccreditationVisits = ({
   const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
   const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
+  const isGreenRating = [rating1, rating2, rating3].some(
+    (item) => item?.overallRatingColor === 'Success'
+  );
+
   const filteredReAccreditationVisits =
     timeline?.reAccreditationVisits?.filter(
       (item) =>
@@ -105,6 +109,7 @@ export const ReAccreditationVisits = ({
   const isFirstVisit = reAccreditationVisitsFromCurrentYear?.length === 1;
   const isReAccreditationFollowUp =
     !isFirstVisit &&
+    !isGreenRating &&
     !!newReAccreditationVisit &&
     !isLastAttendedReAccreditationVisit &&
     !lastAttendedVisit?.visitType?.name?.includes(

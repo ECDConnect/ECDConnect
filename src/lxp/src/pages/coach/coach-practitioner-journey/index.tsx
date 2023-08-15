@@ -60,6 +60,7 @@ import {
 } from '@ecdlink/core';
 import {
   Maybe,
+  PqaRating,
   UpdateVisitPlannedVisitDateModelInput,
   Visit,
 } from '@ecdlink/graphql';
@@ -166,6 +167,28 @@ export const CoachPractitionerJourney = () => {
   const isLastAttendedPqaVisit =
     pqaVisits.filter((item) => item?.attended)?.length === maxNumberOfVisits;
 
+  // All years
+  const filteredReAccreditationRatings =
+    timeline?.reAccreditationRatings?.filter(
+      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+    ) ?? [];
+  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
+    filteredReAccreditationRatings,
+    maxNumberOfVisits
+  );
+  const reAccreditationRatingsFromCurrentYear =
+    subdividedReAccreditationRatings?.[
+      subdividedReAccreditationRatings.length - 1
+    ];
+
+  const rating1 = reAccreditationRatingsFromCurrentYear?.[0];
+  const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
+  const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
+
+  const isGreenReAccreditationRating = [rating1, rating2, rating3].some(
+    (item) => item?.overallRatingColor === 'Success'
+  );
+
   const reAccreditationVisitsWithoutFollowUp =
     timeline?.reAccreditationVisits?.filter(
       (item) =>
@@ -237,6 +260,7 @@ export const CoachPractitionerJourney = () => {
     reAccreditationFollowUpDeadline <= new Date();
   const isReAccreditationFollowUp =
     !isFirstReAccreditationVisit &&
+    !isGreenReAccreditationRating &&
     !!newReAccreditationVisit &&
     !isLastAttendedReAccreditationVisit &&
     !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
@@ -622,7 +646,7 @@ export const CoachPractitionerJourney = () => {
                 <Typography
                   type="body"
                   color="textDark"
-                  text={years > 1 ? `${years} years` : `${years} year`}
+                  text={years > 1 ? `${years} years` : `${years || 1} year`}
                 />
               )}
               <div className="flex justify-between">
