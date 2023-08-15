@@ -59,7 +59,7 @@ namespace ECDLink.ContentManagement.Repositories
             return content != null ? true : false;
         }
 
-        public IQueryable<ContentType> GetAll(string search, bool? searchInContent = null)
+        public IQueryable<ContentType> GetAll(string search, bool searchInContent)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             IQueryable<ContentType> result = null;
