@@ -2045,28 +2045,14 @@ export type Consent = {
   __typename?: 'Consent';
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
-  imagee?: Maybe<Scalars['String']>;
+  image?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
-};
-
-export type ConsentGg = {
-  __typename?: 'ConsentGG';
-  description?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  name?: Maybe<Scalars['String']>;
-  type?: Maybe<Scalars['String']>;
-};
-
-export type ConsentGgInput = {
-  description?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-  type?: InputMaybe<Scalars['String']>;
 };
 
 export type ConsentInput = {
   description?: InputMaybe<Scalars['String']>;
-  imagee?: InputMaybe<Scalars['String']>;
+  image?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
 };
@@ -2111,6 +2097,7 @@ export type ContentType = {
   isVisiblePortal: Scalars['Boolean'];
   metaData?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  portalDisplayOrder: Scalars['Int'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -2139,6 +2126,7 @@ export type ContentTypeSortInput = {
   isVisiblePortal?: InputMaybe<SortEnumType>;
   metaData?: InputMaybe<SortEnumType>;
   name?: InputMaybe<SortEnumType>;
+  portalDisplayOrder?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
 };
@@ -4310,6 +4298,7 @@ export type Mutation = {
   addVisitBackReferral?: Maybe<VisitBackReferral>;
   addVisitData: Scalars['Boolean'];
   autoSubmitStatement?: Maybe<ResultReturnObject>;
+  autoSubmitStatements: Scalars['Boolean'];
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   cancelRemovalFromProgramme: Scalars['Boolean'];
   contentTypeImport: Scalars['Boolean'];
@@ -4337,7 +4326,6 @@ export type Mutation = {
   createCommunitySectionItemSS?: Maybe<Scalars['String']>;
   createCommunitySectionSS?: Maybe<Scalars['String']>;
   createConsent?: Maybe<Scalars['String']>;
-  createConsentGG?: Maybe<Scalars['String']>;
   createContentDefinition?: Maybe<ContentDefinitionModel>;
   createDailyProgramme?: Maybe<DailyProgramme>;
   createDocument?: Maybe<Document>;
@@ -4451,7 +4439,6 @@ export type Mutation = {
   deleteCommunitySectionItemSS?: Maybe<Scalars['Boolean']>;
   deleteCommunitySectionSS?: Maybe<Scalars['Boolean']>;
   deleteConsent?: Maybe<Scalars['Boolean']>;
-  deleteConsentGG?: Maybe<Scalars['Boolean']>;
   deleteContentDefinition: Scalars['Boolean'];
   deleteDailyProgramme?: Maybe<Scalars['Boolean']>;
   deleteDocument?: Maybe<Scalars['Boolean']>;
@@ -4609,7 +4596,6 @@ export type Mutation = {
   updateCommunitySectionSS?: Maybe<CommunitySectionSs>;
   updateCommunitySupport?: Maybe<Trainee>;
   updateConsent?: Maybe<Consent>;
-  updateConsentGG?: Maybe<ConsentGg>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
   updateDocument?: Maybe<Document>;
   updateDocumentType?: Maybe<DocumentType>;
@@ -4991,12 +4977,6 @@ export type MutationCreateCommunitySectionSsArgs = {
 
 export type MutationCreateConsentArgs = {
   input: ConsentInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateConsentGgArgs = {
-  input: ConsentGgInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -5500,12 +5480,6 @@ export type MutationDeleteCommunitySectionSsArgs = {
 };
 
 export type MutationDeleteConsentArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteConsentGgArgs = {
   id: Scalars['String'];
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
@@ -6203,13 +6177,6 @@ export type MutationUpdateCommunitySupportArgs = {
 export type MutationUpdateConsentArgs = {
   id: Scalars['String'];
   input: ConsentInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateConsentGgArgs = {
-  id: Scalars['String'];
-  input: ConsentGgInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -8603,7 +8570,6 @@ export type Query = {
   GetAllCommunitySectionItemSS: Array<Maybe<CommunitySectionItemSs>>;
   GetAllCommunitySectionSS: Array<Maybe<CommunitySectionSs>>;
   GetAllConsent: Array<Maybe<Consent>>;
-  GetAllConsentGG: Array<Maybe<ConsentGg>>;
   GetAllDailyProgramme?: Maybe<Array<Maybe<DailyProgramme>>>;
   GetAllDocument?: Maybe<Array<Maybe<Document>>>;
   GetAllDocumentType?: Maybe<Array<Maybe<DocumentType>>>;
@@ -8730,7 +8696,6 @@ export type Query = {
   GetCommunitySectionItemSSById: Array<Maybe<CommunitySectionItemSs>>;
   GetCommunitySectionSSById: Array<Maybe<CommunitySectionSs>>;
   GetConsentById: Array<Maybe<Consent>>;
-  GetConsentGGById: Array<Maybe<ConsentGg>>;
   GetDailyProgrammeById?: Maybe<DailyProgramme>;
   GetDocumentById?: Maybe<Document>;
   GetDocumentTypeById?: Maybe<DocumentType>;
@@ -9225,11 +9190,6 @@ export type QueryGetAllCommunitySectionSsArgs = {
 };
 
 export type QueryGetAllConsentArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllConsentGgArgs = {
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -9850,12 +9810,6 @@ export type QueryGetConsentByIdArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryGetConsentGgByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryGetDailyProgrammeByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<DailyProgrammeFilterInput>;
@@ -10410,6 +10364,7 @@ export type QueryAllContentLanguagesArgs = {
 
 export type QueryAllDocumentArgs = {
   order?: InputMaybe<Array<DocumentSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
   showOnlyTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -11758,6 +11713,16 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
+export type Setting_IncomeStatementSubmitEnd = {
+  __typename?: 'Setting_IncomeStatementSubmitEnd';
+  IncomeStatementSubmitEnd: Scalars['String'];
+};
+
+export type Setting_IncomeStatementSubmitStart = {
+  __typename?: 'Setting_IncomeStatementSubmitStart';
+  IncomeStatementSubmitStart: Scalars['String'];
+};
+
 export type Setting_IntegrationDelay = {
   __typename?: 'Setting_IntegrationDelay';
   IntegrationDelay: Scalars['String'];
@@ -11814,6 +11779,17 @@ export type Setting_SendGrid = {
   User: Scalars['String'];
 };
 
+export type Setting_SmartLinkApi = {
+  __typename?: 'Setting_SmartLinkApi';
+  BaseUrl: Scalars['String'];
+  Key: Scalars['String'];
+  MaskDataEmail: Scalars['String'];
+  MaskDataIdNumber: Scalars['String'];
+  MaskDataMode: Scalars['String'];
+  MaskDataNumber: Scalars['String'];
+  Mode: Scalars['String'];
+};
+
 export type Setting_Sms = {
   __typename?: 'Setting_Sms';
   Provider: Scalars['String'];
@@ -11850,6 +11826,13 @@ export type Setting_UrlShortner = {
   RedirectUrl: Scalars['String'];
 };
 
+export type Setting_ITouch = {
+  __typename?: 'Setting_iTouch';
+  BaseUrl: Scalars['String'];
+  Password: Scalars['String'];
+  Username: Scalars['String'];
+};
+
 export type SettingsType = {
   __typename?: 'SettingsType';
   AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
@@ -11857,6 +11840,8 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
+  IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
+  IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
   IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
@@ -11866,11 +11851,13 @@ export type SettingsType = {
   SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
+  SmartLinkApi: Setting_SmartLinkApi;
   Sms: Setting_Sms;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
+  iTouch: Setting_ITouch;
 };
 
 export type ShortenUrlEntity = {
@@ -12484,6 +12471,7 @@ export type StatementsIncomeStatement = {
   month: Scalars['Int'];
   notes?: Maybe<Scalars['String']>;
   period?: Maybe<Scalars['String']>;
+  relatedDocumentId?: Maybe<Scalars['String']>;
   submitted: Scalars['Boolean'];
   submittedDate: Scalars['DateTime'];
   updatedBy?: Maybe<Scalars['String']>;
@@ -12506,6 +12494,7 @@ export type StatementsIncomeStatementFilterInput = {
   notes?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<StatementsIncomeStatementFilterInput>>;
   period?: InputMaybe<StringOperationFilterInput>;
+  relatedDocumentId?: InputMaybe<StringOperationFilterInput>;
   submitted?: InputMaybe<BooleanOperationFilterInput>;
   submittedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
@@ -12525,6 +12514,7 @@ export type StatementsIncomeStatementInput = {
   Month: Scalars['Int'];
   Notes?: InputMaybe<Scalars['String']>;
   Period?: InputMaybe<Scalars['String']>;
+  RelatedDocumentId?: InputMaybe<Scalars['String']>;
   Submitted: Scalars['Boolean'];
   SubmittedDate: Scalars['DateTime'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -12544,6 +12534,7 @@ export type StatementsIncomeStatementSortInput = {
   month?: InputMaybe<SortEnumType>;
   notes?: InputMaybe<SortEnumType>;
   period?: InputMaybe<SortEnumType>;
+  relatedDocumentId?: InputMaybe<SortEnumType>;
   submitted?: InputMaybe<SortEnumType>;
   submittedDate?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
