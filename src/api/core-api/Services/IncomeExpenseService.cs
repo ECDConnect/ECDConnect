@@ -106,11 +106,16 @@ namespace ECDLink.Core.Services
         {
             var expenseRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             var statements = expenseRepo.GetAll()
-                .Where(x => x.UserId.Equals(userId) && x.Year.Equals(year) && x.Month.Equals(month))
+                .Where(x => x.UserId.Equals(userId) && x.Year.Equals(year))
                 .ToList();
+
             if (statements.Any())
             {
-                return statements;
+                //check month
+                if (statements.Where(x => x.Month >= month).Count() > 0)
+                    return statements.Where(x => x.Month >= month).ToList();
+                else
+                    return statements;
             }
             else return new List<StatementsIncomeStatement>();
         }
