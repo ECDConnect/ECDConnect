@@ -354,23 +354,14 @@ export const Step19 = ({
           className="ml-2"
           disabled={isViewAnswers}
           options={
-            (classroomGroups && isPrincipal
-              ? currentClassroomGroups.map((x) => {
-                  return {
-                    id: x.id ?? '',
-                    value: x,
-                    label: x.name,
-                    disabled: false,
-                  };
-                })
-              : classroomGroups.map((x) => {
-                  return {
-                    id: x.id ?? '',
-                    value: x,
-                    label: x.name,
-                    disabled: false,
-                  };
-                })) || []
+            currentClassroomGroups.map((x) => {
+              return {
+                id: x.id ?? '',
+                value: x,
+                label: x.name,
+                disabled: false,
+              };
+            }) || []
           }
           onChange={(value) => onFilterItemsChanges(value)}
           placeholder={'Class'}
@@ -411,6 +402,7 @@ export const Step19 = ({
           selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
         return (
           <div
+            key={`attendanceList${selectedGroup.id}`}
             id={`attendanceList${selectedGroup.id}`}
             className={` ${hasChildren && 'pb-6'}`}
           >
