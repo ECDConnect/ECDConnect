@@ -214,11 +214,11 @@ export const CoachPractitionerJourney = () => {
   const currentPqaFollowUpDeadline = pqaRating3?.overallRating
     ? followUpDeadline.lastVisit
     : followUpDeadline.default;
-  const isPQAFollowUpDeadline =
-    addDays(
-      new Date(lastAttendedPqaVisitWithoutFollowUp?.insertedDate),
-      currentPqaFollowUpDeadline
-    ) <= new Date();
+  const pqaFollowUpDeadline = addDays(
+    new Date(lastAttendedPqaVisitWithoutFollowUp?.insertedDate),
+    currentPqaFollowUpDeadline
+  );
+  const isPQAFollowUpDeadline = pqaFollowUpDeadline <= new Date();
 
   const isPQAFollowUp =
     !isFirstPqaVisit &&
@@ -229,11 +229,12 @@ export const CoachPractitionerJourney = () => {
     );
 
   const currentReAccreditationFollowUpDeadline = followUpDeadline.default;
+  const reAccreditationFollowUpDeadline = addDays(
+    new Date(lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate),
+    currentReAccreditationFollowUpDeadline
+  );
   const isReAccreditationFollowUpDeadline =
-    addDays(
-      new Date(lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate),
-      currentReAccreditationFollowUpDeadline
-    ) <= new Date();
+    reAccreditationFollowUpDeadline <= new Date();
   const isReAccreditationFollowUp =
     !isFirstReAccreditationVisit &&
     !!newReAccreditationVisit &&
@@ -691,8 +692,7 @@ export const CoachPractitionerJourney = () => {
   if (
     (showForm && isView) ||
     (showForm && currentVisit?.extraData?.visitId) ||
-    (showForm && selectedForm === visitTypes.supportVisit) ||
-    (showForm && selectedForm === visitTypes.pqa.followUp.name)
+    (showForm && selectedForm)
   ) {
     return (
       <Form onBack={onFormBack} visitId={currentVisit?.extraData?.visitId} />
@@ -769,6 +769,14 @@ export const CoachPractitionerJourney = () => {
                 visits: uncompletedVisits,
                 currentPqaRating,
                 currentReAccreditationRating,
+                pqaFollowUp: {
+                  isFollowUp: isPQAFollowUp,
+                  deadline: pqaFollowUpDeadline,
+                },
+                reAccreditationFollowUp: {
+                  isFollowUp: isReAccreditationFollowUp,
+                  deadline: reAccreditationFollowUpDeadline,
+                },
               })}
               typeColor={{ completed: 'successMain' }}
             />

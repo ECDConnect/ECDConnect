@@ -155,7 +155,8 @@ export const timelineSteps = (
   isLoading: boolean,
   isOnline: boolean,
   visits?: Maybe<Visit>[],
-  nextStep?: string
+  nextStep?: string,
+  isOnStipend?: boolean
 ): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
 
@@ -165,15 +166,6 @@ export const timelineSteps = (
       timeline?.starterLicenseDate,
       timeline?.starterLicenseColor,
       () => onView('Starter Licence'),
-      nextStep
-    )
-  );
-  steps.push(
-    setStep(
-      timeline?.smartSpaceLicenseStatus || 'SmartSpace Licence',
-      timeline?.smartSpaceLicenseDate,
-      timeline?.smartSpaceLicenseColor,
-      () => onView('SmartSpace Licence'),
       nextStep
     )
   );
@@ -234,17 +226,19 @@ export const timelineSteps = (
       nextStep
     )
   );
-  steps.push(
-    setStep(
-      timeline?.signStartUpSupportAgreementStatus ||
-        'Sign start-up support agreement',
-      timeline?.signStartUpSupportAgreementDate ||
-        timeline?.signStartUpSupportAgreementDeadlineDate,
-      timeline?.signStartUpSupportAgreementColor,
-      () => onView('Sign start-up support agreement'),
-      nextStep
-    )
-  );
+  if (isOnStipend) {
+    steps.push(
+      setStep(
+        timeline?.signStartUpSupportAgreementStatus ||
+          'Sign start-up support agreement',
+        timeline?.signStartUpSupportAgreementDate ||
+          timeline?.signStartUpSupportAgreementDeadlineDate,
+        timeline?.signStartUpSupportAgreementColor,
+        () => onView('Sign start-up support agreement'),
+        nextStep
+      )
+    );
+  }
 
   return steps as StepItem<{ date: Date }>[];
 };

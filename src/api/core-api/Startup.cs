@@ -3,7 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
-using EcdLink.Api.CoreApi.Managers.Integration;
+//using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
@@ -44,6 +44,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
+using ECDLink.AutomatedJobs.Services;
+using ECDLink.AutomatedJobs.Services.Interfaces;
+using EcdLink.Api.CoreApi.Managers.Integration;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -156,7 +159,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
-            services.AddTransient<IIntegrationService, IntegrationService>();
+            services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();

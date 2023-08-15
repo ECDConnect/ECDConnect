@@ -1,5 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -16,18 +17,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
+        private HierarchyEngine _hierarchyEngine;
 
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
 
+
         public UserLicenseManager(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory,
+            HierarchyEngine hierarchyEngine
+            )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
+            _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
 
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);

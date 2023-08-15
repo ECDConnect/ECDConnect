@@ -1,10 +1,13 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -21,6 +24,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
+        private HierarchyEngine _hierarchyEngine;
 
         private VisitDataStatusManager _visitDataStatusManager;
         private VisitDataStatusManager_Practitioner _visitDataStatusManager_practitioner;
@@ -30,6 +34,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
+        private UserLicenseManager _userLicenseManager;
+
         private string _applicationUserId;
 
         public VisitDataManager(
@@ -37,15 +43,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             IGenericRepositoryFactory repoFactory,
             VisitDataStatusManager visitDataStatusManager,
             VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner,
-            [Service] IPointsEngineService pointsEngineService)
+            UserLicenseManager userLicenseManager,
+            [Service] IPointsEngineService pointsEngineService,
+            HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataStatusManager_practitioner = visitDataStatusManager_Practitioner;
             _pointsEngineService = pointsEngineService;
+            _userLicenseManager = userLicenseManager;
+            _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
@@ -313,6 +323,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // EC-1359 - remove spacecount which is not compulsory
             if (programmeCount > 6 && healthCount == 7 && safetyCount == 10)
             {
+                Visit visit = _visitRepo.GetById(visitId);
+                // when the smart space checklist is completed, we activate the smartspace license
+                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(visit.Trainee.UserId, Constants.SSSettings.ss_smart_space_licence);
+                if (smartSpaceLicense == null)
+                {
+                    _userLicenseManager.AddSmartSpaceLicense(visit.Trainee.UserId, DateTime.Now);
+                } 
+
                 // update the visit record to show attended/completed 
                 var entityToUpdate = _visitRepo.GetById(visitId);
                 entityToUpdate.UpdatedDate = DateTime.Now;

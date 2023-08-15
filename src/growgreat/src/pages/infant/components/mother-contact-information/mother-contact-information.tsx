@@ -22,7 +22,9 @@ export const MotherContactInformation: React.FC<
   MotherContactInformationProps
 > = ({ onSubmit, details }) => {
   const {
+    trigger,
     getValues: getMotherContactInformationFormValues,
+    setValue: setMotherContactInformationFormValue,
     formState: motherContactInformationFormState,
     register: motherFormRegister,
     control: momContactInformationControl,
@@ -76,9 +78,13 @@ export const MotherContactInformation: React.FC<
           <div className="mt-2">
             <ButtonGroup<boolean>
               options={yesNoOptions}
-              onOptionSelected={(value: boolean | boolean[]) =>
-                setHasWhatsapp(value)
-              }
+              onOptionSelected={(value: boolean | boolean[]) => {
+                setHasWhatsapp(value);
+                if (value === true) {
+                  setMotherContactInformationFormValue('whatsapp', undefined);
+                  trigger();
+                }
+              }}
               color="secondary"
               type={ButtonGroupTypes.Button}
               className={'mt-2 w-full'}
@@ -111,7 +117,7 @@ export const MotherContactInformation: React.FC<
           onClick={() => {
             onSubmit(getMotherContactInformationFormValues());
           }}
-          disabled={!isValid}
+          disabled={!isValid || hasWhatsapp === null}
         />
       </div>
     </>

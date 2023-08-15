@@ -7,6 +7,7 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.Services;
+using ECDLink.AutomatedJobs.Services.Interfaces;
 using ECDLink.AzureStorage.Blob;
 using ECDLink.Core.Caching;
 using ECDLink.Core.Extensions;
@@ -79,7 +80,7 @@ TenantSettings? settings = config.GetRequiredSection("TenantSettings").Get<Tenan
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<ScopedBackgroundService>();
 builder.Services.AddScoped<IScopedProcessingService, IntegrationDataSyncProcessingService>();
-builder.Services.AddTransient<IIntegrationService, IntegrationService>();
+builder.Services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
 
 builder.Services.AddTransient<ICacheService<ITenantCache>, TenantMemoryCacheWrapper>();
 
@@ -108,10 +109,10 @@ builder.Services.AddTransient<VisitDataStatusManager>();
 builder.Services.AddTransient<UserLicenseManager>();
 builder.Services.AddTransient<VisitDataStatusManager_Practitioner>();
 builder.Services.AddTransient<VisitBackReferralManager>();
-builder.Services.AddTransient<ISchedulerService, SchedulerService>();
+builder.Services.AddTransient<ISchedulerService, ECDLink.AutomatedJobs.Services.SchedulerService>();
 builder.Services.AddTransient<IncomeExpenseService>();
 builder.Services.AddTransient<AttendanceService>();
-builder.Services.AddTransient<IIntegrationService, IntegrationService>();
+builder.Services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
 builder.Services.AddTransient<AttendanceService>();
 builder.Services.AddTransient<IHolidayService<Holiday>, HolidayService>();
 builder.Services.AddTransient<IPointsEngineService, PointsEngineService>();

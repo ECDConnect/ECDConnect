@@ -132,7 +132,9 @@ export const ReAccreditationVisits = ({
               } as Maybe<Visit>,
             ]
           : []),
-        ...(!isFirstVisit && newReAccreditationVisit
+        ...(!isFirstVisit &&
+        newReAccreditationVisit &&
+        !isReAccreditationFollowUp
           ? [newReAccreditationVisit]
           : []),
       ]

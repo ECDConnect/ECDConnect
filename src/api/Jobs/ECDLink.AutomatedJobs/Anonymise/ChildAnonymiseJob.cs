@@ -1,9 +1,7 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
+using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.PostgresTenancy.Services;
-using ECDLink.Tenancy.Context;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -23,26 +21,12 @@ namespace ECDLink.AutomatedJobs.Anonymise
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                SetTenantContext(scope);
+                TenancyContext.SetTenantContext(scope);
 
                 var anonChildService = scope.ServiceProvider.GetRequiredService<IChildrenAnonymiseService>();
 
                 anonChildService.AnonymiseChild();
             }
-        }
-
-        // TODO: Convert to multi-tenancy jobs
-        //Single Tenant for now
-        private void SetTenantContext(IServiceScope scope)
-        {
-            var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();
-
-            var tenant = tenancyRepo.GetAllTenants()
-                .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
-                .OrderBy(x => x.Id)
-                .FirstOrDefault();
-
-            TenantExecutionContext.SetTenant(tenant);
         }
     }
 }
