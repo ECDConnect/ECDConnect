@@ -8,15 +8,13 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using Microsoft.AspNetCore.Http;
+using System.Text;
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static EcdLink.Api.CoreApi.Constants;
 
-namespace EcdLink.Api.CoreApi.Managers.Integration
-{
+namespace EcdLink.Api.CoreApi.Managers.Integration;
     public class IntegrationHelperManager
     {
         private IHttpContextAccessor _contextAccessor;
@@ -97,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
                     string localEntity = entity.LocalEntity;
                     string remoteEntity = entity.RemoteEntity;
 
-                    url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                    url = remoteEntity + Constants.SSIntegrationSettings.UpdateMultiple;
                     jsonString.AppendLine("{");
 
                     if (updateLogs.Count() > 0)
@@ -260,5 +258,3 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             return valueToSend;
         }
     }
-}
-

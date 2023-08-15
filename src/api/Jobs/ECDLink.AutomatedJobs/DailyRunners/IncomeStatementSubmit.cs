@@ -1,20 +1,22 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using Microsoft.Extensions.DependencyInjection; 
+using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using System.Threading.Tasks;
 using ECDLink.AutomatedJobs.Util;
+using ECDLink.AutomatedJobs.Services;
+using HotChocolate;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
-public class IntegrationChanges : CronJobService
+public class IncomeStatementSubmit : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IGenericRepositoryFactory _repoFactory;
-    private readonly HierarchyEngine _hierarchyEngine;
-    public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<IntegrationChanges> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
+    private SchedulerService _scheduler;
+    private string _jobId = "IntegrationStatementsData";
+    public IncomeStatementSubmit(IServiceScopeFactory scopeFactory, 
+        IScheduleConfig<IncomeStatementSubmit> config//,  [Service] SchedulerService scheduler
+        )
         : base(config.CronExpression, config.TimeZoneInfo)
     {
         _scopeFactory = scopeFactory;
@@ -27,7 +29,7 @@ public class IntegrationChanges : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
-            await service.IntegrationUpdates();
+            await service.IntegrationStatementsData();
         }
     }
 }

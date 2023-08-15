@@ -1,6 +1,7 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.AutomatedJobs.Cron;
+using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
@@ -29,7 +30,7 @@ namespace ECDLink.AutomatedJobs.Notifications
         {
             using (var scope = _scopeFactory.CreateScope())
             {
-                SetTenantContext(scope);
+                TenancyContext.SetTenantContext(scope);
 
                 var dbContext = scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
                 var notificationProviderFactory = scope.ServiceProvider.GetRequiredService<INotificationProviderFactory<ApplicationUser>>();
@@ -69,20 +70,6 @@ namespace ECDLink.AutomatedJobs.Notifications
                     dbContext.SaveChanges();
                 }
             }
-        }
-
-        // TODO: Convert to multi-tenancy jobs
-        //Single Tenant for now
-        private void SetTenantContext(IServiceScope scope)
-        {
-            var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();
-
-            var tenant = tenancyRepo.GetAllTenants()
-                .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
-                .OrderBy(x => x.Id)
-                .FirstOrDefault();
-
-            TenantExecutionContext.SetTenant(tenant);
         }
     }
 }

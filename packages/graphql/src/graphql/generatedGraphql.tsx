@@ -92,6 +92,7 @@ export type ActionItemMissedProgressReportsDisplay = {
   __typename?: 'ActionItemMissedProgressReportsDisplay';
   color?: Maybe<Scalars['String']>;
   currentReportingPeriodEnd: Scalars['DateTime'];
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   nextReportingPeriodEnd: Scalars['DateTime'];
@@ -184,6 +185,7 @@ export type AddChildTokenModelInput = {
 export type AgeSpreadDisplay = {
   __typename?: 'AgeSpreadDisplay';
   color?: Maybe<Scalars['String']>;
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -1015,6 +1017,7 @@ export type ChildInput = {
 export type ChildProgressDisplay = {
   __typename?: 'ChildProgressDisplay';
   color?: Maybe<Scalars['String']>;
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -1228,6 +1231,7 @@ export type ClassProgrammeSortInput = {
 export type ClassReassignmentDisplay = {
   __typename?: 'ClassReassignmentDisplay';
   color?: Maybe<Scalars['String']>;
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;
@@ -7005,6 +7009,7 @@ export type NoteTypeSortInput = {
 export type NotificationDisplay = {
   __typename?: 'NotificationDisplay';
   color?: Maybe<Scalars['String']>;
+  groupingName?: Maybe<Scalars['String']>;
   icon?: Maybe<Scalars['String']>;
   message?: Maybe<Scalars['String']>;
   notes?: Maybe<Scalars['String']>;

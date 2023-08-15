@@ -7,6 +7,7 @@ using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -23,6 +24,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
+        private HierarchyEngine _hierarchyEngine;
 
         private VisitDataStatusManager _visitDataStatusManager;
         private VisitDataStatusManager_Practitioner _visitDataStatusManager_practitioner;
@@ -42,7 +44,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             VisitDataStatusManager visitDataStatusManager,
             VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner,
             UserLicenseManager userLicenseManager,
-            [Service] IPointsEngineService pointsEngineService)
+            [Service] IPointsEngineService pointsEngineService,
+            HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -50,8 +53,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitDataStatusManager_practitioner = visitDataStatusManager_Practitioner;
             _pointsEngineService = pointsEngineService;
             _userLicenseManager = userLicenseManager;
+            _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);

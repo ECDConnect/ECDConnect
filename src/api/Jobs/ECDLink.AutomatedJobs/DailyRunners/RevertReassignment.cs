@@ -1,20 +1,23 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
+using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using Microsoft.Extensions.DependencyInjection; 
+using ECDLink.PostgresTenancy.Services;
+using ECDLink.Tenancy.Context;
+using Microsoft.Extensions.DependencyInjection;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ECDLink.AutomatedJobs.Util;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
-public class IntegrationChanges : CronJobService
+public class RevertReassignment : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<IntegrationChanges> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
+    public RevertReassignment(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
         : base(config.CronExpression, config.TimeZoneInfo)
     {
         _scopeFactory = scopeFactory;
@@ -24,10 +27,11 @@ public class IntegrationChanges : CronJobService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
-            TenancyContext.SetTenantContext(scope);
-            var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
+            var service = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
 
-            await service.IntegrationUpdates();
+            TenancyContext.SetTenantContext(scope);            
+
+            service.ReassignAbsentees();
         }
     }
 }

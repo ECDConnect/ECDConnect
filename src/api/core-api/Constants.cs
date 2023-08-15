@@ -1,5 +1,6 @@
 using iTextSharp.text;
 using Org.BouncyCastle.Asn1.X509.Qualified;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -712,6 +713,7 @@ namespace EcdLink.Api.CoreApi
             public const string mother_growth = "Mother growth monitoring (Mid-upper arm circumference)";
             public const string alcohol_use = "Alcohol use";
             public const string child_docs = "Child documentation";
+            public const string child_road_to_health = "Road to Health Book";
         }
 
         public static class SSIntegrationSettings
@@ -821,6 +823,7 @@ namespace EcdLink.Api.CoreApi
             public const string child_clients_ac12 = "Vitamin A";
             public const string child_clients_ac13 = "Deworming";
             public const string child_clients_ac14 = "Immunisations";
+            
 
             public const string SSChild = "Child";
             public const string child_data_collection = "Child Data Collection";

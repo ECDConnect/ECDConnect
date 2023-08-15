@@ -9,12 +9,12 @@ using ECDLink.AutomatedJobs.Util;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
-public class IntegrationChanges : CronJobService
+public class AttendanceWeekly : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<IntegrationChanges> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
+    public AttendanceWeekly(IServiceScopeFactory scopeFactory, IScheduleConfig<AttendanceWeekly> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
         : base(config.CronExpression, config.TimeZoneInfo)
     {
         _scopeFactory = scopeFactory;
@@ -27,7 +27,7 @@ public class IntegrationChanges : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
-            await service.IntegrationUpdates();
+            await service.IntegrationAttendanceData();
         }
     }
 }
