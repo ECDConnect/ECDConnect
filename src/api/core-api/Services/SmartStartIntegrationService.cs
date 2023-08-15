@@ -396,17 +396,14 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<bool> IntegrationStatementsData()
     {
         bool isComplete = false;
-        StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();//from the 25th of the previous month is open submission time
-        //TODO - delete add days - just for testing
-        if (DateTime.Now.Date > submitPeriod.Start || DateTime.Now.Date < submitPeriod.End.AddDays(3))//only run task daily withing submit window
+        StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();//from the 25th of the previous month is open submission time        
+        if (DateTime.Now.Date > submitPeriod.Start || DateTime.Now.Date < submitPeriod.End)//only run task daily withing submit window
         {
             ////[{"Month": "January","Year": "2023","StartupSupport": 10.0,"Fees": 0.0,"Donations": 10.0,"FundRaising": 10.0,"OtherIncome": 10.0,"Rent": 10.0,"Utilities": 10.0,"Food": 10.0,"Salary": 10.0,"Transport": 10.0,"OtherExpenses": 10.0,"Franchisee": {"Guid": "4778287e-073f-e711-80e0-005056815442"},"Document": {"Guid": "9c029379-3996-ec11-834e-00155dee5a05"}}]
-            string statementsUrl = Constants.SSIntegrationSettings.SLIncomeStatementIncome + Constants.SSIntegrationSettings.CreateMultiple;
-
-            //TODO: change to run by entities that needs to have docs sent rather than waiting for docs to be picked up - what if autosubmit doesnt run
+            string statementsUrl = Constants.SSIntegrationSettings.SLIncomeStatementIncome + Constants.SSIntegrationSettings.CreateMultiple;            
             var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
             var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("IncomeStatementPDF")).FirstOrDefault();
-            var _mappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
+            var _mappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner); //= await GetMappedEntitiesTestUsers();
             List<IntegrationAudit> allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
 
             List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start)).ToList();// && x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315")
@@ -418,26 +415,27 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
                     foreach (var statement in submittedStatements)
                     {
-                        if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
-                        {
+                        //if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
+                        //{
 
                             var statementDoc = (statement.RelatedDocumentId != null ?
                                 _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).FirstOrDefault() :
                                 _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null).OrderByDescending(d => d.InsertedDate).FirstOrDefault());
                             string remoteStatementId = "";
                             //get associated audit lines
-
                             List<IntegrationAudit> docaudits = null;
 
-
                             string remoteDocId = "";
-                            if (statementDoc != null)
+                            if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
                             {
-                                docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
-                                remoteDocId = await PushNewDocument(statementDoc);
+                                if (statementDoc != null)
+                                {
+                                    docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
+                                    remoteDocId = await PushNewDocument(statementDoc);
+                                }
                             }
-
-                            List<IncomeExpensePDFTableModel> statementData = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFData(_incomeManager, prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+                                List<IncomeExpensePDFTableModel> statementData = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFData(_incomeManager, prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+                            
                             double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
                             double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
                             //calculate based on categories
@@ -518,7 +516,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     if (returnObj != null)
                                     {
                                         remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                        if (docaudits.Count > 0)
+                                        if (docaudits!=null)
                                         {
                                             await _logManager.UpdateAuditSubmitted(docaudits);
                                         }
@@ -538,9 +536,9 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             catch (Exception e)
                             {
-                                await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                                await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse > Remote ID : " + prac.RemoteId);
                             }
-                        }
+                        //}
                     }
                 }
             }
@@ -1029,6 +1027,27 @@ public class SmartStartIntegrationService : IIntegrationService
         }
     }
 
+    public async Task<List<IntegrationEntityMapping>> GetMappedEntitiesTestUsers(string entityType = null)
+    {
+        try
+        {
+            List<IntegrationEntityMapping> list = new List<IntegrationEntityMapping>();
+            List<SL_Ingestion_User_Update> ids = _dbContext.SL_Ingestion_Users_Update.ToList();
+            var alllist = _mapperRepo.GetAll().ToList();
+            foreach (var tester in ids)
+            {
+                list.Add(alllist.Where(x => x.UserId == tester.Id.ToString()).FirstOrDefault());
+
+            }
+
+            return list;
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetMappedEntitiesTestUsers > " + entityType);
+            throw new HttpRequestException("GetMappedEntitiesTestUsers Error retrieving mapped " + entityType + ": " + e.Message);
+        }
+    }
     public async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null, bool getNew = false)
     {
         try
