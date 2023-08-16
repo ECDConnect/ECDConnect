@@ -406,7 +406,7 @@ public class SmartStartIntegrationService : IIntegrationService
             var _mappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner); //= await GetMappedEntitiesTestUsers();
             List<IntegrationAudit> allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
 
-            List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start)).ToList();// && x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315")
+            List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start) ).ToList();//&& x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315"
             /**/
             foreach (var prac in statementsDueList)
             {
@@ -465,14 +465,14 @@ public class SmartStartIntegrationService : IIntegrationService
                                         case "Utilities":
                                             dUtilities += dataLine.Amount;
                                             break;
+                                        case "Preschool fees: monetary contributions":
                                         case "Preschool Fee":
-                                            dFees += dataLine.Amount;
-                                            break;
+                                                dFees += dataLine.Amount;
+                                                break;
                                         case "Donation":
-                                            dDonations += dataLine.Amount;
-                                            break;
+                                        case "Subsidies, donations, contributions":
                                         case "DBE Subsidy":
-                                            dDonations += dataLine.Amount;
+                                                dDonations += dataLine.Amount;
                                             break;
                                         case "Other":
                                             if (statementLine.Type == "Income")
