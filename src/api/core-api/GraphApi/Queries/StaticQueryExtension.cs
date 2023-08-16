@@ -14,6 +14,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
