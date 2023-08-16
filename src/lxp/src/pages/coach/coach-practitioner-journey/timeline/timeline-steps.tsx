@@ -225,7 +225,7 @@ export const timelineSteps = ({
 
     if (pqaFollowUp.isFollowUp) {
       date = pqaFollowUp.deadline;
-    } else if (currentVisit?.insertedDate) {
+    } else if (currentVisit?.insertedDate && currentVisit?.attended) {
       date = currentVisit?.insertedDate;
     }
 
@@ -297,7 +297,7 @@ export const timelineSteps = ({
 
     if (reAccreditationFollowUp.isFollowUp) {
       date = reAccreditationFollowUp.deadline;
-    } else if (currentVisit?.insertedDate) {
+    } else if (currentVisit?.insertedDate && currentVisit?.attended) {
       date = currentVisit?.insertedDate;
     }
 

@@ -36,27 +36,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
         public List<StatementsExpenses> GetAllStatementsExpenses([Service] IncomeExpenseService incomeManager,
-string userId, int year, int month)
+            string userId, int year, int month)
         {
             return incomeManager.GetAllStatementsExpenses(userId, year, month);
         }
         public List<StatementsIncome> GetAllStatementsIncome([Service] IncomeExpenseService incomeManager,
-string userId, int year, int month)
+            string userId, int year, int month)
         {
             return incomeManager.GetAllStatementsIncome(userId, year, month);
         }
         public List<StatementsIncomeStatement> GetAllStatementsIncomeStatement([Service] IncomeExpenseService incomeManager,
-string userId, int year, int month)
+            string userId, int year, int month)
         {
             return incomeManager.GetAllStatementsIncomeStatement(userId, year, month);
         }
         public List<StatementsStartupSupport> GetAllStatementsStartupSupport([Service] IncomeExpenseService incomeManager,
-string userId, int year, int month)
+            string userId, int year, int month)
         {
             return incomeManager.GetAllStatementsStartupSupport(userId, year, month);
         }
         public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet([Service] IncomeExpenseService incomeManager, 
-string userId, int year, int month)
+            string userId, int year, int month)
         {
             return incomeManager.GetAllStatementsBalanceSheet(userId, year, month);
         }

@@ -51,7 +51,10 @@ public class IntegrationAPIManager
 
     public async Task<string> GetAPIHandlerResponse(string endpointUrl, string[] columns, List<IntegrationOptionConditionEntity> optionConditions = null, List<IntegrationOptionRelatedEntity> relatedConditions = null, bool showOptions = true, bool isPut = false, string postString = "")
     {
-        var request = new HttpRequestMessage();
+        var payload = "";
+        string responseString = null;
+        var isSuccess = false;
+        var responseCode = "";
 
         try
         {
@@ -65,27 +68,33 @@ public class IntegrationAPIManager
                         WriteIndented = true,
                         Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping
                     };
-                    var payload = JsonSerializer.Serialize(apiEntity, serializeOptions);
+                    payload = JsonSerializer.Serialize(apiEntity, serializeOptions);
                     var content = showOptions ? new StringContent(payload, Encoding.UTF8, "application/json") : new StringContent(postString, Encoding.UTF8, "application/json");//.Replace("\u0022", "\"")
                     var response = !isPut ? await SmartLinkClient.PostAsync(endpointUrl, content) : await SmartLinkClient.PutAsync(endpointUrl, content);
-                    //var response = await SmartLinkClient.PostAsync(endpointUrl, content);
+                    
+                    responseCode = response.StatusCode.ToString();
 
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        await _logManager.IntegrationLog("SmartLink API GetAPIHandlerResponse (" + endpointUrl + ") Error: " + response.StatusCode + ". Response: " + response, postString, null, LogRelatedType.Error, "GetAPIHandlerResponse > " + endpointUrl + " > " + postString);
-                    }
                     using var responseStream = await response.Content.ReadAsStreamAsync();
 
-                    return await response.Content.ReadAsStringAsync();
+                    responseString = await response.Content.ReadAsStringAsync();
                 }
             }
-            return null;
         }
         catch (Exception e)
         {
             await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAPIHandlerResponse > " + endpointUrl + " > " + postString);
-            return null; //throw new HttpRequestException("SmartLink API Error: " + e.Message);
         }
+        finally
+        {
+             await _logManager.IntegrationLog(
+                 $"SmartLink API GetAPIHandlerResponse ({endpointUrl}) {(isSuccess ? "Success" : "Error")} Error: {responseCode}. Request: {payload} Response: {responseString}", 
+                 postString, 
+                 null, 
+                 isSuccess ? LogRelatedType.Log : LogRelatedType.Error, 
+                 $"GetAPIHandlerResponse > {endpointUrl} > {postString}");            
+        }
+
+        return responseString;
     }
 
     #region Get API Entity

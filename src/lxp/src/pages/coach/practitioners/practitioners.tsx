@@ -23,11 +23,13 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { userSelectors } from '@store/user';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { NotificationDisplay } from '@ecdlink/graphql';
 
 type ListDataItem = UserAlertListDataItem<{
   firstName: string;
   surname: string;
   area: string;
+  groupingName: string;
 }>;
 
 const AlertSeverityMapping = {
@@ -74,7 +76,8 @@ export const Practitioners: React.FC = () => {
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
 
-  const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
+  const [practitionersMessages, setPractitionersMessages] =
+    useState<NotificationDisplay[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerUserListData, setPractitionerUserListData] =
     useState<ListDataItem[]>();
@@ -138,6 +141,7 @@ export const Practitioners: React.FC = () => {
 
   const practionersDetailsFor = async (target = 'practitioner') => {
     setLoading(true);
+
     const practitionersMessageData = await new PractitionerService(
       userAuth?.auth_token!
     ).displayMetrics(target ?? 'practitioner');
@@ -209,6 +213,7 @@ export const Practitioners: React.FC = () => {
         firstName: practitioner?.user?.firstName || '',
         surname: practitioner?.user?.surname || '',
         area: practitioner?.siteAddress?.addressLine2 || '',
+        groupingName: currentPractitionerMessage?.groupingName || '',
       },
     };
   };
@@ -242,13 +247,13 @@ export const Practitioners: React.FC = () => {
 
     items.forEach((item) => {
       if (
-        item.subTitle &&
-        options.findIndex((o) => o.id === item.subTitle) < 0
+        !!item.extraData?.groupingName &&
+        options.findIndex((o) => o.id === item.extraData?.groupingName) < 0
       ) {
         options.push({
-          id: item.subTitle,
-          label: item.subTitle,
-          value: item.subTitle,
+          id: item.extraData?.groupingName,
+          label: item.extraData?.groupingName,
+          value: item.extraData?.groupingName,
         });
       }
     });

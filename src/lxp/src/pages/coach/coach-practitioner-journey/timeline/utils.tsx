@@ -19,7 +19,7 @@ export const getRatingData = (
     case 'Warning':
       return {
         text: 'Orange rating',
-        icon: <span className="text-alertMain text-xl">▲</span>,
+        icon: <span className="text-alertMain text-xs">▲</span>,
       };
     default:
       return {

@@ -1,8 +1,16 @@
 import { gql } from '@apollo/client';
 
 export const contentTypes = gql`
-  {
-    contentTypes {
+  query (
+    $search: String
+    $searchInContent: Boolean
+    $isVisiblePortal: Boolean
+  ) {
+    contentTypes(
+      search: $search
+      searchInContent: $searchInContent
+      isVisiblePortal: $isVisiblePortal
+    ) {
       id
       name
       description
