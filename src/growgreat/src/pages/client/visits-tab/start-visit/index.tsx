@@ -61,13 +61,18 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
     [infants]
   );
 
+  const filteredMothers = useMemo(
+    () => mothers.filter((item) => !!item.expectedDateOfDelivery),
+    [mothers]
+  );
+
   const motherOptions = useMemo(
     () =>
-      mothers.map((mom) => ({
+      filteredMothers.map((mom) => ({
         value: { id: mom.user?.id, type: 'mother' } as DropdownOnChange,
         label: `${mom.user?.firstName || ''} ${mom.user?.surname || ''}`,
       })),
-    [mothers]
+    [filteredMothers]
   );
 
   const clients = [...motherOptions, ...infantOptions];
