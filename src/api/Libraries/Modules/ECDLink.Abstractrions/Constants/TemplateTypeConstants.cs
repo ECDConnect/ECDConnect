@@ -2,6 +2,7 @@ namespace ECDLink.Abstractrions.Constants
 {
     public static class TemplateTypeConstants
     {
+        //sms/email
         public const string ForgotPassword = "forgot-password";
 
         public const string AuthCode = "auth-code";
@@ -27,5 +28,10 @@ namespace ECDLink.Abstractrions.Constants
         public const string AdminPortalInvitation = "admin-portal-invitation";
         
         public const string ForgotPasswordPortal = "forgot-password-portal";
+
+        //app notifications
+
+
+
     }
 }
