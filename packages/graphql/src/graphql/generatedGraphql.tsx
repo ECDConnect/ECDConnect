@@ -543,6 +543,7 @@ export type CmsVisitDataInput = {
 
 export type CmsVisitDataInputModelInput = {
   coachId?: InputMaybe<Scalars['String']>;
+  eventId?: InputMaybe<Scalars['String']>;
   infantId?: InputMaybe<Scalars['String']>;
   motherId?: InputMaybe<Scalars['String']>;
   practitionerId?: InputMaybe<Scalars['String']>;
@@ -8443,12 +8444,16 @@ export type ProgressTrackingLevel = {
   description?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   imageUrl?: Maybe<Scalars['String']>;
+  imageUrlDim?: Maybe<Scalars['String']>;
+  imageUrlDone?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
 };
 
 export type ProgressTrackingLevelInput = {
   description?: InputMaybe<Scalars['String']>;
   imageUrl?: InputMaybe<Scalars['String']>;
+  imageUrlDim?: InputMaybe<Scalars['String']>;
+  imageUrlDone?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
 };
 
