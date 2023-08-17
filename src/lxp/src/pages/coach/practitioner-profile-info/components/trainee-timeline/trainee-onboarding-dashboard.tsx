@@ -18,19 +18,21 @@ import { useHistory } from 'react-router';
 import { timelineSteps } from './timeline-steps';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
-import ROUTES from '@/routes/routes';
+import { PractitionerDto } from '@ecdlink/core';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
   setIsSmartChecklist?: any;
+  practitioner?: PractitionerDto;
 }
 
 export const OnboardingTraineeDashboard: React.FC<
   OnboardingTraineeDashboardProps
-> = ({ setNotificationStep, setIsSmartChecklist }) => {
+> = ({ setNotificationStep, setIsSmartChecklist, practitioner }) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const today = format(new Date(), 'EEEE, d LLLL');
+  const isOnStipend = practitioner?.isOnStipend;
 
   const { width } = useWindowSize();
 
@@ -51,7 +53,9 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    isOnStipend
   ).filter(
     (item) =>
       item?.type !== 'completed' &&
@@ -73,7 +77,9 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    isOnStipend
   ).filter((item) => item?.type === 'completed');
 
   const stepperCount = timelineSteps(
@@ -82,16 +88,10 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    isOnStipend
   ).length;
-
-  const completedFlow = stepperCount - 2 === completedSteps?.length;
-
-  // useEffect(() => {
-  //   if (completedFlow) {
-  //     setShowSteps(false);
-  //   }
-  // }, [completedFlow]);
 
   const filteredUncompletedSteps = uncompletedSteps.filter(
     (item) =>
@@ -134,36 +134,18 @@ export const OnboardingTraineeDashboard: React.FC<
       renderOverflow={true}
       className="h-screen"
     >
-      <div className="bg-uiBg flex w-full items-center justify-center">
-        <Typography
-          className={'my-3'}
-          color={'primary'}
-          type={'h3'}
-          text={'Onboarding'}
-        />
-      </div>
       <div className="h-screen p-4">
-        <Typography
-          className={'my-3'}
-          color={'textDark'}
-          type={'h2'}
-          text={'Trainee onboarding'}
-        />
         {showSteps && (
           <>
-            <StackedList
-              isFullHeight={false}
-              className={'flex flex-col gap-2'}
-              listItems={notificationItem}
-              type={'MenuList'}
-            />
-            <Typography
-              className={'my-3 w-11/12'}
-              color={'textDark'}
-              type={'h3'}
-              text={'Complete all the steps to set up your programme'}
-            />
-            <Divider dividerType="dashed" className="my-2" />
+            {nextStep && (
+              <StackedList
+                isFullHeight={false}
+                className={'flex flex-col gap-2'}
+                listItems={notificationItem}
+                type={'MenuList'}
+              />
+            )}
+
             {timeline && (
               <Steps
                 items={timelineSteps(
@@ -173,7 +155,8 @@ export const OnboardingTraineeDashboard: React.FC<
                   isOnline,
                   // @ts-ignore
                   undefined,
-                  nextStep?.title
+                  nextStep?.title,
+                  isOnStipend
                 )}
                 typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
               />
@@ -192,7 +175,9 @@ export const OnboardingTraineeDashboard: React.FC<
                         false,
                         isOnline,
                         // @ts-ignore
-                        undefined
+                        undefined,
+                        '',
+                        isOnStipend
                       ).length && i + 1 <= completedSteps?.length
                         ? '#26ACAF'
                         : '#D4EEEF',

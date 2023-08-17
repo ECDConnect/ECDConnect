@@ -1,8 +1,18 @@
 import { gql } from '@apollo/client';
 
 export const DocumentList = gql`
-  {
-    GetAllDocument {
+  query GetAllDocuments(
+    $showOnlyTypes: [String]
+    $userId: String
+    $order: [DocumentSortInput!]
+    $pagingInput: PagedQueryInput
+  ) {
+    allDocument(
+      showOnlyTypes: $showOnlyTypes
+      userId: $userId
+      order: $order
+      pagingInput: $pagingInput
+    ) {
       id
       user {
         firstName

@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -32,17 +33,20 @@ namespace ECDLink.SmartStart.Services
         private IGenericRepository<ProgrammeType, Guid> _programmeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
         private AuthenticationDbContext _dbContext;
+        private HierarchyEngine _hierarchyEngine;
 
         public AttendanceService(IDbContextFactory<AuthenticationDbContext> dbFactory,
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory, AuthenticationDbContext dbContext, IHolidayService<Holiday> holidayService) 
+            IGenericRepositoryFactory repoFactory, AuthenticationDbContext dbContext, IHolidayService<Holiday> holidayService,
+            HierarchyEngine hierarchyEngine) 
             : base(holidayService, dbFactory.CreateDbContext())
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _dbContext = dbContext;
+            _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);

@@ -18,7 +18,6 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { DateFormats } from '../../../../constants/Dates';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { OfflineSyncModal } from '../../../../modals';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { useAppDispatch } from '@store';
 import { childrenSelectors } from '@store/children';
@@ -60,9 +59,6 @@ export const ChildCompletedObservationReports: React.FC = () => {
   const [latestCompletedSummary] = useSelector(
     contentReportSelectors.getChildLatestCompletedReports(routeState?.childId)
   );
-  const hasUnsyncedReports = useSelector(
-    contentReportSelectors.hasUnsyncedReports
-  );
   const childReportSummaries = useSelector(
     contentReportSelectors.getChildProgressReportSummaries(routeState?.childId)
   );
@@ -99,30 +95,6 @@ export const ChildCompletedObservationReports: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-
-  useEffect(() => {
-    if (isOnline && hasUnsyncedReports) {
-      dialog({
-        position: DialogPosition.Bottom,
-        render: (onSubmit, onCancel) => {
-          return (
-            <OfflineSyncModal
-              avoidNavigation={true}
-              generalMessageOveride={'You have unsynced progress reports!'}
-              recommendationTextOveride={
-                'If you choose not to sync you will only be able to download synced reports'
-              }
-              onSubmit={() => {
-                onSubmit();
-              }}
-              onCancel={onCancel}
-            ></OfflineSyncModal>
-          );
-        },
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const completedFirstProgressReport =
     !!childReportSummaries &&

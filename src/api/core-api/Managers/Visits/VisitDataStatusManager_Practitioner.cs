@@ -1,6 +1,7 @@
 ﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -18,6 +19,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         private string _applicationUserId;
         private List<string> _clientVisitDataIds;
+        private HierarchyEngine _hierarchyEngine;
 
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private IGenericRepository<Visit, Guid> _visitRepo;
@@ -34,11 +36,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public VisitDataStatusManager_Practitioner(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory) {
+            IGenericRepositoryFactory repoFactory,
+            HierarchyEngine hierarchyEngine) {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
+            _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
 
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);

@@ -273,18 +273,19 @@ export const CoachingAndVisitOrCallStep = ({
           : updatedQuestions.slice(0, 5);
 
       const isAllCompleted = questionList.every((item) => !!item.answer);
+
       const isEnabledButton =
-        isAllCompleted &&
-        ((questionList.length === 5 &&
+        (isAllCompleted &&
+          questionList.length === 5 &&
           !isPqaFollowUp &&
           !isReAccreditationFollowUp) ||
-          (isPqaFollowUp && isPQAFollowUpDeadline) ||
-          (isReAccreditationFollowUp && isReAccreditationFollowUpDeadline));
+        (isPqaFollowUp && isPQAFollowUpDeadline) ||
+        (isReAccreditationFollowUp && isReAccreditationFollowUpDeadline) ||
+        (isAllCompleted && isPqaFollowUp);
 
       if (isEnabledButton) {
         return setEnableButton?.(true);
       }
-
       setEnableButton?.(false);
     },
     [
