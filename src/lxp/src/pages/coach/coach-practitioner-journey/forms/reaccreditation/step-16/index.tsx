@@ -125,7 +125,9 @@ export const Step16ReAccreditation = ({
       setSectionQuestions?.([
         {
           visitSection: reAccreditationVisitSectionStep16,
-          questions: [{ answer, question: reAccreditationQuestionStep16 }],
+          questions: [
+            { answer: value, question: reAccreditationQuestionStep16 },
+          ],
         },
       ]);
 
@@ -135,7 +137,7 @@ export const Step16ReAccreditation = ({
         setEnableButton?.(false);
       }
     },
-    [answer, setEnableButton, setSectionQuestions]
+    [setEnableButton, setSectionQuestions]
   );
 
   const renderContent = useMemo(() => {
