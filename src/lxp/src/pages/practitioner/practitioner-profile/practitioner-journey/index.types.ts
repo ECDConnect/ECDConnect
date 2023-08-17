@@ -6,4 +6,8 @@ export const visitTypes = {
       description: 'Self-assessment due',
     },
   },
+  requestCoachingVisitOrCall: {
+    name: 'request_coaching_visit_or_call',
+    description: 'Request a coaching visit or call',
+  },
 };

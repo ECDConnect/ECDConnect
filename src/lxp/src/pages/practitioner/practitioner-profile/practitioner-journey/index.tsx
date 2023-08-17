@@ -249,7 +249,7 @@ export const PractitionerJourney = ({
         textColor="primary"
         icon="LocationMarkerIcon"
         text="Request a coaching visit or call"
-        onClick={() => {}}
+        onClick={() => onStart(visitTypes.requestCoachingVisitOrCall.name)}
       />
       {!!timeline && (
         <Steps
