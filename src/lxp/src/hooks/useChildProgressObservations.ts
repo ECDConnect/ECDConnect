@@ -718,9 +718,9 @@ export const useChildProgressObservation = (
           IsActive: true,
         })
       ).unwrap();
-      await appDispatch(
-        contentReportThunkActions.getChildProgressReportSummary(50)
-      );
+      // await appDispatch(
+      //   contentReportThunkActions.getChildProgressReportSummary(50)
+      // );
     } finally {
       appDispatch(contentReportActions.saveReport(currentReportCopy));
       setCurrentReport(currentReportCopy);
