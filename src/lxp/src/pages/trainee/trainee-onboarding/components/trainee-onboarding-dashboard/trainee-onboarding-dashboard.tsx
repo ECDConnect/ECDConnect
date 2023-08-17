@@ -22,15 +22,17 @@ import { traineeSelectors } from '@/store/trainee';
 import ROUTES from '@/routes/routes';
 import { CoachVisitInfo } from './components/coach-visit-info';
 import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
+import { PractitionerDto } from '@ecdlink/core';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
   setIsSmartChecklist?: any;
+  practitioner?: PractitionerDto;
 }
 
 export const OnboardingTraineeDashboard: React.FC<
   OnboardingTraineeDashboardProps
-> = ({ setNotificationStep, setIsSmartChecklist }) => {
+> = ({ setNotificationStep, setIsSmartChecklist, practitioner }) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const today = format(new Date(), 'EEEE, d LLLL');
@@ -53,6 +55,7 @@ export const OnboardingTraineeDashboard: React.FC<
 
     setNotificationStep(notificationStep);
   };
+  const isOnStipend = practitioner?.isOnStipend;
 
   const uncompletedSteps = timelineSteps(
     timeline!,
@@ -60,7 +63,10 @@ export const OnboardingTraineeDashboard: React.FC<
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
   ).filter(
     (item) =>
       item?.type !== 'completed' &&
@@ -69,12 +75,9 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title !== 'SmartSpace Licence'
   );
 
-  console.log({ uncompletedSteps });
-
   const extradataTimeValue =
     uncompletedSteps?.length > 0 &&
     Object.values(uncompletedSteps?.[0]?.extraData!);
-  console.log({ extradataTimeValue });
 
   const checkOverdueDate = differenceInDays(
     new Date(),
@@ -91,7 +94,8 @@ export const OnboardingTraineeDashboard: React.FC<
     // @ts-ignore
     undefined,
     '',
-    timeline?.consolidationMeetingStatus
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
   ).filter((item) => item?.type === 'completed');
 
   const stepperCount = timelineSteps(
@@ -102,7 +106,8 @@ export const OnboardingTraineeDashboard: React.FC<
     // @ts-ignore
     undefined,
     '',
-    timeline?.consolidationMeetingStatus
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
   ).length;
 
   const completedFlow = stepperCount - 2 === completedSteps?.length;
@@ -209,9 +214,10 @@ export const OnboardingTraineeDashboard: React.FC<
                 type="filled"
                 color="primary"
                 className="mt-4 mb-2 w-full"
-                onClick={() =>
-                  history.push(ROUTES.DASHBOARD, { isFromTraineeFlow: true })
-                }
+                onClick={() => {
+                  history.push(ROUTES.DASHBOARD, { isFromTraineeFlow: true });
+                  window.location.reload();
+                }}
               >
                 {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
                 <Typography
@@ -268,7 +274,8 @@ export const OnboardingTraineeDashboard: React.FC<
                   // @ts-ignore
                   undefined,
                   nextStep?.title,
-                  timeline?.consolidationMeetingStatus
+                  timeline?.consolidationMeetingStatus,
+                  isOnStipend
                 )}
                 typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
               />
@@ -289,7 +296,8 @@ export const OnboardingTraineeDashboard: React.FC<
                         // @ts-ignore
                         undefined,
                         '',
-                        timeline?.consolidationMeetingStatus
+                        timeline?.consolidationMeetingStatus,
+                        isOnStipend
                       ).length && i + 1 <= completedSteps?.length
                         ? '#26ACAF'
                         : '#D4EEEF',

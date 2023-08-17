@@ -12,6 +12,8 @@
     <Content Remove="Tenancy\TempScripts\**" />
     <EmbeddedResource Remove="Tenancy\TempScripts\**" />
     <None Remove="Tenancy\TempScripts\**" />
+    <Compile Remove="Services\IntegrationService.cs" />
+    <Compile Remove="Services\Interfaces\IIntegrationService.cs" />
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
     <None Remove="SQLUpgradeScripts" />

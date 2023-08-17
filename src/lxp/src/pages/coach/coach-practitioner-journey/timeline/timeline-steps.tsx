@@ -19,6 +19,11 @@ export interface StepType {
   color?: Colours;
 }
 
+interface FollowUp {
+  isFollowUp: boolean;
+  deadline: Date;
+}
+
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   month: 'short',
@@ -83,6 +88,8 @@ export const timelineSteps = ({
   practitionerId,
   currentPqaRating,
   currentReAccreditationRating,
+  reAccreditationFollowUp,
+  pqaFollowUp,
 }: {
   practitionerId: string;
   timeline: PractitionerTimeline;
@@ -94,6 +101,8 @@ export const timelineSteps = ({
   visits?: Maybe<Visit>[];
   currentPqaRating: RatingData;
   currentReAccreditationRating: RatingData;
+  pqaFollowUp: FollowUp;
+  reAccreditationFollowUp: FollowUp;
 }): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
   steps.push(
@@ -212,6 +221,14 @@ export const timelineSteps = ({
       { timeline, currentPqaRating }
     );
 
+    let date = currentVisit?.plannedVisitDate;
+
+    if (pqaFollowUp.isFollowUp) {
+      date = pqaFollowUp.deadline;
+    } else if (currentVisit?.insertedDate && currentVisit?.attended) {
+      date = currentVisit?.insertedDate;
+    }
+
     steps.push({
       title: 'First PQA',
       customSubTitle: (
@@ -220,11 +237,10 @@ export const timelineSteps = ({
             type="body"
             color={stepType?.color}
             className="mr-4"
-            text={`${subTitleText} ${new Date(
-              currentVisit?.attended
-                ? currentVisit.insertedDate
-                : currentVisit?.plannedVisitDate
-            ).toLocaleDateString('en-ZA', dateOptions)}`}
+            text={`${subTitleText} ${new Date(date).toLocaleDateString(
+              'en-ZA',
+              dateOptions
+            )}`}
           />
           {timeline.pQASiteVisits.some((item) => item?.attended) && (
             <>
@@ -277,6 +293,14 @@ export const timelineSteps = ({
         currentRating: currentReAccreditationRating,
       });
 
+    let date = currentVisit?.plannedVisitDate;
+
+    if (reAccreditationFollowUp.isFollowUp) {
+      date = reAccreditationFollowUp.deadline;
+    } else if (currentVisit?.insertedDate && currentVisit?.attended) {
+      date = currentVisit?.insertedDate;
+    }
+
     steps.push({
       title: 'Re-accreditation visit',
       customSubTitle: (
@@ -285,11 +309,10 @@ export const timelineSteps = ({
             type="body"
             color={stepType?.color}
             className="mr-4"
-            text={`${subTitleText} ${new Date(
-              currentVisit?.attended
-                ? currentVisit.insertedDate
-                : currentVisit?.plannedVisitDate
-            ).toLocaleDateString('en-ZA', dateOptions)}`}
+            text={`${subTitleText} ${new Date(date).toLocaleDateString(
+              'en-ZA',
+              dateOptions
+            )}`}
           />
           {timeline.reAccreditationVisits.some((item) => item?.attended) && (
             <>

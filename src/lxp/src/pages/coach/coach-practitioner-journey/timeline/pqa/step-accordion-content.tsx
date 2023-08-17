@@ -112,7 +112,9 @@ export const PQAVisits = ({
               } as Maybe<Visit>,
             ]
           : []),
-        ...(!isFirstVisit && newPqaVisit ? [newPqaVisit] : []),
+        ...(!isFirstVisit && newPqaVisit && !isPQAFollowUp
+          ? [newPqaVisit]
+          : []),
       ]
     : [];
 

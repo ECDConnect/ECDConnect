@@ -15,7 +15,7 @@ namespace EcdLink.Api.CoreApi
     public partial class Startup
     {
         private void ConfigureAuthContext(IServiceCollection services, IConfiguration config)
-        {
+        {           
             services.AddDbContextFactory<AuthenticationDbContext>((serviceProvider, options) =>
             {
                 options.UseNpgsqlTenancy(config);

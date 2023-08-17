@@ -10,8 +10,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.Managers.Integration
-{
+namespace EcdLink.Api.CoreApi.Managers.Integration;
+
     public class IntegrationLogManager
     {
         private IHttpContextAccessor _contextAccessor;
@@ -87,5 +87,3 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
         #endregion
 
     }
-}
-

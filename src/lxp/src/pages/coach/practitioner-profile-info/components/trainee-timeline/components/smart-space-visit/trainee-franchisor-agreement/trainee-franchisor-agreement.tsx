@@ -35,9 +35,7 @@ export const CoachTraineeFranchisorAgreement: React.FC<
   const appDispatch = useAppDispatch();
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
   const practitioner = location.state.practitioner;
-  const programmeName = useSelector(
-    traineeSelectors.getTraineeVisitDataProgrammeName
-  );
+
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [activeStep, setActiveStep] = useState(
@@ -51,10 +49,6 @@ export const CoachTraineeFranchisorAgreement: React.FC<
 
     history.push(ROUTES.COACH_SELF_ASSESSMENT, { practitioner: practitioner });
   };
-
-  const visitData = useSelector(
-    traineeSelectors.getCoachFranchisorAgreementData
-  );
 
   const handleBackButton = () => {
     if (activeStep === 1) {

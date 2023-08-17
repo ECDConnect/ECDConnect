@@ -1,10 +1,6 @@
-﻿using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace ECDLink.Core.Services.Interfaces
-{
+namespace ECDLink.Core.Services.Interfaces;
     public interface IIntegrationService
     {
         Task<bool> IntegrationByMappedCoach(string franchiseeId = null);
@@ -15,5 +11,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> IntegrationAttendanceData();
         Task<bool> IntegrationUpdates();
         Task<bool> IntegrationByTrainees();
-    }
+        Task<bool> AutoSubmitStatements();
+
+    
 }

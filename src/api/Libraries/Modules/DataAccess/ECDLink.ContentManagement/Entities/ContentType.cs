@@ -20,5 +20,9 @@ namespace ECDLink.ContentManagement.Entities
         public string MetaData { get; set; }
 
         public bool IsActive { get; set; }
+
+        public bool IsVisiblePortal { get; set; }
+
+        public int PortalDisplayOrder { get; set; }
     }
 }
