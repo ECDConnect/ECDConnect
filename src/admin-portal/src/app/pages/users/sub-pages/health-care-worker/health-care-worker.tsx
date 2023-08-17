@@ -187,9 +187,12 @@ export default function HealthCareWorkers() {
     };
   });
 
+
   const mapUserTableItem = (item: any) => {
     return {
       ...item,
+      displayColumnIdPassportEmail:
+        item?.user?.userName ?? item?.idNumber ?? item?.user?.email ?? '',
       userId: item.user?.id,
       fullName: `${item.user?.fullName}`,
       isActive: item.user?.isActive,
@@ -442,7 +445,7 @@ export default function HealthCareWorkers() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'idNumber', use: 'id / Passport' },
+                    { field: 'displayColumnIdPassportEmail', use: 'id / Passport' },
                     { field: 'fullName', use: 'name' },
                     // { field: 'usage', use: 'CHW Connect usage' },
                     { field: 'insertedDate', use: 'Date invited' },
