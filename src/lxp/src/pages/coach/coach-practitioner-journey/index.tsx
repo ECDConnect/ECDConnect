@@ -723,6 +723,8 @@ export const CoachPractitionerJourney = () => {
     );
   }
 
+  console.log('dsds');
+  console.log({ uncompletedVisits });
   return (
     <BannerWrapper
       size="small"
@@ -790,6 +792,7 @@ export const CoachPractitionerJourney = () => {
                 onScheduleOrStart,
                 isLoading,
                 isOnline,
+                // @ts-ignore
                 visits: uncompletedVisits,
                 currentPqaRating,
                 currentReAccreditationRating,
