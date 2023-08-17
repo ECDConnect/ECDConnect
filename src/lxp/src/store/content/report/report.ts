@@ -13,6 +13,7 @@ import {
   updateChildProgressReport,
 } from './report.actions';
 import { ContentReportState, UnSyncedReportItem } from './report.types';
+import { reportConvert } from './report.util';
 const initialState: ContentReportState = {
   childProgressionReports: [],
   unsyncedChildProgressReportsIds: [],
@@ -252,18 +253,30 @@ const contentReportSlice = createSlice({
       state,
       action: PayloadAction<ChildProgressObservationReport>
     ) => {
-      if (!state.childProgressionReports) return;
+      if (!state.childProgressionReports || !state.childProgressReportSummaries)
+        return;
 
+      const report = action.payload;
       const reportIndex = state.childProgressionReports.findIndex(
-        (report) => report.id === action.payload.id
+        (r) => r.id === report.id
       );
-
       if (reportIndex < 0) {
-        state.childProgressionReports.push(action.payload);
+        state.childProgressionReports.push(report);
         return;
       }
+      state.childProgressionReports[reportIndex] = report;
 
-      state.childProgressionReports[reportIndex] = action.payload;
+      const summary =
+        reportConvert.ChildProgressObservationReport.ChildProgressReportSummaryModel(
+          report
+        );
+      const summaryIndex = state.childProgressReportSummaries.findIndex(
+        (s) => s.reportId === summary.reportId
+      );
+      if (summaryIndex < 0) {
+        state.childProgressReportSummaries.push(summary);
+      }
+      state.childProgressReportSummaries[summaryIndex] = summary;
     },
     markReportForSyncing: (
       state,
@@ -290,22 +303,35 @@ const contentReportSlice = createSlice({
         if (!state.childProgressionReports) {
           state.childProgressionReports = [];
         }
-
-        const reportContent = JSON.parse(
-          action.payload.reportContent as string
-        );
-
-        const reportIndex = state.childProgressionReports.findIndex(
-          (report) => report.id === reportContent.id
-        );
-
-        if (reportIndex && reportIndex < 0) {
-          state.childProgressionReports.push(reportContent);
-        } else {
-          state.childProgressionReports[reportIndex] = reportContent;
+        if (!state.childProgressReportSummaries) {
+          state.childProgressReportSummaries = [];
         }
 
-        _reportSynced(state, reportContent.id);
+        const report: ChildProgressObservationReport = JSON.parse(
+          action.payload.reportContent as string
+        );
+        const reportIndex = state.childProgressionReports.findIndex(
+          (r) => r.id === report.id
+        );
+        if (reportIndex < 0) {
+          state.childProgressionReports.push(report);
+        } else {
+          state.childProgressionReports[reportIndex] = report;
+        }
+
+        const summary =
+          reportConvert.ChildProgressObservationReport.ChildProgressReportSummaryModel(
+            report
+          );
+        const summaryIndex = state.childProgressReportSummaries.findIndex(
+          (s) => s.reportId === summary.reportId
+        );
+        if (summaryIndex < 0) {
+          state.childProgressReportSummaries.push(summary);
+        }
+        state.childProgressReportSummaries[summaryIndex] = summary;
+
+        _reportSynced(state, report.id);
       }
     );
     builder.addCase(
