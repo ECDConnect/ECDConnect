@@ -29,7 +29,6 @@ import {
   sortVisit,
 } from './timeline/utils';
 import { visitTypes } from './index.types';
-import { Visit } from '@ecdlink/graphql';
 import {
   Form,
   currentActivityKey,
@@ -73,23 +72,7 @@ export const PractitionerJourney = ({
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
-  // TODO: add rules
-  const uncompletedSelfAssessment = !timeline?.selfAssessmentVisits?.[0]
-    ?.attended
-    ? [
-        {
-          id: 'self-assessment',
-          attended: false,
-          visitType: {
-            description: 'Self-assessment due',
-            name: visitTypes.selfAssessment.first.name,
-            order: 1,
-          },
-          // TODO: check correct date
-          plannedVisitDate: new Date(),
-        } as Visit,
-      ]
-    : [];
+  const uncompletedSelfAssessment = timeline?.selfAssessmentVisits ?? [];
 
   const uncompletedVisits = [...uncompletedSelfAssessment];
 
@@ -148,26 +131,28 @@ export const PractitionerJourney = ({
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
     .sort(sortVisit)
-    ?.map(
-      (visit): MenuListDataItem<{ visitId?: string }> => ({
+    ?.map((visit): MenuListDataItem<{ visitId?: string }> => {
+      const isLate = new Date(visit?.plannedVisitDate || '') < new Date();
+
+      return {
         showIcon: true,
-        menuIcon: 'ClipboardListIcon',
+        menuIcon: isLate ? 'ExclamationIcon' : 'ClipboardListIcon',
         iconColor: 'white',
         titleStyle: 'text-textDark',
         title: visit?.visitType?.description || 'Visit',
         subTitle: !!visit?.plannedVisitDate
-          ? new Date(visit?.plannedVisitDate).toLocaleDateString(
+          ? `By ${new Date(visit?.plannedVisitDate).toLocaleDateString(
               'en-ZA',
               dateLongMonthOptions
-            )
+            )}`
           : '',
         subTitleStyle: 'text-textDark',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: isLate ? 'alertMain' : 'primary',
         backgroundColor: 'uiBg',
         extraData: { visitId: visit?.id },
         onActionClick: () => onStart(String(visit?.visitType?.name)),
-      })
-    )
+      };
+    })
     .shift();
 
   const isRenderForm =
