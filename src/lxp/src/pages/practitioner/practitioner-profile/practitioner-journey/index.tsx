@@ -7,10 +7,13 @@ import {
 import {
   getCurrentPQaRatingByUserId,
   getCurrentReAccreditationRatingByUserId,
+  getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { getUser } from '@/store/user/user.selectors';
 import {
+  Alert,
+  AlertType,
   Button,
   LoadingSpinner,
   MenuListDataItem,
@@ -21,7 +24,11 @@ import {
 import { useCallback, useLayoutEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ViewEvent, timelineSteps } from './timeline/timeline-steps';
-import { getFormattedDateInYearsMonthsAndDays, parseBool } from '@ecdlink/core';
+import {
+  getAgeInYearsMonthsAndDays as getCurrentTimeInYearsMonthsAndDays,
+  getFormattedDateInYearsMonthsAndDays,
+  parseBool,
+} from '@ecdlink/core';
 import {
   dateLongMonthOptions,
   dateOptions,
@@ -40,6 +47,8 @@ import {
   generalSupportVisitTypes,
   visitTypes as coachVisitTypes,
 } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
+import { ExclamationIcon } from '@heroicons/react/solid';
 
 interface PractitionerJourneyProps {
   onIsDisplayFormChange: (value: boolean) => void;
@@ -60,6 +69,21 @@ export const PractitionerJourney = ({
   const currentReAccreditationRating = useSelector(
     getCurrentReAccreditationRatingByUserId(userId)
   );
+  const lastAttendedPqaVisitWithoutFollowUp = useSelector(
+    getLastCoachAttendedVisitByUserId({
+      userId,
+      visitType: 'pQASiteVisits',
+      followUpType: 'pqa_visit_follow_up',
+    })
+  );
+  const lastAttendedReAccreditationVisitWithoutFollowUp = useSelector(
+    getLastCoachAttendedVisitByUserId({
+      userId,
+      visitType: 'reAccreditationVisits',
+      followUpType: 're_accreditation_follow_up',
+    })
+  );
+
   const { isLoading: isLoadingTimeline } = useThunkFetchCall(
     'pqa',
     PqaActions.GET_PRACTITIONER_TIMELINE
@@ -172,6 +196,166 @@ export const PractitionerJourney = ({
     }
   }, [appDispatch, isRenderForm, userId]);
 
+  const renderAlert = () => {
+    const isPqaRedRating =
+      currentPqaRating?.rating?.overallRatingColor === 'Error';
+    const isPqaOrangeRating =
+      currentPqaRating?.rating?.overallRatingColor === 'Warning';
+
+    const isReAccreditationRedRating =
+      currentReAccreditationRating?.rating?.overallRatingColor === 'Error';
+    const isReAccreditationOrangeRating =
+      currentReAccreditationRating?.rating?.overallRatingColor === 'Warning';
+
+    const isPqaGreenRating =
+      !isPqaOrangeRating &&
+      !isPqaRedRating &&
+      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate &&
+      !lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate;
+    const isReAccreditationGreenRating =
+      !isReAccreditationOrangeRating &&
+      !isReAccreditationRedRating &&
+      !!lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate;
+
+    const { years } = getCurrentTimeInYearsMonthsAndDays(
+      lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+    );
+
+    if (
+      (isPqaOrangeRating || isPqaRedRating) &&
+      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+    ) {
+      return (
+        <Alert
+          className="mt-4"
+          type={isPqaRedRating ? 'error' : 'warning'}
+          title={isPqaRedRating ? 'Red PQA rating' : 'Orange PQA rating'}
+          titleColor="textDark"
+          message={new Date(
+            lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+          ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
+          messageColor="textMid"
+          customIcon={
+            <div
+              className={`${
+                isPqaRedRating ? 'bg-errorMain' : 'bg-alertMain'
+              } flex h-12 w-12 items-center justify-center rounded-full`}
+            >
+              <ExclamationIcon className="w-5 text-white" />
+            </div>
+          }
+        />
+      );
+    }
+
+    if (
+      (isReAccreditationRedRating || isReAccreditationOrangeRating) &&
+      !!lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+    ) {
+      return (
+        <Alert
+          className="mt-4"
+          type={isReAccreditationRedRating ? 'error' : 'warning'}
+          title={
+            isReAccreditationRedRating
+              ? 'Red reaccreditation rating'
+              : 'Orange reaccreditation rating'
+          }
+          titleColor="textDark"
+          message={new Date(
+            lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+          ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
+          messageColor="textMid"
+          customIcon={
+            <div
+              className={`${
+                isReAccreditationRedRating ? 'bg-errorMain' : 'bg-alertMain'
+              } flex h-12 w-12 items-center justify-center rounded-full`}
+            >
+              <ExclamationIcon className="w-5 text-white" />
+            </div>
+          }
+        />
+      );
+    }
+
+    if (isPqaGreenRating || isReAccreditationGreenRating) {
+      return (
+        <Alert
+          className="mt-4"
+          type="success"
+          variant="flat"
+          title={
+            isPqaGreenRating
+              ? 'First PQA received'
+              : 'PQA re-accreditation awarded'
+          }
+          customMessage={
+            <div>
+              {isReAccreditationGreenRating && (
+                <Typography
+                  type="body"
+                  color="textDark"
+                  text={years > 1 ? `${years} years` : `${years || 1} year`}
+                />
+              )}
+              <div className="flex justify-between">
+                <Typography
+                  className={isPqaGreenRating ? 'pt-2' : ''}
+                  type="help"
+                  color="textMid"
+                  text={new Date(
+                    isPqaGreenRating
+                      ? lastAttendedPqaVisitWithoutFollowUp.insertedDate
+                      : lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+                  ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
+                />
+                <div className="ml-16 flex">
+                  <span className="text-successMain text-xl">●</span>
+                  <p
+                    className="text-textMid text-12 ml-2"
+                    style={{ marginTop: 6 }}
+                  >
+                    Green rating
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
+          messageColor="textMid"
+          customIcon={<BalloonsIcon />}
+        />
+      );
+    }
+
+    return (
+      <Alert
+        className="mt-4"
+        type={
+          timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
+        }
+        variant="flat"
+        title={timeline?.smartSpaceLicenseStatus || ''}
+        message={
+          timeline?.smartSpaceLicenseDate
+            ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
+                'en-ZA',
+                dateLongMonthOptions
+              )
+            : ''
+        }
+        messageColor="textMid"
+        customIcon={
+          timeline?.smartSpaceLicenseColor === 'Success' ? (
+            <BalloonsIcon />
+          ) : (
+            <></>
+          )
+        }
+      />
+    );
+  };
+
   useLayoutEffect(() => {
     if (activityName) {
       onIsDisplayFormChange(true);
@@ -206,6 +390,7 @@ export const PractitionerJourney = ({
           listItems={[currentVisit]}
         />
       )}
+      {renderAlert()}
       <Typography
         className="mt-4 mb-2"
         type="h4"
