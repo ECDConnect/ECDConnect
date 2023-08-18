@@ -105,7 +105,7 @@ export const ReAccreditationVisits = ({
     addDays(
       new Date(lastAttendedReAccreditationVisit?.insertedDate),
       currentFollowUpDeadline
-    ) <= new Date();
+    ) >= new Date();
   const isFirstVisit = reAccreditationVisitsFromCurrentYear?.length === 1;
   const isReAccreditationFollowUp =
     !isFirstVisit &&
@@ -211,8 +211,7 @@ export const ReAccreditationVisits = ({
             {((item?.id === currentVisit?.id && !item?.attended) ||
               (item?.visitType?.name ===
                 visitTypes.reaccreditation.followUp.name &&
-                item.attended === false &&
-                isReAccreditationFollowUpDeadline) ||
+                item.attended === false) ||
               (item?.id === newReAccreditationVisitId && !item.attended)) && (
               <Button
                 style={{
@@ -239,7 +238,13 @@ export const ReAccreditationVisits = ({
           <Typography
             type="body"
             // TODO: add schedule integration
-            color={getStepType(String('Success'))?.color || 'textMid'}
+            color={
+              visitTypes.reaccreditation.followUp.name &&
+              !isReAccreditationFollowUpDeadline &&
+              !item?.attended
+                ? 'errorMain'
+                : getStepType('Success')?.color || 'textMid'
+            }
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(
