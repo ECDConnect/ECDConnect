@@ -180,7 +180,10 @@ export const PractitionerJourney = ({
     .shift();
 
   const isRenderForm =
-    (activityName && currentVisit?.extraData?.visitId) || showForm || isView;
+    (activityName && currentVisit?.extraData?.visitId) ||
+    showForm ||
+    activityName ||
+    isView;
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
