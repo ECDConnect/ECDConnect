@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  addCoachVisitInviteForPractitioner,
   addFollowUpVisitForPractitioner,
   addReAccreditationFollowUpVisitForPractitioner,
   addReAccreditationVisitData,
@@ -190,6 +191,7 @@ const pqaSlice = createSlice({
     setThunkActionStatus(builder, addSupportVisitFormData);
     setThunkActionStatus(builder, addFollowUpVisitForPractitioner);
     setThunkActionStatus(builder, getPractitionerTimeline);
+    setThunkActionStatus(builder, addCoachVisitInviteForPractitioner);
     setThunkActionStatus(
       builder,
       addReAccreditationFollowUpVisitForPractitioner
@@ -351,6 +353,12 @@ const pqaSlice = createSlice({
         }
       });
     });
+    builder.addCase(
+      addCoachVisitInviteForPractitioner.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
   },
 });
 
