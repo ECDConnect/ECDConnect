@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
         public ResultReturnObject UpdateStartupSupport([Service] IncomeExpenseService incomeManager, string id,
-StatementsStartupSupport input)
+            StatementsStartupSupport input)
         {
             if (input != null)
             {
@@ -68,13 +68,16 @@ StatementsStartupSupport input)
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public ResultReturnObject SubmitStatement([Service] IncomeExpenseService incomeManager, string id,
-StatementsSubmit input)
+        public ResultReturnObject SubmitStatement(
+            [Service] IncomeExpenseService incomeManager, 
+            StatementsSubmit input)
         {
             if (input != null)
             {
                 var retObj = incomeManager.SubmitStatement(input);
-                return (retObj == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
+                return (retObj == true 
+                    ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } 
+                    : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
             }
             else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
