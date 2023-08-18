@@ -299,7 +299,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         }
 
-        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData([Service] IncomeExpenseService incomeManager, string userId, int year, int month)
+        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData([Service] IncomeExpenseService incomeManager, string userId, int year, int month, bool splitSupport = false)
         {
             List<IncomeExpensePDFTableModel> tables = new List<IncomeExpensePDFTableModel>();
             var table = new IncomeExpensePDFTableModel();
