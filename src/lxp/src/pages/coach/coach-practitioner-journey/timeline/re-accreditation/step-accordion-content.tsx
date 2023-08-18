@@ -52,6 +52,10 @@ export const ReAccreditationVisits = ({
     })
   );
 
+  const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
+    (item) => item?.attended
+  );
+
   // All years
   const filteredReAccreditationRatings =
     timeline?.reAccreditationRatings?.filter(
@@ -212,28 +216,29 @@ export const ReAccreditationVisits = ({
               (item?.visitType?.name ===
                 visitTypes.reaccreditation.followUp.name &&
                 item.attended === false) ||
-              (item?.id === newReAccreditationVisitId && !item.attended)) && (
-              <Button
-                style={{
-                  position: 'absolute',
-                  right: -36,
-                }}
-                className="z-50 w-32"
-                textColor="primary"
-                type="outlined"
-                color="primary"
-                text="Schedule"
-                iconPosition="start"
-                icon="CalendarIcon"
-                onClick={() =>
-                  onScheduleOrStart({
-                    visit: item as Visit,
-                    visitEventId: currentVisit?.eventId,
-                    eventType: 'ReAccreditation',
-                  })
-                }
-              />
-            )}
+              (item?.id === newReAccreditationVisitId && !item.attended)) &&
+              isUserEnableToStartPqaVisit && (
+                <Button
+                  style={{
+                    position: 'absolute',
+                    right: -36,
+                  }}
+                  className="z-50 w-32"
+                  textColor="primary"
+                  type="outlined"
+                  color="primary"
+                  text="Schedule"
+                  iconPosition="start"
+                  icon="CalendarIcon"
+                  onClick={() =>
+                    onScheduleOrStart({
+                      visit: item as Visit,
+                      visitEventId: currentVisit?.eventId,
+                      eventType: 'ReAccreditation',
+                    })
+                  }
+                />
+              )}
           </div>
           <Typography
             type="body"

@@ -105,6 +105,7 @@ export const CoachPractitionerJourney = () => {
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
   );
+
   const prePqaFormData = useSelector(
     getPrePqaFormDataByIdSelector(practitionerId)
   );
@@ -158,6 +159,10 @@ export const CoachPractitionerJourney = () => {
       lastAttendedReAccreditationFollowUpVisit?.id || '',
       'reAccreditationFollowUpVisitPreviousFormData'
     )
+  );
+
+  const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
+    (item) => item?.attended
   );
 
   const pqaVisits =
@@ -446,10 +451,14 @@ export const CoachPractitionerJourney = () => {
 
   const uncompletedVisits = [
     ...uncompletedPrePqaVisits,
-    ...uncompletedPqaVisits,
-    ...uncompletedPqaFollowUpVisit,
-    ...uncompletedReAccreditationVisits,
-    ...uncompletedReAccreditationFollowUpVisit,
+    ...(isUserEnableToStartPqaVisit
+      ? [
+          ...uncompletedPqaVisits,
+          ...uncompletedPqaFollowUpVisit,
+          ...uncompletedReAccreditationVisits,
+          ...uncompletedReAccreditationFollowUpVisit,
+        ]
+      : []),
   ];
 
   const currentVisit = uncompletedVisits

@@ -53,6 +53,10 @@ export const PQAVisits = ({
     })
   );
 
+  const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
+    (item) => item?.attended
+  );
+
   const pqaVisits =
     timeline?.pQASiteVisits?.filter(
       (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
@@ -206,28 +210,29 @@ export const PQAVisits = ({
             {((item?.id === currentVisit?.id && !item?.attended) ||
               (item?.visitType?.name === visitTypes.pqa.followUp.name &&
                 item.attended === false) ||
-              (item?.id === newPqaVisitId && !item.attended)) && (
-              <Button
-                style={{
-                  position: 'absolute',
-                  right: -36,
-                }}
-                className="z-50 w-32"
-                textColor="primary"
-                type="outlined"
-                color="primary"
-                text={getButtonText(item)}
-                iconPosition="start"
-                icon={getButtonIcon(item)}
-                onClick={() =>
-                  onClick({
-                    visit: item as Visit,
-                    visitEventId: currentVisit?.eventId,
-                    eventType: 'First PQA',
-                  })
-                }
-              />
-            )}
+              (item?.id === newPqaVisitId && !item.attended)) &&
+              isUserEnableToStartPqaVisit && (
+                <Button
+                  style={{
+                    position: 'absolute',
+                    right: -36,
+                  }}
+                  className="z-50 w-32"
+                  textColor="primary"
+                  type="outlined"
+                  color="primary"
+                  text={getButtonText(item)}
+                  iconPosition="start"
+                  icon={getButtonIcon(item)}
+                  onClick={() =>
+                    onClick({
+                      visit: item as Visit,
+                      visitEventId: currentVisit?.eventId,
+                      eventType: 'First PQA',
+                    })
+                  }
+                />
+              )}
           </div>
           <Typography
             type="body"
