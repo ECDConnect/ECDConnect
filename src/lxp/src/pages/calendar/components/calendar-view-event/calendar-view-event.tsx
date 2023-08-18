@@ -34,6 +34,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const endDate = new Date(event.end);
   const user = useSelector(userSelectors.getUser);
   const canEdit = !!props.canEdit ? props.canEdit : user?.id === event.userId;
+  const canAction = user?.id === event.userId;
 
   const onEdit = () => {
     props.onClose();
@@ -197,7 +198,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
             />
           </div>
         </div>
-        {!!event.action && !!event.action.url && (
+        {canAction && !!event.action && !!event.action.url && (
           <div className="px-4 pb-4">
             <Button
               onClick={() => onAction()}
