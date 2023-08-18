@@ -407,7 +407,6 @@ public class SmartStartIntegrationService : IIntegrationService
             List<IntegrationAudit> allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
 
             List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start) ).ToList();//&& x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315"
-            /**/
             foreach (var prac in statementsDueList)
             {
                 var submittedStatements = _incomeManager.GetAllStatementsIncomeStatement(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
@@ -415,131 +414,123 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
                     foreach (var statement in submittedStatements)
                     {
-                        //if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
-                        //{
 
-                            var statementDoc = (statement.RelatedDocumentId != null ?
-                                _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).FirstOrDefault() :
-                                _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null).OrderByDescending(d => d.InsertedDate).FirstOrDefault());
-                            string remoteStatementId = "";
-                            //get associated audit lines
-                            List<IntegrationAudit> docaudits = null;
+                        var statementDoc = (statement.RelatedDocumentId != null ?
+                            _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).FirstOrDefault() :
+                            _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null).OrderByDescending(d => d.InsertedDate).FirstOrDefault());
+                        string remoteStatementId = "";
+                        List<IntegrationAudit> docaudits = null;
 
-                            string remoteDocId = "";
-                            if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
+                        string remoteDocId = "";
+                        if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
+                        {
+                            if (statementDoc != null)
                             {
-                                if (statementDoc != null)
+                                docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
+                                remoteDocId = await PushNewDocument(statementDoc);
+                            }
+                        }
+                    List<StatementReport> statementLines = _incomeManager.GetStatementLinesToReport(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+
+
+                        double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
+                        double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
+                        //calculate based on categories
+                        foreach (var statementLine in statementLines)
+                        {
+                                switch (statementLine.StatementLine)
                                 {
-                                    docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
-                                    remoteDocId = await PushNewDocument(statementDoc);
+                                    case "Startup Support":
+                                        dStartupSupport += statementLine.Value;
+                                        break;
+                                    case "Rent":
+                                        dRent += statementLine.Value;
+                                        break;
+                                    case "Food":
+                                        dFood += statementLine.Value;
+                                        break;
+                                    case "Subcontractor Wages":
+                                        dSalary += statementLine.Value;
+                                        break;
+                                    case "Learning Materials":
+                                    case "Maintenance":
+                                        dOtherExpenses += statementLine.Value;
+                                        break;
+                                    case "Utilities":
+                                        dUtilities += statementLine.Value;
+                                        break;
+                                    case "Preschool Fee":
+                                            dFees += statementLine.Value;
+                                            break;
+                                    case "Donation":
+                                    case "DBE Subsidy":
+                                            dDonations += statementLine.Value;
+                                        break;
+                                    case "Other":
+                                        if (statementLine.StatementType == "Income")
+                                            dOtherIncome += statementLine.Value;
+                                        else
+                                            dOtherExpenses += statementLine.Value;
+                                        break;
+                                    default:
+                                        break;
+                                }                                
+                        }
+
+                        StringBuilder jsonStatementString = new StringBuilder();
+                        jsonStatementString.AppendLine("[{");
+                        jsonStatementString.AppendLine("\"Month\":\"" + submitPeriod.Start.ToString("MMMM") + "\",");
+                        jsonStatementString.AppendLine("\"Year\":\"" + submitPeriod.Start.Year + "\",");
+
+                        jsonStatementString.AppendLine("\"StartupSupport\":" + dStartupSupport + ",");
+                        jsonStatementString.AppendLine("\"Fees\":" + dFees + ",");
+                        jsonStatementString.AppendLine("\"Donations\":" + dDonations + ",");
+                        jsonStatementString.AppendLine("\"FundRaising\":" + dFundRaising + ",");
+                        jsonStatementString.AppendLine("\"OtherIncome\":" + dOtherIncome + ",");
+                        jsonStatementString.AppendLine("\"Rent\":" + dRent + ",");
+                        jsonStatementString.AppendLine("\"Utilities\":" + dUtilities + ",");
+                        jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
+                        jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
+                        jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
+                        jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
+                        jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
+                        //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
+                        jsonStatementString.AppendLine("}]");
+
+                        try
+                        {
+                            //now send to API call <entity type>/Multiple
+                            var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
+                            if (!string.IsNullOrEmpty(responseString))
+                            {
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                                if (returnObj != null)
+                                {
+                                    remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                    if (docaudits!=null)
+                                    {
+                                        await _logManager.UpdateAuditSubmitted(docaudits);
+                                    }
+
+                                    //no need to insert entity mapping item for statements as long as document saved
+                                    isComplete = true;
+                                    //update entity to note its statements has been sent
+                                    prac.LastIncomeSubmittedDate = DateTime.Now;
+                                    _mapperRepo.Update(prac);
+
+                                }
+                                else //error empty response received
+                                {
+                                    await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
                                 }
                             }
-                                List<IncomeExpensePDFTableModel> statementData = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFData(_incomeManager, prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
-                            
-                            double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
-                            double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
-                            //calculate based on categories
-                            foreach (var statementLine in statementData)
-                            {
-                                foreach (var dataLine in statementLine.Data)
-                                {
-                                    //TODO: add transport and wages and fundraising
-                                    switch (statementLine.TableName)//dataLine.Type
-                                    {
-                                        case "Startup Support":
-                                            dStartupSupport += dataLine.Amount;
-                                            break;
-                                        case "Rent":
-                                            dRent += dataLine.Amount;
-                                            break;
-                                        case "Food":
-                                            dFood += dataLine.Amount;
-                                            break;
-                                        case "Subcontractor Wages":
-                                            dSalary += dataLine.Amount;
-                                            break;
-                                        case "Learning Materials":
-                                        case "Maintenance":
-                                            dOtherExpenses += dataLine.Amount;
-                                            break;
-                                        case "Utilities":
-                                            dUtilities += dataLine.Amount;
-                                            break;
-                                        case "Preschool fees: monetary contributions":
-                                        case "Preschool Fee":
-                                                dFees += dataLine.Amount;
-                                                break;
-                                        case "Donation":
-                                        case "Subsidies, donations, contributions":
-                                        case "DBE Subsidy":
-                                                dDonations += dataLine.Amount;
-                                            break;
-                                        case "Other":
-                                            if (statementLine.Type == "Income")
-                                                dOtherIncome += dataLine.Amount;
-                                            else
-                                                dOtherExpenses += dataLine.Amount;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                            }
-
-                            StringBuilder jsonStatementString = new StringBuilder();
-                            jsonStatementString.AppendLine("[{");
-                            jsonStatementString.AppendLine("\"Month\":\"" + submitPeriod.Start.ToString("MMMM") + "\",");
-                            jsonStatementString.AppendLine("\"Year\":\"" + submitPeriod.Start.Year + "\",");
-
-                            jsonStatementString.AppendLine("\"StartupSupport\":" + dStartupSupport + ",");
-                            jsonStatementString.AppendLine("\"Fees\":" + dFees + ",");
-                            jsonStatementString.AppendLine("\"Donations\":" + dDonations + ",");
-                            jsonStatementString.AppendLine("\"FundRaising\":" + dFundRaising + ",");
-                            jsonStatementString.AppendLine("\"OtherIncome\":" + dOtherIncome + ",");
-                            jsonStatementString.AppendLine("\"Rent\":" + dRent + ",");
-                            jsonStatementString.AppendLine("\"Utilities\":" + dUtilities + ",");
-                            jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
-                            jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
-                            jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
-                            jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
-                            jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
-                            //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
-                            jsonStatementString.AppendLine("}]");
-
-                            try
-                            {
-                                //now send to API call <entity type>/Multiple
-                                var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
-                                if (!string.IsNullOrEmpty(responseString))
-                                {
-                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
-                                    if (returnObj != null)
-                                    {
-                                        remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                        if (docaudits!=null)
-                                        {
-                                            await _logManager.UpdateAuditSubmitted(docaudits);
-                                        }
-
-                                        //no need to insert entity mapping item for statements as long as document saved
-                                        isComplete = true;
-                                        //update entity to note its statements has been sent
-                                        prac.LastIncomeSubmittedDate = DateTime.Now;
-                                        _mapperRepo.Update(prac);
-
-                                    }
-                                    else //error empty response received
-                                    {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse > Remote ID : " + prac.RemoteId);
-                            }
-                        //}
-                    }
+                        }
+                        catch (Exception e)
+                        {
+                            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse > Remote ID : " + prac.RemoteId);
+                        }
+                    //}
+                }
                 }
             }
             /**/
