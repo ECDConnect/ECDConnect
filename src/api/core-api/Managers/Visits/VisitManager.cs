@@ -1096,7 +1096,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // EC-548 -- add self assessment
             // Deadline for self - assessment = 1 week before a scheduled PQA / reaccreditation visit OR before the PQA / reaccreditation deadline, whichever comes first. 
             DateTime plannedVisitDate = visit.PlannedVisitDate.AddDays(-7);
-            DateTime dueDate = visit.DueDate.Value.AddDays(-7);
+            DateTime dueDate = default(DateTime);
+            if (visit.DueDate.HasValue)
+            {
+                dueDate = visit.DueDate.Value.AddDays(-7);
+            }
+            
             VisitType selfType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name.Equals(Constants.SSSettings.visitType_self_assessment)).FirstOrDefault();
             Visit selfVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == visit.PractitionerId && x.VisitTypeId == selfType.Id && x.LinkedVisitId == visit.Id).FirstOrDefault();
             if (selfVisit == null)
@@ -1109,7 +1114,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     InfantId = null,
                     LinkedVisitId = visit.Id,
                     PlannedVisitDate = plannedVisitDate,
-                    DueDate = dueDate,
+                    DueDate = dueDate == default(DateTime) ? null : dueDate,
                     PractitionerId = visit.PractitionerId
                 };
                 return AddVisit(input);

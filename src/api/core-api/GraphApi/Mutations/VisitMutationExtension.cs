@@ -511,7 +511,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_practitioner_visit).OrderBy(x => x.NormalizedName).FirstOrDefault();
             }
 
-            Coach coach = coachRepo.GetAll().Where(x => x.UserId == input.CoachId.ToString()).FirstOrDefault();
+            Coach coach = coachRepo.GetAll().Where(x => x.Id == input.CoachId).FirstOrDefault();
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
             if (coach == null || practitioner == null)
