@@ -82,7 +82,7 @@ export const PQAVisits = ({
     addDays(
       new Date(lastAttendedPqaVisit?.insertedDate),
       currentFollowUpDeadline
-    ) <= new Date();
+    ) >= new Date();
 
   const isFirstVisit = timeline?.pQASiteVisits?.length === 1;
   const isPQAFollowUp =
@@ -199,14 +199,13 @@ export const PQAVisits = ({
             {renderIcon(item)}
             <Typography
               type="body"
-              color="textDark"
+              color={'textDark'}
               className="w-6/12 font-bold"
               text={item?.visitType?.description || ''}
             />
             {((item?.id === currentVisit?.id && !item?.attended) ||
               (item?.visitType?.name === visitTypes.pqa.followUp.name &&
-                item.attended === false &&
-                isPQAFollowUpDeadline) ||
+                item.attended === false) ||
               (item?.id === newPqaVisitId && !item.attended)) && (
               <Button
                 style={{
@@ -233,7 +232,13 @@ export const PQAVisits = ({
           <Typography
             type="body"
             // TODO: add schedule integration
-            color={getStepType(String('Success'))?.color || 'textMid'}
+            color={
+              item?.visitType?.name === visitTypes.pqa.followUp.name &&
+              !isPQAFollowUpDeadline &&
+              !item.attended
+                ? 'errorMain'
+                : getStepType('Success')?.color || 'textMid'
+            }
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(

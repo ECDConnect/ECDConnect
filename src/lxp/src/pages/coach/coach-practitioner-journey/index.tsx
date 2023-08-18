@@ -241,8 +241,6 @@ export const CoachPractitionerJourney = () => {
     new Date(lastAttendedPqaVisitWithoutFollowUp?.insertedDate),
     currentPqaFollowUpDeadline
   );
-  const isPQAFollowUpDeadline = pqaFollowUpDeadline <= new Date();
-
   const isPQAFollowUp =
     !isFirstPqaVisit &&
     !!newPqaVisit &&
@@ -256,8 +254,7 @@ export const CoachPractitionerJourney = () => {
     new Date(lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate),
     currentReAccreditationFollowUpDeadline
   );
-  const isReAccreditationFollowUpDeadline =
-    reAccreditationFollowUpDeadline <= new Date();
+
   const isReAccreditationFollowUp =
     !isFirstReAccreditationVisit &&
     !isGreenReAccreditationRating &&
@@ -415,39 +412,37 @@ export const CoachPractitionerJourney = () => {
       ? filteredReAccreditationVisits
       : [];
 
-  const uncompletedPqaFollowUpVisit =
-    isPQAFollowUpDeadline && isPQAFollowUp
-      ? [
-          {
-            id: newPqaFollowUpId,
-            attended: false,
-            visitType: {
-              description: 'Start follow-up PQA visit',
-              name: visitTypes.pqa.followUp.name,
-              order: 1,
-            },
-            // TODO add schedule
-            plannedVisitDate: new Date(),
-          } as Visit,
-        ]
-      : [];
+  const uncompletedPqaFollowUpVisit = isPQAFollowUp
+    ? [
+        {
+          id: newPqaFollowUpId,
+          attended: false,
+          visitType: {
+            description: 'Start follow-up PQA visit',
+            name: visitTypes.pqa.followUp.name,
+            order: 1,
+          },
+          // TODO add schedule
+          plannedVisitDate: new Date(),
+        } as Visit,
+      ]
+    : [];
 
-  const uncompletedReAccreditationFollowUpVisit =
-    isReAccreditationFollowUpDeadline && isReAccreditationFollowUp
-      ? [
-          {
-            id: newReAccreditationFollowUpId,
-            attended: false,
-            visitType: {
-              description: 'Start re-accreditation follow up visit',
-              name: visitTypes.reaccreditation.followUp.name,
-              order: 1,
-            },
-            // TODO add schedule
-            plannedVisitDate: new Date(),
-          } as Visit,
-        ]
-      : [];
+  const uncompletedReAccreditationFollowUpVisit = isReAccreditationFollowUp
+    ? [
+        {
+          id: newReAccreditationFollowUpId,
+          attended: false,
+          visitType: {
+            description: 'Start re-accreditation follow up visit',
+            name: visitTypes.reaccreditation.followUp.name,
+            order: 1,
+          },
+          // TODO add schedule
+          plannedVisitDate: new Date(),
+        } as Visit,
+      ]
+    : [];
 
   const uncompletedVisits = [
     ...uncompletedPrePqaVisits,
