@@ -14,6 +14,7 @@ import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import ChildDevelopmentLevelsDisplay from '../../components/child-development-levels-display/child-development-levels-display';
 import { useState } from 'react';
+import * as styles from './child-development-level-form.styles';
 
 interface ChildDevelopmentLevelFormProps {
   childDevelopmentLevelForm?: ChildDevelopmentLevelFormModel;
@@ -138,10 +139,11 @@ export const ChildDevelopmentLevelForm: React.FC<
         </div>
       </div>
       <Dialog
+        fullScreen
         visible={developmentLevelsDisplayActive}
-        position={DialogPosition.Middle}
+        position={DialogPosition.Top}
       >
-        <div className="p-4">
+        <div className={styles.levelsDisplay}>
           <ChildDevelopmentLevelsDisplay onClose={openLevelDescriptions} />
         </div>
       </Dialog>
