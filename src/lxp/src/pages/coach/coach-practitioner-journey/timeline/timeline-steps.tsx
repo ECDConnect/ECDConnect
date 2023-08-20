@@ -104,6 +104,10 @@ export const timelineSteps = ({
   pqaFollowUp: FollowUp;
   reAccreditationFollowUp: FollowUp;
 }): StepItem[] => {
+  const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
+    (item) => item?.attended
+  );
+
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
   steps.push(
     setStep(
@@ -260,7 +264,9 @@ export const timelineSteps = ({
         ),
       },
       showActionButton:
-        timeline.pQASiteVisits.length === 1 && !currentVisit?.attended,
+        timeline.pQASiteVisits.length === 1 &&
+        !currentVisit?.attended &&
+        isUserEnableToStartPqaVisit,
       actionButtonText: 'Schedule',
       actionButtonType: 'outlined',
       actionButtonTextColor: 'primary',
@@ -333,7 +339,9 @@ export const timelineSteps = ({
         ),
       },
       showActionButton:
-        timeline.reAccreditationVisits.length === 1 && !currentVisit?.attended,
+        timeline.reAccreditationVisits.length === 1 &&
+        !currentVisit?.attended &&
+        isUserEnableToStartPqaVisit,
       actionButtonText: 'Schedule',
       actionButtonType: 'outlined',
       actionButtonTextColor: 'primary',

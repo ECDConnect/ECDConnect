@@ -53,6 +53,7 @@ import {
   question1,
   question2,
 } from './request-coaching-visit-or-call/constants';
+import { OfflineStep } from './offline';
 
 export const practitionerVisitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
@@ -139,6 +140,11 @@ export const Form = ({ onBack }: FormProps) => {
       coachVisitTypes.reaccreditation.includes
     );
 
+    if (!isOnline) {
+      setTitle('You are offline');
+      return [OfflineStep];
+    }
+
     if (activityName.includes(visitTypes.requestCoachingVisitOrCall.name)) {
       setTitle(visitTypes.requestCoachingVisitOrCall.description);
       return requestCoachingVisitOrCallSteps;
@@ -192,7 +198,13 @@ export const Form = ({ onBack }: FormProps) => {
 
     setTitle('Self-assessment');
     return selfAssessmentSteps;
-  }, [activityName, isStep2AllCompleted, isViewDetails, pqaStep11Answer]);
+  }, [
+    isOnline,
+    activityName,
+    isStep2AllCompleted,
+    isViewDetails,
+    pqaStep11Answer,
+  ]);
 
   const isHideSteps =
     (isView && currentSteps.length === 1) || isRequestCoachingVisitOrCall;
