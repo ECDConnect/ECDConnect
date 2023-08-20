@@ -504,10 +504,8 @@ namespace ECDLink.Core.Services
             (
                 from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.IncomeStatementId.Equals(statementId))
                 join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
-                select new { statementExpenseType.Description, statementsExpenses.Amount })               
-                .ToList();
-
-
+                select new { statementExpenseType.Description, statementsExpenses.Amount }
+            ).ToList();
             foreach ( var statement in report )
             {
                 reportData.Add(new StatementReport() { StatementLine = statement.Description, Value = statement.Amount, StatementType = "Expenses" });
@@ -524,10 +522,8 @@ namespace ECDLink.Core.Services
             (
                 from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.IncomeStatementId.Equals(statementId))
                 join StatementsIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on StatementsIncome.IncomeTypeId equals StatementsIncomeType.Id.ToString()
-                select new { StatementsIncomeType.Description, StatementsIncome.Amount })
-                .ToList();
-
-
+                select new { StatementsIncomeType.Description, StatementsIncome.Amount }
+            ).ToList();
             foreach (var statement in report)
             {
                 reportData.Add(new StatementReport() { StatementLine = statement.Description, Value = statement.Amount, StatementType = "Income" });
