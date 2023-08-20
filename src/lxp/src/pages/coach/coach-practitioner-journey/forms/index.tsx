@@ -33,7 +33,6 @@ import {
   InputMaybe,
   Maybe,
   PqaRating,
-  ReAccreditationVisitModelInput,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -369,14 +368,17 @@ export const Form = ({
   }, [dialog]);
 
   const onSubmitSupportVisit = useCallback(
-    (payload: CmsVisitDataInputModelInput, visitType?: InputMaybe<string>) => {
+    async (
+      payload: CmsVisitDataInputModelInput,
+      visitType?: InputMaybe<string>
+    ) => {
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 'support-visit',
         })
       );
-      appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
+      await appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
       onBack?.();
       showMessage({
         message: `${
@@ -398,7 +400,7 @@ export const Form = ({
   );
 
   const onSubmitFollowUpVisit = useCallback(
-    (
+    async (
       payload: CmsVisitDataInputModelInput,
       type: 'pqa' | 're-accreditation'
     ) => {
@@ -409,7 +411,9 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        appDispatch(pqaThunkActions.addFollowUpVisitForPractitioner(payload));
+        await appDispatch(
+          pqaThunkActions.addFollowUpVisitForPractitioner(payload)
+        );
 
         window.sessionStorage.setItem(
           currentActivityKey,
@@ -425,7 +429,7 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        appDispatch(
+        await appDispatch(
           pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner(
             payload
           )
@@ -497,14 +501,14 @@ export const Form = ({
   );
 
   const onSubmitPrePqa = useCallback(
-    ({ payload }: SubmitProps) => {
+    async ({ payload }: SubmitProps) => {
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 'pre-pqa',
         })
       );
-      appDispatch(pqaThunkActions.addVisitFormData(payload));
+      await appDispatch(pqaThunkActions.addVisitFormData(payload));
       displayChildrenDialog(
         activityName === visitTypes.prePqa.first.name
           ? 'First site visit'
@@ -558,22 +562,13 @@ export const Form = ({
 
   const onSubmitReAccreditation = useCallback(
     async ({ payload }: SubmitProps) => {
-      const content: ReAccreditationVisitModelInput = {
-        practitionerId,
-        // TODO: add schedule feature
-        plannedVisitDate: new Date(),
-        attended: true,
-        linkedVisitId: null,
-        reAccreditationData: payload,
-      };
-
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 're-accreditation',
         })
       );
-      await appDispatch(pqaThunkActions.addReAccreditationVisitData(content));
+      await appDispatch(pqaThunkActions.addVisitFormData(payload));
 
       if (isToRemoveSmartStarter) return;
 

@@ -371,10 +371,9 @@ namespace EcdLink.Api.CoreApi.Services
                     int visit1_count = _visitDataRepo.GetAll().Where(x => x.Visit.Mother.HealthCareWorker.UserId == userId &&
                                                                 x.Visit.Attended == false &&
                                                                 x.Visit.VisitType.Name == Constants.GGSettings.visit1 &&
-                                                                x.VisitSection == Constants.GGSettings.mother_growth &&
                                                                 x.InsertedDate.Year == today.Year &&
                                                                 x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
-                    if (visit1_count > 0)
+                    if (visit1_count == 0)
                     {
                         int activity3_records = GetIndividualUserPoints(activity3.Id, userId, today.Month, today.Year).Count;
                         if (activity3_records == 0)
@@ -439,9 +438,9 @@ namespace EcdLink.Api.CoreApi.Services
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
                     int abuseVisits = _visitDataRepo.GetAll().Where(x => x.Visit.Mother.HealthCareWorker.UserId == userId &&
-                                                                x.VisitSection == Constants.GGSettings.alcohol_use &&
-                                                                x.InsertedDate.Year == today.Year &&
-                                                                x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
+                                                                x.Visit.DueDate.HasValue && 
+                                                                x.Visit.DueDate.Value.Year == today.Year &&
+                                                                x.Visit.DueDate.Value.Month == today.Month).Select(x => x.Id).Distinct().Count();
                     if (abuseVisits == 0)
                     {
                         int activity5_records = GetIndividualUserPoints(activity5.Id, userId, today.Month, today.Year).Count;

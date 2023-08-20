@@ -52,6 +52,10 @@ export const ReAccreditationVisits = ({
     })
   );
 
+  const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
+    (item) => item?.attended
+  );
+
   // All years
   const filteredReAccreditationRatings =
     timeline?.reAccreditationRatings?.filter(
@@ -105,7 +109,7 @@ export const ReAccreditationVisits = ({
     addDays(
       new Date(lastAttendedReAccreditationVisit?.insertedDate),
       currentFollowUpDeadline
-    ) <= new Date();
+    ) >= new Date();
   const isFirstVisit = reAccreditationVisitsFromCurrentYear?.length === 1;
   const isReAccreditationFollowUp =
     !isFirstVisit &&
@@ -211,35 +215,41 @@ export const ReAccreditationVisits = ({
             {((item?.id === currentVisit?.id && !item?.attended) ||
               (item?.visitType?.name ===
                 visitTypes.reaccreditation.followUp.name &&
-                item.attended === false &&
-                isReAccreditationFollowUpDeadline) ||
-              (item?.id === newReAccreditationVisitId && !item.attended)) && (
-              <Button
-                style={{
-                  position: 'absolute',
-                  right: -36,
-                }}
-                className="z-50 w-32"
-                textColor="primary"
-                type="outlined"
-                color="primary"
-                text="Schedule"
-                iconPosition="start"
-                icon="CalendarIcon"
-                onClick={() =>
-                  onScheduleOrStart({
-                    visit: item as Visit,
-                    visitEventId: currentVisit?.eventId,
-                    eventType: 'ReAccreditation',
-                  })
-                }
-              />
-            )}
+                item.attended === false) ||
+              (item?.id === newReAccreditationVisitId && !item.attended)) &&
+              isUserEnableToStartPqaVisit && (
+                <Button
+                  style={{
+                    position: 'absolute',
+                    right: -36,
+                  }}
+                  className="z-50 w-32"
+                  textColor="primary"
+                  type="outlined"
+                  color="primary"
+                  text="Schedule"
+                  iconPosition="start"
+                  icon="CalendarIcon"
+                  onClick={() =>
+                    onScheduleOrStart({
+                      visit: item as Visit,
+                      visitEventId: currentVisit?.eventId,
+                      eventType: 'ReAccreditation',
+                    })
+                  }
+                />
+              )}
           </div>
           <Typography
             type="body"
             // TODO: add schedule integration
-            color={getStepType(String('Success'))?.color || 'textMid'}
+            color={
+              visitTypes.reaccreditation.followUp.name &&
+              !isReAccreditationFollowUpDeadline &&
+              !item?.attended
+                ? 'errorMain'
+                : getStepType('Success')?.color || 'textMid'
+            }
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(

@@ -14,6 +14,8 @@
 
         public const string SUBSIDIES_DONATIONS_CONTRIBUTIONS = "Subsidies, donations, contributions";
 
+        public const string STARTUPSUPPORT = "Startup Support";
+
         public const string OTHER = "Other";
 
         public const string PRESCHOOL_FEE = "Preschool Fee";
