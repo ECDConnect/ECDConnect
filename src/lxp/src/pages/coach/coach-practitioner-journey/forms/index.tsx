@@ -784,7 +784,11 @@ export const Form = ({
   };
 
   const getSelfAssessment = useCallback(async () => {
-    const selfAssessmentVisit = timeline?.selfAssessmentVisits?.[0];
+    const attendedSelfAssessments = timeline?.selfAssessmentVisits?.filter(
+      (item) => item?.attended
+    );
+    const selfAssessmentVisit =
+      attendedSelfAssessments?.[attendedSelfAssessments.length - 1];
 
     if (!selfAssessmentVisit) return;
 

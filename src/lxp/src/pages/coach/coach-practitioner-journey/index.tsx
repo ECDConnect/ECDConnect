@@ -463,10 +463,12 @@ export const CoachPractitionerJourney = () => {
 
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
-    ?.map(
-      (visit): MenuListDataItem<{ visitId?: string }> => ({
+    ?.map((visit): MenuListDataItem<{ visitId?: string }> => {
+      const isLate = new Date(visit?.plannedVisitDate || '') < new Date();
+
+      return {
         showIcon: true,
-        menuIcon: 'ClipboardListIcon',
+        menuIcon: isLate ? 'ExclamationIcon' : 'ClipboardListIcon',
         iconColor: 'white',
         titleStyle: 'text-textDark',
         title: visit?.visitType?.description || 'Visit',
@@ -477,12 +479,12 @@ export const CoachPractitionerJourney = () => {
             )
           : '',
         subTitleStyle: 'text-textDark',
-        iconBackgroundColor: 'primary',
+        iconBackgroundColor: isLate ? 'alertMain' : 'primary',
         backgroundColor: 'uiBg',
         extraData: { visitId: visit?.id },
         onActionClick: () => onStart(String(visit?.visitType?.name)),
-      })
-    )
+      };
+    })
     .shift();
 
   const onSupportVisit = () => {

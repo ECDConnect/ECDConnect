@@ -8,6 +8,7 @@ import { getPqaStepData } from './steps/pqa/step';
 import { PQAVisits } from './steps/pqa/step-accordion-content';
 import { ReAccreditationVisits } from './steps/re-accreditation/step-accordion-content';
 import { getReAccreditationStepData } from './steps/re-accreditation/step';
+import { visitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 
 export interface ViewEvent {
   visit: Visit | Maybe<Visit>;
@@ -163,7 +164,11 @@ export const timelineSteps = ({
         <div className="flex items-center">
           <Typography
             type="body"
-            color={stepType?.color}
+            color={
+              stepType?.color || ratingData?.color !== 'successMain'
+                ? ratingData?.color
+                : 'textMid'
+            }
             className="mr-4"
             text={new Date(currentVisit?.plannedVisitDate).toLocaleDateString(
               'en-ZA',
@@ -177,10 +182,28 @@ export const timelineSteps = ({
       ),
       inProgressStepIcon: stepType?.color && 'CheckIcon',
       type: stepType?.type,
+      color: ratingData?.color,
       extraData: {
         date: new Date(currentVisit?.plannedVisitDate),
       },
-      showAccordion: true,
+      showActionButton: attendedPqaVisits.length === 1,
+      actionButtonText: 'View',
+      actionButtonTextColor: 'secondary',
+      actionButtonIsLoading: isLoading,
+      actionButtonOnClick: () => {
+        const item = attendedPqaVisits[0];
+
+        onView({
+          visit: item,
+          visitType: item?.visitType?.name?.includes(
+            visitTypes.pqa.followUp.name
+          )
+            ? 'follow-up-visit'
+            : 'pqa',
+        });
+      },
+      actionButtonColor: 'secondaryAccent2',
+      showAccordion: attendedPqaVisits.length > 1,
       accordionContent: (
         <PQAVisits
           isLoading={isLoading}
@@ -204,7 +227,11 @@ export const timelineSteps = ({
         <div className="flex items-center">
           <Typography
             type="body"
-            color={stepType?.color}
+            color={
+              stepType?.color || ratingData?.color !== 'successMain'
+                ? ratingData?.color
+                : 'textMid'
+            }
             className="mr-4"
             text={new Date(currentVisit?.plannedVisitDate).toLocaleDateString(
               'en-ZA',
@@ -218,11 +245,28 @@ export const timelineSteps = ({
       ),
       subTitleColor: stepType?.color,
       type: stepType?.type,
+      color: ratingData?.color,
       inProgressStepIcon: stepType?.color && 'CheckIcon',
       extraData: {
         date: new Date(currentVisit?.plannedVisitDate),
       },
-      showAccordion: true,
+      showActionButton: attendedReAccreditationVisits.length === 1,
+      actionButtonText: 'View',
+      actionButtonTextColor: 'secondary',
+      actionButtonIsLoading: isLoading,
+      actionButtonOnClick: () => {
+        const item = attendedReAccreditationVisits[0];
+        onView({
+          visit: item,
+          visitType: item?.visitType?.name?.includes(
+            visitTypes.reaccreditation.followUp.name
+          )
+            ? 're-accreditation-follow-up-visit'
+            : 're-accreditation',
+        });
+      },
+      actionButtonColor: 'secondaryAccent2',
+      showAccordion: attendedReAccreditationVisits.length > 1,
       accordionContent: (
         <ReAccreditationVisits
           isLoading={isLoading}
@@ -230,23 +274,6 @@ export const timelineSteps = ({
           onView={onView}
         />
       ),
-    });
-  }
-
-  if (timeline.selfAssessmentVisits?.length) {
-    const visit = timeline.selfAssessmentVisits?.[0];
-
-    steps.push({
-      title: visit?.visitType?.description,
-      subTitle: new Date(
-        visit?.insertedDate ? visit.insertedDate : visit?.plannedVisitDate
-      ).toLocaleDateString('en-ZA', dateOptions),
-      type: visit?.insertedDate ? 'completed' : 'todo',
-      extraData: {
-        date: new Date(
-          visit?.insertedDate ? visit.insertedDate : visit?.plannedVisitDate
-        ),
-      },
     });
   }
 
