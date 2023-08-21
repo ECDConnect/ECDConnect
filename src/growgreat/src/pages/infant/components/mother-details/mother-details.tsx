@@ -257,6 +257,11 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               setMotherDetailsFormValue('id', '');
               setMotherDetailsFormValue('name', '');
               setMotherDetailsFormValue('surname', '');
+              if (value === false) {
+                multipleChildrenArray?.map((child, index) => {
+                  return (multipleChildrenArray[index].caregiver = undefined);
+                });
+              }
             }}
             color="secondary"
             type={ButtonGroupTypes.Button}

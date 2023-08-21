@@ -1,9 +1,11 @@
 ﻿using DinkToPdf;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Tenancy.Context;
@@ -20,9 +22,10 @@ namespace EcdLink.Api.CoreApi.Managers
 
     public class DocumentManager
     {
-
-        public DocumentManager()
+        private IntegrationLogManager _logManager;
+        public DocumentManager(IntegrationLogManager logManager)
         {
+            _logManager = logManager;
         }
 
         //
@@ -120,10 +123,10 @@ namespace EcdLink.Api.CoreApi.Managers
         {
             if (input != null && input.Reference != "")
             {
-                var documentRepo = repoFactory.CreateRepository<Document>(userContext: input.CreatedUserId);
-                var documentTypeRepo = repoFactory.CreateRepository<DocumentType>(userContext: input.CreatedUserId);
-                var workflowStatusTypeRepo = repoFactory.CreateRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
-                var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: input.CreatedUserId);
+                var documentRepo = repoFactory.CreateGenericRepository<Document>(userContext: input.CreatedUserId);
+                var documentTypeRepo = repoFactory.CreateGenericRepository<DocumentType>(userContext: input.CreatedUserId);
+                var workflowStatusTypeRepo = repoFactory.CreateGenericRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
+                var workflowStatusRepo = repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: input.CreatedUserId);
 
                 // Workflow info
                 WorkflowStatusType wsType = workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
@@ -136,36 +139,43 @@ namespace EcdLink.Api.CoreApi.Managers
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
 
                 // Upload the document
-                var document = await fileService.UploadBase64StringFile(input.Reference, input.FileName, FileTypeEnum.IncomeStatementPDF);
-
-                if (doc == null)
+                var document = await fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.IncomeStatementPDF);
+                try
                 {
-                    // Save new document to the database
-                    doc = new Document
+                    if (doc == null)
                     {
-                        CreatedUserId = input.CreatedUserId,
-                        Name = input.FileName,
-                        UpdatedBy = input.CreatedUserId,
-                        InsertedDate = DateTime.Now,
-                        Reference = document.Url.TrimEnd('/'),
-                        UserId = input.UserId,
-                        DocumentTypeId = docType.Id,
-                        WorkflowStatusId = ws.Id,
-                        TenantId = TenantExecutionContext.Tenant.Id
-                    };
-                    return documentRepo.Insert(doc);
-                }
-                else
-                {
-                    // remove previous file on file server
-                    await fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
+                        // Save new document to the database
+                        doc = new Document
+                        {
+                            CreatedUserId = input.CreatedUserId,
+                            Name = input.FileName,
+                            UpdatedBy = input.CreatedUserId,
+                            InsertedDate = DateTime.Now,
+                            Reference = document.Url.TrimEnd('/'),
+                            UserId = input.UserId,
+                            DocumentTypeId = docType.Id,
+                            WorkflowStatusId = ws.Id,
+                            TenantId = TenantExecutionContext.Tenant.Id
+                        };
+                        return documentRepo.Insert(doc);
+                    }
+                    else
+                    {
+                        // remove previous file on file server
+                        await fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
 
-                    doc.Name = input.FileName;
-                    doc.UpdatedBy = input.CreatedUserId;
-                    doc.Reference = document.Url.TrimEnd('/');
-                    doc.UserId = input.UserId;
-                    doc.UpdatedDate = DateTime.Now;
-                    return documentRepo.Update(doc);
+                        doc.Name = input.FileName;
+                        doc.UpdatedBy = input.CreatedUserId;
+                        doc.Reference = document.Url.TrimEnd('/');
+                        doc.UserId = input.UserId;
+                        doc.UpdatedDate = DateTime.Now;
+                        return documentRepo.Update(doc);
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog("SaveIncomeStatementPDF Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SaveIncomeStatementPDF");
+                    return null;
                 }
             }
 
@@ -192,36 +202,44 @@ namespace EcdLink.Api.CoreApi.Managers
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
 
                 // Upload the document
-                var document = await fileService.UploadBase64StringFile(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
-
-                if (doc == null)
+                var document = await fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
+                try
                 {
-                    // Save new document to the database
-                    doc = new Document
+                    if (doc == null)
                     {
-                        CreatedUserId = input.CreatedUserId,
-                        Name = input.FileName,
-                        UpdatedBy = input.CreatedUserId,
-                        InsertedDate = DateTime.Now,
-                        Reference = document.Url.TrimEnd('/'),
-                        UserId = input.UserId,
-                        DocumentTypeId = docType.Id,
-                        WorkflowStatusId = ws.Id,
-                        TenantId = TenantExecutionContext.Tenant.Id
-                    };
-                    return documentRepo.Insert(doc);
-                }
-                else
-                {
-                    // remove previous file on file server
-                    await fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
+                        // Save new document to the database
+                        doc = new Document
+                        {
+                            CreatedUserId = input.CreatedUserId,
+                            Name = input.FileName,
+                            UpdatedBy = input.CreatedUserId,
+                            InsertedDate = DateTime.Now,
+                            Reference = document.Url.TrimEnd('/'),
+                            UserId = input.UserId,
+                            DocumentTypeId = docType.Id,
+                            WorkflowStatusId = ws.Id,
+                            TenantId = TenantExecutionContext.Tenant.Id
+                        };
+                        return documentRepo.Insert(doc);
+                    }
+                    else
+                    {
+                        // remove previous file on file server
+                        await fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
 
-                    doc.Name = input.FileName;
-                    doc.UpdatedBy = input.CreatedUserId;
-                    doc.Reference = document.Url.TrimEnd('/');
-                    doc.UserId = input.UserId;
-                    doc.UpdatedDate = DateTime.Now;
-                    return documentRepo.Update(doc);
+                        doc.Name = input.FileName;
+                        doc.UpdatedBy = input.CreatedUserId;
+                        doc.Reference = document.Url.TrimEnd('/');
+                        doc.UserId = input.UserId;
+                        doc.UpdatedDate = DateTime.Now;
+                        return documentRepo.Update(doc);
+                    }
+                }
+                catch (Exception e)
+                {
+
+                    await _logManager.IntegrationLog("SaveAttendancePDF Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SaveAttendancePDF");
+                    return null;
                 }
             }
             return null;

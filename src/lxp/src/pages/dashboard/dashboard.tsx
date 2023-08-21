@@ -12,7 +12,7 @@ import {
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -102,6 +102,7 @@ export const Dashboard: React.FC = () => {
   const hasConsent = practitioner?.shareInfo;
   const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
   const isTrainee = practitioner?.isTrainee;
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -272,12 +273,6 @@ export const Dashboard: React.FC = () => {
       }
     }
   }, [practitioner?.userId]);
-
-  useEffect(() => {
-    if (isFromTraineeFlow) {
-      window.location.reload();
-    }
-  }, []);
 
   const traineeNavigation = [
     {

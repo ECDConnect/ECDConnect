@@ -251,8 +251,7 @@ export class ChildProgressReportNotificationValidator
   private getNotificationsPrincipalAboutPractioners = (
     reportingPeriod: ReportingPeriodType
   ): Message[] => {
-    const { practitioner: practitionerState, user: userState } =
-      this.store.getState();
+    const { practitioner: practitionerState } = this.store.getState();
 
     if (
       !practitionerState ||

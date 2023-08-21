@@ -28,6 +28,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string UserId { get; set; }
         public bool AutoSubmitted { get; set; }
         public DateTime? AnnualSubmittedDate { get; set; }
+        public string RelatedDocumentId { get; set; }
 
     }
 

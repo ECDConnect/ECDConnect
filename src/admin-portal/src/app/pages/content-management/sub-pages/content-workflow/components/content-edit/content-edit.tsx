@@ -195,7 +195,7 @@ export default function ContentEdit({
                 type="info"
               />
             )}
-            )
+
             <DynamicForm
               template={template}
               handleform={handleform}

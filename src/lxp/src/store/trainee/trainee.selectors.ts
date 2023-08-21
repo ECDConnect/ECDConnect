@@ -69,3 +69,24 @@ export const getTraineeSmartSpaceAddress = (
 
   return programmeDetailsSections?.questionAnswer;
 };
+
+export const getTraineePropertyOwn = (
+  state: RootState
+): string | null | undefined | VisitData[] => {
+  const visitData = state.trainee.traineeVisitData;
+  const programmeDetailsSections = visitData
+    ?.filter((item) => item?.visitSection === 'Programme details')
+    .filter(
+      (item) =>
+        item?.question ===
+          'Do you own the property where you will run your SmartStart programme?' ||
+        item?.question === 'Do you have the Title Deeds for the property?' ||
+        item?.question === 'Do you live at the property?'
+    );
+
+  if (programmeDetailsSections?.[1].questionAnswer === 'true') {
+    return 'Nothando owns the property and has the title deeds.';
+  }
+
+  return 'Nothando does not own the property and lives at the property.';
+};

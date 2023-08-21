@@ -30,6 +30,11 @@ export function ContentManagement() {
     fetchPolicy: 'cache-and-network',
   });
   const { data: dataTypes, refetch } = useQuery(contentTypes, {
+    variables: {
+      search: '',
+      searchInContent: null,
+      isVisiblePortal: true,
+    },
     fetchPolicy: 'cache-and-network',
   });
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
@@ -47,14 +52,11 @@ export function ContentManagement() {
         (x) => x.id === selectedType.id
       );
       setSelectedType(currentSelectedContent);
-      console.log(currentSelectedContent);
-      setSelectedType(currentSelectedContent);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
   const getNavigationItems = () => {
-    console.log(data);
     if (
       data &&
       data.tenantContext &&
@@ -164,7 +166,6 @@ export function ContentManagement() {
 
   const searchContent = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
-    console.log(e.target.value);
   }, 150);
 
   return (

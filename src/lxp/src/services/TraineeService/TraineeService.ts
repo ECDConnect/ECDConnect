@@ -4,6 +4,7 @@ import {
   CmsVisitDataInputModelInput,
   SsChecklistVisitModelInput,
   SupportVisitModelInput,
+  TraineeAddressModelInput,
   TraineeOnBoardTimeline,
   UserConsentInput,
   Visit,
@@ -425,6 +426,37 @@ class TraineeService {
     }
 
     return response.data.data.addCoachFranchiseeAgreementForTrainee;
+  }
+
+  async UpdateTraineeAddress(
+    userId: string,
+    input: TraineeAddressModelInput
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateTraineeAddress: any };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation UpdateTraineeAddress($userId: String, $input: TraineeAddressModelInput) {
+        updateTraineeAddress(userId: $userId, input: $input) {
+            id
+        }
+    }
+        `,
+      variables: {
+        userId,
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'change trainee smart space address failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateTraineeAddress;
   }
 }
 

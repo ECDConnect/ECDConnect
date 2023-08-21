@@ -207,10 +207,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             input.FollowUpData.PractitionerId = practitioner.Id.ToString();
             visitDataManager.AddPractitionerVisitData(input.FollowUpData, false);
 
-
             // PQA Rating
             PQARating pqaRating = visitDataManager.GetPractitionerReAccreditationRating(visit);
-            visitManager.AddNextPQAOrFollowUpVisit(pqaRating.OverallRatingColor, practitioner.Id, visit);
+            visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, practitioner.Id, visit);
 
             return visit;
         }
@@ -258,53 +257,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // PQA Rating
             PQARating pqaRating = visitDataManager.GetPractitionerReAccreditationRating(visit);
-
-            // Add follow-up when rating is not green
-            if (pqaRating.OverallRatingColor != MetricsColorEnum.Success.ToString())
-            {
-                VisitType followUpVisitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
-                DateTime deadlineDate = visit.InsertedDate.AddDays(14);
-
-                // check to see if visit exists
-                Visit accVisit = visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.PlannedVisitDate.Date == deadlineDate.Date && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
-                if (visit == null)
-                {
-                    var accVisitModel = new Visit();
-                    accVisitModel.VisitType = followUpVisitType;
-                    accVisitModel.MotherId = null;
-                    accVisitModel.InfantId = null;
-                    accVisitModel.LinkedVisitId = visit.Id;
-                    accVisitModel.PractitionerId = practitioner.Id;
-                    accVisitModel.Attended = false;
-                    accVisitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate.Date, CultureInfo.InvariantCulture);
-                    accVisitModel.DueDate = Convert.ToDateTime(deadlineDate.Date, CultureInfo.InvariantCulture);
-                    visitRepo.Insert(accVisitModel);
-                }
-            } else
-            {
-                DateTime deadlineDate = visit.PlannedVisitDate.AddYears(1);
-
-                // check to see if there is a accreditation record for the pqa visit for next year
-                Visit accVisit = visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id &&
-                                                            x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 &&
-                                                            x.VisitType.Type == Constants.SSSettings.client_practitioner &&
-                                                            x.LinkedVisitId == visit.Id &&
-                                                            x.PlannedVisitDate.Year == deadlineDate.Year).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-                if (accVisit != null)
-                {
-
-                    var accVisitModel = new Visit();
-                    accVisitModel.VisitType = visitType;
-                    accVisitModel.MotherId = null;
-                    accVisitModel.InfantId = null;
-                    accVisitModel.LinkedVisitId = visit.Id;
-                    accVisitModel.PractitionerId = practitioner.Id;
-                    accVisitModel.Attended = false;
-                    accVisitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                    accVisitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                    visitRepo.Insert(accVisitModel);
-                }
-            }
+            visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, practitioner.Id, visit);
 
             return visit;
         }
