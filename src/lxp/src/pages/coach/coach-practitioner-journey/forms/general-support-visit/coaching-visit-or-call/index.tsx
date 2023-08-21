@@ -153,17 +153,6 @@ export const CoachingAndVisitOrCallStep = ({
       ? followUpDeadline.lastVisit
       : followUpDeadline.default;
 
-  const isPQAFollowUpDeadline =
-    addDays(
-      new Date(lastAttendedPqaVisit?.insertedDate),
-      currentPqaFollowUpDeadline
-    ) <= new Date();
-  const isReAccreditationFollowUpDeadline =
-    addDays(
-      new Date(lastAttendedPqaVisit?.insertedDate),
-      currentReAccreditationFollowUpDeadline
-    ) <= new Date();
-
   const isToShowPqaFollowUpQuestion =
     !pqaRating3?.overallRating &&
     activityName.includes(visitTypes.pqa.followUp.name);
@@ -273,26 +262,14 @@ export const CoachingAndVisitOrCallStep = ({
           : updatedQuestions.slice(0, 5);
 
       const isAllCompleted = questionList.every((item) => !!item.answer);
-      const isEnabledButton =
-        isAllCompleted &&
-        ((questionList.length === 5 &&
-          !isPqaFollowUp &&
-          !isReAccreditationFollowUp) ||
-          (isPqaFollowUp && isPQAFollowUpDeadline) ||
-          (isReAccreditationFollowUp && isReAccreditationFollowUpDeadline));
 
-      if (isEnabledButton) {
+      if (isAllCompleted) {
         return setEnableButton?.(true);
       }
-
       setEnableButton?.(false);
     },
     [
       isToShowReAccreditationFollowUpQuestion,
-      isPQAFollowUpDeadline,
-      isPqaFollowUp,
-      isReAccreditationFollowUp,
-      isReAccreditationFollowUpDeadline,
       isToShowPqaFollowUpQuestion,
       questions,
       setEnableButton,

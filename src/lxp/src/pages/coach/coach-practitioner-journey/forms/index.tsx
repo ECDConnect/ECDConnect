@@ -33,7 +33,6 @@ import {
   InputMaybe,
   Maybe,
   PqaRating,
-  ReAccreditationVisitModelInput,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -563,22 +562,13 @@ export const Form = ({
 
   const onSubmitReAccreditation = useCallback(
     async ({ payload }: SubmitProps) => {
-      const content: ReAccreditationVisitModelInput = {
-        practitionerId,
-        // TODO: add schedule feature
-        plannedVisitDate: new Date(),
-        attended: true,
-        linkedVisitId: null,
-        reAccreditationData: payload,
-      };
-
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 're-accreditation',
         })
       );
-      await appDispatch(pqaThunkActions.addReAccreditationVisitData(content));
+      await appDispatch(pqaThunkActions.addVisitFormData(payload));
 
       if (isToRemoveSmartStarter) return;
 

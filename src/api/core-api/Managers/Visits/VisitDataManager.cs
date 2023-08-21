@@ -15,7 +15,6 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
@@ -164,8 +163,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
-        public Boolean AddPractitionerVisitData(CMSVisitDataInputModel input, bool markVisitAsCompleted)
+        public Visit AddPractitionerVisitData(CMSVisitDataInputModel input, bool markVisitAsCompleted)
         {
+            Visit visit = _visitRepo.GetById(new Guid(input.VisitId));
 
             if (input.VisitData.Sections == null)
             {
@@ -196,81 +196,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (markVisitAsCompleted)
             {
                 // update the visit record to show attended/completed 
-                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
-                entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId;
-                entityToUpdate.Attended = true;
-                entityToUpdate.ActualVisitDate = DateTime.Now;
-                _visitRepo.Update(entityToUpdate);
+                visit.UpdatedDate = DateTime.Now;
+                visit.UpdatedBy = _applicationUserId;
+                visit.Attended = true;
+                visit.ActualVisitDate = DateTime.Now;
+                return _visitRepo.Update(visit);
             }
 
             // then handle status data
-            if (input.VisitData.VisitName == Constants.SSSettings.pqa_visit || input.VisitData.VisitName == Constants.SSSettings.pqa_re_accreditation)
+            if (visit.VisitType.Type == Constants.SSSettings.visitType_pqa_visit_1 || visit.VisitType.Type == Constants.SSSettings.visitType_re_accreditation_1)
             {
                 _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
             }
 
-            if (input.VisitData.VisitName == Constants.SSSettings.visitType_pqa_visit_1)
-            {
-                // PQA Rating
-                Practitioner practitioner = _practitionerRepo.GetByUserId(input.PractitionerId);
-                Visit pqaVisit = _visitRepo.GetById(new Guid(input.VisitId));
-                PQARating pqaRating = GetPractitionerPQARating(pqaVisit);
-
-                // if green, then we add our first re-accreditation record
-                if (pqaRating.OverallRatingColor == MetricsColorEnum.Success.ToString())
-                {
-                    DateTime deadlineDate = pqaVisit.PlannedVisitDate.AddYears(1);
-
-                    // check to see if there is a accreditation record for the pqa visit for next year
-                    Visit accVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id &&
-                                                                x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 &&
-                                                                x.VisitType.Type == Constants.SSSettings.client_practitioner &&
-                                                                x.LinkedVisitId == pqaVisit.Id &&
-                                                                x.PlannedVisitDate.Year == deadlineDate.Year).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-                    if (accVisit != null)
-                    {
-                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
-
-                        var visitModel = new Visit();
-                        visitModel.VisitType = visitType;
-                        visitModel.MotherId = null;
-                        visitModel.InfantId = null;
-                        visitModel.LinkedVisitId = pqaVisit.Id;
-                        visitModel.PractitionerId = practitioner.Id;
-                        visitModel.Attended = false;
-                        visitModel.Risk = Constants.GGSettings.normal_risk;
-                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                        _visitRepo.Insert(visitModel);
-                    }
-
-                } else
-                {
-                    // Add first follow-up
-                    DateTime deadlineDate = pqaVisit.ActualVisitDate.Value.AddDays(14);
-                    VisitType followUpVisitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
-
-                    // check to see if visit exists
-                    Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.PlannedVisitDate.Date == deadlineDate.Date && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
-                    if (visit == null)
-                    {
-                        var visitModel = new Visit();
-                        visitModel.VisitType = followUpVisitType;
-                        visitModel.MotherId = null;
-                        visitModel.InfantId = null;
-                        visitModel.LinkedVisitId = pqaVisit.Id;
-                        visitModel.PractitionerId = practitioner.Id;
-                        visitModel.Attended = false;
-                        visitModel.Risk = Constants.GGSettings.normal_risk;
-                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate.Date, CultureInfo.InvariantCulture);
-                        visitModel.DueDate = Convert.ToDateTime(deadlineDate.Date, CultureInfo.InvariantCulture);
-                        _visitRepo.Insert(visitModel);
-                    }
-
-                }
-            }
-            return true;
+            return visit;
         }
         public Boolean AddTraineeVisitData(CMSVisitDataInputModel input)
         {
@@ -819,12 +758,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     rating.OverallRatingColor = MetricsColorEnum.Warning.ToString();
                     rating.OverallRatingStars = Constants.SSSettings.two_stars;
                 }
-                if (totalScores >= 13 && totalScores <= 26 ||
-                    (
-                    (step16_q1 != null && step16_q3.QuestionAnswer == Constants.SSSettings.answer_no) &&
-                    (step16_q4 != null && step16_q4.QuestionAnswer == Constants.SSSettings.answer_yes) &&
+                if (totalScores >= 13 && totalScores <= 26)
+                {
+                    rating.OverallRatingColor = MetricsColorEnum.Warning.ToString();
+                    rating.OverallRatingStars = Constants.SSSettings.one_star;
+                }
+                if (
+                    (step16_q3 != null && step16_q3.QuestionAnswer == Constants.SSSettings.answer_no) ||
+                    (step16_q4 != null && step16_q4.QuestionAnswer == Constants.SSSettings.answer_yes) ||
                     (step16_q5 != null && step16_q5.QuestionAnswer == Constants.SSSettings.answer_no)
-                    ))
+                    )
                 {
                     rating.OverallRatingColor = MetricsColorEnum.Warning.ToString();
                     rating.OverallRatingStars = Constants.SSSettings.one_star;
@@ -875,8 +818,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private int getCheckBoxScore(List<VisitData> records)
         {
             int score = 0;
-            Boolean parsedValue;
-
 
             foreach (VisitData record in records)
             {

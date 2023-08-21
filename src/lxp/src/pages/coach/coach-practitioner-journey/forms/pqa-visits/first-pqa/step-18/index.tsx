@@ -13,8 +13,8 @@ import { childrenSelectors } from '@/store/children';
 import { classroomsSelectors } from '@/store/classroom';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import {
+  ChildDto,
   ClassroomGroupDto,
-  UserDto,
   getFormattedDateInYearsMonthsAndDays,
   numberToDayOfWeek,
   parseBool,
@@ -37,7 +37,7 @@ export const Step18 = ({
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
-  const [registeredChildren, setRegisteredChildren] = useState<UserDto[]>();
+  const [registeredChildren, setRegisteredChildren] = useState<ChildDto[]>();
   const [questions, setAnswers] = useState([
     {
       question: 'How many children are present today?',
@@ -187,24 +187,25 @@ export const Step18 = ({
       }
     }
 
-    // TODO: check if this is necessary
-    // const sortedChildren = filteredChildren
-    //   .filter((child) => {
-    //     if (child?.dateOfBirth === undefined) {
-    //       return false;
-    //     }
+    // sort by date of birth to get youngest and oldest child
+    const sortedChildren = filteredChildren
+      .filter((child) => {
+        if (child?.user?.dateOfBirth === undefined) {
+          return false;
+        }
 
-    //     const date = new Date(child?.dateOfBirth);
-    //     const minDate = new Date('1900-01-01');
-    //     const maxDate = new Date();
-    //     return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
-    //   })
-    //   .sort(
-    //     (a, b) =>
-    //       new Date(String(a?.dateOfBirth)).getTime() -
-    //       new Date(String(b?.dateOfBirth)).getTime()
-    //   );
-    setRegisteredChildren(filteredChildren);
+        const date = new Date(child?.user?.dateOfBirth);
+        const minDate = new Date('1900-01-01');
+        const maxDate = new Date();
+        return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
+      })
+      .sort(
+        (a, b) =>
+          new Date(String(a?.user?.dateOfBirth)).getTime() -
+          new Date(String(b?.user?.dateOfBirth)).getTime()
+      );
+
+    setRegisteredChildren(sortedChildren);
   }, [
     allLearners,
     children,
@@ -287,16 +288,17 @@ export const Step18 = ({
           color="textMid"
           type="body"
           text={`Youngest child’s age: ${getFormattedDateInYearsMonthsAndDays(
-            String(
-              registeredChildren?.[registeredChildren?.length - 1]?.dateOfBirth
-            )
+            String(registeredChildren?.[0]?.user?.dateOfBirth)
           )}`}
         />
         <Typography
           color="textMid"
           type="body"
           text={`Oldest child’s age: ${getFormattedDateInYearsMonthsAndDays(
-            String(registeredChildren?.[0]?.dateOfBirth)
+            String(
+              registeredChildren?.[registeredChildren?.length - 1]?.user
+                ?.dateOfBirth
+            )
           )}`}
         />
       </div>

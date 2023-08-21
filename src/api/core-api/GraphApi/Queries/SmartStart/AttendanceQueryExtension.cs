@@ -67,7 +67,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public IEnumerable<Attendance> GetWeeklyAttendance(
     [Service] AttendanceTrackingRepository trackingRepository,
-    [Service] IHttpContextAccessor httpContextAccessor,
     string userId,
     int year,
     int? monthOfYear,

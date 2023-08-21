@@ -11,10 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Security.Extensions;
 using ECDLink.Core.Extensions;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
-using System.Reflection.Metadata;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Queries;
 using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
 using HotChocolate;
@@ -23,7 +19,6 @@ using ECDLink.DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Hierarchy;
 
 namespace ECDLink.Core.Services
@@ -486,6 +481,59 @@ namespace ECDLink.Core.Services
             return row;            
         }
 
+        public List<StatementReport> GetStatementLinesToReport(string userId, int year, int month)
+        {
+            var submittedStatements = GetAllStatementsIncomeStatement(userId, year, month);
+            List<StatementReport> statements = new List<StatementReport>();
+            //get income
+            List<StatementReport> incomes = GetAllStatementIncome(userId, submittedStatements.FirstOrDefault().Id.ToString());
+
+            //get expenses
+            List<StatementReport> expenses = GetAllStatementExpenses(userId, submittedStatements.FirstOrDefault().Id.ToString());
+
+            statements.AddRange(incomes);
+            statements.AddRange(expenses);
+
+            return statements;
+        }
+
+        public List<StatementReport> GetAllStatementExpenses(string userId, string statementId)
+        {
+            List<StatementReport> reportData = new List<StatementReport>();
+            // Only return types linked to expenses for params
+            var report = 
+            (
+                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.IncomeStatementId.Equals(statementId))
+                join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
+                select new { statementExpenseType.Description, statementsExpenses.Amount }
+            ).ToList();
+            foreach ( var statement in report )
+            {
+                reportData.Add(new StatementReport() { StatementLine = statement.Description, Value = statement.Amount, StatementType = "Expenses" });
+            }
+
+            return reportData;
+        }
+
+        public List<StatementReport> GetAllStatementIncome(string userId, string statementId)
+        {
+            List<StatementReport> reportData = new List<StatementReport>();
+            // Only return types linked to income for params
+            var report =
+            (
+                from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.IncomeStatementId.Equals(statementId))
+                join StatementsIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on StatementsIncome.IncomeTypeId equals StatementsIncomeType.Id.ToString()
+                select new { StatementsIncomeType.Description, StatementsIncome.Amount }
+            ).ToList();
+            foreach (var statement in report)
+            {
+                reportData.Add(new StatementReport() { StatementLine = statement.Description, Value = statement.Amount, StatementType = "Income" });
+            }
+
+            return reportData;
+        }
+
+
         public List<StatementsExpenseType> GetAllStatementExpenseTypes(string userId, int year, int month)
         {
             // Only return types linked to expenses for params
@@ -534,7 +582,6 @@ namespace ECDLink.Core.Services
                 select statementIncomeType
             ).Distinct().ToList();
         }
-
         public List<StatementsContributionType> GetAllStatementContributionTypes(string userId, int year, int month)
         {
             // Only return types linked to incomes for params
@@ -600,12 +647,15 @@ namespace ECDLink.Core.Services
 
         public List<IncomeExpensePDFDataModel> getSubsidiesDonationsContributions(string userId, int year, int month, string otherId, List<StatementsIncomeType> incomeTypes)
         {
+            List<string> incomeIds = incomeTypes.Select(x => x.Id.ToString()).ToList();
+
             List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
                     .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
                         && x.DateReceived.Year.Equals(year)
                         && x.DateReceived.Month.Equals(month)
                         && x.Submitted.Equals(true)
-                        && x.IncomeTypeId != otherId)
+                        && x.IncomeTypeId != otherId
+                        && incomeIds.Contains(x.IncomeTypeId))
                     .ToList();
 
             List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
@@ -808,7 +858,6 @@ namespace ECDLink.Core.Services
 
                 try
                 {
-
                     //statement update
                     submittedStatement.ExpenseTotal = allExpenses;
                     submittedStatement.IncomeTotal = allIncome;
@@ -824,7 +873,6 @@ namespace ECDLink.Core.Services
                             submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
                     }
                     statementRepo.Insert(submittedStatement);
-                    
                 }
                 catch (Exception e)
                 {
@@ -898,7 +946,6 @@ namespace ECDLink.Core.Services
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).ToList();
-
         }
     }
     #endregion

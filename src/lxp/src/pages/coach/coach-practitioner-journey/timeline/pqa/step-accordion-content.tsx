@@ -53,6 +53,10 @@ export const PQAVisits = ({
     })
   );
 
+  const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
+    (item) => item?.attended
+  );
+
   const pqaVisits =
     timeline?.pQASiteVisits?.filter(
       (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
@@ -82,7 +86,7 @@ export const PQAVisits = ({
     addDays(
       new Date(lastAttendedPqaVisit?.insertedDate),
       currentFollowUpDeadline
-    ) <= new Date();
+    ) >= new Date();
 
   const isFirstVisit = timeline?.pQASiteVisits?.length === 1;
   const isPQAFollowUp =
@@ -199,41 +203,47 @@ export const PQAVisits = ({
             {renderIcon(item)}
             <Typography
               type="body"
-              color="textDark"
+              color={'textDark'}
               className="w-6/12 font-bold"
               text={item?.visitType?.description || ''}
             />
             {((item?.id === currentVisit?.id && !item?.attended) ||
               (item?.visitType?.name === visitTypes.pqa.followUp.name &&
-                item.attended === false &&
-                isPQAFollowUpDeadline) ||
-              (item?.id === newPqaVisitId && !item.attended)) && (
-              <Button
-                style={{
-                  position: 'absolute',
-                  right: -36,
-                }}
-                className="z-50 w-32"
-                textColor="primary"
-                type="outlined"
-                color="primary"
-                text={getButtonText(item)}
-                iconPosition="start"
-                icon={getButtonIcon(item)}
-                onClick={() =>
-                  onClick({
-                    visit: item as Visit,
-                    visitEventId: currentVisit?.eventId,
-                    eventType: 'First PQA',
-                  })
-                }
-              />
-            )}
+                item.attended === false) ||
+              (item?.id === newPqaVisitId && !item.attended)) &&
+              isUserEnableToStartPqaVisit && (
+                <Button
+                  style={{
+                    position: 'absolute',
+                    right: -36,
+                  }}
+                  className="z-50 w-32"
+                  textColor="primary"
+                  type="outlined"
+                  color="primary"
+                  text={getButtonText(item)}
+                  iconPosition="start"
+                  icon={getButtonIcon(item)}
+                  onClick={() =>
+                    onClick({
+                      visit: item as Visit,
+                      visitEventId: currentVisit?.eventId,
+                      eventType: 'First PQA',
+                    })
+                  }
+                />
+              )}
           </div>
           <Typography
             type="body"
             // TODO: add schedule integration
-            color={getStepType(String('Success'))?.color || 'textMid'}
+            color={
+              item?.visitType?.name === visitTypes.pqa.followUp.name &&
+              !isPQAFollowUpDeadline &&
+              !item.attended
+                ? 'errorMain'
+                : getStepType('Success')?.color || 'textMid'
+            }
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(
