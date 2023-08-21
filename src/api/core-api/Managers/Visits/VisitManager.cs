@@ -14,8 +14,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using static NPOI.HSSF.Util.HSSFColor;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -77,7 +75,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 PractitionerId = input.PractitionerId,
                 Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
-                UpdatedBy = _applicationUserId
+                UpdatedBy = _applicationUserId,
+                LinkedVisitId = input.LinkedVisitId != null ? input.LinkedVisitId : null
             };
         }
         public Visit AddAdditionalVisit(VisitModel input)
@@ -1103,7 +1102,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             
             VisitType selfType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name.Equals(Constants.SSSettings.visitType_self_assessment)).FirstOrDefault();
-            Visit selfVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == visit.PractitionerId && x.VisitTypeId == selfType.Id && x.LinkedVisitId == visit.Id).FirstOrDefault();
+            Visit selfVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == visit.PractitionerId && x.VisitTypeId == selfType.Id && x.LinkedVisitId == visit.Id && x.PlannedVisitDate == plannedVisitDate.Date).FirstOrDefault();
             if (selfVisit == null)
             {
                 var input = new VisitModel
@@ -1113,8 +1112,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     MotherId = null,
                     InfantId = null,
                     LinkedVisitId = visit.Id,
-                    PlannedVisitDate = plannedVisitDate,
-                    DueDate = dueDate == default(DateTime) ? null : dueDate,
+                    PlannedVisitDate = plannedVisitDate.Date,
+                    DueDate = dueDate == default(DateTime) ? null : dueDate.Date,
                     PractitionerId = visit.PractitionerId
                 };
                 return AddVisit(input);

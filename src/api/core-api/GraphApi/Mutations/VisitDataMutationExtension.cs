@@ -3,11 +3,11 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using ECDLink.DataAccessLayer.Entities.Visits;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
