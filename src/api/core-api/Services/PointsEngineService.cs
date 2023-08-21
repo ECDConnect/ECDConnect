@@ -1352,7 +1352,12 @@ namespace EcdLink.Api.CoreApi.Services
             // Calculation: points awarded per the percentage of attendance registers submitted.
             // less than 50 % = 0 points
 
-            var perc = Math.Round((double)(totalExpectedAttendance / (double)(totalChildrenAttendedSessions)) * 100);
+            var perc = 0.0;
+            if (totalChildrenAttendedSessions != 0 && totalExpectedAttendance != 0)
+            {
+               perc = Math.Round((double)(totalChildrenAttendedSessions/ (double)(totalExpectedAttendance)) * 100);
+            }
+
             if (perc > 50)
             {
                 PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
@@ -1562,59 +1567,62 @@ namespace EcdLink.Api.CoreApi.Services
                                                                                 x.Submitted == true && x.IsActive == true).Select(x => x.SubmittedDate.Month).Distinct().ToList();
                 rows.Sort();
 
-                // Split sorted months into batches of 3
-                int nSize = 3;
-                var subList = new List<List<int>>();
-                for (var i = 0; i < rows.Count; i += nSize)
+                if (rows.Count > 1)
                 {
-                    var answer = rows.GetRange(i, Math.Min(nSize, rows.Count - i));
-                    subList.Add(answer);
-                }
-
-                // Find consecutive numbers
-                var total = 0;
-                foreach (var row in subList)
-                {
-                    var _answer = !row.Select((i, j) => i - j).Distinct().Skip(1).Any();
-                    if (_answer)
+                    // Split sorted months into batches of 3
+                    int nSize = 3;
+                    var subList = new List<List<int>>();
+                    for (var i = 0; i < rows.Count; i += nSize)
                     {
-                        total++;
+                        var answer = rows.GetRange(i, Math.Min(nSize, rows.Count - i));
+                        subList.Add(answer);
                     }
-                }
 
-                if (total > 0)
-                {
-                    var totalPoints = total * activity.Points;
-                    PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    if (activity_record == null)
+                    // Find consecutive numbers
+                    var total = 0;
+                    foreach (var row in subList)
                     {
-                        InsertIndividualUserPoints(
-                            new PointsUser
-                            {
-                                Id = Guid.NewGuid(),
-                                IsActive = true,
-                                InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
-                                Month = today.Month,
-                                Year = today.Year,
-                                Points = totalPoints,
-                                UserId = userId,
-                                PointsLibraryId = activity.Id,
-                                Comment = "Total: " + total
-                            }
-                        );
+                        var _answer = !row.Select((i, j) => i - j).Distinct().Skip(1).Any();
+                        if (_answer)
+                        {
+                            total++;
+                        }
                     }
-                    else
-                    {
-                        activity_record.Points = totalPoints;
-                        activity_record.UpdatedDate = DateTime.Now;
-                        activity_record.UpdatedBy = _uId;
-                        activity_record.Comment = "Total: " + total;
-                        UpdateIndividualUserPoints(activity_record);
-                    }
-                }
 
-                UpdateUserSummaryPoints(userId, today);
+                    if (total > 0)
+                    {
+                        var totalPoints = total * activity.Points;
+                        PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
+                        if (activity_record == null)
+                        {
+                            InsertIndividualUserPoints(
+                                new PointsUser
+                                {
+                                    Id = Guid.NewGuid(),
+                                    IsActive = true,
+                                    InsertedDate = DateTime.Now,
+                                    UpdatedBy = _uId,
+                                    Month = today.Month,
+                                    Year = today.Year,
+                                    Points = totalPoints,
+                                    UserId = userId,
+                                    PointsLibraryId = activity.Id,
+                                    Comment = "Total: " + total
+                                }
+                            );
+                        }
+                        else
+                        {
+                            activity_record.Points = totalPoints;
+                            activity_record.UpdatedDate = DateTime.Now;
+                            activity_record.UpdatedBy = _uId;
+                            activity_record.Comment = "Total: " + total;
+                            UpdateIndividualUserPoints(activity_record);
+                        }
+                    }
+
+                    UpdateUserSummaryPoints(userId, today);
+                }
             }
             return true;
         }
