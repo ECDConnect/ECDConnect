@@ -480,7 +480,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // consolidation meetings 
-            if (trainee?.ConsolidationMeetingDate != null)
+            /*if (trainee?.ConsolidationMeetingDate != null)
             {
                 timeline.ConsolidationMeetingStatus = Constants.SSSettings.consolidation_meeting;
                 timeline.ConsolidationMeetingColor = MetricsColorEnum.Success.ToString();
@@ -490,7 +490,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.ConsolidationMeetingStatus = Constants.SSSettings.no_consolidation_meeting;
                 timeline.ConsolidationMeetingColor = MetricsColorEnum.Warning.ToString();
                 timeline.ConsolidationMeetingDate = trainee?.ConsolidationMeetingDate;
-            }
+            }*/
 
             // First Aid
             if (practitioner?.AttendedFirstAidCourse == true)
