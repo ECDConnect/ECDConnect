@@ -414,12 +414,12 @@ export const Form = ({
         await appDispatch(
           pqaThunkActions.addFollowUpVisitForPractitioner(payload)
         );
-
-        window.sessionStorage.setItem(
-          currentActivityKey,
-          visitTypes.pqa.firstPQA.name
-        );
-        setCurrentActivity(visitTypes.pqa.firstPQA.name);
+        // TODO: check if it is needed
+        // window.sessionStorage.setItem(
+        //   currentActivityKey,
+        //   visitTypes.pqa.firstPQA.name
+        // );
+        // setCurrentActivity(visitTypes.pqa.firstPQA.name);
       }
 
       if (type === 're-accreditation') {
@@ -434,15 +434,11 @@ export const Form = ({
             payload
           )
         );
-
-        window.sessionStorage.setItem(
-          currentActivityKey,
-          visitTypes.reaccreditation.first.name
-        );
-        setCurrentActivity(visitTypes.reaccreditation.first.name);
       }
+
+      onBack?.();
     },
-    [appDispatch, practitionerId]
+    [appDispatch, onBack, practitionerId]
   );
 
   const handleSubmitExtraVisit = useCallback(
