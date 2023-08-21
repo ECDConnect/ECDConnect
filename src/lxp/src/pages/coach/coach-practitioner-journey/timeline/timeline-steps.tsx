@@ -263,6 +263,7 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
+      color: ratingData?.color,
       showActionButton:
         timeline.pQASiteVisits.length === 1 &&
         !currentVisit?.attended &&
@@ -338,6 +339,7 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
+      color: ratingData?.color,
       showActionButton:
         timeline.reAccreditationVisits.length === 1 &&
         !currentVisit?.attended &&

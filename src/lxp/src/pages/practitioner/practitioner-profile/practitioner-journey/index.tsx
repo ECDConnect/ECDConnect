@@ -118,8 +118,14 @@ export const PractitionerJourney = ({
 
         return item;
       });
+      // INFO: To fill in some steps for PQA and re-accreditation, it's necessary to get data from the self-assessment
     } else {
-      const selfAssessmentVisit = timeline?.selfAssessmentVisits?.[0];
+      const attendedSelfAssessment = timeline?.selfAssessmentVisits?.filter(
+        (item) => item?.attended
+      );
+      // INFO: this is getting the last self-assessment visit
+      const selfAssessmentVisit =
+        attendedSelfAssessment?.[attendedSelfAssessment.length - 1];
 
       await appDispatch(
         getVisitDataForVisitId({ visitId: visit?.id, visitType })

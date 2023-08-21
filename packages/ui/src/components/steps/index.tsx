@@ -23,6 +23,7 @@ export interface StepItem<T = {}> {
   inProgressStepIcon?: string;
   completedStepIcon?: string;
   type: 'todo' | 'inProgress' | 'completed';
+  color?: Colours;
   showActionButton?: boolean;
   actionButtonText?: string;
   actionButtonTextColor?: Colours;
@@ -31,6 +32,7 @@ export interface StepItem<T = {}> {
   actionButtonType?: ButtonType;
   actionButtonClassName?: string;
   actionButtonIconStartPosition?: boolean;
+  actionButtonIsLoading?: boolean;
   actionButtonOnClick?: () => void;
   showAccordion?: boolean;
   accordionContent?: ReactElement;
@@ -66,24 +68,26 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
     ({
       icon,
       typeColor,
+      itemColor,
     }: {
       icon?: Icon;
       typeColor?: StepsProps['typeColor'];
+      itemColor?: StepItem['color'];
     }) => ({
       todo: {
         style: `bg-${
-          typeColor?.todo || 'tertiaryAccent2'
+          itemColor || typeColor?.todo || 'tertiaryAccent2'
         } border-2 border-primary`,
         icon: icon?.todo || '',
         border: 'border-solid',
       },
       inProgress: {
-        style: 'bg-primary',
+        style: `bg-${itemColor || 'primary'}`,
         icon: icon?.inProgress || 'CalendarIcon',
         border: 'border-dashed',
       },
       completed: {
-        style: `bg-${typeColor?.completed || 'secondary'}`,
+        style: `bg-${itemColor || typeColor?.completed || 'secondary'}`,
         icon: icon?.completed || 'CheckIcon',
         border: 'border-solid',
       },
@@ -92,16 +96,22 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
   );
 
   const getStatus = useCallback(
-    (type: StepItem['type'], icon?: Icon) => {
+    (type: StepItem['type'], icon?: Icon, itemColor?: StepItem['color']) => {
       switch (type) {
         case 'todo':
-          return typeStyle({ typeColor, icon: { todo: icon?.todo } }).todo;
+          return typeStyle({ typeColor, icon: { todo: icon?.todo }, itemColor })
+            .todo;
         case 'inProgress':
-          return typeStyle({ icon: { inProgress: icon?.inProgress } })
-            .inProgress;
+          return typeStyle({
+            icon: { inProgress: icon?.inProgress },
+            itemColor,
+          }).inProgress;
         default:
-          return typeStyle({ typeColor, icon: { completed: icon?.completed } })
-            .completed;
+          return typeStyle({
+            typeColor,
+            icon: { completed: icon?.completed },
+            itemColor,
+          }).completed;
       }
     },
     [typeStyle, typeColor]
@@ -157,8 +167,14 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                       item.type === 'completed' &&
                       items[index + 1] &&
                       items[index + 1].type === 'completed'
-                        ? `var(--${typeColor?.completed || 'secondary'})`
-                        : `var(--${typeColor?.todoAndInProgress || 'primary'})`,
+                        ? `var(--${
+                            item.color || typeColor?.completed || 'secondary'
+                          })`
+                        : `var(--${
+                            item.color ||
+                            typeColor?.todoAndInProgress ||
+                            'primary'
+                          })`,
                     height: refs && refs[index]?.current?.clientHeight,
                     left: 14,
                   }}
@@ -168,7 +184,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                 <div
                   className={classNames(
                     'min-h-8 min-w-8 flex h-8 w-8 items-center justify-center rounded-full',
-                    getStatus(item.type)?.style
+                    getStatus(item.type, {}, item?.color)?.style
                   )}
                 >
                   {getStatus(item.type)?.icon &&
@@ -215,6 +231,8 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                     iconPosition={
                       item?.actionButtonIconStartPosition ? 'start' : 'end'
                     }
+                    isLoading={item.actionButtonIsLoading}
+                    disabled={item.actionButtonIsLoading}
                     className={'h-9 w-auto'}
                     onClick={item.actionButtonOnClick}
                     text={item.actionButtonText}
