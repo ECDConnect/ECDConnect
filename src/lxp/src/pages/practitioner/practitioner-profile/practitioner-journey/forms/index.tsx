@@ -92,7 +92,9 @@ export const Form = ({ onBack }: FormProps) => {
   const isViewPqaOrReAccreditation =
     (activityName.includes(coachVisitTypes.pqa.includes) ||
       activityName.includes(coachVisitTypes.reaccreditation.includes)) &&
-    !activityName.includes(coachVisitTypes.prePqa.includes);
+    !activityName.includes(coachVisitTypes.prePqa.includes) &&
+    !activityName.includes(coachVisitTypes.pqa.followUp.name) &&
+    !activityName.includes(coachVisitTypes.reaccreditation.followUp.name);
   const isRequestCoachingVisitOrCall = activityName.includes(
     visitTypes.requestCoachingVisitOrCall.name
   );
