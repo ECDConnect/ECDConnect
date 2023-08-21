@@ -29,8 +29,7 @@ namespace ECDLink.Core.Services
         private readonly IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
         private string _adminId;
-        private readonly ISystemSetting<IncomeStatementSubmitStartOptions> _submitStartDate;
-        private readonly ISystemSetting<IncomeStatementSubmitEndOptions> _submitEndDate;
+        private readonly int _submitEndDate;
         private IGenericRepository<StatementsExpenseType, Guid> _statementsExpenseTypeRepo;
         private IGenericRepository<StatementsExpenses, Guid> _statementsExpensesRepo;
         private IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
@@ -53,7 +52,6 @@ namespace ECDLink.Core.Services
             [Service] DocumentManager documentManager,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] PersonnelService personnelService,
-            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
             ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate, 
             IPointsEngineService pointsEngineService,
             HierarchyEngine hierarchyEngine
@@ -63,8 +61,7 @@ namespace ECDLink.Core.Services
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
             _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
-            _submitStartDate = submitStartDate;
-            _submitEndDate = submitEndDate;            
+            _submitEndDate = int.Parse(submitEndDate.Value.IncomeStatementSubmitEnd);            
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
@@ -115,114 +112,86 @@ namespace ECDLink.Core.Services
             else return new List<StatementsIncomeStatement>();
         }
 
-        public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet(string userId, int year, int month)
+        /// <summary>
+        /// Returns the balance sheets for all months in the given year, or limited to a specific month if that is passed in
+        /// </summary>
+        /// <param name="userId">UserId of practitioner to fetch balance sheets for</param>
+        /// <param name="year">Year to fetch balance sheets for (Required)</param>
+        /// <param name="month">Month to get balance sheet for if only one is required</param>
+        /// <returns>Balance sheet for each month required. For the current month this will be calculated from the current income and expnses</returns>
+        public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet(string userId, int year, int? month = null)
         {
-            List<StatementsBalanceSheet> balanceSheets = new List<StatementsBalanceSheet>();
-            var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            DateTime nextMonth = DateTime.Now.AddMonths(1);
-            int submitStartDate = int.Parse(_submitStartDate.Value.IncomeStatementSubmitStart);
-            int submitEndDate = int.Parse(_submitEndDate.Value.IncomeStatementSubmitEnd);
-            var allMonths = new List<int>();
+            var balanceSheets = new List<StatementsBalanceSheet>();
+            var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);            
 
             var statements = statementsRepo.GetAll().Where(x => 
                 string.Equals(x.UserId, userId) && 
-                x.Submitted.Equals(true) && 
-                (year == 0 || x.Year.Equals(year))) // Filter to specific year
+                x.Submitted && 
+                x.Year == year &&
+                (!month.HasValue || x.Month == month.Value)) // Filter by month if desired
                 .ToList();
-
-            if (statements.Any())
+                        
+            var lastMonthRequired = 0;            
+            if(month.HasValue)
             {
-                //supplied year loop
-                var allYears = statements.Select(x => x.Year).Distinct().ToList();
-                if (allYears.Any())
-                {
-                    allYears.OrderDescending();
-                    foreach (var currentYear in allYears)
-                    {
-                        //loop months of YTD of supplied year
-                        allMonths = statements.Where(x => x.Year == currentYear).Select(y => y.Month).Distinct().ToList();
-                        if (month > 0) //filter to specific month if supplied in addition to year
-                        {
-                            statements = statements.Where(x => x.Month.Equals(month)).ToList();
-                        }
-                        if (allMonths.Any())
-                        {
-                            //if currentmonth is not yet submitted, add this too but pull previous entries not yet submitted and include in this iteration
-                            allMonths.OrderDescending();
-                            foreach (var loopMonth in allMonths)
-                            {
-                                var statementCheck = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).OrderBy(x => x.Id).FirstOrDefault();
-                                bool isAutoSubmitted = (statementCheck != null ? statementCheck.AutoSubmitted : false);
-                                DateTime? submittedDate = (statementCheck != null ? statementCheck.SubmittedDate : null);
-                                var allIncome = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).Select(y => y.IncomeTotal).ToList();
-                                var allExpenses = statements.Where(x => x.Year.Equals(currentYear) && x.Month.Equals(loopMonth)).Select(y => y.ExpenseTotal).ToList();
-
-                                double allIncomeTotal = allIncome.Sum();
-                                double allExpenseTotal = allExpenses.Sum();
-
-                                double balance = allIncomeTotal - allExpenseTotal;
-
-                                balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round(balance, 2), IncomeTotal = Math.Round(allIncomeTotal, 2), ExpenseTotal = Math.Round(allExpenseTotal, 2), Month = loopMonth, Year = currentYear, UserId = userId, Submitted = true, AutoSubmitted = isAutoSubmitted, SubmittedDate = submittedDate });
-                            }
-                        }
-
-                    }
-                }
-                else return new List<StatementsBalanceSheet>();
+                lastMonthRequired = month.Value;
             }
-            if (DateTime.Now.Month.Equals(month) && DateTime.Now.Year.Equals(year) && !IsSubmitted(userId, year, month))
+            else if (DateTime.Now.Year == year)
             {
-                IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, year, month);
-                if (incomeExpenses.AllUnSubmitted != null)
-                {
-                    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = month, Year = year, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
-                }
+                lastMonthRequired = DateTime.Now.Month;
             }
             else
             {
-                if (month == 0 && !IsSubmitted(userId, year, DateTime.Today.Month))
+                lastMonthRequired = 12;
+            }
+
+            for (int i = month ?? 1; i <= lastMonthRequired; i++)
+            {
+                var statement = statements.Where(x => x.Year == year && x.Month == i).FirstOrDefault();
+
+                // If we have a statement return that
+                if (statement != null)
                 {
-                    IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, year, DateTime.Today.Month);
-                    if (incomeExpenses.AllUnSubmitted != null)
+                    balanceSheets.Add(new StatementsBalanceSheet()
                     {
-                        balanceSheets.Add(new StatementsBalanceSheet()
-                        {
-                            Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2),
-                            IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2),
-                            ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2),
-                            Month = DateTime.Today.Month,
-                            Year = year,
-                            UserId = userId,
-                            AutoSubmitted = false,
-                            SubmittedDate = null,
-                            Submitted = false
-                        });
-                    }
+                        Balance = Math.Round(statement.IncomeTotal - statement.ExpenseTotal, 2),
+                        IncomeTotal = Math.Round(statement.IncomeTotal, 2),
+                        ExpenseTotal = Math.Round(statement.ExpenseTotal, 2),
+                        Month = i,
+                        Year = year,
+                        UserId = userId,
+                        Submitted = true,
+                        AutoSubmitted = statement.AutoSubmitted,
+                        SubmittedDate = statement.SubmittedDate
+                    });
                 }
-                else
+                // Only build from income/expenses if it is the current month, or its last month and we are before the end of the submit window
+                else if (DateTime.Now.Year == year && (DateTime.Now.Month == i || (DateTime.Now.Month-1 == i && DateTime.Now.Day <= _submitEndDate))) 
                 {
+                    // Build a statement estimate from income and expenses (include any unsubmitted items from previous month, if a statement has been submitted for that month)
+                    var lastMonthSubmitted = statements.Any(x => x.Year == year && x.Month == i - 1);
+                    var incomeExpensesForThisMonth = GetMonthlyIncomeExpenses(userId, year, i);
+                    var incomeExpensesForLastMonth = GetMonthlyIncomeExpenses(userId, year, i-1);
 
-                    DateTime lastMonthToSubmit = DateTime.Today.AddMonths(-1);
-                    var unsubmittedMonth = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Month : DateTime.Today.Month) : DateTime.Today.Month;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
-                    var unsubmittedMonthYear = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Year : DateTime.Today.Year) : DateTime.Today.Year;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
+                    var incomeTotal = incomeExpensesForThisMonth.AllUnSubmitted?.IncomeTotal ?? 0 + (!lastMonthSubmitted ? incomeExpensesForLastMonth.AllUnSubmitted?.IncomeTotal ?? 0 : 0);
+                    var expenseTotal = incomeExpensesForThisMonth.AllUnSubmitted?.ExpenseTotal ?? 0 + (!lastMonthSubmitted ? incomeExpensesForLastMonth.AllUnSubmitted?.ExpenseTotal ?? 0 : 0);
 
-                    IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, unsubmittedMonthYear, unsubmittedMonth);
-
-                    if (incomeExpenses.AllUnSubmitted != null && incomeExpenses.AllUnSubmitted.Income != null && incomeExpenses.AllUnSubmitted.Expenses != null)
+                    balanceSheets.Add(new StatementsBalanceSheet()
                     {
-                        balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = unsubmittedMonth, Year = unsubmittedMonthYear, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
-                    }
+                        Balance = Math.Round((incomeTotal - expenseTotal), 2),
+                        IncomeTotal = Math.Round(incomeTotal, 2),
+                        ExpenseTotal = Math.Round(expenseTotal, 2),
+                        Month = i,
+                        Year = year,
+                        UserId = userId,
+                        AutoSubmitted = false,
+                        SubmittedDate = null,
+                        Submitted = false
+                    });
                 }
             }
-            return balanceSheets;
-        }
 
-        public List<StatementsStartupSupport> GetAllStatementsStartupSupport(string userId, int year, int month)
-        {
-            var expenseRepo = _repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
-            return expenseRepo.GetAll()
-                .Where(x => x.UserId.Equals(userId) && x.InsertedDate.Year.Equals(year) && x.InsertedDate.Month.Equals(month))
-                .ToList();
+            return balanceSheets;
         }
 
         public double GetRunningBalance(string userId, int year, int month, string lineStatus = LinesStatus.ANY)

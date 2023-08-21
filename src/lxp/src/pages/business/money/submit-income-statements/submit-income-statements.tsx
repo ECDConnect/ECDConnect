@@ -32,6 +32,7 @@ export const SubmitIncomeStatements: React.FC = () => {
   const offlineImg = window.localStorage.getItem(
     LocalStorageKeys.offlineStatments
   );
+  console.log('balanceSheet', balanceSheet);
 
   const monthNames = balanceSheet?.map((item) => {
     return getMonthName(item?.month! - 1).substring(0, 3);

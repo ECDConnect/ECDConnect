@@ -345,12 +345,12 @@ class IncomeStatementsService {
   async getAllStatementsBalanceSheet(
     userId: string,
     year: Number,
-    month: Number
+    month: Number | undefined
   ): Promise<BalanceSheetDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int!) { 
+      query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int) { 
          allStatementsBalanceSheet(userId: $userId, year: $year, month: $month) { 
            userId 
            incomeTotal

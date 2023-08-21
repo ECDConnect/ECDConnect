@@ -474,7 +474,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
         statementsThunkActions.getAllStatementsBalanceSheet({
           // userId: userAuth?.id!,
           year: submitMonth.getFullYear(),
-          month: 0,
+          month: undefined,
         })
       );
     }
