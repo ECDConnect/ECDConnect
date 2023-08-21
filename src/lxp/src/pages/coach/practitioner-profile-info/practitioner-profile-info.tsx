@@ -57,6 +57,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     useState<any>();
   const isTrainee = practitioner?.isTrainee;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+
+  const timelineStepsCompleted = Object.values(timeline!)?.filter(
+    (item) => item === 'Success'
+  );
+  const isOnStipend = practitioner?.isOnStipend;
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
   const completedSteps = timelineSteps(
@@ -160,7 +165,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     {
       title: 'Classroom',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Children, progress & attendance',
+      subTitle: !isTrainee ? 'Children, progress & attendance' : 'Children',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'AcademicCapIcon',
@@ -181,7 +186,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         }),
       classNames: 'bg-uiBg',
     },
-    {
+  ];
+
+  if (!isTrainee) {
+    listItems?.push({
       title: 'Programme Information',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: 'Location, classes & staff',
@@ -204,8 +212,42 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
           practitionerId,
         }),
       classNames: 'bg-uiBg',
-    },
-  ];
+    });
+  }
+
+  if (onboardingNotCompleted && isTrainee) {
+    listItems?.splice(0, 1, {
+      title: 'Trainee onboarding',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: isOnStipend
+        ? `${timelineStepsCompleted.length} of 9 steps completed`
+        : `${timelineStepsCompleted.length} of 8 steps completed`,
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'BadgeCheckIcon',
+      menuIconClassName: 'text-white',
+      showIcon: true,
+      iconBackgroundColor: 'tertiary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'white',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        onboardingNotCompleted && isTrainee
+          ? setShowTraineeDashboard(true)
+          : history.push(
+              ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+                ':practitionerId',
+                practitionerId
+              )
+            ),
+      classNames: 'bg-uiBg',
+    });
+  }
 
   const noClassroomGroupsListItems = [
     {
@@ -306,7 +348,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               <StatusChip
                 backgroundColour="primary"
                 borderColour="primary"
-                text={'SmartStarter'}
+                text={isTrainee ? 'Trainee' : 'SmartStarter'}
                 textColour={'white'}
                 className={'px-3 py-1.5'}
               />
