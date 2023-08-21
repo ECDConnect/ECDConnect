@@ -14,10 +14,14 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { traineeSelectors } from '@/store/trainee';
 import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { isRejectedWithValue } from '@reduxjs/toolkit';
+import { TraineeService } from '@/services/TraineeService';
+import { TraineeAddressModelInput } from '@ecdlink/graphql';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -52,12 +56,18 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const [answer, setAnswer] = useState('');
+  const [newAddress, setNewAddress] = useState('');
   const [enableButton, setEnableButton] = useState(false);
   const traineeProgrammeType = useSelector(
     traineeSelectors.getTraineeSmartSpaceAddress
   );
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const traineePropertyOwnAnswer = useSelector(
+    traineeSelectors.getTraineePropertyOwn
+  );
+
   const [questions, setAnswers] = useState([
     {
       question: 'Is this address correct?',
@@ -69,8 +79,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       answer: false,
     },
     {
-      question:
-        'I have checked that Nothando has the required forms proving ownership/lease agreement/permission to use premises.',
+      question: 'Where is the programme site located?',
       answer: '',
     },
   ]);
@@ -141,11 +150,32 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   }, []);
 
   useEffect(() => {
-    if (questions.every((item) => item.answer !== false)) {
+    if (
+      questions.every((item) => item.answer !== false) ||
+      (answer !== '' && questions?.[1]?.answer === true)
+    ) {
       return setEnableButton?.(true);
     }
     setEnableButton(false);
-  }, [questions]);
+  }, [answer, questions]);
+
+  const changeSmartSpaceCheckAddress = async () => {
+    if (questions[0].answer === false && answer !== '') {
+      const input = {
+        homeAddressLine1: answer,
+        homeAddressLine2: '',
+        homeAddressLine3: '',
+        homeAddressPostalCode: '',
+      };
+      const changeAddress: TraineeAddressModelInput = await new TraineeService(
+        userAuth?.auth_token!
+      ).UpdateTraineeAddress(practitioner?.userId!, input);
+      setNewAddress(input?.homeAddressLine1);
+      return changeAddress;
+    } else {
+      return isRejectedWithValue('no access token, profile check required');
+    }
+  };
 
   return (
     <div className="p-4">
@@ -163,7 +193,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       />
       <Typography
         type={'h4'}
-        text={traineeProgrammeType as string}
+        text={newAddress || (traineeProgrammeType as string)}
         color={'textDark'}
       />
       <Divider dividerType="dashed" className={'my-4'} />
@@ -188,7 +218,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           className="mt-4"
           textInputType="input"
           label={questions?.[2]?.question}
-          placeholder={'e.g. create a list of emergency numbers'}
+          placeholder={'e.g. street a'}
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
         />
@@ -211,7 +241,11 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       />
       <Typography
         type={'body'}
-        text={'Nothando owns the property and has the title deeds.'}
+        text={
+          traineePropertyOwnAnswer
+            ? (traineePropertyOwnAnswer as string)
+            : 'Nothando owns the property and has the title deeds.'
+        }
         color={'textMid'}
         className={'my-3'}
       />
@@ -239,6 +273,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
               onClick={() => {
                 handleNextSection();
                 saveSmartSpaceCheckData();
+                changeSmartSpaceCheckAddress();
               }}
               disabled={!enableButton}
             >

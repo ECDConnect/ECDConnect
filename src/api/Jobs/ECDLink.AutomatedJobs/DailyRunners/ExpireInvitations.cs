@@ -1,4 +1,5 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
+using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -16,7 +17,7 @@ public class ExpireInvitations : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public ExpireInvitations(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
+    public ExpireInvitations(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config)
         : base(config.CronExpression, config.TimeZoneInfo)
     {
         _scopeFactory = scopeFactory;
@@ -28,23 +29,9 @@ public class ExpireInvitations : CronJobService
         {
             var service = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
 
-            SetTenantContext(scope);            
+            TenancyContext.SetTenantContext(scope);
 
             service.ExpireRelationshipLinks();
         }
-    }
-
-    // TODO: Convert to multi-tenancy jobs
-    //Single Tenant for now
-    private void SetTenantContext(IServiceScope scope)
-    {
-        var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();
-
-        var tenant = tenancyRepo.GetAllTenants()
-            .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
-            .OrderBy(x => x.Id)
-            .FirstOrDefault();
-
-        TenantExecutionContext.SetTenant(tenant);
     }
 }

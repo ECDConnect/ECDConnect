@@ -11,6 +11,7 @@ import {
   LicenseModelInput,
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
+  NotificationDisplay,
   PractitionerInput,
   PractitionerRemovalHistory,
 } from '@ecdlink/graphql';
@@ -223,6 +224,8 @@ class PractitionerService {
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              idNumber
+              phoneNumber
             }
             siteAddress {
               id
@@ -261,6 +264,7 @@ class PractitionerService {
             attendedChildProgress
             usePhotoInReport
             setupTraineeInitiated
+            isOnStipend
           }
         }
       `,
@@ -290,6 +294,8 @@ class PractitionerService {
               surname
               fullName
               email
+              idNumber
+              phoneNumber
               isSouthAfricanCitizen
               verifiedByHomeAffairs
               gender {
@@ -329,6 +335,7 @@ class PractitionerService {
             progress
             attendedChildProgress
             usePhotoInReport
+            IsOnStipend
           }
         }
       `,
@@ -411,6 +418,7 @@ class PractitionerService {
             progress
             attendedChildProgress
             usePhotoInReport
+            isOnStipend
           }
         }
       `,
@@ -863,7 +871,7 @@ class PractitionerService {
     classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    console.log('classroomGroupReassignments', classroomGroupReassignments);
+
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation removePractitioner(
@@ -950,14 +958,20 @@ class PractitionerService {
     return response.data.data.removeFromProgramme;
   }
 
-  async displayMetrics(type: string): Promise<PractitionerDto[]> {
+  async displayMetrics(type: string): Promise<NotificationDisplay[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       query displayMetrics($type: String) {
         displayMetrics(type: $type) {
-      subject icon color message notes userId userType 
-      
+          subject
+          icon
+          color
+          message
+          notes
+          userId
+          userType 
+          groupingName     
         }
       }
       `,
@@ -981,7 +995,13 @@ class PractitionerService {
       query: `
       query classroomActionItems($practitionerId: String) {
         classroomActionItems(practitionerId: $practitionerId) {
-          subject icon color message notes userId userType
+          subject
+          icon
+          color
+          message
+          notes
+          userId
+          userType
         }
       }
       `,

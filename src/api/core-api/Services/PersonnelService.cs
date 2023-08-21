@@ -621,6 +621,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 user.LockoutEnd = DateTime.MaxValue;
                 var userResult = await _userManager.UpdateAsync(user);
 
+                // Remove any roles
+                var roles = _userManager.GetRolesAsync(user).Result;
+                foreach (var role in roles)
+                {
+                    var result = _userManager.RemoveFromRoleAsync(user, role).Result;
+                }
+
                 return userResult?.Succeeded ?? false;
             }
             return false;

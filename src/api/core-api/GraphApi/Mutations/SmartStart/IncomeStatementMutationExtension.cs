@@ -82,18 +82,16 @@ StatementsSubmit input)
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
         public ResultReturnObject AutoSubmitStatement([Service] IncomeExpenseService incomeManager)
         {
-            //TODO: pull from system settings
-            int forceSubmitDay = 8;
-            var statements = incomeManager.GetUnsubmittedStatements(forceSubmitDay);
-            var dateToSubmit = DateTime.Now.AddMonths(-1); //run previous months unsubmitted
-            foreach (var userId in statements)
-            {
-                incomeManager.AutoSubmitStatement(userId, dateToSubmit.Year, dateToSubmit.Month);
-            }
+            StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
+            var pracsDueSubmits = incomeManager.GetUnsubmittedStatements();
 
+            foreach (var pracData in pracsDueSubmits)
+            {
+                DateTime duePeriod  = pracData.Value;
+                incomeManager.AutoSubmitStatement(pracData.Key, duePeriod.Year, duePeriod.Month);
+            }
             return new ResultReturnObject() { ResultMessage = "OK" };
         }
-
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
         public async Task<Document> SaveIncomeStatementPDF(

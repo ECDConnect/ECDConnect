@@ -36,7 +36,6 @@ import { CoachPractitionerNotRegistered } from './components/coach-practitioner-
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { OnboardingTraineeDashboard } from './components/trainee-timeline/trainee-onboarding-dashboard';
 import { TraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
 
@@ -49,6 +48,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const practitionerId = location.state.practitionerId;
   const isFromProgrammeView = location.state.isFromProgrammeView;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );

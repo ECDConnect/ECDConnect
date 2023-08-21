@@ -1,14 +1,17 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
+using ECDLink.Core.Services;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Reports;
@@ -292,6 +295,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return metrics;
         }
 
+        // THIS IS ONLY FETCHING PROGRESS NOTIFICATION INFO FOR THE FIRST CLASS GROUP OF THE PRACTITIONER
+        // TODO - Need to update this to handle all classroom groups not just the first
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<NotificationDisplay>> GetClassroomActionItems(
             IGenericRepositoryFactory repoFactory,
@@ -312,8 +317,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var notifications = new List<NotificationDisplay>();
 
-            var classroomGroup = classroomGroupRepo.GetAll()
-                .Where(c => c.UserId == Guid.Parse(practitionerId)).FirstOrDefault();
+            var classroomGroups = classroomGroupRepo.GetAll()
+                .Where(c => c.UserId == Guid.Parse(practitionerId)).ToList();
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
 
             var practitioner = practRepo.GetByUserId(practitionerId);
@@ -365,11 +370,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 });
             }
 
-            // Get Attendance Rate
-            if (classroomGroup?.Id is not null)
+            // Get Attendance Rate - why is this just for one classroom group. TODO - fix for multiple classes
+            if (classroomGroups.Any())
             {
                 // The results of this seem wrong?
-                var attendanceReport = attendanceReportService.GetChildAttendance(classroomGroup.Id, practitionerId, previousMonthStart, previousMonthEnd);
+                var attendanceReport = attendanceReportService.GetChildAttendance(classroomGroups.First().Id, practitionerId, previousMonthStart, previousMonthEnd);
                 var attendancePercentage = attendanceReport?.AttendancePercentage ?? 0;
                 if (attendancePercentage < 80)
                 {
@@ -379,7 +384,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         // TODO: Warnings or errors?
                         Icon = MetricsIconEnum.Error.ToString(),
                         Color = MetricsColorEnum.Error.ToString(),
-                        Message = $"{classroomGroup?.Name} - {previousMonthStart.ToString("MMMM yyyy")}",
+                        Message = $"{classroomGroups.First().Name} - {previousMonthStart.ToString("MMMM yyyy")}",
                         Notes = "",
                         UserId = Guid.Parse(practitionerId),
                         // TODO: Principal?
@@ -400,26 +405,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
             var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
 
-            int missedReportCount = 0;
-
-            if (classroomGroup?.Id is not null)
+            // Notifications for child progress reports
+            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, uId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), DateTime.Now);
+            
+            // If any reports were submitted in the overdue period (2nd month of the submission window
+            if (reportCounts.overdueReportsSubmitted > 0)
             {
-                missedReportCount = await GetMissedReports(
-                    repoFactory,
-                    practitionerId,
-                    user,
-                    childRepo,
-                    practitionerHieracry,
-                    classroomGroup,
-                    notifications,
-                    currentDate,
-                    reportPeriodStart,
-                    reportPeriodEnd,
-                    reportDueStart,
-                    reportDueEnd,
-                    reportOverDueStart,
-                    reportOverDueEnd,
-                    missedReportCount);
+                notifications.Add(new NotificationDisplay()
+                {
+                    Subject = $"{reportCounts.overdueReportsSubmitted} overdue progress reports",
+                    // TODO: Warnings or errors?
+                    Icon = MetricsIconEnum.Error.ToString(),
+                    Color = MetricsColorEnum.Error.ToString(),
+                    Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
+                    Notes = "",
+                    UserId = Guid.Parse(practitionerId),
+                    // TODO: Principal?
+                    UserType = "practitioner"
+                });
+            }
+
+            // If any children did not get a report submitted
+            if (reportCounts.missedReportCount > 0
+                && currentDate >= reportOverDueEnd)
+            {
+                notifications.Add(new NotificationDisplay()
+                {
+                    Subject = $"{reportCounts.missedReportCount} missed progress reports",
+                    // TODO: Warnings or errors?
+                    Icon = MetricsIconEnum.Error.ToString(),
+                    Color = MetricsColorEnum.Error.ToString(),
+                    Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
+                    Notes = "",
+                    UserId = Guid.Parse(practitionerId),
+                    // TODO: Principal?
+                    UserType = "practitioner"
+                });
             }
 
             var children = await childRepo.GetAll()
@@ -451,7 +472,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Rule:
             // Show only if the practitioner did not submit reports for the January to June reporting period by the deadline(31 July)
             // or for the July to November reporting period by the deadline(20 Dec)"
-            if (missedReportCount > 0
+            if (reportCounts.missedReportCount > 0
                         && currentDate >= reportOverDueEnd)
             {
                 var childProgress = GetChildProgress(repoFactory, reportPeriodStart, children);
@@ -891,7 +912,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return reassignedClassList;
         }
 
-            private static Dictionary<Guid, List<(DateTime, int)>> GetChildProgressHistory(IOrderedQueryable<ChildProgressReport> childProgressReportsFor2Years)
+        private static Dictionary<Guid, List<(DateTime, int)>> GetChildProgressHistory(IOrderedQueryable<ChildProgressReport> childProgressReportsFor2Years)
         {
             var childProgressReportContents = childProgressReportsFor2Years?.Select(r => r.ReportContent).ToList();
 
@@ -919,77 +940,52 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return progressHistory;
         }
 
-        private async Task<int> GetMissedReports(IGenericRepositoryFactory repoFactory, string practitionerId, ApplicationIdentityUser user, IGenericRepository<Child, Guid> childRepo, string practitionerHieracry, ClassroomGroup classroomGroup, List<NotificationDisplay> notifications, DateTime currentDate, DateTime reportPeriodStart, DateTime reportPeriodEnd, DateTime reportDueStart, DateTime reportDueEnd, DateTime reportOverDueStart, DateTime reportOverDueEnd, int missedReportCount)
+        private (int dueReportsSubmitted, int missedReportCount, int overdueReportsSubmitted) GetChildProgressReportStatusCountsForPractitioner(
+            IGenericRepositoryFactory repoFactory,
+            string userId,
+            string practitionerHierarcry,
+            IEnumerable<Guid> classroomGroupIds,
+            DateTime currentDate)
         {
-            // None of the below is needed if the reports aren't due yet.
-            if (currentDate >= reportPeriodStart)
+            DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
+            DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
+            var isPeriod1 = previousMonthStart.Month <= 7;
+            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodEnd = GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
+
+            DateTime reportDueStart = GetReportDueStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportDueEnd = GetReportDueEnd(previousMonthStart.Year, isPeriod1);
+
+            var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+            var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
+
+            if (DateTime.Now <= reportPeriodStart)
             {
-
-                var progressReports = await repoFactory.CreateRepository<ChildProgressReport>(userContext: user.Id)
-                    .GetAll()
-                    .Where(x =>
-                            x.ClassroomGroupId == classroomGroup.Id
-                            && x.ReportDate.ToUniversalTime() >= reportDueStart
-                            && x.ReportDate.ToUniversalTime() <= reportOverDueEnd
-                            && x.IsActive == true)
-                    .OrderBy(x => x.ReportDate)
-                    .ToListAsync();
-
-                var dueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportDueStart && r.ReportDate <= reportDueEnd) ?? 0;
-                var overdueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportOverDueStart && r.ReportDate <= reportOverDueEnd) ?? 0;
-
-                var childCount = await childRepo.GetAll().CountAsync(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHieracry));
-                var unsibmittedOverdueReportsCount = childCount - overdueReportsSubmitted;
-
-                missedReportCount = childCount - (dueReportsSubmitted + overdueReportsSubmitted);
-
-                // Rule:
-                // Show this action as soon as at least 1 of a practitioner's child progress reports become overdue
-                // Note: once the reporting deadline has passed (31 July for June reporting period; and 20 December for the November reporting period),
-                // remove this action item -- if reports were missed, they will show up as the action item in the row below."
-
-                if (unsibmittedOverdueReportsCount > 0
-                    && currentDate >= reportOverDueEnd)
-                {
-                    notifications.Add(new NotificationDisplay()
-                    {
-                        Subject = $"{unsibmittedOverdueReportsCount} overdue progress reports",
-                        // TODO: Warnings or errors?
-                        Icon = MetricsIconEnum.Error.ToString(),
-                        Color = MetricsColorEnum.Error.ToString(),
-                        Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
-                        Notes = "",
-                        UserId = Guid.Parse(practitionerId),
-                        // TODO: Principal?
-                        UserType = "practitioner"
-                    });
-                }
-
-                // Rule:
-                // Show only if the practitioner did not submit reports for the
-                // January to June reporting period by the deadline(31 July) or for the 
-                // July to November reporting period by the deadline(20 Dec)
-
-                if (missedReportCount > 0
-                    && currentDate >= reportOverDueEnd)
-                {
-                    notifications.Add(new NotificationDisplay()
-                    {
-                        Subject = $"{missedReportCount} missed progress reports",
-                        // TODO: Warnings or errors?
-                        Icon = MetricsIconEnum.Error.ToString(),
-                        Color = MetricsColorEnum.Error.ToString(),
-                        Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
-                        Notes = "",
-                        UserId = Guid.Parse(practitionerId),
-                        // TODO: Principal?
-                        UserType = "practitioner"
-                    });
-                }
-                // End Get Due/Overdue Reports
+                // Reports aren't due yet
+                return (0, 0, 0);
             }
 
-            return missedReportCount;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
+            var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: userId);
+
+            var progressReports = childProgressReportRepo
+                .GetAll()
+                .Where(x =>
+                        classroomGroupIds.Contains(x.ClassroomGroupId.Value)
+                        && x.ReportDate.ToUniversalTime() >= reportDueStart
+                        && x.ReportDate.ToUniversalTime() <= reportOverDueEnd
+                        && x.IsActive == true)
+                .OrderBy(x => x.ReportDate)
+                .ToList();
+
+            var dueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportDueStart && r.ReportDate <= reportDueEnd) ?? 0;
+            var overdueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportOverDueStart && r.ReportDate <= reportOverDueEnd) ?? 0;
+
+            var childCount = childRepo.GetAll().Count(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHierarcry));
+
+            var missedReportCount = childCount - (dueReportsSubmitted + overdueReportsSubmitted);
+
+            return (dueReportsSubmitted, missedReportCount, overdueReportsSubmitted);
         }
 
         private async Task<int> GetMissingAttendanceReportsAsync(
@@ -1073,384 +1069,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] VisitDataManager visitDataManager,
-            [Service] UserLicenseManager userLicenseManager,
-            [Service] VisitManager visitManager,
+            [Service] IncomeExpenseService incomeManager,
+            [Service] IHolidayService<Holiday> holidayService,
+            [Service] PersonnelService personnelService,
             IGenericRepositoryFactory repoFactory,
-            string type)//, DateTime fromDate,DateTime toDate
+            string type)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var notificationList = new List<NotificationDisplay>();
 
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var visitRepo = repoFactory.CreateRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateRepository<VisitData>(userContext: uId);
-
-            //set basic dates to be last month and before last
-            DateTime reference = DateTime.Now;
-            DateTime fromDate = reference.GetStartOfPreviousMonth();
-            DateTime toDate = reference.GetEndOfPreviousMonth();
-
-            //// report dates for Practitioner for previous week?
-            //{
-            //    fromDatePractitioner = reference.GetStartOfPreviousWeek();
-            //    toDatePractitioner = fromDate.AddDays(7);
-            //}
-
-            int avgClassDays = 20;
-
-            DisplaySet weighting30 = new DisplaySet();
-            DisplaySet weighting20 = new DisplaySet();
-            DisplaySet weighting10 = new DisplaySet();
-
-            /*Do logic for weighting - loop through each user then
-            1: Get all not registered
-            2: Get all progress reports overdue
-            3: Get all incomplete registers (for practitioners/principals)
-            4: Get Days absent (for practitioners/principals)
-            5: Get Child attendance for each
-            6: get all leavers - practitioners disputing association to principal
-            7: get all no classes assigned
-            8: 
-
-            Add weighting to each subject, and weigh up for each user what the messages are and use weighting to push the most relevant message up to the top, and assign colour, icon and Message to each
-            return list to FE for each user
-            */
-            type = type.ToLower();
-
-            if (type == "child")
+            switch (type)
             {
-                //child view from practitioner/principal/coach
-                var children = childRepo.GetAll();
-                foreach (var user in children)
-                {
-                    NotificationDisplay displayChild = new NotificationDisplay()
-                    {
-                        Subject = "Missing Attendance",
-                        Icon = MetricsIconEnum.Error.ToString(),
-                        Color = MetricsColorEnum.Error.ToString(),
-                        Message = "",
-                        Notes = "",
-                        UserId = Guid.Parse(user.UserId),
-                        UserType = "child"
-                    };
-
-                    notificationList.Add(displayChild);
-                }
+                case "child":
+                    var childResults = GetChildNotifications(contextAccessor, repoFactory).ToList();
+                    return childResults;
+                case "practitioner":
+                case "principal":
+                case "coach":
+                    var practitionerResults = GetPractitionerNotifications(
+                        attendanceRepo,
+                        visitDataManager,
+                        incomeManager,
+                        holidayService,
+                        personnelService,
+                        repoFactory,
+                        uId,
+                        type).ToList();
+                    return practitionerResults;
+                default:
+                    return new List<NotificationDisplay>(); // THIS SHOULD 400
             }
-
-            if (type == "practitioner" || type == "principal" || type == "coach")
-            {  //practitioners and principals
-                var practitioners = practRepo.GetAll().ToList();
-                foreach (var user in practitioners)
-                {
-                    string finalMessageToDisplay = "";
-                    string finalIcon = "";
-                    string finalColor = "";
-                    string finalNotes = "";
-                    int priority = 8; //set the priority high and override as importance goes along
-                    int weighting = 0;
-                    int absentDays = 0;
-
-                    //get absent days count 
-                    var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
-                    absentDays = absenteeRepo.GetAll()
-                        .Count(x => x.UserId == user.UserId && x.AbsentDate >= fromDate && x.AbsentDate <= toDate);
-
-                    //get is registered?
-                    bool isRegistered = user.IsRegistered != null && user.IsRegistered == true;
-                    //get is leaving?
-                    bool isLeaving = user.IsLeaving != null && user.IsLeaving == true;
-                    //get is complete?
-                    bool isComplete = user.IsRegistered != null && user.IsRegistered == true; //(double)user.Progress > 0.2 ? true : false; // TODO: when FE is fully integrated to use the progress indicators, then revert and not user IsRegistered
-
-                    int attendancePercentage = 0;
-                    if (isRegistered)
-                    {
-                        //get attendance register counts across all classroomgroups and programmes
-                        attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(user.UserId, fromDate, toDate);
-                    }
-
-                    
-
-
-
-
-                    //TODO
-                    //progress reports overdue count
-
-                    //TODO
-                    //incomplete child registers count
-
-                    //TODO
-                    //child progress reporting for coach
-                    //TODO - logic to calculate "x children did not progress"
-
-                    if (isComplete)
-                    {
-                        weighting10.Icon = MetricsIconEnum.Success.ToString();
-                        weighting10.Color = MetricsColorEnum.Success.ToString();
-                        weighting10.Subject = "Profile complete";
-                        weighting10.Notes = "";
-                        priority = 9;
-                        weighting = 10;
-                    }
-                    else
-                    {
-                        weighting20.Icon = MetricsIconEnum.Error.ToString();
-                        weighting20.Color = MetricsColorEnum.Error.ToString();
-                        weighting20.Subject = "Profile incomplete";
-                        weighting20.Notes = "Complete Profile";
-                        priority = 1;
-                        weighting = 20;
-                    }
-
-
-                    if (type != "coach")
-                    {
-                        //absentees - priority varies betwen 4 and 6
-                        int absenteePercentage = (100 - (absentDays / avgClassDays) * 100);
-                        if (absenteePercentage < 75)
-                        {
-                            weighting30.Icon = MetricsIconEnum.Error.ToString();
-                            weighting30.Color = MetricsColorEnum.Error.ToString();
-                            weighting30.Subject = absentDays + " days absent last month";
-                            weighting30.Notes = "Improve attendance";
-                            priority = 6;
-                            weighting = 30;
-                        }
-                        else if (absenteePercentage >= 75 && absenteePercentage < 90)
-                        {
-                            weighting20.Icon = MetricsIconEnum.Warning.ToString();
-                            weighting20.Color = MetricsColorEnum.Warning.ToString();
-                            weighting20.Subject = absentDays + " days absent last month";
-                            weighting20.Notes = "Improve attendance";
-                            priority = 4;
-                            weighting = 20;
-                        }
-                        else if (absenteePercentage >= 90)
-                        {
-                            weighting10.Icon = MetricsIconEnum.Success.ToString();
-                            weighting10.Color = MetricsColorEnum.Success.ToString();
-                            weighting10.Subject = absentDays + " days absent last month";
-                            weighting10.Notes = "Excellent attendance";
-                            priority = 8;
-                            weighting = 10;
-                        }
-                    }
-
-                    //Calculate Overall Attendance Percentages
-                    if (attendancePercentage > 0 && attendancePercentage < 60)
-                    {
-                        weighting30.Icon = MetricsIconEnum.Error.ToString();
-                        weighting30.Color = MetricsColorEnum.Error.ToString();
-                        weighting30.Subject = "Child Attendance < 60%";
-                        weighting30.Notes = "Improve attendance";
-                        priority = 5;
-                        weighting = 30;
-                    }
-                    else if (attendancePercentage >= 60 && attendancePercentage < 79)
-                    {
-                        weighting20.Icon = MetricsIconEnum.Warning.ToString();
-                        weighting20.Color = MetricsColorEnum.Warning.ToString();
-                        weighting20.Subject = "Child Attendance > 60% and less than 79%";
-                        weighting20.Notes = "Improve Attendance";
-                        priority = 7;
-                        weighting = 20;
-                    }
-                    else if (attendancePercentage > 80)
-                    {
-                        weighting10.Icon = MetricsIconEnum.Success.ToString();
-                        weighting10.Color = MetricsColorEnum.Success.ToString();
-                        weighting10.Subject = "Child Attendance > 80%";
-                        weighting10.Notes = "Well done, attendance is 80% or higher.";
-                        priority = 8;
-                        weighting = 10;
-                    }
-
-
-
-                    //Priority 1
-                    if (!isRegistered)
-                    {
-                        weighting30.Icon = MetricsIconEnum.Error.ToString();
-                        weighting30.Color = MetricsColorEnum.Error.ToString();
-                        weighting30.Subject = "Not registered on Funda App";
-                        weighting30.Notes = "Request registration on Funda App";
-                        priority = 1;
-                        weighting = 30;
-                    }
-
-
-                    //priority 0
-                    if (isLeaving)
-                    {
-                        weighting30.Icon = MetricsIconEnum.Error.ToString();
-                        weighting30.Color = MetricsColorEnum.Error.ToString();
-                        weighting30.Subject = "Practitioner is leaving on " + user.DateToBeRemoved;
-                        weighting30.Notes = "Practitioner is leaving on " + user.DateToBeRemoved;
-                        priority = 0;
-                        weighting = 30;
-                    }
-
-                    // PQA - EC-482 - start ------------------------
-                    if (type == "practitioner")
-                    {
-                        // license Status
-                        License SSLicense = userLicenseManager.GetLicenseForUserForType(user.UserId, Constants.SSSettings.ss_smart_space_licence);
-
-                        // Practitioner has a license and not delicensed
-                        if (SSLicense != null)
-                        {
-
-                            if (SSLicense.DelicensedDate != null)
-                            {
-                                // 1. immediately flag delicencing when yes on 'Did you observe an adult hitting or smacking a child at this programme?'
-                                VisitData PQAVisit =
-                                (
-                                    from visit in visitRepo.GetAll().Where(x => x.Practitioner.User.Id == user.UserId)
-                                    join visitData in visitDataRepo.GetAll().Where(y => y.Question == Constants.SSSettings.step16_q1 && y.QuestionAnswer == Constants.SSSettings.answer_yes) on visit.Id equals visitData.VisitId
-                                    select visitData
-                                ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
-
-                                // get pga rating
-                                List<Visit> allPqaVisits = visitManager.GetPQAVisitsForPractitioner(user.UserId);
-                                Visit visit1 = allPqaVisits.GetItemByIndex(0);
-                                Visit visit2 = allPqaVisits.GetItemByIndex(1);
-                                Visit visit3 = allPqaVisits.GetItemByIndex(2);
-                                PQARating pqaRating1 = visit1 != null ? visitDataManager.GetPractitionerPQARating(visit1) : new PQARating();
-                                PQARating pqaRating2 = visit2 != null ? visitDataManager.GetPractitionerPQARating(visit2) : new PQARating();
-                                PQARating pqaRating3 = visit3 != null ? visitDataManager.GetPractitionerPQARating(visit3) : new PQARating();
-
-                                // 2. When there are 2 red ratings delicence
-                                int redRating = 0;
-                                if (pqaRating1.OverallRatingColor == MetricsColorEnum.Error.ToString())
-                                {
-                                    redRating++;
-                                }
-                                else if (pqaRating2.OverallRatingColor == MetricsColorEnum.Error.ToString())
-                                {
-                                    redRating++;
-                                }
-                                else if (pqaRating3.OverallRatingColor == MetricsColorEnum.Error.ToString())
-                                {
-                                    redRating++;
-                                }
-
-                                // this is the highest priority item
-                                if (PQAVisit != null || redRating == 2)
-                                {
-                                    weighting30.Icon = MetricsIconEnum.Error.ToString();
-                                    weighting30.Color = MetricsColorEnum.Error.ToString();
-                                    weighting30.Subject = "Delicence SmartStarter";
-                                    weighting30.Notes = "";
-                                    priority = 0;
-                                    weighting = 30;
-                                }
-                            }
-                            else
-                            {
-                                // Overdue PQA visit 1
-                                Visit firstPQAVisit = visitManager.GetVisitForUserForType(user.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_pqa_visit_1);
-                                if (firstPQAVisit != null)
-                                {
-                                    if (!firstPQAVisit.Attended && firstPQAVisit.PlannedVisitDate < DateTime.Now)
-                                    {
-                                        weighting20.Icon = MetricsIconEnum.Error.ToString();
-                                        weighting20.Color = MetricsColorEnum.Error.ToString();
-                                        weighting20.Subject = "First PQA overdue";
-                                        weighting20.Notes = firstPQAVisit.PlannedVisitDate.ToShortDateString();
-                                        priority = 1;
-                                        weighting = 20;
-                                    }
-                                    if (!firstPQAVisit.Attended && firstPQAVisit.PlannedVisitDate > DateTime.Now)
-                                    {
-                                        weighting10.Icon = MetricsIconEnum.Warning.ToString();
-                                        weighting10.Color = MetricsColorEnum.Warning.ToString();
-                                        weighting10.Subject = "First PQA due";
-                                        weighting10.Notes = firstPQAVisit.PlannedVisitDate.ToShortDateString();
-                                        priority = 2;
-                                        weighting = 10;
-                                    }
-                                }
-
-                                // Overdue PQA reaccreditation visit 1
-                                Visit firstAccreditationPQAVisit = visitManager.GetVisitForUserForType(user.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
-                                if (firstAccreditationPQAVisit != null)
-                                {
-                                    if (!firstAccreditationPQAVisit.Attended && firstAccreditationPQAVisit.PlannedVisitDate < DateTime.Now)
-                                    {
-                                        weighting20.Icon = MetricsIconEnum.Error.ToString();
-                                        weighting20.Color = MetricsColorEnum.Error.ToString();
-                                        weighting20.Subject = "PQA reaccreditation overdue";
-                                        weighting20.Notes = "";
-                                        priority = 1;
-                                        weighting = 20;
-                                    }
-                                    if (!firstAccreditationPQAVisit.Attended && firstAccreditationPQAVisit.PlannedVisitDate > DateTime.Now)
-                                    {
-                                        weighting10.Icon = MetricsIconEnum.Warning.ToString();
-                                        weighting10.Color = MetricsColorEnum.Warning.ToString();
-                                        weighting10.Subject = "PQA reaccreditation due";
-                                        weighting10.Notes = firstAccreditationPQAVisit.PlannedVisitDate.ToShortDateString();
-                                        priority = 2;
-                                        weighting = 10;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    // PQA - end ------------------------
-
-                    /*
-                     Working in Priority high to low (in SLA terms, lower digits priority is higher) and weighting low to high (more important carries more weight) in seperate streams so that importance overrides
-                    TODO: cleanup and use less code
-                     */
-                    if (weighting == 10)
-                    {
-                        finalMessageToDisplay = weighting10.Subject;
-                        finalIcon = weighting10.Icon;
-                        finalColor = weighting10.Color;
-                        finalNotes = weighting10.Notes;
-                    }
-
-                    if (priority >= 0 && priority < 9)
-                    {
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
-
-
-
-                    //build up display for this user
-                    NotificationDisplay displayPracti = new NotificationDisplay()
-                    {
-                        Subject = finalMessageToDisplay,
-                        Icon = finalIcon,
-                        Color = finalColor,
-                        Message = finalMessageToDisplay,
-                        Notes = finalNotes,
-                        UserId = Guid.Parse(user.UserId),
-                        UserType = "practitioner"
-                    };
-
-                    notificationList.Add(displayPracti);
-                }
-            }
-
-            return notificationList;
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
@@ -1503,5 +1150,706 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return practitionerMetricReport;
         }
 
+        private IEnumerable<NotificationDisplay> GetChildNotifications(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+
+            //child view from practitioner/principal/coach
+            var children = childRepo.GetAll();
+            foreach (var user in children)
+            {
+                NotificationDisplay displayChild = new NotificationDisplay()
+                {
+                    Subject = "Missing Attendance",
+                    Icon = MetricsIconEnum.Error.ToString(),
+                    Color = MetricsColorEnum.Error.ToString(),
+                    Message = "",
+                    Notes = "",
+                    UserId = Guid.Parse(user.UserId),
+                    UserType = "child"
+                };
+
+                yield return displayChild;
+            }
+        }
+
+        private IEnumerable<NotificationDisplay> GetPractitionerNotifications(
+            [Service] AttendanceTrackingRepository attendanceRepo,
+            [Service] VisitDataManager visitDataManager,
+            [Service] IncomeExpenseService incomeManager,
+            [Service] IHolidayService<Holiday> holidayService,
+            [Service] PersonnelService personnelService,
+            IGenericRepositoryFactory repoFactory,
+            string uId,
+            string mode)
+        {
+            var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
+            var visitRepo = repoFactory.CreateRepository<Visit>(userContext: uId);
+            var visitDataRepo = repoFactory.CreateRepository<VisitData>(userContext: uId);
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+            var licenseRepo = repoFactory.CreateRepository<License>(userContext: uId);
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var clubMeetingRegisterRepo = repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: uId);
+            var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
+            var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+
+            var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
+            var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
+            var currentMonthEnd = DateTime.Now.GetEndOfMonth();
+
+            List<Practitioner> practitioners;
+            switch (mode)
+            {
+                case "coach":
+                    practitioners = practRepo.GetAll().Where(x => x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(uId)).ToList();
+                    break;
+                case "principal":
+                    practitioners = practRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(uId)).ToList();
+                    break;
+                default:
+                    // How/Does this get used by a single practitioner ???
+                    practitioners = practRepo.GetAll().Where(x => x.UserId.Equals(uId)).ToList();
+                    break;
+            }
+
+            var pracitionerUserIds = practitioners.Select(y => y.UserId);
+            var classrooms = classroomRepo.GetAll().ToList();
+            var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId) && x.AbsentDate >= previousMonthStart).ToList();
+            var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId)).ToList();
+            var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId)).ToList();
+            var classroomGroups = classroomGroupRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+
+            foreach (var practitioner in practitioners)
+            {
+                var notification = new NotificationDisplay()
+                {
+                    UserId = Guid.Parse(practitioner.UserId),
+                    UserType = "practitioner"
+                };
+
+                #region ON LEAVE
+                if (absenteeDays.Any(x => x.UserId == practitioner.UserId && x.AbsentDate.Date == DateTime.Now.Date))
+                {
+                    notification.Subject = "On leave";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                var firstPqaVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1).FirstOrDefault();
+                var secondPqaVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_2).FirstOrDefault();
+                var thirdPqaVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_3).FirstOrDefault();
+
+                // NOTE - this might not occur since we auto remove practitioners when delicensing, it's a fallback in case the process was interupted
+                #region DELICENSE SMARTSTARTER
+                if (licenses.Any(x => x.UserId == practitioner.UserId && x.DelicensedDate != null))
+                {
+                    var redFlagVisit =
+                    (
+                        from visit in visitRepo.GetAll().Where(x => x.Practitioner.User.Id == practitioner.UserId)
+                        join visitData in visitDataRepo.GetAll().Where(y => y.Question == Constants.SSSettings.step16_q1 && y.QuestionAnswer == Constants.SSSettings.answer_yes) on visit.Id equals visitData.VisitId
+                        select visitData
+                    ).OrderByDescending(y => y.InsertedDate).Any();
+
+                    if (redFlagVisit)
+                    {
+                        notification.Subject = "Delicense SmartStarter";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Delicense SmartStarter";
+                        yield return notification;
+                        continue;
+                    }
+
+                    var pqaRating1 = firstPqaVisit != null ? visitDataManager.GetPractitionerPQARating(firstPqaVisit) : new PQARating();
+                    var pqaRating2 = secondPqaVisit != null ? visitDataManager.GetPractitionerPQARating(secondPqaVisit) : new PQARating();
+                    var pqaRating3 = thirdPqaVisit != null ? visitDataManager.GetPractitionerPQARating(thirdPqaVisit) : new PQARating();
+
+                    if ((new[] { pqaRating1, pqaRating2, pqaRating3 }).Count(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()) >= 2)
+                    {
+                        notification.Subject = "Delicense SmartStarter";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Delicense SmartStarter";
+                        yield return notification;
+                        continue;
+                    }
+                }
+                #endregion
+
+                #region NOT REGISTERED ON FUNDA APP
+                if (!practitioner.IsRegistered.HasValue || practitioner.IsRegistered.Value == false)
+                {
+                    notification.Subject = "Not registered on Funda App";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "Request registration on Funda App";
+                    notification.GroupingName = "Not registered on Funda App";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region FIRST PQA OVERDUE
+                if (firstPqaVisit != null && !firstPqaVisit.Attended && firstPqaVisit.PlannedVisitDate < DateTime.Now)
+                {
+                    notification.Subject = "First PQA overdue";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = firstPqaVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "First PQA overdue";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region PQA REACCREDITATION OVERDUE
+                var firstAccreditationPqaVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                if (firstAccreditationPqaVisit != null && !firstAccreditationPqaVisit.Attended && firstAccreditationPqaVisit.PlannedVisitDate < DateTime.Now)
+                {
+                    notification.Subject = "PQA reacceditation overdue";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = firstAccreditationPqaVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "PQA reaccreditation overdue";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region FIRST SITE VISIT OVERDUE
+                var firstSiteVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.first_site_visit).FirstOrDefault();
+                if (firstSiteVisit != null && !firstSiteVisit.ActualVisitDate.HasValue && firstSiteVisit.PlannedVisitDate < DateTime.Now)
+                {
+                    notification.Subject = "First site visit overdue";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = firstSiteVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "First site visist overdue";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region SECOND SITE VISIT OVERDUE
+                var secondSiteVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.second_site_visit).FirstOrDefault();
+                if (secondSiteVisit != null && !secondSiteVisit.ActualVisitDate.HasValue && secondSiteVisit.PlannedVisitDate < DateTime.Now)
+                {
+                    notification.Subject = "Second site visit overdue";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = secondSiteVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "Second site visit overdue";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+                                
+                #region SMARTSPACE VISIT OVERDUE
+                var smartSpaceVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_smart_space_checklist).FirstOrDefault();
+                if (smartSpaceVisit != null && !smartSpaceVisit.ActualVisitDate.HasValue && smartSpaceVisit.PlannedVisitDate < DateTime.Now)
+                {
+                    notification.Subject = "SmartSpace visit overdue";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = smartSpaceVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "SmartSpace visist overdue";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region REMOVED FROM PROGRAMME
+                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId)
+                    .Where(x => x.IsActive)
+                    .OrderByDescending(x => x.InsertedDate)
+                    .FirstOrDefault();
+
+                if (removalHistory != null)
+                {
+                    notification.Subject = "Removed from programme";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval}";
+                    notification.GroupingName = "Removed from programe";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region OFFLINE ON FUNDA APP FOR 2 WEEKS
+                if (practitioner.User.LastSeen < DateTime.Now.AddDays(-14))
+                {
+                    notification.Subject = "Offline on Funda app for 2 weeks";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = $"Last login was {practitioner.User.LastSeen.ToString("MM/dd/yyyy h:mm tt")}";
+                    notification.GroupingName = "Offline on Funda app for 2 weeks";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region MISSING INCOME STATEMENT
+                var previousMonthBalanceSheet = incomeManager.GetAllStatementsBalanceSheet(practitioner.UserId, previousMonthEnd.Year, previousMonthEnd.Month).FirstOrDefault();
+                if (previousMonthBalanceSheet == null || previousMonthBalanceSheet.SubmittedDate == null || previousMonthBalanceSheet.AutoSubmitted)
+                {
+                    notification.Subject = $"Missing income statement";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Missing income statement";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region PROGRESS REPORTS OVERDUE
+                var isPeriod1 = previousMonthStart.Month <= 7;
+                var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+                var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
+
+                if (DateTime.Now > reportOverDueStart && DateTime.Now < reportOverDueEnd)
+                {
+                    var missedReports = GetChildProgressReportStatusCountsForPractitioner(
+                    repoFactory,
+                    uId,
+                    practitioner.Hierarchy,
+                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList(),
+                    DateTime.Now);
+
+                    if (missedReports.overdueReportsSubmitted > 0)
+                    {
+                        notification.Subject = "Progress reports overdue";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Progress reports overdue";
+                        yield return notification;
+                        continue;
+                    }
+                }
+                #endregion
+
+                #region MISSING ATTENDANCE REGISTERS
+                var missingRegisterDayCount = GetMissingAttendanceReportsAsync(
+                classProgrammeRepo,
+                attendanceRepo,
+                holidayService,
+                classroomGroupRepo,
+                previousMonthStart,
+                previousMonthEnd,
+                practitioner).Result;
+
+                if (missingRegisterDayCount > 0)
+                {
+                    notification.Subject = $"Missing attendance registers";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Missing attendance registers";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region PROGRAMME LOST R300 IN LAST 2 MONTHS
+                var lastMonthBalance = incomeManager.GetAllStatementsBalanceSheet(practitioner.UserId, previousMonthStart.Year, previousMonthStart.Month).FirstOrDefault();
+                var secondLastMonth = previousMonthStart.AddMonths(-1);
+                var secondLastMonthBalance = incomeManager.GetAllStatementsBalanceSheet(practitioner.UserId, secondLastMonth.Year, secondLastMonth.Month).FirstOrDefault();
+                if (lastMonthBalance != null && secondLastMonthBalance != null)
+                {
+                    var balance = lastMonthBalance.Balance + secondLastMonthBalance.Balance;
+                    if (balance < 0)
+                    {
+                        notification.Subject = $"Programme lost R{balance} in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Programme losing money";
+                        yield return notification;
+                        continue;
+                    }
+                }
+                #endregion
+
+                #region 50% CHILD ATTENDANCE
+                var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId, previousMonthStart, previousMonthEnd);
+                if (attendancePercentage < 60)
+                {
+                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "Improve attendance";
+                    notification.GroupingName = "50% child attendance last month";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
+                if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
+                {
+                    var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId);
+
+                    var warningCount = 0;
+                    var warningString = MetricsColorEnum.Warning.ToString();
+                    if (traineeTimeline.DayOneStartUpTrainingColor == warningString) warningCount++;
+                    if (traineeTimeline.CommunitySupportColor == warningString) warningCount++;
+                    if (traineeTimeline.ConsolidationMeetingColor == warningString) warningCount++;
+                    if (traineeTimeline.SignFranchiseeAgreementColor == warningString) warningCount++;
+                    if (traineeTimeline.SignStartUpSupportAgreementColor == warningString) warningCount++;
+                    if (traineeTimeline.SmartSpaceChecklistColor == warningString) warningCount++;
+                    if (traineeTimeline.SmartSpaceLicenseColor == warningString) warningCount++;
+                    if (traineeTimeline.SSCoachVisitColor == warningString) warningCount++;
+                    if (traineeTimeline.StarterLicenseColor == warningString) warningCount++;
+                    if (traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
+
+                    if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28))
+                    {
+                        if (warningCount > 0)
+                        {
+                            notification.Subject = "Remove Trainee";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Remove trainee";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    else if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-14))
+                    {
+                        if (warningCount > 0)
+                        {
+                            notification.Subject = "Trainee onboarding incomplete";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Trainee onboarding incomplete";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        var overdueCount = 0;
+                        if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
+
+                        if (overdueCount > 2)
+                        {
+                            notification.Subject = $"{overdueCount} trainee onboarding tasks overdue";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Trainee onboarding tasks overdue";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                }
+                #endregion
+
+                // STARTUP SUPPORT ENDING (1 month)
+
+                // Club features not implemented yet
+                // NOT ASSIGNED TO A CLUB
+                // MISSED 3 CLUB MEETINGS
+
+                #region LESS THAN 5 CHILDREN REGISTERED                
+                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
+                var classroom = practitionerClassrooms.FirstOrDefault();
+
+                if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
+                {                    
+                    var numberOfLearners = classroomGroupRepo.GetAll()
+                        .Where(x => practitionerClassrooms.Select(x => x.Id).Contains(x.ClassroomId))
+                        .SelectMany(x => x.Learners)
+                        .Count();
+
+                    if (numberOfLearners < 5)
+                    {
+                        notification.Subject = "Less than 5 children registered";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Less than 5 children registered";
+                        yield return notification;
+                    }
+                }
+                #endregion
+
+                #region PQA REACCREDITATION DUE
+                if (firstAccreditationPqaVisit != null && !firstAccreditationPqaVisit.Attended && firstAccreditationPqaVisit.PlannedVisitDate > DateTime.Now)
+                {
+                    notification.Subject = $"{firstAccreditationPqaVisit.PlannedVisitDate.ToShortDateString()}, PQA reaccreditation due";
+                    notification.Icon = MetricsIconEnum.None.ToString(); //TODO
+                    notification.Color = MetricsColorEnum.None.ToString(); // TODO
+                    notification.Message = "";
+                    notification.Notes = firstAccreditationPqaVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "PQA reaccreditation due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region FIRST PQA DUE
+                if (firstPqaVisit != null && !firstPqaVisit.Attended && firstPqaVisit.PlannedVisitDate > DateTime.Now)
+                {
+                    notification.Subject = $"{firstPqaVisit.PlannedVisitDate.ToShortDateString()}, First PQA due";
+                    notification.Icon = MetricsIconEnum.None.ToString(); //TODO
+                    notification.Color = MetricsColorEnum.None.ToString(); // TODO
+                    notification.Message = "";
+                    notification.Notes = firstPqaVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "First PQA visit due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region SMARTSPACE VISIT DUE
+                if (smartSpaceVisit != null && !smartSpaceVisit.ActualVisitDate.HasValue && smartSpaceVisit.PlannedVisitDate > DateTime.Now)
+                {
+                    notification.Subject = $"{smartSpaceVisit.PlannedVisitDate.ToShortDateString()}, SmartSpace visit due";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = smartSpaceVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "SmartSpace visit due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region FIRST SITE VISIT DUE
+                if (firstSiteVisit != null && !firstSiteVisit.ActualVisitDate.HasValue && firstSiteVisit.PlannedVisitDate > DateTime.Now)
+                {
+                    notification.Subject = $"{firstSiteVisit.PlannedVisitDate.ToShortDateString()}, First site visit due";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = firstSiteVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "First site visit due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region SECOND SITE VISIT DUE
+                if (secondSiteVisit != null && !secondSiteVisit.ActualVisitDate.HasValue && secondSiteVisit.PlannedVisitDate > DateTime.Now)
+                {
+                    notification.Subject = $"{secondSiteVisit.PlannedVisitDate.ToShortDateString()}, Second site visit due";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = secondSiteVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "Second site visit due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region PQA FOLLOW UP VISIT DUE
+                var pqaFollowupVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
+                if (pqaFollowupVisit != null && !pqaFollowupVisit.Attended && pqaFollowupVisit.PlannedVisitDate < DateTime.Now)
+                {
+                    notification.Subject = $"{pqaFollowupVisit.PlannedVisitDate.ToShortDateString()}, PQA follow up visit due";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = pqaFollowupVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "PQA follow up visit due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region REACCREDITATION FOLLOW UP VISIT DUE
+                var reaccreditationFollowupVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                if (reaccreditationFollowupVisit != null && !reaccreditationFollowupVisit.Attended && reaccreditationFollowupVisit.PlannedVisitDate < DateTime.Now)
+                {
+                    notification.Subject = $"{reaccreditationFollowupVisit.PlannedVisitDate.ToShortTimeString()}, PQA reaccreditation follow up due";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = reaccreditationFollowupVisit.PlannedVisitDate.ToShortDateString();
+                    notification.GroupingName = "PQA reaccreditation follow up due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region BUSINESS SKILLS TRAINING DUE
+                if (!practitioner.AttendedBusinessSkills.HasValue || !practitioner.AttendedBusinessSkills.Value)
+                {
+                    notification.Subject = $"Business skills training due";
+                    notification.Icon = MetricsIconEnum.Warning.ToString();
+                    notification.Color = MetricsColorEnum.Warning.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Business skills training due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region CHILD PROGRESS TRAINING DUE
+                if (!practitioner.AttendedChildProgress.HasValue || !practitioner.AttendedChildProgress.Value)
+                {
+                    notification.Subject = $"Child progress training due";
+                    notification.Icon = MetricsIconEnum.Warning.ToString();
+                    notification.Color = MetricsColorEnum.Warning.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Child progress training due";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                // STARTUP SUPPORT ENDING (3 months)
+
+                #region 70% CHILD ATTENDENCE
+                if (attendancePercentage < 80)
+                {
+                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                    notification.Icon = MetricsIconEnum.Warning.ToString();
+                    notification.Color = MetricsColorEnum.Warning.ToString();
+                    notification.Message = "";
+                    notification.Notes = "Improve attendance";
+                    notification.GroupingName = "70% child attendance";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region CHILDREN DID NOT PROGRESS
+                var children = childRepo.GetAll().Where(c => c.IsActive == true
+                    && c.Hierarchy.StartsWith(practitioner.Hierarchy))
+                    .Include(c => c.User)
+                    .ToListAsync().Result;
+                var childProgress = GetChildProgress(repoFactory, GetReportPeriodStart(previousMonthStart.Year, previousMonthStart.Month <= 7), children);
+
+                if (childProgress.notProgressedFor2Periods > 0)
+                {
+                    notification.Subject = $"{childProgress.notProgressedFor2Periods} children did not progress";
+                    notification.Icon = MetricsIconEnum.Warning.ToString();
+                    notification.Color = MetricsColorEnum.Warning.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Children did not progress";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region NEW TRAINEE
+                if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
+                {
+                    notification.Subject = "New trainee";
+                    notification.Icon = MetricsIconEnum.Success.ToString();
+                    notification.Color = MetricsColorEnum.Success.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "New trainee";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region 80% CHILD ATTENDANCE
+                if (attendancePercentage >= 80)
+                {
+                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                    notification.Icon = MetricsIconEnum.Success.ToString();
+                    notification.Color = MetricsColorEnum.Success.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "80% child attendance";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region MADE R300 PROFIT  - WHAT IS THIS PERIOD? Last 3 moneths? Is it tied to another alert I can look up?
+                if (lastMonthBalance != null && secondLastMonthBalance != null)
+                {
+                    var balance = lastMonthBalance.Balance + secondLastMonthBalance.Balance;
+                    if (balance > 0)
+                    {
+                        notification.Subject = $"Made R{balance} profit in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Programme making profit";
+                        yield return notification;
+                        continue;
+                    }
+                }
+                #endregion
+
+                #region NEW SMARTSTARTER
+                if (practitioner.IsRegistered.HasValue && practitioner.IsRegistered.Value && practitioner.StartDate.HasValue && practitioner.StartDate.Value > DateTime.Now.AddMonths(-3))
+                {
+                    notification.Subject = "New SmartStarter";
+                    notification.Icon = MetricsIconEnum.Success.ToString();
+                    notification.Color = MetricsColorEnum.Success.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "New SmartStarter";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+                
+                #region CLASSROOM NAME
+                notification.Subject = classroom?.Name ?? "Unknown classroom";
+                notification.Icon = MetricsIconEnum.Success.ToString();
+                notification.Color = MetricsColorEnum.Success.ToString();
+                notification.Message = "";
+                notification.Notes = "";
+                yield return notification;
+                continue;
+                #endregion
+            }
+        }
     }
 }

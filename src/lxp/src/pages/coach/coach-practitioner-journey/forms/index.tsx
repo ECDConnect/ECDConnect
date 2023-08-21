@@ -237,8 +237,6 @@ export const Form = ({
     PractitionerActions.DEACTIVATE_PRACTITIONER
   );
 
-  const wasLoading = usePrevious(isLoading);
-  const wasLoadingReAccreditation = usePrevious(isLoadingReAccreditationVisit);
   const wasLoadingDeactivate = usePrevious(isLoadingDeactivate);
 
   const isStep11AnswerTrue =
@@ -375,14 +373,17 @@ export const Form = ({
   }, [dialog]);
 
   const onSubmitSupportVisit = useCallback(
-    (payload: CmsVisitDataInputModelInput, visitType?: InputMaybe<string>) => {
+    async (
+      payload: CmsVisitDataInputModelInput,
+      visitType?: InputMaybe<string>
+    ) => {
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 'support-visit',
         })
       );
-      appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
+      await appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
       onBack?.();
       showMessage({
         message: `${
@@ -404,7 +405,7 @@ export const Form = ({
   );
 
   const onSubmitFollowUpVisit = useCallback(
-    (
+    async (
       payload: CmsVisitDataInputModelInput,
       type: 'pqa' | 're-accreditation'
     ) => {
@@ -415,7 +416,9 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        appDispatch(pqaThunkActions.addFollowUpVisitForPractitioner(payload));
+        await appDispatch(
+          pqaThunkActions.addFollowUpVisitForPractitioner(payload)
+        );
 
         window.sessionStorage.setItem(
           currentActivityKey,
@@ -431,7 +434,7 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        appDispatch(
+        await appDispatch(
           pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner(
             payload
           )
@@ -503,14 +506,14 @@ export const Form = ({
   );
 
   const onSubmitPrePqa = useCallback(
-    ({ payload }: SubmitProps) => {
+    async ({ payload }: SubmitProps) => {
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 'pre-pqa',
         })
       );
-      appDispatch(pqaThunkActions.addVisitFormData(payload));
+      await appDispatch(pqaThunkActions.addVisitFormData(payload));
       displayChildrenDialog(
         activityName === visitTypes.prePqa.first.name
           ? 'First site visit'
@@ -581,6 +584,8 @@ export const Form = ({
       );
       await appDispatch(pqaThunkActions.addReAccreditationVisitData(content));
 
+      if (isToRemoveSmartStarter) return;
+
       if (!isBasicSmartSpaceStandardsCompleted) {
         // TODO: add schedule feature
         return onBack?.();
@@ -592,6 +597,7 @@ export const Form = ({
     [
       appDispatch,
       isBasicSmartSpaceStandardsCompleted,
+      isToRemoveSmartStarter,
       onBack,
       practitionerId,
       showMessage,
@@ -807,23 +813,6 @@ export const Form = ({
   useEffect(() => {
     getSelfAssessment();
   }, [getSelfAssessment]);
-
-  useEffect(() => {
-    if (
-      !isToRemoveSmartStarter &&
-      ((wasLoading && !isLoading) ||
-        (wasLoadingReAccreditation && !isLoadingReAccreditationVisit))
-    ) {
-      onBack?.();
-    }
-  }, [
-    isToRemoveSmartStarter,
-    isLoading,
-    wasLoading,
-    onBack,
-    wasLoadingReAccreditation,
-    isLoadingReAccreditationVisit,
-  ]);
 
   useEffect(() => {
     if (wasLoadingDeactivate && !isLoadingDeactivate) {

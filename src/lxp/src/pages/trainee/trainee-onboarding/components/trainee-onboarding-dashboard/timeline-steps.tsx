@@ -152,7 +152,8 @@ export const timelineSteps = (
   isOnline: boolean,
   visits?: Maybe<Visit>[],
   nextStep?: string,
-  consolidationMeetingDataStatus?: Maybe<string> | undefined
+  consolidationMeetingDataStatus?: Maybe<string> | undefined,
+  isOnStipend?: boolean
 ): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
   steps.push(
@@ -228,18 +229,20 @@ export const timelineSteps = (
       consolidationMeetingDataStatus
     )
   );
-  steps.push(
-    setStep(
-      timeline?.signStartUpSupportAgreementStatus ||
-        'Sign start-up support agreement',
-      timeline?.signStartUpSupportAgreementDate ||
-        timeline?.signStartUpSupportAgreementDeadlineDate,
-      timeline?.signStartUpSupportAgreementColor,
-      () => onView('Sign start-up support agreement'),
-      nextStep,
-      consolidationMeetingDataStatus
-    )
-  );
+  if (isOnStipend) {
+    steps.push(
+      setStep(
+        timeline?.signStartUpSupportAgreementStatus ||
+          'Sign start-up support agreement',
+        timeline?.signStartUpSupportAgreementDate ||
+          timeline?.signStartUpSupportAgreementDeadlineDate,
+        timeline?.signStartUpSupportAgreementColor,
+        () => onView('Sign start-up support agreement'),
+        nextStep,
+        consolidationMeetingDataStatus
+      )
+    );
+  }
 
   return steps as StepItem<{ date: Date }>[];
 };

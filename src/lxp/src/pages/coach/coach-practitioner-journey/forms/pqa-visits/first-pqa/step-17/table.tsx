@@ -133,7 +133,6 @@ export const Rating = ({
   const rating = sectionList
     .map((item) => item.score)
     .reduce((total, number) => total + number, 0);
-  const ratingColours = sectionList.map((item) => item.color);
 
   const getCard = () => {
     const isOrangeFlag =
@@ -146,7 +145,6 @@ export const Rating = ({
 
     if (
       rating > 42 &&
-      ratingColours.every((item) => item === 'successMain') &&
       !isRedFlagSmartSpaceCheck &&
       !isRedFlagSmartSpaceLicence &&
       !isOrangeFlag

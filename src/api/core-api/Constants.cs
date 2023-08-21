@@ -1,5 +1,6 @@
 using iTextSharp.text;
 using Org.BouncyCastle.Asn1.X509.Qualified;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -712,6 +713,7 @@ namespace EcdLink.Api.CoreApi
             public const string mother_growth = "Mother growth monitoring (Mid-upper arm circumference)";
             public const string alcohol_use = "Alcohol use";
             public const string child_docs = "Child documentation";
+            public const string child_road_to_health = "Road to Health Book";
         }
 
         public static class SSIntegrationSettings
@@ -809,18 +811,19 @@ namespace EcdLink.Api.CoreApi
             public const string child_clients = "Child Clients";
             public const string child_clients_ac1 = "Child support grant - all eligible children accessing the CSG";
             public const string child_clients_ac2 = "Love, play and talk for healthy development guide. All children screened";
-            public const string child_clients_ac3 = "Measuring childrens' growth length - normal";
+            public const string child_clients_ac3 = "Measuring children's growth length";
             public const string child_clients_ac4 = "Measuring childrens' growth length - referral not required";
             public const string child_clients_ac5 = "Measuring childrens' growth length - referral required";
-            public const string child_clients_ac6 = "Measuring childrens' growth weight - normal";
+            public const string child_clients_ac6 = "Measuring children's growth weight";
             public const string child_clients_ac7 = "Measuring childrens' growth weight - referral not required";
             public const string child_clients_ac8 = "Measuring childrens' growth weight - referral required";
-            public const string child_clients_ac9 = "Measuring childrens' growth MUAC - normal";
+            public const string child_clients_ac9 = "Measuring children's growth MUAC";
             public const string child_clients_ac10 = "Measuring childrens' growth MUAC - referral not required";
             public const string child_clients_ac11 = "Measuring childrens' growth MUAC - referral required";
             public const string child_clients_ac12 = "Vitamin A";
             public const string child_clients_ac13 = "Deworming";
             public const string child_clients_ac14 = "Immunisations";
+            
 
             public const string SSChild = "Child";
             public const string child_data_collection = "Child Data Collection";
