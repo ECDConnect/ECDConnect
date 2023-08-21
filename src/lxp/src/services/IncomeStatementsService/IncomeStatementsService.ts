@@ -318,21 +318,17 @@ class IncomeStatementsService {
     return response.data.data.allStatementsIncome;
   }
 
-  async submitStatement(
-    id: string,
-    input: StatementsSubmitInput
-  ): Promise<any> {
+  async submitStatement(input: StatementsSubmitInput): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation submitStatement($id: String!,$input: StatementsSubmitInput) {      
-           submitStatement(id: $id, input: $input) {
+      mutation submitStatement($input: StatementsSubmitInput) {      
+           submitStatement(input: $input) {
             result  resultObject resultMessage 
            } 
        }
       `,
       variables: {
-        id,
         input,
       },
     });

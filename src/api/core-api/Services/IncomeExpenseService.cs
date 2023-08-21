@@ -124,13 +124,14 @@ namespace ECDLink.Core.Services
             int submitEndDate = int.Parse(_submitEndDate.Value.IncomeStatementSubmitEnd);
             var allMonths = new List<int>();
 
-            var statements = statementsRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.Submitted.Equals(true)).ToList();
+            var statements = statementsRepo.GetAll().Where(x => 
+                string.Equals(x.UserId, userId) && 
+                x.Submitted.Equals(true) && 
+                (year == 0 || x.Year.Equals(year))) // Filter to specific year
+                .ToList();
+
             if (statements.Any())
             {
-                if (year > 0) //filter to specific year
-                {
-                    statements = statements.Where(x => x.Year.Equals(year)).ToList();
-                }
                 //supplied year loop
                 var allYears = statements.Select(x => x.Year).Distinct().ToList();
                 if (allYears.Any())
@@ -347,7 +348,7 @@ namespace ECDLink.Core.Services
         private IncomeExpenseLinesMonthly GetMonthlyIncomeExpenses(string userId, int year, int month)
         {
             IncomeExpenseLinesMonthly incomeExpenses = new IncomeExpenseLinesMonthly();
-            DateTime previousTimePeriod = DateTime.Now.AddMonths(-1); //previous months date to check for any unsubmitted records of current - 1 month
+            var previousTimePeriod = new DateTime(year, month, 1).AddMonths(-1); //previous months (to submission) date to check for any unsubmitted records of current
 
             //all lines
             var latestIncomeRowsAll = GetAllIncomeLines(userId, year, month, LinesStatus.ANY);
@@ -775,15 +776,15 @@ namespace ECDLink.Core.Services
 
         public bool SubmitStatement(StatementsSubmit model, bool autoSubmitted = false)
         {
-            bool retVal = false;
+            var retVal = false;
             var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            int rows = 0;
-            DateTime previousTimePeriod = DateTime.Now.AddMonths(-1); //previous months date to check for any unsubmitted records of current - 1 month
-            IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(model.UserId, model.Year, model.Month);
+            var rows = 0;
+            var previousTimePeriod = new DateTime(model.Year, model.Month, 1).AddMonths(-1); //previous months (to submission) date to check for any unsubmitted records of current
+            var incomeExpenses = GetMonthlyIncomeExpenses(model.UserId, model.Year, model.Month);
 
             if (model.Period == "Annual")
             {
-                ////annually needs to look at the entire years statements and sumbit all these for only that year.
+                // annually needs to look at the entire years statements and sumbit all these for only that year.
                 var annualRows = statementRepo.GetAll().Where(x => string.Equals(x.UserId, model.UserId) && x.AnnualSubmittedDate == null && x.SubmittedDate.Year.Equals(model.Year)).ToList();
                 foreach (var row in annualRows)
                 {
@@ -798,8 +799,8 @@ namespace ECDLink.Core.Services
             {
                 double allIncome = 0;
                 double allExpenses = 0;
-                //statement insert
-                StatementsIncomeStatement submittedStatement = new StatementsIncomeStatement()
+                // statement insert
+                var submittedStatement = new StatementsIncomeStatement()
                 {
                     AutoSubmitted = autoSubmitted,
                     Balance = 0,
@@ -817,8 +818,7 @@ namespace ECDLink.Core.Services
                     Id = Guid.NewGuid()
                 };
 
-
-                //income
+                // income
                 if (incomeExpenses.AllUnSubmitted.Income?.Count > 0)
                 {
                     var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
@@ -836,6 +836,7 @@ namespace ECDLink.Core.Services
                     }
                     retVal = true;
                 }
+
                 //expenses
                 if (incomeExpenses.AllUnSubmitted.Expenses != null && incomeExpenses.AllUnSubmitted.Expenses.Count > 0)
                 {
@@ -879,7 +880,10 @@ namespace ECDLink.Core.Services
                 }
             }
             if (!autoSubmitted)
+            {
                 _pointsEngineService.CalculateIncomeStatements(model.UserId, DateTime.UtcNow);
+            }
+
             return retVal;
         }
 
