@@ -8,12 +8,15 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using static NPOI.HSSF.Util.HSSFColor;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -1000,17 +1003,24 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 else if (color == MetricsColorEnum.Error.ToString())
                 {
+                    // Red rating follow up -- if the practitioner receives a red rating:
+                    // --optional - the coach can schedule / start 1 follow up visit only(no deadline since the item is only shown if the coach schedules it in calendar)
+                    // --the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit +14 days
+
                     _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
-                    _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
+                    _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_1).FirstOrDefault();
                     _linkedVisitId = linkedVisit.Id;
-                    _addNewFirstPQA = true;
+                    _addNewFirstPQA = false;
                 }
                 else if (color == MetricsColorEnum.Warning.ToString())
                 {
+                    // Orange rating follow up -- if the practitioner receives an orange rating:
+                    // --coach must conduct at least 1 follow up visit & can conduct up to 3 follow up visits if needed; deadline for follow up visit 1 = 14 days from First PQA; deadline for follow up visit 2 = 14 days from follow up visit 1; deadline for follow up visit 3(if added) = 14 days from follow up visit 2
+
                     _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
                     _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
                     _linkedVisitId = linkedVisit.Id;
-                    _addNewFirstPQA = true;
+                    _addNewFirstPQA = true; // --coach must schedule another First PQA visit when the practitioner is ready(as determined in the follow up visit flow); deadline = date of the last First PQA visit +60 days
                 }
 
                 // check to see if visit exists
@@ -1105,7 +1115,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
 
 
-                if (totalVisits < 4)
+                if (totalVisits < 3)
                 {
                     Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                  x.VisitType.Type == Constants.SSSettings.client_practitioner &&
@@ -1321,8 +1331,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     _addNewFirstReAccreditation = true;
                 }
 
-
-                if (totalVisits < 4)
+                if (totalVisits < 3)
                 {
                     Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                  x.VisitType.Type == Constants.SSSettings.client_practitioner &&
