@@ -43,6 +43,7 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
+import { EditAddress } from './edit-address/edit-address';
 
 export const PractitionerProgrammeInformation: React.FC = () => {
   const history = useHistory();
@@ -69,12 +70,12 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     (item) => item.userId !== practitioner?.userId
   );
   const isPrincipal = practitioner?.isPrincipal === true;
-
   const { createNewDocument, classroomImage, updateDocument, deleteDocument } =
     useDocuments();
   const [editFieldVisible, setEditFieldVisible] = useState(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
+  const [showEditAddress, setShowEditAddress] = useState(false);
 
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const { theme } = useTheme();
@@ -226,17 +227,17 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     ];
 
     if (
-      (practitioner?.isRegistered !== null && isPrincipal !== false) ||
+      practitioner?.isRegistered !== null ||
       practitioner?.isLeaving !== null
     ) {
       stackedActionList.push(
         {
-          title: 'Location - N/A',
-          subTitle: 'N/A',
+          title: 'Location',
+          subTitle: classroom?.siteAddress?.addressLine1,
           switchTextStyles: true,
-          actionName: undefined,
+          actionName: isPrincipal ? 'Add/Edit' : '',
           actionIcon: 'PlusIcon',
-          onActionClick: () => {},
+          onActionClick: () => setShowEditAddress(true),
         },
         {
           title: 'Type of ECD service',
@@ -392,6 +393,16 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           type={'ActionList'}
         ></StackedList>
       </BannerWrapper>
+      <Dialog
+        fullScreen
+        visible={showEditAddress}
+        position={DialogPosition.Full}
+      >
+        <EditAddress
+          setShowEditAddress={setShowEditAddress}
+          practitioner={practitioner}
+        />
+      </Dialog>
 
       <Dialog
         borderRadius="normal"
