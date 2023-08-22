@@ -1344,6 +1344,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
+                            IsOnStipend = entity.StipendType != null ? true : false,
                         };
 
                         //check phone number is valid
@@ -2115,6 +2116,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 //AttendedChildProgress = entity.AttendedChildProgress,
                                 //MonthSinceFranchisee = int.Parse(entity.MonthsSinceFranchisee),
                                 //StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
+                                IsOnStipend = entity.StipendType != null ? true : false,
                             };
                         }
                         else
@@ -2147,6 +2149,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             FranchiseeAgreementAcceptedDate = entity.FranchiseeAgreementAcceptedDate,
                             SmartSpaceLicenceDate = entity.SmartSpaceLicenceDate,
                             StipendType = entity.StipendType,
+                            IsOnStipend = entity.StipendType != null ? true : false,
                             //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage
                             //HighestEducationLevel = entity.HighestEducationLevel,
                             //StartDate
