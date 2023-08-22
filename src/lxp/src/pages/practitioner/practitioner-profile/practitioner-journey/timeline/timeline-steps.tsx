@@ -9,6 +9,7 @@ import { PQAVisits } from './steps/pqa/step-accordion-content';
 import { ReAccreditationVisits } from './steps/re-accreditation/step-accordion-content';
 import { getReAccreditationStepData } from './steps/re-accreditation/step';
 import { visitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import { time } from 'console';
 
 export interface ViewEvent {
   visit: Visit | Maybe<Visit>;
@@ -68,13 +69,15 @@ export const timelineSteps = ({
     )
   );
 
-  steps.push(
-    setStep(
-      timeline.firstAidCourseStatus,
-      timeline.firstAidDate,
-      timeline?.firstAidCourseColor
-    )
-  );
+  if (timeline.firstAidDate) {
+    steps.push(
+      setStep(
+        timeline.firstAidCourseStatus,
+        timeline.firstAidDate,
+        timeline?.firstAidCourseColor
+      )
+    );
+  }
 
   if (!!attendedSupportVisits?.length) {
     const date = new Date(
