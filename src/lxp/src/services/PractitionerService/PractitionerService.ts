@@ -265,6 +265,7 @@ class PractitionerService {
             usePhotoInReport
             setupTraineeInitiated
             isOnStipend
+            stipendType
           }
         }
       `,

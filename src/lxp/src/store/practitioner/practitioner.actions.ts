@@ -8,6 +8,7 @@ import {
   MutationUpdatePractitionerProgressArgs,
   MutationUpdatePractitionerUsePhotoInReportArgs,
   LicenseModelInput,
+  NotificationDisplay,
 } from '@ecdlink/graphql';
 
 export const PractitionerActions = {
@@ -128,7 +129,7 @@ export const getAllPractitioners = createAsyncThunk<
 );
 
 export const getPractitionerDisplayMetrics = createAsyncThunk<
-  PractitionerDto[],
+  NotificationDisplay[],
   {},
   ThunkApiType<RootState>
 >(
@@ -140,7 +141,7 @@ export const getPractitionerDisplayMetrics = createAsyncThunk<
     } = getState();
 
     try {
-      let practitionersMessageData: PractitionerDto[] | undefined;
+      let practitionersMessageData: NotificationDisplay[] | undefined;
 
       if (userAuth?.auth_token) {
         practitionersMessageData = await new PractitionerService(

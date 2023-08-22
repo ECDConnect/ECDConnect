@@ -6024,7 +6024,6 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
 };
 
 export type MutationSubmitStatementArgs = {
-  id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<StatementsSubmitInput>;
 };
 
@@ -8833,7 +8832,6 @@ export type Query = {
   allStatementsExpenses?: Maybe<Array<Maybe<StatementsExpenses>>>;
   allStatementsIncome?: Maybe<Array<Maybe<StatementsIncome>>>;
   allStatementsIncomeStatement?: Maybe<Array<Maybe<StatementsIncomeStatement>>>;
-  allStatementsStartupSupport?: Maybe<Array<Maybe<StatementsStartupSupport>>>;
   allTeamLeads?: Maybe<Array<Maybe<TeamLead>>>;
   attendance?: Maybe<Array<Maybe<Attendance>>>;
   backReferralsForInfant?: Maybe<Array<Maybe<VisitBackReferral>>>;
@@ -10411,7 +10409,7 @@ export type QueryAllPractitionersForPrincipalArgs = {
 };
 
 export type QueryAllStatementsBalanceSheetArgs = {
-  month: Scalars['Int'];
+  month?: InputMaybe<Scalars['Int']>;
   userId?: InputMaybe<Scalars['String']>;
   year: Scalars['Int'];
 };
@@ -10429,12 +10427,6 @@ export type QueryAllStatementsIncomeArgs = {
 };
 
 export type QueryAllStatementsIncomeStatementArgs = {
-  month: Scalars['Int'];
-  userId?: InputMaybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
-export type QueryAllStatementsStartupSupportArgs = {
   month: Scalars['Int'];
   userId?: InputMaybe<Scalars['String']>;
   year: Scalars['Int'];
@@ -11305,6 +11297,7 @@ export type QueryRoleForUserArgs = {
 
 export type QueryStatementsIncomeExpensesPdfDataArgs = {
   month: Scalars['Int'];
+  splitSupport?: Scalars['Boolean'];
   userId?: InputMaybe<Scalars['String']>;
   year: Scalars['Int'];
 };

@@ -50,14 +50,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             return incomeManager.GetAllStatementsIncomeStatement(userId, year, month);
         }
-        public List<StatementsStartupSupport> GetAllStatementsStartupSupport([Service] IncomeExpenseService incomeManager,
-            string userId, int year, int month)
-        {
-            return incomeManager.GetAllStatementsStartupSupport(userId, year, month);
-        }
+
         public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet([Service] IncomeExpenseService incomeManager, 
-            string userId, int year, int month)
+            string userId, int year, int? month = null)
         {
+            Console.WriteLine($"Month = {month}, Year = {year}");
             return incomeManager.GetAllStatementsBalanceSheet(userId, year, month);
         }
 
