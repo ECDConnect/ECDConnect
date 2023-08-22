@@ -3,6 +3,7 @@ import {
   ClassroomDto,
   ClassroomGroupDto,
   LearnerDto,
+  SiteAddressDto,
 } from '@ecdlink/core';
 import {
   ClassProgrammeInput,
@@ -10,6 +11,7 @@ import {
   ClassroomInput,
   LearnerInput,
   ProgrammeTypeEnum,
+  SiteAddressInput,
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -272,7 +274,6 @@ export const upsertClassroom = createAsyncThunk<
       auth: { userAuth },
       classroomData: { classroom },
     } = getState();
-
     try {
       if (userAuth?.auth_token && classroom) {
         const input: ClassroomInput = {
@@ -285,6 +286,9 @@ export const upsertClassroom = createAsyncThunk<
           NumberPractitioners: classroom.numberPractitioners,
           NumberOfOtherAssistants: classroom.numberOfOtherAssistants,
           IsActive: classroom.isActive === false ? false : true,
+          SiteAddress: classroom?.siteAddress
+            ? mapSiteAddress(classroom?.siteAddress!)
+            : null,
         };
 
         const result = await new ClassroomService(
@@ -651,4 +655,16 @@ const mapLearnerInput = (learnerDto: Partial<LearnerDto>): LearnerInput => ({
   StartedAttendance: learnerDto.startedAttendance,
   StoppedAttendance: learnerDto.stoppedAttendance,
   IsActive: learnerDto.isActive === false ? false : true,
+});
+
+const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({
+  Id: x.id,
+  AddressLine1: x.addressLine1,
+  AddressLine2: x.addressLine2,
+  AddressLine3: x.addressLine3,
+  Name: x.name,
+  PostalCode: x.postalCode,
+  ProvinceId: x.provinceId,
+  Ward: x.ward,
+  IsActive: x.isActive === false ? false : true,
 });
