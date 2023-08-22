@@ -80,7 +80,7 @@ export const timelineSteps = ({
 
   if (!!attendedSupportVisits?.length) {
     const date = new Date(
-      attendedSupportVisits[attendedSupportVisits.length - 1]?.insertedDate
+      attendedSupportVisits[attendedSupportVisits.length - 1]?.actualVisitDate
     ).toLocaleDateString('en-ZA', dateOptions);
 
     steps.push({
@@ -172,7 +172,7 @@ export const timelineSteps = ({
                 : 'textMid'
             }
             className="mr-4"
-            text={new Date(currentVisit?.plannedVisitDate).toLocaleDateString(
+            text={new Date(currentVisit?.actualVisitDate).toLocaleDateString(
               'en-ZA',
               dateOptions
             )}
@@ -186,7 +186,7 @@ export const timelineSteps = ({
       type: stepType?.type,
       color: ratingData?.color,
       extraData: {
-        date: new Date(currentVisit?.plannedVisitDate),
+        date: new Date(currentVisit?.actualVisitDate),
       },
       showActionButton: attendedPqaVisits.length === 1,
       actionButtonText: 'View',
@@ -235,7 +235,7 @@ export const timelineSteps = ({
                 : 'textMid'
             }
             className="mr-4"
-            text={new Date(currentVisit?.plannedVisitDate).toLocaleDateString(
+            text={new Date(currentVisit?.actualVisitDate).toLocaleDateString(
               'en-ZA',
               dateOptions
             )}
@@ -250,7 +250,7 @@ export const timelineSteps = ({
       color: ratingData?.color,
       inProgressStepIcon: stepType?.color && 'CheckIcon',
       extraData: {
-        date: new Date(currentVisit?.plannedVisitDate),
+        date: new Date(currentVisit?.actualVisitDate),
       },
       showActionButton: attendedReAccreditationVisits.length === 1,
       actionButtonText: 'View',

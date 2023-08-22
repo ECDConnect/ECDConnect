@@ -84,7 +84,7 @@ export const PQAVisits = ({
     : followUpDeadline.default;
   const isPQAFollowUpDeadline =
     addDays(
-      new Date(lastAttendedPqaVisit?.insertedDate),
+      new Date(lastAttendedPqaVisit?.actualVisitDate),
       currentFollowUpDeadline
     ) >= new Date();
 
@@ -109,7 +109,7 @@ export const PQAVisits = ({
                   name: visitTypes.pqa.followUp.name,
                 },
                 plannedVisitDate: addDays(
-                  new Date(lastAttendedPqaVisit?.insertedDate),
+                  new Date(lastAttendedPqaVisit?.actualVisitDate),
                   currentFollowUpDeadline
                 ),
                 attended: false,
@@ -123,16 +123,17 @@ export const PQAVisits = ({
     : [];
 
   const sortedVisits = mergedVisits.sort((a, b) => {
-    if (!a?.insertedDate && !b?.insertedDate) {
+    if (!a?.actualVisitDate && !b?.actualVisitDate) {
       return 0;
-    } else if (!a?.insertedDate) {
+    } else if (!a?.actualVisitDate) {
       return 1;
-    } else if (!b?.insertedDate) {
+    } else if (!b?.actualVisitDate) {
       return -1;
     }
 
     return (
-      new Date(a.insertedDate).getTime() - new Date(b.insertedDate).getTime()
+      new Date(a.actualVisitDate).getTime() -
+      new Date(b.actualVisitDate).getTime()
     );
   });
 
@@ -247,7 +248,7 @@ export const PQAVisits = ({
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(
-                    item.attended ? item.insertedDate : item.plannedVisitDate
+                    item.attended ? item.actualVisitDate : item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
             }
