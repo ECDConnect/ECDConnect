@@ -193,6 +193,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
         });
         setSelectedFeeTypeValue([]);
         reset();
+        setPreschoolFeesValue('note', '');
       });
   };
 
