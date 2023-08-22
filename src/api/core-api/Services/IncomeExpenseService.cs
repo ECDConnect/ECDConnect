@@ -748,7 +748,6 @@ namespace ECDLink.Core.Services
             var retVal = false;
             var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             var rows = 0;
-            var previousTimePeriod = new DateTime(model.Year, model.Month, 1).AddMonths(-1); //previous months (to submission) date to check for any unsubmitted records of current
             var incomeExpenses = GetMonthlyIncomeExpenses(model.UserId, model.Year, model.Month);
 
             if (model.Period == "Annual")

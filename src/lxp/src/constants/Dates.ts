@@ -44,3 +44,8 @@ type ShortMonthType = {
   label: string;
   value: number;
 };
+
+export const IncomeStatementDates = {
+  SubmitStartDay: 22,
+  SubmitEndDay: 7,
+};
