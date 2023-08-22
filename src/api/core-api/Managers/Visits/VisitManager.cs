@@ -1003,7 +1003,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
                     _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
                     _linkedVisitId = linkedVisit.Id;
-                    _addNewFirstPQA = false;
+                    _addNewFirstPQA = true;
                 }
                 else if (color == MetricsColorEnum.Warning.ToString())
                 {
@@ -1094,7 +1094,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
                     _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
                     _linkedVisitId = lastPQAVisit.Id;
-                    _addNewFirstPQA = false;
+                    _addNewFirstPQA = true;
                 }
                 else if (color == MetricsColorEnum.Warning.ToString())
                 {
@@ -1228,6 +1228,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
                     _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
                     _linkedVisitId = linkedVisit.Id;
+                    _addNewFirstReAccreditation = true;
                 }
 
                 // check to see if visit exists
