@@ -1103,7 +1103,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             
             VisitType selfType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name.Equals(Constants.SSSettings.visitType_self_assessment)).FirstOrDefault();
             Visit selfVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == visit.PractitionerId && x.VisitTypeId == selfType.Id && x.LinkedVisitId == visit.Id && x.PlannedVisitDate == plannedVisitDate.Date).FirstOrDefault();
-            if (selfVisit == null)
+            if (selfVisit == null && visit != null)
             {
                 var input = new VisitModel
                 {

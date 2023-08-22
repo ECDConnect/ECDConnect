@@ -290,7 +290,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             visitModel.VisitType = visitType;
             visitModel.MotherId = null;
             visitModel.InfantId = null;
-            visitModel.LinkedVisitId = null;
+            visitModel.LinkedVisitId = input.LinkedVisitId;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
