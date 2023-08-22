@@ -58,7 +58,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
-  const timelineStepsCompleted = Object.values(timeline!)?.filter(
+  const timelineStepsCompleted = Object.values(!timeline)?.filter(
     (item) => item === 'Success'
   );
   const isOnStipend = practitioner?.isOnStipend;

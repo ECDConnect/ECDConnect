@@ -976,6 +976,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public Visit AddNextPQAOrFollowUpVisit(string color, Guid practitionerId, Visit linkedVisit)
         {
+            // saving the color to the visit's comment
+            linkedVisit.Comment = color;
+            _visitRepo.Update(linkedVisit);
+
             Visit newVisit = new Visit();
             VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_1).FirstOrDefault();
             VisitType followUpVisitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
@@ -1124,6 +1128,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public Visit AddNextReAccreditationOrFollowUpVisit(string color, Guid practitionerId, Visit linkedVisit)
         {
+            // saving the color to the visit's comment
+            linkedVisit.Comment = color;
+            _visitRepo.Update(linkedVisit);
+
             Visit newVisit = new Visit();
             VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
             VisitType followUpVisitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
