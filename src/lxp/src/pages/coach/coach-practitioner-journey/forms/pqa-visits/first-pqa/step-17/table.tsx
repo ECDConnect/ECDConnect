@@ -141,12 +141,14 @@ export const Rating = ({
     const isOrangeCard =
       (isOrangeRating || isOrangeFlag) &&
       !isRedFlagSmartSpaceLicence &&
-      !isRedFlagSmartSpaceCheck;
+      !isRedFlagSmartSpaceCheck &&
+      !isRedFlagScoreLess5;
 
     if (
       rating > 42 &&
       !isRedFlagSmartSpaceCheck &&
       !isRedFlagSmartSpaceLicence &&
+      !isRedFlagScoreLess5 &&
       !isOrangeFlag
     ) {
       setPqaRating?.({ color: 'Success', score: rating });
