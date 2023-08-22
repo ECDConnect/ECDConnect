@@ -112,7 +112,7 @@ export default function UiTable({
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
-    if (component === 'Consent' || component === 'roles') {
+    if (component === 'cms' || component === 'roles') {
       return [...columns];
     }
     const columnsWithSelect = [selectColumn, ...cols];
@@ -185,7 +185,7 @@ export default function UiTable({
     );
     if (
       column.field === 'select' &&
-      component !== 'Consent' &&
+      component !== 'cms' &&
       component !== 'roles'
     ) {
       return checkboxCell;

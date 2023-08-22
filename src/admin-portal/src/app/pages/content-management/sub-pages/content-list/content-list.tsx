@@ -267,7 +267,7 @@ export default function ContentList({
                     hasPermission(PermissionEnum.delete_static) &&
                     deleteAndRefresh
                   }
-                  component={contentType.name}
+                  component={'cms'}
                   viewRow={
                     hasPermission(PermissionEnum.update_static) &&
                     viewSelectedRow
