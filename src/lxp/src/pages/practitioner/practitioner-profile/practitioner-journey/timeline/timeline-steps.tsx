@@ -68,13 +68,15 @@ export const timelineSteps = ({
     )
   );
 
-  steps.push(
-    setStep(
-      timeline.firstAidCourseStatus,
-      timeline.firstAidDate,
-      timeline?.firstAidCourseColor
-    )
-  );
+  if (timeline.firstAidDate) {
+    steps.push(
+      setStep(
+        timeline.firstAidCourseStatus,
+        timeline.firstAidDate,
+        timeline?.firstAidCourseColor
+      )
+    );
+  }
 
   if (!!attendedSupportVisits?.length) {
     const date = new Date(
