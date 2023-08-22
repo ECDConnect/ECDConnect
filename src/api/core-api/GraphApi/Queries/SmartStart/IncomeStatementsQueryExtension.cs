@@ -54,7 +54,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet([Service] IncomeExpenseService incomeManager, 
             string userId, int year, int? month = null)
         {
-            Console.WriteLine($"Month = {month}, Year = {year}");
             return incomeManager.GetAllStatementsBalanceSheet(userId, year, month);
         }
 
