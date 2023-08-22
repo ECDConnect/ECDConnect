@@ -1,10 +1,12 @@
 ﻿using ECDLink.Moodle.Models;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -20,11 +22,27 @@ namespace ECDLink.Moodle.Managers
             _configuration = configuration;
         }
 
-        public async Task<bool> CreateUserAsync(MoodleUser user, List<string> cohorts)
+        private string GetConnectionString(MoodleConfig config)
         {
             string connectionString = ConfigurationExtensions.GetConnectionString(_configuration, "MoodleConnectionString");
+            if (config.Database != null && !string.IsNullOrEmpty(config.Database.ConnectionString))
+                connectionString = config.Database.ConnectionString;
+            return connectionString;
+        }
 
-            await using var conn = new NpgsqlConnection(connectionString);
+        public async Task<bool> CreateUserAsync(MoodleConfig config, MoodleUser user)
+        {
+            user.UserName = string.Format(config.Site.UserNameFormatString, user);
+            user.Password = config.Site.DefaultPassword;
+
+            var cohorts = new List<string>();
+            var allCohorts = config.UserTypes.First(x => x.UserType == "*").Cohorts;
+            foreach (var cohort in allCohorts)
+            {
+                cohorts.Add(cohort);
+            }
+
+            await using var conn = new NpgsqlConnection(GetConnectionString(config));
             await conn.OpenAsync();
 
             // First see if record already exists
@@ -64,11 +82,9 @@ namespace ECDLink.Moodle.Managers
             return true;
         }
 
-        public async Task<string> CreateUserSessionAsync(string userName)
+        public async Task<string> CreateUserSessionAsync(MoodleConfig config, string userName)
         {
-            string connectionString = ConfigurationExtensions.GetConnectionString(_configuration, "MoodleConnectionString");
-
-            await using var conn = new NpgsqlConnection(connectionString);
+            await using var conn = new NpgsqlConnection(GetConnectionString(config));
             await conn.OpenAsync();
 
             long userId = await GetMoodleUserId(conn, userName);
