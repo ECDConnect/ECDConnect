@@ -186,8 +186,6 @@ export default function ContentList({
     });
   };
 
-
-
   if (tableData && displayFields) {
     return (
       <div>
@@ -228,7 +226,6 @@ export default function ContentList({
                     return { field: item, use: item };
                   })}
                   rows={tableData}
-               
                   component={'cms'}
                   viewRow={
                     hasPermission(PermissionEnum.update_static) &&

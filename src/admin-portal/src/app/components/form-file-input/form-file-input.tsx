@@ -192,7 +192,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     <>
       <label
         htmlFor={nameProp}
-        className="block pb-1 text-sm font-lg text-gray-900"
+        className="font-lg block pb-1 text-sm text-gray-900"
       >
         {label}
         {acceptedFormats && (

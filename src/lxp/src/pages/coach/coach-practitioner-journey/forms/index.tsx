@@ -480,7 +480,7 @@ export const Form = ({
       }
 
       if (type === 're-accreditation-follow-up-visit') {
-        return onSubmitFollowUpVisit(payload, 're-accreditation');
+        return onSubmitFollowUpVisit(followUpPayload, 're-accreditation');
       }
     },
     [

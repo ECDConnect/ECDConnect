@@ -212,10 +212,12 @@ export function ViewUser(props: any) {
         <AlertModal
           title="Deactivate User"
           btnText={['Yes, Deactivate User', 'No, Cancel']}
-          message={`${chwData?.GetHealthCareWorkerById?.user?.firstName ??
+          message={`${
+            chwData?.GetHealthCareWorkerById?.user?.firstName ??
             userData.userById.fullName
-            } will lose their access to ${data?.tenantContext.applicationName
-            } App immediately. Make sure you have communicated with them before deactivating them.`}
+          } will lose their access to ${
+            data?.tenantContext.applicationName
+          } App immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -255,9 +257,10 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${chwData?.GetHealthCareWorkerById?.user?.fullName ??
+          message={`You are about to send an invite to ${
+            chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
-            }`}
+          }`}
           btnText={['Yes, Resend Invitation', 'No, Cancel']}
           onCancel={onCancel}
           onSubmit={() => {
@@ -353,7 +356,7 @@ export function ViewUser(props: any) {
     chwDetailSetValue(
       'idNumber',
       userData?.userById?.idNumber ||
-      chwData?.GetHealthCareWorkerById?.user.idNumber,
+        chwData?.GetHealthCareWorkerById?.user.idNumber,
       {
         shouldValidate: true,
       }
@@ -362,7 +365,7 @@ export function ViewUser(props: any) {
     chwDetailSetValue(
       'phoneNumber',
       userData?.userById?.phoneNumber ||
-      chwData?.GetHealthCareWorkerById?.user.phoneNumber,
+        chwData?.GetHealthCareWorkerById?.user.phoneNumber,
       {
         shouldValidate: true,
       }
@@ -476,7 +479,7 @@ export function ViewUser(props: any) {
                     userData?.userById?.profileImageUrl ||
                     chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
                   }
-                  onPressed={() => { }}
+                  onPressed={() => {}}
                   hasConsent
                   size="header"
                 />
@@ -536,12 +539,12 @@ export function ViewUser(props: any) {
           {!isNotLockedOut(
             userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
           ) && (
-              <Alert
-                className="mt-5 mb-3"
-                message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
-                type="error"
-              />
-            )}
+            <Alert
+              className="mt-5 mb-3"
+              message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
+              type="error"
+            />
+          )}
         </div>
 
         <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
@@ -675,17 +678,19 @@ export function ViewUser(props: any) {
           <div className="flex justify-end p-4">
             {isNotLockedOut(
               userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-            ) && <button
-              onClick={() => {
-                setEditActive(!editActive);
-              }}
-              id="dropdownHoverButton"
-              className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-              type="button"
-            >
+            ) && (
+              <button
+                onClick={() => {
+                  setEditActive(!editActive);
+                }}
+                id="dropdownHoverButton"
+                className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                type="button"
+              >
                 {' '}
                 {editActive ? 'Close' : 'Edit'}
-              </button>}
+              </button>
+            )}
           </div>
         </div>
 
@@ -919,26 +924,26 @@ export function ViewUser(props: any) {
                   ></Typography>
                 </Button>
               )}
-            {
-              (isNotLockedOut(
-                userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
-              ) && <Button
+            {isNotLockedOut(
+              userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
+            ) && (
+              <Button
                 className={'mt-3 w-4/12 rounded-md'}
                 type="filled"
                 // isLoading={isLoading}
                 color="secondary"
                 onClick={sendInvite}
               >
-                  <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
-                    {' '}
-                  </PaperAirplaneIcon>
-                  <Typography
-                    type="help"
-                    color="white"
-                    text={'Resend Invitation'}
-                  ></Typography>
-                </Button>)
-            }
+                <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
+                  {' '}
+                </PaperAirplaneIcon>
+                <Typography
+                  type="help"
+                  color="white"
+                  text={'Resend Invitation'}
+                ></Typography>
+              </Button>
+            )}
           </div>
 
           <div className="w-2/12">
@@ -946,7 +951,7 @@ export function ViewUser(props: any) {
               User added to {data?.tenantContext.applicationName} App :{' '}
               {formatDate(
                 chwData?.GetHealthCareWorkerById?.insertedDate ||
-                userData?.userById?.insertedDate
+                  userData?.userById?.insertedDate
               )}
             </p>
           </div>
