@@ -361,6 +361,7 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_visit = "PQA Visit 1";
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
+            public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
 
             public const string step12 = "Step 12";
             public const string step13 = "Step 13";
