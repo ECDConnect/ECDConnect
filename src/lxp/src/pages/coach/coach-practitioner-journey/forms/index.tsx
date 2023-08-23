@@ -145,16 +145,6 @@ export const Form = ({
       (item) => item.question === step15ReAccreditationQuestions.question1
     )?.answer;
 
-  const newPqaVisit = timeline?.pQASiteVisits?.find(
-    (item) =>
-      !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
-  );
-  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
-    (item) =>
-      !item?.attended &&
-      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-  );
-
   // All years
   const filteredReAccreditationRatings =
     timeline?.reAccreditationRatings?.filter(
@@ -411,9 +401,7 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        await appDispatch(
-          pqaThunkActions.addFollowUpVisitForPractitioner(payload)
-        );
+        await appDispatch(pqaThunkActions.addVisitFormData(payload));
         // TODO: check if it is needed
         // window.sessionStorage.setItem(
         //   currentActivityKey,
@@ -458,38 +446,19 @@ export const Form = ({
         supportData: payload,
       };
 
-      const followUpPayload: FollowUpVisitModelInput = {
-        practitionerId,
-        // TODO: add schedule option
-        plannedVisitDate: new Date(),
-        // TODO: add schedule option
-        attended: true,
-        linkedVisitId:
-          type === 'pqa-follow-up-visit'
-            ? newPqaVisit?.id
-            : newReAccreditationVisit?.id,
-        followUpData: payload,
-      };
-
       if (type === 'support-visit') {
         return onSubmitSupportVisit(supportPayload, visitOrCallAnswer);
       }
 
       if (type === 'pqa-follow-up-visit') {
-        return onSubmitFollowUpVisit(followUpPayload, 'pqa');
+        return onSubmitFollowUpVisit(payload, 'pqa');
       }
 
       if (type === 're-accreditation-follow-up-visit') {
         return onSubmitFollowUpVisit(followUpPayload, 're-accreditation');
       }
     },
-    [
-      practitionerId,
-      newPqaVisit?.id,
-      newReAccreditationVisit,
-      onSubmitSupportVisit,
-      onSubmitFollowUpVisit,
-    ]
+    [practitionerId, onSubmitSupportVisit, onSubmitFollowUpVisit]
   );
 
   const onSubmitPrePqa = useCallback(
