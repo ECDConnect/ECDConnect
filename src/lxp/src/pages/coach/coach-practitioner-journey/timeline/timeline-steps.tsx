@@ -20,11 +20,6 @@ export interface StepType {
   color?: Colours;
 }
 
-interface FollowUp {
-  isFollowUp: boolean;
-  deadline: Date;
-}
-
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
   month: 'short',
@@ -89,8 +84,6 @@ export const timelineSteps = ({
   practitionerId,
   currentPqaRating,
   currentReAccreditationRating,
-  reAccreditationFollowUp,
-  pqaFollowUp,
 }: {
   practitionerId: string;
   timeline: PractitionerTimeline;
@@ -102,8 +95,6 @@ export const timelineSteps = ({
   visits?: Maybe<Visit>[];
   currentPqaRating: RatingData;
   currentReAccreditationRating: RatingData;
-  pqaFollowUp: FollowUp;
-  reAccreditationFollowUp: FollowUp;
 }): StepItem[] => {
   const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
     (item) => item?.attended
@@ -230,9 +221,7 @@ export const timelineSteps = ({
 
     let date = currentVisit?.plannedVisitDate;
 
-    if (pqaFollowUp.isFollowUp) {
-      date = pqaFollowUp.deadline;
-    } else if (currentVisit?.actualVisitDate && currentVisit?.attended) {
+    if (currentVisit?.actualVisitDate && currentVisit?.attended) {
       date = currentVisit?.actualVisitDate;
     }
 
@@ -311,9 +300,7 @@ export const timelineSteps = ({
   ) {
     let date = currentVisit?.plannedVisitDate;
 
-    if (reAccreditationFollowUp.isFollowUp) {
-      date = reAccreditationFollowUp.deadline;
-    } else if (currentVisit?.actualVisitDate && currentVisit?.attended) {
+    if (currentVisit?.actualVisitDate && currentVisit?.attended) {
       date = currentVisit?.actualVisitDate;
     }
 
