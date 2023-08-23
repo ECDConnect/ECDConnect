@@ -294,10 +294,7 @@ export const timelineSteps = ({
       currentRating: currentReAccreditationRating,
     });
 
-  if (
-    timeline.reAccreditationVisits?.length &&
-    isDateWithinThreeMonths(currentVisit?.plannedVisitDate)
-  ) {
+  if (timeline.reAccreditationVisits?.length) {
     let date = currentVisit?.plannedVisitDate;
 
     if (currentVisit?.actualVisitDate && currentVisit?.attended) {

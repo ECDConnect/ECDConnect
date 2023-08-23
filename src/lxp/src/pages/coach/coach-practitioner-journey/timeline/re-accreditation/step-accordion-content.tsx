@@ -8,7 +8,7 @@ import {
   maxNumberOfVisits,
   visitTypes,
 } from '../../coach-practitioner-journey.types';
-import { getRatingData } from '../utils';
+import { getRatingData, isDateWithinThreeMonths } from '../utils';
 import { chunkArray } from '@ecdlink/core';
 
 interface ReAccreditationVisitsProps {
@@ -151,7 +151,8 @@ export const ReAccreditationVisits = ({
                 visitTypes.reaccreditation.followUp.name &&
                 item.attended === false) ||
               (item?.id === newReAccreditationVisitId && !item.attended)) &&
-              isUserEnableToStartPqaVisit && (
+              isUserEnableToStartPqaVisit &&
+              isDateWithinThreeMonths(item?.plannedVisitDate) && (
                 <Button
                   style={{
                     position: 'absolute',
