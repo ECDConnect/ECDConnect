@@ -901,13 +901,16 @@ class PractitionerService {
       },
     });
 
-    if (response.status !== 200) {
-      throw new Error(
-        'Get Practitioner by ID number Failed - Server connection error'
-      );
+    console.log('response', response);
+    if (
+      response.status !== 200 ||
+      !!response.data.errors ||
+      !response.data.data.removePractitioner
+    ) {
+      throw new Error('Remove practitioner failed');
     }
 
-    return response.data.data.updatePractitionerRegistered;
+    return response.data.data.removePractitioner;
   }
 
   async RemovePractitionerFromProgramme(

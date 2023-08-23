@@ -132,7 +132,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string oldPrincipalUserId, 
             string newPrincipalUserId)
         {
-            var result = personnelManager.SwitchPrincipal(userManager, oldPrincipalUserId, newPrincipalUserId);
+            var result = personnelManager.SwitchPrincipal(oldPrincipalUserId, newPrincipalUserId);
             return result != null;
         }
 
@@ -140,7 +140,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] UserManager<ApplicationUser> userManager,
              string userId)
         {
-            Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userManager, userId);
+            Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userId);
             return personnelManager.MapPractitionerToPrincipal(practitionerToPromote);
         }
 
@@ -148,7 +148,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
              [Service] UserManager<ApplicationUser> userManager,
              string userId)
         {
-            Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userManager, userId);
+            Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);
 
             return practitionerToDemote;
         }

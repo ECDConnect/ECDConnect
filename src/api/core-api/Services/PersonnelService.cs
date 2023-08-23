@@ -52,7 +52,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private UserLicenseManager _userLicenseManager;
         private UserManager<ApplicationUser> _userManager;
         private IReassignmentService _reassignmentService;
-        
+        private HierarchyEngine _hierarchyEngine;
+
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -62,7 +63,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             VisitManager visitManager,
             UserLicenseManager userLicenseManager,
             [Service] IReassignmentService reassignmentService,
-            UserManager<ApplicationUser> userManager)
+            UserManager<ApplicationUser> userManager,
+            [Service] HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -88,6 +90,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _userLicenseManager = userLicenseManager;
             _reassignmentService = reassignmentService;
             _userManager = userManager;
+            _hierarchyEngine = hierarchyEngine;
         }
 
 
@@ -151,8 +154,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return peers;
         }
 
-        public List<Child> GetAllChildrenForPractitioner(
-        string practitionerId)
+        public List<Child> GetAllChildrenForPractitioner(string practitionerId)
         {
             Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId);
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
@@ -163,11 +165,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             else return new List<Child>();
         }
 
-        public Practitioner GetPractitionerForChild([Service] HierarchyEngine hierarchyEngine, string childUserId)
+        public Practitioner GetPractitionerForChild(string childUserId)
         {
             if (childUserId != null)
             {
-                var parentUserId = hierarchyEngine.GetUserParentUserId(childUserId);
+                var parentUserId = _hierarchyEngine.GetUserParentUserId(childUserId);
                 return _practiGenericRepo.GetByUserId(parentUserId);          
             }
             else return null;
@@ -183,8 +185,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return _classRepo.GetListByUserId(userIdOfPractitioner);
         }
 
-        public PrincipalClassroom GetClassroomDetailsForPractitioner(
-            string userId)
+        public PrincipalClassroom GetClassroomDetailsForPractitioner(string userId)
         {                       
             PrincipalClassroom principalClassroom = new PrincipalClassroom();
             var practitioner = _practiGenericRepo.GetByUserId(userId);
@@ -246,7 +247,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return siteName;
         }
 
-        public Practitioner SwitchPrincipal([Service] UserManager<ApplicationUser> userManager, string oldPrincipalUserId, string newPrincipalUserId)
+        public Practitioner SwitchPrincipal(string oldPrincipalUserId, string newPrincipalUserId)
         {
             var practitionerToPromote = _practiGenericRepo.GetByUserId(newPrincipalUserId);
             var practitionerToDemote = _practiGenericRepo.GetByUserId(oldPrincipalUserId);
@@ -301,23 +302,21 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
 
                 //now add user to principal
-                var userToPromote = userManager.FindByIdAsync(newPrincipalUserId).Result;
+                var userToPromote = _userManager.FindByIdAsync(newPrincipalUserId).Result;
                 IdentityResult result = null;
-                result = userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
-                if (isRolePrincipal) { result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; }
-                if (isRoleFAA) { result = userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; }
+                result = _userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
+                if (isRolePrincipal) { result = _userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; }
+                if (isRoleFAA) { result = _userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; }
 
-                var userToDemote = userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                if (isRolePrincipal) { result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; }
-                if (isRoleFAA) { result = userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; }
-                result = userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
+                var userToDemote = _userManager.FindByIdAsync(oldPrincipalUserId).Result;
+                if (isRolePrincipal) { result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; }
+                if (isRoleFAA) { result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; }
+                result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;
         }
 
-        public Practitioner PromotePractitionerToPrincipal(
-         [Service] UserManager<ApplicationUser> userManager,
-         string userId)
+        public Practitioner PromotePractitionerToPrincipal(string userId)
         {
             var practitionerToPromote = _practiRepo.GetByUserId(userId);            
             if (practitionerToPromote!=null)
@@ -327,15 +326,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiRepo.Update(practitionerToPromote);
 
                 //now add user to principal
-                var user = userManager.FindByIdAsync(userId).Result;
-                userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
-                userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+                var user = _userManager.FindByIdAsync(userId).Result;
+                _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
+                _userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
             }
             return practitionerToPromote;
         }
 
-        public Practitioner DemotePractitionerAsPrincipal([Service] UserManager<ApplicationUser> userManager,
-             string userId)
+        public Practitioner DemotePractitionerAsPrincipal(string userId)
         {
             var practitionerToDemote = _practiRepo.GetByUserId(userId);
             if (practitionerToDemote != null)
@@ -356,9 +354,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
 
                 //now add user back to practitioner
-                var user = userManager.FindByIdAsync(userId).Result;
-                userManager.RemoveFromRoleAsync(user, Roles.PRINCIPAL);
-                userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
+                var user = _userManager.FindByIdAsync(userId).Result;
+                _userManager.RemoveFromRoleAsync(user, Roles.PRINCIPAL);
+                _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
             }
 
             return practitionerToDemote;
@@ -606,6 +604,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             if (practitioner != null && user != null)
             {
+                practitioner.CoachHierarchy = null;
+                practitioner.PrincipalHierarchy = null;
                 practitioner.DateToBeRemoved = DateTime.Now;
                 practitioner.IsLeaving = true;
                 practitioner.IsActive = false;
@@ -863,21 +863,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         }
         #endregion
 
-
-        private string GetUserIdOrGenerateNew(string userId)
+        public string GetUserSignature(string userId)
         {
-            return userId ?? Guid.NewGuid().ToString();
-        }
-
-        private static int GetMonthDifference(DateTime startDate, DateTime endDate)
-        {
-            int monthsApart = 12 * (startDate.Year - endDate.Year) + startDate.Month - endDate.Month;
-            return Math.Abs(monthsApart);
-        }
-
-        public string GetUserSignature([Service] UserManager<ApplicationUser> userManager, string userId)
-        {
-            ApplicationUser user = userManager.FindByIdAsync(userId).Result;
+            ApplicationUser user = _userManager.FindByIdAsync(userId).Result;
 
             if (user?.franchisorObjectData?.SigningSignature != null)
             {
@@ -898,10 +886,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return "";
         }
 
-        public string GetUserSiteAddress([Service] UserManager<ApplicationUser> userManager, string userId)
+        public string GetUserSiteAddress(string userId)
         {
             var _siteAddress = new SiteAddress();
-            ApplicationUser user = userManager.FindByIdAsync(userId).Result;
+            ApplicationUser user = _userManager.FindByIdAsync(userId).Result;
 
             if (user?.franchisorObjectData?.SiteAddress != null)
             {
