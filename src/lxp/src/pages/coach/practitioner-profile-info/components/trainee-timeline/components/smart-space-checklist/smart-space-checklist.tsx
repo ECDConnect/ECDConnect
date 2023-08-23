@@ -175,7 +175,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       titleStyle: 'text-textDark semibold',
       subTitle: '0 of 6 completed',
       subTitleStyle: 'text-textMid',
-      iconBackgroundColor: 'primary',
+      iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
         setActiveStep(SmartSpaceChecklisstStepsSteps.PROGRAMME_DETAILS),
@@ -205,17 +205,21 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const completedHealthSanitationItems = completedItems(
     'Health, sanitation & safety'
   );
-  if (completedHealthSanitationItems && completedHealthSanitationItems < 6) {
+
+  if (
+    completedHealthSanitationItems !== undefined &&
+    completedHealthSanitationItems! < 7
+  ) {
     notificationItems.push({
       showIcon: true,
-      menuIcon: 'HeartIcon',
+      menuIcon: 'PlusCircleIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
       title: 'Health, sanitation & safety',
       titleStyle: 'text-textDark semibold',
       subTitle: `${completedHealthSanitationItems} of 7 completed`,
       subTitleStyle: 'text-textMid',
-      iconBackgroundColor: 'primary',
+      iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
         setActiveStep(SmartSpaceChecklisstStepsSteps.HEALTH_SANITATION_SAFETY),
@@ -240,17 +244,20 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const completedSafetyStructureItems = completedItems(
     'Safety - structure, space & area'
   );
-  if (completedSafetyStructureItems && completedSafetyStructureItems < 10) {
+  if (
+    completedSafetyStructureItems !== undefined &&
+    completedSafetyStructureItems < 10
+  ) {
     notificationItems.push({
       showIcon: true,
-      menuIcon: 'HandIcon',
+      menuIcon: 'ShieldCheckIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
       title: 'Safety - structure & area',
       titleStyle: 'text-textDark semibold',
       subTitle: `${completedSafetyStructureItems} of 10 completed`,
       subTitleStyle: 'text-textMid',
-      iconBackgroundColor: 'primary',
+      iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
         setActiveStep(SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA),
@@ -275,7 +282,10 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const completedSpaceEmergencyItems = completedItems(
     'Space & emergency planning'
   );
-  if (completedSpaceEmergencyItems && completedSpaceEmergencyItems < 4) {
+  if (
+    completedSpaceEmergencyItems !== undefined &&
+    completedSpaceEmergencyItems < 4
+  ) {
     notificationItemsLaterStage.push({
       showIcon: true,
       menuIcon: 'ShieldExclamationIcon',
@@ -285,7 +295,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       titleStyle: 'text-textDark semibold',
       subTitle: `${completedSpaceEmergencyItems} of 4 completed`,
       subTitleStyle: 'text-textMid',
-      iconBackgroundColor: 'primary',
+      iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
         setActiveStep(SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING),
