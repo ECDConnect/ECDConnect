@@ -455,7 +455,7 @@ export const Form = ({
       }
 
       if (type === 're-accreditation-follow-up-visit') {
-        return onSubmitFollowUpVisit(followUpPayload, 're-accreditation');
+        return onSubmitFollowUpVisit(payload, 're-accreditation');
       }
     },
     [practitionerId, onSubmitSupportVisit, onSubmitFollowUpVisit]
