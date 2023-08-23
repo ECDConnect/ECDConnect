@@ -1,6 +1,6 @@
 import ROUTES from '@/routes/routes';
-import { PractitionerDto } from '@ecdlink/core';
-import { BannerWrapper } from '@ecdlink/ui';
+import { PractitionerDto, useDialog } from '@ecdlink/core';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { SmartSpaceCheck2 } from './components/smart-space-check-2';
 import { useSelector } from 'react-redux';
@@ -40,6 +40,7 @@ export const CoachSmartSpaceChecklist: React.FC<
   CoachSmartSpaceChecklistProps
 > = () => {
   const history = useHistory();
+  const dialog = useDialog();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
@@ -213,6 +214,48 @@ export const CoachSmartSpaceChecklist: React.FC<
     }
   };
 
+  const onClose = () => {
+    history?.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+      practitionerId: practitioner?.userId,
+    });
+  };
+
+  const exitPrompt = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Are you sure you want to exit now?`}
+          detailText={'If you exit now you will lose your progress.'}
+          actionButtons={[
+            {
+              text: 'Exit',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                onSubmit();
+                onClose();
+              },
+              leadingIcon: 'ArrowLeftIcon',
+            },
+            {
+              text: 'Continue editing',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => onCancel(),
+              leadingIcon: 'PencilIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
   return (
     <BannerWrapper
       size="small"
@@ -221,6 +264,7 @@ export const CoachSmartSpaceChecklist: React.FC<
       className={'h-full'}
       title={`SmartSpace visit`}
       subTitle={`${activeStep} of 10`}
+      onClose={() => exitPrompt()}
     >
       <div>{renderStep(activeStep)}</div>
     </BannerWrapper>
