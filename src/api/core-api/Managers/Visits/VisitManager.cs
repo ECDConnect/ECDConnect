@@ -1115,7 +1115,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
 
 
-                if (totalVisits < 3)
+                if (_visitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up && totalVisits < 3)
                 {
                     Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                  x.VisitType.Type == Constants.SSSettings.client_practitioner &&
@@ -1163,6 +1163,29 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                             visitModel.PlannedVisitDate = Convert.ToDateTime(_deadlineDate.Date, CultureInfo.InvariantCulture);
                             visitModel.DueDate = Convert.ToDateTime(_deadlineDate.Date, CultureInfo.InvariantCulture);
                             newVisit = AddVisitForPractitioner(visitModel);
+                            AddSelfAssessmentVisit(newVisit);
+                        }
+                    }
+                } else
+                {
+                    Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
+                                                                 x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                                                 x.LinkedVisitId == _linkedVisitId &&
+                                                                 x.VisitType.Name == _visitType.Name).FirstOrDefault();
+                    if (visit == null)
+                    {
+                        var visitModel = new VisitModel();
+                        visitModel.VisitType = _visitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = _linkedVisitId;
+                        visitModel.PractitionerId = practitionerId;
+                        visitModel.Attended = false;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(_deadlineDate.Date, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(_deadlineDate.Date, CultureInfo.InvariantCulture);
+                        newVisit = AddVisitForPractitioner(visitModel);
+                        if (_visitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || _visitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                        {
                             AddSelfAssessmentVisit(newVisit);
                         }
                     }
@@ -1293,7 +1316,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else // Re-accreditation Follow-up visit start here
             {
+
                 // get last completed PQA
+                Visit lastPQAVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId &&
+                                                                    x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                                                    x.Attended == true &&
+                                                                    x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1).OrderByDescending(x => x.PlannedVisitDate).FirstOrDefault();
+
+                // get last completed Re-accreditation
                 Visit lastReAccreditationVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId &&
                                                                     x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                     x.Attended == true &&
@@ -1304,6 +1334,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                                                  x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                  x.LinkedVisitId == lastReAccreditationVisit.Id &&
                                                                  x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).OrderByDescending(x => x.PlannedVisitDate).Count();
+
+                string followUpAnswer = _visitDataRepo.GetAll().Where(x => x.VisitId == linkedVisit.Id && x.Question == Constants.SSSettings.re_accreditation_follow_up).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                 VisitType _visitType = new VisitType();
                 DateTime _deadlineDate = new DateTime();
@@ -1318,20 +1350,37 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 else if (color == MetricsColorEnum.Error.ToString())
                 {
-                    _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
-                    _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
-                    _linkedVisitId = lastReAccreditationVisit.Id;
+                    // "Red rating follow up -- if the practitioner receives a red rating:
+                    // -- optional - the coach can schedule / start 1 follow up visit only(no deadline since the item is only shown if the coach schedules it in calendar)
+                    // --the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit +14 days
+
+                    _deadlineDate = lastPQAVisit.ActualVisitDate.Value.AddDays(14);
+                    _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_1).FirstOrDefault();
+                    _linkedVisitId = linkedVisit.Id;
                     _addNewFirstReAccreditation = true;
                 }
                 else if (color == MetricsColorEnum.Warning.ToString())
                 {
-                    _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
-                    _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
-                    _linkedVisitId = lastReAccreditationVisit.Id;
-                    _addNewFirstReAccreditation = true;
+                    // IF coach selects ""Yes"" for the question ""Is {practitioner first name} ready for a follow-up reaccreditation visit?"", add the re-accreditation to do item at the top of the screen & add the reaccreditation item to the journey list (see UI)
+                    if (followUpAnswer == Constants.SSSettings.answer_yes)
+                    {
+                        _deadlineDate = lastReAccreditationVisit.ActualVisitDate.Value.AddMonths(3);
+                        _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                        _linkedVisitId = lastReAccreditationVisit.Id;
+                        _addNewFirstReAccreditation = false;
+                    }
+                    else
+                    {
+                        // - IF coach selects ""No"" for the question ""Is {practitioner first name} ready for a follow-up reaccreditation visit?"" auto-add another
+                        _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
+                        _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
+                        _linkedVisitId = lastReAccreditationVisit.Id;
+                        _addNewFirstReAccreditation = true;
+                    }
+
                 }
 
-                if (totalVisits < 3)
+                if (_visitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up && totalVisits < 3)
                 {
                     Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                  x.VisitType.Type == Constants.SSSettings.client_practitioner &&
@@ -1383,6 +1432,31 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         }
                     }
 
+                }
+                else if (_visitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || _visitType.Name == Constants.SSSettings.visitType_pqa_visit_1) 
+                {
+                    // Applicable for this condition:
+                    // When answer was yes to Is {client} ready for a follow-up reaccreditation visit?, we add new accreditation visit (3 months)
+                    // When follow-up rating was red, the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit + 14 days
+
+                    Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
+                                                                                   x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                                                                   x.LinkedVisitId == _linkedVisitId &&
+                                                                                   x.VisitType.Name == _visitType.Name).FirstOrDefault();
+                    if (visit == null)
+                    {
+                        var visitModel = new VisitModel();
+                        visitModel.VisitType = _visitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = _linkedVisitId;
+                        visitModel.PractitionerId = practitionerId;
+                        visitModel.Attended = false;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(_deadlineDate.Date, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(_deadlineDate.Date, CultureInfo.InvariantCulture);
+                        newVisit = AddVisitForPractitioner(visitModel);
+                        AddSelfAssessmentVisit(newVisit);
+                    }
                 }
             }
 
