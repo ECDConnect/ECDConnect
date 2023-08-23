@@ -70,6 +70,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
             {}
           }
           // onClick={() => setShowMap(true)}
+          value={editedAddress}
           disabled={showMap}
           suffixIcon={'LocationMarkerIcon'}
           sufficIconColor="primary"
@@ -96,6 +97,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
         <AddressMap
           onClose={() => setShowMap?.(false)}
           onSubmit={(address) => {
+            console.log(address);
             setEditedAddress(address);
             changeSmartSpaceCheckAddress();
           }}
