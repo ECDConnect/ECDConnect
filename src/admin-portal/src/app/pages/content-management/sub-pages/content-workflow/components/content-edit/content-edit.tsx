@@ -188,13 +188,19 @@ export default function ContentEdit({
             </div>
           </div>
           <div className="rounded-xl bg-white px-12 pt-6 pb-8">
-            {contentType.name === 'Consent' && (
+            {contentType.name === 'Consent' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            )}
+            ) : contentType.name === 'Info Pages' ? (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
+                type="info"
+              />
+            ) : null}
 
             <DynamicForm
               template={template}

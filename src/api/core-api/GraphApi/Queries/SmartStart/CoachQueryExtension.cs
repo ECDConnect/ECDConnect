@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(userId)).ToList();
+            var practitioners = dbRepo.GetAll().Where(x => x.IsActive && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(userId)).ToList();
 
             foreach (var practitioner in practitioners)
             {

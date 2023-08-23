@@ -70,8 +70,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     (item) => item.userId === practitionerUserId
   );
 
-  const currentUser = useSelector(userSelectors.getUser) as UserDto;
-
   //Get list of practitioners for classroom
   const practitionersForClass = useMemo<
     { label: string; value: string }[]
@@ -146,10 +144,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   };
 
   useEffect(() => {
-    if (practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) {
-      setRemovePractionerFormValues('requirePrincipal', true);
-    }
-
     classroomsGroupsForPractitioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioner]);
@@ -157,8 +151,12 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   useEffect(() => {
     if (!practitionersForClass || !practitionersForClass.length) {
       setRemovePractionerFormValues('requireClassReassignments', false);
+    } else {
+      if (practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) {
+        setRemovePractionerFormValues('requirePrincipal', true);
+      }
     }
-  }, [practitionersForClass]);
+  }, [practitioner, practitionersForClass]);
 
   const handleFormSubmit = async (formValues: RemovePractionerModel) => {
     if (isValid) {
@@ -182,14 +180,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
       );
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
-      ).unwrap();
-      await appDispatch(
-        practitionerThunkActions.getPractitionersForCoach({})
-      ).unwrap();
-      await appDispatch(
-        classroomsForCoachThunkActions.getClassroomForCoach({
-          id: currentUser?.id!,
-        })
       ).unwrap();
     }
   };

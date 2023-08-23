@@ -159,6 +159,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
+            services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
             services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();

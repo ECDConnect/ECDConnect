@@ -69,10 +69,11 @@ import { ExclamationIcon } from '@heroicons/react/solid';
 import { addDays } from 'date-fns';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
-import { followUpDeadline } from './timeline/utils';
+import { followUpDeadline, isDateWithinThreeMonths } from './timeline/utils';
 import { newReAccreditationFollowUpId } from './timeline/re-accreditation/step-accordion-content';
 import { newPqaFollowUpId } from './timeline/pqa/step-accordion-content';
 import { reAccreditationFollowUpQuestion } from './forms/general-support-visit/coaching-visit-or-call/constants';
+import { getReAccreditationStepData } from './timeline/re-accreditation/step';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
@@ -160,6 +161,12 @@ export const CoachPractitionerJourney = () => {
       'reAccreditationFollowUpVisitPreviousFormData'
     )
   );
+  const reAccreditationVisitData =
+    timeline &&
+    getReAccreditationStepData({
+      timeline,
+      currentRating: currentReAccreditationRating,
+    });
 
   const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
     (item) => item?.attended
@@ -243,7 +250,7 @@ export const CoachPractitionerJourney = () => {
     ? followUpDeadline.lastVisit
     : followUpDeadline.default;
   const pqaFollowUpDeadline = addDays(
-    new Date(lastAttendedPqaVisitWithoutFollowUp?.insertedDate),
+    new Date(lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate),
     currentPqaFollowUpDeadline
   );
   const isPQAFollowUp =
@@ -256,7 +263,7 @@ export const CoachPractitionerJourney = () => {
 
   const currentReAccreditationFollowUpDeadline = followUpDeadline.default;
   const reAccreditationFollowUpDeadline = addDays(
-    new Date(lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate),
+    new Date(lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate),
     currentReAccreditationFollowUpDeadline
   );
 
@@ -413,7 +420,11 @@ export const CoachPractitionerJourney = () => {
       !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
   );
   const uncompletedReAccreditationVisits =
-    filteredReAccreditationVisits?.length && !isReAccreditationFollowUp
+    filteredReAccreditationVisits?.length &&
+    !isReAccreditationFollowUp &&
+    isDateWithinThreeMonths(
+      reAccreditationVisitData?.currentVisit?.plannedVisitDate || ''
+    )
       ? filteredReAccreditationVisits
       : [];
 
@@ -566,20 +577,20 @@ export const CoachPractitionerJourney = () => {
     const isPqaGreenRating =
       !isPqaOrangeRating &&
       !isPqaRedRating &&
-      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate &&
-      !lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate;
+      !!lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate &&
+      !lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate;
     const isReAccreditationGreenRating =
       !isReAccreditationOrangeRating &&
       !isReAccreditationRedRating &&
-      !!lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate;
+      !!lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate;
 
     const { years } = getCurrentTimeInYearsMonthsAndDays(
-      lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+      lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate
     );
 
     if (
       (isPqaOrangeRating || isPqaRedRating) &&
-      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+      !!lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate
     ) {
       return (
         <Alert
@@ -588,7 +599,7 @@ export const CoachPractitionerJourney = () => {
           title={isPqaRedRating ? 'Red PQA rating' : 'Orange PQA rating'}
           titleColor="textDark"
           message={new Date(
-            lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+            lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate
           ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
           messageColor="textMid"
           customIcon={
@@ -606,7 +617,7 @@ export const CoachPractitionerJourney = () => {
 
     if (
       (isReAccreditationRedRating || isReAccreditationOrangeRating) &&
-      !!lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+      !!lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate
     ) {
       return (
         <Alert
@@ -619,7 +630,7 @@ export const CoachPractitionerJourney = () => {
           }
           titleColor="textDark"
           message={new Date(
-            lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+            lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate
           ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
           messageColor="textMid"
           customIcon={
@@ -662,8 +673,8 @@ export const CoachPractitionerJourney = () => {
                   color="textMid"
                   text={new Date(
                     isPqaGreenRating
-                      ? lastAttendedPqaVisitWithoutFollowUp.insertedDate
-                      : lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+                      ? lastAttendedPqaVisitWithoutFollowUp.actualVisitDate
+                      : lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate
                   ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
                 />
                 <div className="ml-16 flex">
