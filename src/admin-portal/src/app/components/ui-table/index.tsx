@@ -14,7 +14,7 @@ import Table from 'react-tailwind-table';
 import Icon from '../icon';
 import { Link, useHistory } from 'react-router-dom';
 import { useLazyQuery, useMutation } from '@apollo/client';
-import { sentInviteToMultipleUsers } from '@ecdlink/graphql';
+import { sentInviteToMultipleUsers, deleteMultipleUsers } from '@ecdlink/graphql';
 import { ReactI18NextChild } from 'react-i18next';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
@@ -54,6 +54,16 @@ export default function UiTable({
       fetchPolicy: 'network-only',
     }
   );
+  const [deactivateUsers, { loading: deactivating }] = useMutation(
+    deleteMultipleUsers,
+    {
+      variables: {
+        ids: [],
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
+ 
 
   const inviteUsers = () => {
     sendInvitations({
@@ -70,6 +80,34 @@ export default function UiTable({
           if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
             setNotification({
               title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+              variant: NOTIFICATION.ERROR,
+            });
+          }
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to send invitations',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
+  };
+
+  const deactivateUser = () => {
+    deactivateUsers({
+      variables: {
+        ids: selectedRows,
+      },
+    })
+      .then((res) => {
+        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Deactivated ${res.data?.sendBulkInviteToPortal?.success.length} Users!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+            setNotification({
+              title: ` Failed to Deactivate ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
               variant: NOTIFICATION.ERROR,
             });
           }
@@ -112,7 +150,7 @@ export default function UiTable({
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
-    if (component === 'Consent' || component === 'roles') {
+    if (component === 'cms' || component === 'roles') {
       return [...columns];
     }
     const columnsWithSelect = [selectColumn, ...cols];
@@ -185,7 +223,7 @@ export default function UiTable({
     );
     if (
       column.field === 'select' &&
-      component !== 'Consent' &&
+      component !== 'cms' &&
       component !== 'roles'
     ) {
       return checkboxCell;
@@ -212,32 +250,23 @@ export default function UiTable({
           {formatDate(display_value)}
         </span>
       );
-    } else if (column.type === 'array') {
+    } else if (column.field === 'roles') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
           {display_value?.map(
-            (item: {
-              [x: string]:
-                | boolean
-                | ReactChild
-                | ReactFragment
-                | ReactPortal
-                | Iterable<ReactI18NextChild>;
-              id: Key;
-            }) => (
+            (item: any) => (
               <div
-                key={item.id}
+                key={item?.id}
                 className={
-                  `${
-                    item[column.displayProperty] === 'Administrator'
-                      ? 'bg-tertiary'
-                      : item[column.displayProperty] === 'Practitioner'
+                  `${item[column.displayProperty] === 'Administrator'
+                    ? 'bg-tertiary'
+                    : item[column.displayProperty] === 'Practitioner'
                       ? 'bg-secondary'
                       : 'bg-primary'
                   }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
               >
-                {item[column.displayProperty]}
+                {item[column?.displayProperty]}
               </div>
             )
           )}
@@ -301,9 +330,9 @@ export default function UiTable({
             <Button
               className="mr-4 rounded-xl px-6 py-0"
               type="outlined"
-              // isLoading={isLoading}
+              isLoading={deactivating}
               color="tertiary"
-              // onClick={deactivateUser}
+              onClick={deactivateUser}
             >
               <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
                 {' '}
@@ -347,9 +376,8 @@ export default function UiTable({
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${
-                rows.length < 10 ? 'hidden' : ''
-              } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${rows.length < 10 ? 'hidden' : ''
+                } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
             page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,

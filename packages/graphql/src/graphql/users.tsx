@@ -176,6 +176,14 @@ export const sentInviteToMultipleUsers = gql`
     }
   }
 `;
+export const deleteMultipleUsers = gql`
+  mutation BulkDeleteUser($ids: [String]) {
+    BulkDeleteUser(ids: $ids) {
+      success
+      failed
+    }
+  }
+`;
 
 export const getUserCount = gql`
   query countUsers($search: String, $pagingInput: PagedQueryInput) {
