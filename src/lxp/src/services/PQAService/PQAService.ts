@@ -247,6 +247,7 @@ class PQAService {
               attended
               comment
               dueDate
+              actualVisitDate
               insertedDate
               visitType {
                 type
@@ -279,6 +280,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              actualVisitDate
               insertedDate
               visitType {
                 type
@@ -294,6 +296,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              actualVisitDate
               insertedDate
               visitType {
                 type

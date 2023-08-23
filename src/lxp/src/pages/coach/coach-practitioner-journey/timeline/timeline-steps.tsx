@@ -7,6 +7,7 @@ import { PQAVisits } from './pqa/step-accordion-content';
 import { getPqaStepData } from './pqa/step';
 import { ReAccreditationVisits } from './re-accreditation/step-accordion-content';
 import { getReAccreditationStepData } from './re-accreditation/step';
+import { isDateWithinThreeMonths } from './utils';
 
 export interface ScheduleProps {
   visit: Visit;
@@ -153,10 +154,10 @@ export const timelineSteps = ({
         item?.visitType?.name?.includes('pre_pqa_visit_1') && item?.attended
     )
       ? new Date(
-          visit2?.attended ? visit2?.insertedDate : visit2?.plannedVisitDate
+          visit2?.attended ? visit2?.actualVisitDate : visit2?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions)
       : new Date(
-          visit1?.attended ? visit1.insertedDate : visit1?.plannedVisitDate
+          visit1?.attended ? visit1.actualVisitDate : visit1?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions);
 
     const isLateDate =
@@ -231,8 +232,8 @@ export const timelineSteps = ({
 
     if (pqaFollowUp.isFollowUp) {
       date = pqaFollowUp.deadline;
-    } else if (currentVisit?.insertedDate && currentVisit?.attended) {
-      date = currentVisit?.insertedDate;
+    } else if (currentVisit?.actualVisitDate && currentVisit?.attended) {
+      date = currentVisit?.actualVisitDate;
     }
 
     steps.push({
@@ -261,7 +262,7 @@ export const timelineSteps = ({
       extraData: {
         date: new Date(
           currentVisit?.attended
-            ? currentVisit?.insertedDate
+            ? currentVisit?.actualVisitDate
             : currentVisit?.plannedVisitDate
         ),
       },
@@ -298,19 +299,22 @@ export const timelineSteps = ({
     });
   }
 
-  if (timeline.reAccreditationVisits?.length) {
-    const { currentVisit, ratingData, stepType, subTitleText } =
-      getReAccreditationStepData({
-        timeline,
-        currentRating: currentReAccreditationRating,
-      });
+  const { currentVisit, ratingData, stepType, subTitleText } =
+    getReAccreditationStepData({
+      timeline,
+      currentRating: currentReAccreditationRating,
+    });
 
+  if (
+    timeline.reAccreditationVisits?.length &&
+    isDateWithinThreeMonths(currentVisit?.plannedVisitDate)
+  ) {
     let date = currentVisit?.plannedVisitDate;
 
     if (reAccreditationFollowUp.isFollowUp) {
       date = reAccreditationFollowUp.deadline;
-    } else if (currentVisit?.insertedDate && currentVisit?.attended) {
-      date = currentVisit?.insertedDate;
+    } else if (currentVisit?.actualVisitDate && currentVisit?.attended) {
+      date = currentVisit?.actualVisitDate;
     }
 
     steps.push({
@@ -340,7 +344,7 @@ export const timelineSteps = ({
       extraData: {
         date: new Date(
           currentVisit?.attended
-            ? currentVisit.insertedDate
+            ? currentVisit.actualVisitDate
             : currentVisit?.plannedVisitDate
         ),
       },
