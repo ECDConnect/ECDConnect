@@ -11,6 +11,7 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../content-management-models';
+import { Alert } from '@ecdlink/ui';
 
 const acceptedFormats = [
   'svg',
@@ -92,6 +93,11 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
         case FieldType.Image:
           return (
             <div key={propName} className={contentWrapper}>
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                message={`Editing the image here will update the image for all translations of this page.`}
+                type='warning'
+              />
               <div className="sm:col-span-12">
                 <FormFileInput
                   acceptedFormats={acceptedFormats}

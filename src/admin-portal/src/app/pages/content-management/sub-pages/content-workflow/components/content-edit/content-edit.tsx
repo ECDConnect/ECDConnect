@@ -160,7 +160,7 @@ export default function ContentEdit({
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <h3 className="text-lg font-medium leading-6 text-gray-900">
-                {cancelEdit && camelCaseToSentanceCase(contentType.name ?? '')}
+                {cancelEdit && camelCaseToSentanceCase(contentType.name  ?? '')}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
@@ -188,13 +188,17 @@ export default function ContentEdit({
             </div>
           </div>
           <div className="rounded-xl bg-white px-12 pt-6 pb-8">
-            {contentType.name === 'Consent' && (
+            {contentType.name === 'Consent' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            )}
+            ) :(contentType.name === 'Info Pages')?  <Alert
+            className="mt-2 mb-2 rounded-md"
+            message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
+            type="info"
+          />: null}
 
             <DynamicForm
               template={template}

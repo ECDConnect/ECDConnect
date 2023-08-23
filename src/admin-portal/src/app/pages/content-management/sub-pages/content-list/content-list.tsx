@@ -186,42 +186,7 @@ export default function ContentList({
     });
   };
 
-  const deleteAndRefresh = async (item: any) => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Delete Content"
-          message={`You are about to delete content that is part of the Collection ${type}, this can implicate data issues. Would you like to go ahead`}
-          onCancel={onCancel}
-          btnText={['Yes, Delete Content', 'No, Cancel']}
-          onSubmit={() => {
-            onSubmit();
 
-            deleteContent({
-              variables: {
-                id: item.id.toString(),
-                localeId: languageId.toString(),
-              },
-            })
-              .then(() => {
-                refetchContent({
-                  localeId: languageId.toString(),
-                });
-
-                setNotification({
-                  title: 'Successfully Deleted Content!',
-                  variant: NOTIFICATION.SUCCESS,
-                });
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          }}
-        />
-      ),
-    });
-  };
 
   if (tableData && displayFields) {
     return (
@@ -263,10 +228,7 @@ export default function ContentList({
                     return { field: item, use: item };
                   })}
                   rows={tableData}
-                  deleteRow={
-                    hasPermission(PermissionEnum.delete_static) &&
-                    deleteAndRefresh
-                  }
+               
                   component={'cms'}
                   viewRow={
                     hasPermission(PermissionEnum.update_static) &&
