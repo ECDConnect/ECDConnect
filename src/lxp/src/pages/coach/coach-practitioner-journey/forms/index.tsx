@@ -429,11 +429,7 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        await appDispatch(
-          pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner(
-            payload
-          )
-        );
+        await appDispatch(pqaThunkActions.addVisitFormData(payload));
       }
 
       onBack?.();
