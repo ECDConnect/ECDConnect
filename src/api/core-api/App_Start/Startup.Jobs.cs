@@ -14,27 +14,28 @@ namespace EcdLink.Api.CoreApi
     {
         private void ConfigureJobs(IServiceCollection services)
         {
-                if (Environment.IsProduction())
+            if (Environment.IsProduction())
+            {
+                //Hard - coded times for now, consider using ISystemSettings and move the cron expressions to DB
+                services.AddCronJob<RequestLogOnNotification>(c =>
                 {
-                    //Hard - coded times for now, consider using ISystemSettings and move the cron expressions to DB
-                    services.AddCronJob<RequestLogOnNotification>(c =>
-                    {
-                        c.TimeZoneInfo = TimeZoneInfo.Local;
-                        c.CronExpression = CronTags.MidnightDaily;
-                    });
+                    c.TimeZoneInfo = TimeZoneInfo.Local;
+                    c.CronExpression = CronTags.MidnightDaily;
+                });
 
-                    services.AddCronJob<LogOnNotificationSender>(c =>
-                    {
-                        c.TimeZoneInfo = TimeZoneInfo.Local;
-                        c.CronExpression = CronTags.NineAmWeekDaily;
-                    });
+                services.AddCronJob<LogOnNotificationSender>(c =>
+                {
+                    c.TimeZoneInfo = TimeZoneInfo.Local;
+                    c.CronExpression = CronTags.NineAmWeekDaily;
+                });
 
-                    services.AddCronJob<RequestAttendanceCaptureNotification>(c =>
-                    {
-                        c.TimeZoneInfo = TimeZoneInfo.Local;
-                        c.CronExpression = CronTags.FourPmEveryFriday;
-                    });
-                }
+                services.AddCronJob<RequestAttendanceCaptureNotification>(c =>
+                {
+                    c.TimeZoneInfo = TimeZoneInfo.Local;
+                    c.CronExpression = CronTags.FourPmEveryFriday;
+                });
+            }
+
             //run these jobs regardless of environment
             services.AddCronJob<ChildAnonymiseJob>(c =>
             {
@@ -60,6 +61,11 @@ namespace EcdLink.Api.CoreApi
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
                 c.CronExpression = CronTags.EighthOfEveryMonth;
+            });
+            services.AddCronJob<RemovePractitioners>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.MidnightDaily;
             });
         }
     }

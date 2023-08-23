@@ -108,8 +108,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             DateTime startDate,
             DateTime endDate)
         {
-            string _siteAddress = personnelService.GetUserSiteAddress(userManager, userId);
-            string _signingSignature = personnelService.GetUserSignature(userManager, userId);
+            string _siteAddress = personnelService.GetUserSiteAddress(userId);
+            string _signingSignature = personnelService.GetUserSignature(userId);
             string signDateRow = documentManager.GetSignatureRow(_signingSignature);
             string _css = documentManager.GetDocumentStyling();
             string _header = documentManager.GetDocumentHeader(startDate.Year, startDate.Month) + " Attendance Register";

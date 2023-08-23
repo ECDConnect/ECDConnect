@@ -199,7 +199,7 @@ export const Step3 = ({
     <div className="p-4">
       <Typography
         type="h2"
-        text="1. A stimulating & adequately resourced learning environment"
+        text="2. Consistent use of the SmartStart routine"
       />
       {isViewAnswers && (
         <Alert

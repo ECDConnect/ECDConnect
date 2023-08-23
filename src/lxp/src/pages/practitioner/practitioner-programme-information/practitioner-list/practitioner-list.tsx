@@ -128,7 +128,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   };
 
   const stackedListItems: ActionListDataItem[] =
-    practitioners && practitioners?.length! > 0
+    practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
       ? practitioners?.map((item) => {
           return {
             title: item?.user?.fullName ? item?.user?.fullName : '',

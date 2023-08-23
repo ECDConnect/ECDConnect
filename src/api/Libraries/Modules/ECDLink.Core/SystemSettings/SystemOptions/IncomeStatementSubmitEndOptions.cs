@@ -6,6 +6,5 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
     public class IncomeStatementSubmitEndOptions
     {
         public string IncomeStatementSubmitEnd { get; set; }
-
     }
 }

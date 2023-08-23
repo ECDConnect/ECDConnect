@@ -24,6 +24,7 @@ import {
   getNextMonth,
   getPreviousMonth,
 } from '@ecdlink/core';
+import { IncomeStatementDates } from '@/constants/Dates';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
@@ -45,11 +46,10 @@ export const SubmitIncomeStatements: React.FC = () => {
   const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
     useState<number>(0);
 
-  const openDay = 25;
-  const closeDay = 7;
   const currentDate = new Date();
   const isSubmitWindowOpen =
-    currentDate.getDate() >= openDay || currentDate.getDate() <= closeDay;
+    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
+    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
   useEffect(() => {
     // Outside submit
@@ -70,7 +70,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
     } else {
       // In window and current month
-      if (currentDate.getDate() >= openDay) {
+      if (currentDate.getDate() >= IncomeStatementDates.SubmitStartDay) {
         setSubmitMonthAndYear(currentDate);
 
         setIsThisMonthSubmitted(
@@ -576,6 +576,8 @@ export const SubmitIncomeStatements: React.FC = () => {
     previousMonthTotalExpenses,
     previousMonthTotalIncome,
     walkthroughSteps,
+    isThisMonthSubmitted,
+    isSubmitWindowOpen,
   ]);
 
   return (

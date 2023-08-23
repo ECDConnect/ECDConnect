@@ -38,6 +38,7 @@ import { useAppDispatch } from '@/store';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { PractitionerService } from '@/services/PractitionerService';
 import { getPreviousMonth } from '@ecdlink/core';
+import { IncomeStatementDates } from '@/constants/Dates';
 
 interface ReportDetailsForPractitionerData {
   classroomGroupName: string;
@@ -103,7 +104,9 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const currentDate = new Date();
   const submitMonth =
-    currentDate.getDay() >= 25 ? currentDate : getPreviousMonth(currentDate);
+    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay
+      ? currentDate
+      : getPreviousMonth(currentDate);
 
   // Income values
   const [preschoolFees, setPreschoolFees] = useState<any>([]);
@@ -474,7 +477,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
         statementsThunkActions.getAllStatementsBalanceSheet({
           // userId: userAuth?.id!,
           year: submitMonth.getFullYear(),
-          month: 0,
+          month: undefined,
         })
       );
     }

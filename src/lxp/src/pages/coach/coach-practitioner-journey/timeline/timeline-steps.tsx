@@ -116,13 +116,15 @@ export const timelineSteps = ({
       timeline?.consolidationMeetingColor
     )
   );
-  steps.push(
-    setStep(
-      timeline.firstAidCourseStatus,
-      timeline.firstAidDate,
-      timeline?.firstAidCourseColor
-    )
-  );
+  if (timeline.firstAidDate) {
+    steps.push(
+      setStep(
+        timeline.firstAidCourseStatus,
+        timeline.firstAidDate,
+        timeline?.firstAidCourseColor
+      )
+    );
+  }
   steps.push(
     setStep(
       timeline.smartSpaceLicenseStatus,
@@ -263,7 +265,10 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
-      color: stepType?.type !== 'todo' && ratingData?.color,
+      color:
+        stepType?.type !== 'todo' &&
+        currentPqaRating?.rating &&
+        ratingData?.color,
       showActionButton:
         timeline.pQASiteVisits.length === 1 &&
         !currentVisit?.attended &&
@@ -339,7 +344,10 @@ export const timelineSteps = ({
             : currentVisit?.plannedVisitDate
         ),
       },
-      color: stepType?.type !== 'todo' && ratingData?.color,
+      color:
+        stepType?.type !== 'todo' &&
+        currentReAccreditationRating.rating &&
+        ratingData?.color,
       showActionButton:
         timeline.reAccreditationVisits.length === 1 &&
         !currentVisit?.attended &&

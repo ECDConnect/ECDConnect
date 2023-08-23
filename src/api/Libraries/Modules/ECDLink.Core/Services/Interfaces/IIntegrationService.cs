@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 
-namespace ECDLink.Core.Services.Interfaces;
+namespace ECDLink.Core.Services.Interfaces
+{
     public interface IIntegrationService
     {
         Task<bool> IntegrationByMappedCoach(string franchiseeId = null);
@@ -12,6 +13,5 @@ namespace ECDLink.Core.Services.Interfaces;
         Task<bool> IntegrationUpdates();
         Task<bool> IntegrationByTrainees();
         Task<bool> AutoSubmitStatements();
-
-    
+    }
 }
