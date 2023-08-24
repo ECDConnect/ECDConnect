@@ -14,7 +14,10 @@ import Table from 'react-tailwind-table';
 import Icon from '../icon';
 import { Link, useHistory } from 'react-router-dom';
 import { useLazyQuery, useMutation } from '@apollo/client';
-import { sentInviteToMultipleUsers, deleteMultipleUsers } from '@ecdlink/graphql';
+import {
+  sentInviteToMultipleUsers,
+  deleteMultipleUsers,
+} from '@ecdlink/graphql';
 import { ReactI18NextChild } from 'react-i18next';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
@@ -63,7 +66,6 @@ export default function UiTable({
       fetchPolicy: 'network-only',
     }
   );
- 
 
   const inviteUsers = () => {
     sendInvitations({
@@ -253,23 +255,22 @@ export default function UiTable({
     } else if (column.field === 'roles') {
       rowValue = (
         <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
-          {display_value?.map(
-            (item: any) => (
-              <div
-                key={item?.id}
-                className={
-                  `${item[column.displayProperty] === 'Administrator'
+          {display_value?.map((item: any) => (
+            <div
+              key={item?.id}
+              className={
+                `${
+                  item[column.displayProperty] === 'Administrator'
                     ? 'bg-tertiary'
                     : item[column.displayProperty] === 'Practitioner'
-                      ? 'bg-secondary'
-                      : 'bg-primary'
-                  }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
-                }
-              >
-                {item[column?.displayProperty]}
-              </div>
-            )
-          )}
+                    ? 'bg-secondary'
+                    : 'bg-primary'
+                }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
+              }
+            >
+              {item[column?.displayProperty]}
+            </div>
+          ))}
         </div>
       );
     } else if (column.type === 'workflowStatus') {
@@ -376,8 +377,9 @@ export default function UiTable({
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${rows.length < 10 ? 'hidden' : ''
-                } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${
+                rows.length < 10 ? 'hidden' : ''
+              } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
             page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,

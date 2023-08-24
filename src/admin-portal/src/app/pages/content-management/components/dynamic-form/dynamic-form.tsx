@@ -96,7 +96,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`Editing the image here will update the image for all translations of this page.`}
-                type='warning'
+                type="warning"
               />
               <div className="sm:col-span-12">
                 <FormFileInput

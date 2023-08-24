@@ -84,6 +84,10 @@ namespace ECDLink.Security.Api
                 }
             }
 
+            // Update user, to save last login
+            user.LastSeen = DateTime.Now;
+            await _userManager.UpdateAsync(user);
+
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
             var package = new OkObjectResult(jwtObj);

@@ -115,8 +115,7 @@ export default function Documents() {
                     displayDocument
                   }
                   viewRow={
-                    hasPermission(PermissionEnum.view_documents) &&
-                    displayPanel
+                    hasPermission(PermissionEnum.view_documents) && displayPanel
                   }
                   component={'cms'}
                 />

@@ -187,7 +187,6 @@ export default function HealthCareWorkers() {
     };
   });
 
-
   const mapUserTableItem = (item: any) => {
     return {
       ...item,
@@ -445,7 +444,10 @@ export default function HealthCareWorkers() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'displayColumnIdPassportEmail', use: 'id / Passport' },
+                    {
+                      field: 'displayColumnIdPassportEmail',
+                      use: 'id / Passport',
+                    },
                     { field: 'fullName', use: 'name' },
                     // { field: 'usage', use: 'CHW Connect usage' },
                     { field: 'insertedDate', use: 'Date invited' },

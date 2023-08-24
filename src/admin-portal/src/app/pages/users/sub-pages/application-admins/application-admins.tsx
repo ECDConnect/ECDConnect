@@ -8,7 +8,7 @@ import {
   usePanel,
   UserDto,
 } from '@ecdlink/core';
-import { SortEnumType, UserList} from '@ecdlink/graphql';
+import { SortEnumType, UserList } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';

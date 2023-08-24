@@ -219,20 +219,20 @@ export const PractitionerJourney = ({
     const isPqaGreenRating =
       !isPqaOrangeRating &&
       !isPqaRedRating &&
-      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate &&
-      !lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate;
+      !!lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate &&
+      !lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate;
     const isReAccreditationGreenRating =
       !isReAccreditationOrangeRating &&
       !isReAccreditationRedRating &&
-      !!lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate;
+      !!lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate;
 
     const { years } = getCurrentTimeInYearsMonthsAndDays(
-      lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+      lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate
     );
 
     if (
       (isPqaOrangeRating || isPqaRedRating) &&
-      !!lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+      !!lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate
     ) {
       return (
         <Alert
@@ -241,7 +241,7 @@ export const PractitionerJourney = ({
           title={isPqaRedRating ? 'Red PQA rating' : 'Orange PQA rating'}
           titleColor="textDark"
           message={new Date(
-            lastAttendedPqaVisitWithoutFollowUp?.insertedDate
+            lastAttendedPqaVisitWithoutFollowUp?.actualVisitDate
           ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
           messageColor="textMid"
           customIcon={
@@ -259,7 +259,7 @@ export const PractitionerJourney = ({
 
     if (
       (isReAccreditationRedRating || isReAccreditationOrangeRating) &&
-      !!lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+      !!lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate
     ) {
       return (
         <Alert
@@ -272,7 +272,7 @@ export const PractitionerJourney = ({
           }
           titleColor="textDark"
           message={new Date(
-            lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+            lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate
           ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
           messageColor="textMid"
           customIcon={
@@ -315,8 +315,8 @@ export const PractitionerJourney = ({
                   color="textMid"
                   text={new Date(
                     isPqaGreenRating
-                      ? lastAttendedPqaVisitWithoutFollowUp.insertedDate
-                      : lastAttendedReAccreditationVisitWithoutFollowUp?.insertedDate
+                      ? lastAttendedPqaVisitWithoutFollowUp.actualVisitDate
+                      : lastAttendedReAccreditationVisitWithoutFollowUp?.actualVisitDate
                   ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
                 />
                 <div className="ml-16 flex">

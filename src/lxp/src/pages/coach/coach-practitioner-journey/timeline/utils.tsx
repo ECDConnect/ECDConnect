@@ -1,5 +1,6 @@
 import { Maybe } from '@ecdlink/graphql';
 import { Colours } from '@ecdlink/ui';
+import { differenceInMonths, parseISO } from 'date-fns';
 
 export interface RatingData {
   text: string;
@@ -32,4 +33,13 @@ export const getRatingData = (
         color: 'successMain',
       };
   }
+};
+
+export const isDateWithinThreeMonths = (inputDateStr: string): boolean => {
+  const inputDate = parseISO(inputDateStr);
+  const currentDate = new Date();
+
+  const monthDifference = differenceInMonths(inputDate, currentDate);
+
+  return monthDifference <= 3;
 };
