@@ -980,9 +980,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public Visit AddNextPQAOrFollowUpVisit(string color, Guid practitionerId, Visit linkedVisit)
         {
-            // saving the color to the visit's comment
-            linkedVisit.Comment = "Rating: " + color;
-            _visitRepo.Update(linkedVisit);
+            if (linkedVisit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1) { 
+                // saving the color to the visit's comment
+                linkedVisit.Comment = "Rating: " + color;
+               _visitRepo.Update(linkedVisit);
+            }
 
             Visit newVisit = new Visit();
 
