@@ -37,7 +37,9 @@ namespace ECDLink.SmartStart.Services
 
         public AttendanceService(IDbContextFactory<AuthenticationDbContext> dbFactory,
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory, AuthenticationDbContext dbContext, IHolidayService<Holiday> holidayService,
+            IGenericRepositoryFactory repoFactory, 
+            AuthenticationDbContext dbContext, 
+            IHolidayService<Holiday> holidayService,
             HierarchyEngine hierarchyEngine) 
             : base(holidayService, dbFactory.CreateDbContext())
         {
@@ -56,10 +58,7 @@ namespace ECDLink.SmartStart.Services
             _addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
             _programmeRepo = _repoFactory.CreateGenericRepository<ProgrammeType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateRepository<Child>(userContext: _applicationUserId);
-
-
         }
-
 
         #region Learners and Classrooms
 
@@ -84,7 +83,7 @@ namespace ECDLink.SmartStart.Services
             var learners = _dbContext.Learners
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
-                            .Where(l => l.ClassroomGroupId == classgroupId);
+                            .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId);
             return learners.ToList();
         }
 
@@ -122,7 +121,11 @@ namespace ECDLink.SmartStart.Services
 
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
-            List<ClassroomGroup> groups = _classGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).ToList();
+            var groups = _classGroupRepo.GetAll()
+                .Where(x =>x.IsActive && x.UserId.ToString() == userId)
+                .OrderBy(x => x.Id)
+                .ToList();
+
             return groups;
         }
 

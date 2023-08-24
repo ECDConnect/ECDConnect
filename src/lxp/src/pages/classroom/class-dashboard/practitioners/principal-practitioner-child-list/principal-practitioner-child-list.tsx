@@ -33,11 +33,11 @@ export const PrincipalPractitionerChildList: React.FC<
   ComponentBaseProps
 > = () => {
   const location = useLocation<PractitionerProfileRouteState>();
-  const practitionerId = location.state.practitionerId;
-  const classroomItem = location?.state?.classroomItem;
+  const practitionerUserId = location.state.practitionerUserId;
+  const classroomGroup = location?.state?.classroomGroup;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+    (practitioner) => practitioner?.userId === practitionerUserId
   );
 
   const { isOnline } = useOnlineStatus();
@@ -49,8 +49,8 @@ export const PrincipalPractitionerChildList: React.FC<
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
   const children = useSelector(childrenSelectors.getChildren);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
-    return item?.userId === practitionerId;
+  const practitionerClassroomGroups = classroomGroups?.filter((item) => {
+    return item?.userId === practitionerUserId;
   });
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
@@ -64,23 +64,24 @@ export const PrincipalPractitionerChildList: React.FC<
     classroomsSelectors.getClassroomGroupLearners
   );
 
-  const practitionerLearners = classroomGroupLearners.filter((el) => {
+  const learnersForPractitioner = classroomGroupLearners.filter((el) => {
     return practitionerClassroomGroups.some((f) => {
       return f.id === el.classroomGroupId;
     });
   });
   const childrenForPractitioner = children?.filter((el) => {
-    return practitionerLearners?.some((f) => {
+    return learnersForPractitioner?.some((f) => {
       return f.userId === el.userId;
     });
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [addChildButtonExpanded, setAddChildButtonExpanded] =
-    useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
-  const [activeFilters, setActiveFilters] = useState<any[]>([]);
-  const [activeSort, setActiveSort] = useState<any[]>([]);
+  const [activeFilters, setActiveFilters] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const [activeSort, setActiveSort] = useState<SearchDropDownOption<string>[]>(
+    []
+  );
   const [childUserListData, setChildUserListData] =
     useState<UserAlertListDataItem[]>();
   const [filteredChildData, setFilteredChildData] = useState<
@@ -166,7 +167,7 @@ export const PrincipalPractitionerChildList: React.FC<
     });
   };
 
-  const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
+  const onFilterItemsChanges = (value: SearchDropDownOption<string>[]) => {
     setActiveFilters(value);
     const selectedClassrooms = value.map((x) => x.value);
     const childListItem: UserAlertListDataItem[] = [];
@@ -198,14 +199,14 @@ export const PrincipalPractitionerChildList: React.FC<
   };
 
   useEffect(() => {
-    if (classroomItem) {
+    if (classroomGroup) {
       const filteredClassroomGroup = updatedPlaygroups?.filter(
-        (item) => item?.value === classroomItem?.id
+        (item) => item?.value === classroomGroup?.id
       );
       onFilterItemsChanges(filteredClassroomGroup);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomItem, updatedPlaygroups]);
+  }, [classroomGroup, updatedPlaygroups]);
 
   const onSortItemsChanges = (column: string) => {
     if (childrenForPractitioner && classroomGroupLearners) {
@@ -335,14 +336,6 @@ export const PrincipalPractitionerChildList: React.FC<
     };
   };
 
-  const handleListScroll = (scrollTop: number) => {
-    if (scrollTop < 30) {
-      setAddChildButtonExpanded(true);
-    } else {
-      setAddChildButtonExpanded(false);
-    }
-  };
-
   const onSearchChange = (value: string) => {
     setFilteredChildData(
       childUserListData?.filter((x) =>
@@ -364,7 +357,6 @@ export const PrincipalPractitionerChildList: React.FC<
       ></BannerWrapper>
       <SearchHeader<UserAlertListDataItem>
         searchItems={filteredChildData || []}
-        onScroll={handleListScroll}
         onSearchChange={onSearchChange}
         isTextSearchActive={searchTextActive}
         onBack={() => setSearchTextActive(false)}
@@ -418,7 +410,6 @@ export const PrincipalPractitionerChildList: React.FC<
             className={styles.stackedList}
             listItems={childUserListData}
             type={'UserAlertList'}
-            onScroll={(scrollTop: number) => handleListScroll(scrollTop)}
           ></StackedList>
         ) : null}
       </div>

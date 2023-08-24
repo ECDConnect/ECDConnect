@@ -176,9 +176,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceMetrics(
-            IGenericRepositoryFactory repoFactory,
             [Service] AttendanceTrackingRepository attendanceRepo,
-            [Service] MonthlyAttendanceReport report,
             [Service] AttendanceService attendanceService,
             DateTime startMonth,
             DateTime endMonth)
@@ -188,7 +186,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = GetClassAttendanceMetricsByUser(repoFactory, attendanceRepo, report, attendanceService,  practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
+                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService,  practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
                 if (metric.Any())
                 {
                     metrics.AddRange(metric);
@@ -200,15 +198,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceMetricsByUser(
-            IGenericRepositoryFactory repoFactory,
             [Service] AttendanceTrackingRepository attendanceRepo,
-            [Service] MonthlyAttendanceReport report,
             [Service] AttendanceService attendanceService,
             string userId,
             DateTime startMonth,
             DateTime endMonth)
         {
-            List<ClassroomMetricReport> metric = new List<ClassroomMetricReport>();
+            var metric = new List<ClassroomMetricReport>();
 
             var fromDate = startMonth.GetStartOfMonth();
             var toDate = endMonth.GetEndOfMonth().GetEndOfDay();
@@ -218,7 +214,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 foreach (var group in classroomGroups)
                 {
-                    List<Learner> learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
+                    var learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
                     
                     int childCount = learners.Count;
                     int month = fromDate.Month;
@@ -232,13 +228,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            List<Attendance> attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId);
+                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId);
                             if (attendanceData.Any())
                             {
                                 var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
                                 var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
                                 if (attendanceAttended > 0)
-                                    attendancePercentage = (int)(childCount > 0 && attendanceAttended > 0 ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) : 0);
+                                {
+                                    attendancePercentage = 
+                                        (int)(childCount > 0 && attendanceAttended > 0 
+                                            ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) 
+                                            : 0);
+                                }
+
                                 //override month and year to attendance month and year
                                 month = attendanceData.FirstOrDefault().MonthOfYear;
                                 year = attendanceData.FirstOrDefault().Year;
@@ -246,7 +248,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             }
                         }
                     }
-                    metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });
+                    metric.Add(
+                        new ClassroomMetricReport() 
+                        {
+                            ChildCount = childCount, 
+                            AttendancePercentage = attendancePercentage, 
+                            ClassroomGroupId = group.Id.ToString(), 
+                            ClassroomId = group.ClassroomId.ToString(), 
+                            Month = month, 
+                            Year = year, 
+                            WeekOfYear = weekOfYear, 
+                            PractitionerId = userId 
+                        });
                 }
             }
 
@@ -287,7 +300,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
                     attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
 
-                    var thisClass = new ClassroomMetricReport() { childCount = 4, attendancePercentage = 75, classroomId = c.Id.ToString(), month = fromDate.Month, year = fromDate.Year };
+                    var thisClass = new ClassroomMetricReport() { ChildCount = 4, AttendancePercentage = 75, ClassroomId = c.Id.ToString(), Month = fromDate.Month, Year = fromDate.Year };
                     metrics.Add(thisClass);
                 }
             }

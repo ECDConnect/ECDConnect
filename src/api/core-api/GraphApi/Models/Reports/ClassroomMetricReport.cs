@@ -2,13 +2,13 @@
 {
     public class ClassroomMetricReport
     {
-        public string practitionerId { get; set; }
-        public int childCount { get; set; }
-        public int attendancePercentage { get; set; }
-        public int month { get; set; }
-        public int year { get; set; }
-        public int weekOfYear { get; set; }
-        public string classroomGroupId { get; set; }
-        public string classroomId { get; set; }
+        public string PractitionerId { get; set; }
+        public int ChildCount { get; set; }
+        public int AttendancePercentage { get; set; }
+        public int Month { get; set; }
+        public int Year { get; set; }
+        public int WeekOfYear { get; set; }
+        public string ClassroomGroupId { get; set; }
+        public string ClassroomId { get; set; }
     }
 }
