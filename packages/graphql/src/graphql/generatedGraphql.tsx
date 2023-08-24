@@ -13005,6 +13005,7 @@ export type Trainee = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isAdminFileAndPlaykitValidated?: Maybe<Scalars['Boolean']>;
+  isOnStipend?: Maybe<Scalars['Boolean']>;
   isSmartSpaceVisitValidated?: Maybe<Scalars['Boolean']>;
   linkedPrincipalHierarchy?: Maybe<Scalars['UUID']>;
   playKitReceived?: Maybe<Scalars['Boolean']>;
@@ -13055,6 +13056,7 @@ export type TraineeFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isAdminFileAndPlaykitValidated?: InputMaybe<BooleanOperationFilterInput>;
+  isOnStipend?: InputMaybe<BooleanOperationFilterInput>;
   isSmartSpaceVisitValidated?: InputMaybe<BooleanOperationFilterInput>;
   linkedPrincipalHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<TraineeFilterInput>>;
@@ -13097,6 +13099,7 @@ export type TraineeInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsAdminFileAndPlaykitValidated?: InputMaybe<Scalars['Boolean']>;
+  IsOnStipend?: InputMaybe<Scalars['Boolean']>;
   IsSmartSpaceVisitValidated?: InputMaybe<Scalars['Boolean']>;
   LinkedPrincipalHierarchy?: InputMaybe<Scalars['UUID']>;
   PlayKitReceived?: InputMaybe<Scalars['Boolean']>;
@@ -13181,6 +13184,7 @@ export type TraineeSortInput = {
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   isAdminFileAndPlaykitValidated?: InputMaybe<SortEnumType>;
+  isOnStipend?: InputMaybe<SortEnumType>;
   isSmartSpaceVisitValidated?: InputMaybe<SortEnumType>;
   linkedPrincipalHierarchy?: InputMaybe<SortEnumType>;
   playKitReceived?: InputMaybe<SortEnumType>;
@@ -13385,6 +13389,7 @@ export type Visit = {
   comment?: Maybe<Scalars['String']>;
   dueDate?: Maybe<Scalars['DateTime']>;
   eventId?: Maybe<Scalars['UUID']>;
+  hasAnswerData: Scalars['Boolean'];
   id: Scalars['UUID'];
   infant?: Maybe<Infant>;
   infantId?: Maybe<Scalars['UUID']>;
@@ -13637,6 +13642,7 @@ export type VisitFilterInput = {
   comment?: InputMaybe<StringOperationFilterInput>;
   dueDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   eventId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  hasAnswerData?: InputMaybe<BooleanOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   infant?: InputMaybe<InfantFilterInput>;
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -13791,6 +13797,7 @@ export type VisitInput = {
   Comment?: InputMaybe<Scalars['String']>;
   DueDate?: InputMaybe<Scalars['DateTime']>;
   EventId?: InputMaybe<Scalars['UUID']>;
+  HasAnswerData: Scalars['Boolean'];
   Id?: InputMaybe<Scalars['UUID']>;
   Infant?: InputMaybe<InfantInput>;
   InfantId?: InputMaybe<Scalars['UUID']>;
@@ -13841,6 +13848,7 @@ export type VisitSortInput = {
   comment?: InputMaybe<SortEnumType>;
   dueDate?: InputMaybe<SortEnumType>;
   eventId?: InputMaybe<SortEnumType>;
+  hasAnswerData?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   infant?: InputMaybe<InfantSortInput>;
   infantId?: InputMaybe<SortEnumType>;
