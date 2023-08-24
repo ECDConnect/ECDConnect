@@ -1829,6 +1829,24 @@ export type CoachSortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
+export type CoachingCircleTopics = {
+  __typename?: 'CoachingCircleTopics';
+  endDate?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['Int']>;
+  resource?: Maybe<Scalars['String']>;
+  startDate?: Maybe<Scalars['String']>;
+  title?: Maybe<Scalars['String']>;
+  topicContent?: Maybe<Scalars['String']>;
+};
+
+export type CoachingCircleTopicsInput = {
+  endDate?: InputMaybe<Scalars['String']>;
+  resource?: InputMaybe<Scalars['String']>;
+  startDate?: InputMaybe<Scalars['String']>;
+  title?: InputMaybe<Scalars['String']>;
+  topicContent?: InputMaybe<Scalars['String']>;
+};
+
 export type CommunitySectionGg = {
   __typename?: 'CommunitySectionGG';
   id?: Maybe<Scalars['Int']>;
@@ -4322,6 +4340,7 @@ export type Mutation = {
   createClubMeeting?: Maybe<ClubMeeting>;
   createClubMeetingRegister?: Maybe<ClubMeetingRegister>;
   createCoach?: Maybe<Coach>;
+  createCoachingCircleTopics?: Maybe<Scalars['String']>;
   createCommunitySectionGG?: Maybe<Scalars['String']>;
   createCommunitySectionItemGG?: Maybe<Scalars['String']>;
   createCommunitySectionItemSS?: Maybe<Scalars['String']>;
@@ -4435,6 +4454,7 @@ export type Mutation = {
   deleteClubMeetingRegister?: Maybe<Scalars['Boolean']>;
   deleteCoach?: Maybe<Scalars['Boolean']>;
   deleteCoachForFranchisor?: Maybe<Coach>;
+  deleteCoachingCircleTopics?: Maybe<Scalars['Boolean']>;
   deleteCommunitySectionGG?: Maybe<Scalars['Boolean']>;
   deleteCommunitySectionItemGG?: Maybe<Scalars['Boolean']>;
   deleteCommunitySectionItemSS?: Maybe<Scalars['Boolean']>;
@@ -4591,6 +4611,7 @@ export type Mutation = {
   updateClubMeeting?: Maybe<ClubMeeting>;
   updateClubMeetingRegister?: Maybe<ClubMeetingRegister>;
   updateCoach?: Maybe<Coach>;
+  updateCoachingCircleTopics?: Maybe<CoachingCircleTopics>;
   updateCommunitySectionGG?: Maybe<CommunitySectionGg>;
   updateCommunitySectionItemGG?: Maybe<CommunitySectionItemGg>;
   updateCommunitySectionItemSS?: Maybe<CommunitySectionItemSs>;
@@ -4950,6 +4971,12 @@ export type MutationCreateClubMeetingRegisterArgs = {
 
 export type MutationCreateCoachArgs = {
   input?: InputMaybe<CoachInput>;
+};
+
+export type MutationCreateCoachingCircleTopicsArgs = {
+  input: CoachingCircleTopicsInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCreateCommunitySectionGgArgs = {
@@ -5454,6 +5481,12 @@ export type MutationDeleteCoachArgs = {
 export type MutationDeleteCoachForFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationDeleteCoachingCircleTopicsArgs = {
+  id: Scalars['String'];
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeleteCommunitySectionGgArgs = {
@@ -6139,6 +6172,13 @@ export type MutationUpdateClubMeetingRegisterArgs = {
 export type MutationUpdateCoachArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<CoachInput>;
+};
+
+export type MutationUpdateCoachingCircleTopicsArgs = {
+  id: Scalars['String'];
+  input: CoachingCircleTopicsInput;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateCommunitySectionGgArgs = {
@@ -8569,6 +8609,7 @@ export type Query = {
   GetAllClubMeeting?: Maybe<Array<Maybe<ClubMeeting>>>;
   GetAllClubMeetingRegister?: Maybe<Array<Maybe<ClubMeetingRegister>>>;
   GetAllCoach?: Maybe<Array<Maybe<Coach>>>;
+  GetAllCoachingCircleTopics: Array<Maybe<CoachingCircleTopics>>;
   GetAllCommunitySectionGG: Array<Maybe<CommunitySectionGg>>;
   GetAllCommunitySectionItemGG: Array<Maybe<CommunitySectionItemGg>>;
   GetAllCommunitySectionItemSS: Array<Maybe<CommunitySectionItemSs>>;
@@ -8695,6 +8736,7 @@ export type Query = {
   GetClubMeetingById?: Maybe<ClubMeeting>;
   GetClubMeetingRegisterById?: Maybe<ClubMeetingRegister>;
   GetCoachById?: Maybe<Coach>;
+  GetCoachingCircleTopicsById: Array<Maybe<CoachingCircleTopics>>;
   GetCommunitySectionGGById: Array<Maybe<CommunitySectionGg>>;
   GetCommunitySectionItemGGById: Array<Maybe<CommunitySectionItemGg>>;
   GetCommunitySectionItemSSById: Array<Maybe<CommunitySectionItemSs>>;
@@ -9170,6 +9212,11 @@ export type QueryGetAllCoachArgs = {
   order?: InputMaybe<Array<CoachSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<CoachFilterInput>;
+};
+
+export type QueryGetAllCoachingCircleTopicsArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetAllCommunitySectionGgArgs = {
@@ -9781,6 +9828,12 @@ export type QueryGetClubMeetingRegisterByIdArgs = {
 export type QueryGetCoachByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<CoachFilterInput>;
+};
+
+export type QueryGetCoachingCircleTopicsByIdArgs = {
+  id?: InputMaybe<Scalars['Int']>;
+  locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetCommunitySectionGgByIdArgs = {
