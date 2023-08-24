@@ -6,6 +6,7 @@ import {
   ContentTypeFieldDto,
   ContentValueDto,
   NOTIFICATION,
+  useDialog,
   useNotifications,
 } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
@@ -16,13 +17,14 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
-import { Alert, classNames } from '@ecdlink/ui';
+import { Alert, DialogPosition, classNames } from '@ecdlink/ui';
 import {
   ArrowLeftIcon,
   DocumentDuplicateIcon,
   SaveAsIcon,
   XIcon,
 } from '@heroicons/react/solid';
+import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
 
 export interface ContentViewProps {
   content: any;
@@ -64,6 +66,24 @@ export default function ContentEdit({
       } 
     }
   `;
+  const dialog = useDialog();
+
+  const cancelDialog = async () => {
+    dialog({
+      // blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <AlertModal
+          title="Cancel Edit"
+          btnText={['Yes, Cancel', 'No, Cancel']}
+          message={` Make sure you have communicated with them before deactivating them.`}
+          onCancel={onCancel}
+          onSubmit={cancelEdit }
+           
+        />
+      ),
+    });
+  };
 
   const [updateContent] = useMutation(updateMutation);
 
@@ -174,10 +194,11 @@ export default function ContentEdit({
                   <DocumentDuplicateIcon width="20px" className="pl-1" />
                 </button>
               )}
+              
 
               {cancelEdit && (
                 <button
-                  onClick={cancelEdit}
+                  onClick={cancelDialog}
                   type="button"
                   className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
                 >
@@ -188,13 +209,19 @@ export default function ContentEdit({
             </div>
           </div>
           <div className="rounded-xl bg-white px-12 pt-6 pb-8">
-            {contentType.name === 'Consent' && (
+            {contentType.name === 'Consent' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            )}
+            ) : contentType.name === 'Info Pages' ? (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
+                type="info"
+              />
+            ) : null}
 
             <DynamicForm
               template={template}

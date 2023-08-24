@@ -9,16 +9,18 @@ import {
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
-import { ContentTypeDto } from '@ecdlink/core';
+import { ContentTypeDto, DocumentTypeDto } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import { classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
 import { SearchIcon } from '@heroicons/react/solid';
+import { useLazyQuery } from '@apollo/client';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
+  const [searchValue, setSearchValue] = useState('');
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
 
@@ -29,7 +31,9 @@ export function ContentManagement() {
   const { data: languages } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
   });
-  const { data: dataTypes, refetch } = useQuery(contentTypes, {
+
+
+  const [getContentTypes, { data: dataTypes, refetch }] = useLazyQuery(contentTypes, {
     variables: {
       search: '',
       searchInContent: null,
@@ -37,6 +41,8 @@ export function ContentManagement() {
     },
     fetchPolicy: 'cache-and-network',
   });
+
+
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
     contentDefinitions,
     {
@@ -64,38 +70,50 @@ export function ContentManagement() {
     ) {
       return [
         {
-          name: 'All Roles',
+          name: 'Consent',
           // href: '/',
         },
         {
-          name: 'CHWs',
+          name: 'Info  pages',
+          href: 'MoreInformation',
+        },
+        {
+          name: 'Postnatal',
+       
+        },
+        {
+          name: 'Antenatal',
           // href: '/',
         },
         {
-          name: 'Team Leads',
+          name: 'Danger signs',
           // href: '/',
         },
         {
-          name: 'Administrators',
-          // href: '/',
+          name: 'Community',
+          href: 'CommunitySectionGG',
         },
       ];
     } else {
       return [
         {
-          name: 'Administrators',
+          name: 'Consent',
           href: '/content-management',
         },
         {
-          name: 'Administrators',
+          name: 'Info pages',
           // href: '/',
         },
         {
-          name: 'Administrators',
+          name: 'Progress',
           // href: '/',
         },
         {
-          name: 'Administrators',
+          name: 'Programme',
+          // href: '/',
+        },
+        {
+          name: 'Community',
           // href: '/',
         },
       ];
@@ -136,35 +154,27 @@ export function ContentManagement() {
     refrechDefinitions();
   };
 
-  const getVariables = (
-    search: string,
-    sortDescending: boolean,
-    currentPage: number,
-    pageSize: number
-  ) => {
-    return {
-      search: search,
-      order: [
-        { insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
-        { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
-      ],
-      pagingInput: {
-        pageNumber: currentPage,
-        pageSize: pageSize,
-        filterBy: [
-          {
-            fieldName: 'ADMINISTRATOR',
-            filterType: 'EQUALS',
-            value: 'true',
-          },
-        ],
-      },
-    };
-  };
 
-  const [searchValue, setSearchValue] = useState('');
+  useEffect(() => {
+    console.log(searchValue)
+    getContentTypes(
+      {
+        variables: {
+          search: searchValue,
+          searchInContent: true,
+          isVisiblePortal: true,
+        }
+      });
+    // TODO: Use actual pagination when table component supports it.
+    // const getUserCountQueryVariables = getCountVariables(searchValue);
+    // getCountUsers({
+    //   variables: getUserCountQueryVariables
+    // });
+  }, [searchValue]);
 
-  const searchContent = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+  console.log(dataTypes?.contentTypes);
+
+  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
 
@@ -174,9 +184,9 @@ export function ContentManagement() {
         <>
           {!selectedContent && (
             <div className="flex w-full  flex-row overflow-auto rounded-md bg-white">
-              {dataTypes?.contentTypes?.map((item: ContentTypeDto) => (
+              {navigation.map((item: any) => (
                 <div
-                  key={item.id}
+                  key={item.name}
                   className={
                     data?.tenantContext.applicationName === 'GrowGreat'
                       ? 'w-3/12 '
@@ -185,16 +195,19 @@ export function ContentManagement() {
                 >
                   <a
                     onClick={() => {
-                      showGroupContentTypes(item);
+                      const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === item.name || type.name === item.href));
+                      if (selectedTypeObject) {
+                        showGroupContentTypes(selectedTypeObject);
+                      }
                     }}
                     className={classNames(
-                      selectedType?.id === item.id
+                      selectedType?.name === item.name
                         ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                       'consent-tabs text-md flex h-14 items-center font-medium'
                     )}
                   >
-                    {item.description}
+                    {item.name}
                   </a>
                 </div>
               ))}
@@ -226,7 +239,7 @@ export function ContentManagement() {
                     <input
                       className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
                       placeholder="      Search by email or name..."
-                      onChange={() => searchContent}
+                      onChange={search}
                     />
                   </div>
                   {selectedType && languages?.GetAllLanguage && (

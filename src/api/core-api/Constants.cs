@@ -300,7 +300,7 @@ namespace EcdLink.Api.CoreApi
             public const string step13_q1_a4 = "The venue has good natural ventilation (windows or doors that can open).";
             public const string step13_q1_a5 = "The programme does not exceed the maximum child number per programme type.";
 
-            public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}'s venue.";
+            public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}’s venue?";
             public const string step14_success = "{client} venue meets all the basic SmartSpace standards as well as the additional standards.";
             public const string step14_not_reissue = "You cannot reissue {client}'s SmartSpace Licence.";
             public const string step14_not_meet = "{client}'s venue does not meet the basic SmartSpace standards.";
@@ -361,6 +361,7 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_visit = "PQA Visit 1";
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
+            public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
 
             public const string step12 = "Step 12";
             public const string step13 = "Step 13";
@@ -397,7 +398,7 @@ namespace EcdLink.Api.CoreApi
             public const string community_support = "Community support gained";
             public const string coach_visit = "SmartSpace visit from coach";
             public const string attended_first_aid = "Attended first aid course";
-            public const string not_attended_first_aid = "Did not attended first aid course";
+            public const string not_attended_first_aid = "Did not attend first aid course";
             public const string child_progress_training = "Child progress training";
             public const string self_assessment = "Self-assessment completed";
 

@@ -3,11 +3,11 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using ECDLink.DataAccessLayer.Entities.Visits;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -30,12 +30,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 Visit visit = visitDataManager.AddPractitionerVisitData(input, true);
                 // PQA Rating
-                if (visit.VisitType.Type == Constants.SSSettings.visitType_pqa_visit_1 || visit.VisitType.Type == Constants.SSSettings.visitType_pqa_visit_follow_up)
+                if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
                 {
                     PQARating pqaRating = visitDataManager.GetPractitionerPQARating(visit);
                     visitManager.AddNextPQAOrFollowUpVisit(pqaRating.OverallRatingColor, (System.Guid)visit.PractitionerId, visit);
-
-                } else if (visit.VisitType.Type == Constants.SSSettings.visitType_re_accreditation_1 || visit.VisitType.Type == Constants.SSSettings.visitType_re_accreditation_follow_up)
+                } 
+                if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
                 {
                     PQARating pqaRating = visitDataManager.GetPractitionerReAccreditationRating(visit);
                     visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, (System.Guid)visit.PractitionerId, visit);

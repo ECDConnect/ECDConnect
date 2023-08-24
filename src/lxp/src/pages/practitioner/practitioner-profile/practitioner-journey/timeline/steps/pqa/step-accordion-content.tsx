@@ -38,16 +38,17 @@ export const PQAVisits = ({
   const pqaRating3 = pqaRatings?.[2];
 
   const sortedVisits = attendedPqaVisits?.sort((a, b) => {
-    if (!a?.insertedDate && !b?.insertedDate) {
+    if (!a?.actualVisitDate && !b?.actualVisitDate) {
       return 0;
-    } else if (!a?.insertedDate) {
+    } else if (!a?.actualVisitDate) {
       return 1;
-    } else if (!b?.insertedDate) {
+    } else if (!b?.actualVisitDate) {
       return -1;
     }
 
     return (
-      new Date(a.insertedDate).getTime() - new Date(b.insertedDate).getTime()
+      new Date(a.actualVisitDate).getTime() -
+      new Date(b.actualVisitDate).getTime()
     );
   });
 
@@ -116,8 +117,8 @@ export const PQAVisits = ({
             type="body"
             color={getStepType(String('Success'))?.color || 'textMid'}
             text={
-              !!item?.insertedDate
-                ? `${new Date(item.insertedDate).toLocaleDateString(
+              !!item?.actualVisitDate
+                ? `${new Date(item.actualVisitDate).toLocaleDateString(
                     'en-ZA',
                     dateOptions
                   )}`

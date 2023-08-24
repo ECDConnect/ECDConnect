@@ -10,8 +10,7 @@ namespace ECDLink.Core.Services.Interfaces
         List<StatementsExpenses> GetAllStatementsExpenses(string userId, int year, int month);
         List<StatementsIncome> GetAllStatementsIncome(string userId, int year, int month);
         List<StatementsIncomeStatement> GetAllStatementsIncomeStatement(string userId, int year, int month);
-        List<StatementsBalanceSheet> GetAllStatementsBalanceSheet(string userId, int year, int month = 0);
-        List<StatementsStartupSupport> GetAllStatementsStartupSupport(string userId, int year, int month);
+        List<StatementsBalanceSheet> GetAllStatementsBalanceSheet(string userId, int year, int? month = null);
         double GetRunningBalance(string userId, int year, int month, string lineStatus = LinesStatus.ANY);
         StatementsIncome UpdateIncome(StatementsIncome model);
         StatementsExpenses UpdateExpense(StatementsExpenses model);

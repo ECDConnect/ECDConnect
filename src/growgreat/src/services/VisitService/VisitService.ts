@@ -286,6 +286,7 @@ class Visit {
               id
               orderDate
               plannedVisitDate
+              actualVisitDate
               visitType {
                 name
               }

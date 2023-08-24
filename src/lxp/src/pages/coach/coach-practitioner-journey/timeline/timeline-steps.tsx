@@ -7,6 +7,7 @@ import { PQAVisits } from './pqa/step-accordion-content';
 import { getPqaStepData } from './pqa/step';
 import { ReAccreditationVisits } from './re-accreditation/step-accordion-content';
 import { getReAccreditationStepData } from './re-accreditation/step';
+import { isDateWithinThreeMonths } from './utils';
 
 export interface ScheduleProps {
   visit: Visit;
@@ -17,11 +18,6 @@ export interface ScheduleProps {
 export interface StepType {
   type: StepItem['type'];
   color?: Colours;
-}
-
-interface FollowUp {
-  isFollowUp: boolean;
-  deadline: Date;
 }
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
@@ -88,8 +84,6 @@ export const timelineSteps = ({
   practitionerId,
   currentPqaRating,
   currentReAccreditationRating,
-  reAccreditationFollowUp,
-  pqaFollowUp,
 }: {
   practitionerId: string;
   timeline: PractitionerTimeline;
@@ -101,8 +95,6 @@ export const timelineSteps = ({
   visits?: Maybe<Visit>[];
   currentPqaRating: RatingData;
   currentReAccreditationRating: RatingData;
-  pqaFollowUp: FollowUp;
-  reAccreditationFollowUp: FollowUp;
 }): StepItem[] => {
   const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
     (item) => item?.attended
@@ -116,13 +108,15 @@ export const timelineSteps = ({
       timeline?.consolidationMeetingColor
     )
   );
-  steps.push(
-    setStep(
-      timeline.firstAidCourseStatus,
-      timeline.firstAidDate,
-      timeline?.firstAidCourseColor
-    )
-  );
+  if (timeline.firstAidDate) {
+    steps.push(
+      setStep(
+        timeline.firstAidCourseStatus,
+        timeline.firstAidDate,
+        timeline?.firstAidCourseColor
+      )
+    );
+  }
   steps.push(
     setStep(
       timeline.smartSpaceLicenseStatus,
@@ -151,10 +145,10 @@ export const timelineSteps = ({
         item?.visitType?.name?.includes('pre_pqa_visit_1') && item?.attended
     )
       ? new Date(
-          visit2?.attended ? visit2?.insertedDate : visit2?.plannedVisitDate
+          visit2?.attended ? visit2?.actualVisitDate : visit2?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions)
       : new Date(
-          visit1?.attended ? visit1.insertedDate : visit1?.plannedVisitDate
+          visit1?.attended ? visit1.actualVisitDate : visit1?.plannedVisitDate
         ).toLocaleDateString('en-ZA', dateOptions);
 
     const isLateDate =
@@ -227,10 +221,8 @@ export const timelineSteps = ({
 
     let date = currentVisit?.plannedVisitDate;
 
-    if (pqaFollowUp.isFollowUp) {
-      date = pqaFollowUp.deadline;
-    } else if (currentVisit?.insertedDate && currentVisit?.attended) {
-      date = currentVisit?.insertedDate;
+    if (currentVisit?.actualVisitDate && currentVisit?.attended) {
+      date = currentVisit?.actualVisitDate;
     }
 
     steps.push({
@@ -259,10 +251,14 @@ export const timelineSteps = ({
       extraData: {
         date: new Date(
           currentVisit?.attended
-            ? currentVisit?.insertedDate
+            ? currentVisit?.actualVisitDate
             : currentVisit?.plannedVisitDate
         ),
       },
+      color:
+        stepType?.type !== 'todo' &&
+        currentPqaRating?.rating &&
+        ratingData?.color,
       showActionButton:
         timeline.pQASiteVisits.length === 1 &&
         !currentVisit?.attended &&
@@ -292,19 +288,17 @@ export const timelineSteps = ({
     });
   }
 
-  if (timeline.reAccreditationVisits?.length) {
-    const { currentVisit, ratingData, stepType, subTitleText } =
-      getReAccreditationStepData({
-        timeline,
-        currentRating: currentReAccreditationRating,
-      });
+  const { currentVisit, ratingData, stepType, subTitleText } =
+    getReAccreditationStepData({
+      timeline,
+      currentRating: currentReAccreditationRating,
+    });
 
+  if (timeline.reAccreditationVisits?.length) {
     let date = currentVisit?.plannedVisitDate;
 
-    if (reAccreditationFollowUp.isFollowUp) {
-      date = reAccreditationFollowUp.deadline;
-    } else if (currentVisit?.insertedDate && currentVisit?.attended) {
-      date = currentVisit?.insertedDate;
+    if (currentVisit?.actualVisitDate && currentVisit?.attended) {
+      date = currentVisit?.actualVisitDate;
     }
 
     steps.push({
@@ -334,10 +328,14 @@ export const timelineSteps = ({
       extraData: {
         date: new Date(
           currentVisit?.attended
-            ? currentVisit.insertedDate
+            ? currentVisit.actualVisitDate
             : currentVisit?.plannedVisitDate
         ),
       },
+      color:
+        stepType?.type !== 'todo' &&
+        currentReAccreditationRating.rating &&
+        ratingData?.color,
       showActionButton:
         timeline.reAccreditationVisits.length === 1 &&
         !currentVisit?.attended &&

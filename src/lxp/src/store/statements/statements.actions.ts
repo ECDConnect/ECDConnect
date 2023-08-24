@@ -120,8 +120,8 @@ export const getAllIncome = createAsyncThunk<
 );
 
 export const getAllStatementsBalanceSheet = createAsyncThunk<
-  any[],
-  { year: Number; month: Number },
+  BalanceSheetDto[],
+  { year: Number; month: Number | undefined },
   ThunkApiType<RootState>
 >(
   'getAllStatementsBalanceSheet',

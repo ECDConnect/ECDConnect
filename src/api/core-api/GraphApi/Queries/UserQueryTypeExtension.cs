@@ -326,36 +326,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] UserManager<ApplicationUser> userManager,
             string userId)
         {
+            string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfigVar;
+            if (string.IsNullOrEmpty(moodleConfigVar))
+            {
+                return "false";
+            }
+            var moodleConfig = JsonConvert.DeserializeObject<MoodleConfig>(moodleConfigVar);
+            if (moodleConfig == null)
+            {
+                return "false";
+            }
 
             var user = userManager.FindByIdAsync(userId).Result;
-            var moodleUserName = user.IdNumber + "@ecdconnect.co.za";
-            var moodlePassword = "Test@1234";
-
-            var cohorts = new List<string>();
-
-            string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfigVar;
-            if (!string.IsNullOrEmpty(moodleConfigVar))
-            {
-                var moodleConfig = JsonConvert.DeserializeObject<MoodleConfig>(moodleConfigVar);
-                var allCohorts = moodleConfig.All.Cohorts;
-                foreach (var cohort in allCohorts)
-                {
-                    cohorts.Add(cohort);
-                }
-            }
 
             var moodleUser = new MoodleUser()
             {
-                UserName = moodleUserName,
-                Password = moodlePassword,
                 IdNumber = user.IdNumber,
                 Firstname = user.FirstName,
                 Lastname = user.Surname,
-                Email = moodleUserName, // user.Email,
                 Phone1 = string.IsNullOrEmpty(user.PhoneNumber) ? "" : user.PhoneNumber
             };
             // create user for moodle
-            return moodleManager.CreateUserAsync(moodleUser, cohorts).Result.ToString();
+            return moodleManager.CreateUserAsync(moodleConfig, moodleUser).Result.ToString();
             // create session for moodle user
             // return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
         }

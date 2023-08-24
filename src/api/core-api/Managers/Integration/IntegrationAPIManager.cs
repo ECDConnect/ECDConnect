@@ -77,6 +77,7 @@ public class IntegrationAPIManager
                     using var responseStream = await response.Content.ReadAsStreamAsync();
 
                     responseString = await response.Content.ReadAsStringAsync();
+                    isSuccess = responseCode == "OK" ? true : false;
                 }
             }
         }

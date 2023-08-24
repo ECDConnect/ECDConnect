@@ -145,53 +145,21 @@ export default function ContentWorkflow({
                     style={{ minHeight: '36rem' }}
                   >
                     <div className="rounded-lg border-b px-4 py-5 sm:px-6">
-                      {isEdit ? (
-                        <div>
-                          <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-                            <div className="ml-4 mt-2">
-                              <h3 className="text-md font-medium leading-6 text-gray-900">
-                                {camelCaseToSentanceCase(
-                                  contentType.name + '-' + contentType ?? ''
-                                )}
-                              </h3>
-                            </div>
-                            <div className="ml-4 mt-2 flex-shrink-0">
-                              <button
-                                onClick={() => setIsEdit(!isEdit)}
-                                type="button"
-                                className="bg-uiMid hover:bg-secondary focus:outline-none text-md inline-flex items-center rounded-md border border-transparent px-4 py-2.5 font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                              >
-                                {!isEdit ? 'Preview' : 'Edit'} content
-                              </button>
-                            </div>
-                          </div>
-                          <ContentView
-                            key={viewKey}
-                            optionDefinitions={optionDefinitions}
-                            contentValues={getOrderedContentValues(
-                              currentContent?.contentValues
-                            )}
-                            selectedLanguageId={selectedLanguageId}
-                            contentType={contentType}
-                          />
-                        </div>
-                      ) : (
-                        <div key={selectedLanguageId}>
-                          <ContentEdit
-                            optionDefinitions={optionDefinitions}
-                            content={contentView.content}
-                            selectedLanguageId={selectedLanguageId}
-                            contentValues={getOrderedContentValues(
-                              currentContent?.contentValues
-                            )}
-                            contentType={contentType}
-                            cancelEdit={() => goBack()}
-                            savedContent={savedContent}
-                            defaultLanguageId={defaultLanguageId}
-                            cancelCompare={() => setIsCompareMode(!isEdit)}
-                          />
-                        </div>
-                      )}
+                      <div key={selectedLanguageId}>
+                        <ContentEdit
+                          optionDefinitions={optionDefinitions}
+                          content={contentView.content}
+                          selectedLanguageId={selectedLanguageId}
+                          contentValues={getOrderedContentValues(
+                            currentContent?.contentValues
+                          )}
+                          contentType={contentType}
+                          cancelEdit={() => goBack()}
+                          savedContent={savedContent}
+                          defaultLanguageId={defaultLanguageId}
+                          cancelCompare={() => setIsCompareMode(!isEdit)}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -145,16 +145,6 @@ export const Form = ({
       (item) => item.question === step15ReAccreditationQuestions.question1
     )?.answer;
 
-  const newPqaVisit = timeline?.pQASiteVisits?.find(
-    (item) =>
-      !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
-  );
-  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
-    (item) =>
-      !item?.attended &&
-      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-  );
-
   // All years
   const filteredReAccreditationRatings =
     timeline?.reAccreditationRatings?.filter(
@@ -411,15 +401,13 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        await appDispatch(
-          pqaThunkActions.addFollowUpVisitForPractitioner(payload)
-        );
-
-        window.sessionStorage.setItem(
-          currentActivityKey,
-          visitTypes.pqa.firstPQA.name
-        );
-        setCurrentActivity(visitTypes.pqa.firstPQA.name);
+        await appDispatch(pqaThunkActions.addVisitFormData(payload));
+        // TODO: check if it is needed
+        // window.sessionStorage.setItem(
+        //   currentActivityKey,
+        //   visitTypes.pqa.firstPQA.name
+        // );
+        // setCurrentActivity(visitTypes.pqa.firstPQA.name);
       }
 
       if (type === 're-accreditation') {
@@ -429,20 +417,12 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        await appDispatch(
-          pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner(
-            payload
-          )
-        );
-
-        window.sessionStorage.setItem(
-          currentActivityKey,
-          visitTypes.reaccreditation.first.name
-        );
-        setCurrentActivity(visitTypes.reaccreditation.first.name);
+        await appDispatch(pqaThunkActions.addVisitFormData(payload));
       }
+
+      onBack?.();
     },
-    [appDispatch, practitionerId]
+    [appDispatch, onBack, practitionerId]
   );
 
   const handleSubmitExtraVisit = useCallback(
@@ -466,38 +446,19 @@ export const Form = ({
         supportData: payload,
       };
 
-      const followUpPayload: FollowUpVisitModelInput = {
-        practitionerId,
-        // TODO: add schedule option
-        plannedVisitDate: new Date(),
-        // TODO: add schedule option
-        attended: true,
-        linkedVisitId:
-          type === 'pqa-follow-up-visit'
-            ? newPqaVisit?.id
-            : newReAccreditationVisit?.id,
-        followUpData: payload,
-      };
-
       if (type === 'support-visit') {
         return onSubmitSupportVisit(supportPayload, visitOrCallAnswer);
       }
 
       if (type === 'pqa-follow-up-visit') {
-        return onSubmitFollowUpVisit(followUpPayload, 'pqa');
+        return onSubmitFollowUpVisit(payload, 'pqa');
       }
 
       if (type === 're-accreditation-follow-up-visit') {
-        return onSubmitFollowUpVisit(followUpPayload, 're-accreditation');
+        return onSubmitFollowUpVisit(payload, 're-accreditation');
       }
     },
-    [
-      practitionerId,
-      newPqaVisit?.id,
-      newReAccreditationVisit,
-      onSubmitSupportVisit,
-      onSubmitFollowUpVisit,
-    ]
+    [practitionerId, onSubmitSupportVisit, onSubmitFollowUpVisit]
   );
 
   const onSubmitPrePqa = useCallback(
@@ -784,7 +745,11 @@ export const Form = ({
   };
 
   const getSelfAssessment = useCallback(async () => {
-    const selfAssessmentVisit = timeline?.selfAssessmentVisits?.[0];
+    const attendedSelfAssessments = timeline?.selfAssessmentVisits?.filter(
+      (item) => item?.attended
+    );
+    const selfAssessmentVisit =
+      attendedSelfAssessments?.[attendedSelfAssessments.length - 1];
 
     if (!selfAssessmentVisit) return;
 

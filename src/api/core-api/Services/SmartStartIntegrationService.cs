@@ -43,6 +43,8 @@ using ECDLink.Security;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Models;
 using ECDLink.AutomatedJobs.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.Services;
@@ -87,6 +89,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<SmartSpaceVisit, Guid> _smartSpaceVisitRepo;
     private IGenericRepository<PQA, Guid> _pqaRepo;
 
+    IHolidayService<Holiday> _holidayService;
     private IntegrationLogManager _logManager;
     private IntegrationAPIManager _apiManager;
     //private ISchedulerService _schedulerService;
@@ -128,6 +131,7 @@ public class SmartStartIntegrationService : IIntegrationService
          [Service] IFileService fileService,
          [Service] IncomeExpenseService incomeManager,
          [Service] AttendanceTrackingRepository attendanceTrackingRepository,
+         IHolidayService<Holiday> holidayService,
         [Service] INotificationService notificationService
         )
     {
@@ -143,6 +147,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _integrationHelperManager = integrationHelperManager;
         _logManager = logManager;
         _apiManager = apiManager;
+        _holidayService = holidayService;
         _notificationService = notificationService;
 
         _uId = _hierarchyEngine.GetIntegrationUserId();
@@ -545,27 +550,30 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationAttendanceData()
     {
-        bool isComplete = false;                                                                                                                                                                                                                                     //var statements = _docRepo.GetAll().Where(d => d.UserId.Equals("6fc08fe0-91fa-4a5d-91ad-24be9aaf02e6") && d.DocumentTypeId.ToString() == statementType.LocalId).ToList();
-                                                                                                                                                                                                                                                                     //get all mapped practitioners and iterate through them to submit attendance
+        bool isComplete = false;
+                                                                                                                                                                                                                                                                     
         _mappedEntities = await GetMappedEntities();
-
+        int trackingDays = 1;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-7))).ToList();
+        var attendancesDueList = _mappedEntities.Where(x => (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays)) ).ToList(); //&& x.UserId == "bc9c910e-d7e5-4ee2-b07e-7d21a9b91a71"
 
-        DateTime trackingWeekDate = DateTime.Now.AddDays(-7).StartOfWeek(DayOfWeek.Monday);
+        DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
         DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
 
         foreach (var parent in attendancesDueList)
         {
-
-            IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, _contextAccessor, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+            IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+            var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
             if (attendanceData.Any())
             {
                 try
                 {
                     bool validAttendance = false;
                     string absent = "Absent";
+                    string nosession = "No Session";
+                    string unknown = "Unknown";
                     string present = "Present";
+                    string pholiday = "Public Holiday";
                     StringBuilder jsonAttendanceString = new StringBuilder();
                     jsonAttendanceString.AppendLine("[");
                     //get list of children
@@ -573,17 +581,44 @@ public class SmartStartIntegrationService : IIntegrationService
                     foreach (var child in children)
                     {
                         int daysPresent = 0;
-                        string mondayPresent = absent;
-                        string tuesdayPresent = absent;
-                        string wednesdayPresent = absent;
-                        string thursdayPresent = absent;
-                        string fridayPresent = absent;
+                        int daysAbsent = 0;
+                        //set everything to nosession and override as teh days are iterated through - whether absent or present or a holiday
+                        string mondayPresent = nosession;
+                        string tuesdayPresent = nosession;
+                        string wednesdayPresent = nosession;
+                        string thursdayPresent = nosession;
+                        string fridayPresent = nosession;
                         //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
                         var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
                         if (mappedChild != null)
-                        {
-
+                        {                           
                             var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+                            //mark public holidays off first
+                            if (holidays.Count>0)
+                            {
+                                foreach(var publicholiday in holidays)
+                                {
+                                    switch (publicholiday.Day.ToString("dddd"))
+                                    {
+                                        case "Monday":
+                                        mondayPresent = pholiday;
+                                        break;
+                                    case "Tuesday":
+                                        tuesdayPresent = pholiday;
+                                        break;
+                                    case "Wednesday":
+                                        wednesdayPresent = pholiday;
+                                        break;
+                                    case "Thursday":
+                                        thursdayPresent = pholiday;
+                                        break;
+                                    case "Friday":
+                                        fridayPresent = pholiday;
+                                        break;
+
+                                    }
+                                }
+                            }                            
                             foreach (var attendance in childAttendances)
                             {
                                 switch (attendance.AttendanceDate.ToString("dddd"))
@@ -594,8 +629,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             mondayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             mondayPresent = absent;
                                         }
                                         break;
@@ -605,8 +641,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             tuesdayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             tuesdayPresent = absent;
                                         }
                                         break;
@@ -616,8 +653,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             wednesdayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             wednesdayPresent = absent;
                                         }
                                         break;
@@ -627,8 +665,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             thursdayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             thursdayPresent = absent;
                                         }
                                         break;
@@ -638,8 +677,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             fridayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             fridayPresent = absent;
                                         }
                                         break;
@@ -651,7 +691,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             jsonAttendanceString.AppendLine("{");
                             jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                             jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + daysPresent + ",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + (5 - daysPresent) + ",");
+                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + daysAbsent + ",");
                             jsonAttendanceString.AppendLine("\"Monday\":\"" + mondayPresent + "\",");
                             jsonAttendanceString.AppendLine("\"Tuesday\":\"" + tuesdayPresent + "\",");
                             jsonAttendanceString.AppendLine("\"Wednesday\":\"" + wednesdayPresent + "\",");
@@ -683,7 +723,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
                                 else //error empty response received
                                 {
-                                    await _logManager.IntegrationLog("Data Push Fail: ", jsonAttendanceString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
+                                    await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonAttendanceString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
                                 }
                             }
                         }
@@ -1308,6 +1348,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
+                            IsOnStipend = entity.StipendType != null ? true : false,
                         };
 
                         //check phone number is valid
@@ -2079,6 +2120,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 //AttendedChildProgress = entity.AttendedChildProgress,
                                 //MonthSinceFranchisee = int.Parse(entity.MonthsSinceFranchisee),
                                 //StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
+                                IsOnStipend = entity.StipendType != null ? true : false,
                             };
                         }
                         else
@@ -2111,6 +2153,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             FranchiseeAgreementAcceptedDate = entity.FranchiseeAgreementAcceptedDate,
                             SmartSpaceLicenceDate = entity.SmartSpaceLicenceDate,
                             StipendType = entity.StipendType,
+                            IsOnStipend = entity.StipendType != null ? true : false,
                             //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage
                             //HighestEducationLevel = entity.HighestEducationLevel,
                             //StartDate

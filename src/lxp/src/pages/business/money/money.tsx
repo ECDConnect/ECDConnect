@@ -57,7 +57,7 @@ export const Money: React.FC<MoneyProps> = ({
         statementsThunkActions.getAllStatementsBalanceSheet({
           // userId: userAuth?.id!,
           year: year,
-          month: 0,
+          month: undefined,
         })
       );
     }

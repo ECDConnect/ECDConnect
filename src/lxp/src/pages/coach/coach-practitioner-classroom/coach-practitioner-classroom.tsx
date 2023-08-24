@@ -26,7 +26,6 @@ import {
 } from '@/store/childrenForPractitioner';
 import { ChildrenPerAgeGroup } from './components/childrenPerAgeGroup/childrenPerAgeGroup';
 import { classroomsSelectors } from '@/store/classroom';
-import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { ClassroomAttendance } from './components/classroom-attendance/classroom-attendance';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
@@ -45,19 +44,16 @@ export const CoachPractitionerClassroom: React.FC = () => {
     childrenForPractitionerSelectors.getChildrenForPractitioner
   );
   const location = useLocation<PractitionerProfileRouteState>();
-  const practitionerId = location.state.practitionerId;
+  const practitionerUserId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+    (practitioner) => practitioner?.userId === practitionerUserId
   );
   const isTrainee = practitioner?.isTrainee;
 
-  const coachClassrooms = useSelector(
-    classroomsForCoachSelectors.getClassroomForCoach
-  );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerClassroomGroups = classroomGroups.filter(
-    (item) => item.userId === practitionerId
+    (item) => item.userId === practitionerUserId
   );
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)
@@ -89,15 +85,18 @@ export const CoachPractitionerClassroom: React.FC = () => {
     const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
     const metricsData = await new ClassroomGroupService(
       userAuth?.auth_token!
-    ).getClassAttendanceMetrics(firstDayPrevMonth, lastDayPrevMonth);
+    ).getClassAttendanceMetricsByUser(
+      practitionerUserId,
+      firstDayPrevMonth,
+      lastDayPrevMonth
+    );
     setClassMetrics(metricsData);
     return metricsData;
   };
 
   useEffect(() => {
     classroomsMetrics();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [userAuth, practitionerUserId]);
 
   useEffect(() => {
     if (classMetrics) {
@@ -114,7 +113,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const getClassroomsActionItems = async () => {
     const newActionItems = await new PractitionerService(
       userAuth?.auth_token!
-    ).classroomActionItems(practitionerId);
+    ).classroomActionItems(practitionerUserId);
 
     setActionItems(newActionItems);
 
@@ -123,20 +122,18 @@ export const CoachPractitionerClassroom: React.FC = () => {
 
   useEffect(() => {
     getClassroomsActionItems();
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [practitionerUserId]);
 
   useEffect(() => {
     resetChildrenForPractitioner();
     (async () =>
       await appDispatch(
         childrenForPractitionerThunkActions.getChildrenForPractitioner({
-          id: practitionerId,
+          id: practitionerUserId,
         })
       ).unwrap())();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appDispatch, practitionerId]);
+  }, [appDispatch, practitionerUserId]);
 
   const resetChildrenForPractitioner = () => {
     appDispatch(
@@ -182,7 +179,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
       text: '1',
       onActionClick: () =>
         history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
-          practitionerId,
+          practitionerId: practitionerUserId,
         }),
       classNames: 'bg-uiBg',
     },
@@ -206,7 +203,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
       text: '1',
       onActionClick: () =>
         history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
-          practitionerId,
+          practitionerId: practitionerUserId,
         }),
       classNames: 'bg-uiBg',
     },
@@ -223,7 +220,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
           renderOverflow={false}
           onBack={() =>
             history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
-              practitionerId,
+              practitionerId: practitionerUserId,
             })
           }
           displayOffline={!isOnline}
@@ -273,7 +270,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
                   size="small"
                   onClick={() =>
                     history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, {
-                      practitionerId,
+                      practitionerUserId,
                     })
                   }
                 >
@@ -291,7 +288,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
             <div className="w-full">
               <ChildrenPerAgeGroup
                 childrenForPractitionerList={childrenForPractitionerList}
-                practitionerId={practitionerId}
+                practitionerId={practitionerUserId}
               />
             </div>
           </>
