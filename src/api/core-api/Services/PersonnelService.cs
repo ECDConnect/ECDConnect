@@ -525,12 +525,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
             }
 
             foreach (Visit visit in reaccreditation_visits)
             {
                 PQARating pqaRating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
             }
 
             foreach (Visit visit in pre_pqa_visits)
