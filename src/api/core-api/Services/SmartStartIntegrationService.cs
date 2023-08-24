@@ -43,6 +43,7 @@ using ECDLink.Security;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using ECDLink.AutomatedJobs.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.Services;
 public class SmartStartIntegrationService : IIntegrationService
@@ -109,6 +110,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public DateTime _startTime = DateTime.Now;
     public static string scheduledTask = "SmartLinkIntegrationDataSync";
+    private INotificationService _notificationService;
 
     public SmartStartIntegrationService(
         IGenericRepositoryFactory repositoryFactory,
@@ -125,7 +127,8 @@ public class SmartStartIntegrationService : IIntegrationService
          IntegrationHelperManager integrationHelperManager,
          [Service] IFileService fileService,
          [Service] IncomeExpenseService incomeManager,
-         [Service] AttendanceTrackingRepository attendanceTrackingRepository
+         [Service] AttendanceTrackingRepository attendanceTrackingRepository,
+        [Service] INotificationService notificationService
         )
     {
         _repositoryFactory = repositoryFactory;
@@ -140,6 +143,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _integrationHelperManager = integrationHelperManager;
         _logManager = logManager;
         _apiManager = apiManager;
+        _notificationService = notificationService;
 
         _uId = _hierarchyEngine.GetIntegrationUserId();
         Enum.TryParse(_options.Value.Mode, out _apiMode);
@@ -2326,6 +2330,8 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     _practitionerRepo.Insert(newPractitioner);
                                 }
+                                //notify trainee to stary journey
+                                await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, newTrainee.User);
 
                                 pracCreated = true;
                             }

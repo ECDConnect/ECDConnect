@@ -167,6 +167,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IntegrationLogManager>();
             services.AddTransient<IntegrationHelperManager>();
             services.AddTransient<DocumentManager>();
+            services.AddTransient<INotificationService, NotificationService>();
             if (!Environment.IsDevelopment()) { //dont look at any jobs for development
                 ConfigureJobs(services);
             }            

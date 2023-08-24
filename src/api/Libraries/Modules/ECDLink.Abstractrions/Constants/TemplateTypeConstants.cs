@@ -30,7 +30,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string ForgotPasswordPortal = "forgot-password-portal";
 
         //app notifications
-
+        public const string StartTraineeJourney = "start-trainee-journey";
 
 
     }
