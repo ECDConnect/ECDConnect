@@ -75,11 +75,11 @@ export function ContentManagement() {
         },
         {
           name: 'Info  pages',
-          // href: '/',
+          href: 'MoreInformation',
         },
         {
           name: 'Postnatal',
-          // href: '/',
+       
         },
         {
           name: 'Antenatal',
@@ -91,7 +91,7 @@ export function ContentManagement() {
         },
         {
           name: 'Community',
-          // href: '/',
+          href: 'CommunitySectionGG',
         },
       ];
     } else {
@@ -195,7 +195,7 @@ export function ContentManagement() {
                 >
                   <a
                     onClick={() => {
-                      const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => type.name === item.name);
+                      const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === item.name || type.name === item.href));
                       if (selectedTypeObject) {
                         showGroupContentTypes(selectedTypeObject);
                       }
