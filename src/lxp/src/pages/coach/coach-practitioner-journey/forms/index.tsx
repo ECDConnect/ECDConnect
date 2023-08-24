@@ -10,7 +10,7 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
@@ -29,7 +29,6 @@ import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
-  FollowUpVisitModelInput,
   InputMaybe,
   Maybe,
   PqaRating,
@@ -66,6 +65,7 @@ import {
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { options } from './reaccreditation/step-2/options';
+import ROUTES from '@/routes/routes';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -113,6 +113,7 @@ export const Form = ({
     Rating | undefined
   >();
 
+  const history = useHistory();
   const { isOnline } = useOnlineStatus();
 
   const dialog = useDialog();
@@ -496,13 +497,14 @@ export const Form = ({
           formType: 'pqa',
         })
       );
-      // Create a new ID if it doesn't already exist
       await appDispatch(
         pqaThunkActions.addVisitFormData({
           ...payload,
           visitId: visitId,
         })
       );
+
+      if (isToRemoveSmartStarter) return;
 
       if (step19Question2Answer === 'true') {
         return displayChildrenDialog('First PQA visit');
@@ -512,6 +514,7 @@ export const Form = ({
       onBack();
     },
     [
+      isToRemoveSmartStarter,
       appDispatch,
       displayChildrenDialog,
       practitionerId,
@@ -774,10 +777,11 @@ export const Form = ({
         });
       }
 
-      onBack?.();
+      history.push(ROUTES.COACH.PRACTITIONERS);
       showMessage({ message: 'SmartStarter removed' });
     }
   }, [
+    history,
     isLoadingDeactivate,
     isRejected,
     onBack,
