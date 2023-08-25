@@ -481,6 +481,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 rating.VisitTypeName = pqaVisit.VisitType.Name;
                 rating.LinkedVisitId = pqaVisit.LinkedVisitId.ToString();
+                rating.VisitId = pqaVisit.Id.ToString();
                 rating.Children = new List<PQARatingChild>();
                 List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == pqaVisit.Id).ToList();
                 double step5Score = -1;
@@ -667,6 +668,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 rating.VisitTypeName = RAVisit.VisitType.Name;
                 rating.LinkedVisitId = RAVisit.LinkedVisitId.ToString();
+                rating.VisitId = RAVisit.Id.ToString();
                 rating.Children = new List<PQARatingChild>();
 
                 List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == RAVisit.Id).ToList();
