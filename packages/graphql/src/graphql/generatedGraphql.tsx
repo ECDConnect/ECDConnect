@@ -7111,6 +7111,7 @@ export type PqaRating = {
   overallRatingStars?: Maybe<Scalars['String']>;
   overallScore: Scalars['Float'];
   plannedDate?: Maybe<Scalars['DateTime']>;
+  visitId?: Maybe<Scalars['String']>;
   visitName?: Maybe<Scalars['String']>;
   visitTypeName?: Maybe<Scalars['String']>;
 };
@@ -7150,6 +7151,7 @@ export type PqaRatingFilterInput = {
   overallRatingStars?: InputMaybe<StringOperationFilterInput>;
   overallScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
   plannedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  visitId?: InputMaybe<StringOperationFilterInput>;
   visitName?: InputMaybe<StringOperationFilterInput>;
   visitTypeName?: InputMaybe<StringOperationFilterInput>;
 };
@@ -7163,6 +7165,7 @@ export type PqaRatingInput = {
   overallRatingStars?: InputMaybe<Scalars['String']>;
   overallScore: Scalars['Float'];
   plannedDate?: InputMaybe<Scalars['DateTime']>;
+  visitId?: InputMaybe<Scalars['String']>;
   visitName?: InputMaybe<Scalars['String']>;
   visitTypeName?: InputMaybe<Scalars['String']>;
 };
@@ -7175,6 +7178,7 @@ export type PqaRatingSortInput = {
   overallRatingStars?: InputMaybe<SortEnumType>;
   overallScore?: InputMaybe<SortEnumType>;
   plannedDate?: InputMaybe<SortEnumType>;
+  visitId?: InputMaybe<SortEnumType>;
   visitName?: InputMaybe<SortEnumType>;
   visitTypeName?: InputMaybe<SortEnumType>;
 };
