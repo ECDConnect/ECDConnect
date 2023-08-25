@@ -26,13 +26,9 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_call = "support_call";
 
             public const string visitType_pqa_visit_1 = "pqa_visit_1";
-            public const string visitType_pqa_visit_2 = "pqa_visit_2";
-            public const string visitType_pqa_visit_3 = "pqa_visit_3";
             public const string visitType_pqa_visit_follow_up = "pqa_visit_follow_up";
 
             public const string visitType_re_accreditation_1 = "re_accreditation_1";
-            public const string visitType_re_accreditation_2 = "re_accreditation_2";
-            public const string visitType_re_accreditation_3 = "re_accreditation_3";
             public const string visitType_re_accreditation_follow_up = "re_accreditation_follow_up";
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";

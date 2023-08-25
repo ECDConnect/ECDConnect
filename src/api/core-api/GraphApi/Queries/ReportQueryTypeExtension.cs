@@ -1260,8 +1260,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 var firstPqaVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1).FirstOrDefault();
-                var secondPqaVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_2).FirstOrDefault();
-                var thirdPqaVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_3).FirstOrDefault();
 
                 // NOTE - this might not occur since we auto remove practitioners when delicensing, it's a fallback in case the process was interupted
                 #region DELICENSE SMARTSTARTER
@@ -1287,10 +1285,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
 
                     var pqaRating1 = firstPqaVisit != null ? visitDataManager.GetPractitionerPQARating(firstPqaVisit) : new PQARating();
-                    var pqaRating2 = secondPqaVisit != null ? visitDataManager.GetPractitionerPQARating(secondPqaVisit) : new PQARating();
-                    var pqaRating3 = thirdPqaVisit != null ? visitDataManager.GetPractitionerPQARating(thirdPqaVisit) : new PQARating();
 
-                    if ((new[] { pqaRating1, pqaRating2, pqaRating3 }).Count(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()) >= 2)
+                    if ((new[] { pqaRating1 }).Count(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()) >= 2)
                     {
                         notification.Subject = "Delicense SmartStarter";
                         notification.Icon = MetricsIconEnum.Error.ToString();
