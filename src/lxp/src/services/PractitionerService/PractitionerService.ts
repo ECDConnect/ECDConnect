@@ -107,6 +107,7 @@ class PractitionerService {
               }
               pQASiteVisits {
                 id
+                hasAnswerData
                 plannedVisitDate
                 attended
                 comment
@@ -122,6 +123,7 @@ class PractitionerService {
               }
               reAccreditationVisits {
                 id
+                hasAnswerData
                 plannedVisitDate
                 attended
                 comment
