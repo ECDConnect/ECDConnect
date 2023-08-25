@@ -25,7 +25,6 @@ import {
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
-import { newGuid } from '@/utils/common/uuid.utils';
 import {
   incomesValueFunc,
   numberWithSpaces,
@@ -56,6 +55,7 @@ interface ReportDetailsForPractitionerData {
 export const SubmitIncomeStatementsList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
+
   const date = format(new Date(), 'EEEE, d LLLL');
   const { isOnline } = useOnlineStatus();
   const [confimSubmitIncomeValues, setConfimSubmitIncomeValues] =
@@ -278,20 +278,16 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     utilitiesExpense?.id,
   ]);
 
-  const input = {
-    period: 'Monthly',
-    userId: userAuth?.id!,
-    month: submitMonth.getMonth() + 1, // +1 for 0 index
-    year: submitMonth.getFullYear(),
-  };
-
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
-      await new IncomeStatementsService(userAuth?.auth_token)
-        .submitStatement(input)
-        .catch((err) => {
-          errorDialog(err.message);
-        });
+      await appDispatch(
+        statementsThunkActions.submitIncomeStatement({
+          period: 'Monthly',
+          userId: userAuth?.id!,
+          month: submitMonth.getMonth() + 1, // +1 for 0 index
+          year: submitMonth.getFullYear(),
+        })
+      );
     }
   };
 
@@ -459,30 +455,6 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     );
   };
 
-  const refreshStatements = async () => {
-    if (userAuth?.auth_token) {
-      await appDispatch(
-        statementsThunkActions.getAllExpenses({
-          month: submitMonth.getMonth() + 1,
-          year: submitMonth.getFullYear(),
-        })
-      );
-      await appDispatch(
-        statementsThunkActions.getAllIncome({
-          month: submitMonth.getMonth() + 1,
-          year: submitMonth.getFullYear(),
-        })
-      );
-      await appDispatch(
-        statementsThunkActions.getAllStatementsBalanceSheet({
-          // userId: userAuth?.id!,
-          year: submitMonth.getFullYear(),
-          month: undefined,
-        })
-      );
-    }
-  };
-
   return (
     <BannerWrapper
       showBackground={false}
@@ -601,16 +573,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                updateStatements().then(async () => {
-                  const reportData = await appDispatch(
-                    statementsThunkActions.getIncomeExpensesPDFreport({
-                      month: submitMonth.getMonth() + 1,
-                      year: submitMonth.getFullYear(),
-                    })
-                  ).unwrap();
-                  submitPdfReport(reportData ?? []);
-                  refreshStatements();
-                });
+                updateStatements();
                 setConfimSubmitIncomeValues(false);
                 history.push(ROUTES.BUSINESS);
               },

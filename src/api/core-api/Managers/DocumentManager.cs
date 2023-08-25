@@ -23,9 +23,14 @@ namespace EcdLink.Api.CoreApi.Managers
     public class DocumentManager
     {
         private IntegrationLogManager _logManager;
-        public DocumentManager(IntegrationLogManager logManager)
+        private IFileService _fileService;
+        private IGenericRepositoryFactory _repoFactory;
+
+        public DocumentManager([Service] IFileService fileService, IGenericRepositoryFactory repoFactory, IntegrationLogManager logManager)
         {
             _logManager = logManager;
+            _fileService = fileService;
+            _repoFactory = repoFactory;
         }
 
         //
@@ -119,27 +124,33 @@ namespace EcdLink.Api.CoreApi.Managers
         // SAVING DOCUMENTS
         //
 
-        public async Task<Document> SaveIncomeStatementPDF([Service] IFileService fileService, IGenericRepositoryFactory repoFactory, PdfDocumentModel input)
+        public async Task<Document> SaveIncomeStatementPDF(PdfDocumentModel input)
         {
             if (input != null && input.Reference != "")
             {
-                var documentRepo = repoFactory.CreateGenericRepository<Document>(userContext: input.CreatedUserId);
-                var documentTypeRepo = repoFactory.CreateGenericRepository<DocumentType>(userContext: input.CreatedUserId);
-                var workflowStatusTypeRepo = repoFactory.CreateGenericRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
-                var workflowStatusRepo = repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: input.CreatedUserId);
+                var documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: input.CreatedUserId);
+                var documentTypeRepo = _repoFactory.CreateGenericRepository<DocumentType>(userContext: input.CreatedUserId);
+                var workflowStatusTypeRepo = _repoFactory.CreateGenericRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
+                var workflowStatusRepo = _repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: input.CreatedUserId);
 
                 // Workflow info
-                WorkflowStatusType wsType = workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
-                WorkflowStatus ws = workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == Constants.SSSettings.workflow_status_pdf_type).FirstOrDefault();
+                var wsType = workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
+                var ws = workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == Constants.SSSettings.workflow_status_pdf_type).FirstOrDefault();
 
                 // Get the document type
-                DocumentType docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.income_statement_pdf_type).FirstOrDefault();
+                var docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.income_statement_pdf_type).FirstOrDefault();
 
                 // First validate if document is already in db
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
 
+                if (doc != null)
+                {
+                    // remove previous file on file server
+                    await _fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
+                }
+
                 // Upload the document
-                var document = await fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.IncomeStatementPDF);
+                var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.IncomeStatementPDF);
                 try
                 {
                     if (doc == null)
@@ -161,15 +172,12 @@ namespace EcdLink.Api.CoreApi.Managers
                     }
                     else
                     {
-                        // remove previous file on file server
-                        await fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
-
                         doc.Name = input.FileName;
                         doc.UpdatedBy = input.CreatedUserId;
                         doc.Reference = document.Url.TrimEnd('/');
                         doc.UserId = input.UserId;
                         doc.UpdatedDate = DateTime.Now;
-                        return documentRepo.Update(doc);
+                        var result = documentRepo.Update(doc);
                     }
                 }
                 catch (Exception e)
@@ -200,7 +208,7 @@ namespace EcdLink.Api.CoreApi.Managers
 
                 // First validate if document is already in db
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
-
+                
                 // Upload the document
                 var document = await fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
                 try
@@ -244,7 +252,6 @@ namespace EcdLink.Api.CoreApi.Managers
             }
             return null;
         }
-
     }
 }
 
