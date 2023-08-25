@@ -17,13 +17,9 @@
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
     <None Remove="SQLUpgradeScripts" />
-    <None Remove="SQLUpgradeScripts\MeetingDate_1_AddCoachCircleColumns.sql" />
   </ItemGroup>
   
-  <ItemGroup>
-    <Compile Include="SQLUpgradeScripts\MeetingDate_1_AddCoachCircleColumns.sql" />
-  </ItemGroup>
-  
+ 
   <ItemGroup>
     
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
