@@ -1,5 +1,5 @@
 import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
-import { StepType, getStepType, sortVisit } from '../timeline-steps';
+import { StepType, getStepType } from '../timeline-steps';
 import { RatingData as RatingDataUtils, getRatingData } from '../utils';
 import { RatingData } from '@/store/pqa/pqa.types';
 
@@ -19,16 +19,12 @@ export const getPqaStepData = ({
 } => {
   if (!timeline.pQASiteVisits?.length) return {};
 
-  const formattedVisits = timeline.pQASiteVisits
-    ?.filter(
-      (visit: Maybe<Visit>) => typeof visit?.visitType?.order !== 'undefined'
-    )
-    ?.sort(sortVisit);
+  const visits = timeline.pQASiteVisits;
 
-  const visitToAttend = formattedVisits.find((item) => !item?.attended);
+  const visitToAttend = visits.find((item) => !item?.attended);
   const currentVisit = !!visitToAttend
     ? visitToAttend
-    : formattedVisits[formattedVisits.length - 1];
+    : visits[visits.length - 1];
 
   const isLateDate =
     new Date(currentVisit?.plannedVisitDate) < new Date() &&
