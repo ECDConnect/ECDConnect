@@ -29,8 +29,10 @@ export const EditAddress: React.FC<EditAdressProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const [showMap, setShowMap] = useState(false);
-  const [editedAddress, setEditedAddress] = useState('');
   const classroom = useSelector(classroomsSelectors.getClassroom);
+  const [editedAddress, setEditedAddress] = useState(
+    classroom?.siteAddress?.addressLine1 || ''
+  );
   const appDispatch = useAppDispatch();
 
   const changeSmartSpaceCheckAddress = async () => {
@@ -49,8 +51,12 @@ export const EditAddress: React.FC<EditAdressProps> = ({
     }
   };
 
+  const handleShowMap = () => {
+    setShowMap(true);
+  };
+
   return (
-    <div>
+    <div onClick={handleShowMap}>
       <BannerWrapper
         size="small"
         renderOverflow
@@ -60,22 +66,20 @@ export const EditAddress: React.FC<EditAdressProps> = ({
         className="p-4"
       >
         <Typography type="h2" color="textDark" text={'Programme address'} />
-        <FormInput
-          label={'Where is your site located?'}
-          nameProp={'programmeAddress'}
-          placeholder={'Tap to add address'}
-          type={'text'}
-          onChange={(e) =>
-            //   onOptionSelected((e.target as HTMLInputElement).value, 3)
-            {}
-          }
-          // onClick={() => setShowMap(true)}
-          value={editedAddress}
-          disabled={showMap}
-          suffixIcon={'LocationMarkerIcon'}
-          sufficIconColor="primary"
-          suffixIconAction={() => setShowMap(true)}
-        />
+        <div>
+          <FormInput
+            label={'Where is your site located?'}
+            nameProp={'programmeAddress'}
+            placeholder={'Tap to add address'}
+            type={'text'}
+            onChange={(e) => {}}
+            value={editedAddress}
+            disabled={showMap}
+            suffixIcon={'LocationMarkerIcon'}
+            sufficIconColor="primary"
+            suffixIconAction={() => setShowMap(true)}
+          />
+        </div>
       </BannerWrapper>
       <div className="absolute bottom-0 left-0 right-0 max-h-20 bg-white p-4">
         <Button

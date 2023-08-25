@@ -7,7 +7,6 @@ import { PQAVisits } from './pqa/step-accordion-content';
 import { getPqaStepData } from './pqa/step';
 import { ReAccreditationVisits } from './re-accreditation/step-accordion-content';
 import { getReAccreditationStepData } from './re-accreditation/step';
-import { isDateWithinThreeMonths } from './utils';
 
 export interface ScheduleProps {
   visit: Visit;

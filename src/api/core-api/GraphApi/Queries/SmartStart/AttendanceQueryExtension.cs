@@ -229,7 +229,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             pdfDoc.FileName = _header.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
             pdfDoc.CreatedUserId = uId;
-            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, pdfDoc);
+            return await documentManager.SaveAttendancePDF(pdfDoc);
         }
 
         private int GetTotalForDay(int key, IEnumerable<ClassroomGroupChildAttendanceReportModel> children)
