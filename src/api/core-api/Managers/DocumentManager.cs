@@ -190,14 +190,14 @@ namespace EcdLink.Api.CoreApi.Managers
             return null;
         }
 
-        public async Task<Document> SaveAttendancePDF([Service] IFileService fileService, IGenericRepositoryFactory repoFactory, PdfDocumentModel input)
+        public async Task<Document> SaveAttendancePDF(PdfDocumentModel input)
         {
             if (input != null && input.Reference != "")
             {
-                var documentRepo = repoFactory.CreateRepository<Document>(userContext: input.CreatedUserId);
-                var documentTypeRepo = repoFactory.CreateRepository<DocumentType>(userContext: input.CreatedUserId);
-                var workflowStatusTypeRepo = repoFactory.CreateRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
-                var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: input.CreatedUserId);
+                var documentRepo = _repoFactory.CreateRepository<Document>(userContext: input.CreatedUserId);
+                var documentTypeRepo = _repoFactory.CreateRepository<DocumentType>(userContext: input.CreatedUserId);
+                var workflowStatusTypeRepo = _repoFactory.CreateRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
+                var workflowStatusRepo = _repoFactory.CreateRepository<WorkflowStatus>(userContext: input.CreatedUserId);
 
                 // Workflow info
                 WorkflowStatusType wsType = workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
@@ -210,7 +210,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
                 
                 // Upload the document
-                var document = await fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
+                var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
                 try
                 {
                     if (doc == null)
@@ -233,7 +233,7 @@ namespace EcdLink.Api.CoreApi.Managers
                     else
                     {
                         // remove previous file on file server
-                        await fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
+                        await _fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
 
                         doc.Name = input.FileName;
                         doc.UpdatedBy = input.CreatedUserId;
