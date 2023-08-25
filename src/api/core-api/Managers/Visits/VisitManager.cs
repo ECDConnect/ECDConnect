@@ -1107,7 +1107,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     else
                     {
                         // - IF coach selects ""No"" for the question ""Is {practitioner first name} ready for a follow-up pqa visit?"" auto-add another
-                        _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
+                        // get previous follow-up record
+                        Visit prevVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId &&
+                                                                    x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                                                    x.LinkedVisitId == lastPQAVisit.Id &&
+                                                                    x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).OrderByDescending(x => x.PlannedVisitDate).FirstOrDefault();
+                        if (prevVisit == null)
+                        {
+                            _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
+                        }
+                        else
+                        {
+                            _deadlineDate = prevVisit.ActualVisitDate.Value.AddDays(14);
+                        }
+
+
                         _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
                         _linkedVisitId = lastPQAVisit.Id;
                     }
@@ -1382,7 +1396,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     else
                     {
                         // - IF coach selects ""No"" for the question ""Is {practitioner first name} ready for a follow-up reaccreditation visit?"" auto-add another
-                        _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
+                        Visit prevVisit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId &&
+                                                            x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                                            x.LinkedVisitId == lastReAccreditationVisit.Id &&
+                                                            x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).OrderByDescending(x => x.PlannedVisitDate).FirstOrDefault();
+                        if (prevVisit == null)
+                        {
+                            _deadlineDate = linkedVisit.ActualVisitDate.Value.AddDays(14);
+                        }
+                        else
+                        {
+                            _deadlineDate = prevVisit.ActualVisitDate.Value.AddDays(14);
+                        }
+
                         _visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
                         _linkedVisitId = lastReAccreditationVisit.Id;
                     }
@@ -1394,7 +1420,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                                     x.VisitType.Type == Constants.SSSettings.client_practitioner &&
-                                                                                    x.Attended == false &&
                                                                                     x.LinkedVisitId == _linkedVisitId &&
                                                                                     x.VisitType.Name == _visitType.Name).FirstOrDefault();
                         if (visit == null)
