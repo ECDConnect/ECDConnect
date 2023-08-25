@@ -1,6 +1,6 @@
 import { RatingData } from '@/store/pqa/pqa.types';
 import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
-import { StepType, getStepType, sortVisit } from '../timeline-steps';
+import { StepType, getStepType } from '../timeline-steps';
 import { RatingData as RatingDataUtils, getRatingData } from '../utils';
 
 interface Props {

@@ -28,7 +28,6 @@ import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
   InputMaybe,
-  SupportVisitModelInput,
   VisitModelInput,
 } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
@@ -280,7 +279,9 @@ export const Form = ({ onBack }: FormProps) => {
     setIsViewDetails(true);
   };
 
-  const onSubmitSelfAssessment = async (payload: SupportVisitModelInput) => {
+  const onSubmitSelfAssessment = async (
+    payload: CmsVisitDataInputModelInput
+  ) => {
     appDispatch(
       pqaActions.addVisitFormData(payload, {
         userId: user?.id!,
@@ -288,9 +289,7 @@ export const Form = ({ onBack }: FormProps) => {
       })
     );
 
-    await appDispatch(
-      pqaThunkActions.addSelfAssessmentForPractitioner(payload)
-    );
+    await appDispatch(pqaThunkActions.addVisitFormData(payload));
   };
 
   const onSubmitRequestCoachingVisitOrCall = async () => {
@@ -330,18 +329,11 @@ export const Form = ({ onBack }: FormProps) => {
       })),
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-    const data: CmsVisitDataInputModelInput = {
+    const payload: CmsVisitDataInputModelInput = {
       practitionerId: user?.id,
       visitData: {
         sections,
       },
-    };
-
-    const payload: SupportVisitModelInput = {
-      practitionerId: user?.id,
-      plannedVisitDate: new Date(),
-      attended: true,
-      supportData: data,
     };
 
     if (activityName.includes(visitTypes.selfAssessment.includes)) {
