@@ -73,9 +73,9 @@ export const PQAVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    if (item?.id === pqaRating3?.linkedVisitId) {
+    if (item?.id === pqaRating3?.visitId) {
       return pqaRating3;
-    } else if (item?.id === pqaRating2?.linkedVisitId) {
+    } else if (item?.id === pqaRating2?.visitId) {
       return pqaRating2;
     } else {
       return pqaRating1;

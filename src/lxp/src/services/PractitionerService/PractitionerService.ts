@@ -89,6 +89,7 @@ class PractitionerService {
                 eventId
               }
               pQARatings {
+                visitId
                 linkedVisitId
                 actualVisitDate
                 children {
@@ -138,6 +139,7 @@ class PractitionerService {
                 eventId
               }
               reAccreditationRatings {
+                visitId
                 linkedVisitId
                 children {
                   sectionRating
@@ -903,7 +905,6 @@ class PractitionerService {
       },
     });
 
-    console.log('response', response);
     if (
       response.status !== 200 ||
       !!response.data.errors ||

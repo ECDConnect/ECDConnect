@@ -65,9 +65,9 @@ export const ReAccreditationVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    if (item?.id === rating3?.linkedVisitId) {
+    if (item?.id === rating3?.visitId) {
       return rating3;
-    } else if (item?.id === rating2?.linkedVisitId) {
+    } else if (item?.id === rating2?.visitId) {
       return rating2;
     } else {
       return rating1;

@@ -136,14 +136,21 @@ export const getSectionsQuestionsByStep = (
 
 export const getCurrentPQaRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const pqaRatings =
-      timeline?.pQARatings?.filter(
-        (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
-      ) ?? [];
+    const visits = timeline?.pQASiteVisits?.filter(
+      (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
+    );
 
-    const pqaRating1 = pqaRatings?.[0];
-    const pqaRating2 = pqaRatings?.[1];
-    const pqaRating3 = pqaRatings?.[2];
+    const pqaRatings =
+      timeline?.pQARatings
+        ?.filter((item) => item?.visitTypeName !== visitTypes.pqa.followUp.name)
+        ?.map((item) => ({
+          item,
+          order: visits?.findIndex((visit) => visit?.id === item?.visitId),
+        })) ?? [];
+
+    const pqaRating1 = pqaRatings?.find((item) => item?.order === 0)?.item;
+    const pqaRating2 = pqaRatings?.find((item) => item?.order === 1)?.item;
+    const pqaRating3 = pqaRatings?.find((item) => item?.order === 2)?.item;
 
     if (pqaRating3?.overallRating) {
       return {
@@ -167,6 +174,10 @@ export const getCurrentPQaRatingByUserId = (userId: string) =>
 
 export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
+    const visits = timeline?.reAccreditationVisits?.filter(
+      (item) =>
+        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+    );
     // All years
     const filteredReAccreditationRatings =
       timeline?.reAccreditationRatings?.filter(
@@ -182,9 +193,26 @@ export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
         subdividedReAccreditationRatings.length - 1
       ];
 
-    const rating1 = reAccreditationRatingsFromCurrentYear?.[0];
-    const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
-    const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
+    const reAccreditationRatings =
+      reAccreditationRatingsFromCurrentYear
+        ?.filter(
+          (item) =>
+            item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
+        )
+        ?.map((item) => ({
+          item,
+          order: visits?.findIndex((visit) => visit?.id === item?.visitId),
+        })) ?? [];
+
+    const rating1 = reAccreditationRatings?.find(
+      (item) => item?.order === 0
+    )?.item;
+    const rating2 = reAccreditationRatings?.find(
+      (item) => item?.order === 1
+    )?.item;
+    const rating3 = reAccreditationRatings?.find(
+      (item) => item?.order === 2
+    )?.item;
 
     if (rating3?.overallRating) {
       return {
