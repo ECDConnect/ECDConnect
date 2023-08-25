@@ -24,7 +24,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private string _applicationUserId;
         
         public IncomeStatementMutationExtension(
                 IHttpContextAccessor contextAccessor,
@@ -38,7 +37,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public ResultReturnObject UpdateIncome([Service] IncomeExpenseService incomeManager, string id,
               StatementsIncome input)
         {
-
             var retObj = incomeManager.UpdateIncome(input);
             return (retObj != null ? new ResultReturnObject() { Result = true, ResultMessage = "Income Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Income line could not be processed for criteria" });
         }
@@ -57,7 +55,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
         public ResultReturnObject UpdateStartupSupport([Service] IncomeExpenseService incomeManager, string id,
-StatementsStartupSupport input)
+            StatementsStartupSupport input)
         {
             if (input != null)
             {
@@ -68,13 +66,16 @@ StatementsStartupSupport input)
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public ResultReturnObject SubmitStatement([Service] IncomeExpenseService incomeManager, string id,
-StatementsSubmit input)
+        public ResultReturnObject SubmitStatement(
+            [Service] IncomeExpenseService incomeManager, 
+            StatementsSubmit input)
         {
             if (input != null)
             {
                 var retObj = incomeManager.SubmitStatement(input);
-                return (retObj == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
+                return (retObj == true 
+                    ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } 
+                    : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
             }
             else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
@@ -82,7 +83,6 @@ StatementsSubmit input)
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
         public ResultReturnObject AutoSubmitStatement([Service] IncomeExpenseService incomeManager)
         {
-            StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsDueSubmits = incomeManager.GetUnsubmittedStatements();
 
             foreach (var pracData in pracsDueSubmits)
@@ -96,15 +96,11 @@ StatementsSubmit input)
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
         public async Task<Document> SaveIncomeStatementPDF(
             [Service] DocumentManager documentManager,
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IFileService fileService,
-            IGenericRepositoryFactory repoFactory,
             PdfDocumentModel input)
         {
-            input.CreatedUserId = contextAccessor.HttpContext.GetUser().Id;
+            input.CreatedUserId = _contextAccessor.HttpContext.GetUser().Id;
 
-            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, input);
-            
+            return await documentManager.SaveIncomeStatementPDF(input);            
         }
     }
 }

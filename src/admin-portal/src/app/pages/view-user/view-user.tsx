@@ -676,17 +676,21 @@ export function ViewUser(props: any) {
           </div>
 
           <div className="flex justify-end p-4">
-            <button
-              onClick={() => {
-                setEditActive(!editActive);
-              }}
-              id="dropdownHoverButton"
-              className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-              type="button"
-            >
-              {' '}
-              {editActive ? 'Close' : 'Edit'}
-            </button>
+            {isNotLockedOut(
+              userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
+            ) && (
+              <button
+                onClick={() => {
+                  setEditActive(!editActive);
+                }}
+                id="dropdownHoverButton"
+                className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                type="button"
+              >
+                {' '}
+                {editActive ? 'Close' : 'Edit'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -920,7 +924,9 @@ export function ViewUser(props: any) {
                   ></Typography>
                 </Button>
               )}
-            {
+            {isNotLockedOut(
+              userData?.userById ?? chwData?.GetHealthCareWorkerById?.user
+            ) && (
               <Button
                 className={'mt-3 w-4/12 rounded-md'}
                 type="filled"
@@ -937,7 +943,7 @@ export function ViewUser(props: any) {
                   text={'Resend Invitation'}
                 ></Typography>
               </Button>
-            }
+            )}
           </div>
 
           <div className="w-2/12">

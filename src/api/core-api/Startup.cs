@@ -159,6 +159,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
+            services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
             services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
@@ -167,9 +168,9 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IntegrationLogManager>();
             services.AddTransient<IntegrationHelperManager>();
             services.AddTransient<DocumentManager>();
-
-            ConfigureJobs(services);
-            
+            if (!Environment.IsDevelopment()) { //dont look at any jobs for development
+                ConfigureJobs(services);
+            }            
             services.AddControllers();
         }
 

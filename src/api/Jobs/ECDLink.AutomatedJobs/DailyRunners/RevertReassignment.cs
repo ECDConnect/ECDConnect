@@ -15,8 +15,7 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 public class RevertReassignment : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IGenericRepositoryFactory _repoFactory;
-    private readonly HierarchyEngine _hierarchyEngine;
+
     public RevertReassignment(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
         : base(config.CronExpression, config.TimeZoneInfo)
     {

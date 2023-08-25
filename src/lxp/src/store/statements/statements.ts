@@ -11,8 +11,10 @@ import {
   getAllStatementsFeeType,
   getAllStatementsBalanceSheet,
   getIncomeExpensesPDFreport,
+  submitIncomeStatement,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: StatementsState = {
   income: undefined,
@@ -55,6 +57,7 @@ const statementsSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, submitIncomeStatement);
     builder.addCase(getAllExpenses.fulfilled, (state, action) => {
       state.expenses = action.payload;
     });
@@ -85,6 +88,9 @@ const statementsSlice = createSlice({
 
     builder.addCase(getIncomeExpensesPDFreport.fulfilled, (state, action) => {
       state.pdfReportData = action.payload;
+    });
+    builder.addCase(submitIncomeStatement.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

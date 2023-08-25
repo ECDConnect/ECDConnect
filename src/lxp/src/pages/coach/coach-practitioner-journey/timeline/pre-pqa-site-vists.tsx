@@ -26,7 +26,7 @@ export const PrePqaVisits = ({
       ?.sort(sortVisit)
       ?.map((visit, index) => {
         const previousVisit =
-          index > 1 ? timeline.prePQASiteVisits?.[index - 1] : undefined;
+          index > 0 ? timeline.prePQASiteVisits?.[index - 1] : undefined;
         const title =
           (index === 0 && timeline.prePQAVisitDate1Status) ||
           (index === 1 && timeline.prePQAVisitDate2Status) ||

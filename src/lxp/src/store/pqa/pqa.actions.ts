@@ -7,7 +7,9 @@ import {
   PractitionerTimeline,
   SupportVisitModelInput,
   UpdateVisitPlannedVisitDateModelInput,
+  Visit,
   VisitData,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 import { PQAFormType } from './pqa.types';
 
@@ -22,6 +24,7 @@ export const PqaActions = {
     'addReAccreditationFollowUpVisitFormData',
   ADD_SELF_ASSESSMENT_FOR_PRACTITIONER: 'addSelfAssessmentForPractitioner',
   UPDATE_PLANNEDVISITDATE: 'updatePlannedVisitDate',
+  ADD_COACH_VISIT_INVITE_FOR_PRACTITIONER: 'addCoachVisitInviteForPractitioner',
 };
 
 export const addVisitFormData = createAsyncThunk<
@@ -33,7 +36,12 @@ export const addVisitFormData = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      pqa: { prePqaFormData, pqaFormData },
+      pqa: {
+        prePqaFormData,
+        pqaFormData,
+        followUpVisitFormData,
+        reAccreditationFollowUpVisitFormData,
+      },
     } = getState();
 
     try {
@@ -59,6 +67,28 @@ export const addVisitFormData = createAsyncThunk<
 
         if (!!pqaFormData?.length) {
           const promises = pqaFormData?.map(
+            async (item) =>
+              await new PQAService(userAuth?.auth_token).addVisitData(
+                item.formData
+              )
+          );
+
+          return promises?.length && Promise.all(promises);
+        }
+
+        if (!!followUpVisitFormData?.length) {
+          const promises = followUpVisitFormData?.map(
+            async (item) =>
+              await new PQAService(userAuth?.auth_token).addVisitData(
+                item.formData
+              )
+          );
+
+          return promises?.length && Promise.all(promises);
+        }
+
+        if (!!reAccreditationFollowUpVisitFormData?.length) {
+          const promises = reAccreditationFollowUpVisitFormData?.map(
             async (item) =>
               await new PQAService(userAuth?.auth_token).addVisitData(
                 item.formData
@@ -340,6 +370,33 @@ export const updateVisitPlannedVisitDate = createAsyncThunk<
           const response = await new PQAService(
             userAuth?.auth_token
           ).updateVisitPlannedVisitDate(input);
+
+          return response;
+        }
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addCoachVisitInviteForPractitioner = createAsyncThunk<
+  Visit | undefined,
+  VisitModelInput,
+  ThunkApiType<RootState>
+>(
+  PqaActions.ADD_COACH_VISIT_INVITE_FOR_PRACTITIONER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!Object.keys(input).length) {
+          const response = await new PQAService(
+            userAuth?.auth_token
+          ).addCoachVisitInviteForPractitioner(input);
 
           return response;
         }

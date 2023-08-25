@@ -12,9 +12,12 @@ import {
   StatusChip,
   Typography,
   Card,
-  Alert,
 } from '@ecdlink/ui';
-import { NoteTypeEnum, PractitionerRemovalHistory } from '@ecdlink/graphql';
+import {
+  ClassroomMetricReport,
+  NoteTypeEnum,
+  PractitionerRemovalHistory,
+} from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './principal-practitioner-profile.types';
@@ -42,31 +45,30 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const location = useLocation<PractitionerProfileRouteState>();
-  const practitionerId = location.state.practitionerId;
+  const practitionerUserId = location.state.practitionerId;
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+    (practitioner) => practitioner?.userId === practitionerUserId
   );
 
-  const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
-    return item?.userId === practitionerId;
+  const practitionerClassroomGroups = classroomGroups?.filter((item) => {
+    return item?.userId === practitionerUserId;
   });
   const { theme } = useTheme();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
     useState<boolean>(false);
-  const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
+  const notes = useSelector(
+    notesSelectors.getNotesByUserId(practitionerUserId)
+  );
 
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
   const [childrenCount, setChildrenCount] = useState(0);
-  const [classMetrics, setClassMetrics] = useState<any>();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  // const practitionerClassrooms: any[] = [];
-  const [practitionerClassrooms, setPractitionerClassrooms] = useState<any[]>();
+  const [classMetrics, setClassMetrics] = useState<ClassroomMetricReport[]>([]);
 
   const handleReassignClass = (practitionerId: string) => {
     history.push('practitioner-reassign-class', {
@@ -74,50 +76,15 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     });
   };
 
-  // if (classMetrics) {
-  //   classMetrics.forEach((e: any) => {
-  //     let classroomValue: any = practitionerClassroomGroups.find(
-  //       (item: any) => item?.userId === e?.practitionerId
-  //     );
-
-  //     if (classroomValue) {
-  //       practitionerClassrooms.push({
-  //         ...e,
-  //         childCount: classroomValue?.childCount,
-  //         attendancePercentage: classroomValue?.attendancePercentage,
-  //         month: classroomValue?.month,
-  //         year: classroomValue?.year,
-  //       });
-  //     } else {
-  //       practitionerClassrooms.push({ ...e });
-  //     }
-  //   });
-  // }
-
   useEffect(() => {
-    if (classMetrics) {
-      const practitionerClassroomData = classMetrics?.filter((item: any) => {
-        return practitionerClassroomGroups.some((x) => {
-          return item?.practitionerId === x?.userId;
-        });
-      });
-      setPractitionerClassrooms(practitionerClassroomData);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classMetrics]);
+    if (!!classMetrics && !!classMetrics?.length) {
+      const totalChildCount = classMetrics.reduce((total, currentItem) => {
+        return total + currentItem.childCount;
+      }, 0);
 
-  useEffect(() => {
-    let count = 0;
-    if (practitionerClassrooms?.length && practitionerClassrooms?.length > 0) {
-      // eslint-disable-next-line array-callback-return
-      practitionerClassrooms?.map((item: any) => {
-        count += item?.childCount;
-      });
-      return setChildrenCount(count);
+      setChildrenCount(totalChildCount);
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionerClassrooms]);
+  }, [classMetrics, setChildrenCount]);
 
   const callForHelp = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -156,7 +123,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     const lastDayPrevMonth = new Date(today.getFullYear(), today.getMonth(), 0);
     const metricsData = await new ClassroomGroupService(
       userAuth?.auth_token!
-    ).getClassAttendanceMetrics(firstDayPrevMonth, lastDayPrevMonth);
+    ).getClassAttendanceMetricsByUser(
+      practitionerUserId,
+      firstDayPrevMonth,
+      lastDayPrevMonth
+    );
     setClassMetrics(metricsData);
     return metricsData;
   };
@@ -333,7 +304,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     type="filled"
                     color="primary"
                     className={'mt-6 mb-6 w-11/12'}
-                    onClick={() => handleReassignClass(practitionerId)}
+                    onClick={() => handleReassignClass(practitionerUserId)}
                   >
                     {renderIcon(
                       'PencilAltIcon',
@@ -349,9 +320,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </div>
             </Card>
-            {practitionerClassrooms && practitionerClassrooms?.length > 0
-              ? practitionerClassrooms?.map((item: any, index: number) => {
-                  const classroomItem: any = practitionerClassroomGroups?.find(
+            {!!classMetrics && !!classMetrics.length
+              ? classMetrics?.map((item, index) => {
+                  const classroomGroup = practitionerClassroomGroups?.find(
                     (x) => {
                       return x?.id === item?.classroomGroupId;
                     }
@@ -360,7 +331,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     <Card className={styles.absentCard} key={index}>
                       <Typography
                         type={'h1'}
-                        text={classroomItem?.name}
+                        text={classroomGroup?.name}
                         color={'textMid'}
                         className={styles.absentCardTitle}
                       />
@@ -390,8 +361,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                                 history.push(
                                   ROUTES.PRINCIPAL.PRACTITIONER_CHILD_LIST,
                                   {
-                                    practitionerId,
-                                    classroomItem,
+                                    practitionerUserId,
+                                    classroomGroup,
                                   }
                                 )
                               }
@@ -643,7 +614,9 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   type="filled"
                   onClick={
                     () =>
-                      history.push(ROUTES.PRINCIPAL.NOTES, { practitionerId })
+                      history.push(ROUTES.PRINCIPAL.NOTES, {
+                        practitionerId: practitionerUserId,
+                      })
                     // setCreatePractitionerdNoteVisible(true)
                   }
                 >
@@ -663,7 +636,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               >
                 <div className={styles.dialogContent}>
                   <CreateNote
-                    userId={practitionerId || ''}
+                    userId={practitionerUserId || ''}
                     noteType={NoteTypeEnum.Unknown}
                     titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
                     onBack={() => onCreatePractitionerNoteBack()}
@@ -683,7 +656,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     history.push(
                       ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
                       {
-                        practitionerId,
+                        practitionerId: practitionerUserId,
                       }
                     )
                   }
@@ -716,7 +689,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           removalDetails={existingRemoval as PractitionerRemovalHistory}
           onEdit={() => {
             history.push(ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME, {
-              practitionerId,
+              practitionerId: practitionerUserId,
             });
           }}
           onCancel={() => {
