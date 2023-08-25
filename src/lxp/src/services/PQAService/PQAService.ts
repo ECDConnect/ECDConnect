@@ -277,6 +277,7 @@ class PQAService {
             }
             pQASiteVisits {
               id
+              hasAnswerData
               plannedVisitDate
               attended
               comment
@@ -293,6 +294,7 @@ class PQAService {
             }
             reAccreditationVisits {
               id
+              hasAnswerData
               plannedVisitDate
               attended
               comment

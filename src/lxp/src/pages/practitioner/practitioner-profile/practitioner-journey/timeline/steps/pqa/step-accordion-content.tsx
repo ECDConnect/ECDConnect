@@ -89,29 +89,31 @@ export const PQAVisits = ({
               className="w-6/12 font-bold"
               text={item?.visitType?.description || ''}
             />
-            <Button
-              style={{
-                position: 'absolute',
-                right: -36,
-              }}
-              className="z-50 w-32"
-              type="filled"
-              color="secondaryAccent2"
-              textColor="secondary"
-              text="View"
-              isLoading={isLoading}
-              disabled={isLoading}
-              onClick={() =>
-                onView({
-                  visit: item,
-                  visitType: item?.visitType?.name?.includes(
-                    visitTypes.pqa.followUp.name
-                  )
-                    ? 'follow-up-visit'
-                    : 'pqa',
-                })
-              }
-            />
+            {item?.hasAnswerData && (
+              <Button
+                style={{
+                  position: 'absolute',
+                  right: -36,
+                }}
+                className="z-50 w-32"
+                type="filled"
+                color="secondaryAccent2"
+                textColor="secondary"
+                text="View"
+                isLoading={isLoading}
+                disabled={isLoading}
+                onClick={() =>
+                  onView({
+                    visit: item,
+                    visitType: item?.visitType?.name?.includes(
+                      visitTypes.pqa.followUp.name
+                    )
+                      ? 'follow-up-visit'
+                      : 'pqa',
+                  })
+                }
+              />
+            )}
           </div>
           <Typography
             type="body"
