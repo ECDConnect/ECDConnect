@@ -8,15 +8,12 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using static NPOI.HSSF.Util.HSSFColor;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -1116,12 +1113,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
 
-                if (linkedVisit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
+                if (_visitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
                 {
                     if (totalVisits < 3)
                     {
                         Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                                     x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                                                                    x.Attended == false &&
                                                                                     x.LinkedVisitId == _linkedVisitId &&
                                                                                     x.VisitType.Name == _visitType.Name).FirstOrDefault();
                         if (visit == null)
@@ -1390,12 +1388,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
 
-                if (linkedVisit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
+                if (_visitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
                 {
                     if (totalVisits < 3)
                     {
                         Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                                     x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                                                                    x.Attended == false &&
                                                                                     x.LinkedVisitId == _linkedVisitId &&
                                                                                     x.VisitType.Name == _visitType.Name).FirstOrDefault();
                         if (visit == null)
