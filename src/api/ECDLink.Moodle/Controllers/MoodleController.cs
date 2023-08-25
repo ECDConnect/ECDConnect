@@ -1,4 +1,5 @@
-﻿using ECDLink.Moodle.Managers;
+﻿/*
+ * using ECDLink.Moodle.Managers;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -28,3 +29,4 @@ namespace ECDLink.Moodle.Controllers
         }
     }
 }
+*/

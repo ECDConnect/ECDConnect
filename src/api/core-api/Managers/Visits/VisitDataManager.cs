@@ -15,7 +15,6 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
@@ -819,8 +818,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private int getCheckBoxScore(List<VisitData> records)
         {
             int score = 0;
-            Boolean parsedValue;
-
 
             foreach (VisitData record in records)
             {

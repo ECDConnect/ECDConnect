@@ -1,12 +1,12 @@
-import { LearnerDto } from '@ecdlink/core';
+import { ClassroomGroupDto, LearnerDto } from '@ecdlink/core';
 
 export interface ChildListLearner extends LearnerDto {
   avatarColor: string;
 }
 
 export interface PractitionerProfileRouteState {
-  practitionerId: string;
-  classroomItem: any;
+  practitionerUserId: string;
+  classroomGroup: ClassroomGroupDto;
 }
 
 export interface PractitionerDashboardModel {

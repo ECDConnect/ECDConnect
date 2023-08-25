@@ -33,6 +33,7 @@ import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
@@ -40,6 +41,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'Startup Support';
   const incomeTypeValue = incomeTypes.find(
@@ -127,12 +129,30 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           }
           className="mt-4 mb-2"
         />
-        <Typography
-          type="h3"
-          color={'primary'}
-          text={'Community Works Programme (CWP)'}
-          className="mt-2"
-        />
+        {!!practitioner?.stipendType && !!practitioner?.isOnStipend && (
+          <Typography
+            type="h3"
+            color={'primary'}
+            text={`${practitioner?.stipendType}`}
+            className="mt-2"
+          />
+        )}
+        {(!practitioner?.stipendType || !practitioner?.isOnStipend) && (
+          <Alert
+            type="warning"
+            className="mt-4"
+            title="We do not have start-up support information on-record for you"
+            list={[
+              'If you receive start-up support, please fill in the information below and SmartStart will be notified to change the information they have on record.',
+              'If you do not reveive start-up support, please use the back button and choose a different income type.',
+            ]}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationCircleIcon', 'text-alertMain w-5 h-5')}
+              </div>
+            }
+          />
+        )}
         <label className="text-md text-textDark mt-2 mb-1 block font-semibold">
           When did you get this start-up support?
         </label>

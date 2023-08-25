@@ -1,5 +1,5 @@
 import { ClassroomGroupDto, Config } from '@ecdlink/core';
-import { ClassroomGroupInput } from '@ecdlink/graphql';
+import { ClassroomGroupInput, ClassroomMetricReport } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class ClassroomGroupService {
   _accessToken: string;
@@ -148,35 +148,47 @@ class ClassroomGroupService {
     return true;
   }
 
-  async getClassAttendanceMetrics(
+  async getClassAttendanceMetricsByUser(
+    userId: string,
     startMonth: Date,
     endMonth: Date
-  ): Promise<ClassroomGroupDto> {
+  ): Promise<ClassroomMetricReport[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query classAttendanceMetrics(        
-        $startMonth: DateTime! $endMonth: DateTime!) 
+      query classAttendanceMetricsByUser(   
+        $userId: String    
+        $startMonth: DateTime! 
+        $endMonth: DateTime!) 
         {        
-          classAttendanceMetrics(          
-            startMonth: $startMonth endMonth: $endMonth 
+          classAttendanceMetricsByUser(          
+            userId: $userId, startMonth: $startMonth endMonth: $endMonth 
           ) 
           {          
-            childCount  attendancePercentage month year classroomId practitionerId weekOfYear classroomGroupId       
+            childCount  
+            attendancePercentage 
+            month 
+            year 
+            classroomId 
+            practitionerId 
+            weekOfYear 
+            classroomGroupId       
           }      
         }  
       `,
       variables: {
+        userId: userId,
         startMonth: startMonth,
         endMonth: endMonth,
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.error) {
       throw new Error('Get class metrics Failed - Server connection error');
     }
 
-    return response.data.data.classAttendanceMetrics;
+    return response.data.data
+      .classAttendanceMetricsByUser as ClassroomMetricReport[];
   }
 }
 

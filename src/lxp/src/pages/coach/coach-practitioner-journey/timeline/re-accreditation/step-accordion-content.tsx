@@ -1,19 +1,14 @@
 import { Visit, Maybe, PqaRating } from '@ecdlink/graphql';
-import { ScheduleProps, dateOptions, getStepType } from '../timeline-steps';
+import { ScheduleProps, dateOptions } from '../timeline-steps';
 import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import {
-  getCurrentReAccreditationRatingByUserId,
-  getLastCoachAttendedVisitByUserId,
-  getPractitionerTimelineByIdSelector,
-} from '@/store/pqa/pqa.selectors';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import {
   maxNumberOfVisits,
   visitTypes,
 } from '../../coach-practitioner-journey.types';
-import { addDays } from 'date-fns';
-import { followUpDeadline, getRatingData } from '../utils';
+import { getRatingData, isDateWithinThreeMonths } from '../utils';
 import { chunkArray } from '@ecdlink/core';
 
 interface ReAccreditationVisitsProps {
@@ -35,21 +30,9 @@ export const ReAccreditationVisits = ({
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
   );
-  const currentReAccreditationRating = useSelector(
-    getCurrentReAccreditationRatingByUserId(practitionerId)
-  );
-  const lastAttendedReAccreditationVisit = useSelector(
-    getLastCoachAttendedVisitByUserId({
-      userId: practitionerId,
-      visitType: `reAccreditationVisits`,
-      followUpType: 're_accreditation_follow_up',
-    })
-  );
-  const lastAttendedVisit = useSelector(
-    getLastCoachAttendedVisitByUserId({
-      userId: practitionerId,
-      visitType: `reAccreditationVisits`,
-    })
+
+  const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
+    (item) => item?.attended
   );
 
   // All years
@@ -70,10 +53,6 @@ export const ReAccreditationVisits = ({
   const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
   const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
-  const isGreenRating = [rating1, rating2, rating3].some(
-    (item) => item?.overallRatingColor === 'Success'
-  );
-
   const filteredReAccreditationVisits =
     timeline?.reAccreditationVisits?.filter(
       (item) =>
@@ -86,76 +65,35 @@ export const ReAccreditationVisits = ({
   const reAccreditationVisitsFromCurrentYear =
     subdividedReAccreditationVisits?.[filteredReAccreditationVisits.length - 1];
 
-  const isLastAttendedReAccreditationVisit =
-    reAccreditationVisitsFromCurrentYear?.filter((item) => item?.attended)
-      ?.length === maxNumberOfVisits;
+  const nextReAccreditationVisit = timeline?.reAccreditationVisits
+    ?.filter((item) => !item?.attended)
+    .shift();
 
-  // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
-  const currentFollowUpDeadline = rating3?.overallRating
-    ? followUpDeadline.lastVisit
-    : followUpDeadline.default;
-
-  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
-    (item) =>
-      !item?.attended &&
-      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-  );
-
-  const isReAccreditationFollowUpDeadline =
-    addDays(
-      new Date(lastAttendedReAccreditationVisit?.insertedDate),
-      currentFollowUpDeadline
-    ) <= new Date();
   const isFirstVisit = reAccreditationVisitsFromCurrentYear?.length === 1;
-  const isReAccreditationFollowUp =
-    !isFirstVisit &&
-    !isGreenRating &&
-    !!newReAccreditationVisit &&
-    !isLastAttendedReAccreditationVisit &&
-    !lastAttendedVisit?.visitType?.name?.includes(
-      visitTypes.reaccreditation.followUp.name
-    );
 
   const mergedVisits = timeline?.reAccreditationVisits
     ? [
         ...(isFirstVisit
           ? timeline.reAccreditationVisits
           : timeline.reAccreditationVisits.filter((item) => item?.attended)),
-        ...(isReAccreditationFollowUp
-          ? [
-              {
-                id: newReAccreditationFollowUpId,
-                visitType: {
-                  description: `Follow-up visit ${currentReAccreditationRating.visitNumber}`,
-                  name: visitTypes.reaccreditation.followUp.name,
-                },
-                plannedVisitDate: addDays(
-                  new Date(lastAttendedReAccreditationVisit?.insertedDate),
-                  currentFollowUpDeadline
-                ),
-                attended: false,
-              } as Maybe<Visit>,
-            ]
-          : []),
-        ...(!isFirstVisit &&
-        newReAccreditationVisit &&
-        !isReAccreditationFollowUp
-          ? [newReAccreditationVisit]
+        ...(!isFirstVisit && nextReAccreditationVisit
+          ? [nextReAccreditationVisit]
           : []),
       ]
     : [];
 
   const sortedVisits = mergedVisits.sort((a, b) => {
-    if (!a?.insertedDate && !b?.insertedDate) {
+    if (!a?.attended && !b?.attended) {
       return 0;
-    } else if (!a?.insertedDate) {
+    } else if (!a?.attended) {
       return 1;
-    } else if (!b?.insertedDate) {
+    } else if (!b?.attended) {
       return -1;
     }
 
     return (
-      new Date(a.insertedDate).getTime() - new Date(b.insertedDate).getTime()
+      new Date(a.actualVisitDate).getTime() -
+      new Date(b.actualVisitDate).getTime()
     );
   });
 
@@ -211,39 +149,43 @@ export const ReAccreditationVisits = ({
             {((item?.id === currentVisit?.id && !item?.attended) ||
               (item?.visitType?.name ===
                 visitTypes.reaccreditation.followUp.name &&
-                item.attended === false &&
-                isReAccreditationFollowUpDeadline) ||
-              (item?.id === newReAccreditationVisitId && !item.attended)) && (
-              <Button
-                style={{
-                  position: 'absolute',
-                  right: -36,
-                }}
-                className="z-50 w-32"
-                textColor="primary"
-                type="outlined"
-                color="primary"
-                text="Schedule"
-                iconPosition="start"
-                icon="CalendarIcon"
-                onClick={() =>
-                  onScheduleOrStart({
-                    visit: item as Visit,
-                    visitEventId: currentVisit?.eventId,
-                    eventType: 'ReAccreditation',
-                  })
-                }
-              />
-            )}
+                item.attended === false) ||
+              (item?.id === newReAccreditationVisitId && !item.attended)) &&
+              isUserEnableToStartPqaVisit &&
+              isDateWithinThreeMonths(item?.plannedVisitDate) && (
+                <Button
+                  style={{
+                    position: 'absolute',
+                    right: -36,
+                  }}
+                  className="z-50 w-32"
+                  textColor="primary"
+                  type="outlined"
+                  color="primary"
+                  text="Schedule"
+                  iconPosition="start"
+                  icon="CalendarIcon"
+                  onClick={() =>
+                    onScheduleOrStart({
+                      visit: item as Visit,
+                      visitEventId: currentVisit?.eventId,
+                      eventType: 'ReAccreditation',
+                    })
+                  }
+                />
+              )}
           </div>
           <Typography
             type="body"
-            // TODO: add schedule integration
-            color={getStepType(String('Success'))?.color || 'textMid'}
+            color={
+              !item?.attended && new Date(item?.plannedVisitDate) < new Date()
+                ? 'errorMain'
+                : 'textMid'
+            }
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(
-                    item.attended ? item.insertedDate : item.plannedVisitDate
+                    item.attended ? item.actualVisitDate : item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
             }
