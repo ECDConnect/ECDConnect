@@ -4,14 +4,13 @@ import {
   Alert,
   Button,
   Card,
-  CheckboxGroup,
   Colours,
   Divider,
   FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 
@@ -44,6 +43,18 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
 }) => {
   const [enableButton, setEnableButton] = useState(false);
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const visitData1and2Completed = useSelector(
+    traineeSelectors.getCoachSmartSpaceVisitDataCount
+  );
+  const coachSmartSpaceVisitDataNotAttendedStandards = useSelector(
+    traineeSelectors.getCoachSmartSpaceVisitDataNotAttendedStandards
+  );
+  const coachSmartSpaceVisitDataNotAttendedStandardsFormatted =
+    coachSmartSpaceVisitDataNotAttendedStandards?.length! > 0
+      ? coachSmartSpaceVisitDataNotAttendedStandards?.map((item: any) => {
+          return item?.question;
+        })
+      : [];
   const question =
     'Together with the SmartStarter, agree on what next steps can be taken and note them here:';
   const [questions, setAnswers] = useState([
@@ -119,6 +130,15 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
       />
       <Divider dividerType="dashed" className={'my-4'} />
 
+      {Number(visitData1and2Completed) < 22 && (
+        <Alert
+          className={'mt-5 mb-3'}
+          title={`You cannot issue ${practitioner?.user?.firstName}'s SmartSpace Licence.`}
+          list={coachSmartSpaceVisitDataNotAttendedStandardsFormatted}
+          type={'warning'}
+        />
+      )}
+
       <Card className="bg-uiBg rounded-2xl p-4">
         <Typography
           type={'body'}
@@ -145,6 +165,18 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         onChange={onChange}
       />
 
+      {Number(visitData1and2Completed) < 22 && (
+        <Alert
+          className={'mt-5 mb-3'}
+          title={`You cannot issue ${practitioner?.user?.firstName}'s SmartSpace Licence.`}
+          list={[
+            `Discuss ways that ${practitioner?.user?.firstName} can prepare for the next SmartSpace visit.`,
+            `Schedule a follow-up visit with Nothando.`,
+          ]}
+          type={'error'}
+        />
+      )}
+
       <div className="mt-2 space-y-4">
         <div>
           <div>
@@ -156,7 +188,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton}
+              disabled={!enableButton || Number(visitData1and2Completed) < 22}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />
