@@ -4,14 +4,13 @@ import {
   Alert,
   Button,
   Card,
-  CheckboxGroup,
   Colours,
   Divider,
   FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 
@@ -189,7 +188,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton}
+              disabled={!enableButton || Number(visitData1and2Completed) < 22}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />
