@@ -19,6 +19,10 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string Message { get; set; }
         public string Subject { get; set; }
         public string CTA { get; set; }
+        public string CTAText { get; set; }
+        public int? TypeCode { get; set; }
+
+
     }
 
     public interface MessageTemplateJoin<TKey>

@@ -423,10 +423,23 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
                     foreach (var statement in submittedStatements)
                     {
-
-                        var statementDoc = (statement.RelatedDocumentId != null ?
-                            _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).FirstOrDefault() :
-                            _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null).OrderByDescending(d => d.InsertedDate).FirstOrDefault());
+                        int[] validmonths = { statement.Month, statement.Month+1 };
+                        Document statementDoc = null;
+                        if (statement.RelatedDocumentId != null)
+                        {
+                            var docs = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).ToList();
+                            if (docs.Any())
+                            {
+                                statementDoc = docs.FirstOrDefault();
+                            } else
+                            {
+                                //get the latest one created
+                                statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
+                            }
+                        }
+                        else {
+                            statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
+                        }
                         string remoteStatementId = "";
                         List<IntegrationAudit> docaudits = null;
 
@@ -439,7 +452,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 remoteDocId = await PushNewDocument(statementDoc);
                             }
                         }
-                    List<StatementReport> statementLines = _incomeManager.GetStatementLinesToReport(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+                        List<StatementReport> statementLines = _incomeManager.GetStatementLinesToReport(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
 
 
                         double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
@@ -503,7 +516,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
                         jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
                         jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
-                        //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
+                        if (!string.IsNullOrWhiteSpace(remoteDocId))
+                        {
+                            jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
+                        }
                         jsonStatementString.AppendLine("}]");
 
                         try
@@ -515,18 +531,23 @@ public class SmartStartIntegrationService : IIntegrationService
                                 var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
                                 if (returnObj != null)
                                 {
-                                    remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                    if (docaudits!=null)
+                                    if (returnObj[0].Guid != null)
                                     {
-                                        await _logManager.UpdateAuditSubmitted(docaudits);
+                                        remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                        if (docaudits != null)
+                                        {
+                                            await _logManager.UpdateAuditSubmitted(docaudits);
+                                        }
+
+                                        //no need to insert entity mapping item for statements as long as document saved
+                                        isComplete = true;
+                                        //update entity to note its statements has been sent
+                                        prac.LastIncomeSubmittedDate = DateTime.Now;
+                                        _mapperRepo.Update(prac);
+                                    } else
+                                    {
+                                        await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
                                     }
-
-                                    //no need to insert entity mapping item for statements as long as document saved
-                                    isComplete = true;
-                                    //update entity to note its statements has been sent
-                                    prac.LastIncomeSubmittedDate = DateTime.Now;
-                                    _mapperRepo.Update(prac);
-
                                 }
                                 else //error empty response received
                                 {
@@ -1068,14 +1089,17 @@ public class SmartStartIntegrationService : IIntegrationService
         {
             List<IntegrationEntityMapping> list = new List<IntegrationEntityMapping>();
             List<SL_Ingestion_User_Update> ids = _dbContext.SL_Ingestion_Users_Update.ToList();
-            var alllist = _mapperRepo.GetAll().ToList();
+            var alllist = _mapperRepo.GetAll().ToList();//.Where(x => string.Equals(x.UserId, "4a715da0-b50a-4246-9f0a-5a99fb7e13ab"))
             foreach (var tester in ids)
             {
-                list.Add(alllist.Where(x => x.UserId == tester.Id.ToString()).FirstOrDefault());
+                if (tester.Id != null)
+                {
+                    list.Add(alllist.Where(x => x.UserId == tester.Id.ToString()).FirstOrDefault());
+                }
 
             }
 
-            return list;
+            return alllist;
         }
         catch (Exception e)
         {
@@ -2374,7 +2398,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     _practitionerRepo.Insert(newPractitioner);
                                 }
                                 //notify trainee to stary journey
-                                await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, newTrainee.User);
+                                await _notificationService.SendNotificationAsync("Trainee", TemplateTypeConstants.StartTraineeJourney, DateTime.Now, newTrainee.User);
 
                                 pracCreated = true;
                             }
@@ -3307,18 +3331,21 @@ public class SmartStartIntegrationService : IIntegrationService
                                     var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
                                     if (returnObj != null)
                                     {
-                                        noteRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                        IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
-                                        cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSDocument;
-                                        cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLDocument;
-                                        cgMapping.LocalId = newDoc.Id.ToString();
-                                        cgMapping.RemoteId = docRemoteId;
-                                        //cgMapping.UserId = newDoc.UserId;
-                                        cgMapping.UpdatedBy = _uId;
-                                        cgMapping.UpdatedDate = DateTime.Now;
-                                        cgMapping.IsComplete = true;
-                                        cgMapping.BeforeJSON = jsonDocString.ToString() + " | " + jsonNoteString.ToString();
-                                        _mapperRepo.Insert(cgMapping);
+                                        if (returnObj[0].Guid != null)
+                                        {
+                                            noteRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                            IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                            cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSDocument;
+                                            cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLDocument;
+                                            cgMapping.LocalId = newDoc.Id.ToString();
+                                            cgMapping.RemoteId = docRemoteId;
+                                            //cgMapping.UserId = newDoc.UserId;
+                                            cgMapping.UpdatedBy = _uId;
+                                            cgMapping.UpdatedDate = DateTime.Now;
+                                            cgMapping.IsComplete = true;
+                                            cgMapping.BeforeJSON = jsonDocString.ToString() + " | " + jsonNoteString.ToString();
+                                            _mapperRepo.Insert(cgMapping);
+                                        }
                                     }
                                     else //error empty response received
                                     {

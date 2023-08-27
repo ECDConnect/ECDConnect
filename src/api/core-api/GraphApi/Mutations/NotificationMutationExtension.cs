@@ -2,10 +2,12 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -16,6 +18,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -35,11 +38,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (userId != null)
             {
                 var userToSend = await userManager.FindByIdAsync(userId);
-                return await notificationService.SendNotificationAsync(userType, templateType, userToSend);
+                return await notificationService.SendNotificationAsync(userType, templateType, DateTime.Now,  userToSend);
             }
             else
             { 
-                return await notificationService.SendNotificationAsync(userType, templateType);
+                return await notificationService.SendNotificationAsync(userType, templateType, DateTime.Now);
             }
         }
 
@@ -146,5 +149,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             return result;
         }
+
+
     }
 }

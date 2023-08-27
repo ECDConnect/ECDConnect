@@ -16,6 +16,8 @@ using System.Collections.Generic;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
+using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -64,7 +66,7 @@ namespace EcdLink.Api.CoreApi.Services
             return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template)).ToList();
         }
 
-        public async Task<bool> SendNotificationAsync(string userType, string templatetype, ApplicationUser user = null, string message = "")
+        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null)
         {
             bool bNeedsMapping = false;
             var template = await RetrieveTemplate(templatetype);
@@ -73,24 +75,36 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 foreach (var item in template)
                 {
-                    if (item.Message.Contains("[[") || item.Subject.Contains("[["))
+                    //remap all field
+                    await RemapFields(item, user, replacements);
+
+                    Notification notification = new Notification() { 
+                        Id = Guid.NewGuid(), 
+                        MessageProtocol = item.Protocol, 
+                        Message = !string.IsNullOrWhiteSpace(message)? message : item.Message,
+                        MessageDate = messageDate,                       
+                        FromUserId = Guid.Parse(_uId),
+                        MessageTemplateType = item.TemplateType,
+                        MessageTemplate = item,
+                        To = (user!=null? user.Id : userType),
+                        Status = status
+                    };
+                    if(messageEndDate != null)
                     {
-                        bNeedsMapping = true; 
+                        notification.MessageEndDate = messageEndDate;
                     }
 
                     switch (item.Protocol)
                     {
                         case MessageTypeConstants.SMS:
-                            await SendSMSAsync(user, userType, item);
+                            await SendSMSAsync(notification,user, item);
                             break;
                         case MessageTypeConstants.EMAIL:
-                            await SendEmailAsync(user, userType, item);
+                            await SendEmailAsync(notification, user, item);
                             break;
                         case MessageTypeConstants.HUB:
-                            await SendHubMessageAsync(user, userType, item, message);
-                            break;
                         case MessageTypeConstants.PUSH:
-                            await SendHubMessageAsync(user, userType, item, message);
+                            await SendHubMessageAsync(notification, user, item);
                             break;
                         default:
                             break;
@@ -100,63 +114,44 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        private async Task SendEmailAsync(ApplicationUser user, string group, MessageTemplate template)
+        private async Task SendEmailAsync(Notification notification, ApplicationUser user, MessageTemplate template)
         {
-            //var encodedToken = TokenHelper.EncodeToken(token);
+            //convert str to enum
+            TemplateTypeEnum templateType = (TemplateTypeEnum)Enum.Parse(typeof(TemplateTypeEnum), template.TypeCode.ToString());
+            var notificationProvider = _notificationProviderFactory.Create(user);
 
-            //var invitationUrl = $"{_options.Value.AdminSignup}/{encodedToken}";
-            //var applicationName = TenantExecutionContext.Tenant.ApplicationName;
-            //var organisationName = TenantExecutionContext.Tenant.OrganisationName;
-            //string firstName = user.FirstName;
-
-            //var notificationProvider = _notificationProviderFactory.Create(user);
-
-            //await notificationProvider
-            //  .SetMessageTemplate(TemplateTypeEnum.AdminPortalInvitation)
-            //  .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
-            //  .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
-            //  .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
-            //  .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
-            //  .SendMessageAsync();
-            await CommitNotification(user.Id, template, template.Subject, template.Message);
+            await notificationProvider
+                .SetMessageMapped(templateType, notification.Subject, notification.Message)
+                .SendMessageAsync();
+            await CommitNotification(notification, template);
         }
 
-        private async Task SendSMSAsync(ApplicationUser user, string group, MessageTemplate template)
+        private async Task SendSMSAsync(Notification notification, ApplicationUser user,  MessageTemplate template)
         {
-            //var encodedToken = TokenHelper.EncodeToken(token);
-
-            //var invitationUrl = $"{_options.Value.AdminSignup}/{encodedToken}";
-            //var applicationName = TenantExecutionContext.Tenant.ApplicationName;
-            //var organisationName = TenantExecutionContext.Tenant.OrganisationName;
-            //string firstName = user.FirstName;
-
-            //var notificationProvider = _notificationProviderFactory.Create(user);
-
-            //await notificationProvider
-            //  .SetMessageTemplate(TemplateTypeEnum.AdminPortalInvitation)
-            //  .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
-            //  .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
-            //  .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
-            //  .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
-            //  .SendMessageAsync();
-            await CommitNotification(user.Id, template, template.Subject, template.Message);
+            //convert str to enum
+            TemplateTypeEnum templateType = (TemplateTypeEnum)Enum.Parse(typeof(TemplateTypeEnum), template.TypeCode.ToString());
+            var notificationProvider = _notificationProviderFactory.Create(user);
+            await notificationProvider
+              .SetMessageMapped(templateType, notification.Subject, notification.Message)
+              .SendMessageAsync();
+            await CommitNotification(notification, template);
         }
 
-        private async Task SendHubMessageAsync(ApplicationUser user, string group, MessageTemplate template, string message)
+        private async Task SendHubMessageAsync(Notification notification, ApplicationUser user, MessageTemplate template)
         {
-            await CommitNotification(user != null ? user.Id : group, template, template.Subject, message);
+            await CommitNotification(notification, template);
         }
 
-        private async Task SendPushMessageAsync(ApplicationUser user, string group, MessageTemplate template, string message)
+        private async Task SendPushMessageAsync(Notification notification, ApplicationUser user, MessageTemplate template)
         {
-            await CommitNotification(user.Id, template, template.Subject, message);
+            await CommitNotification(notification, template);
         }
 
-        private async Task CommitNotification(string toRecipient, MessageTemplate notification, string subject, string message)
+        public async Task CommitNotification(Notification notification, MessageTemplate template)
         {
             try
             {
-                _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), FromUserId = Guid.Parse(_uId), To = toRecipient, InsertedDate = DateTime.Now, IsActive = true, MessageProtocol = notification.Protocol, MessageTemplateType = notification.TemplateType, Message = message, Subject = subject  });
+               _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), FromUserId = Guid.Parse(_uId), To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status  });
             } catch (Exception ex)
             {
                 throw ex;
@@ -173,6 +168,50 @@ namespace EcdLink.Api.CoreApi.Services
                 _messageRepo.Update(notification);
             }
             return true;
+        }
+        public async Task<bool> ExpireNotification(string notificationId)
+        {
+            if (notificationId != null)
+            {
+                var notification = _messageRepo.GetById(Guid.Parse(notificationId));
+                notification.MessageEndDate = DateTime.Now;
+                _messageRepo.Update(notification);
+            }
+            return true;
+        }
+
+        private async Task<MessageTemplate> RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements)
+        {
+            //iterate through all placeholders, figure out which one it is and replace it based on the the placeholder name in 
+            //setup some basics on all messages
+            string subject = template.Subject;
+            string message = template.Message;
+
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            string firstName = user.FirstName;
+
+            if (replacements == null)
+            {
+                replacements = new List<TagsReplacements>();
+            }
+
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.FirstName, ReplacementValue = firstName });
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.ApplicationName, ReplacementValue = applicationName });
+            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.OrganisationName, ReplacementValue = organisationName });
+            //add all basic tags here
+
+
+            foreach (var replacement in replacements)
+            {
+               subject = subject.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+               message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+
+            }
+                       
+            template.Subject = subject;
+            template.Message = message;
+            return template;
         }
 
     }

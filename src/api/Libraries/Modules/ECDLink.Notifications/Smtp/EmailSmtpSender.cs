@@ -214,6 +214,17 @@ namespace ECDLink.Notifications.Smtp
             return this;
         }
 
+        public INotificationProvider<ApplicationUser> SetMessageMapped(TemplateTypeEnum template, string subject, string message)
+        {
+            var messageTemplate = GetTemplate(template);
+            _message.MessageBody = message;
+            _message.Subject = subject;
+
+            _messageTemplate = messageTemplate;
+
+            return this;
+        }
+
         public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
         {
             if (_fieldTransform.ContainsKey(key))
