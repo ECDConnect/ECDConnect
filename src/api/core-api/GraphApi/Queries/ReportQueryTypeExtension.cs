@@ -1301,7 +1301,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region NOT REGISTERED ON FUNDA APP
-                if (!practitioner.IsRegistered.HasValue || practitioner.IsRegistered.Value == false)
+                if (
+                    // If they are a trainee, check if they have logged in
+                    (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value && practitioner.User.LastSeen == DateTime.MinValue) 
+                    // If they are a practitioner, check is registered
+                    || ((!practitioner.IsTrainee.HasValue || !practitioner.IsTrainee.Value) && (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)))
                 {
                     notification.Subject = "Not registered on Funda App";
                     notification.Icon = MetricsIconEnum.Error.ToString();

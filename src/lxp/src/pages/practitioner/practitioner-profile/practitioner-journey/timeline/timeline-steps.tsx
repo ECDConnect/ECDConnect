@@ -188,7 +188,8 @@ export const timelineSteps = ({
       extraData: {
         date: new Date(currentVisit?.actualVisitDate),
       },
-      showActionButton: attendedPqaVisits.length === 1,
+      showActionButton:
+        attendedPqaVisits.length === 1 && currentVisit?.hasAnswerData,
       actionButtonText: 'View',
       actionButtonTextColor: 'secondary',
       actionButtonIsLoading: isLoading,
@@ -252,7 +253,9 @@ export const timelineSteps = ({
       extraData: {
         date: new Date(currentVisit?.actualVisitDate),
       },
-      showActionButton: attendedReAccreditationVisits.length === 1,
+      showActionButton:
+        attendedReAccreditationVisits.length === 1 &&
+        currentVisit?.hasAnswerData,
       actionButtonText: 'View',
       actionButtonTextColor: 'secondary',
       actionButtonIsLoading: isLoading,
