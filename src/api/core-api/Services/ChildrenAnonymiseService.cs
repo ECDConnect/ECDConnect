@@ -1,9 +1,11 @@
 ﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.DataAccessLayer.Services;
@@ -39,17 +41,19 @@ namespace EcdLink.Api.CoreApi.Services
             var adminId = _hierarchyEngine.GetAdminUserId();
 
             var childRepo = _repositoryFactory.CreateRepository<Child>(userContext: adminId);
+            var learnerRepo = _repositoryFactory.CreateRepository<Learner>(userContext: adminId);
 
             var children = GetChildrenToRemove(childRepo);
             foreach (var child in children)
             {
-                childRepo.Update(child);
-
                 childRepo.Delete(child.Id);
-
+                //remove learners from allocated classes
+                var learnerRow = learnerRepo.GetByUserId(child.UserId);
+                learnerRepo.Delete(learnerRow.Id);
+                _hierarchyEngine.DeleteHierarchy(child.UserId);
                 RemoveChildDocuments(child, adminId);
 
-                _userManager.DeleteAsync(child.User);
+                var result = _userManager.DeleteAsync(child.User).Result;
 
             }
         }
@@ -69,7 +73,7 @@ namespace EcdLink.Api.CoreApi.Services
             var expiryTime = DateTime.UtcNow.AddDays(-30);
 
             // Removed child where status is pending (not all required information saved)
-            // and they were inserted within the last 30 days
+            // and they were inserted within the last 21 days
             return childRepo.GetAll()
                         .Where(c => c.IsActive && c.CaregiverId.Equals(null)
                                     && c.InsertedDate <= expiryTime).ToList();

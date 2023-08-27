@@ -148,8 +148,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
              [Service] UserManager<ApplicationUser> userManager,
              string userId)
         {
-            Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);
-
+            Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);                        
             return practitionerToDemote;
         }
 
