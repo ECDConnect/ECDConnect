@@ -48,7 +48,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
     []
   );
   const [colleagueProfile, setColleagueProfile] = useState({});
-  const appDispatch = useAppDispatch();
   const classroom = useSelector(classroomsSelectors?.getClassroom);
 
   const getPractitionerColleagues = async () => {
@@ -253,25 +252,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                 />
               </div>
             )}
-          </div>
-          <div className="absolute bottom-0 left-0 right-0 max-h-20 p-4">
-            <div className="flex justify-center">
-              <Button
-                type="filled"
-                color="primary"
-                className={'w-full'}
-                onClick={() => {}}
-                disabled={true}
-              >
-                {renderIcon('SaveIcon', styles.buttonIcon)}
-                <Typography
-                  type="h6"
-                  className="mr-2 rounded-2xl"
-                  color="white"
-                  text={'Save'}
-                ></Typography>
-              </Button>
-            </div>
           </div>
         </>
       </>
