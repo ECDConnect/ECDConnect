@@ -112,9 +112,8 @@ export const OnboardingTraineeDashboard: React.FC<
 
   useEffect(() => {
     if (
-      practitioner?.isOnStipend
-        ? completedSteps?.length === 7
-        : completedSteps.length === 6
+      (practitioner?.isOnStipend && completedSteps?.length === 7) ||
+      (practitioner?.isOnStipend !== true && completedSteps.length === 6)
     ) {
       setShowSteps(false);
     }
@@ -178,86 +177,86 @@ export const OnboardingTraineeDashboard: React.FC<
           type={'h2'}
           text={'Trainee onboarding'}
         />
-        {practitioner?.isOnStipend
-          ? completedSteps?.length === 7
-          : completedSteps.length === 6 && (
-              <>
-                <div className="bg-successBg grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
-                  <div className="flex">
-                    <div className="flex justify-center">
-                      <img
-                        src={PositiveBonusEmoticon}
-                        alt="developing well"
-                        className="mt-3 ml-2 mr-2 h-12 w-16"
-                      />
-                    </div>
-                    <div className="ml-3">
-                      <div className="flex justify-center">
-                        <Typography
-                          type="h3"
-                          weight="bold"
-                          color={'successDark'}
-                          text={`Well done! You have your SmartSpace licence.`}
-                          fontSize="18"
-                          className="pt-2"
-                        />
-                      </div>
-                      <div className="mt-1 flex justify-center">
-                        <Typography
-                          type="body"
-                          color={'textDark'}
-                          text={`Use Funda App to set up your profile and manage your classroom.`}
-                          fontSize="14"
-                        />
-                      </div>
-                    </div>
+        {((practitioner?.isOnStipend && completedSteps.length === 7) ||
+          (practitioner?.isOnStipend !== true &&
+            completedSteps.length === 6)) && (
+          <>
+            <div className="bg-successBg grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
+              <div className="flex">
+                <div className="flex justify-center">
+                  <img
+                    src={PositiveBonusEmoticon}
+                    alt="developing well"
+                    className="mt-3 ml-2 mr-2 h-12 w-16"
+                  />
+                </div>
+                <div className="ml-3">
+                  <div className="flex justify-center">
+                    <Typography
+                      type="h3"
+                      weight="bold"
+                      color={'successDark'}
+                      text={`Well done! You have your SmartSpace licence.`}
+                      fontSize="18"
+                      className="pt-2"
+                    />
+                  </div>
+                  <div className="mt-1 flex justify-center">
+                    <Typography
+                      type="body"
+                      color={'textDark'}
+                      text={`Use Funda App to set up your profile and manage your classroom.`}
+                      fontSize="14"
+                    />
                   </div>
                 </div>
+              </div>
+            </div>
+            <div>
+              <Button
+                type="filled"
+                color="primary"
+                className="mt-4 mb-2 w-full"
+                onClick={() => {
+                  history.push(ROUTES.DASHBOARD, {
+                    isFromTraineeFlow: true,
+                  });
+                  window.location.reload();
+                }}
+              >
+                {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+                <Typography
+                  type={'help'}
+                  text={'Complete your Funda App profile'}
+                  color={'white'}
+                />
+              </Button>
+            </div>
+            <div className="mt-2 space-y-4">
+              <div>
                 <div>
                   <Button
-                    type="filled"
+                    type="outlined"
                     color="primary"
-                    className="mt-4 mb-2 w-full"
-                    onClick={() => {
-                      history.push(ROUTES.DASHBOARD, {
-                        isFromTraineeFlow: true,
-                      });
-                      window.location.reload();
-                    }}
-                  >
-                    {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-                    <Typography
-                      type={'help'}
-                      text={'Complete your Funda App profile'}
-                      color={'white'}
-                    />
-                  </Button>
+                    className={'mt-1 mb-4 w-full'}
+                    onClick={() => setShowSteps((prevState) => !prevState)}
+                    icon={!showSteps ? 'EyeOffIcon' : 'EyeIcon'}
+                    text={
+                      !showSteps
+                        ? 'See completed sections'
+                        : 'Hide completed sections'
+                    }
+                  />
                 </div>
-                <div className="mt-2 space-y-4">
-                  <div>
-                    <div>
-                      <Button
-                        type="outlined"
-                        color="primary"
-                        className={'mt-1 mb-4 w-full'}
-                        onClick={() => setShowSteps((prevState) => !prevState)}
-                        icon={!showSteps ? 'EyeOffIcon' : 'EyeIcon'}
-                        text={
-                          !showSteps
-                            ? 'See completed sections'
-                            : 'Hide completed sections'
-                        }
-                      />
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
+              </div>
+            </div>
+          </>
+        )}
         {showSteps && (
           <>
-            {!(practitioner?.isOnStipend
-              ? completedSteps?.length === 7
-              : completedSteps.length === 6) && (
+            {((practitioner?.isOnStipend && completedSteps?.length < 7) ||
+              (practitioner?.isOnStipend !== true &&
+                completedSteps.length < 6)) && (
               <StackedList
                 isFullHeight={false}
                 className={'flex flex-col gap-2'}

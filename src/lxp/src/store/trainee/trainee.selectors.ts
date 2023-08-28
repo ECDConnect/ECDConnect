@@ -112,7 +112,7 @@ export const getTraineePropertyOwn = (
         item?.question === 'Do you live at the property?'
     );
 
-  if (programmeDetailsSections?.[1].questionAnswer === 'true') {
+  if (programmeDetailsSections?.[1]?.questionAnswer === 'true') {
     return 'Nothando owns the property and has the title deeds.';
   }
 
