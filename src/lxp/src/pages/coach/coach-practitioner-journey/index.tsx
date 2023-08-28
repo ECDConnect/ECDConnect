@@ -140,9 +140,9 @@ export const CoachPractitionerJourney = () => {
     )
   );
   const reAccreditationVisitData =
-    timeline &&
+    timeline?.reAccreditationVisits &&
     getReAccreditationStepData({
-      timeline,
+      reAccreditationVisits: timeline?.reAccreditationVisits,
       currentRating: currentReAccreditationRating,
     });
 
@@ -650,8 +650,6 @@ export const CoachPractitionerJourney = () => {
                 isLoading,
                 isOnline,
                 visits: uncompletedVisits,
-                currentPqaRating,
-                currentReAccreditationRating,
               })}
               typeColor={{ completed: 'successMain' }}
             />

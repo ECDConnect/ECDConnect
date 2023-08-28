@@ -14,6 +14,7 @@ import { chunkArray } from '@ecdlink/core';
 interface ReAccreditationVisitsProps {
   isLoading: boolean;
   currentVisit: Maybe<Visit>;
+  reAccreditationVisits: Maybe<Visit>[];
   practitionerId: string;
   isOnline: boolean;
   onScheduleOrStart: (schedule: ScheduleProps) => void;
@@ -24,6 +25,7 @@ export const newReAccreditationVisitId = 'new-re-accreditation';
 
 export const ReAccreditationVisits = ({
   currentVisit,
+  reAccreditationVisits,
   practitionerId,
   onScheduleOrStart,
 }: ReAccreditationVisitsProps) => {
@@ -54,7 +56,7 @@ export const ReAccreditationVisits = ({
   const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
   const filteredReAccreditationVisits =
-    timeline?.reAccreditationVisits?.filter(
+    reAccreditationVisits?.filter(
       (item) =>
         item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
     ) ?? [];
@@ -65,17 +67,17 @@ export const ReAccreditationVisits = ({
   const reAccreditationVisitsFromCurrentYear =
     subdividedReAccreditationVisits?.[filteredReAccreditationVisits.length - 1];
 
-  const nextReAccreditationVisit = timeline?.reAccreditationVisits
+  const nextReAccreditationVisit = reAccreditationVisits
     ?.filter((item) => !item?.attended)
     .shift();
 
   const isFirstVisit = reAccreditationVisitsFromCurrentYear?.length === 1;
 
-  const mergedVisits = timeline?.reAccreditationVisits
+  const mergedVisits = reAccreditationVisits
     ? [
         ...(isFirstVisit
-          ? timeline.reAccreditationVisits
-          : timeline.reAccreditationVisits.filter((item) => item?.attended)),
+          ? reAccreditationVisits
+          : reAccreditationVisits.filter((item) => item?.attended)),
         ...(!isFirstVisit && nextReAccreditationVisit
           ? [nextReAccreditationVisit]
           : []),

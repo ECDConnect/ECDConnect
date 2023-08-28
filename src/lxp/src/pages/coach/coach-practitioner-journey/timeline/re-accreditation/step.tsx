@@ -4,12 +4,12 @@ import { StepType, getStepType } from '../timeline-steps';
 import { RatingData as RatingDataUtils, getRatingData } from '../utils';
 
 interface Props {
-  timeline: PractitionerTimeline;
+  reAccreditationVisits: PractitionerTimeline['reAccreditationVisits'];
   currentRating: RatingData;
 }
 
 export const getReAccreditationStepData = ({
-  timeline,
+  reAccreditationVisits,
   currentRating,
 }: Props): {
   currentVisit?: Maybe<Visit>;
@@ -17,11 +17,11 @@ export const getReAccreditationStepData = ({
   subTitleText?: string;
   ratingData?: RatingDataUtils;
 } => {
-  if (!timeline.reAccreditationVisits?.length) {
+  if (!reAccreditationVisits?.length) {
     return {};
   }
 
-  const visits = timeline.reAccreditationVisits;
+  const visits = reAccreditationVisits;
 
   const visitToAttend = visits.find((item) => !item?.attended);
   const currentVisit = !!visitToAttend
@@ -30,8 +30,8 @@ export const getReAccreditationStepData = ({
 
   const isLateDate =
     new Date(currentVisit?.plannedVisitDate) < new Date() &&
-    timeline.reAccreditationVisits.some((item) => !item?.attended);
-  const isAllCompleted = timeline.reAccreditationVisits?.every(
+    reAccreditationVisits.some((item) => !item?.attended);
+  const isAllCompleted = reAccreditationVisits?.every(
     (item) => !!item?.attended
   );
 

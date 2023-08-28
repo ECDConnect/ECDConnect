@@ -46,8 +46,14 @@ export const Rating = ({
   const step2ReAccreditationQuestionAnswers = sectionQuestions?.find(
     (item) => item.visitSection === step2ReAccreditationVisitSection
   )?.questions?.[0]?.answer as string[] | undefined;
+
+  // it's string if it's from the backend
+  const step2Answers =
+    typeof step2ReAccreditationQuestionAnswers === 'string'
+      ? (step2ReAccreditationQuestionAnswers as string)?.split('.,')
+      : step2ReAccreditationQuestionAnswers;
   const isBasicSmartSpaceStandardsCompleted =
-    step2ReAccreditationQuestionAnswers?.length === options.length;
+    step2Answers?.length === options.length;
 
   const step15Questions = sectionQuestions?.find(
     (item) => item.visitSection === step15ReAccreditationVisitSection
@@ -121,12 +127,16 @@ export const Rating = ({
     .map((item) => item.score)
     .reduce((total, number) => total + number, 0);
 
-  const isRedFlagSmartSpaceLicence = step15Question1Answer === true;
+  const isRedFlagSmartSpaceLicence =
+    step15Question1Answer === true || step15Question1Answer === 'true';
   const isRedFlagSmartSpaceCertificateWithdrawn =
     !isBasicSmartSpaceStandardsCompleted;
-  const isOrangeQuestion2 = step15Question2Answer === false;
-  const isOrangeQuestion3 = step15Question3Answer === true;
-  const isOrangeQuestion4 = step15Question4Answer === false;
+  const isOrangeQuestion2 =
+    step15Question2Answer === false || step15Question2Answer === 'false';
+  const isOrangeQuestion3 =
+    step15Question3Answer === true || step15Question3Answer === 'true';
+  const isOrangeQuestion4 =
+    step15Question4Answer === false || step15Question4Answer === 'false';
 
   const isOrangeFlag =
     rating >= 27 &&
