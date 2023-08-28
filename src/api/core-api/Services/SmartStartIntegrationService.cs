@@ -43,6 +43,8 @@ using ECDLink.Security;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Models;
 
 namespace EcdLink.Api.CoreApi.Services;
 public class SmartStartIntegrationService : IIntegrationService
@@ -86,6 +88,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<SmartSpaceVisit, Guid> _smartSpaceVisitRepo;
     private IGenericRepository<PQA, Guid> _pqaRepo;
 
+    IHolidayService<Holiday> _holidayService;
     private IntegrationLogManager _logManager;
     private IntegrationAPIManager _apiManager;
     //private ISchedulerService _schedulerService;
@@ -125,7 +128,8 @@ public class SmartStartIntegrationService : IIntegrationService
          IntegrationHelperManager integrationHelperManager,
          [Service] IFileService fileService,
          [Service] IncomeExpenseService incomeManager,
-         [Service] AttendanceTrackingRepository attendanceTrackingRepository
+         [Service] AttendanceTrackingRepository attendanceTrackingRepository,
+         IHolidayService<Holiday> holidayService
         )
     {
         _repositoryFactory = repositoryFactory;
@@ -140,6 +144,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _integrationHelperManager = integrationHelperManager;
         _logManager = logManager;
         _apiManager = apiManager;
+        _holidayService = holidayService;
 
         _uId = _hierarchyEngine.GetIntegrationUserId();
         Enum.TryParse(_options.Value.Mode, out _apiMode);
@@ -407,7 +412,6 @@ public class SmartStartIntegrationService : IIntegrationService
             List<IntegrationAudit> allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
 
             List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start) ).ToList();//&& x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315"
-            /**/
             foreach (var prac in statementsDueList)
             {
                 var submittedStatements = _incomeManager.GetAllStatementsIncomeStatement(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
@@ -415,131 +419,123 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
                     foreach (var statement in submittedStatements)
                     {
-                        //if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
-                        //{
 
-                            var statementDoc = (statement.RelatedDocumentId != null ?
-                                _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).FirstOrDefault() :
-                                _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null).OrderByDescending(d => d.InsertedDate).FirstOrDefault());
-                            string remoteStatementId = "";
-                            //get associated audit lines
-                            List<IntegrationAudit> docaudits = null;
+                        var statementDoc = (statement.RelatedDocumentId != null ?
+                            _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).FirstOrDefault() :
+                            _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null).OrderByDescending(d => d.InsertedDate).FirstOrDefault());
+                        string remoteStatementId = "";
+                        List<IntegrationAudit> docaudits = null;
 
-                            string remoteDocId = "";
-                            if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
+                        string remoteDocId = "";
+                        if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
+                        {
+                            if (statementDoc != null)
                             {
-                                if (statementDoc != null)
+                                docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
+                                remoteDocId = await PushNewDocument(statementDoc);
+                            }
+                        }
+                    List<StatementReport> statementLines = _incomeManager.GetStatementLinesToReport(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+
+
+                        double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
+                        double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
+                        //calculate based on categories
+                        foreach (var statementLine in statementLines)
+                        {
+                                switch (statementLine.StatementLine)
                                 {
-                                    docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
-                                    remoteDocId = await PushNewDocument(statementDoc);
+                                    case "Startup Support":
+                                        dStartupSupport += statementLine.Value;
+                                        break;
+                                    case "Rent":
+                                        dRent += statementLine.Value;
+                                        break;
+                                    case "Food":
+                                        dFood += statementLine.Value;
+                                        break;
+                                    case "Subcontractor Wages":
+                                        dSalary += statementLine.Value;
+                                        break;
+                                    case "Learning Materials":
+                                    case "Maintenance":
+                                        dOtherExpenses += statementLine.Value;
+                                        break;
+                                    case "Utilities":
+                                        dUtilities += statementLine.Value;
+                                        break;
+                                    case "Preschool Fee":
+                                            dFees += statementLine.Value;
+                                            break;
+                                    case "Donation":
+                                    case "DBE Subsidy":
+                                            dDonations += statementLine.Value;
+                                        break;
+                                    case "Other":
+                                        if (statementLine.StatementType == "Income")
+                                            dOtherIncome += statementLine.Value;
+                                        else
+                                            dOtherExpenses += statementLine.Value;
+                                        break;
+                                    default:
+                                        break;
+                                }                                
+                        }
+
+                        StringBuilder jsonStatementString = new StringBuilder();
+                        jsonStatementString.AppendLine("[{");
+                        jsonStatementString.AppendLine("\"Month\":\"" + submitPeriod.Start.ToString("MMMM") + "\",");
+                        jsonStatementString.AppendLine("\"Year\":\"" + submitPeriod.Start.Year + "\",");
+
+                        jsonStatementString.AppendLine("\"StartupSupport\":" + dStartupSupport + ",");
+                        jsonStatementString.AppendLine("\"Fees\":" + dFees + ",");
+                        jsonStatementString.AppendLine("\"Donations\":" + dDonations + ",");
+                        jsonStatementString.AppendLine("\"FundRaising\":" + dFundRaising + ",");
+                        jsonStatementString.AppendLine("\"OtherIncome\":" + dOtherIncome + ",");
+                        jsonStatementString.AppendLine("\"Rent\":" + dRent + ",");
+                        jsonStatementString.AppendLine("\"Utilities\":" + dUtilities + ",");
+                        jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
+                        jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
+                        jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
+                        jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
+                        jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
+                        //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
+                        jsonStatementString.AppendLine("}]");
+
+                        try
+                        {
+                            //now send to API call <entity type>/Multiple
+                            var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
+                            if (!string.IsNullOrEmpty(responseString))
+                            {
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                                if (returnObj != null)
+                                {
+                                    remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                    if (docaudits!=null)
+                                    {
+                                        await _logManager.UpdateAuditSubmitted(docaudits);
+                                    }
+
+                                    //no need to insert entity mapping item for statements as long as document saved
+                                    isComplete = true;
+                                    //update entity to note its statements has been sent
+                                    prac.LastIncomeSubmittedDate = DateTime.Now;
+                                    _mapperRepo.Update(prac);
+
+                                }
+                                else //error empty response received
+                                {
+                                    await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
                                 }
                             }
-                                List<IncomeExpensePDFTableModel> statementData = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFData(_incomeManager, prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
-                            
-                            double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
-                            double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
-                            //calculate based on categories
-                            foreach (var statementLine in statementData)
-                            {
-                                foreach (var dataLine in statementLine.Data)
-                                {
-                                    //TODO: add transport and wages and fundraising
-                                    switch (statementLine.TableName)//dataLine.Type
-                                    {
-                                        case "Startup Support":
-                                            dStartupSupport += dataLine.Amount;
-                                            break;
-                                        case "Rent":
-                                            dRent += dataLine.Amount;
-                                            break;
-                                        case "Food":
-                                            dFood += dataLine.Amount;
-                                            break;
-                                        case "Subcontractor Wages":
-                                            dSalary += dataLine.Amount;
-                                            break;
-                                        case "Learning Materials":
-                                        case "Maintenance":
-                                            dOtherExpenses += dataLine.Amount;
-                                            break;
-                                        case "Utilities":
-                                            dUtilities += dataLine.Amount;
-                                            break;
-                                        case "Preschool fees: monetary contributions":
-                                        case "Preschool Fee":
-                                                dFees += dataLine.Amount;
-                                                break;
-                                        case "Donation":
-                                        case "Subsidies, donations, contributions":
-                                        case "DBE Subsidy":
-                                                dDonations += dataLine.Amount;
-                                            break;
-                                        case "Other":
-                                            if (statementLine.Type == "Income")
-                                                dOtherIncome += dataLine.Amount;
-                                            else
-                                                dOtherExpenses += dataLine.Amount;
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                            }
-
-                            StringBuilder jsonStatementString = new StringBuilder();
-                            jsonStatementString.AppendLine("[{");
-                            jsonStatementString.AppendLine("\"Month\":\"" + submitPeriod.Start.ToString("MMMM") + "\",");
-                            jsonStatementString.AppendLine("\"Year\":\"" + submitPeriod.Start.Year + "\",");
-
-                            jsonStatementString.AppendLine("\"StartupSupport\":" + dStartupSupport + ",");
-                            jsonStatementString.AppendLine("\"Fees\":" + dFees + ",");
-                            jsonStatementString.AppendLine("\"Donations\":" + dDonations + ",");
-                            jsonStatementString.AppendLine("\"FundRaising\":" + dFundRaising + ",");
-                            jsonStatementString.AppendLine("\"OtherIncome\":" + dOtherIncome + ",");
-                            jsonStatementString.AppendLine("\"Rent\":" + dRent + ",");
-                            jsonStatementString.AppendLine("\"Utilities\":" + dUtilities + ",");
-                            jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
-                            jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
-                            jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
-                            jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
-                            jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
-                            //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
-                            jsonStatementString.AppendLine("}]");
-
-                            try
-                            {
-                                //now send to API call <entity type>/Multiple
-                                var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
-                                if (!string.IsNullOrEmpty(responseString))
-                                {
-                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
-                                    if (returnObj != null)
-                                    {
-                                        remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                        if (docaudits!=null)
-                                        {
-                                            await _logManager.UpdateAuditSubmitted(docaudits);
-                                        }
-
-                                        //no need to insert entity mapping item for statements as long as document saved
-                                        isComplete = true;
-                                        //update entity to note its statements has been sent
-                                        prac.LastIncomeSubmittedDate = DateTime.Now;
-                                        _mapperRepo.Update(prac);
-
-                                    }
-                                    else //error empty response received
-                                    {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
-                                    }
-                                }
-                            }
-                            catch (Exception e)
-                            {
-                                await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse > Remote ID : " + prac.RemoteId);
-                            }
-                        //}
-                    }
+                        }
+                        catch (Exception e)
+                        {
+                            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse > Remote ID : " + prac.RemoteId);
+                        }
+                    //}
+                }
                 }
             }
             /**/
@@ -550,27 +546,30 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationAttendanceData()
     {
-        bool isComplete = false;                                                                                                                                                                                                                                     //var statements = _docRepo.GetAll().Where(d => d.UserId.Equals("6fc08fe0-91fa-4a5d-91ad-24be9aaf02e6") && d.DocumentTypeId.ToString() == statementType.LocalId).ToList();
-                                                                                                                                                                                                                                                                     //get all mapped practitioners and iterate through them to submit attendance
+        bool isComplete = false;
+                                                                                                                                                                                                                                                                     
         _mappedEntities = await GetMappedEntities();
-
+        int trackingDays = 1;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-7))).ToList();
+        var attendancesDueList = _mappedEntities.Where(x => (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays)) ).ToList(); //&& x.UserId == "bc9c910e-d7e5-4ee2-b07e-7d21a9b91a71"
 
-        DateTime trackingWeekDate = DateTime.Now.AddDays(-7).StartOfWeek(DayOfWeek.Monday);
+        DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
         DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
 
         foreach (var parent in attendancesDueList)
         {
-
-            IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, _contextAccessor, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+            IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+            var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
             if (attendanceData.Any())
             {
                 try
                 {
                     bool validAttendance = false;
                     string absent = "Absent";
+                    string nosession = "No Session";
+                    string unknown = "Unknown";
                     string present = "Present";
+                    string pholiday = "Public Holiday";
                     StringBuilder jsonAttendanceString = new StringBuilder();
                     jsonAttendanceString.AppendLine("[");
                     //get list of children
@@ -578,17 +577,44 @@ public class SmartStartIntegrationService : IIntegrationService
                     foreach (var child in children)
                     {
                         int daysPresent = 0;
-                        string mondayPresent = absent;
-                        string tuesdayPresent = absent;
-                        string wednesdayPresent = absent;
-                        string thursdayPresent = absent;
-                        string fridayPresent = absent;
+                        int daysAbsent = 0;
+                        //set everything to nosession and override as teh days are iterated through - whether absent or present or a holiday
+                        string mondayPresent = nosession;
+                        string tuesdayPresent = nosession;
+                        string wednesdayPresent = nosession;
+                        string thursdayPresent = nosession;
+                        string fridayPresent = nosession;
                         //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
                         var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
                         if (mappedChild != null)
-                        {
-
+                        {                           
                             var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+                            //mark public holidays off first
+                            if (holidays.Count>0)
+                            {
+                                foreach(var publicholiday in holidays)
+                                {
+                                    switch (publicholiday.Day.ToString("dddd"))
+                                    {
+                                        case "Monday":
+                                        mondayPresent = pholiday;
+                                        break;
+                                    case "Tuesday":
+                                        tuesdayPresent = pholiday;
+                                        break;
+                                    case "Wednesday":
+                                        wednesdayPresent = pholiday;
+                                        break;
+                                    case "Thursday":
+                                        thursdayPresent = pholiday;
+                                        break;
+                                    case "Friday":
+                                        fridayPresent = pholiday;
+                                        break;
+
+                                    }
+                                }
+                            }                            
                             foreach (var attendance in childAttendances)
                             {
                                 switch (attendance.AttendanceDate.ToString("dddd"))
@@ -599,8 +625,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             mondayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             mondayPresent = absent;
                                         }
                                         break;
@@ -610,8 +637,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             tuesdayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             tuesdayPresent = absent;
                                         }
                                         break;
@@ -621,8 +649,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             wednesdayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             wednesdayPresent = absent;
                                         }
                                         break;
@@ -632,8 +661,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             thursdayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             thursdayPresent = absent;
                                         }
                                         break;
@@ -643,8 +673,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                             fridayPresent = present;
                                             daysPresent++;
                                         }
-                                        else
+                                        else if (!attendance.Attended)
                                         {
+                                            daysAbsent++;
                                             fridayPresent = absent;
                                         }
                                         break;
@@ -656,7 +687,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             jsonAttendanceString.AppendLine("{");
                             jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                             jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + daysPresent + ",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + (5 - daysPresent) + ",");
+                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + daysAbsent + ",");
                             jsonAttendanceString.AppendLine("\"Monday\":\"" + mondayPresent + "\",");
                             jsonAttendanceString.AppendLine("\"Tuesday\":\"" + tuesdayPresent + "\",");
                             jsonAttendanceString.AppendLine("\"Wednesday\":\"" + wednesdayPresent + "\",");
@@ -688,7 +719,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
                                 else //error empty response received
                                 {
-                                    await _logManager.IntegrationLog("Data Push Fail: ", jsonAttendanceString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
+                                    await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonAttendanceString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
                                 }
                             }
                         }
@@ -1313,6 +1344,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
+                            IsOnStipend = entity.StipendType != null ? true : false,
                         };
 
                         //check phone number is valid
@@ -2084,6 +2116,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 //AttendedChildProgress = entity.AttendedChildProgress,
                                 //MonthSinceFranchisee = int.Parse(entity.MonthsSinceFranchisee),
                                 //StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
+                                IsOnStipend = entity.StipendType != null ? true : false,
                             };
                         }
                         else
@@ -2116,6 +2149,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             FranchiseeAgreementAcceptedDate = entity.FranchiseeAgreementAcceptedDate,
                             SmartSpaceLicenceDate = entity.SmartSpaceLicenceDate,
                             StipendType = entity.StipendType,
+                            IsOnStipend = entity.StipendType != null ? true : false,
                             //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage
                             //HighestEducationLevel = entity.HighestEducationLevel,
                             //StartDate

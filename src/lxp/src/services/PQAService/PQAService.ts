@@ -8,6 +8,7 @@ import {
   UpdateVisitPlannedVisitDateModelInput,
   Visit,
   VisitData,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
@@ -246,6 +247,7 @@ class PQAService {
               attended
               comment
               dueDate
+              actualVisitDate
               insertedDate
               visitType {
                 type
@@ -278,6 +280,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              actualVisitDate
               insertedDate
               visitType {
                 type
@@ -293,6 +296,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              actualVisitDate
               insertedDate
               visitType {
                 type
@@ -403,6 +407,42 @@ class PQAService {
     }
 
     return response.data.data.updateVisitPlannedVisitDate;
+  }
+
+  async addCoachVisitInviteForPractitioner(
+    input: VisitModelInput
+  ): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addCoachVisitInviteForPractitioner: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddCoachVisitInviteForPractitioner($input: VisitModelInput) {        
+          addCoachVisitInviteForPractitioner(input: $input) {           
+              id           
+              plannedVisitDate           
+              actualVisitDate           
+              attended           
+              visitType {               
+                  name               
+                  description           
+              }         
+          }   
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add coach visit invite for practitioner failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addCoachVisitInviteForPractitioner;
   }
 }
 

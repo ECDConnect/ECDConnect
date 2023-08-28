@@ -67,7 +67,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public IEnumerable<Attendance> GetWeeklyAttendance(
     [Service] AttendanceTrackingRepository trackingRepository,
-    [Service] IHttpContextAccessor httpContextAccessor,
     string userId,
     int year,
     int? monthOfYear,
@@ -109,8 +108,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             DateTime startDate,
             DateTime endDate)
         {
-            string _siteAddress = personnelService.GetUserSiteAddress(userManager, userId);
-            string _signingSignature = personnelService.GetUserSignature(userManager, userId);
+            string _siteAddress = personnelService.GetUserSiteAddress(userId);
+            string _signingSignature = personnelService.GetUserSignature(userId);
             string signDateRow = documentManager.GetSignatureRow(_signingSignature);
             string _css = documentManager.GetDocumentStyling();
             string _header = documentManager.GetDocumentHeader(startDate.Year, startDate.Month) + " Attendance Register";
@@ -230,7 +229,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             pdfDoc.FileName = _header.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
             pdfDoc.CreatedUserId = uId;
-            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, pdfDoc);
+            return await documentManager.SaveAttendancePDF(pdfDoc);
         }
 
         private int GetTotalForDay(int key, IEnumerable<ClassroomGroupChildAttendanceReportModel> children)

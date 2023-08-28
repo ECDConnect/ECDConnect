@@ -8,7 +8,7 @@ import {
 import { DocumentList, GetAllWorkflowStatus } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
-import UiTable from '../../components/old-ui-table';
+import UiTable from '../../components/ui-table';
 import { useUser } from '../../hooks/useUser';
 import DocumentPanel from './components/document-panel/document-panel';
 
@@ -112,12 +112,12 @@ export default function Documents() {
                   rows={tableData}
                   editRow={
                     hasPermission(PermissionEnum.update_documents) &&
-                    displayPanel
-                  }
-                  viewRow={
-                    hasPermission(PermissionEnum.view_documents) &&
                     displayDocument
                   }
+                  viewRow={
+                    hasPermission(PermissionEnum.view_documents) && displayPanel
+                  }
+                  component={'cms'}
                 />
               </div>
             </div>

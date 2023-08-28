@@ -10,6 +10,7 @@ import {
   pqaSteps,
   prePqaSteps,
   reAccreditationSteps,
+  requestCoachingVisitOrCallSteps,
   selfAssessmentSteps,
   supportVisitSteps,
 } from './steps';
@@ -28,11 +29,15 @@ import {
   CmsVisitSectionInput,
   InputMaybe,
   SupportVisitModelInput,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { PqaActions } from '@/store/pqa/pqa.actions';
+import {
+  PqaActions,
+  addCoachVisitInviteForPractitioner,
+} from '@/store/pqa/pqa.actions';
 import { visitTypes as coachVisitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import {
   getFirstPqaSteps,
@@ -42,6 +47,13 @@ import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 import { step11VisitSection } from '@/pages/coach/coach-practitioner-journey/forms/pqa-visits/first-pqa';
 import { step2ReAccreditationVisitSection } from '@/pages/coach/coach-practitioner-journey/forms/reaccreditation';
 import { options } from '@/pages/coach/coach-practitioner-journey/forms/reaccreditation/step-2/options';
+import { getCoach } from '@/store/coach/coach.selectors';
+import {
+  callType,
+  question1,
+  question2,
+} from './request-coaching-visit-or-call/constants';
+import { OfflineStep } from './offline';
 
 export const practitionerVisitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
@@ -63,7 +75,15 @@ export const Form = ({ onBack }: FormProps) => {
     'pqa',
     PqaActions.ADD_SELF_ASSESSMENT_FOR_PRACTITIONER
   );
+  const {
+    isLoading: isLoadingCoachRequest,
+    isRejected: isRejectedCoachRequest,
+  } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_COACH_VISIT_INVITE_FOR_PRACTITIONER
+  );
   const wasLoading = usePrevious(isLoading);
+  const wasLoadingCoachRequest = usePrevious(isLoadingCoachRequest);
 
   const { showMessage } = useSnackbar();
 
@@ -72,9 +92,16 @@ export const Form = ({ onBack }: FormProps) => {
   const isViewPqaOrReAccreditation =
     (activityName.includes(coachVisitTypes.pqa.includes) ||
       activityName.includes(coachVisitTypes.reaccreditation.includes)) &&
-    !activityName.includes(coachVisitTypes.prePqa.includes);
+    !activityName.includes(coachVisitTypes.prePqa.includes) &&
+    !activityName.includes(coachVisitTypes.pqa.followUp.name) &&
+    !activityName.includes(coachVisitTypes.reaccreditation.followUp.name);
+  const isRequestCoachingVisitOrCall = activityName.includes(
+    visitTypes.requestCoachingVisitOrCall.name
+  );
 
   const [visitId] = useSessionStorage(practitionerVisitIdKey);
+
+  const coach = useSelector(getCoach);
 
   const step2PreviousData = useSelector(
     getSectionsQuestionsByStep(
@@ -115,6 +142,15 @@ export const Form = ({ onBack }: FormProps) => {
       coachVisitTypes.reaccreditation.includes
     );
 
+    if (!isOnline) {
+      setTitle('You are offline');
+      return [OfflineStep];
+    }
+
+    if (activityName.includes(visitTypes.requestCoachingVisitOrCall.name)) {
+      setTitle(visitTypes.requestCoachingVisitOrCall.description);
+      return requestCoachingVisitOrCallSteps;
+    }
     if (activityName.includes(coachVisitTypes.prePqa.includes)) {
       setTitle('Pre-PQA site visits summary');
       return prePqaSteps;
@@ -164,9 +200,16 @@ export const Form = ({ onBack }: FormProps) => {
 
     setTitle('Self-assessment');
     return selfAssessmentSteps;
-  }, [activityName, isStep2AllCompleted, isViewDetails, pqaStep11Answer]);
+  }, [
+    isOnline,
+    activityName,
+    isStep2AllCompleted,
+    isViewDetails,
+    pqaStep11Answer,
+  ]);
 
-  const isHideSteps = isView && currentSteps.length === 1;
+  const isHideSteps =
+    (isView && currentSteps.length === 1) || isRequestCoachingVisitOrCall;
 
   const handleOnBack = useCallback(() => {
     if (isSecondaryPage) {
@@ -237,7 +280,7 @@ export const Form = ({ onBack }: FormProps) => {
     setIsViewDetails(true);
   };
 
-  const onSubmitSelfAssessment = (payload: SupportVisitModelInput) => {
+  const onSubmitSelfAssessment = async (payload: SupportVisitModelInput) => {
     appDispatch(
       pqaActions.addVisitFormData(payload, {
         userId: user?.id!,
@@ -245,10 +288,40 @@ export const Form = ({ onBack }: FormProps) => {
       })
     );
 
-    appDispatch(pqaThunkActions.addSelfAssessmentForPractitioner(payload));
+    await appDispatch(
+      pqaThunkActions.addSelfAssessmentForPractitioner(payload)
+    );
+  };
+
+  const onSubmitRequestCoachingVisitOrCall = async () => {
+    const questions = sectionQuestions?.find((item) =>
+      item.visitSection.includes(
+        visitTypes.requestCoachingVisitOrCall.description
+      )
+    )?.questions;
+
+    const payload: VisitModelInput = {
+      practitionerId: user?.id,
+      coachId: coach?.id,
+      isSupportCall:
+        questions?.find((item) => item.question.includes(question1))?.answer ===
+        callType,
+      comment: questions?.find((item) => item.question.includes(question2))
+        ?.answer as string,
+      attended: false,
+      // TODO: Check these dates
+      actualVisitDate: new Date(),
+      plannedVisitDate: new Date(),
+    };
+
+    await appDispatch(addCoachVisitInviteForPractitioner(payload));
   };
 
   const handleOnSubmit = () => {
+    if (isRequestCoachingVisitOrCall) {
+      onSubmitRequestCoachingVisitOrCall();
+    }
+
     const sections = sectionQuestions?.map((item) => ({
       ...item,
       questions: item.questions.map((question) => ({
@@ -278,6 +351,13 @@ export const Form = ({ onBack }: FormProps) => {
 
   const renderSubmitButtonStyle =
     useMemo((): DynamicFormProps['submitButton'] => {
+      if (isRequestCoachingVisitOrCall) {
+        return {
+          icon: 'PaperAirplaneIcon',
+          text: 'Send request',
+          type: 'filled',
+        };
+      }
       if (isView) {
         if (isViewPqaOrReAccreditation) {
           return { icon: 'EyeIcon', text: 'View details', type: 'filled' };
@@ -287,7 +367,7 @@ export const Form = ({ onBack }: FormProps) => {
       }
 
       return undefined;
-    }, [isView, isViewPqaOrReAccreditation]);
+    }, [isRequestCoachingVisitOrCall, isView, isViewPqaOrReAccreditation]);
 
   useEffect(() => {
     if (wasLoading && !isLoading) {
@@ -298,6 +378,33 @@ export const Form = ({ onBack }: FormProps) => {
       });
     }
   }, [isLoading, onBack, showMessage, wasLoading]);
+
+  useEffect(() => {
+    if (wasLoadingCoachRequest && isRejectedCoachRequest) {
+      showMessage({
+        type: 'error',
+        message: `Something went wrong. ${
+          isOnline
+            ? 'Please try again later'
+            : 'Please check your internet connection and try again'
+        } `,
+      });
+    }
+
+    if (wasLoadingCoachRequest && !isRejectedCoachRequest) {
+      onBack();
+      showMessage({
+        type: 'success',
+        message: 'Request sent!',
+      });
+    }
+  }, [
+    isOnline,
+    isRejectedCoachRequest,
+    onBack,
+    showMessage,
+    wasLoadingCoachRequest,
+  ]);
 
   return (
     <BannerWrapper

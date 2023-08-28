@@ -9,6 +9,7 @@ using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using NPOI.POIFS.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -103,7 +104,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual T Insert(T entity)
         {
             if (entity == null) throw new ArgumentNullException("entity");
-            
+
             if (entity.Id == default(Guid))
             {
                 entity.Id = Guid.NewGuid();
@@ -129,8 +130,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (entityList == null || !entityList.Any())
                 throw new ArgumentNullException("entity");
 
-            
-            
             //Populate Audit records
             if (typeof(ITrackableType).IsAssignableFrom(typeof(T))
                 && !typeof(IntegrationAudit).IsAssignableFrom(typeof(T)))
@@ -159,41 +158,28 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (entity == null)
                 throw new ArgumentNullException("entity");
 
-            if (Exists(entity.Id))
+            entity.UpdatedBy = _userId;
+
+            // Notify update would get input values without this:
+            entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
+            entity.InsertedDate = entities.Entry(entity).Property(e => e.InsertedDate).OriginalValue;
+
+            //Populate Audit records
+            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
             {
-                entity.UpdatedBy = _userId;
-
-                // Notify update would get input values without this:
-                entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
-                entity.InsertedDate = entities.Entry(entity).Property(e => e.InsertedDate).OriginalValue;
-
-                //Populate Audit records
-                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                {
-                    if (DoAudit(entity, "Update", entity))
-                    {
-                        if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
-                        entity.UpdatedDate = DateTime.Now;
-                    }
-                }
-                else
-                {
-                    entity.UpdatedDate = DateTime.Now;
-                }
-
-                entities.Update(entity);
-                // Do not update Inserted Date:
-                entities.Entry(entity).Property(e => e.InsertedDate).IsModified = false;
-                // Do not allow replacing or changing TenantId.
-                entities.Entry(entity).Property(e => e.TenantId).IsModified = false;
-
-                // Publish notification with correct data.
-                _domainEventService.NotifyUpdate<T>(_userId, entity);
+                DoAudit(entity, "Update", entity);
             }
-            else
-            {
-                Insert(entity);
-            }
+                
+            entity.UpdatedDate = DateTime.Now;
+
+            entities.Update(entity);
+            // Do not update Inserted Date:
+            entities.Entry(entity).Property(e => e.InsertedDate).IsModified = false;
+            // Do not allow replacing or changing TenantId.
+            entities.Entry(entity).Property(e => e.TenantId).IsModified = false;
+
+            // Publish notification with correct data.
+            _domainEventService.NotifyUpdate<T>(_userId, entity);
 
             context.SaveChanges();
 
@@ -201,8 +187,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         }
 
         public virtual void Delete(Guid id)
-        {
-            
+        {            
             T entity = entities.Where(e => e.TenantId == _tenantId).SingleOrDefault(s => s.Id == id);
             entity.IsActive = false;
             // TODO: Global change to Utc.
@@ -215,7 +200,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             //Populate Audit records
             if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
                 DoAudit(entity, "Delete");
-
         }
 
         public virtual bool DoAudit(T entity, string changeType = "Update", T entityBefore = null)
@@ -298,11 +282,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                             }
                         }
                     }
-
-                    foreach (var auditItem in changesList)
-                    {
-                        auditInsertRepo.Insert(auditItem);
-                    }
+                    
+                    auditInsertRepo.InsertMany(changesList);
                     break;
             }
             return isValidChange;

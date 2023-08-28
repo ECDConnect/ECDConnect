@@ -10,7 +10,7 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
@@ -29,11 +29,9 @@ import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
-  FollowUpVisitModelInput,
   InputMaybe,
   Maybe,
   PqaRating,
-  ReAccreditationVisitModelInput,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -67,6 +65,7 @@ import {
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { options } from './reaccreditation/step-2/options';
+import ROUTES from '@/routes/routes';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -114,6 +113,7 @@ export const Form = ({
     Rating | undefined
   >();
 
+  const history = useHistory();
   const { isOnline } = useOnlineStatus();
 
   const dialog = useDialog();
@@ -145,16 +145,6 @@ export const Form = ({
     ?.questions.find(
       (item) => item.question === step15ReAccreditationQuestions.question1
     )?.answer;
-
-  const newPqaVisit = timeline?.pQASiteVisits?.find(
-    (item) =>
-      !item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
-  );
-  const newReAccreditationVisit = timeline?.reAccreditationVisits?.find(
-    (item) =>
-      !item?.attended &&
-      item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-  );
 
   // All years
   const filteredReAccreditationRatings =
@@ -416,15 +406,13 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        await appDispatch(
-          pqaThunkActions.addFollowUpVisitForPractitioner(payload)
-        );
-
-        window.sessionStorage.setItem(
-          currentActivityKey,
-          visitTypes.pqa.firstPQA.name
-        );
-        setCurrentActivity(visitTypes.pqa.firstPQA.name);
+        await appDispatch(pqaThunkActions.addVisitFormData(payload));
+        // TODO: check if it is needed
+        // window.sessionStorage.setItem(
+        //   currentActivityKey,
+        //   visitTypes.pqa.firstPQA.name
+        // );
+        // setCurrentActivity(visitTypes.pqa.firstPQA.name);
       }
 
       if (type === 're-accreditation') {
@@ -434,20 +422,12 @@ export const Form = ({
             formType: 'follow-up-visit',
           })
         );
-        await appDispatch(
-          pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner(
-            payload
-          )
-        );
-
-        window.sessionStorage.setItem(
-          currentActivityKey,
-          visitTypes.reaccreditation.first.name
-        );
-        setCurrentActivity(visitTypes.reaccreditation.first.name);
+        await appDispatch(pqaThunkActions.addVisitFormData(payload));
       }
+
+      onBack?.();
     },
-    [appDispatch, practitionerId]
+    [appDispatch, onBack, practitionerId]
   );
 
   const handleSubmitExtraVisit = useCallback(
@@ -471,38 +451,19 @@ export const Form = ({
         supportData: payload,
       };
 
-      const followUpPayload: FollowUpVisitModelInput = {
-        practitionerId,
-        // TODO: add schedule option
-        plannedVisitDate: new Date(),
-        // TODO: add schedule option
-        attended: true,
-        linkedVisitId:
-          type === 'pqa-follow-up-visit'
-            ? newPqaVisit?.id
-            : newReAccreditationVisit?.id,
-        followUpData: payload,
-      };
-
       if (type === 'support-visit') {
         return onSubmitSupportVisit(supportPayload, visitOrCallAnswer);
       }
 
       if (type === 'pqa-follow-up-visit') {
-        return onSubmitFollowUpVisit(followUpPayload, 'pqa');
+        return onSubmitFollowUpVisit(payload, 'pqa');
       }
 
       if (type === 're-accreditation-follow-up-visit') {
-        return onSubmitFollowUpVisit(followUpPayload, 're-accreditation');
+        return onSubmitFollowUpVisit(payload, 're-accreditation');
       }
     },
-    [
-      practitionerId,
-      newPqaVisit?.id,
-      newReAccreditationVisit,
-      onSubmitSupportVisit,
-      onSubmitFollowUpVisit,
-    ]
+    [practitionerId, onSubmitSupportVisit, onSubmitFollowUpVisit]
   );
 
   const onSubmitPrePqa = useCallback(
@@ -540,13 +501,14 @@ export const Form = ({
           formType: 'pqa',
         })
       );
-      // Create a new ID if it doesn't already exist
       await appDispatch(
         pqaThunkActions.addVisitFormData({
           ...payload,
           visitId: visitId,
         })
       );
+
+      if (isToRemoveSmartStarter) return;
 
       if (step19Question2Answer === 'true') {
         return displayChildrenDialog('First PQA visit');
@@ -556,6 +518,7 @@ export const Form = ({
       onBack();
     },
     [
+      isToRemoveSmartStarter,
       appDispatch,
       displayChildrenDialog,
       practitionerId,
@@ -567,22 +530,13 @@ export const Form = ({
 
   const onSubmitReAccreditation = useCallback(
     async ({ payload }: SubmitProps) => {
-      const content: ReAccreditationVisitModelInput = {
-        practitionerId,
-        // TODO: add schedule feature
-        plannedVisitDate: new Date(),
-        attended: true,
-        linkedVisitId: null,
-        reAccreditationData: payload,
-      };
-
       appDispatch(
         pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 're-accreditation',
         })
       );
-      await appDispatch(pqaThunkActions.addReAccreditationVisitData(content));
+      await appDispatch(pqaThunkActions.addVisitFormData(payload));
 
       if (isToRemoveSmartStarter) return;
 
@@ -798,7 +752,11 @@ export const Form = ({
   };
 
   const getSelfAssessment = useCallback(async () => {
-    const selfAssessmentVisit = timeline?.selfAssessmentVisits?.[0];
+    const attendedSelfAssessments = timeline?.selfAssessmentVisits?.filter(
+      (item) => item?.attended
+    );
+    const selfAssessmentVisit =
+      attendedSelfAssessments?.[attendedSelfAssessments.length - 1];
 
     if (!selfAssessmentVisit) return;
 
@@ -823,10 +781,11 @@ export const Form = ({
         });
       }
 
-      onBack?.();
+      history.push(ROUTES.COACH.PRACTITIONERS);
       showMessage({ message: 'SmartStarter removed' });
     }
   }, [
+    history,
     isLoadingDeactivate,
     isRejected,
     onBack,

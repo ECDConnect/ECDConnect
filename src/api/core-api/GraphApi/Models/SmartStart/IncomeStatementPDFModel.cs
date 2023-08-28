@@ -37,5 +37,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string PhotoProof { get; set; }
     }
 
+    public class StatementReport
+    {
+        public string StatementLine { get; set; }
+        public double Value { get; set; } = 0.0;
+        public string StatementType { get; set; } = "Income";
+    }
+
 }
 
