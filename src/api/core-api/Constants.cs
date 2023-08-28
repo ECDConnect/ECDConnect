@@ -837,8 +837,15 @@ namespace EcdLink.Api.CoreApi
 
         }
 
+        public static class CoachingCircleSettings
+        {
+            public const string no_circle_meetings_held = "No coaching circles held yet";
+            public const string circle_meetings_held = "Last coaching circle held: ";
+
+            public const string meeting_type_coach_circle = "coaching_circle";
+        }
 
 
-    }
+        }
 }
 

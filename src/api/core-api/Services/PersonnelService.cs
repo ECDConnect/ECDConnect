@@ -45,9 +45,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
-        private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<Coach, Guid> _coachRepo;
+
+        private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
+        private IGenericRepository<ClubMeeting, Guid> _clubMeetingRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -86,6 +88,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
             _clubMeetingRegisterRepo = _repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _applicationUserId);
+            _clubMeetingRepo = _repoFactory.CreateGenericRepository<ClubMeeting>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
 
@@ -450,6 +453,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             Trainee trainee = _traineeRepo.GetByUserId(userId);
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
+            Coach coach = _coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
             PractitionerTimeline timeline = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
@@ -544,9 +548,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.ChildProgressTrainingStatus = Constants.SSSettings.child_progress_training;
             timeline.ChildProgressTrainingColor = practitioner.AttendedChildProgress == true ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
 
-            // Club meetings
-            timeline.ClubMeetings = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id).ToList();
-
             // PQA visits
             List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
             visits = visits.OrderBy(x => x.InsertedDate).ToList();
@@ -624,6 +625,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.SelfAssessmentStatus = Constants.SSSettings.self_assessment;
                 timeline.SelfAssessmentColor = MetricsColorEnum.Success.ToString();
                 timeline.SelfAssessmentDate = selfVisit?.ActualVisitDate;
+            }
+
+            // Coach Circles
+            // get all attendance for practitioner
+            List<ClubMeetingRegister> practitionerAttendance = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.ClubMeeting.MeetingDate.Value.Year == today.Year).OrderByDescending(x => x.ClubMeeting.MeetingDate).ToList();
+            if (practitionerAttendance.Count > 0)
+            {
+                timeline.CoachCircles = new PractitionerCoachCircle();
+                timeline.CoachCircles.TotalCirclesLogged = practitionerAttendance.Select(x => x.ClubMeeting.Id).Distinct().Count();
+                timeline.CoachCircles.TotalPresent = practitionerAttendance.Where(x => x.Attended == true).Count();
+                timeline.CoachCircles.PercAttended = (double)timeline.CoachCircles.TotalPresent / (double)timeline.CoachCircles.TotalCirclesLogged * 100;
+                if (timeline.CoachCircles.TotalPresent > 0)
+                {
+                    timeline.CoachCircles.AttendanceText = practitionerAttendance.GetItemByIndex(0).ClubMeeting.MeetingDate.Value.ToString();
+                    timeline.CoachCircles.AttendanceColor = timeline.CoachCircles.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
+                }
+                timeline.CoachCircles.MeetingRegister = practitionerAttendance;
             }
 
             timeline.PrePQASiteVisits = pre_pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
