@@ -183,7 +183,11 @@ export function ContentManagement() {
       description: 'An organized set of activities based around a particular topic',
       titleIcon: 'SparklesIcon',
       titleIconClassName: 'bg-secondary text-white',
-      onActionClick: () => { console.log(">>>>")},
+      onActionClick: () => {
+        setSpecialType('');
+        const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'Theme'));
+        showGroupContentTypes(selectedTypeObject);
+      },
       classNames: 'bg-uiBg',
     },
     {
@@ -192,7 +196,11 @@ export function ContentManagement() {
       titleIcon: 'UsersIcon',
       titleIconClassName: 'bg-secondary text-white',
 
-      onActionClick: () => ({}),
+      onActionClick: () => {
+        setSpecialType('');
+        const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'Activity'));
+        showGroupContentTypes(selectedTypeObject);
+      },
       classNames: 'bg-uiBg',
     },
     {
@@ -201,7 +209,11 @@ export function ContentManagement() {
       titleIcon: 'BookOpenIcon',
       titleIconClassName: 'bg-secondary text-white',
 
-      onActionClick: () => ({}),
+      onActionClick: () => {
+        setSpecialType('');
+        const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBook'));
+        showGroupContentTypes(selectedTypeObject);
+      },
       classNames: 'bg-uiBg',
     },
     {
@@ -211,7 +223,11 @@ export function ContentManagement() {
       titleIcon: 'BriefcaseIcon',
       titleIconClassName: 'bg-secondary text-white',
 
-      onActionClick: () => ({}),
+      onActionClick: () => {
+        setSpecialType('');
+        const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBookPartQuestion'));
+        showGroupContentTypes(selectedTypeObject);
+      },
       classNames: 'bg-uiBg',
     }
   );
