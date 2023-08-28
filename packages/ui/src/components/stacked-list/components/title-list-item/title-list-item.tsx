@@ -27,7 +27,16 @@ export function TitleListItem({ item, onClickItem }: TitleListItemProps) {
             className={classNames('mr-4', item.titleIconClassName)}
           />
           <div className={stackedListStyles.paragraphWrapper}>
-            <div className={styles.title}>{item.title}</div>
+            <div className='flex flex-col'>
+
+              <h2 className={styles.title}>
+
+                {item.title}
+              </h2>
+              <h4 className={styles.description}>{item.description}</h4>
+            </div>
+
+
           </div>
         </div>
         {item.chipConfig && (
