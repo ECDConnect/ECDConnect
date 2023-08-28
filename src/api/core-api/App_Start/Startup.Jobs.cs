@@ -55,7 +55,7 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<AttendanceWeekly>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.NinePmEveryFriday;
+                c.CronExpression = CronTags.NinePmEverySaturday;
             });
             services.AddCronJob<IncomeStatementsAutoSubmit>(c =>
             {

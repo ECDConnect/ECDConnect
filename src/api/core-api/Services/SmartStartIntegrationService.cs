@@ -572,11 +572,11 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<bool> IntegrationAttendanceData()
     {
         bool isComplete = false;
-                                                                                                                                                                                                                                                                     
+
         _mappedEntities = await GetMappedEntities();
-        int trackingDays = 1;
+        int trackingDays = 7;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays)) ).ToList(); //&& x.UserId == "bc9c910e-d7e5-4ee2-b07e-7d21a9b91a71"
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays)) ).ToList(); 
 
         DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
         DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
@@ -1099,7 +1099,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
             }
 
-            return alllist;
+            return list;
         }
         catch (Exception e)
         {
@@ -1334,8 +1334,9 @@ public class SmartStartIntegrationService : IIntegrationService
             IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
             if (entity != null)
             {
+                string validUserName = entity.IdNumber.Replace(" ", "-");//do not allow spaces in usernames
                 //check if user exists but not linked to SL account already and update rather
-                var createdUserCheck = await _userManager.FindByNameAsync(entity.IdNumber); //await _userManager.FindByIdAsync(entity.IdNumber);
+                var createdUserCheck = await _userManager.FindByNameAsync(validUserName); //await _userManager.FindByIdAsync(entity.IdNumber);
                 if (createdUserCheck != null)
                 {
                     userExists = true;
@@ -1407,7 +1408,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         {
                             Id = userId.ToString(),
                             PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
-                            UserName = entity.IdNumber,
+                            UserName = validUserName, 
                             IdNumber = entity.IdNumber,
                             Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
                             IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
