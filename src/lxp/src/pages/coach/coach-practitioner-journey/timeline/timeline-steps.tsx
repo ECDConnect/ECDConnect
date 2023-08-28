@@ -7,6 +7,12 @@ import { PQAVisits } from './pqa/step-accordion-content';
 import { getPqaStepData } from './pqa/step';
 import { ReAccreditationVisits } from './re-accreditation/step-accordion-content';
 import { getReAccreditationStepData } from './re-accreditation/step';
+import {
+  divideArrayByFollowUp,
+  isDateWithinThreeMonths,
+  sortVisits,
+} from './utils';
+import { visitTypes } from '../coach-practitioner-journey.types';
 
 export interface ScheduleProps {
   visit: Visit;
@@ -81,8 +87,6 @@ export const timelineSteps = ({
   isOnline,
   visits,
   practitionerId,
-  currentPqaRating,
-  currentReAccreditationRating,
 }: {
   practitionerId: string;
   timeline: PractitionerTimeline;
@@ -92,8 +96,6 @@ export const timelineSteps = ({
   isLoading: boolean;
   isOnline: boolean;
   visits?: Maybe<Visit>[];
-  currentPqaRating: RatingData;
-  currentReAccreditationRating: RatingData;
 }): StepItem[] => {
   const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
     (item) => item?.attended
@@ -214,152 +216,189 @@ export const timelineSteps = ({
   }
 
   if (!!timeline.pQASiteVisits?.length) {
-    const { currentVisit, ratingData, stepType, subTitleText } = getPqaStepData(
-      { timeline, currentPqaRating }
-    );
+    const sortedVisits = sortVisits(timeline.pQASiteVisits);
+    const dividedVisits = divideArrayByFollowUp(sortedVisits);
 
-    let date = currentVisit?.plannedVisitDate;
+    dividedVisits.map((pQASiteVisits, pqaIndex) => {
+      const currentRating: RatingData = {
+        rating: timeline.pQARatings
+          ?.filter(
+            (item) =>
+              !item?.visitTypeName?.includes(visitTypes.pqa.followUp.name)
+          )
+          ?.find((visit) =>
+            pQASiteVisits.some((item) => item?.id === visit?.visitId)
+          ),
+        visitNumber: pqaIndex + 1,
+      };
 
-    if (currentVisit?.actualVisitDate && currentVisit?.attended) {
-      date = currentVisit?.actualVisitDate;
-    }
+      const { currentVisit, ratingData, stepType, subTitleText } =
+        getPqaStepData({ pQASiteVisits, currentPqaRating: currentRating });
+      let date = currentVisit?.plannedVisitDate;
 
-    steps.push({
-      title: 'First PQA',
-      customSubTitle: (
-        <div className="flex items-center">
-          <Typography
-            type="body"
-            color={stepType?.color}
-            className="mr-4"
-            text={`${subTitleText} ${new Date(date).toLocaleDateString(
-              'en-ZA',
-              dateOptions
-            )}`}
-          />
-          {timeline.pQASiteVisits.some((item) => item?.attended) && (
-            <>
-              {ratingData?.icon}
-              <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
-            </>
-          )}
-        </div>
-      ),
-      inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
-      type: stepType?.type,
-      extraData: {
-        date: new Date(
-          currentVisit?.attended
-            ? currentVisit?.actualVisitDate
-            : currentVisit?.plannedVisitDate
+      if (currentVisit?.actualVisitDate && currentVisit?.attended) {
+        date = currentVisit?.actualVisitDate;
+      }
+
+      return steps.push({
+        title: 'First PQA',
+        customSubTitle: (
+          <div className="flex items-center">
+            <Typography
+              type="body"
+              color={stepType?.color}
+              className="mr-4"
+              text={`${subTitleText} ${new Date(date).toLocaleDateString(
+                'en-ZA',
+                dateOptions
+              )}`}
+            />
+            {pQASiteVisits.some((item) => item?.attended) && (
+              <>
+                {ratingData?.icon}
+                <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+              </>
+            )}
+          </div>
         ),
-      },
-      color:
-        stepType?.type !== 'todo' &&
-        currentPqaRating?.rating &&
-        ratingData?.color,
-      showActionButton:
-        timeline.pQASiteVisits.length === 1 &&
-        !currentVisit?.attended &&
-        isUserEnableToStartPqaVisit,
-      actionButtonText: 'Schedule',
-      actionButtonType: 'outlined',
-      actionButtonTextColor: 'primary',
-      actionButtonIcon: 'CalendarIcon',
-      actionButtonIconStartPosition: 'start',
-      actionButtonOnClick: () =>
-        onScheduleOrStart({
-          visit: currentVisit!,
-          visitEventId: currentVisit?.eventId,
-          eventType: 'First PQA',
-        }),
-      showAccordion: timeline.pQASiteVisits.length > 1,
-      accordionContent: (
-        <PQAVisits
-          isLoading={isLoading}
-          currentVisit={currentVisit!}
-          practitionerId={practitionerId}
-          onStart={onStart}
-          onScheduleOrStart={onScheduleOrStart}
-          isOnline={isOnline}
-        />
-      ),
+        inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
+        type: stepType?.type,
+        extraData: {
+          date: new Date(
+            currentVisit?.attended
+              ? currentVisit?.actualVisitDate
+              : currentVisit?.plannedVisitDate
+          ),
+        },
+        color:
+          stepType?.type !== 'todo' &&
+          currentRating?.rating &&
+          ratingData?.color,
+        showActionButton:
+          pQASiteVisits.length === 1 &&
+          !currentVisit?.attended &&
+          isUserEnableToStartPqaVisit,
+        actionButtonText: 'Schedule',
+        actionButtonType: 'outlined',
+        actionButtonTextColor: 'primary',
+        actionButtonIcon: 'CalendarIcon',
+        actionButtonIconStartPosition: 'start',
+        actionButtonOnClick: () =>
+          onScheduleOrStart({
+            visit: currentVisit!,
+            visitEventId: currentVisit?.eventId,
+            eventType: 'First PQA',
+          }),
+        showAccordion: pQASiteVisits.length > 1,
+        accordionContent: (
+          <PQAVisits
+            isLoading={isLoading}
+            currentVisit={currentVisit!}
+            pQASiteVisits={pQASiteVisits}
+            practitionerId={practitionerId}
+            onStart={onStart}
+            onScheduleOrStart={onScheduleOrStart}
+            isOnline={isOnline}
+          />
+        ),
+      });
     });
   }
 
-  const { currentVisit, ratingData, stepType, subTitleText } =
-    getReAccreditationStepData({
-      timeline,
-      currentRating: currentReAccreditationRating,
-    });
-
   if (timeline.reAccreditationVisits?.length) {
-    let date = currentVisit?.plannedVisitDate;
+    const sortedVisits = sortVisits(timeline.reAccreditationVisits);
+    const dividedVisits = divideArrayByFollowUp(sortedVisits);
 
-    if (currentVisit?.actualVisitDate && currentVisit?.attended) {
-      date = currentVisit?.actualVisitDate;
-    }
+    dividedVisits.map((reAccreditationVisits, reAccreditationIndex) => {
+      const currentRating: RatingData = {
+        rating: timeline.reAccreditationRatings
+          ?.filter(
+            (item) =>
+              !item?.visitTypeName?.includes(
+                visitTypes.reaccreditation.followUp.name
+              )
+          )
+          ?.find((visit) =>
+            reAccreditationVisits.some((item) => item?.id === visit?.visitId)
+          ),
+        visitNumber: reAccreditationIndex + 1,
+      };
 
-    steps.push({
-      title: 'Re-accreditation visit',
-      customSubTitle: (
-        <div className="flex items-center">
-          <Typography
-            type="body"
-            color={stepType?.color}
-            className="mr-4"
-            text={`${subTitleText} ${new Date(date).toLocaleDateString(
-              'en-ZA',
-              dateOptions
-            )}`}
-          />
-          {timeline.reAccreditationVisits.some((item) => item?.attended) && (
-            <>
-              {ratingData?.icon}
-              <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
-            </>
-          )}
-        </div>
-      ),
-      subTitleColor: stepType?.color,
-      type: stepType?.type,
-      inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
-      extraData: {
-        date: new Date(
-          currentVisit?.attended
-            ? currentVisit.actualVisitDate
-            : currentVisit?.plannedVisitDate
+      const { currentVisit, ratingData, stepType, subTitleText } =
+        getReAccreditationStepData({
+          reAccreditationVisits,
+          currentRating,
+        });
+
+      let date = currentVisit?.plannedVisitDate;
+
+      if (currentVisit?.actualVisitDate && currentVisit?.attended) {
+        date = currentVisit?.actualVisitDate;
+      }
+
+      return steps.push({
+        title: 'Re-accreditation visit',
+        customSubTitle: (
+          <div className="flex items-center">
+            <Typography
+              type="body"
+              color={stepType?.color}
+              className="mr-4"
+              text={`${subTitleText} ${new Date(date).toLocaleDateString(
+                'en-ZA',
+                dateOptions
+              )}`}
+            />
+            {reAccreditationVisits.some((item) => item?.attended) && (
+              <>
+                {ratingData?.icon}
+                <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+              </>
+            )}
+          </div>
         ),
-      },
-      color:
-        stepType?.type !== 'todo' &&
-        currentReAccreditationRating.rating &&
-        ratingData?.color,
-      showActionButton:
-        timeline.reAccreditationVisits.length === 1 &&
-        !currentVisit?.attended &&
-        isUserEnableToStartPqaVisit,
-      actionButtonText: 'Schedule',
-      actionButtonType: 'outlined',
-      actionButtonTextColor: 'primary',
-      actionButtonIcon: 'CalendarIcon',
-      actionButtonIconStartPosition: 'start',
-      actionButtonOnClick: () =>
-        onScheduleOrStart({
-          visit: currentVisit!,
-          visitEventId: currentVisit?.eventId,
-          eventType: 'ReAccreditation',
-        }),
-      showAccordion: timeline.reAccreditationVisits.length > 1,
-      accordionContent: (
-        <ReAccreditationVisits
-          isLoading={isLoading}
-          currentVisit={currentVisit!}
-          practitionerId={practitionerId}
-          onScheduleOrStart={onScheduleOrStart}
-          isOnline={isOnline}
-        />
-      ),
+        subTitleColor: stepType?.color,
+        type: stepType?.type,
+        inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
+        extraData: {
+          date: new Date(
+            currentVisit?.attended
+              ? currentVisit.actualVisitDate
+              : currentVisit?.plannedVisitDate
+          ),
+        },
+        color:
+          stepType?.type !== 'todo' &&
+          currentRating.rating &&
+          ratingData?.color,
+        showActionButton:
+          reAccreditationVisits.length === 1 &&
+          !currentVisit?.attended &&
+          isUserEnableToStartPqaVisit &&
+          isDateWithinThreeMonths(currentVisit?.plannedVisitDate),
+        actionButtonText: 'Schedule',
+        actionButtonType: 'outlined',
+        actionButtonTextColor: 'primary',
+        actionButtonIcon: 'CalendarIcon',
+        actionButtonIconStartPosition: 'start',
+        actionButtonOnClick: () =>
+          onScheduleOrStart({
+            visit: currentVisit!,
+            visitEventId: currentVisit?.eventId,
+            eventType: 'ReAccreditation',
+          }),
+        showAccordion: reAccreditationVisits.length > 1,
+        accordionContent: (
+          <ReAccreditationVisits
+            isLoading={isLoading}
+            currentVisit={currentVisit!}
+            reAccreditationVisits={reAccreditationVisits}
+            practitionerId={practitionerId}
+            onScheduleOrStart={onScheduleOrStart}
+            isOnline={isOnline}
+          />
+        ),
+      });
     });
   }
 
