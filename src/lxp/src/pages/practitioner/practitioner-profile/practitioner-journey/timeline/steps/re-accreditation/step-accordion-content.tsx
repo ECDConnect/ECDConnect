@@ -15,19 +15,21 @@ import { chunkArray } from '@ecdlink/core';
 interface ReAccreditationVisitsProps {
   isLoading: boolean;
   practitionerId: string;
+  reAccreditationVisits: Maybe<Visit>[];
   onView: (event: ViewEvent) => void;
 }
 
 export const ReAccreditationVisits = ({
   practitionerId,
   isLoading,
+  reAccreditationVisits,
   onView,
 }: ReAccreditationVisitsProps) => {
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
   );
 
-  const attendedReAccreditationVisits = timeline?.reAccreditationVisits?.filter(
+  const attendedReAccreditationVisits = reAccreditationVisits?.filter(
     (item) => !!item?.attended
   );
 
