@@ -629,11 +629,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // Coach Circles
             // get all attendance for practitioner
-            List<ClubMeetingRegister> practitionerAttendance = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id).OrderByDescending(x => x.ClubMeeting.MeetingDate).ToList();
+            List<ClubMeetingRegister> practitionerAttendance = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.ClubMeeting.MeetingDate.Value.Year == today.Year).OrderByDescending(x => x.ClubMeeting.MeetingDate).ToList();
             if (practitionerAttendance.Count > 0)
             {
                 timeline.CoachCircles = new PractitionerCoachCircle();
-                timeline.CoachCircles.TotalCirclesLogged = practitionerAttendance.Where(x => x.ClubMeeting.MeetingDate.Value.Year == today.Year).Count();
+                timeline.CoachCircles.TotalCirclesLogged = practitionerAttendance.Select(x => x.ClubMeeting.Id).Distinct().Count();
                 timeline.CoachCircles.TotalPresent = practitionerAttendance.Where(x => x.Attended == true).Count();
                 timeline.CoachCircles.PercAttended = (double)timeline.CoachCircles.TotalPresent / (double)timeline.CoachCircles.TotalCirclesLogged * 100;
                 if (timeline.CoachCircles.TotalPresent > 0)

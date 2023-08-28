@@ -1,5 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -7,6 +8,8 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -18,6 +21,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<Club, Guid> _clubRepo;
         private readonly IGenericRepository<ClubMeeting, Guid> _clubMeetingRepo;
         private readonly IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
+        private readonly IGenericRepository<MeetingType, Guid> _meetingTypeRepo;
 
         private readonly string _uId;
 
@@ -33,10 +37,14 @@ namespace EcdLink.Api.CoreApi.Services
             _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
             _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _uId);
             _clubMeetingRegisterRepo = _repositoryFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _uId);
+            _meetingTypeRepo = _repositoryFactory.CreateGenericRepository<MeetingType>(userContext: _uId);
         }
 
         public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input)
         {
+            Guid MeetingTypeId = _meetingTypeRepo.GetAll().Where(x => x.Name == Constants.CoachingCircleSettings.meeting_type_coach_circle).Select(x => x.Id).FirstOrDefault();
+            List<ClubMeetingRegister> participants = new List<ClubMeetingRegister>();
+
             // insert club meeting
             ClubMeeting clubMeeting = _clubMeetingRepo.Insert(new ClubMeeting
             {
@@ -48,14 +56,14 @@ namespace EcdLink.Api.CoreApi.Services
                 Name = input.Name,
                 ClubId = input.ClubId,
                 ContentValueId = input.ContentValueId,
-                MeetingType = Constants.CoachingCircleSettings.meeting_type_coach_circle,
+                MeetingTypeId = MeetingTypeId,
                 MeetingNotes = input.MeetingNotes
             });
-
+            
             // insert participants for club  meeting
             foreach (var participant in input.ClubMeetingParticipants)
             {
-                _clubMeetingRegisterRepo.Insert(new ClubMeetingRegister {
+                participants.Add(new ClubMeetingRegister {
                     Id = Guid.NewGuid(),
                     IsActive = true,
                     InsertedDate = DateTime.Now,
@@ -65,6 +73,8 @@ namespace EcdLink.Api.CoreApi.Services
                     ClubMeetingId = clubMeeting.Id
                 });
             }
+
+            _clubMeetingRegisterRepo.InsertMany(participants);
             return clubMeeting;
         }
 

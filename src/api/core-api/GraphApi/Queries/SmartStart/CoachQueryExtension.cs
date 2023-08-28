@@ -190,8 +190,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             // Setting secondary text for each club
             foreach (var club in clubs_with_meetings)
             {
-                ClubMeeting latest_meeting_inside_quarter = club.ClubMeetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date >= startDate && x.MeetingDate.Value.Date <= endDate && x.MeetingType ==  Constants.CoachingCircleSettings.meeting_type_coach_circle).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
-                ClubMeeting latest_meeting_outside_quarter = club.ClubMeetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date < startDate && x.MeetingType == Constants.CoachingCircleSettings.meeting_type_coach_circle).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
+                ClubMeeting latest_meeting_inside_quarter = club.ClubMeetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date >= startDate && x.MeetingDate.Value.Date <= endDate && x.MeetingType.Name ==  Constants.CoachingCircleSettings.meeting_type_coach_circle).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
+                ClubMeeting latest_meeting_outside_quarter = club.ClubMeetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date < startDate && x.MeetingType.Name == Constants.CoachingCircleSettings.meeting_type_coach_circle).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
 
                 if (latest_meeting_inside_quarter != null)
                 {

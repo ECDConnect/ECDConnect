@@ -153,6 +153,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Club> Clubs { get; set; }
         public DbSet<ClubMeeting> ClubMeetings { get; set; }
         public DbSet<ClubMeetingRegister> ClubMeetingRegisters { get; set; }
+        public DbSet<MeetingType> MeetingType { get; set; }
 
         // PQA
         public DbSet<PQA> PQAs { get; set; }
