@@ -183,8 +183,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var clubRepo = repoFactory.CreateRepository<Club>(userContext: uId);
 
-            List<Club> clubs_with_no_meetings = clubRepo.GetAll().Where(x => x.UserId == userId && x.ClubMeetings.Count == 0 && x.IsActive == true).OrderBy(x => x.Name).ToList();
-            List<Club> clubs_with_meetings = clubRepo.GetAll().Where(x => x.UserId == userId && x.ClubMeetings.Count > 0 && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<Club> all_clubs = clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<Club> clubs_with_no_meetings = all_clubs.Where(x => x.UserId == userId && x.ClubMeetings.Count == 0 && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<Club> clubs_with_meetings = all_clubs.Where(x => x.UserId == userId && x.ClubMeetings.Count > 0 && x.IsActive == true).OrderBy(x => x.Name).ToList();
 
             // Setting secondary text for each club
             foreach (var club in clubs_with_meetings)
