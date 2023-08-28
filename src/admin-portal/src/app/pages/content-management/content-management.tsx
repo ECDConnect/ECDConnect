@@ -12,7 +12,7 @@ import {
 import { ContentTypeDto, DocumentTypeDto } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
-import { classNames } from '@ecdlink/ui';
+import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
 import { SearchIcon } from '@heroicons/react/solid';
@@ -21,6 +21,8 @@ import { useLazyQuery } from '@apollo/client';
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
+  const [specialType, setSpecialType] = useState('');
+
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
 
@@ -79,7 +81,7 @@ export function ContentManagement() {
         },
         {
           name: 'Postnatal',
-       
+
         },
         {
           name: 'Antenatal',
@@ -98,23 +100,18 @@ export function ContentManagement() {
       return [
         {
           name: 'Consent',
-          href: '/content-management',
+          // href: '/content-management',
         },
         {
           name: 'Info pages',
-          // href: '/',
+          href: 'MoreInformation',
         },
         {
           name: 'Progress',
           // href: '/',
         },
         {
-          name: 'Programme',
-          // href: '/',
-        },
-        {
           name: 'Community',
-          // href: '/',
         },
       ];
     }
@@ -178,6 +175,43 @@ export function ContentManagement() {
     setSearchValue(e.target.value || '');
   }, 150);
 
+  const progressItems: StackedListItemType[] = [];
+
+  progressItems.push(
+    {
+      title: 'Themes',
+      titleIcon: 'SparklesIcon',
+      titleIconClassName: 'bg-secondary text-white',
+      onActionClick: () => { },
+      classNames: 'bg-uiBg',
+    },
+    {
+      title: 'Small/large group activities',
+      titleIcon: 'UsersIcon',
+      titleIconClassName: 'bg-secondary text-white',
+
+      onActionClick: () => ({}),
+      classNames: 'bg-uiBg',
+    },
+    {
+      title: 'Stories',
+      titleIcon: 'BookOpenIcon',
+      titleIconClassName: 'bg-secondary text-white',
+
+      onActionClick: () => ({}),
+      classNames: 'bg-uiBg',
+    },
+    {
+      title: 'Story activities',
+      titleIcon: 'BriefcaseIcon',
+      titleIconClassName: 'bg-secondary text-white',
+
+      onActionClick: () => ({}),
+      classNames: 'bg-uiBg',
+    }
+  );
+
+
   return (
     <div className="">
       {dataTypes ? (
@@ -197,11 +231,14 @@ export function ContentManagement() {
                     onClick={() => {
                       const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === item.name || type.name === item.href));
                       if (selectedTypeObject) {
+                        setSpecialType('');
                         showGroupContentTypes(selectedTypeObject);
+                      } else {
+                        setSpecialType(item.name);
                       }
                     }}
                     className={classNames(
-                      selectedType?.name === item.name
+                      (selectedType?.name === item?.name || item?.href === selectedType?.name || specialType === item.name)
                         ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                       'consent-tabs text-md flex h-14 items-center font-medium'
@@ -230,7 +267,7 @@ export function ContentManagement() {
                   className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
                 >
-                  <div className="relative w-6/12">
+                  {specialType === '' && <div className="relative w-6/12">
                     <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                       {searchValue === '' && (
                         <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
@@ -241,8 +278,8 @@ export function ContentManagement() {
                       placeholder="      Search by email or name..."
                       onChange={search}
                     />
-                  </div>
-                  {selectedType && languages?.GetAllLanguage && (
+                  </div>}
+                  {selectedType && languages?.GetAllLanguage && specialType === '' && (
                     <ContentList
                       optionDefinitions={dataDefinitions.contentDefinitions}
                       contentType={selectedType}
@@ -251,6 +288,15 @@ export function ContentManagement() {
                       refreshParent={() => refreshParent()}
                     ></ContentList>
                   )}
+                  {
+                    specialType === 'Progress' ? <div className="flex">
+                      <StackedList
+                        className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
+                        type="TitleList"
+                        listItems={progressItems}
+                      />
+                    </div> : null
+                  }
                 </div>
               </div>
             </div>
