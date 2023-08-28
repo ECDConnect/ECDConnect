@@ -192,11 +192,11 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
     <>
       <label
         htmlFor={nameProp}
-        className="block pb-1 text-sm font-medium text-gray-700"
+        className="font-lg block pb-1 text-sm text-gray-900"
       >
         {label}
         {acceptedFormats && (
-          <span className="font-bold">: {acceptedFormats?.join(', ')}</span>
+          <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
         )}
       </label>
       <label

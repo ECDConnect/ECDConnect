@@ -892,21 +892,28 @@ export const WeightAndLengthResultStep = ({
       var mapData: xAxisData[] = [];
 
       const dateOfBirth = infant?.user?.dateOfBirth as string;
-      const {
-        years: ageYears,
-        months: ageMonthsPart,
-        days: ageDays,
-      } = getAgeInYearsMonthsAndDays(dateOfBirth);
+      const { years: ageYears, days: ageDays } =
+        getAgeInYearsMonthsAndDays(dateOfBirth);
       const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
       const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
       var _x = 0;
       var i = 0;
+
+      const hasBirthMarkers =
+        Number(infant?.weightAtBirth) > 0 || Number(infant?.lengthAtBirth) > 0;
+
       if (growthData) {
         for (i = 0; i < growthData.length; i++) {
           if (
-            growthData[i].question === question &&
-            growthData[i].questionAnswer !== 'undefined' &&
-            growthData[i].questionAnswer !== ''
+            (growthData[i].question === question &&
+              growthData[i].questionAnswer !== 'undefined' &&
+              growthData[i].questionAnswer !== '' &&
+              growthData[i].visitName !== 'Care for baby') ||
+            (growthData[i].question === question &&
+              growthData[i].questionAnswer !== 'undefined' &&
+              growthData[i].questionAnswer !== '' &&
+              growthData[i].visitName === 'Care for baby' &&
+              !hasBirthMarkers)
           ) {
             if (growthData[i].visit?.visitType?.name === 'day_3') {
               _x = 3;
@@ -953,6 +960,8 @@ export const WeightAndLengthResultStep = ({
               _x = 4;
             } else if (growthData[i].visit?.visitType?.name === '5_months') {
               _x = 5;
+            } else if (growthData[i].visit?.visitType?.name === '6_months') {
+              _x = 6;
             } else if (growthData[i].visit?.visitType?.name === '9_months') {
               _x = 9;
             } else if (growthData[i].visit?.visitType?.name === '12_months') {
@@ -970,9 +979,11 @@ export const WeightAndLengthResultStep = ({
             } else if (
               growthData[i].visit?.visitType?.name === 'additional_visits'
             ) {
-              var additional_date = new Date(
-                growthData[i].visit?.plannedVisitDate
-              );
+              var additional_date =
+                growthData[i].visit?.plannedVisitDate <
+                growthData[i].visit?.actualVisitDate
+                  ? new Date(growthData[i].visit?.plannedVisitDate)
+                  : new Date(growthData[i].visit?.actualVisitDate);
               var startDate = new Date(dateOfBirth);
               var endDate = addMonths(startDate, ageMonths);
               if (suffix === 'd') {
@@ -1007,11 +1018,8 @@ export const WeightAndLengthResultStep = ({
   const xAxisWeigthMapData = useMemo(() => {
     var mapData: xAxisData[] = getMapData('Weight');
     const dateOfBirth = infant?.user?.dateOfBirth as string;
-    const {
-      years: ageYears,
-      months: ageMonthsPart,
-      days: ageDays,
-    } = getAgeInYearsMonthsAndDays(dateOfBirth);
+    const { years: ageYears, days: ageDays } =
+      getAgeInYearsMonthsAndDays(dateOfBirth);
     const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
     const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 

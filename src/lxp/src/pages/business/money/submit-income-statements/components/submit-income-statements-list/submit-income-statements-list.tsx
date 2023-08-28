@@ -25,12 +25,10 @@ import {
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
-import { newGuid } from '@/utils/common/uuid.utils';
 import {
   incomesValueFunc,
   numberWithSpaces,
 } from '@/utils/statements/statements-utils';
-import { getMonth, getYear } from 'date-fns';
 import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
 import { practitionerSelectors } from '@/store/practitioner';
 import { UserOptions } from 'jspdf-autotable';
@@ -38,6 +36,8 @@ import { getMonthName } from '@/utils/classroom/attendance/track-attendance-util
 import { useAppDispatch } from '@/store';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { PractitionerService } from '@/services/PractitionerService';
+import { getPreviousMonth } from '@ecdlink/core';
+import { IncomeStatementDates } from '@/constants/Dates';
 
 interface ReportDetailsForPractitionerData {
   classroomGroupName: string;
@@ -55,6 +55,7 @@ interface ReportDetailsForPractitionerData {
 export const SubmitIncomeStatementsList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
+
   const date = format(new Date(), 'EEEE, d LLLL');
   const { isOnline } = useOnlineStatus();
   const [confimSubmitIncomeValues, setConfimSubmitIncomeValues] =
@@ -100,16 +101,12 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const totalBalance = (totalIncome - totalExpenses).toFixed(2);
   const appDispatch = useAppDispatch();
-  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
-  const today = new Date();
-  const isLastMonth =
-    today.getMonth() === balanceSheet?.[balanceSheet?.length - 1]?.month!;
 
-  const statementMonth =
-    balanceSheet?.[balanceSheet?.length - 1]?.submitted === false && isLastMonth
-      ? getMonth(new Date()) - 1
-      : getMonth(new Date());
-  const statementYear = getYear(new Date());
+  const currentDate = new Date();
+  const submitMonth =
+    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay
+      ? currentDate
+      : getPreviousMonth(currentDate);
 
   // Income values
   const [preschoolFees, setPreschoolFees] = useState<any>([]);
@@ -281,21 +278,16 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     utilitiesExpense?.id,
   ]);
 
-  const id = newGuid();
-  const input = {
-    period: 'Monthly',
-    userId: userAuth?.id!,
-    month: statementMonth + 1,
-    year: statementYear,
-  };
-
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
-      await new IncomeStatementsService(userAuth?.auth_token)
-        .submitStatement(id, input)
-        .catch((err) => {
-          errorDialog(err.message);
-        });
+      await appDispatch(
+        statementsThunkActions.submitIncomeStatement({
+          period: 'Monthly',
+          userId: userAuth?.id!,
+          month: submitMonth.getMonth() + 1, // +1 for 0 index
+          year: submitMonth.getFullYear(),
+        })
+      );
     }
   };
 
@@ -445,7 +437,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       tableHeadStyles,
       tableTopContent,
       tableStyles,
-      `${getMonthName(Number(statementMonth))}-income-statement-report.pdf`,
+      `${getMonthName(submitMonth.getMonth())}-income-statement-report.pdf`,
       'submit-statements',
       tableStyles,
       footer,
@@ -455,36 +447,12 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     await appDispatch(
       statementsThunkActions.saveIncomeStatementPDF({
         fileName: `${getMonthName(
-          Number(statementMonth)
+          submitMonth.getMonth()
         )}-income-statement-report.pdf`,
         reference: report ?? '',
         userId: practitioner?.userId ?? '',
       })
     );
-  };
-
-  const refreshStatements = async () => {
-    if (userAuth?.auth_token) {
-      await appDispatch(
-        statementsThunkActions.getAllExpenses({
-          month: statementMonth + 1,
-          year: statementYear,
-        })
-      );
-      await appDispatch(
-        statementsThunkActions.getAllIncome({
-          month: statementMonth + 1,
-          year: statementYear,
-        })
-      );
-      await appDispatch(
-        statementsThunkActions.getAllStatementsBalanceSheet({
-          // userId: userAuth?.id!,
-          year: statementYear,
-          month: 0,
-        })
-      );
-    }
   };
 
   return (
@@ -504,14 +472,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           type="h2"
           weight="bold"
           color="textDark"
-          text={
-            isLastMonth
-              ? `${format(
-                  new Date().setMonth(today.getMonth() - 1),
-                  'LLLL'
-                )} balance`
-              : `${format(new Date(), 'LLLL')} balance`
-          }
+          text={`${format(submitMonth, 'LLLL')} balance`}
         />
         <StackedList
           className="mt-4 flex w-full flex-col"
@@ -612,16 +573,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                updateStatements().then(async () => {
-                  const reportData = await appDispatch(
-                    statementsThunkActions.getIncomeExpensesPDFreport({
-                      month: statementMonth + 1,
-                      year: statementYear,
-                    })
-                  ).unwrap();
-                  submitPdfReport(reportData ?? []);
-                  refreshStatements();
-                });
+                updateStatements();
                 setConfimSubmitIncomeValues(false);
                 history.push(ROUTES.BUSINESS);
               },

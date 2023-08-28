@@ -35,6 +35,7 @@ namespace EcdLink.Api.CoreApi
                     c.CronExpression = CronTags.FourPmEveryFriday;
                 });
             }
+
             //run these jobs regardless of environment
             services.AddCronJob<ChildAnonymiseJob>(c =>
             {
@@ -60,6 +61,11 @@ namespace EcdLink.Api.CoreApi
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
                 c.CronExpression = CronTags.EighthOfEveryMonth;
+            });
+            services.AddCronJob<RemovePractitioners>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.MidnightDaily;
             });
         }
     }

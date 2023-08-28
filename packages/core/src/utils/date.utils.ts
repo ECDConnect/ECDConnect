@@ -142,3 +142,41 @@ export const getDateWithoutTimeZone = (date: string) => {
 
   return undefined;
 };
+
+export const getPreviousMonth = (date: Date): Date => {
+  // Get the month and year of the current date
+  const currentMonth = date.getMonth();
+  const currentYear = date.getFullYear();
+
+  // Calculate the month and year of the previous month
+  let previousMonth = currentMonth - 1;
+  let previousYear = currentYear;
+
+  if (previousMonth < 0) {
+    // If the previous month is negative, subtract 1 from the year and set the month to 11 (December)
+    previousMonth = 11;
+    previousYear -= 1;
+  }
+
+  // Create a new Date object for the first day of the previous month
+  return new Date(previousYear, previousMonth, 1);
+};
+
+export const getNextMonth = (date: Date): Date => {
+  // Get the month and year of the current date
+  const currentMonth = date.getMonth();
+  const currentYear = date.getFullYear();
+
+  // Calculate the month and year of the previous month
+  let nextMonth = currentMonth + 1;
+  let nextYear = currentYear;
+
+  if (nextMonth > 11) {
+    // If the previous month is negative, subtract 1 from the year and set the month to 11 (December)
+    nextMonth = 0;
+    nextYear += 1;
+  }
+
+  // Create a new Date object for the first day of the previous month
+  return new Date(nextYear, nextMonth, 1);
+};

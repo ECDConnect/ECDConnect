@@ -73,11 +73,11 @@ export const GrowthChart = ({
   const getLabel = (id: string) => {
     switch (id) {
       case '2 SD':
-        return type === 'weight' ? 'Severely underweight' : 'Severely stunted';
+        return type === 'weight' ? 'Underweight' : 'Stunted';
       case '-2 SD':
         return '+2 line';
       case '3 SD':
-        return type === 'weight' ? 'Underweight' : 'Stunted';
+        return type === 'weight' ? 'Severely underweight' : 'Severely stunted';
       case '-3 SD':
         return '+3 line';
       default:

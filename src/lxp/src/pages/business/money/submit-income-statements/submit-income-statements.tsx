@@ -10,7 +10,7 @@ import {
   Alert,
   renderIcon,
 } from '@ecdlink/ui';
-import { differenceInDays, format, getMonth, setDate } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
@@ -19,13 +19,18 @@ import StatementsWrapper from './components/statements-wrapper/StatementsWrapper
 import { useAppContext } from '@/walkthrougContext';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { LocalStorageKeys } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  getNextMonth,
+  getPreviousMonth,
+} from '@ecdlink/core';
+import { IncomeStatementDates } from '@/constants/Dates';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
-  const [disableSubmit, setDisableSubmit] = useState(false);
   const offlineImg = window.localStorage.getItem(
     LocalStorageKeys.offlineStatments
   );
@@ -34,7 +39,77 @@ export const SubmitIncomeStatements: React.FC = () => {
     return getMonthName(item?.month! - 1).substring(0, 3);
   });
 
-  const monthDateNumber = getMonth(new Date()) + 1;
+  const { isLoading: isSubmittingStatement } = useThunkFetchCall(
+    'statements',
+    'submitIncomeStatement'
+  );
+  console.log('isSubmittingStatement', isSubmittingStatement);
+
+  const [submitMonthAndYear, setSubmitMonthAndYear] = useState<Date>(
+    new Date()
+  );
+  const [isThisMonthSubmitted, setIsThisMonthSubmitted] =
+    useState<boolean>(false);
+  const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
+    useState<number>(0);
+
+  const currentDate = new Date();
+  const isSubmitWindowOpen =
+    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
+    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
+
+  useEffect(() => {
+    // Outside submit
+    if (!isSubmitWindowOpen) {
+      setSubmitMonthAndYear(currentDate);
+
+      setIsThisMonthSubmitted(
+        balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
+          ?.submitted || false
+      );
+
+      const nextMonth = getNextMonth(currentDate);
+      const nextSubmit = new Date(
+        nextMonth.getFullYear(),
+        nextMonth.getMonth(),
+        7
+      );
+      setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
+    } else {
+      // In window and current month
+      if (currentDate.getDate() >= IncomeStatementDates.SubmitStartDay) {
+        setSubmitMonthAndYear(currentDate);
+
+        setIsThisMonthSubmitted(
+          balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
+            ?.submitted || false
+        );
+
+        const nextMonth = getNextMonth(currentDate);
+        const nextSubmit = new Date(
+          nextMonth.getFullYear(),
+          nextMonth.getMonth(),
+          7
+        );
+        setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
+      } else {
+        // In window but next month
+        setSubmitMonthAndYear(getPreviousMonth(currentDate));
+
+        setIsThisMonthSubmitted(
+          balanceSheet?.find((x) => x.month === currentDate.getMonth())
+            ?.submitted || false
+        );
+
+        const nextSubmit = new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          7
+        );
+        setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
+      }
+    }
+  }, []);
 
   const balanceNotifications = useMemo(() => {
     if (
@@ -154,41 +229,6 @@ export const SubmitIncomeStatements: React.FC = () => {
       return `- R ${numberWithSpaces(String(Math.abs(value).toFixed(2)))}`;
   };
 
-  const today = new Date();
-
-  const firstDateToSubmit = useMemo(() => setDate(new Date(), 25), []);
-  const lastDayToSubmit = useMemo(() => setDate(new Date(), 7), []);
-
-  const lastDayToSubmitNextMonth = new Date(
-    today.getFullYear(),
-    today.getMonth() + 1,
-    7
-  );
-
-  const isLastMonth =
-    today.getMonth() === balanceSheet?.[balanceSheet?.length - 1]?.month!;
-
-  const isSameMonth =
-    monthDateNumber === balanceSheet?.[balanceSheet?.length - 1]?.month!;
-
-  const submitDateDaysCount =
-    (balanceSheet?.length === 1 && isSameMonth) ||
-    (isSameMonth && disableSubmit) ||
-    balanceSheet?.[balanceSheet?.length - 1]?.submitted === true
-      ? differenceInDays(lastDayToSubmitNextMonth, today)
-      : differenceInDays(lastDayToSubmit, today);
-
-  const enableSubmit = today <= lastDayToSubmit || today >= firstDateToSubmit;
-
-  useEffect(() => {
-    if (
-      balanceSheet?.filter((e) => e?.submitted === true).length! > 0 &&
-      isSameMonth
-    ) {
-      setDisableSubmit(true);
-    }
-  }, [balanceSheet, isSameMonth, monthDateNumber]);
-
   const {
     setState,
     state: { stepIndex },
@@ -235,7 +275,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                   history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
                 }
                 className="mt-6 rounded-2xl"
-                disabled={disableSubmit || !enableSubmit}
+                disabled={isThisMonthSubmitted || !isSubmitWindowOpen} //</> || isSubmittingStatement}
               >
                 <Typography
                   type="help"
@@ -249,14 +289,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                 shadowSize={'md'}
               >
                 <Typography
-                  text={
-                    isLastMonth
-                      ? `${format(
-                          new Date().setMonth(today.getMonth() - 1),
-                          'LLLL'
-                        )} balance`
-                      : `${format(new Date(), 'LLLL')} balance`
-                  }
+                  text={`${format(submitMonthAndYear, 'LLLL')} balance`}
                   type="h4"
                   color={'white'}
                   className="w-6/12"
@@ -543,8 +576,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     currentMonthTotalBalance,
     currentMonthTotalExpenses,
     currentMonthTotalIncome,
-    disableSubmit,
-    enableSubmit,
     history,
     isOnline,
     previousMonthRecord,
@@ -552,6 +583,8 @@ export const SubmitIncomeStatements: React.FC = () => {
     previousMonthTotalExpenses,
     previousMonthTotalIncome,
     walkthroughSteps,
+    isThisMonthSubmitted,
+    isSubmitWindowOpen,
   ]);
 
   return (
@@ -569,12 +602,12 @@ export const SubmitIncomeStatements: React.FC = () => {
           >
             <StatusChip
               backgroundColour={
-                submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
+                daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
               }
               borderColour={
-                submitDateDaysCount > 8 ? 'successMain' : 'alertMain'
+                daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
               }
-              text={`${submitDateDaysCount} days`}
+              text={`${daysUntilFinalSubmission} days`}
               textColour={'white'}
               className={'mr-2'}
             />
