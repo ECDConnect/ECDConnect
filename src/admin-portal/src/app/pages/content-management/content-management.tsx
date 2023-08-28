@@ -180,13 +180,15 @@ export function ContentManagement() {
   progressItems.push(
     {
       title: 'Themes',
+      description: 'An organized set of activities based around a particular topic',
       titleIcon: 'SparklesIcon',
       titleIconClassName: 'bg-secondary text-white',
-      onActionClick: () => { },
+      onActionClick: () => { console.log(">>>>")},
       classNames: 'bg-uiBg',
     },
     {
       title: 'Small/large group activities',
+      description: 'Classroom activities for children to do either in small groups or as a whole class',
       titleIcon: 'UsersIcon',
       titleIconClassName: 'bg-secondary text-white',
 
@@ -195,6 +197,7 @@ export function ContentManagement() {
     },
     {
       title: 'Stories',
+      description: 'Read aloud stories and story books',
       titleIcon: 'BookOpenIcon',
       titleIconClassName: 'bg-secondary text-white',
 
@@ -203,6 +206,8 @@ export function ContentManagement() {
     },
     {
       title: 'Story activities',
+      description: 'Activities to do during story time ',
+
       titleIcon: 'BriefcaseIcon',
       titleIconClassName: 'bg-secondary text-white',
 
