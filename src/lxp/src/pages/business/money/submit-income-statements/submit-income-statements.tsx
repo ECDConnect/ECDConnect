@@ -25,6 +25,7 @@ import {
   getPreviousMonth,
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
@@ -37,6 +38,12 @@ export const SubmitIncomeStatements: React.FC = () => {
   const monthNames = balanceSheet?.map((item) => {
     return getMonthName(item?.month! - 1).substring(0, 3);
   });
+
+  const { isLoading: isSubmittingStatement } = useThunkFetchCall(
+    'statements',
+    'submitIncomeStatement'
+  );
+  console.log('isSubmittingStatement', isSubmittingStatement);
 
   const [submitMonthAndYear, setSubmitMonthAndYear] = useState<Date>(
     new Date()
@@ -268,7 +275,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                   history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
                 }
                 className="mt-6 rounded-2xl"
-                disabled={isThisMonthSubmitted || !isSubmitWindowOpen}
+                disabled={isThisMonthSubmitted || !isSubmitWindowOpen} //</> || isSubmittingStatement}
               >
                 <Typography
                   type="help"

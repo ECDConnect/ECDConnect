@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
@@ -8,6 +9,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -53,6 +55,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private UserManager<ApplicationUser> _userManager;
         private IReassignmentService _reassignmentService;
         private HierarchyEngine _hierarchyEngine;
+        private INotificationService _notificationService;
 
 
         public PersonnelService(
@@ -63,6 +66,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             VisitManager visitManager,
             UserLicenseManager userLicenseManager,
             [Service] IReassignmentService reassignmentService,
+            [Service] INotificationService notificationService,
             UserManager<ApplicationUser> userManager,
             [Service] HierarchyEngine hierarchyEngine)
         {
@@ -91,6 +95,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _reassignmentService = reassignmentService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
+            _notificationService = notificationService;
         }
 
 
@@ -329,6 +334,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var user = _userManager.FindByIdAsync(userId).Result;
                 _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
                 _userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+
+                List<TagsReplacements> replacements = null;
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "principalOrFAA",
+                    ReplacementValue = "Principal"
+                });
+                var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = classroom.Name
+                });
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+
+
             }
             return practitionerToPromote;
         }
@@ -357,6 +378,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var user = _userManager.FindByIdAsync(userId).Result;
                 _userManager.RemoveFromRoleAsync(user, Roles.PRINCIPAL);
                 _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
+
+                //send notifications that user has been demoted
+                List<TagsReplacements> replacements = null;
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "principalOrFAA",
+                    ReplacementValue = "Principal"
+                });
+
+                var classroom = GetClassroomDetailsForPractitioner(practitionerToDemote.UserId);
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = classroom.Name
+                });
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DemotedFromPrincipalOrFAA, DateTime.Now, practitionerToDemote.User, null, MessageStatusConstants.Amber, replacements);
             }
 
             return practitionerToDemote;

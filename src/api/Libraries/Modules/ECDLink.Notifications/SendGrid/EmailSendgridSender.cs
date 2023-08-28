@@ -53,6 +53,10 @@ namespace ECDLink.Notifications.SendGrid
         {
             throw new NotImplementedException();
         }
+        public INotificationProvider<ApplicationUser> SetMessageMapped(TemplateTypeEnum template, string subject, string message)
+        {
+            throw new NotImplementedException();
+        }
 
         public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
         {

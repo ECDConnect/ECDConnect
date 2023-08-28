@@ -259,6 +259,7 @@ class PQAService {
               eventId
             }
             pQARatings {
+              visitId
               linkedVisitId
               actualVisitDate
               children {
@@ -277,6 +278,7 @@ class PQAService {
             }
             pQASiteVisits {
               id
+              hasAnswerData
               plannedVisitDate
               attended
               comment
@@ -293,6 +295,7 @@ class PQAService {
             }
             reAccreditationVisits {
               id
+              hasAnswerData
               plannedVisitDate
               attended
               comment
@@ -308,6 +311,7 @@ class PQAService {
               eventId
             }
             reAccreditationRatings {
+              visitId
               linkedVisitId
               children {
                 sectionRating

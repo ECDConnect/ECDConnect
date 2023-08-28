@@ -304,6 +304,49 @@ export const getAllPayType = createAsyncThunk<
   }
 );
 
+export const submitIncomeStatement = createAsyncThunk<
+  any[],
+  {
+    period: string;
+    userId: string;
+    month: number;
+    year: number;
+  },
+  ThunkApiType<RootState>
+>(
+  'submitIncomeStatement',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ year, month, period, userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let result: any | undefined;
+
+      if (userAuth?.auth_token) {
+        await new IncomeStatementsService(userAuth?.auth_token).submitStatement(
+          {
+            period,
+            userId,
+            month,
+            year,
+          }
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!result) {
+        return rejectWithValue('Error submitting income statement');
+      }
+      return result;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getIncomeExpensesPDFreport = createAsyncThunk<
   any[],
   { year: Number; month: Number },

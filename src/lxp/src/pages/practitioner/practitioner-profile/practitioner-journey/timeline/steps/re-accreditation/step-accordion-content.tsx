@@ -65,9 +65,9 @@ export const ReAccreditationVisits = ({
   });
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    if (item?.id === rating3?.linkedVisitId) {
+    if (item?.id === rating3?.visitId) {
       return rating3;
-    } else if (item?.id === rating2?.linkedVisitId) {
+    } else if (item?.id === rating2?.visitId) {
       return rating2;
     } else {
       return rating1;
@@ -101,29 +101,31 @@ export const ReAccreditationVisits = ({
               className="w-6/12 font-bold"
               text={item?.visitType?.description || ''}
             />
-            <Button
-              style={{
-                position: 'absolute',
-                right: -36,
-              }}
-              className="z-50 w-32"
-              type="filled"
-              color="secondaryAccent2"
-              textColor="secondary"
-              text="View"
-              isLoading={isLoading}
-              disabled={isLoading}
-              onClick={() =>
-                onView({
-                  visit: item,
-                  visitType: item?.visitType?.name?.includes(
-                    visitTypes.reaccreditation.followUp.name
-                  )
-                    ? 're-accreditation-follow-up-visit'
-                    : 're-accreditation',
-                })
-              }
-            />
+            {item?.hasAnswerData && (
+              <Button
+                style={{
+                  position: 'absolute',
+                  right: -36,
+                }}
+                className="z-50 w-32"
+                type="filled"
+                color="secondaryAccent2"
+                textColor="secondary"
+                text="View"
+                isLoading={isLoading}
+                disabled={isLoading}
+                onClick={() =>
+                  onView({
+                    visit: item,
+                    visitType: item?.visitType?.name?.includes(
+                      visitTypes.reaccreditation.followUp.name
+                    )
+                      ? 're-accreditation-follow-up-visit'
+                      : 're-accreditation',
+                  })
+                }
+              />
+            )}
           </div>
           <Typography
             type="body"
