@@ -90,7 +90,8 @@ export const setStep = (
   const consolidationMeetingAttended =
     consolidationMeetingDataStatus === 'Consolidation meeting attended';
   const starterLicenceReceived =
-    startLicenceStatus === 'SmartSpace Licence received';
+    startLicenceStatus === 'SmartSpace Licence received' ||
+    'Starter Licence received';
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
