@@ -220,6 +220,13 @@ export const timelineSteps = ({
     const dividedVisits = divideArrayByFollowUp(sortedVisits);
 
     dividedVisits.map((pQASiteVisits, pqaIndex) => {
+      const previousVisits = pqaIndex > 0 ? dividedVisits[pqaIndex - 1] : [];
+      const isAllCompleted = previousVisits.length
+        ? previousVisits?.every((item) => !!item?.attended)
+        : true;
+
+      if (!isAllCompleted) return {};
+
       const currentRating: RatingData = {
         rating: timeline.pQARatings
           ?.filter(
@@ -310,6 +317,14 @@ export const timelineSteps = ({
     const dividedVisits = divideArrayByFollowUp(sortedVisits);
 
     dividedVisits.map((reAccreditationVisits, reAccreditationIndex) => {
+      const previousVisits =
+        reAccreditationIndex > 0 ? dividedVisits[reAccreditationIndex - 1] : [];
+      const isAllCompleted = previousVisits.length
+        ? previousVisits?.every((item) => !!item?.attended)
+        : true;
+
+      if (!isAllCompleted) return {};
+
       const currentRating: RatingData = {
         rating: timeline.reAccreditationRatings
           ?.filter(

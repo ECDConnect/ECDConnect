@@ -157,6 +157,13 @@ export const timelineSteps = ({
     const dividedVisits = divideArrayByFollowUp(sortedVisits);
 
     dividedVisits.map((pQASiteVisits, pqaIndex) => {
+      const previousVisits = pqaIndex > 0 ? dividedVisits[pqaIndex - 1] : [];
+      const isAllCompleted = previousVisits.length
+        ? previousVisits?.every((item) => !!item?.attended)
+        : true;
+
+      if (!isAllCompleted) return {};
+
       const currentRating: RatingData = {
         rating: timeline.pQARatings
           ?.filter(
@@ -193,7 +200,7 @@ export const timelineSteps = ({
                   : currentVisit?.plannedVisitDate
               ).toLocaleDateString('en-ZA', dateOptions)}`}
             />
-            {currentVisit?.attended && (
+            {pQASiteVisits.some((item) => item?.attended) && (
               <>
                 {ratingData?.icon}
                 <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
@@ -201,7 +208,9 @@ export const timelineSteps = ({
             )}
           </div>
         ),
-        inProgressStepIcon: stepType?.color && 'CheckIcon',
+        inProgressStepIcon:
+          (stepType?.color && currentVisit?.attended && 'CheckIcon') ||
+          (ratingData?.color && 'ExclamationCircleIcon'),
         type: stepType?.type,
         color: currentVisit?.attended && ratingData?.color,
         extraData: {
@@ -245,6 +254,14 @@ export const timelineSteps = ({
     const dividedVisits = divideArrayByFollowUp(sortedVisits);
 
     dividedVisits.map((reAccreditationVisits, reAccreditationIndex) => {
+      const previousVisits =
+        reAccreditationIndex > 0 ? dividedVisits[reAccreditationIndex - 1] : [];
+      const isAllCompleted = previousVisits.length
+        ? previousVisits?.every((item) => !!item?.attended)
+        : true;
+
+      if (!isAllCompleted) return {};
+
       const currentRating: RatingData = {
         rating: timeline.reAccreditationRatings
           ?.filter(
@@ -276,7 +293,7 @@ export const timelineSteps = ({
                 currentVisit?.attended &&
                 (stepType?.color || ratingData?.color !== 'successMain')
                   ? ratingData?.color
-                  : 'textMid'
+                  : stepType?.color || 'textMid'
               }
               className="mr-4"
               text={`${currentVisit?.attended ? '' : 'By '}${new Date(
@@ -285,7 +302,7 @@ export const timelineSteps = ({
                   : currentVisit?.plannedVisitDate
               ).toLocaleDateString('en-ZA', dateOptions)}`}
             />
-            {currentVisit?.attended && (
+            {reAccreditationVisits.some((item) => item?.attended) && (
               <>
                 {ratingData?.icon}
                 <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
@@ -296,7 +313,9 @@ export const timelineSteps = ({
         subTitleColor: stepType?.color,
         type: stepType?.type,
         color: currentVisit?.attended && ratingData?.color,
-        inProgressStepIcon: stepType?.color && 'CheckIcon',
+        inProgressStepIcon:
+          (stepType?.color && currentVisit?.attended && 'CheckIcon') ||
+          (stepType?.color && 'ExclamationCircleIcon'),
         extraData: {
           date: currentVisit?.attended
             ? new Date(currentVisit?.actualVisitDate)
