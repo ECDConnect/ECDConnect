@@ -11,6 +11,7 @@ import { ReAccreditationVisits } from './steps/re-accreditation/step-accordion-c
 import { visitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import {
   divideArrayByFollowUp,
+  isDateWithinThreeMonths,
   sortVisits,
 } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 import { getReAccreditationStepData } from '@/pages/coach/coach-practitioner-journey/timeline/re-accreditation/step';
@@ -25,6 +26,7 @@ interface TimelineStepsProps {
   practitionerId: string;
   timeline: PractitionerTimeline;
   isLoading: boolean;
+  currentReAccreditationRating?: RatingData;
   onView: (event: ViewEvent) => void;
 }
 
@@ -32,6 +34,7 @@ export const timelineSteps = ({
   timeline,
   isLoading,
   practitionerId,
+  currentReAccreditationRating,
   onView,
 }: TimelineStepsProps) => {
   const attendedSupportVisits = timeline.supportVisits?.filter(
@@ -188,8 +191,7 @@ export const timelineSteps = ({
             <Typography
               type="body"
               color={
-                currentVisit?.attended &&
-                (stepType?.color || ratingData?.color !== 'successMain')
+                currentVisit?.attended && ratingData?.color !== 'successMain'
                   ? ratingData?.color
                   : 'textMid'
               }
@@ -262,7 +264,14 @@ export const timelineSteps = ({
 
       if (!isAllCompleted) return {};
 
-      const currentRating: RatingData = {
+      const isNextYear =
+        currentReAccreditationRating?.rating?.overallRatingColor ===
+          'Success' &&
+        previousVisits?.some(
+          (item) => item?.id === currentReAccreditationRating?.rating?.visitId
+        );
+
+      const ratingForThisVisit: RatingData = {
         rating: timeline.reAccreditationRatings
           ?.filter(
             (item) =>
@@ -279,9 +288,15 @@ export const timelineSteps = ({
       const { currentVisit, ratingData, stepType } = getReAccreditationStepData(
         {
           reAccreditationVisits,
-          currentRating,
+          currentRating: ratingForThisVisit,
         }
       );
+
+      if (
+        isNextYear &&
+        !isDateWithinThreeMonths(currentVisit?.plannedVisitDate)
+      )
+        return {};
 
       return steps.push({
         title: 'Annual re-accreditation',
@@ -290,8 +305,7 @@ export const timelineSteps = ({
             <Typography
               type="body"
               color={
-                currentVisit?.attended &&
-                (stepType?.color || ratingData?.color !== 'successMain')
+                currentVisit?.attended && ratingData?.color !== 'successMain'
                   ? ratingData?.color
                   : stepType?.color || 'textMid'
               }
