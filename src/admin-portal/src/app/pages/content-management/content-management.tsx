@@ -15,13 +15,15 @@ import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import { SearchIcon } from '@heroicons/react/solid';
+import { ArrowLeftIcon, SearchIcon } from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
+  const [selectedTab, setSelectedTab] = useState(0);
+
 
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
@@ -64,6 +66,8 @@ export function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
+
+
   const getNavigationItems = () => {
     if (
       data &&
@@ -74,26 +78,33 @@ export function ContentManagement() {
         {
           name: 'Consent',
           // href: '/',
+          id: 0
         },
         {
           name: 'Info  pages',
           href: 'MoreInformation',
+          id: 1
         },
         {
           name: 'Postnatal',
+          href: 'MoreInformation',
+          id: 2
 
         },
         {
           name: 'Antenatal',
-          // href: '/',
+          href: 'MoreInformation',
+          id: 3
         },
         {
           name: 'Danger signs',
           // href: '/',
+          id: 4
         },
         {
           name: 'Community',
           href: 'CommunitySectionGG',
+          id: 5
         },
       ];
     } else {
@@ -101,17 +112,26 @@ export function ContentManagement() {
         {
           name: 'Consent',
           // href: '/content-management',
+          id: 0
         },
         {
           name: 'Info pages',
           href: 'MoreInformation',
+          id: 1
         },
         {
           name: 'Progress',
           // href: '/',
+          id: 2
+        },
+        {
+          name: 'Programmes',
+          // href: '/',
+          id: 3
         },
         {
           name: 'Community',
+          id: 4
         },
       ];
     }
@@ -175,9 +195,9 @@ export function ContentManagement() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const progressItems: StackedListItemType[] = [];
+  const programItems: StackedListItemType[] = [];
 
-  progressItems.push(
+  programItems.push(
     {
       title: 'Themes',
       description: 'An organized set of activities based around a particular topic',
@@ -250,16 +270,50 @@ export function ContentManagement() {
                 >
                   <a
                     onClick={() => {
-                      const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === item.name || type.name === item.href));
+                      const selectedTypeObject = dataTypes?.contentTypes.find(
+                        (type: ContentTypeDto) =>
+                          type.name === item.name || type.name === item.href
+                      );
+                      const filterMoreInfo = (moreInfoType: string) => {
+                        const filteredContent = selectedTypeObject.content.filter((contentObject: { contentValues: any[]; }) =>
+                          contentObject.contentValues.some(item => item.value === moreInfoType)
+                        );
+                        const filteredTypeObject = {
+                          ...selectedTypeObject,
+                          content: filteredContent.map((contentObject: { contentValues: any[]; }) => ({
+                            ...contentObject,
+                            contentValues: contentObject.contentValues.filter((item: { value: string; }) => item.value === moreInfoType)
+                          })),
+                        };
+                        return filteredTypeObject;
+                      }
+
+                      console.log(">>gg>", selectedTypeObject);
+                      console.log(">>>", filterMoreInfo('antenatal'));
+
+
                       if (selectedTypeObject) {
-                        setSpecialType('');
-                        showGroupContentTypes(selectedTypeObject);
+                        if (item.id == 2) {
+                          setSelectedTab(item.id)
+                          setSpecialType('');
+                          showGroupContentTypes(filterMoreInfo('postnatal'));
+                        } else if (item.id == 3) {
+                          setSelectedTab(item.id)
+                          setSpecialType('');
+                          showGroupContentTypes(filterMoreInfo('antenatal'));
+                        } else {
+                          setSelectedTab(item.id)
+                          setSpecialType('');
+                          showGroupContentTypes(selectedTypeObject);
+                        }
+
                       } else {
+                        setSelectedTab(item.id)
                         setSpecialType(item.name);
                       }
                     }}
                     className={classNames(
-                      (selectedType?.name === item?.name || item?.href === selectedType?.name || specialType === item.name)
+                      item.id === selectedTab
                         ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                       'consent-tabs text-md flex h-14 items-center font-medium'
@@ -269,6 +323,7 @@ export function ContentManagement() {
                   </a>
                 </div>
               ))}
+
             </div>
           )}
 
@@ -283,7 +338,26 @@ export function ContentManagement() {
             />
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+              <div className="h-full py-3 px-4 sm:px-6 lg:px-8">
+                {(selectedType?.name === 'Theme' || selectedType?.name === 'Activity' || selectedType?.name === 'StoryBook' || selectedType?.name === 'StoryBookPartQuestion') && <div className="justify-self col-end-3 pb-2">
+                  <button
+                    onClick={() => {
+                      setSelectedType(null);
+                      setSpecialType('Programmes');
+                    }}
+                    type="button"
+                    className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+                  >
+                    <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
+                      {' '}
+                    </ArrowLeftIcon>
+                    Programme
+                    <span className="px-1 text-gray-400">
+                      {' '}
+                      / {selectedType?.name}
+                    </span>
+                  </button>
+                </div>}
                 <div
                   className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
@@ -296,7 +370,7 @@ export function ContentManagement() {
                     </span>
                     <input
                       className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                      placeholder="      Search by email or name..."
+                      placeholder="      Search by type..."
                       onChange={search}
                     />
                   </div>}
@@ -310,11 +384,11 @@ export function ContentManagement() {
                     ></ContentList>
                   )}
                   {
-                    specialType === 'Progress' ? <div className="flex">
+                    specialType === 'Programmes' ? <div className="flex">
                       <StackedList
                         className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
                         type="TitleList"
-                        listItems={progressItems}
+                        listItems={programItems}
                       />
                     </div> : null
                   }
