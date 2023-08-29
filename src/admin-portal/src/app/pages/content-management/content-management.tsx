@@ -189,8 +189,6 @@ export function ContentManagement() {
     // });
   }, [searchValue]);
 
-  console.log(dataTypes?.contentTypes);
-
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
@@ -274,38 +272,11 @@ export function ContentManagement() {
                         (type: ContentTypeDto) =>
                           type.name === item.name || type.name === item.href
                       );
-                      const filterMoreInfo = (moreInfoType: string) => {
-                        const filteredContent = selectedTypeObject.content.filter((contentObject: { contentValues: any[]; }) =>
-                          contentObject.contentValues.some(item => item.value === moreInfoType)
-                        );
-                        const filteredTypeObject = {
-                          ...selectedTypeObject,
-                          content: filteredContent.map((contentObject: { contentValues: any[]; }) => ({
-                            ...contentObject,
-                            contentValues: contentObject.contentValues.filter((item: { value: string; }) => item.value === moreInfoType)
-                          })),
-                        };
-                        return filteredTypeObject;
-                      }
-
-                      console.log(">>gg>", selectedTypeObject);
-                      console.log(">>>", filterMoreInfo('antenatal'));
-
 
                       if (selectedTypeObject) {
-                        if (item.id == 2) {
-                          setSelectedTab(item.id)
-                          setSpecialType('');
-                          showGroupContentTypes(filterMoreInfo('postnatal'));
-                        } else if (item.id == 3) {
-                          setSelectedTab(item.id)
-                          setSpecialType('');
-                          showGroupContentTypes(filterMoreInfo('antenatal'));
-                        } else {
-                          setSelectedTab(item.id)
-                          setSpecialType('');
-                          showGroupContentTypes(selectedTypeObject);
-                        }
+                        setSelectedTab(item.id)
+                        setSpecialType('');
+                        showGroupContentTypes(selectedTypeObject);
 
                       } else {
                         setSelectedTab(item.id)
@@ -381,6 +352,7 @@ export function ContentManagement() {
                       languages={languages.GetAllLanguage}
                       viewContent={getContentValues}
                       refreshParent={() => refreshParent()}
+                      selectedTab={selectedTab}
                     ></ContentList>
                   )}
                   {

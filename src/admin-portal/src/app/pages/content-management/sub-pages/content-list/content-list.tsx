@@ -26,6 +26,7 @@ import {
 import ContentCreate from './components/content-create/content-create';
 
 export interface ContentListProps {
+  selectedTab?: number;
   contentType: ContentTypeDto;
   optionDefinitions: ContentDefinitionModelDto[];
   languages: LanguageDto[];
@@ -34,11 +35,13 @@ export interface ContentListProps {
 }
 
 export default function ContentList({
+  selectedTab,
   contentType,
   languages,
   optionDefinitions,
   viewContent,
   refreshParent,
+
 }: ContentListProps) {
   const { hasPermission } = useUser();
 
@@ -66,8 +69,6 @@ export default function ContentList({
         if (x.fieldType.dataType === FieldType.Text)
           displayFields.push(x.fieldName);
       });
-
-      console.log(displayFields);
 
       setDisplayFields(displayFields);
     }
@@ -115,16 +116,29 @@ export default function ContentList({
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
-      const copyItems = contentData[getAllCall].map((item) => ({
-        ...item,
-        _view: undefined,
-        _edit: undefined,
-        _url: undefined,
+      const copyItems = contentData[getAllCall].map((item: any) => ({
+        ...item
       }));
-      setTableData(copyItems);
+
+      if (selectedTab === 1) {
+        let clientProfileData = copyItems.filter((item: { type: string; }) => item.type === "client profile");
+        setTableData(clientProfileData);
+      }
+      else if (selectedTab === 2) {
+        let postNatalData = copyItems.filter((item: { type: string; }) => item.type === "postnatal");
+        console.log(postNatalData)
+        setTableData(postNatalData);
+
+      } else if (selectedTab === 3) {
+        let anteNatalData = copyItems.filter((item: { type: string; }) => item.type === "antenatal");
+        setTableData(anteNatalData);
+      } else {
+        setTableData(copyItems);
+      }
+
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentData]);
+  }, [contentData, selectedTab]);
 
   useEffect(() => {
     if (languages) {
