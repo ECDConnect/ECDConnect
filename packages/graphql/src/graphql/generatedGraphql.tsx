@@ -13770,6 +13770,7 @@ export type Visit = {
   plannedVisitDate: Scalars['DateTime'];
   practitioner?: Maybe<Practitioner>;
   practitionerId?: Maybe<Scalars['UUID']>;
+  rating?: Maybe<Scalars['String']>;
   risk?: Maybe<Scalars['String']>;
   trainee?: Maybe<Trainee>;
   traineeId?: Maybe<Scalars['UUID']>;
@@ -14024,6 +14025,7 @@ export type VisitFilterInput = {
   plannedVisitDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
   practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  rating?: InputMaybe<StringOperationFilterInput>;
   risk?: InputMaybe<StringOperationFilterInput>;
   trainee?: InputMaybe<TraineeFilterInput>;
   traineeId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -14177,6 +14179,7 @@ export type VisitInput = {
   PlannedVisitDate: Scalars['DateTime'];
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId?: InputMaybe<Scalars['UUID']>;
+  Rating?: InputMaybe<Scalars['String']>;
   Risk?: InputMaybe<Scalars['String']>;
   Trainee?: InputMaybe<TraineeInput>;
   TraineeId?: InputMaybe<Scalars['UUID']>;
@@ -14229,6 +14232,7 @@ export type VisitSortInput = {
   plannedVisitDate?: InputMaybe<SortEnumType>;
   practitioner?: InputMaybe<PractitionerSortInput>;
   practitionerId?: InputMaybe<SortEnumType>;
+  rating?: InputMaybe<SortEnumType>;
   risk?: InputMaybe<SortEnumType>;
   trainee?: InputMaybe<TraineeSortInput>;
   traineeId?: InputMaybe<SortEnumType>;
