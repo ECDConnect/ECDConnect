@@ -33,6 +33,7 @@ export interface TableProps {
     section4: Section;
   };
   isToRemoveSmartStarter?: boolean;
+  isTwoOrangeRatings?: boolean;
   setReAccreditationRating?: (value: RatingType) => void;
 }
 
@@ -41,6 +42,7 @@ export const Rating = ({
   sections,
   sectionQuestions,
   isToRemoveSmartStarter,
+  isTwoOrangeRatings,
   setReAccreditationRating,
 }: TableProps) => {
   const step2ReAccreditationQuestionAnswers = sectionQuestions?.find(
@@ -261,26 +263,27 @@ export const Rating = ({
   return (
     <>
       {getCard()}
-      {(isOrangeQuestion2 || isOrangeQuestion3 || isOrangeQuestion4) && (
-        <ul className="ml-5 mb-4 list-disc">
-          {isOrangeQuestion2 && (
-            <li className="text-textMid">
-              SmartStart programme not implemented for long enough
-            </li>
-          )}
-          {isOrangeQuestion3 && (
-            <li className="text-textMid">
-              Too many children are attending the programme
-            </li>
-          )}
-          {isOrangeQuestion4 && (
-            <li className="text-textMid">
-              There are not enough adults for the number of children in the
-              programme
-            </li>
-          )}
-        </ul>
-      )}
+      {(isOrangeQuestion2 || isOrangeQuestion3 || isOrangeQuestion4) &&
+        !isTwoOrangeRatings && (
+          <ul className="ml-5 mb-4 list-disc">
+            {isOrangeQuestion2 && (
+              <li className="text-textMid">
+                SmartStart programme not implemented for long enough
+              </li>
+            )}
+            {isOrangeQuestion3 && (
+              <li className="text-textMid">
+                Too many children are attending the programme
+              </li>
+            )}
+            {isOrangeQuestion4 && (
+              <li className="text-textMid">
+                There are not enough adults for the number of children in the
+                programme
+              </li>
+            )}
+          </ul>
+        )}
       {isRedFlagSmartSpaceCertificateWithdrawn ? (
         <>
           <Typography
