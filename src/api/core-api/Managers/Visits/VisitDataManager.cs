@@ -651,6 +651,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
+            pqaVisit.Rating = rating.OverallRatingColor;
+            _visitRepo.Update(pqaVisit);
             return rating;
         }
         
@@ -781,6 +783,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
+            RAVisit.Rating = rating.OverallRatingColor;
+            _visitRepo.Update(RAVisit);
+            
             return rating;
         }
         private int getScoreForSection(List<VisitData> records)
