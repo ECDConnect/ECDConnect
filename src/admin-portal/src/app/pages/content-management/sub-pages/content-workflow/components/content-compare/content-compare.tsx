@@ -56,7 +56,6 @@ export default function ContentCompare({
       );
       if (content) {
         setCurrentContent(content);
-        console.log(content);
       }
     }
   }, [contentType, contentView]);
