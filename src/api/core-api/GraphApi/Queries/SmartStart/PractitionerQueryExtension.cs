@@ -386,13 +386,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, string userId)
         {
-            Visit visit = visitManager.GetPQAVisitsForPractitioner(userId).FirstOrDefault();
+            Visit visit = visitManager.GetPQAVisitsForPractitioner(userId).Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
             return visit != null ? visitDataManager.GetPractitionerPQARating(visit): new PQARating();
         }
 
         public PQARating GetPractitionerReAccreditationRating([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, string userId)
         {
-            Visit visit = visitManager.GetReAccreditationVisitsForPractitioner(userId).FirstOrDefault();
+            Visit visit = visitManager.GetReAccreditationVisitsForPractitioner(userId).Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
             return visit != null ? visitDataManager.GetPractitionerReAccreditationRating(visit) : new PQARating();
         }
 

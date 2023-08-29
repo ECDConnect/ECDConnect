@@ -10,7 +10,7 @@ import { ViewEvent } from '../../timeline-steps';
 
 interface PQAVisitsProps {
   isLoading: boolean;
-  currentVisit: Maybe<Visit>;
+  pQASiteVisits: Maybe<Visit>[];
   practitionerId: string;
   onView: (event: ViewEvent) => void;
 }
@@ -18,15 +18,14 @@ interface PQAVisitsProps {
 export const PQAVisits = ({
   isLoading,
   practitionerId,
+  pQASiteVisits,
   onView,
 }: PQAVisitsProps) => {
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
   );
 
-  const attendedPqaVisits = timeline?.pQASiteVisits?.filter(
-    (item) => !!item?.attended
-  );
+  const attendedPqaVisits = pQASiteVisits?.filter((item) => !!item?.attended);
 
   const pqaRatings =
     timeline?.pQARatings?.filter(

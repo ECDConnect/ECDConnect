@@ -42,6 +42,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public Guid? EventId { get; set; }
         [NotMapped]
         public bool HasAnswerData { get; set; }
+        public string Rating { get; set; }
     }
 
     public interface VisitJoin<TKey>
