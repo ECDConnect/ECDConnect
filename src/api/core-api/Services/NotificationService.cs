@@ -151,6 +151,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             try
             {
+                //TODO: make sure there isnt another notification of the same sort for the same reason and time period and that it it doesnt duplicate
                _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), FromUserId = Guid.Parse(_uId), To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status  });
             } catch (Exception ex)
             {

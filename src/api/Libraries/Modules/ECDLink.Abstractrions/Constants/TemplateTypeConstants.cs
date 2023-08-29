@@ -38,6 +38,12 @@ namespace ECDLink.Abstractrions.Constants
 
         public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
         public const string ReassignedToNewClass = "reassigned-to-new-class";
+        public const string TraineeOverdueTasks = "trainee-overdue-tasks";
+        public const string TwoOnboardingStepsLeft = "two-more-steps-to-complete";
+        public const string UnassignedClasses = "unassigned-classes";
+        public const string RejectedInvitation = "rejected-invitation";
+        public const string RemovedFromProgramme = "removed-from-programme";
+        public const string PrincipalFAAChanged = "principal-changed";
 
 
 
