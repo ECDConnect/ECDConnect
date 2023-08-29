@@ -22,6 +22,8 @@ export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
+  const [selectedTab, setSelectedTab] = useState(0);
+
 
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
@@ -65,24 +67,6 @@ export function ContentManagement() {
   }, [dataTypes]);
 
 
-  // Helper function to check if a navigation item is selected
-  const isSelected = (itemName: string) => {
-    return (
-      selectedType?.name === itemName ||
-      isSelectedRelated(itemName) ||
-      specialType === itemName
-    );
-  };
-
-  // Helper function to check if a related navigation item is selected
-  const isSelectedRelated = (itemName: string) => {
-    if (itemName === 'Info  pages') {
-      return (
-        selectedType?.name === 'Postnatal' || selectedType?.name === 'Antenatal'
-      );
-    }
-    return false;
-  };
 
   const getNavigationItems = () => {
     if (
@@ -94,30 +78,33 @@ export function ContentManagement() {
         {
           name: 'Consent',
           // href: '/',
+          id: 0
         },
         {
           name: 'Info  pages',
           href: 'MoreInformation',
-          id: 0
+          id: 1
         },
         {
           name: 'Postnatal',
           href: 'MoreInformation',
-          id: 1
+          id: 2
 
         },
         {
           name: 'Antenatal',
           href: 'MoreInformation',
-          id: 2
+          id: 3
         },
         {
           name: 'Danger signs',
           // href: '/',
+          id: 4
         },
         {
           name: 'Community',
           href: 'CommunitySectionGG',
+          id: 5
         },
       ];
     } else {
@@ -125,21 +112,26 @@ export function ContentManagement() {
         {
           name: 'Consent',
           // href: '/content-management',
+          id: 0
         },
         {
           name: 'Info pages',
           href: 'MoreInformation',
+          id: 1
         },
         {
           name: 'Progress',
           // href: '/',
+          id: 2
         },
         {
           name: 'Programmes',
           // href: '/',
+          id: 3
         },
         {
           name: 'Community',
+          id: 4
         },
       ];
     }
@@ -283,16 +275,16 @@ export function ContentManagement() {
                           type.name === item.name || type.name === item.href
                       );
                       if (selectedTypeObject) {
+                        setSelectedTab(item.id)
                         setSpecialType('');
                         showGroupContentTypes(selectedTypeObject);
                       } else {
+                        setSelectedTab(item.id)
                         setSpecialType(item.name);
                       }
                     }}
                     className={classNames(
-                      isSelected(item.name) ||
-                        isSelected(item.href) ||
-                        isSelectedRelated(item.name)
+                      item.id === selectedTab
                         ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                       'consent-tabs text-md flex h-14 items-center font-medium'
