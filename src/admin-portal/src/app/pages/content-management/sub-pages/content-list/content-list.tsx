@@ -67,8 +67,6 @@ export default function ContentList({
           displayFields.push(x.fieldName);
       });
 
-      console.log(displayFields);
-
       setDisplayFields(displayFields);
     }
   }, [contentType]);
