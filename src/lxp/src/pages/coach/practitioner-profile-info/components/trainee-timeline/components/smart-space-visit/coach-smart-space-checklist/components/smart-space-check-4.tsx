@@ -141,7 +141,12 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
           type="number"
           value={item.answer}
           subLabel="Any programme with more than 10 children must have an assistant."
-          onChange={(e) => onOptionSelected(e.target.value, index)}
+          onChange={(e) =>
+            e.target.value === typeof Number
+              ? onOptionSelected(e.target.value, index)
+              : null
+          }
+          onKeyDown={(e) => e.code !== '69'}
         />
       ))}
 
