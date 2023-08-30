@@ -22,7 +22,7 @@ export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab] = useState(1);
 
 
   const [selectedContent, setSelectedContent] =
@@ -164,6 +164,7 @@ export function ContentManagement() {
       setSelectedType(currentType);
       setSelectedContent(contentManagementView);
     });
+    console.log(contentManagementView)
   };
 
   const refreshParent = () => {
@@ -277,7 +278,6 @@ export function ContentManagement() {
                         setSelectedTab(item.id)
                         setSpecialType('');
                         showGroupContentTypes(selectedTypeObject);
-
                       } else {
                         setSelectedTab(item.id)
                         setSpecialType(item.name);

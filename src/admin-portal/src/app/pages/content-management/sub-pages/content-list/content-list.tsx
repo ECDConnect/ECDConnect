@@ -107,12 +107,7 @@ export default function ContentList({
     },
   });
 
-  const mutationName = `delete${contentType.name}`;
-  const deleteMutation = gql` 
-    mutation ${mutationName} ($id: String!, $localeId: String!) {
-      ${mutationName} (id: $id, localeId: $localeId) 
-      }
-  `;
+
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
@@ -152,7 +147,6 @@ export default function ContentList({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages]);
 
-  const [deleteContent] = useMutation(deleteMutation);
 
   const getContentGroupContentByLanguageId = (languageId: string) => {
     setLanguageId(languageId);
@@ -218,13 +212,13 @@ export default function ContentList({
               <div className="flex flex-col">
                 <div className="mt-1 ml-4">
                   {hasPermission(PermissionEnum.create_static) &&
-                    contentType.name !== 'Consent' && (
+                    (
                       <button
                         onClick={() => displayCreatePanel()}
                         type="button"
                         className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                       >
-                        Create {camelCaseToSentanceCase(contentType.name)}
+                        Add {camelCaseToSentanceCase(contentType.name)}
                       </button>
                     )}
                 </div>
