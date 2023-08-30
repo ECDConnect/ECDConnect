@@ -24,6 +24,7 @@ import {
   FieldType,
 } from '../../content-management-models';
 import ContentCreate from './components/content-create/content-create';
+import { PlusIcon } from '@heroicons/react/solid';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -218,6 +219,7 @@ export default function ContentList({
                         type="button"
                         className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                       >
+                        <PlusIcon width="22px" className="pl-1" />
                         Add {camelCaseToSentanceCase(contentType.name)}
                       </button>
                     )}
