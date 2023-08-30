@@ -30,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 Visit visit = visitDataManager.AddPractitionerVisitData(input, true);
                 // PQA Rating
-                if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
                 {
                     PQARating pqaRating = visitDataManager.GetPractitionerPQARating(visit);
                     visitManager.AddNextPQAOrFollowUpVisit(pqaRating.OverallRatingColor, (System.Guid)visit.PractitionerId, visit);

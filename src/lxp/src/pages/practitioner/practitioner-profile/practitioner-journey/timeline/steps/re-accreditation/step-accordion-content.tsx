@@ -8,27 +8,28 @@ import {
   maxNumberOfVisits,
   visitTypes,
 } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
-import { getRatingData } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
+import {
+  getRatingData,
+  sortVisits,
+} from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 import { ViewEvent } from '../../timeline-steps';
 import { chunkArray } from '@ecdlink/core';
 
 interface ReAccreditationVisitsProps {
   isLoading: boolean;
   practitionerId: string;
+  reAccreditationVisits: Maybe<Visit>[];
   onView: (event: ViewEvent) => void;
 }
 
 export const ReAccreditationVisits = ({
   practitionerId,
   isLoading,
+  reAccreditationVisits,
   onView,
 }: ReAccreditationVisitsProps) => {
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
-  );
-
-  const attendedReAccreditationVisits = timeline?.reAccreditationVisits?.filter(
-    (item) => !!item?.attended
   );
 
   // All years
@@ -49,25 +50,12 @@ export const ReAccreditationVisits = ({
   const rating2 = reAccreditationRatingsFromCurrentYear?.[1];
   const rating3 = reAccreditationRatingsFromCurrentYear?.[2];
 
-  const sortedVisits = attendedReAccreditationVisits?.sort((a, b) => {
-    if (!a?.actualVisitDate && !b?.actualVisitDate) {
-      return 0;
-    } else if (!a?.actualVisitDate) {
-      return 1;
-    } else if (!b?.actualVisitDate) {
-      return -1;
-    }
-
-    return (
-      new Date(a.actualVisitDate).getTime() -
-      new Date(b.actualVisitDate).getTime()
-    );
-  });
+  const sortedVisits = sortVisits(reAccreditationVisits);
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    if (item?.id === rating3?.linkedVisitId) {
+    if (item?.id === rating3?.visitId) {
       return rating3;
-    } else if (item?.id === rating2?.linkedVisitId) {
+    } else if (item?.id === rating2?.visitId) {
       return rating2;
     } else {
       return rating1;
@@ -101,39 +89,40 @@ export const ReAccreditationVisits = ({
               className="w-6/12 font-bold"
               text={item?.visitType?.description || ''}
             />
-            <Button
-              style={{
-                position: 'absolute',
-                right: -36,
-              }}
-              className="z-50 w-32"
-              type="filled"
-              color="secondaryAccent2"
-              textColor="secondary"
-              text="View"
-              isLoading={isLoading}
-              disabled={isLoading}
-              onClick={() =>
-                onView({
-                  visit: item,
-                  visitType: item?.visitType?.name?.includes(
-                    visitTypes.reaccreditation.followUp.name
-                  )
-                    ? 're-accreditation-follow-up-visit'
-                    : 're-accreditation',
-                })
-              }
-            />
+            {item?.hasAnswerData && (
+              <Button
+                style={{
+                  position: 'absolute',
+                  right: -36,
+                }}
+                className="z-50 w-32"
+                type="filled"
+                color="secondaryAccent2"
+                textColor="secondary"
+                text="View"
+                isLoading={isLoading}
+                disabled={isLoading}
+                onClick={() =>
+                  onView({
+                    visit: item,
+                    visitType: item?.visitType?.name?.includes(
+                      visitTypes.reaccreditation.followUp.name
+                    )
+                      ? 're-accreditation-follow-up-visit'
+                      : 're-accreditation',
+                  })
+                }
+              />
+            )}
           </div>
           <Typography
             type="body"
             color={getStepType(String('Success'))?.color || 'textMid'}
             text={
-              !!item?.actualVisitDate
-                ? new Date(item.actualVisitDate).toLocaleDateString(
-                    'en-ZA',
-                    dateOptions
-                  )
+              !!item?.plannedVisitDate
+                ? new Date(
+                    item.attended ? item.actualVisitDate : item.plannedVisitDate
+                  ).toLocaleDateString('en-ZA', dateOptions)
                 : ''
             }
           />

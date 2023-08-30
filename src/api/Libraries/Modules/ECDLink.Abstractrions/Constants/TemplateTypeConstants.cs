@@ -2,6 +2,7 @@ namespace ECDLink.Abstractrions.Constants
 {
     public static class TemplateTypeConstants
     {
+        //sms/email
         public const string ForgotPassword = "forgot-password";
 
         public const string AuthCode = "auth-code";
@@ -27,5 +28,18 @@ namespace ECDLink.Abstractrions.Constants
         public const string AdminPortalInvitation = "admin-portal-invitation";
         
         public const string ForgotPasswordPortal = "forgot-password-portal";
+
+        //app notifications
+        public const string StartTraineeJourney = "start-trainee-journey";
+        public const string AddedToProgramme = "added-to-programme";
+        public const string DemotedFromPrincipalOrFAA = "demoted-from-principal-faa";
+
+        public const string PromotedToPrincipalOrFAA = "promoted-to-prinicpal-or-faa";
+
+        public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
+        public const string ReassignedToNewClass = "reassigned-to-new-class";
+
+
+
     }
 }

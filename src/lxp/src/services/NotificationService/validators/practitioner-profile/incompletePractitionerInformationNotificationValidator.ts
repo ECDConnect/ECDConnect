@@ -31,7 +31,7 @@ export class IncompletePractitionerInformationNotificationValidator
     } = this.store.getState();
 
     if (!classroomState || !userState) return [];
-
+    const isOnStipend = practitionerState?.practitioner?.isOnStipend;
     const timeline = traineeState?.traineeOnboardTimeline;
     const completedSteps = timelineSteps(
       timeline!,
@@ -39,7 +39,10 @@ export class IncompletePractitionerInformationNotificationValidator
       false,
       true,
       // @ts-ignore
-      undefined
+      undefined,
+      '',
+      timeline?.consolidationMeetingStatus,
+      isOnStipend
     ).filter((item) => item?.type === 'completed');
 
     /**
@@ -77,12 +80,8 @@ export class IncompletePractitionerInformationNotificationValidator
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
       if (
-        (isTrainee &&
-          practitionerState?.practitioner?.isOnStipend &&
-          completedSteps?.length < 7) ||
-        (isTrainee &&
-          practitionerState?.practitioner?.isOnStipend !== true &&
-          completedSteps?.length < 6)
+        (isTrainee && isOnStipend && completedSteps?.length < 7) ||
+        (isTrainee && isOnStipend !== true && completedSteps?.length < 6)
       ) {
         return [
           {

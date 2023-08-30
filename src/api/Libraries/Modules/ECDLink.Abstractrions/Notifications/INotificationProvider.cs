@@ -11,6 +11,8 @@ namespace ECDLink.Abstractrions.Notifications
 
         public INotificationProvider<ProviderContext> SetMessageTemplate(TemplateTypeEnum type);
 
+        public INotificationProvider<ProviderContext> SetMessageMapped(TemplateTypeEnum template, string subject, string message);
+
         public INotificationProvider<ProviderContext> SetMessageMetaData<T>(T type) where T : IMessageMetaData;
 
         public INotificationProvider<ProviderContext> AddOrUpdateFieldReplacement(string key, string value);

@@ -102,7 +102,7 @@ public class IntegrationAPIManager
 
     public async Task<List<RecordChange>> GetRecordChangesBetweenDates(DateTime startDate, DateTime endDate)
     {
-        try
+        try 
         {
             string[] columns = null;
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();

@@ -1,15 +1,15 @@
 import { RatingData } from '@/store/pqa/pqa.types';
 import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
-import { StepType, getStepType, sortVisit } from '../timeline-steps';
+import { StepType, getStepType } from '../timeline-steps';
 import { RatingData as RatingDataUtils, getRatingData } from '../utils';
 
 interface Props {
-  timeline: PractitionerTimeline;
+  reAccreditationVisits: PractitionerTimeline['reAccreditationVisits'];
   currentRating: RatingData;
 }
 
 export const getReAccreditationStepData = ({
-  timeline,
+  reAccreditationVisits,
   currentRating,
 }: Props): {
   currentVisit?: Maybe<Visit>;
@@ -17,25 +17,21 @@ export const getReAccreditationStepData = ({
   subTitleText?: string;
   ratingData?: RatingDataUtils;
 } => {
-  if (!timeline.reAccreditationVisits?.length) {
+  if (!reAccreditationVisits?.length) {
     return {};
   }
 
-  const formattedVisits = timeline.reAccreditationVisits
-    ?.filter(
-      (visit: Maybe<Visit>) => typeof visit?.visitType?.order !== 'undefined'
-    )
-    ?.sort(sortVisit);
+  const visits = reAccreditationVisits;
 
-  const visitToAttend = formattedVisits.find((item) => !item?.attended);
+  const visitToAttend = visits.find((item) => !item?.attended);
   const currentVisit = !!visitToAttend
     ? visitToAttend
-    : formattedVisits[formattedVisits.length - 1];
+    : visits[visits.length - 1];
 
   const isLateDate =
     new Date(currentVisit?.plannedVisitDate) < new Date() &&
-    timeline.reAccreditationVisits.some((item) => !item?.attended);
-  const isAllCompleted = timeline.reAccreditationVisits?.every(
+    reAccreditationVisits.some((item) => !item?.attended);
+  const isAllCompleted = reAccreditationVisits?.every(
     (item) => !!item?.attended
   );
 

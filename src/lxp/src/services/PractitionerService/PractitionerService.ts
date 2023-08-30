@@ -89,6 +89,7 @@ class PractitionerService {
                 eventId
               }
               pQARatings {
+                visitId
                 linkedVisitId
                 actualVisitDate
                 children {
@@ -107,6 +108,7 @@ class PractitionerService {
               }
               pQASiteVisits {
                 id
+                hasAnswerData
                 plannedVisitDate
                 attended
                 comment
@@ -122,6 +124,7 @@ class PractitionerService {
               }
               reAccreditationVisits {
                 id
+                hasAnswerData
                 plannedVisitDate
                 attended
                 comment
@@ -136,6 +139,7 @@ class PractitionerService {
                 eventId
               }
               reAccreditationRatings {
+                visitId
                 linkedVisitId
                 children {
                   sectionRating
@@ -557,6 +561,7 @@ class PractitionerService {
             classroomGroupName
             classroomGroupId
             insertedDate
+            classSiteAddress
           }
         }
       `,
@@ -901,7 +906,6 @@ class PractitionerService {
       },
     });
 
-    console.log('response', response);
     if (
       response.status !== 200 ||
       !!response.data.errors ||

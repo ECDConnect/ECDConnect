@@ -92,7 +92,6 @@ export default function Roles() {
               },
             })
               .then((response: any) => {
-                console.log(response);
                 if (response) {
                   refetch();
 

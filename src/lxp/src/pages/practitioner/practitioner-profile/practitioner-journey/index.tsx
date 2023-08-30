@@ -437,7 +437,6 @@ export const PractitionerJourney = ({
             onView,
             isLoading: isLoadingGetVisitData,
             practitionerId: userId,
-            currentPqaRating,
             currentReAccreditationRating,
           })}
           typeColor={{ completed: 'successMain' }}

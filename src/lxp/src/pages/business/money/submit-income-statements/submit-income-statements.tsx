@@ -25,6 +25,7 @@ import {
   getPreviousMonth,
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const SubmitIncomeStatements: React.FC = () => {
   const history = useHistory();
@@ -37,6 +38,12 @@ export const SubmitIncomeStatements: React.FC = () => {
   const monthNames = balanceSheet?.map((item) => {
     return getMonthName(item?.month! - 1).substring(0, 3);
   });
+
+  const { isLoading: isSubmittingStatement } = useThunkFetchCall(
+    'statements',
+    'submitIncomeStatement'
+  );
+  console.log('isSubmittingStatement', isSubmittingStatement);
 
   const [submitMonthAndYear, setSubmitMonthAndYear] = useState<Date>(
     new Date()
@@ -259,23 +266,28 @@ export const SubmitIncomeStatements: React.FC = () => {
         <>
           {isOnline && (
             <>
-              <Button
-                shape="normal"
-                color="primary"
-                type="filled"
-                icon="ArrowCircleRightIcon"
-                onClick={() =>
-                  history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
-                }
-                className="mt-6 rounded-2xl"
-                disabled={isThisMonthSubmitted || !isSubmitWindowOpen}
-              >
-                <Typography
-                  type="help"
-                  color="white"
-                  text="Submit income statement"
-                />
-              </Button>
+              {isSubmitWindowOpen &&
+                !isThisMonthSubmitted &&
+                !isSubmittingStatement && (
+                  <Button
+                    shape="normal"
+                    color="primary"
+                    type="filled"
+                    icon="ArrowCircleRightIcon"
+                    onClick={() =>
+                      history.push(
+                        ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST
+                      )
+                    }
+                    className="mt-6 rounded-2xl"
+                  >
+                    <Typography
+                      type="help"
+                      color="white"
+                      text="Submit income statement"
+                    />
+                  </Button>
+                )}
               <Card
                 className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
                 borderRaduis={'xl'}
@@ -584,35 +596,38 @@ export const SubmitIncomeStatements: React.FC = () => {
     <>
       <StatementsWrapper />
       <div className="pb-180 flex flex-col justify-center p-4">
-        {isOnline && (
-          <div
-            className={
-              walkthroughSteps
-                ? 'mt-2 flex items-center pt-4'
-                : 'flex items-center'
-            }
-            id="howMayDaysToSubmit"
-          >
-            <StatusChip
-              backgroundColour={
-                daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
+        {isOnline &&
+          !isThisMonthSubmitted &&
+          isSubmitWindowOpen &&
+          !isSubmittingStatement && (
+            <div
+              className={
+                walkthroughSteps
+                  ? 'mt-2 flex items-center pt-4'
+                  : 'flex items-center'
               }
-              borderColour={
-                daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-              }
-              text={`${daysUntilFinalSubmission} days`}
-              textColour={'white'}
-              className={'mr-2'}
-            />
-            <Typography
-              className="truncate"
-              type="h4"
-              weight="bold"
-              color="textDark"
-              text={'To submit next income statement'}
-            />
-          </div>
-        )}
+              id="howMayDaysToSubmit"
+            >
+              <StatusChip
+                backgroundColour={
+                  daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
+                }
+                borderColour={
+                  daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
+                }
+                text={`${daysUntilFinalSubmission} days`}
+                textColour={'white'}
+                className={'mr-2'}
+              />
+              <Typography
+                className="truncate"
+                type="h4"
+                weight="bold"
+                color="textDark"
+                text={'To submit next income statement'}
+              />
+            </div>
+          )}
         {!isOnline && <img src={offlineImg!} alt="offline img" />}
         {renderAccordinglyWalkthroughOrNot}
         {balanceNotifications}

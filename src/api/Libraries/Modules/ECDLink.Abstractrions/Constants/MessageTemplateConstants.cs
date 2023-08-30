@@ -19,5 +19,6 @@ namespace ECDLink.Abstractrions.Constants
         public const string OTPCode = "OTPCode";
         public const string AdminUserFullName = "AdminUserFullName";
         public const string AffectedUserFullName = "AffectedUserFullName";
+        
     }
 }

@@ -164,10 +164,12 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
+            services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();
             services.AddTransient<IntegrationHelperManager>();
             services.AddTransient<DocumentManager>();
+            services.AddTransient<INotificationService, NotificationService>();
             if (!Environment.IsDevelopment()) { //dont look at any jobs for development
                 ConfigureJobs(services);
             }            

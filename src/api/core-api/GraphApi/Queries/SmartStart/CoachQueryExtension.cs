@@ -1,8 +1,11 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -169,5 +172,59 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             }
             return classrooms;
         }
-    }
+
+        public CircleTabClubs GetAllCoachingCircleClubsForCoach(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId,
+            DateTime startDate,
+            DateTime endDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var clubRepo = repoFactory.CreateRepository<Club>(userContext: uId);
+
+            List<Club> all_clubs = clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<Club> clubs_with_no_meetings = all_clubs.Where(x => x.UserId == userId && x.ClubMeetings.Count == 0 && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<Club> clubs_with_meetings = all_clubs.Where(x => x.UserId == userId && x.ClubMeetings.Count > 0 && x.IsActive == true).OrderBy(x => x.Name).ToList();
+
+            // Setting secondary text for each club
+            foreach (var club in clubs_with_meetings)
+            {
+                ClubMeeting latest_meeting_inside_quarter = club.ClubMeetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date >= startDate && x.MeetingDate.Value.Date <= endDate && x.MeetingType.Name ==  Constants.CoachingCircleSettings.meeting_type_coach_circle).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
+                ClubMeeting latest_meeting_outside_quarter = club.ClubMeetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date < startDate && x.MeetingType.Name == Constants.CoachingCircleSettings.meeting_type_coach_circle).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
+
+                if (latest_meeting_inside_quarter != null)
+                {
+                    club.CCMeetingStatus = Constants.CoachingCircleSettings.circle_meetings_held + latest_meeting_inside_quarter.MeetingDate;
+                    club.CCMeetingStatusColor = MetricsColorEnum.Success.ToString();
+                } 
+                else
+                {
+                    if (latest_meeting_outside_quarter != null)
+                    {
+                        club.CCMeetingStatus = Constants.CoachingCircleSettings.no_circle_meetings_held + latest_meeting_outside_quarter.MeetingDate;
+                        club.CCMeetingStatusColor = MetricsColorEnum.Error.ToString();
+                    }
+                }
+            }
+
+            CircleTabClubs result = new CircleTabClubs();
+            result.ClubsWithNoLinkedMeetings = clubs_with_no_meetings;
+            result.ClubsWithLinkedMeetings = clubs_with_meetings;
+
+            return result;
+        }
+
+        public List<Club> GetAllClubsForCoach(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var clubRepo = repoFactory.CreateRepository<Club>(userContext: uId);
+            return clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+        }
+
+
+        }
 }

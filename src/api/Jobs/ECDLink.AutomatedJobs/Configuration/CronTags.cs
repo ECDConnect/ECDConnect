@@ -13,6 +13,7 @@
         public const string FourPmEveryFriday = "0 0 16 * * 5";
 
         public const string NinePmEveryFriday = "0 0 21 * * 5";
+        public const string NinePmEverySaturday = "0 0 21 * * 6";
 
         public const string MidnightDaily = "0 0 0 * * *";
 
