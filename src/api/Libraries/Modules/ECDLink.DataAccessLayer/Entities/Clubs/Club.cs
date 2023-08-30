@@ -1,7 +1,5 @@
-using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Leagues;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -22,21 +20,10 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public string Name { get; set; }
         public int NumberOfMembers { get; set; }
         public string? UserId { get; set; }
-
-        public TKey LeagueId { get; set; }
-
-        [ForeignKey(nameof(LeagueId))]
+        public Guid? LeagueId { get; set; }
         public virtual League League { get; set; }
-
-        public virtual ICollection<ClubMeeting> ClubMeetings { get; set; }
-        
-        // Coaching Circle fields
-        [NotMapped]
-        public string CCMeetingStatus { get; set; } = "No coaching circles held yet";
-        [NotMapped]
-        public string CCMeetingStatusColor { get; set; } = MetricsColorEnum.Error.ToString();
-
-
+        public virtual ClubLeader ClubLeader { get; set; }
+        public virtual ClubSupport ClubSupport { get; set; }
     }
 
     public interface ClubJoin<TKey>

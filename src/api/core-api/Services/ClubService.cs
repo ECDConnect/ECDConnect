@@ -7,9 +7,11 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -22,6 +24,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<ClubMeeting, Guid> _clubMeetingRepo;
         private readonly IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
         private readonly IGenericRepository<MeetingType, Guid> _meetingTypeRepo;
+        private readonly IGenericRepository<ClubMember, Guid> _clubMemberRepo;
 
         private readonly string _uId;
 
@@ -38,6 +41,7 @@ namespace EcdLink.Api.CoreApi.Services
             _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _uId);
             _clubMeetingRegisterRepo = _repositoryFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _uId);
             _meetingTypeRepo = _repositoryFactory.CreateGenericRepository<MeetingType>(userContext: _uId);
+            _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
         }
 
         public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input)
@@ -77,6 +81,41 @@ namespace EcdLink.Api.CoreApi.Services
             _clubMeetingRegisterRepo.InsertMany(participants);
             return clubMeeting;
         }
+
+        public List<ClubMember> GetClubMembers(Guid clubId)
+        {
+            return _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true).ToList();
+        }
+
+        public double GetClubAttendanceForMonth(Guid clubId, DateTime date)
+        {
+            double attendance = 0.0;
+            int totalMembers = _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true).Count();
+            int totalAttended = _clubMeetingRegisterRepo.GetAll().Where(x => x.ClubMeeting.MeetingDate.Value.Year == date.Year &&
+                                                                            x.ClubMeeting.MeetingDate.Value.Month == date.Month &&
+                                                                            x.ClubMeeting.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting &&
+                                                                            x.IsActive == true && x.Attended == true).Count();
+
+            if (totalMembers > 0) {
+                attendance = ((double) totalAttended / (double) totalMembers) * 100;
+            }
+            
+            return attendance;
+        }
+
+        public bool HasAttendanceRegisterForMonth(Guid clubId, DateTime date)
+        {
+            int totalRegister = _clubMeetingRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true &&
+                                                                x.MeetingDate.Value.Year == date.Year &&
+                                                                x.MeetingDate.Value.Month == date.Month &&
+                                                                x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting &&
+                                                                x.ClubMeetingRegister.Count > 0).Count();
+
+
+            return totalRegister > 0;
+
+        }
+
 
     }
 }

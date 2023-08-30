@@ -14,7 +14,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
 
     }
 
-    public class ClubMeeting<TKey> : EntityBase<TKey>, ClubJoin<TKey>, MeetingTypeJoin<TKey>
+    public class ClubMeeting<TKey> : EntityBase<TKey>, ClubJoin<TKey>
         where TKey : IEquatable<TKey>
     {
         public DateTime? MeetingDate { get; set; }
@@ -22,9 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
 
         // Coaching circle meeting fields - start
         public int? ContentValueId { get; set; } // this link to the Coaching Circle Topic in CMS
-        public TKey MeetingTypeId { get; set; }
-
-        [ForeignKey(nameof(MeetingTypeId))]
+        public Guid? MeetingTypeId { get; set; }
         public virtual MeetingType MeetingType { get; set; }
         public string? MeetingNotes { get; set; }
         // Coaching circle meeting fields - end
@@ -33,6 +31,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public TKey ClubId { get; set; }
         [ForeignKey(nameof(ClubId))]
         public virtual Club Club { get; set; }
+        public bool CoachAttended { get; set; }
     }
 
     public interface ClubMeetingJoin<TKey>

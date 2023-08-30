@@ -10,7 +10,7 @@
 	CONSTRAINT "PK_League" PRIMARY KEY ("Id")
 );
 
-ALTER TABLE public."League" ADD CONSTRAINT "FK_League_LeagueTypeId" FOREIGN KEY ("LeagueTypeId") REFERENCES "LeagueType"("Id") ON DELETE CASCADE;
+ALTER TABLE public."League" ADD CONSTRAINT "FK_League_LeagueTypeId" FOREIGN KEY ("LeagueTypeId") REFERENCES "LeagueType"("Id");
 
 INSERT INTO public."League"
 ("Id", "Name", "LeagueTypeId", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId")

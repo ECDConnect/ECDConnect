@@ -1,4 +1,5 @@
-﻿using ECDLink.DataAccessLayer.Entities.Clubs;
+﻿using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using System;
 using System.Collections.Generic;
 
@@ -23,7 +24,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
 
     public class CircleTabClubs
     {
-        public virtual ICollection<Club> ClubsWithNoLinkedMeetings { get; set; }
-        public virtual ICollection<Club> ClubsWithLinkedMeetings { get; set; }
+        public virtual ICollection<CircleClub> ClubsWithNoLinkedMeetings { get; set; }
+        public virtual ICollection<CircleClub> ClubsWithLinkedMeetings { get; set; }
+    }
+
+    public class CircleClub
+    {
+        public string Id { get; set; }
+        public string LeagueId { get; set; }
+        public string Name { get; set; }
+        public string CCMeetingStatus { get; set; } = "No coaching circles held yet";
+        public string CCMeetingStatusColor { get; set; } = MetricsColorEnum.Error.ToString();
+        public virtual ICollection<ClubMeeting> ClubMeetings { get; set; }
     }
 }

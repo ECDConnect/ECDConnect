@@ -322,7 +322,7 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation = "B. Programme implementation";
             public const string step_11_re_accreditation = "C. Records";
             public const string step_12_re_accreditation = "D. Operational standards";
-          
+
             public const string step8_re_accreditation_a1 = "Supervision: children are supervised at all times.";
             public const string step8_re_accreditation_a2 = "Learning space: the space is divided into 3 or more interest areas, which are labelled.";
             public const string step8_re_accreditation_a3 = "Using the toy kit: the play kit is unpacked and children can reach toys and story books.";
@@ -491,7 +491,7 @@ namespace EcdLink.Api.CoreApi
             public const string not_growing = " is not growing well";
             public const string growing_well = " is growing well";
             public const string health_issues = "You have some health issues";
-            public const string severely_underweight= "Severely underweight";
+            public const string severely_underweight = "Severely underweight";
             public const string severely_stunted = "Severely stunted";
             public const string stunted = "Stunted";
             public const string severe_acute_malnutrition = "Severe acute malnutrition";
@@ -740,7 +740,7 @@ namespace EcdLink.Api.CoreApi
             public const string SSRecordChange = "";
             public const string SLRecordChange = "RecordChange";
             //Column Queries
-            public const string SSColumnChange = "";            
+            public const string SSColumnChange = "";
             public const string SLColumnChange = "ColumnChange";
             //Document Queries
             public const string SSDocument = "Document";
@@ -794,14 +794,14 @@ namespace EcdLink.Api.CoreApi
             public const string client_registration_ac2 = "Complete client registration flow for 2 or more pregnant women";
             public const string client_registration_ac3 = "Complete the client registration flow for 1-2 pregnant clients who are less than 20 weeks into pregnancy";
             public const string client_registration_ac4 = "Complete the client registration flow for 3 or more pregnant clients who are less than 20 weeks into pregnancy";
-            
+
             public const string pregnant_mom_clients = "Pregnant Mom Clients";
             public const string pregnant_mom_clients_ac1 = "Screening for maternal distress 'up to date'";
             public const string pregnant_mom_clients_ac2 = "1 referral per month [Screening for maternal distress]";
             public const string pregnant_mom_clients_ac3 = "Screening for maternal malnutrition";
             public const string pregnant_mom_clients_ac4 = "Referral made for maternal malnutrition [Screening for maternal malnutrition]";
             public const string pregnant_mom_clients_ac5 = "Screening for substance abuse 'up to date'";
-            
+
             public const string child_clients = "Child Clients";
             public const string child_clients_ac1 = "Child support grant - all eligible children accessing the CSG";
             public const string child_clients_ac2 = "Love, play and talk for healthy development guide. All children screened";
@@ -817,7 +817,7 @@ namespace EcdLink.Api.CoreApi
             public const string child_clients_ac12 = "Vitamin A";
             public const string child_clients_ac13 = "Deworming";
             public const string child_clients_ac14 = "Immunisations";
-            
+
 
             public const string SSChild = "Child";
             public const string child_data_collection = "Child Data Collection";
@@ -841,8 +841,22 @@ namespace EcdLink.Api.CoreApi
 
             public const string meeting_type_coach_circle = "coaching_circle";
         }
+        public static class ClubSettings
+        {
+            public const string meeting_type_club_meeting = "club_meeting";
 
-
+            public const string no_club_leader = "No club leader";
+            public const string not_enough_club_members = "Not enough club members";
+            public const string too_many_club_members = "Too many club members";
+            public const string choose_club_leader = "Choose a new club leader";
+            public const string missing_register = "Missing club meeting register";
+            public const string club_attendance = "% club attendance in ";
+            public const string new_club = "New club";
+            public const string name_purple = "Purple";
+            public const string club_purple = "Purple club";
+            public const string club_not_in_league = "Club not in league";
         }
+
+    }
 }
 
