@@ -4,7 +4,6 @@ using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Licenses;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -650,9 +649,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
             }
-
-            pqaVisit.Rating = rating.OverallRatingColor;
-            _visitRepo.Update(pqaVisit);
+            if (pqaVisit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+            {
+                pqaVisit.Rating = rating.OverallRatingColor;
+                _visitRepo.Update(pqaVisit);
+            }
             return rating;
         }
         
@@ -783,8 +784,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            RAVisit.Rating = rating.OverallRatingColor;
-            _visitRepo.Update(RAVisit);
+            if (RAVisit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
+            {
+                RAVisit.Rating = rating.OverallRatingColor;
+                _visitRepo.Update(RAVisit);
+            }
             
             return rating;
         }
