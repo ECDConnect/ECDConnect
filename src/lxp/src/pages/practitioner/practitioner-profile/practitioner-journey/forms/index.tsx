@@ -327,6 +327,7 @@ export const Form = ({ onBack }: FormProps) => {
 
     const payload: CmsVisitDataInputModelInput = {
       practitionerId: user?.id,
+      visitId: visitId ?? '',
       visitData: {
         sections,
       },
