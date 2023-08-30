@@ -29,7 +29,6 @@ import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
-  FollowUpVisitModelInput,
   InputMaybe,
   Maybe,
   PqaRating,
@@ -496,7 +495,7 @@ export const Form = ({
           formType: 'pqa',
         })
       );
-      // Create a new ID if it doesn't already exist
+
       await appDispatch(
         pqaThunkActions.addVisitFormData({
           ...payload,

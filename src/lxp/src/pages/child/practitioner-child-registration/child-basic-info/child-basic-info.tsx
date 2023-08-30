@@ -38,7 +38,7 @@ export const ChildBasicInfo: React.FC<
   );
   const location = useLocation<PractitionerChildRegisterState>();
 
-  const { practitionerId } = location.state;
+  const practitionerId = location?.state?.practitionerId;
 
   const practitionerFromState = useSelector(
     getPractitionerByUserId(practitionerId || '')
