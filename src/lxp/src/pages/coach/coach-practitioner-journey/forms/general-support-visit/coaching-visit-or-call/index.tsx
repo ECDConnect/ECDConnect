@@ -25,8 +25,7 @@ import {
 } from '../../../coach-practitioner-journey.types';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { currentActivityKey, visitIdKey } from '../..';
-import { addDays } from 'date-fns';
-import { followUpDeadline, getRatingData } from '../../../timeline/utils';
+import { divideArrayByFollowUp, getRatingData } from '../../../timeline/utils';
 import {
   callAnswer,
   pqaFollowUpQuestion,
@@ -123,6 +122,43 @@ export const CoachingAndVisitOrCallStep = ({
     getPractitionerTimelineByIdSelector(practitionerId)
   );
 
+  const pqaVisits = divideArrayByFollowUp(timeline?.pQASiteVisits ?? []);
+  const currentPqaVisits = pqaVisits.find((visits) =>
+    visits.some((item) => !item?.attended)
+  );
+  const currentPqaIndex = pqaVisits.findIndex((visits) =>
+    currentPqaVisits?.some((item) =>
+      visits.find((visit) => visit?.id === item?.id)
+    )
+  );
+  const nextPqaVisits = pqaVisits[currentPqaIndex + 1] ?? [];
+
+  const isThirdPqaFollowUpVisit =
+    currentPqaVisits?.filter(
+      (item) => item?.visitType?.name === visitTypes.pqa.followUp.name
+    )?.length === 3;
+
+  const reAccreditationVisits = divideArrayByFollowUp(
+    timeline?.reAccreditationVisits ?? []
+  );
+  const currentReAccreditationVisits = reAccreditationVisits.find((visits) =>
+    visits.some((item) => !item?.attended)
+  );
+  const currentReAccreditationIndex = reAccreditationVisits.findIndex(
+    (visits) =>
+      currentReAccreditationVisits?.some((item) =>
+        visits.find((visit) => visit?.id === item?.id)
+      )
+  );
+  const nextReAccreditationVisits =
+    reAccreditationVisits[currentReAccreditationIndex + 1] ?? [];
+
+  const isThirdReAccreditationFollowUpVisit =
+    currentReAccreditationVisits?.filter(
+      (item) =>
+        item?.visitType?.name === visitTypes.reaccreditation.followUp.name
+    )?.length === 3;
+
   // All years
   const filteredReAccreditationRatings =
     timeline?.reAccreditationRatings?.filter(
@@ -143,15 +179,6 @@ export const CoachingAndVisitOrCallStep = ({
 
   const pqaRating3 = pqaRatings?.[2];
   const reAccreditationRating3 = reAccreditationRatingsFromCurrentYear?.[2];
-
-  // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
-  const currentPqaFollowUpDeadline = pqaRating3?.overallRating
-    ? followUpDeadline.lastVisit
-    : followUpDeadline.default;
-  const currentReAccreditationFollowUpDeadline =
-    reAccreditationRating3?.overallRating
-      ? followUpDeadline.lastVisit
-      : followUpDeadline.default;
 
   const isToShowPqaFollowUpQuestion =
     !pqaRating3?.overallRating &&
@@ -257,7 +284,9 @@ export const CoachingAndVisitOrCallStep = ({
       ]);
 
       const questionList =
-        isToShowPqaFollowUpQuestion || isToShowReAccreditationFollowUpQuestion
+        (isToShowPqaFollowUpQuestion && !isThirdPqaFollowUpVisit) ||
+        (isToShowReAccreditationFollowUpQuestion &&
+          !isThirdReAccreditationFollowUpVisit)
           ? updatedQuestions
           : updatedQuestions.slice(0, 5);
 
@@ -269,11 +298,13 @@ export const CoachingAndVisitOrCallStep = ({
       setEnableButton?.(false);
     },
     [
-      isToShowReAccreditationFollowUpQuestion,
-      isToShowPqaFollowUpQuestion,
       questions,
-      setEnableButton,
       setSectionQuestions,
+      isToShowPqaFollowUpQuestion,
+      isThirdPqaFollowUpVisit,
+      isToShowReAccreditationFollowUpQuestion,
+      isThirdReAccreditationFollowUpVisit,
+      setEnableButton,
     ]
   );
 
@@ -311,23 +342,21 @@ export const CoachingAndVisitOrCallStep = ({
             <Alert
               className="mt-4"
               type="warning"
-              title={`Start another First PQA visit by ${addDays(
-                new Date(lastAttendedPqaVisit?.insertedDate),
-                currentPqaFollowUpDeadline
+              title={`Start another First PQA visit by ${new Date(
+                nextPqaVisits[0]?.plannedVisitDate
               ).toLocaleDateString('en-ZA', {
                 month: 'long',
                 day: 'numeric',
               })}.`}
             />
           )}
-          {pqaRating3?.overallRatingColor === 'Warning' && (
+          {isThirdPqaFollowUpVisit && (
             <Alert
               className="mt-4"
               type="warning"
               title={`This is your third follow up visit with ${firstName}.`}
-              message={`You must conduct a full PQA visit by ${addDays(
-                new Date(lastAttendedPqaVisit?.insertedDate),
-                currentPqaFollowUpDeadline
+              message={`You must conduct a full PQA visit by ${new Date(
+                nextPqaVisits[0]?.plannedVisitDate
               ).toLocaleDateString('en-ZA', {
                 month: 'long',
                 day: 'numeric',
@@ -350,23 +379,21 @@ export const CoachingAndVisitOrCallStep = ({
             <Alert
               className="mt-4"
               type="warning"
-              title={`Start another reaccreditation visit by ${addDays(
-                new Date(lastAttendedReAccreditationVisit?.insertedDate),
-                currentReAccreditationFollowUpDeadline
+              title={`Start another reaccreditation visit by ${new Date(
+                nextReAccreditationVisits[0]?.plannedVisitDate
               ).toLocaleDateString('en-ZA', {
                 month: 'long',
                 day: 'numeric',
               })}.`}
             />
           )}
-          {reAccreditationRating3?.overallRatingColor === 'Warning' && (
+          {isThirdReAccreditationFollowUpVisit && (
             <Alert
               className="mt-4"
               type="warning"
               title={`This is your third follow up visit with ${firstName}.`}
-              message={`You must conduct a full reaccreditation visit by ${addDays(
-                new Date(lastAttendedReAccreditationVisit?.insertedDate),
-                currentReAccreditationFollowUpDeadline
+              message={`You must conduct a full reaccreditation visit by ${new Date(
+                nextReAccreditationVisits[0]?.plannedVisitDate
               ).toLocaleDateString('en-ZA', {
                 month: 'long',
                 day: 'numeric',
@@ -481,8 +508,9 @@ export const CoachingAndVisitOrCallStep = ({
       })}
       {(isPqaFollowUp || isReAccreditationFollowUp) && (
         <>
-          {(isToShowPqaFollowUpQuestion ||
-            isToShowReAccreditationFollowUpQuestion) && (
+          {((isToShowPqaFollowUpQuestion && !isThirdPqaFollowUpVisit) ||
+            (isToShowReAccreditationFollowUpQuestion &&
+              !isThirdReAccreditationFollowUpVisit)) && (
             <>
               <Typography
                 type="h4"

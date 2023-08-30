@@ -1,6 +1,16 @@
+using Castle.Components.DictionaryAdapter.Xml;
+using DotLiquid.Tags;
+using ECDLink.DataAccessLayer.Entities;
 using iTextSharp.text;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
+using NPOI.SS.Formula.Functions;
 using Org.BouncyCastle.Asn1.X509.Qualified;
+using Org.BouncyCastle.Utilities;
 using System.Threading.Tasks;
+using static ECDLink.Core.SystemSettings.SettingGroups;
+using static NPOI.HSSF.Util.HSSFColor;
+using static System.Reflection.Metadata.BlobBuilder;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -316,8 +326,8 @@ namespace EcdLink.Api.CoreApi
             public const string step8_re_accreditation_a1 = "Supervision: children are supervised at all times.";
             public const string step8_re_accreditation_a2 = "Learning space: the space is divided into 3 or more interest areas, which are labelled.";
             public const string step8_re_accreditation_a3 = "Using the toy kit: the play kit is unpacked and children can reach toys and story books.";
-            public const string step8_re_accreditation_a4 = "Displays: the learning space is interesting with posters and children's work on the walls.";
-            public const string step8_re_accreditation_a5 = "SmartStart routine: the SmartStart routine is displayed at a height that children cna reach.";
+            public const string step8_re_accreditation_a4 = "Displays: the learning space is interesting with posters and children’s work on the walls.";
+            public const string step8_re_accreditation_a5 = "SmartStart routine: the SmartStart routine is displayed at a height that children can reach.";
             public const string step8_re_accreditation_a6 = "SmartStart activities: all the activities in the SmartStart routine (below) were included today.";
             public const string step8_re_accreditation_a7 = "Free play: at least 45 minutes was set aside for free play.";
             public const string step8_re_accreditation_a8 = "Planning & recall: children had the chance to plan and recall activities before and after free play.";
@@ -326,6 +336,7 @@ namespace EcdLink.Api.CoreApi
             public const string step8_re_accreditation_a11 = "Large group time: there was large group time (at least 15 minutes).";
             public const string step8_re_accreditation_a12 = "Message board: the message board is up to date.";
 
+
             public const string step_10_section = "Step 10";
             public const string step_10_re_accreditation_q1 = "Adults speak and act warmly & respectfully to children.";
             public const string step_10_re_accreditation_q2 = "Adults offer individual attention to children, and give encouragement.";
@@ -333,8 +344,8 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation_q4 = "Children are comforted if they are upset.";
             public const string step_10_re_accreditation_q5 = "Children are involved in solving conflicts.";
             public const string step_10_re_accreditation_q6 = "Adults create opportunities to talk with children, and listen and respond to their questions and ideas.";
-            public const string step_10_re_accreditation_q7 = "Adults encourage children to make their own choices during the session and to things for themselves where they can.";
-            public const string step_10_re_accreditation_q8 = "Adults join in as a partner in children's play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
+            public const string step_10_re_accreditation_q7 = "Adults encourage children to make their own choices during the session and to do things for themselves where they can.";
+            public const string step_10_re_accreditation_q8 = "Adults join in as a partner in children’s play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
             public const string step_10_re_accreditation_q9 = "Adults use appropriate activities and materials for the different ages and stages of children.";
             public const string step_10_re_accreditation_q10 = "During story time there is lots of conversation and children are encouraged to take part and ask questions.";
 
@@ -347,7 +358,7 @@ namespace EcdLink.Api.CoreApi
             public const string step_11_re_accreditation_a6 = "Caregiver meetings: there are attendance registers for the last two monthly caregiver meetings.";
 
             public const string step_12_section = "Step 12";
-            public const string step_12_re_accreditation_a1 = "Caregiver meetings: the franchisee is organising monthly caregiver meetings (at least 6 in the last year).";
+            public const string step_12_re_accreditation_a1 = "Caregiver meetings: the franchisee is organising monthly caregiver meetings (at least 6 in last year).";
             public const string step_12_re_accreditation_a2 = "Club meetings: the franchisee is attending monthly club meetings (at least 9 in the last year).";
             public const string step_12_re_accreditation_a3 = "Age range: all or nearly all (more than 80%) of the children are aged three and four years old.";
             public const string step_12_re_accreditation_a4 = "Dosage: at least three-quarters of children receive a dosage of six hours per week (playgroups) or 20 hours per week (day mothers and ECD centres).";
@@ -358,10 +369,8 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
             public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
-
             public const string step12 = "Step 12";
             public const string step13 = "Step 13";
-
             public const int step2_total = 12;
             public const int step3_total = 2;
             public const int step4_total = 14;
@@ -370,14 +379,12 @@ namespace EcdLink.Api.CoreApi
             public const int step7_total = 10;
             public const int step8_total = 8;
             public const int step12_total = 17;
-
             public const int step2_re_accreditation_total = 17;
             public const int step3_re_accreditation_total = 5;
             public const int re_accreditation_A_total = 12;
             public const int re_accreditation_B_total = 20;
             public const int re_accreditation_C_total = 6;
             public const int re_accreditation_D_total = 6;
-
             public const string zero_stars = "0 stars";
             public const string one_star = "1 star";
             public const string two_stars = "2 stars";
@@ -397,39 +404,31 @@ namespace EcdLink.Api.CoreApi
             public const string not_attended_first_aid = "Did not attend first aid course";
             public const string child_progress_training = "Child progress training";
             public const string self_assessment = "Self-assessment completed";
-
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
         }
-
         public static class GGSettings
         {
             public const int recordsPerPage = 40;
             public const int pageNumber = 0;
-
             public const string visitType_all = "all";
             public const string visitType_overdue = "overdue";
             public const string visitType_due = "due";
             public const string visit_follow_up = "Follow up";
-
             public const string client_mother = "mother";
             public const string client_child = "child";
             public const string client_new = "New client";
             public const string client_teenager = "Teenager";
-
             public const string client_pregnant_mom = "Pregnant mom";
             public const string client_pregnant_mom_and_child = "Pregnant mom and child";
             public const string client_pregnant_mom_multiple_children = "Multiple children";
-
             public const string maternal_record_name = "maternalcaserecord.png";
             public const string upload_maternal_case_record = "Upload maternal case record";
-
             public const string additional_visits = "additional_visits";
             public const string visit1 = "visit_1";
             public const string visit2 = "visit_2";
             public const string visit3 = "visit_3";
             public const string visit4 = "visit_4";
-
             public const string visit_data_client_dashboard = "ClientDashboard";
             public const string visit_data_client_summary = "ClientSummary";
             public const string visit_data_client_referral = "Referral";
@@ -440,11 +439,9 @@ namespace EcdLink.Api.CoreApi
             public const string q_antenatal_visits = "Is {client} up to date with their antenatal clinic visits?";
             public const string q_measurement = "What is {client} mid-upper arm circumference (MUAC) today?";
             public const string q_danger_signs = "Tick the danger signs {client} is experiencing:";
-
             public const string q_stop_worry = "Felt unable to stop worrying or thinking too much?";
             public const string q_felt_down = "Felt down, depressed or hopeless?";
             public const string q_suicide = "Had thoughts and plans to harm yourself or commit suicide?";
-
             public const string q_T = "(T) Tolerance: how many drinks does it take to make you high?";
             public const string q_A = "(A) Have people annoyed you by criticizing your drinking?";
             public const string q_C = "(C) Have you ever felt you need to cut down on your drinking?";

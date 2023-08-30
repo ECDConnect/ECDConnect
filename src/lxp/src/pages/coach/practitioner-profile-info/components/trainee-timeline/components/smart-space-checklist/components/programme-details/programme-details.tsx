@@ -213,30 +213,70 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     }
 
     if (checkedquestion(questions?.[4].question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'ownTheProperty',
-        Boolean(checkedquestion(questions?.[4].question)?.questionAnswer)
-      );
+      const answer =
+        checkedquestion(questions?.[4].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('ownTheProperty', answer);
     }
 
-    if (checkedquestion(questions?.[5].question)?.questionAnswer) {
-      setProgrammeFormValue(
-        'haveTheTitleDeeds',
-        Boolean(checkedquestion(questions?.[5].question)?.questionAnswer)
-      );
+    if (checkedquestion(questions?.[5]?.question)?.questionAnswer) {
+      const answer =
+        checkedquestion(questions?.[5].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('haveTheTitleDeeds', answer);
     }
 
-    if (checkedquestion(questions?.[6].question)?.questionAnswer) {
+    if (checkedquestion(questions?.[6]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'unproclaimedLand',
         Boolean(checkedquestion(questions?.[6].question)?.questionAnswer)
       );
     }
 
-    if (checkedquestion(questions?.[7].question)?.questionAnswer) {
+    if (checkedquestion(questions?.[7]?.question)?.questionAnswer) {
       setProgrammeFormValue(
         'r4bPhoto',
-        checkedquestion(questions?.[7].question)?.questionAnswer!
+        checkedquestion(questions?.[7]?.question)?.questionAnswer!
+      );
+
+      setR4bPhotoUrl(
+        checkedquestion(questions?.[7]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[8]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[8]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[9]?.question)?.questionAnswer) {
+      const answer =
+        checkedquestion(questions?.[9].question)?.questionAnswer === 'false'
+          ? false
+          : true;
+      setProgrammeFormValue('liveAtTheProperty', answer);
+    }
+    if (checkedquestion(questions?.[10]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[10].question)?.questionAnswer!
+      );
+    }
+    if (checkedquestion(questions?.[11]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[11]?.question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[12]?.question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[12].question)?.questionAnswer!
       );
     }
   }, []);

@@ -33,6 +33,7 @@ export interface TableProps {
     section4: Section;
   };
   isToRemoveSmartStarter?: boolean;
+  isTwoOrangeRatings?: boolean;
   setReAccreditationRating?: (value: RatingType) => void;
 }
 
@@ -41,13 +42,20 @@ export const Rating = ({
   sections,
   sectionQuestions,
   isToRemoveSmartStarter,
+  isTwoOrangeRatings,
   setReAccreditationRating,
 }: TableProps) => {
   const step2ReAccreditationQuestionAnswers = sectionQuestions?.find(
     (item) => item.visitSection === step2ReAccreditationVisitSection
   )?.questions?.[0]?.answer as string[] | undefined;
+
+  // it's string if it's from the backend
+  const step2Answers =
+    typeof step2ReAccreditationQuestionAnswers === 'string'
+      ? (step2ReAccreditationQuestionAnswers as string)?.split('.,')
+      : step2ReAccreditationQuestionAnswers;
   const isBasicSmartSpaceStandardsCompleted =
-    step2ReAccreditationQuestionAnswers?.length === options.length;
+    step2Answers?.length === options.length;
 
   const step15Questions = sectionQuestions?.find(
     (item) => item.visitSection === step15ReAccreditationVisitSection
@@ -121,12 +129,16 @@ export const Rating = ({
     .map((item) => item.score)
     .reduce((total, number) => total + number, 0);
 
-  const isRedFlagSmartSpaceLicence = step15Question1Answer === true;
+  const isRedFlagSmartSpaceLicence =
+    step15Question1Answer === true || step15Question1Answer === 'true';
   const isRedFlagSmartSpaceCertificateWithdrawn =
     !isBasicSmartSpaceStandardsCompleted;
-  const isOrangeQuestion2 = step15Question2Answer === false;
-  const isOrangeQuestion3 = step15Question3Answer === true;
-  const isOrangeQuestion4 = step15Question4Answer === false;
+  const isOrangeQuestion2 =
+    step15Question2Answer === false || step15Question2Answer === 'false';
+  const isOrangeQuestion3 =
+    step15Question3Answer === true || step15Question3Answer === 'true';
+  const isOrangeQuestion4 =
+    step15Question4Answer === false || step15Question4Answer === 'false';
 
   const isOrangeFlag =
     rating >= 27 &&
@@ -251,26 +263,27 @@ export const Rating = ({
   return (
     <>
       {getCard()}
-      {(isOrangeQuestion2 || isOrangeQuestion3 || isOrangeQuestion4) && (
-        <ul className="ml-5 mb-4 list-disc">
-          {isOrangeQuestion2 && (
-            <li className="text-textMid">
-              SmartStart programme not implemented for long enough
-            </li>
-          )}
-          {isOrangeQuestion3 && (
-            <li className="text-textMid">
-              Too many children are attending the programme
-            </li>
-          )}
-          {isOrangeQuestion4 && (
-            <li className="text-textMid">
-              There are not enough adults for the number of children in the
-              programme
-            </li>
-          )}
-        </ul>
-      )}
+      {(isOrangeQuestion2 || isOrangeQuestion3 || isOrangeQuestion4) &&
+        !isTwoOrangeRatings && (
+          <ul className="ml-5 mb-4 list-disc">
+            {isOrangeQuestion2 && (
+              <li className="text-textMid">
+                SmartStart programme not implemented for long enough
+              </li>
+            )}
+            {isOrangeQuestion3 && (
+              <li className="text-textMid">
+                Too many children are attending the programme
+              </li>
+            )}
+            {isOrangeQuestion4 && (
+              <li className="text-textMid">
+                There are not enough adults for the number of children in the
+                programme
+              </li>
+            )}
+          </ul>
+        )}
       {isRedFlagSmartSpaceCertificateWithdrawn ? (
         <>
           <Typography

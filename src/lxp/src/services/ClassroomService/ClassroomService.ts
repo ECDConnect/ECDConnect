@@ -24,6 +24,20 @@ class ClassroomService {
             numberPractitioners
             numberOfOtherAssistants
             insertedDate
+            siteAddressId
+            siteAddress {
+              id
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
           }
         }
           `,

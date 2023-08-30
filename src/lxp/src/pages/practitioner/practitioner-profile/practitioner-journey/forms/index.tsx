@@ -72,7 +72,7 @@ export const Form = ({ onBack }: FormProps) => {
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
-    PqaActions.ADD_SELF_ASSESSMENT_FOR_PRACTITIONER
+    PqaActions.ADD_VISIT_FORM_DATA
   );
   const {
     isLoading: isLoadingCoachRequest,
@@ -123,10 +123,6 @@ export const Form = ({ onBack }: FormProps) => {
   const pqaStep11Answer =
     String(previousData?.questions?.[0]?.answer) ?? undefined;
 
-  const { isLoading: isLoadingSelfAssessment } = useThunkFetchCall(
-    'pqa',
-    PqaActions.ADD_SELF_ASSESSMENT_FOR_PRACTITIONER
-  );
   const { isOnline } = useOnlineStatus();
 
   const user = useSelector(getUser);
@@ -422,7 +418,7 @@ export const Form = ({ onBack }: FormProps) => {
         onClose={onBack}
         onSubmit={handleOnSubmit}
         submitButton={renderSubmitButtonStyle}
-        isLoading={isLoadingSelfAssessment}
+        isLoading={isLoading}
         isView={isView}
         {...(isViewPqaOrReAccreditation && { onView })}
       />
