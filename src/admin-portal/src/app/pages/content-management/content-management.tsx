@@ -15,7 +15,7 @@ import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import { ArrowLeftIcon, SearchIcon } from '@heroicons/react/solid';
+import { ArrowLeftIcon, ChartBarIcon, PresentationChartBarIcon, SearchIcon } from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 
 export function ContentManagement() {
@@ -194,66 +194,137 @@ export function ContentManagement() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const programItems: StackedListItemType[] = [];
+  const listItems: StackedListItemType[] = [];
 
-  programItems.push(
-    {
-      title: 'Themes',
-      description: 'An organized set of activities based around a particular topic',
-      titleIcon: 'SparklesIcon',
-      titleIconClassName: 'bg-secondary text-white',
-      onActionClick: () => {
-        setSpecialType('');
-        const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'Theme'));
-        showGroupContentTypes(selectedTypeObject);
+  console.log(dataTypes?.contentTypes)
+
+  if (specialType === 'Progress') {
+    listItems.push(
+      {
+        title: 'Levels',
+        description: 'Children will be placed at a specific level or stage of development',
+        titleIcon: 'ChartBarIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'ProgressTrackingLevel'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
       },
-      classNames: 'bg-uiBg',
-    },
-    {
-      title: 'Small/large group activities',
-      description: 'Classroom activities for children to do either in small groups or as a whole class',
-      titleIcon: 'UsersIcon',
-      titleIconClassName: 'bg-secondary text-white',
-
-      onActionClick: () => {
-        setSpecialType('');
-        const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'Activity'));
-        showGroupContentTypes(selectedTypeObject);
+      {
+        title: 'Progress categories',
+        description: 'Development areas',
+        titleIcon: 'PresentationChartBarIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'ProgressTrackingCategory'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
       },
-      classNames: 'bg-uiBg',
-    },
-    {
-      title: 'Stories',
-      description: 'Read aloud stories and story books',
-      titleIcon: 'BookOpenIcon',
-      titleIconClassName: 'bg-secondary text-white',
-
-      onActionClick: () => {
-        setSpecialType('');
-        const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBook'));
-        showGroupContentTypes(selectedTypeObject);
+      {
+        title: 'Progress subcategories',
+        description: 'Development areas',
+        titleIcon: 'PresentationChartBarIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'ProgressTrackingSubCategory'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
       },
-      classNames: 'bg-uiBg',
-    },
-    {
-      title: 'Story activities',
-      description: 'Activities to do during story time ',
-
-      titleIcon: 'BriefcaseIcon',
-      titleIconClassName: 'bg-secondary text-white',
-
-      onActionClick: () => {
-        setSpecialType('');
-        const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBookPartQuestion'));
-        showGroupContentTypes(selectedTypeObject);
+      {
+        title: 'Progress tool',
+        description: 'Edit the skills shown in the progress tracker',
+        titleIcon: 'PresentationChartBarIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'ProgressTrackingSkill'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
       },
-      classNames: 'bg-uiBg',
-    }
-  );
+    );
+  } else {
+    listItems.push(
+      {
+        title: 'Themes',
+        description: 'An organized set of activities based around a particular topic',
+        titleIcon: 'SparklesIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'Theme'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Small/large group activities',
+        description: 'Classroom activities for children to do either in small groups or as a whole class',
+        titleIcon: 'UsersIcon',
+        titleIconClassName: 'bg-secondary text-white',
+
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'Activity'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Stories',
+        description: 'Read aloud stories and story books',
+        titleIcon: 'BookOpenIcon',
+        titleIconClassName: 'bg-secondary text-white',
+
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBook'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Story Book Parts',
+        description: 'Read aloud stories and story books',
+        titleIcon: 'BookOpenIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBookParts'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Story activities',
+        description: 'Activities to do during story time ',
+
+        titleIcon: 'BriefcaseIcon',
+        titleIconClassName: 'bg-secondary text-white',
+
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBookPartQuestion'));
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      }
+    );
+  }
+
+
 
 
   return (
     <div className="">
+
+
       {dataTypes ? (
         <>
           {!selectedContent && (
@@ -337,6 +408,7 @@ export function ContentManagement() {
                     <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                       {searchValue === '' && (
                         <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+
                       )}
                     </span>
                     <input
@@ -356,13 +428,23 @@ export function ContentManagement() {
                     ></ContentList>
                   )}
                   {
-                    specialType === 'Programmes' ? <div className="flex">
+                    specialType === 'Programmes' && <div className="flex">
                       <StackedList
                         className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
                         type="TitleList"
-                        listItems={programItems}
+                        listItems={listItems}
                       />
-                    </div> : null
+                    </div>
+                  }
+
+                  {
+                    specialType === 'Progress' && <div className="flex">
+                      <StackedList
+                        className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
+                        type="TitleList"
+                        listItems={listItems}
+                      />
+                    </div>
                   }
                 </div>
               </div>

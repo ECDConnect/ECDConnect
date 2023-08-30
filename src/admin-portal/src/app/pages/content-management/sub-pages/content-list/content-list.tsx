@@ -128,9 +128,9 @@ export default function ContentList({
       } else if (selectedTab === 3) {
         let anteNatalData = copyItems.filter((item: { type: string; }) => item.type === "antenatal");
         setTableData(anteNatalData);
-      } else {
-        setTableData(copyItems);
       }
+      console.log(">>>", copyItems)
+      setTableData(copyItems);
 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

@@ -21,6 +21,7 @@ import { Alert, Button, DialogPosition, Typography, classNames } from '@ecdlink/
 import {
   ArrowLeftIcon,
   DocumentDuplicateIcon,
+  PencilIcon,
   SaveAsIcon,
   TrashIcon,
   XIcon,
@@ -222,11 +223,12 @@ export default function ContentEdit({
   if (contentType && contentValues && template && !loading) {
     return (
       <div className="flex flex-col rounded-md ">
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
-              <h3 className="text-lg font-medium leading-6 text-gray-900">
-                {cancelEdit && camelCaseToSentanceCase(contentType.name ?? '')}
+              <h3 className="text-xl font-semibold leading-6 text-gray-900">
+                {cancelEdit && camelCaseToSentanceCase( content.name ?? '')}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
@@ -250,6 +252,7 @@ export default function ContentEdit({
                 >
                   Cancel
                   <XIcon width="22px" className="pl-1" />
+
                 </button>
               )}
             </div>
@@ -267,7 +270,11 @@ export default function ContentEdit({
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : null}
+            ) : <Alert
+              className="mt-2 mb-2 rounded-md"
+              message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
+              type="warning"
+            />}
 
             <DynamicForm
               template={template}
@@ -276,7 +283,7 @@ export default function ContentEdit({
               defaultLanguageId={defaultLanguageId}
             />
           </div>
-         
+
           <div className="flex flex-row">
             <button
               type="submit"
@@ -295,7 +302,7 @@ export default function ContentEdit({
                 {' '}
               </TrashIcon>
             </button>
-          
+
           </div>
         </form>
       </div>
