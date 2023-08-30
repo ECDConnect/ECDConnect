@@ -24,7 +24,6 @@ export function ContentManagement() {
   const [specialType, setSpecialType] = useState('');
   const [selectedTab, setSelectedTab] = useState(1);
 
-
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
 
@@ -36,16 +35,17 @@ export function ContentManagement() {
     fetchPolicy: 'cache-and-network',
   });
 
-
-  const [getContentTypes, { data: dataTypes, refetch }] = useLazyQuery(contentTypes, {
-    variables: {
-      search: '',
-      searchInContent: null,
-      isVisiblePortal: true,
-    },
-    fetchPolicy: 'cache-and-network',
-  });
-
+  const [getContentTypes, { data: dataTypes, refetch }] = useLazyQuery(
+    contentTypes,
+    {
+      variables: {
+        search: '',
+        searchInContent: null,
+        isVisiblePortal: true,
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
 
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
     contentDefinitions,
@@ -66,8 +66,6 @@ export function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dataTypes]);
 
-
-
   const getNavigationItems = () => {
     if (
       data &&
@@ -78,33 +76,32 @@ export function ContentManagement() {
         {
           name: 'Consent',
           // href: '/',
-          id: 0
+          id: 0,
         },
         {
           name: 'Info  pages',
           href: 'MoreInformation',
-          id: 1
+          id: 1,
         },
         {
           name: 'Postnatal',
           href: 'MoreInformation',
-          id: 2
-
+          id: 2,
         },
         {
           name: 'Antenatal',
           href: 'MoreInformation',
-          id: 3
+          id: 3,
         },
         {
           name: 'Danger signs',
           // href: '/',
-          id: 4
+          id: 4,
         },
         {
           name: 'Community',
           href: 'CommunitySectionGG',
-          id: 5
+          id: 5,
         },
       ];
     } else {
@@ -112,26 +109,26 @@ export function ContentManagement() {
         {
           name: 'Consent',
           // href: '/content-management',
-          id: 0
+          id: 0,
         },
         {
           name: 'Info pages',
           href: 'MoreInformation',
-          id: 1
+          id: 1,
         },
         {
           name: 'Progress',
           // href: '/',
-          id: 2
+          id: 2,
         },
         {
           name: 'Programmes',
           // href: '/',
-          id: 3
+          id: 3,
         },
         {
           name: 'Community',
-          id: 4
+          id: 4,
         },
       ];
     }
@@ -172,17 +169,15 @@ export function ContentManagement() {
     refrechDefinitions();
   };
 
-
   useEffect(() => {
-    console.log(searchValue)
-    getContentTypes(
-      {
-        variables: {
-          search: searchValue,
-          searchInContent: true,
-          isVisiblePortal: true,
-        }
-      });
+    console.log(searchValue);
+    getContentTypes({
+      variables: {
+        search: searchValue,
+        searchInContent: true,
+        isVisiblePortal: true,
+      },
+    });
     // TODO: Use actual pagination when table component supports it.
     // const getUserCountQueryVariables = getCountVariables(searchValue);
     // getCountUsers({
@@ -320,7 +315,6 @@ export function ContentManagement() {
 
 
 
-
   return (
     <div className="">
 
@@ -350,7 +344,7 @@ export function ContentManagement() {
                         setSpecialType('');
                         showGroupContentTypes(selectedTypeObject);
                       } else {
-                        setSelectedTab(item.id)
+                        setSelectedTab(item.id);
                         setSpecialType(item.name);
                       }
                     }}
@@ -365,7 +359,6 @@ export function ContentManagement() {
                   </a>
                 </div>
               ))}
-
             </div>
           )}
 
@@ -381,25 +374,30 @@ export function ContentManagement() {
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">
               <div className="h-full py-3 px-4 sm:px-6 lg:px-8">
-                {(selectedType?.name === 'Theme' || selectedType?.name === 'Activity' || selectedType?.name === 'StoryBook' || selectedType?.name === 'StoryBookPartQuestion') && <div className="justify-self col-end-3 pb-2">
-                  <button
-                    onClick={() => {
-                      setSelectedType(null);
-                      setSpecialType('Programmes');
-                    }}
-                    type="button"
-                    className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
-                  >
-                    <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
-                      {' '}
-                    </ArrowLeftIcon>
-                    Programme
-                    <span className="px-1 text-gray-400">
-                      {' '}
-                      / {selectedType?.name}
-                    </span>
-                  </button>
-                </div>}
+                {(selectedType?.name === 'Theme' ||
+                  selectedType?.name === 'Activity' ||
+                  selectedType?.name === 'StoryBook' ||
+                  selectedType?.name === 'StoryBookPartQuestion') && (
+                  <div className="justify-self col-end-3 pb-2">
+                    <button
+                      onClick={() => {
+                        setSelectedType(null);
+                        setSpecialType('Programmes');
+                      }}
+                      type="button"
+                      className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+                    >
+                      <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
+                        {' '}
+                      </ArrowLeftIcon>
+                      Programme
+                      <span className="px-1 text-gray-400">
+                        {' '}
+                        / {selectedType?.name}
+                      </span>
+                    </button>
+                  </div>
+                )}
                 <div
                   className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
@@ -430,7 +428,7 @@ export function ContentManagement() {
                   {
                     specialType === 'Programmes' && <div className="flex">
                       <StackedList
-                        className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
+                        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
                         type="TitleList"
                         listItems={listItems}
                       />

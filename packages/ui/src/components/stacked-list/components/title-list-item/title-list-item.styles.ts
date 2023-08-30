@@ -3,6 +3,6 @@ export const contentWrapper =
 
 export const title =
   'text-base leading-snug font-semibold text-textDark truncate';
-export const description = 'font-normal text-gray text-md'
+export const description = 'font-normal text-gray text-md';
 export const titleChevron = 'h-5 w-5 text-textLight';
 export const titlelistItemContainer = `block rounded-2xl`;

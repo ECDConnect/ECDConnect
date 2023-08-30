@@ -16,6 +16,7 @@ import {
 } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import { chunkArray } from '@ecdlink/core';
 import { Maybe, PqaRating } from '@ecdlink/graphql';
+import { sortVisits } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
   return createSelector(
@@ -136,16 +137,20 @@ export const getSectionsQuestionsByStep = (
 
 export const getCurrentPQaRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const visits = timeline?.pQASiteVisits?.filter(
-      (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
-    );
+    const visits =
+      timeline?.pQASiteVisits?.filter(
+        (item) => item?.visitType?.name !== visitTypes.pqa.followUp.name
+      ) ?? [];
+    const sortedVisits = sortVisits(visits);
 
     const pqaRatings =
       timeline?.pQARatings
         ?.filter((item) => item?.visitTypeName !== visitTypes.pqa.followUp.name)
         ?.map((item) => ({
           item,
-          order: visits?.findIndex((visit) => visit?.id === item?.visitId),
+          order: sortedVisits?.findIndex(
+            (visit) => visit?.id === item?.visitId
+          ),
         })) ?? [];
 
     const pqaRating1 = pqaRatings?.find((item) => item?.order === 0)?.item;
@@ -174,10 +179,13 @@ export const getCurrentPQaRatingByUserId = (userId: string) =>
 
 export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const visits = timeline?.reAccreditationVisits?.filter(
-      (item) =>
-        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-    );
+    const visits =
+      timeline?.reAccreditationVisits?.filter(
+        (item) =>
+          item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+      ) ?? [];
+    const sortedVisits = sortVisits(visits);
+
     // All years
     const filteredReAccreditationRatings =
       timeline?.reAccreditationRatings?.filter(
@@ -201,7 +209,9 @@ export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
         )
         ?.map((item) => ({
           item,
-          order: visits?.findIndex((visit) => visit?.id === item?.visitId),
+          order: sortedVisits?.findIndex(
+            (visit) => visit?.id === item?.visitId
+          ),
         })) ?? [];
 
     const rating1 = reAccreditationRatings?.find(
