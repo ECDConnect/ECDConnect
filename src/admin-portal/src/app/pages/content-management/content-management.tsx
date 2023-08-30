@@ -8,6 +8,7 @@ import {
   SortEnumType,
   contentDefinitions,
   contentTypes,
+  contentTypesWithLanguage,
 } from '@ecdlink/graphql';
 import { ContentTypeDto } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
@@ -29,7 +30,7 @@ export function ContentManagement() {
   const { data: languages } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
   });
-  const { data: dataTypes, refetch } = useQuery(contentTypes, {
+  const { data: dataTypes, refetch } = useQuery(contentTypesWithLanguage, {
     variables: {
       search: '',
       searchInContent: null,
@@ -45,10 +46,14 @@ export function ContentManagement() {
   );
 
   useEffect(() => {
-    if (dataTypes && dataTypes.contentTypes && !selectedType) {
-      setSelectedType(dataTypes.contentTypes[0]);
-    } else if (dataTypes && dataTypes.contentTypes && selectedType) {
-      const currentSelectedContent = dataTypes.contentTypes.find(
+    if (dataTypes && dataTypes.contentTypesWithLanguages && !selectedType) {
+      setSelectedType(dataTypes.contentTypesWithLanguages[0]);
+    } else if (
+      dataTypes &&
+      dataTypes.contentTypesWithLanguages &&
+      selectedType
+    ) {
+      const currentSelectedContent = dataTypes.contentTypesWithLanguages.find(
         (x) => x.id === selectedType.id
       );
       setSelectedType(currentSelectedContent);
@@ -127,6 +132,7 @@ export function ContentManagement() {
         (x: ContentTypeDto) => x.id === selectedType?.id
       );
       setSelectedType(currentType);
+
       setSelectedContent(contentManagementView);
     });
   };

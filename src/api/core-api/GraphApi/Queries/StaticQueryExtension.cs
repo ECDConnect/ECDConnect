@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (!string.IsNullOrWhiteSpace(userId))
                 docsQuery = docsQuery.Where(x => x.UserId == userId);
-            
+
             if (showOnlyTypes is not null && showOnlyTypes.Length > 0)
                 docsQuery = docsQuery
                     .Include(d => d.DocumentType)

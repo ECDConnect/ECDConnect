@@ -32,6 +32,15 @@ namespace ECDLink.ContentManagement.Repositories
         {
             var currentTenant = TenantExecutionContext.Tenant.Id;
 
+            if (localeId == Guid.Empty)
+            {
+                var deafultLocale = _context.Languages
+                .Where(x => x.Locale == "en-za")
+                .FirstOrDefault();
+
+                localeId = deafultLocale.Id;
+            }
+
             // Get the complete content for null tenant and current tenants.
             var contentType = _context.ContentTypes
                   .Include(ct => ct.Content)
