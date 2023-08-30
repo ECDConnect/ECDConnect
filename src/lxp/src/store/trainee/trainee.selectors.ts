@@ -88,6 +88,18 @@ export const getTraineeVisitDataAssitantsNumber = (
   return questions?.[0]?.answer;
 };
 
+export const getCoachVisitDataNextSteps = (
+  state: RootState
+): string | null | undefined => {
+  const visitData = state.trainee.coachSmartSpaceCheckData;
+  const programmeDetailsSections = visitData?.find(
+    (item) => item?.visitSection === 'Discuss next steps'
+  );
+  const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
+  const questions = programmeDetailsSectionsWithoutTypo?.questions;
+  return questions?.[0]?.answer;
+};
+
 export const getTraineeProgrammeType = (
   state: RootState
 ): string | null | undefined => {
