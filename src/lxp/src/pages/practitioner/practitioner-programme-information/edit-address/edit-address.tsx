@@ -55,8 +55,12 @@ export const EditAddress: React.FC<EditAdressProps> = ({
     setShowMap(true);
   };
 
+  const handleCloseMap = () => {
+    setShowMap(false);
+  };
+
   return (
-    <div onClick={handleShowMap}>
+    <div>
       <BannerWrapper
         size="small"
         renderOverflow
@@ -66,7 +70,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
         className="p-4"
       >
         <Typography type="h2" color="textDark" text={'Programme address'} />
-        <div>
+        <div onClick={handleShowMap}>
           <FormInput
             label={'Where is your site located?'}
             nameProp={'programmeAddress'}
@@ -99,7 +103,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
       </div>
       <Dialog visible={showMap} position={DialogPosition.Bottom} stretch>
         <AddressMap
-          onClose={() => setShowMap?.(false)}
+          onClose={handleCloseMap}
           onSubmit={(address) => {
             console.log(address);
             setEditedAddress(address);
