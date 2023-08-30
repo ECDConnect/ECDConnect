@@ -49,7 +49,8 @@ export const ChildBasicInfo: React.FC<
     return item?.userId === userId || item?.isActive !== true;
   });
 
-  const isPrincipal = practitioner?.isPrincipal;
+  const isPrincipal =
+    practitioner?.isPrincipal || practitionerFromState?.isPrincipal;
 
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
