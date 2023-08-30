@@ -10,6 +10,7 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
@@ -154,6 +155,10 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ClubMeeting> ClubMeetings { get; set; }
         public DbSet<ClubMeetingRegister> ClubMeetingRegisters { get; set; }
         public DbSet<MeetingType> MeetingType { get; set; }
+
+        // Leagues
+        public DbSet<LeagueType> LeagueType { get; set; }
+        public DbSet<League> League { get; set; }
 
         // PQA
         public DbSet<PQA> PQAs { get; set; }

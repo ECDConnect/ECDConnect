@@ -3691,6 +3691,92 @@ export type LanguageSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type League = {
+  __typename?: 'League';
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  leagueType?: Maybe<LeagueType>;
+  leagueTypeId: Scalars['UUID'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type LeagueFilterInput = {
+  and?: InputMaybe<Array<LeagueFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  leagueType?: InputMaybe<LeagueTypeFilterInput>;
+  leagueTypeId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  or?: InputMaybe<Array<LeagueFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type LeagueInput = {
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  LeagueType?: InputMaybe<LeagueTypeInput>;
+  LeagueTypeId: Scalars['UUID'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type LeagueSortInput = {
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  leagueType?: InputMaybe<LeagueTypeSortInput>;
+  leagueTypeId?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type LeagueType = {
+  __typename?: 'LeagueType';
+  description?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  normalizedName?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type LeagueTypeFilterInput = {
+  and?: InputMaybe<Array<LeagueTypeFilterInput>>;
+  description?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
+  normalizedName?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<LeagueTypeFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type LeagueTypeInput = {
+  Description?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Name?: InputMaybe<Scalars['String']>;
+  NormalizedName?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type LeagueTypeSortInput = {
+  description?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  name?: InputMaybe<SortEnumType>;
+  normalizedName?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+};
+
 export type Learner = {
   __typename?: 'Learner';
   classroomGroup?: Maybe<ClassroomGroup>;
@@ -4498,6 +4584,8 @@ export type Mutation = {
   createIntegrationEntityMapping?: Maybe<IntegrationEntityMapping>;
   createIntegrationLog?: Maybe<IntegrationLog>;
   createLanguage?: Maybe<Language>;
+  createLeague?: Maybe<League>;
+  createLeagueType?: Maybe<LeagueType>;
   createLearner?: Maybe<Learner>;
   createLicense?: Maybe<License>;
   createLicenseType?: Maybe<LicenseType>;
@@ -4613,6 +4701,8 @@ export type Mutation = {
   deleteIntegrationEntityMapping?: Maybe<Scalars['Boolean']>;
   deleteIntegrationLog?: Maybe<Scalars['Boolean']>;
   deleteLanguage?: Maybe<Scalars['Boolean']>;
+  deleteLeague?: Maybe<Scalars['Boolean']>;
+  deleteLeagueType?: Maybe<Scalars['Boolean']>;
   deleteLearner?: Maybe<Scalars['Boolean']>;
   deleteLicense?: Maybe<Scalars['Boolean']>;
   deleteLicenseType?: Maybe<Scalars['Boolean']>;
@@ -4786,6 +4876,8 @@ export type Mutation = {
   updateIntegrationEntityMapping?: Maybe<IntegrationEntityMapping>;
   updateIntegrationLog?: Maybe<IntegrationLog>;
   updateLanguage?: Maybe<Language>;
+  updateLeague?: Maybe<League>;
+  updateLeagueType?: Maybe<LeagueType>;
   updateLearner?: Maybe<Learner>;
   updateLicense?: Maybe<License>;
   updateLicenseType?: Maybe<LicenseType>;
@@ -5244,6 +5336,14 @@ export type MutationCreateIntegrationLogArgs = {
 
 export type MutationCreateLanguageArgs = {
   input?: InputMaybe<LanguageInput>;
+};
+
+export type MutationCreateLeagueArgs = {
+  input?: InputMaybe<LeagueInput>;
+};
+
+export type MutationCreateLeagueTypeArgs = {
+  input?: InputMaybe<LeagueTypeInput>;
 };
 
 export type MutationCreateLearnerArgs = {
@@ -5757,6 +5857,14 @@ export type MutationDeleteIntegrationLogArgs = {
 };
 
 export type MutationDeleteLanguageArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteLeagueArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteLeagueTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -6563,6 +6671,16 @@ export type MutationUpdateIntegrationLogArgs = {
 export type MutationUpdateLanguageArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<LanguageInput>;
+};
+
+export type MutationUpdateLeagueArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<LeagueInput>;
+};
+
+export type MutationUpdateLeagueTypeArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<LeagueTypeInput>;
 };
 
 export type MutationUpdateLearnerArgs = {
@@ -8906,6 +9024,8 @@ export type Query = {
   >;
   GetAllIntegrationLog?: Maybe<Array<Maybe<IntegrationLog>>>;
   GetAllLanguage?: Maybe<Array<Maybe<Language>>>;
+  GetAllLeague?: Maybe<Array<Maybe<League>>>;
+  GetAllLeagueType?: Maybe<Array<Maybe<LeagueType>>>;
   GetAllLearner?: Maybe<Array<Maybe<Learner>>>;
   GetAllLicense?: Maybe<Array<Maybe<License>>>;
   GetAllLicenseType?: Maybe<Array<Maybe<LicenseType>>>;
@@ -9030,6 +9150,8 @@ export type Query = {
   GetIntegrationEntityMappingById?: Maybe<IntegrationEntityMapping>;
   GetIntegrationLogById?: Maybe<IntegrationLog>;
   GetLanguageById?: Maybe<Language>;
+  GetLeagueById?: Maybe<League>;
+  GetLeagueTypeById?: Maybe<LeagueType>;
   GetLearnerById?: Maybe<Learner>;
   GetLicenseById?: Maybe<License>;
   GetLicenseTypeById?: Maybe<LicenseType>;
@@ -9222,6 +9344,8 @@ export type Query = {
   countIntegrationEntityMapping?: Maybe<Scalars['Int']>;
   countIntegrationLog?: Maybe<Scalars['Int']>;
   countLanguage?: Maybe<Scalars['Int']>;
+  countLeague?: Maybe<Scalars['Int']>;
+  countLeagueType?: Maybe<Scalars['Int']>;
   countLearner?: Maybe<Scalars['Int']>;
   countLicense?: Maybe<Scalars['Int']>;
   countLicenseType?: Maybe<Scalars['Int']>;
@@ -9633,6 +9757,18 @@ export type QueryGetAllLanguageArgs = {
   order?: InputMaybe<Array<LanguageSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LanguageFilterInput>;
+};
+
+export type QueryGetAllLeagueArgs = {
+  order?: InputMaybe<Array<LeagueSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<LeagueFilterInput>;
+};
+
+export type QueryGetAllLeagueTypeArgs = {
+  order?: InputMaybe<Array<LeagueTypeSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<LeagueTypeFilterInput>;
 };
 
 export type QueryGetAllLearnerArgs = {
@@ -10247,6 +10383,16 @@ export type QueryGetIntegrationLogByIdArgs = {
 export type QueryGetLanguageByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<LanguageFilterInput>;
+};
+
+export type QueryGetLeagueByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<LeagueFilterInput>;
+};
+
+export type QueryGetLeagueTypeByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<LeagueTypeFilterInput>;
 };
 
 export type QueryGetLearnerByIdArgs = {
@@ -11126,6 +11272,16 @@ export type QueryCountIntegrationLogArgs = {
 };
 
 export type QueryCountLanguageArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountLeagueArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountLeagueTypeArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
