@@ -4057,18 +4057,18 @@ export type ListFilterInputTypeOfNoteFilterInput = {
   some?: InputMaybe<NoteFilterInput>;
 };
 
-export type ListFilterInputTypeOfPqaRatingChildFilterInput = {
-  all?: InputMaybe<PqaRatingChildFilterInput>;
-  any?: InputMaybe<Scalars['Boolean']>;
-  none?: InputMaybe<PqaRatingChildFilterInput>;
-  some?: InputMaybe<PqaRatingChildFilterInput>;
-};
-
 export type ListFilterInputTypeOfPqaRatingFilterInput = {
   all?: InputMaybe<PqaRatingFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
   none?: InputMaybe<PqaRatingFilterInput>;
   some?: InputMaybe<PqaRatingFilterInput>;
+};
+
+export type ListFilterInputTypeOfPqaSectionRatingFilterInput = {
+  all?: InputMaybe<PqaSectionRatingFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<PqaSectionRatingFilterInput>;
+  some?: InputMaybe<PqaSectionRatingFilterInput>;
 };
 
 export type ListFilterInputTypeOfPointsLibraryFilterInput = {
@@ -4598,6 +4598,8 @@ export type Mutation = {
   createNote?: Maybe<Note>;
   createNoteType?: Maybe<NoteType>;
   createPQA?: Maybe<Pqa>;
+  createPQARating?: Maybe<PqaRating>;
+  createPQASectionRating?: Maybe<PqaSectionRating>;
   createPermission?: Maybe<Permission>;
   createPointsLibrary?: Maybe<PointsLibrary>;
   createPointsUser?: Maybe<PointsUser>;
@@ -4715,6 +4717,8 @@ export type Mutation = {
   deleteNote?: Maybe<Scalars['Boolean']>;
   deleteNoteType?: Maybe<Scalars['Boolean']>;
   deletePQA?: Maybe<Scalars['Boolean']>;
+  deletePQARating?: Maybe<Scalars['Boolean']>;
+  deletePQASectionRating?: Maybe<Scalars['Boolean']>;
   deletePermission?: Maybe<Scalars['Boolean']>;
   deletePointsLibrary?: Maybe<Scalars['Boolean']>;
   deletePointsUser?: Maybe<Scalars['Boolean']>;
@@ -4893,6 +4897,8 @@ export type Mutation = {
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
   updatePQA?: Maybe<Pqa>;
+  updatePQARating?: Maybe<PqaRating>;
+  updatePQASectionRating?: Maybe<PqaSectionRating>;
   updatePermission?: Maybe<Permission>;
   updatePointsLibrary?: Maybe<PointsLibrary>;
   updatePointsUser?: Maybe<PointsUser>;
@@ -5394,6 +5400,14 @@ export type MutationCreateNoteTypeArgs = {
 
 export type MutationCreatePqaArgs = {
   input?: InputMaybe<PqaInput>;
+};
+
+export type MutationCreatePqaRatingArgs = {
+  input?: InputMaybe<PqaRatingInput>;
+};
+
+export type MutationCreatePqaSectionRatingArgs = {
+  input?: InputMaybe<PqaSectionRatingInput>;
 };
 
 export type MutationCreatePermissionArgs = {
@@ -5915,6 +5929,14 @@ export type MutationDeleteNoteTypeArgs = {
 };
 
 export type MutationDeletePqaArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeletePqaRatingArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeletePqaSectionRatingArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -6760,6 +6782,16 @@ export type MutationUpdatePqaArgs = {
   input?: InputMaybe<PqaInput>;
 };
 
+export type MutationUpdatePqaRatingArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<PqaRatingInput>;
+};
+
+export type MutationUpdatePqaSectionRatingArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<PqaSectionRatingInput>;
+};
+
 export type MutationUpdatePermissionArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PermissionInput>;
@@ -7466,84 +7498,131 @@ export type PqaInput = {
 
 export type PqaRating = {
   __typename?: 'PQARating';
-  actualVisitDate?: Maybe<Scalars['DateTime']>;
-  children?: Maybe<Array<Maybe<PqaRatingChild>>>;
-  linkedVisitId?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  linkedVisitId?: Maybe<Scalars['UUID']>;
   overallRating?: Maybe<Scalars['String']>;
   overallRatingColor?: Maybe<Scalars['String']>;
   overallRatingStars?: Maybe<Scalars['String']>;
   overallScore: Scalars['Float'];
-  plannedDate?: Maybe<Scalars['DateTime']>;
-  visitId?: Maybe<Scalars['String']>;
+  sections?: Maybe<Array<Maybe<PqaSectionRating>>>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  visit?: Maybe<Visit>;
+  visitId: Scalars['UUID'];
   visitName?: Maybe<Scalars['String']>;
   visitTypeName?: Maybe<Scalars['String']>;
 };
 
-export type PqaRatingChild = {
-  __typename?: 'PQARatingChild';
-  sectionRating?: Maybe<Scalars['String']>;
-  sectionRatingColor?: Maybe<Scalars['String']>;
-  sectionScore: Scalars['Float'];
-  visitSection?: Maybe<Scalars['String']>;
-};
-
-export type PqaRatingChildFilterInput = {
-  and?: InputMaybe<Array<PqaRatingChildFilterInput>>;
-  or?: InputMaybe<Array<PqaRatingChildFilterInput>>;
-  sectionRating?: InputMaybe<StringOperationFilterInput>;
-  sectionRatingColor?: InputMaybe<StringOperationFilterInput>;
-  sectionScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
-  visitSection?: InputMaybe<StringOperationFilterInput>;
-};
-
-export type PqaRatingChildInput = {
-  sectionRating?: InputMaybe<Scalars['String']>;
-  sectionRatingColor?: InputMaybe<Scalars['String']>;
-  sectionScore: Scalars['Float'];
-  visitSection?: InputMaybe<Scalars['String']>;
-};
-
 export type PqaRatingFilterInput = {
-  actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   and?: InputMaybe<Array<PqaRatingFilterInput>>;
-  children?: InputMaybe<ListFilterInputTypeOfPqaRatingChildFilterInput>;
-  linkedVisitId?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  linkedVisitId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<PqaRatingFilterInput>>;
   overallRating?: InputMaybe<StringOperationFilterInput>;
   overallRatingColor?: InputMaybe<StringOperationFilterInput>;
   overallRatingStars?: InputMaybe<StringOperationFilterInput>;
   overallScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
-  plannedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  visitId?: InputMaybe<StringOperationFilterInput>;
+  sections?: InputMaybe<ListFilterInputTypeOfPqaSectionRatingFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  visit?: InputMaybe<VisitFilterInput>;
+  visitId?: InputMaybe<ComparableGuidOperationFilterInput>;
   visitName?: InputMaybe<StringOperationFilterInput>;
   visitTypeName?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type PqaRatingInput = {
-  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
-  children?: InputMaybe<Array<InputMaybe<PqaRatingChildInput>>>;
-  linkedVisitId?: InputMaybe<Scalars['String']>;
-  overallRating?: InputMaybe<Scalars['String']>;
-  overallRatingColor?: InputMaybe<Scalars['String']>;
-  overallRatingStars?: InputMaybe<Scalars['String']>;
-  overallScore: Scalars['Float'];
-  plannedDate?: InputMaybe<Scalars['DateTime']>;
-  visitId?: InputMaybe<Scalars['String']>;
-  visitName?: InputMaybe<Scalars['String']>;
-  visitTypeName?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  LinkedVisitId?: InputMaybe<Scalars['UUID']>;
+  OverallRating?: InputMaybe<Scalars['String']>;
+  OverallRatingColor?: InputMaybe<Scalars['String']>;
+  OverallRatingStars?: InputMaybe<Scalars['String']>;
+  OverallScore: Scalars['Float'];
+  Sections?: InputMaybe<Array<InputMaybe<PqaSectionRatingInput>>>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  Visit?: InputMaybe<VisitInput>;
+  VisitId: Scalars['UUID'];
+  VisitName?: InputMaybe<Scalars['String']>;
+  VisitTypeName?: InputMaybe<Scalars['String']>;
 };
 
 export type PqaRatingSortInput = {
-  actualVisitDate?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
   linkedVisitId?: InputMaybe<SortEnumType>;
   overallRating?: InputMaybe<SortEnumType>;
   overallRatingColor?: InputMaybe<SortEnumType>;
   overallRatingStars?: InputMaybe<SortEnumType>;
   overallScore?: InputMaybe<SortEnumType>;
-  plannedDate?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  visit?: InputMaybe<VisitSortInput>;
   visitId?: InputMaybe<SortEnumType>;
   visitName?: InputMaybe<SortEnumType>;
   visitTypeName?: InputMaybe<SortEnumType>;
+};
+
+export type PqaSectionRating = {
+  __typename?: 'PQASectionRating';
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  pQARating?: Maybe<PqaRating>;
+  pQARatingId: Scalars['UUID'];
+  sectionRating?: Maybe<Scalars['String']>;
+  sectionRatingColor?: Maybe<Scalars['String']>;
+  sectionScore: Scalars['Float'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  visitSection?: Maybe<Scalars['String']>;
+};
+
+export type PqaSectionRatingFilterInput = {
+  and?: InputMaybe<Array<PqaSectionRatingFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<PqaSectionRatingFilterInput>>;
+  pQARating?: InputMaybe<PqaRatingFilterInput>;
+  pQARatingId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  sectionRating?: InputMaybe<StringOperationFilterInput>;
+  sectionRatingColor?: InputMaybe<StringOperationFilterInput>;
+  sectionScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  visitSection?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type PqaSectionRatingInput = {
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  PQARating?: InputMaybe<PqaRatingInput>;
+  PQARatingId: Scalars['UUID'];
+  SectionRating?: InputMaybe<Scalars['String']>;
+  SectionRatingColor?: InputMaybe<Scalars['String']>;
+  SectionScore: Scalars['Float'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  VisitSection?: InputMaybe<Scalars['String']>;
+};
+
+export type PqaSectionRatingSortInput = {
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  pQARating?: InputMaybe<PqaRatingSortInput>;
+  pQARatingId?: InputMaybe<SortEnumType>;
+  sectionRating?: InputMaybe<SortEnumType>;
+  sectionRatingColor?: InputMaybe<SortEnumType>;
+  sectionScore?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+  visitSection?: InputMaybe<SortEnumType>;
 };
 
 export type PqaSortInput = {
@@ -9038,6 +9117,8 @@ export type Query = {
   GetAllNote?: Maybe<Array<Maybe<Note>>>;
   GetAllNoteType?: Maybe<Array<Maybe<NoteType>>>;
   GetAllPQA?: Maybe<Array<Maybe<Pqa>>>;
+  GetAllPQARating?: Maybe<Array<Maybe<PqaRating>>>;
+  GetAllPQASectionRating?: Maybe<Array<Maybe<PqaSectionRating>>>;
   GetAllPermission?: Maybe<Array<Maybe<Permission>>>;
   GetAllPointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   GetAllPointsUser?: Maybe<Array<Maybe<PointsUser>>>;
@@ -9164,6 +9245,8 @@ export type Query = {
   GetNoteById?: Maybe<Note>;
   GetNoteTypeById?: Maybe<NoteType>;
   GetPQAById?: Maybe<Pqa>;
+  GetPQARatingById?: Maybe<PqaRating>;
+  GetPQASectionRatingById?: Maybe<PqaSectionRating>;
   GetPermissionById?: Maybe<Permission>;
   GetPointsLibraryById?: Maybe<PointsLibrary>;
   GetPointsUserById?: Maybe<PointsUser>;
@@ -9357,6 +9440,8 @@ export type Query = {
   countNote?: Maybe<Scalars['Int']>;
   countNoteType?: Maybe<Scalars['Int']>;
   countPQA?: Maybe<Scalars['Int']>;
+  countPQARating?: Maybe<Scalars['Int']>;
+  countPQASectionRating?: Maybe<Scalars['Int']>;
   countPermission?: Maybe<Scalars['Int']>;
   countPointsLibrary?: Maybe<Scalars['Int']>;
   countPointsUser?: Maybe<Scalars['Int']>;
@@ -9448,8 +9533,6 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
-  practitionerPQARating?: Maybe<PqaRating>;
-  practitionerReAccreditationRating?: Maybe<PqaRating>;
   practitionerTimeline?: Maybe<PractitionerTimeline>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
   previousVisitInformationForInfant?: Maybe<Progress_VisitDataStatus>;
@@ -9840,6 +9923,18 @@ export type QueryGetAllPqaArgs = {
   order?: InputMaybe<Array<PqaSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<PqaFilterInput>;
+};
+
+export type QueryGetAllPqaRatingArgs = {
+  order?: InputMaybe<Array<PqaRatingSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<PqaRatingFilterInput>;
+};
+
+export type QueryGetAllPqaSectionRatingArgs = {
+  order?: InputMaybe<Array<PqaSectionRatingSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<PqaSectionRatingFilterInput>;
 };
 
 export type QueryGetAllPermissionArgs = {
@@ -10454,6 +10549,16 @@ export type QueryGetNoteTypeByIdArgs = {
 export type QueryGetPqaByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<PqaFilterInput>;
+};
+
+export type QueryGetPqaRatingByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<PqaRatingFilterInput>;
+};
+
+export type QueryGetPqaSectionRatingByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<PqaSectionRatingFilterInput>;
 };
 
 export type QueryGetPermissionByIdArgs = {
@@ -11341,6 +11446,16 @@ export type QueryCountPqaArgs = {
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
 
+export type QueryCountPqaRatingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountPqaSectionRatingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
 export type QueryCountPermissionArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
@@ -11744,14 +11859,6 @@ export type QueryPractitionerInviteCountArgs = {
 export type QueryPractitionerNewSignupMetricArgs = {
   fromDate: Scalars['DateTime'];
   toDate: Scalars['DateTime'];
-};
-
-export type QueryPractitionerPqaRatingArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryPractitionerReAccreditationRatingArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPractitionerTimelineArgs = {

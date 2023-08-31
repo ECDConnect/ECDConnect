@@ -91,8 +91,7 @@ class PractitionerService {
               pQARatings {
                 visitId
                 linkedVisitId
-                actualVisitDate
-                children {
+                sections {
                   sectionRating
                   sectionRatingColor
                   sectionScore
@@ -102,7 +101,6 @@ class PractitionerService {
                 overallRatingColor
                 overallRatingStars
                 overallScore
-                plannedDate
                 visitName
                 visitTypeName
               }
@@ -141,7 +139,7 @@ class PractitionerService {
               reAccreditationRatings {
                 visitId
                 linkedVisitId
-                children {
+                sections {
                   sectionRating
                   sectionRatingColor
                   sectionScore
@@ -151,7 +149,6 @@ class PractitionerService {
                 overallRatingColor
                 overallRatingStars
                 overallScore
-                plannedDate
                 visitName
                 visitTypeName
               }
