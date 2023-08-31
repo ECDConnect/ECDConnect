@@ -1063,6 +1063,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                  x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                  x.LinkedVisitId == _linkedVisitId &&
+                                                                 x.Attended == false &&
                                                                  x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1091,6 +1092,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                x.LinkedVisitId == _linkedVisitId &&
+                                                               x.Attended == false &&
                                                                x.VisitType.Name == _visitType.Name).FirstOrDefault();
                         if (visit == null)
                         {
@@ -1114,7 +1116,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // PQA Follow-up visit start here - there are no ratings on follow-up visits
             if (linkedVisit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
             {
-                string followUpAnswer = _visitDataRepo.GetAll().Where(x => x.VisitId == linkedVisit.Id && x.Question == Constants.SSSettings.visitType_pqa_visit_follow_up).Select(x => x.QuestionAnswer).FirstOrDefault();
+                string followUpAnswer = _visitDataRepo.GetAll().Where(x => x.VisitId == linkedVisit.Id && x.Question == Constants.SSSettings.pqa_follow_up).Select(x => x.QuestionAnswer).FirstOrDefault();
                 VisitType _visitType = new VisitType();
                 DateTime _deadlineDate = new DateTime();
                 Guid _linkedVisitId = new Guid();
@@ -1180,6 +1182,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                     x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                     x.LinkedVisitId == _linkedVisitId &&
+                                                                    x.Attended == false &&
                                                                     x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1256,7 +1259,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // get list of re-accreditation visits to see if there are 2 orange ratings
             List<Visit> warningReAccreditationVisit = allPractitionerVisits.Where(x => x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                 x.Attended == true &&
-                                                                x.Comment == "Rating: Warning" && 
+                                                                x.Rating == "Warning" && // this can be joined with new rating tables when done
                                                                 x.LinkedVisitId == lastPQAVisit.Id &&
                                                                 x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1).OrderByDescending(x => x.PlannedVisitDate).ToList();
 
@@ -1343,6 +1346,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                              x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                              x.LinkedVisitId == _linkedVisitId &&
+                                                             x.Attended == false &&
                                                              x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1373,6 +1377,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                            x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                            x.LinkedVisitId == _linkedVisitId &&
+                                                           x.Attended == false &&
                                                            x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1457,6 +1462,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                     x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                     x.LinkedVisitId == _linkedVisitId &&
+                                                                    x.Attended == false &&
                                                                     x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1489,6 +1495,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 Visit visit = allPractitionerVisits.Where(x =>  x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                 x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                 x.LinkedVisitId == _linkedVisitId &&
+                                                                x.Attended == false &&
                                                                 x.VisitType.Name == _visitType.Name).FirstOrDefault();
                 if (visit == null)
                 {

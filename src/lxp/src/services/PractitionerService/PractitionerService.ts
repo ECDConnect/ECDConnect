@@ -561,6 +561,7 @@ class PractitionerService {
             classroomGroupName
             classroomGroupId
             insertedDate
+            classSiteAddress
           }
         }
       `,

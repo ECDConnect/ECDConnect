@@ -282,8 +282,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                             }
                         }
                     }
-                    
-                    auditInsertRepo.InsertMany(changesList);
+
+                    if (changesList.Count > 0)
+                    {
+                        auditInsertRepo.InsertMany(changesList);
+                    }
                     break;
             }
             return isValidChange;

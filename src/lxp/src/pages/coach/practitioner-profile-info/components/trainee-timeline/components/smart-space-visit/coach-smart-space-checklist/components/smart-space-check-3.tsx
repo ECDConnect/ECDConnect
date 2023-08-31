@@ -151,7 +151,8 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
       />
       <Divider dividerType="dashed" className={'my-4'} />
 
-      {Number(visitData1Completed) < 17 && (
+      {(Number(visitData1Completed) < 17 ||
+        visitData1Completed === undefined) && (
         <Alert
           className={'mt-5 mb-3'}
           title={`You cannot issue ${practitioner?.user?.firstName}'s SmartSpace Licence.`}
@@ -214,7 +215,8 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         onChange={onChange}
       />
 
-      {Number(visitData1Completed) < 17 && (
+      {(Number(visitData1Completed) < 17 ||
+        visitData1Completed === undefined) && (
         <Alert
           className={'mt-5 mb-3'}
           title={`You cannot issue ${practitioner?.user?.firstName}'s SmartSpace Licence.`}
@@ -237,7 +239,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton || Number(visitData1Completed) < 22}
+              disabled={!enableButton || Number(visitData1Completed) < 17}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

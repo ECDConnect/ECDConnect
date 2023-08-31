@@ -87,6 +87,7 @@ export const timelineSteps = ({
   isOnline,
   visits,
   practitionerId,
+  currentReAccreditationRating,
 }: {
   practitionerId: string;
   timeline: PractitionerTimeline;
@@ -96,6 +97,7 @@ export const timelineSteps = ({
   isLoading: boolean;
   isOnline: boolean;
   visits?: Maybe<Visit>[];
+  currentReAccreditationRating?: RatingData;
 }): StepItem[] => {
   const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
     (item) => item?.attended
@@ -220,6 +222,13 @@ export const timelineSteps = ({
     const dividedVisits = divideArrayByFollowUp(sortedVisits);
 
     dividedVisits.map((pQASiteVisits, pqaIndex) => {
+      const previousVisits = pqaIndex > 0 ? dividedVisits[pqaIndex - 1] : [];
+      const isAllCompleted = previousVisits.length
+        ? previousVisits?.every((item) => !!item?.attended)
+        : true;
+
+      if (!isAllCompleted) return {};
+
       const currentRating: RatingData = {
         rating: timeline.pQARatings
           ?.filter(
@@ -310,7 +319,22 @@ export const timelineSteps = ({
     const dividedVisits = divideArrayByFollowUp(sortedVisits);
 
     dividedVisits.map((reAccreditationVisits, reAccreditationIndex) => {
-      const currentRating: RatingData = {
+      const previousVisits =
+        reAccreditationIndex > 0 ? dividedVisits[reAccreditationIndex - 1] : [];
+      const isAllCompleted = previousVisits.length
+        ? previousVisits?.every((item) => !!item?.attended)
+        : true;
+
+      if (!isAllCompleted) return {};
+
+      const isNextYear =
+        currentReAccreditationRating?.rating?.overallRatingColor ===
+          'Success' &&
+        previousVisits?.some(
+          (item) => item?.id === currentReAccreditationRating?.rating?.visitId
+        );
+
+      const ratingForThisVisit: RatingData = {
         rating: timeline.reAccreditationRatings
           ?.filter(
             (item) =>
@@ -327,10 +351,12 @@ export const timelineSteps = ({
       const { currentVisit, ratingData, stepType, subTitleText } =
         getReAccreditationStepData({
           reAccreditationVisits,
-          currentRating,
+          currentRating: ratingForThisVisit,
         });
 
       let date = currentVisit?.plannedVisitDate;
+
+      if (isNextYear && !isDateWithinThreeMonths(date)) return {};
 
       if (currentVisit?.actualVisitDate && currentVisit?.attended) {
         date = currentVisit?.actualVisitDate;
@@ -369,7 +395,7 @@ export const timelineSteps = ({
         },
         color:
           stepType?.type !== 'todo' &&
-          currentRating.rating &&
+          ratingForThisVisit.rating &&
           ratingData?.color,
         showActionButton:
           reAccreditationVisits.length === 1 &&

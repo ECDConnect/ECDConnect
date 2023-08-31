@@ -116,7 +116,6 @@ export default function PractitionerDashboard() {
         toDate: today,
       },
     }).then((response) => {
-      console.log(response.data.practitionerNewSignupMetric);
       if (response.data) {
         tempStats.push({
           id: 4,
@@ -202,7 +201,6 @@ export default function PractitionerDashboard() {
                       toDate: body.endMonth,
                     },
                   }).then((response) => {
-                    console.log(response.data.practitionerNewSignupMetric);
                     if (response.data) {
                       setupPractitionerNewSignUp(
                         response.data.practitionerNewSignupMetric,
@@ -236,7 +234,7 @@ export default function PractitionerDashboard() {
         )}
 
         <div className="mt-4 grid grid-cols-2 gap-4">
-          <div className="bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">
+          <div className="bg-uiBg overflow-hidden rounded-lg px-4 pt-5 pb-12 sm:px-6 sm:pt-6">
             {practStatusdata && (
               <DoughnutChart
                 data={practStatusdata}
@@ -244,7 +242,7 @@ export default function PractitionerDashboard() {
               />
             )}
           </div>
-          <div className="bg-uiBg pt-5 px-4 pb-12 sm:pt-6 sm:px-6 rounded-lg overflow-hidden">
+          <div className="bg-uiBg overflow-hidden rounded-lg px-4 pt-5 pb-12 sm:px-6 sm:pt-6">
             {practProgramdata && (
               <HorizontalBarChart
                 data={practProgramdata}

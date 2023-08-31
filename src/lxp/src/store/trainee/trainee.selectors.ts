@@ -31,17 +31,21 @@ export const getCoachSmartSpaceVisitData = (
 export const getCoachSmartSpaceSection1VisitDataCount = (
   state: RootState
 ): SectionQuestions[] | string | undefined => {
-  const step1Count = state.trainee.coachSmartSpaceCheckData?.[0] as any;
+  const [step1Count] = state.trainee.coachSmartSpaceCheckData?.filter(
+    (item) => item?.visitSection === 'SmartSpace check'
+  ) as any;
   const step1CountFormatted = step1Count?.questions?.filter(
     (item: any) => item?.answer === true || item?.answer === 'true'
   );
-  return step1CountFormatted.length || undefined;
+  return step1CountFormatted?.length || undefined;
 };
 
 export const getCoachSmartSpaceSection2VisitDataCount = (
   state: RootState
 ): SectionQuestions[] | string | undefined => {
-  const step2Count = state.trainee.coachSmartSpaceCheckData?.[1] as any;
+  const [step2Count] = state.trainee.coachSmartSpaceCheckData?.filter(
+    (item) => item?.visitSection === 'Additional standards'
+  ) as any;
   const step2CountFormatted = step2Count?.questions?.filter(
     (item: any) => item?.answer === true || item?.answer === 'true'
   );
@@ -78,6 +82,18 @@ export const getTraineeVisitDataAssitantsNumber = (
   const visitData = state.trainee.coachSmartSpaceCheckData;
   const programmeDetailsSections = visitData?.find(
     (item) => item?.visitSection === 'Programme details'
+  );
+  const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
+  const questions = programmeDetailsSectionsWithoutTypo?.questions;
+  return questions?.[0]?.answer;
+};
+
+export const getCoachVisitDataNextSteps = (
+  state: RootState
+): string | null | undefined => {
+  const visitData = state.trainee.coachSmartSpaceCheckData;
+  const programmeDetailsSections = visitData?.find(
+    (item) => item?.visitSection === 'Discuss next steps'
   );
   const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
   const questions = programmeDetailsSectionsWithoutTypo?.questions;

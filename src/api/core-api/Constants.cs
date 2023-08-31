@@ -1,17 +1,3 @@
-using Castle.Components.DictionaryAdapter.Xml;
-using DotLiquid.Tags;
-using ECDLink.DataAccessLayer.Entities;
-using iTextSharp.text;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Options;
-using NPOI.SS.Formula.Functions;
-using Org.BouncyCastle.Asn1.X509.Qualified;
-using Org.BouncyCastle.Utilities;
-using System.Threading.Tasks;
-using static ECDLink.Core.SystemSettings.SettingGroups;
-using static NPOI.HSSF.Util.HSSFColor;
-using static System.Reflection.Metadata.BlobBuilder;
-
 namespace EcdLink.Api.CoreApi
 {
     public static class Constants
@@ -369,6 +355,7 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
             public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
+            public const string pqa_follow_up = "Is {client} ready for a follow-up PQA observation visit?";
             public const string step12 = "Step 12";
             public const string step13 = "Step 13";
             public const int step2_total = 12;
