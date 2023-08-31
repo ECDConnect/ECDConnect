@@ -4,7 +4,6 @@ using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Licenses;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -31,7 +30,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
-        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
         private UserLicenseManager _userLicenseManager;
 
@@ -58,7 +56,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
-            _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
         }
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
@@ -652,7 +649,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
             }
-
+            if (pqaVisit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+            {
+                pqaVisit.Rating = rating.OverallRatingColor;
+                _visitRepo.Update(pqaVisit);
+            }
             return rating;
         }
         
@@ -783,6 +784,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
+            if (RAVisit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
+            {
+                RAVisit.Rating = rating.OverallRatingColor;
+                _visitRepo.Update(RAVisit);
+            }
+            
             return rating;
         }
         private int getScoreForSection(List<VisitData> records)

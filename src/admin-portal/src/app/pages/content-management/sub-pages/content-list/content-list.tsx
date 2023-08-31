@@ -24,8 +24,10 @@ import {
   FieldType,
 } from '../../content-management-models';
 import ContentCreate from './components/content-create/content-create';
+import { PlusIcon } from '@heroicons/react/solid';
 
 export interface ContentListProps {
+  selectedTab?: number;
   contentType: ContentTypeDto;
   optionDefinitions: ContentDefinitionModelDto[];
   languages: LanguageDto[];
@@ -34,11 +36,13 @@ export interface ContentListProps {
 }
 
 export default function ContentList({
+  selectedTab,
   contentType,
   languages,
   optionDefinitions,
   viewContent,
   refreshParent,
+
 }: ContentListProps) {
   const { hasPermission } = useUser();
 
@@ -66,8 +70,6 @@ export default function ContentList({
         if (x.fieldType.dataType === FieldType.Text)
           displayFields.push(x.fieldName);
       });
-
-      console.log(displayFields);
 
       setDisplayFields(displayFields);
     }
@@ -106,25 +108,33 @@ export default function ContentList({
     },
   });
 
-  const mutationName = `delete${contentType.name}`;
-  const deleteMutation = gql` 
-    mutation ${mutationName} ($id: String!, $localeId: String!) {
-      ${mutationName} (id: $id, localeId: $localeId) 
-      }
-  `;
+
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
-      const copyItems = contentData[getAllCall].map((item) => ({
-        ...item,
-        _view: undefined,
-        _edit: undefined,
-        _url: undefined,
+      const copyItems = contentData[getAllCall].map((item: any) => ({
+        ...item
       }));
+
+      if (selectedTab === 1) {
+        let clientProfileData = copyItems.filter((item: { type: string; }) => item.type === "client profile");
+        setTableData(clientProfileData);
+      }
+      else if (selectedTab === 2) {
+        let postNatalData = copyItems.filter((item: { type: string; }) => item.type === "postnatal");
+        console.log(postNatalData)
+        setTableData(postNatalData);
+
+      } else if (selectedTab === 3) {
+        let anteNatalData = copyItems.filter((item: { type: string; }) => item.type === "antenatal");
+        setTableData(anteNatalData);
+      }
+      console.log(">>>", copyItems)
       setTableData(copyItems);
+
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contentData]);
+  }, [contentData, selectedTab]);
 
   useEffect(() => {
     if (languages) {
@@ -138,7 +148,6 @@ export default function ContentList({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [languages]);
 
-  const [deleteContent] = useMutation(deleteMutation);
 
   const getContentGroupContentByLanguageId = (languageId: string) => {
     setLanguageId(languageId);
@@ -204,13 +213,14 @@ export default function ContentList({
               <div className="flex flex-col">
                 <div className="mt-1 ml-4">
                   {hasPermission(PermissionEnum.create_static) &&
-                    contentType.name !== 'Consent' && (
+                    (
                       <button
                         onClick={() => displayCreatePanel()}
                         type="button"
                         className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                       >
-                        Create {camelCaseToSentanceCase(contentType.name)}
+                        <PlusIcon width="22px" className="pl-1" />
+                        Add {camelCaseToSentanceCase(contentType.name)}
                       </button>
                     )}
                 </div>

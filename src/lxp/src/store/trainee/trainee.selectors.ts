@@ -28,32 +28,48 @@ export const getCoachSmartSpaceVisitData = (
   state: RootState
 ): VisitData[] | undefined => state.trainee.coachSmartSpaceCheckData;
 
-export const getCoachSmartSpaceVisitDataCount = (
+export const getCoachSmartSpaceSection1VisitDataCount = (
   state: RootState
 ): SectionQuestions[] | string | undefined => {
-  const step1Count = state.trainee.coachSmartSpaceCheckData?.[0] as any;
-  const step2Count = state.trainee.coachSmartSpaceCheckData?.[1] as any;
+  const [step1Count] = state.trainee.coachSmartSpaceCheckData?.filter(
+    (item) => item?.visitSection === 'SmartSpace check'
+  ) as any;
   const step1CountFormatted = step1Count?.questions?.filter(
     (item: any) => item?.answer === true || item?.answer === 'true'
   );
+  return step1CountFormatted?.length || undefined;
+};
+
+export const getCoachSmartSpaceSection2VisitDataCount = (
+  state: RootState
+): SectionQuestions[] | string | undefined => {
+  const [step2Count] = state.trainee.coachSmartSpaceCheckData?.filter(
+    (item) => item?.visitSection === 'Additional standards'
+  ) as any;
   const step2CountFormatted = step2Count?.questions?.filter(
     (item: any) => item?.answer === true || item?.answer === 'true'
   );
-  return step1CountFormatted.length + step2CountFormatted?.length || undefined;
+  return step2CountFormatted.length || undefined;
 };
 
-export const getCoachSmartSpaceVisitDataNotAttendedStandards = (
+export const getCoachSmartSpaceVisit1DataNotAttendedStandards = (
   state: RootState
 ): SectionQuestions[] | undefined | [] => {
   const step1Count = state.trainee.coachSmartSpaceCheckData?.[0] as any;
-  const step2Count = state.trainee.coachSmartSpaceCheckData?.[1] as any;
   const step1CountFormatted = step1Count?.questions?.filter(
     (item: any) => item?.answer === false || item?.answer === 'false'
   );
+  return (step1CountFormatted as []) || undefined;
+};
+
+export const getCoachSmartSpaceVisit2DataNotAttendedStandards = (
+  state: RootState
+): SectionQuestions[] | undefined | [] => {
+  const step2Count = state.trainee.coachSmartSpaceCheckData?.[1] as any;
   const step2CountFormatted = step2Count?.questions?.filter(
     (item: any) => item?.answer === false || item?.answer === 'false'
   );
-  return ([...step1CountFormatted, ...step2CountFormatted] as []) || undefined;
+  return (step2CountFormatted as []) || undefined;
 };
 
 export const getCoachFranchisorAgreementData = (
@@ -66,6 +82,18 @@ export const getTraineeVisitDataAssitantsNumber = (
   const visitData = state.trainee.coachSmartSpaceCheckData;
   const programmeDetailsSections = visitData?.find(
     (item) => item?.visitSection === 'Programme details'
+  );
+  const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
+  const questions = programmeDetailsSectionsWithoutTypo?.questions;
+  return questions?.[0]?.answer;
+};
+
+export const getCoachVisitDataNextSteps = (
+  state: RootState
+): string | null | undefined => {
+  const visitData = state.trainee.coachSmartSpaceCheckData;
+  const programmeDetailsSections = visitData?.find(
+    (item) => item?.visitSection === 'Discuss next steps'
   );
   const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
   const questions = programmeDetailsSectionsWithoutTypo?.questions;
@@ -112,7 +140,7 @@ export const getTraineePropertyOwn = (
         item?.question === 'Do you live at the property?'
     );
 
-  if (programmeDetailsSections?.[1].questionAnswer === 'true') {
+  if (programmeDetailsSections?.[1]?.questionAnswer === 'true') {
     return 'Nothando owns the property and has the title deeds.';
   }
 

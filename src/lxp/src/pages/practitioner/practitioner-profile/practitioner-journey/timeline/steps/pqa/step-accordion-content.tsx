@@ -3,14 +3,17 @@ import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
-import { getRatingData } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
+import {
+  getRatingData,
+  sortVisits,
+} from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 import { visitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import { dateOptions, getStepType } from '../../utils';
 import { ViewEvent } from '../../timeline-steps';
 
 interface PQAVisitsProps {
   isLoading: boolean;
-  currentVisit: Maybe<Visit>;
+  pQASiteVisits: Maybe<Visit>[];
   practitionerId: string;
   onView: (event: ViewEvent) => void;
 }
@@ -18,14 +21,11 @@ interface PQAVisitsProps {
 export const PQAVisits = ({
   isLoading,
   practitionerId,
+  pQASiteVisits,
   onView,
 }: PQAVisitsProps) => {
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
-  );
-
-  const attendedPqaVisits = timeline?.pQASiteVisits?.filter(
-    (item) => !!item?.attended
   );
 
   const pqaRatings =
@@ -37,20 +37,7 @@ export const PQAVisits = ({
   const pqaRating2 = pqaRatings?.[1];
   const pqaRating3 = pqaRatings?.[2];
 
-  const sortedVisits = attendedPqaVisits?.sort((a, b) => {
-    if (!a?.actualVisitDate && !b?.actualVisitDate) {
-      return 0;
-    } else if (!a?.actualVisitDate) {
-      return 1;
-    } else if (!b?.actualVisitDate) {
-      return -1;
-    }
-
-    return (
-      new Date(a.actualVisitDate).getTime() -
-      new Date(b.actualVisitDate).getTime()
-    );
-  });
+  const sortedVisits = sortVisits(pQASiteVisits);
 
   const getVisitRating = (item: Maybe<Visit>) => {
     if (item?.id === pqaRating3?.visitId) {
@@ -119,11 +106,10 @@ export const PQAVisits = ({
             type="body"
             color={getStepType(String('Success'))?.color || 'textMid'}
             text={
-              !!item?.actualVisitDate
-                ? `${new Date(item.actualVisitDate).toLocaleDateString(
-                    'en-ZA',
-                    dateOptions
-                  )}`
+              !!item?.plannedVisitDate
+                ? `${new Date(
+                    item.attended ? item.actualVisitDate : item.plannedVisitDate
+                  ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
             }
           />
