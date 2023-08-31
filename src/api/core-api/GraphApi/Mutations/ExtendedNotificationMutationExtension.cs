@@ -258,5 +258,32 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
         }
 
+
+
+        //Coaches Endpoints
+        public async Task<bool> SendCoachVisitsOverdueNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachVisitsOverdue, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+
+        public async Task<bool> SendCoachRemoveTraineeNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string traineeName)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "TraineeName",
+                ReplacementValue = traineeName
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachRemoveTrainee, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+        }
+
     }
 }

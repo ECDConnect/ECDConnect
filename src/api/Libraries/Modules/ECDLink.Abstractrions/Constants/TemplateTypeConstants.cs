@@ -54,6 +54,9 @@ namespace ECDLink.Abstractrions.Constants
         public const string GainCommunitySupport = "gain-community-support";
         public const string SLChildDocumentFlagged = "child-document-flagged";
 
+        //coach notifications
+        public const string CoachVisitsOverdue = "coach-visits-overdue";
+        public const string CoachRemoveTrainee = "coach-remove-trainee";    
 
     }
 }
