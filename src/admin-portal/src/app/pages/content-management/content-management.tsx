@@ -47,6 +47,8 @@ export function ContentManagement() {
         search: '',
         searchInContent: null,
         isVisiblePortal: true,
+        // contentTypeIdFilter: '',
+        // contentTypeNameFilter: ''
       },
       fetchPolicy: 'cache-and-network',
     }
@@ -181,6 +183,8 @@ export function ContentManagement() {
         search: searchValue,
         searchInContent: true,
         isVisiblePortal: true,
+        // contentTypeIdFilter: null,
+        // contentTypeNameFilter: ''
       },
     });
     // TODO: Use actual pagination when table component supports it.
