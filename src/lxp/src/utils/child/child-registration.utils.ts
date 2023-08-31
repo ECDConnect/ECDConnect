@@ -11,7 +11,6 @@ import {
   AddChildLearnerTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
-  FileTypeEnum,
 } from '@ecdlink/graphql';
 import { CareGiverChildInformationFormModel } from '@schemas/child/child-registration/care-giver-child-information-form';
 import { CareGiverContributionFormModel } from '@schemas/child/child-registration/care-giver-contribution-form';

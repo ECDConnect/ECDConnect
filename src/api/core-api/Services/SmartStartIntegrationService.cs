@@ -1,7 +1,5 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Queries;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+﻿using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Text;
@@ -25,8 +23,6 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using Microsoft.EntityFrameworkCore;
 using ECDLink.DataAccessLayer.Entities.Clubs;
-using ECDLink.DataAccessLayer.Entities.PQA;
-using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Tenancy.Context;
 using ECDLink.DataAccessLayer.Entities.Documents;
@@ -45,7 +41,9 @@ using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Models;
-using ECDLink.AutomatedJobs.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Visits;
+using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Enums;
 
 namespace EcdLink.Api.CoreApi.Services;
 public class SmartStartIntegrationService : IIntegrationService
@@ -53,10 +51,8 @@ public class SmartStartIntegrationService : IIntegrationService
     private readonly IGenericRepositoryFactory _repositoryFactory;
     private readonly ISystemSetting<IntegrationDelayOptions> _integrationDelay;
     private readonly ISystemSetting<IntegrationApiOptions> _options;
-    private IHttpContextAccessor _contextAccessor;
     private string _uId;
     private UserManager<ApplicationUser> _userManager;
-    //private PersonnelService _personnelService;
     private IGenericRepository<IntegrationAudit, Guid> _auditRepo;
     private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
     private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
@@ -73,7 +69,6 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<Child, Guid> _childRepo;
     private IGenericRepository<Child, Guid> _childGenericRepo;
     private IGenericRepository<Coach, Guid> _coachGenericRepo;
-    //private IGenericRepository<Franchisor, Guid> _franchisorGenericRepo;
     private IGenericRepository<Caregiver, Guid> _caregiverRepo;
     private IGenericRepository<Relation, Guid> _staticRelationRepo;
     private IGenericRepository<Education, Guid> _staticEducationRepo;
@@ -86,13 +81,13 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<Club, Guid> _clubRepo;
     private IGenericRepository<ClubMeeting, Guid> _clubMeetingRepo;
     private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
-    private IGenericRepository<SmartSpaceVisit, Guid> _smartSpaceVisitRepo;
-    private IGenericRepository<PQA, Guid> _pqaRepo;
+    private IGenericRepository<Visit, Guid> _visitsRepo;
+    private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+    private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
 
     IHolidayService<Holiday> _holidayService;
     private IntegrationLogManager _logManager;
     private IntegrationAPIManager _apiManager;
-    //private ISchedulerService _schedulerService;
     private IFileService _fileService;
     private IncomeExpenseService _incomeManager;
     private IntegrationHelperManager _integrationHelperManager;
@@ -106,10 +101,11 @@ public class SmartStartIntegrationService : IIntegrationService
     public static string password = "AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==";//ECDConnect123!
     public static string securityStamp = "7MLVEAR2UK2APFPOBGP4BPN7XJ4IJGQ6";
     public static string concurrencystamp = "a7ce158a-30c5-4cfb-aee2-027c000b8df6";
-    public Guid tenantId = TenantExecutionContext.Tenant.Id;
+    public Guid _tenantId = TenantExecutionContext.Tenant.Id;
     public List<IntegrationEntityMapping> _mappedEntities;
     public List<IntegrationColumnMapping> _mappedColumns;
     public List<IntegrationAudit> _audits;
+    public VisitManager _visitManager;
 
     public DateTime _startTime = DateTime.Now;
     public static string scheduledTask = "SmartLinkIntegrationDataSync";
@@ -119,11 +115,8 @@ public class SmartStartIntegrationService : IIntegrationService
         IGenericRepositoryFactory repositoryFactory,
         ISystemSetting<IntegrationDelayOptions> integrationDelay,
         ISystemSetting<IntegrationApiOptions> options,
-        [Service] IHttpContextAccessor contextAccessor,
         [Service] UserManager<ApplicationUser> userManager,
         HierarchyEngine hierarchyEngine,
-         //[Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
-         //[Service] InvitationNotificationManager notificationManager,
          AuthenticationDbContext dbContext,
          IntegrationLogManager logManager,
          IntegrationAPIManager apiManager,
@@ -132,13 +125,13 @@ public class SmartStartIntegrationService : IIntegrationService
          [Service] IncomeExpenseService incomeManager,
          [Service] AttendanceTrackingRepository attendanceTrackingRepository,
          IHolidayService<Holiday> holidayService,
-        [Service] INotificationService notificationService
+         [Service] INotificationService notificationService,
+         VisitManager visitManager
         )
     {
         _repositoryFactory = repositoryFactory;
         _integrationDelay = integrationDelay;
         _options = options;
-        _contextAccessor = contextAccessor;
         _userManager = userManager;
         _hierarchyEngine = hierarchyEngine;
         _dbContext = dbContext;
@@ -169,7 +162,6 @@ public class SmartStartIntegrationService : IIntegrationService
         _practitionerRepo = repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
         _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
         _coachGenericRepo = repositoryFactory.CreateGenericRepository<Coach>(userContext: _uId);
-        //_franchisorGenericRepo = repositoryFactory.CreateGenericRepository<Franchisor>(userContext: _uId);
         _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
 
         _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
@@ -182,11 +174,13 @@ public class SmartStartIntegrationService : IIntegrationService
         _docRepo = repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
         _workflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
         _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
+        _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
+        _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
+        _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
 
-        //_pqaRepo = _repositoryFactory.CreateGenericRepository<pqa>(userContext: _uId);
         _attendanceTrackingRepository = attendanceTrackingRepository;
         _incomeManager = incomeManager;
-
+        _visitManager = visitManager;
     }
 
     #region Integration Points   
@@ -216,7 +210,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             InsertedDate = DateTime.Now,
                             Name = club.Name,
                             NumberOfMembers = club.NumberOfFranchisees,
-                            TenantId = tenantId
+                            TenantId = _tenantId
                         });
                 }
                 catch (Exception e)
@@ -246,7 +240,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     InsertedDate = DateTime.Now,
                                     Name = meeting.Name,
                                     MeetingDate = meeting.MeetingDate,
-                                    TenantId = tenantId,
+                                    TenantId = _tenantId,
                                     ClubId = Guid.Parse(meeting.Club.Guid)
 
                                 });
@@ -283,7 +277,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                         Attended = register.Attended,
                                         PractitionerId = Guid.Parse(prac.UserId),
                                         ClubMeetingId = Guid.Parse(register.ClubMeeting.Guid),
-                                        TenantId = tenantId
+                                        TenantId = _tenantId
                                     });
                             }
                         }
@@ -298,109 +292,177 @@ public class SmartStartIntegrationService : IIntegrationService
 
         return true;
     }
-    public async Task<bool> IntegrationPQASmartSpaceVisitsData()
+    
+    /// <summary>
+    /// Pull past PQA data for practitioners, that were created on SmartLink and outside of the Funda app.
+    /// 
+    /// We can only set up the basic visit data, since they do not have the full Q&A data we would save. We are 
+    /// just setting up enough data so we can show the details on the practitioners journey and to set up future 
+    /// PQA visits if needed
+    /// </summary>
+    /// <returns></returns>
+    public async Task<bool> PullPQAData()
     {
-        _smartSpaceVisitRepo = _repositoryFactory.CreateGenericRepository<SmartSpaceVisit>(userContext: _uId);
-        _pqaRepo = _repositoryFactory.CreateGenericRepository<PQA>(userContext: _uId);
+        await _logManager.IntegrationLog($"PullPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PullPQAData > GetPQAByFranchisee");
+        int totalVisitsAdded = 0;
+        int totalFollowUpVisitsAdded = 0;
+
+        var success = true;
         var mappedPractitioners = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
+        var mappedCoaches = await GetMappedEntities(Constants.SSIntegrationSettings.SSCoach);
+        var coaches = _coachGenericRepo.GetAll().Where(x => mappedCoaches.Select(y => y.UserId).Contains(x.UserId)).ToList();
+        var pqaVisit1TypeId = _visitTypeRepo.GetAll().First(x => x.Name == Constants.SSSettings.visitType_pqa_visit_1).Id;
 
-        foreach (var prac in mappedPractitioners)
+        int maxScore = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
+                                Constants.SSSettings.step6_total + Constants.SSSettings.step7_total + Constants.SSSettings.step8_total;
+
+        foreach (var practitioner in mappedPractitioners)
         {
+            var practitionerId = Guid.Parse(practitioner.LocalId);
             try
             {
-                var pqas = await _apiManager.GetPQAByFranchisee(prac.RemoteId);
-                var existingPQAs = _pqaRepo.GetAll().Where(x => string.Equals(x.UserId, prac.UserId)).ToList(); //reload all meetings                    
-                foreach (var pqa in pqas)
+                // Need to get existing PQA visits and see if we have mapped this one before - DO WE ONLY NEED TO PULL OLD PQAS ONCE PER PRACTITIONER???
+                var pqas = await _apiManager.GetPQAByFranchisee(practitioner.RemoteId);
+
+                if(pqas == null || !pqas.Any())
                 {
-                    if (existingPQAs.Where(x => x.Id == Guid.Parse(pqa.Guid)).Any())
+                    continue;
+                }
+
+                var existingVisits = _visitsRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).ToList();
+
+
+                // For any we haven't created, create a new visit
+                var createdVisits = new List<Visit>();
+                var createdRatings = new List<PQARating>();
+                foreach (var slPQA in pqas.OrderBy(x => x.DateOfVisit))
+                {
+                    if (existingVisits.Any(x => x.Id == Guid.Parse(slPQA.Guid)))
                     {
-                        _pqaRepo.Insert(new PQA()
-                        {
-                            Id = Guid.Parse(pqa.Guid), //Guid.NewGuid(),
-                            IsActive = true,
-                            InsertedDate = DateTime.Now,
-                            TenantId = tenantId,
-                            Latitude = pqa.Latitude,
-                            Longitude = pqa.Longitude,
-                            WasSuccessful = pqa.WasSuccessful,
-                            IsFranchiseeHittingChildren = pqa.IsFranchiseeHittingChildren,
-                            IsSmartSpaceStillFine = pqa.IsSmartSpaceStillFine,
-                            IsVenueSafe = pqa.IsVenueSafe,
-                            IsThereTooManyChildren = pqa.IsThereTooManyChildren,
-                            DateOfVisit = pqa.DateOfVisit,
-                            UserId = prac.UserId
-                        });
+                        continue; // We've already added this visit, just continue to next one
+                    }
+
+                    // Create visit
+                    var mappedCoach = mappedCoaches.FirstOrDefault(x => x.RemoteId == slPQA.Coach.Guid);                    
+                    var visit = new Visit()
+                    {
+                        Id = Guid.Parse(slPQA.Guid),
+                        ActualVisitDate = slPQA.DateOfVisit,
+                        CoachId = mappedCoach != null ? coaches.FirstOrDefault(x => x.UserId == mappedCoach.UserId)?.Id : null, // Coach might not be mapped yet
+                        HasAnswerData = false,
+                        VisitTypeId = pqaVisit1TypeId,
+                        TenantId = _tenantId,
+                        Attended = slPQA.StatusOutcome.ToLower() != "not done",
+                        DueDate = slPQA.DateOfVisit, 
+                        PlannedVisitDate = slPQA.DateOfVisit,
+                        PractitionerId = practitionerId,
+                        Risk = Constants.GGSettings.normal_risk, // GG only field, but non nullable in the database
+                    };
+
+                    // Create rating
+                    var pqaRating = new PQARating()
+                    {
+                        VisitId = visit.Id,
+                        OverallRating = $"{slPQA.TotalScore}/{maxScore}",
+                        OverallRatingColor = MapStatusOutcomeToRatingColour(slPQA.StatusOutcome),
+                        OverallRatingStars = GetNumberOfStarsForPQA(slPQA.TotalScore, slPQA.StatusOutcome),
+                        OverallScore = slPQA.TotalScore,
+                        VisitName = Constants.SSSettings.visitType_pqa_visit_1,
+                        TenantId = _tenantId
+                    };
+
+                    createdRatings.Add(pqaRating);
+                    createdVisits.Add(visit);
+                    totalVisitsAdded++;
+                }
+                _visitsRepo.InsertMany(createdVisits);
+                _pqaRatingRepo.InsertMany(createdRatings);
+
+                if (createdVisits.Any())
+                {
+                    // For the last visit we find (that isn't already added), run the logic to create a follow up pr reaccredication etc. Their next required visit
+                    // color = color we got back from SL, practitioenr id = from the prac on the loop, linkedVisit = visit we just created and saved.
+                    // Note - we will have to save all the previous visits before we call this as it pulls them and calculates based on that
+                    var lastVisit = createdVisits.Last();
+                    if (lastVisit.Attended)
+                    {
+                        totalFollowUpVisitsAdded++;
+                        var newVisit = _visitManager.AddNextPQAOrFollowUpVisit(createdRatings.First(x => x.VisitId == lastVisit.Id).OverallRatingColor, practitionerId, lastVisit);
                     }
                 }
             }
             catch (Exception e)
             {
-                await _logManager.IntegrationLog("IntegrationPQASmartSpaceVisitsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationPQASmartSpaceVisitsData > GetPQAByFranchisee");
+                success = false;
+                await _logManager.IntegrationLog($"PullPQAData Error: {e.Message}", e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PullPQAData > GetPQAByFranchisee");
             }
         }
 
-        var mappedTrainees = await GetMappedEntities(Constants.SSIntegrationSettings.SSTrainee);
-        foreach (var prac in mappedTrainees)
-        {
-            try
-            {
-                var visits = await _apiManager.GetSmartSpaceVisitsByFranchiseeTrainee(prac.RemoteId);
-                var existingVisits = _smartSpaceVisitRepo.GetAll().Where(x => string.Equals(x.UserId, prac.UserId)).ToList(); //reload all meetings                    
-                foreach (var visit in visits)
-                {
-                    if (existingVisits.Where(x => x.Id == Guid.Parse(visit.Guid)).Any())
-                    {
-                        _smartSpaceVisitRepo.Insert(new SmartSpaceVisit()
-                        {
-                            Id = Guid.Parse(visit.Guid), //Guid.NewGuid(),
-                            IsActive = true,
-                            InsertedDate = DateTime.Now,
-                            TenantId = tenantId,
-                            Latitude = visit.Latitude,
-                            Longitude = visit.Longitude,
-                            Name = visit.Name,
-                            NumberOfAssistants = visit.NumberOfAssistants,
-                            Capacity = visit.Capacity,
-                            RequiredItemsScore = visit.RequiredItemsScore,
-                            UnrequiredItemsScore = visit.UnrequiredItemsScore,
-                            TotalScore = visit.TotalScore,
-                            OwnsProperty = visit.OwnsProperty,
-                            HasAcceptedSmartSpaceAgreement = visit.HasAcceptedSmartSpaceAgreement,
-                            Q1 = visit.Q1,
-                            Q2 = visit.Q2,
-                            Q3 = visit.Q3,
-                            Q4 = visit.Q4,
-                            Q5 = visit.Q5,
-                            Q6 = visit.Q6,
-                            Q7 = visit.Q7,
-                            Q8 = visit.Q8,
-                            Q9 = visit.Q9,
-                            Q10 = visit.Q10,
-                            Q11 = visit.Q11,
-                            Q12 = visit.Q12,
-                            Q13 = visit.Q13,
-                            Q14 = visit.Q14,
-                            Q15 = visit.Q15,
-                            Q16 = visit.Q16,
-                            Q17 = visit.Q17,
-                            Q18 = visit.Q18,
-                            Q19 = visit.Q19,
-                            Q20 = visit.Q20,
-                            Q21 = visit.Q21,
-                            DateOfVisit = visit.DateOfVisit,
-                            UserId = prac.UserId
-                        });
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                await _logManager.IntegrationLog("IntegrationPQASmartSpaceVisitsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationPQASmartSpaceVisitsData > GetSmartSpaceVisitsByFranchiseeTrainee");
-            }
-        }
+        await _logManager.IntegrationLog($"PullPQAData completed at {DateTime.Now}", $"PQA visits added {totalVisitsAdded}, total next PQA or Follow-up visits added {totalFollowUpVisitsAdded}", null, LogRelatedType.Log, "PullPQAData > GetPQAByFranchisee");
 
-        return true;
+        return success;
     }
+
+    /// <summary>
+    /// Pull past Smart Space Visits for practitioners, that were created on SmartLink and outside of the Funda app.
+    /// 
+    /// NOTE: This will only pull data for trainees
+    /// </summary>
+    /// <returns></returns>
+    public async Task<bool> PullSmartSpaceVisitsData()
+    {
+        // We currently don't need to create a smart space visit, and we can import the license data when importing the practitioner
+        throw new NotImplementedException();
+    }
+    //{
+    //    var success = true;
+    //    var mappedTrainees = await GetMappedEntities(Constants.SSIntegrationSettings.SSTrainee); // TODO Why only trainees
+    //    var smartSpaceVisitTypeId = _visitTypeRepo.GetAll().First(x => x.Name == Constants.SSSettings.smart_space_checklist).Id;
+
+    //    foreach (var practitioner in mappedTrainees)
+    //    {
+    //        try
+    //        {
+    //            var smartSpaceVisits = await _apiManager.GetSmartSpaceVisitsByFranchiseeTrainee(practitioner.RemoteId);
+    //            var existingVisits = _visitsRepo.GetAll().Where(x => string.Equals(x.TraineeId, practitioner.Id) && x.VisitTypeId == smartSpaceVisitTypeId).ToList(); //reload all meetings
+
+    //            var createdVisits = new List<Visit>();
+    //            foreach (var slVisit in smartSpaceVisits)
+    //            {
+    //                if (existingVisits.Any(x => x.Id == Guid.Parse(slVisit.Guid)))
+    //                {
+    //                    continue;
+    //                }
+
+    //                // Create visit
+    //                var visit = new Visit()
+    //                {
+    //                    Id = Guid.Parse(slVisit.Guid),
+    //                    ActualVisitDate = slVisit.DateOfVisit,
+    //                    CoachId = Guid.Parse(slVisit.Coach.Guid),
+    //                    HasAnswerData = false,
+    //                    VisitTypeId = smartSpaceVisitTypeId,
+    //                    TenantId = _tenantId,
+    //                    Attended = true,
+    //                    DueDate = slVisit.DateOfVisit,
+    //                    PlannedVisitDate = slVisit.DateOfVisit,
+    //                    TraineeId = practitioner.Id,                  
+    //                };
+    //                createdVisits.Add(visit);
+
+    //                // Do I need to save license info ???
+    //            }
+    //            _visitsRepo.InsertMany(createdVisits);
+    //        }
+    //        catch (Exception e)
+    //        {
+    //            await _logManager.IntegrationLog("IntegrationPQASmartSpaceVisitsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationPQASmartSpaceVisitsData > GetSmartSpaceVisitsByFranchiseeTrainee");
+    //            success = false;
+    //        }
+    //    }
+
+    //    return success;
+    //}
 
     public async Task<bool> IntegrationStatementsData()
     {
@@ -1427,7 +1489,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             EmergencyContactSurname = entity.NextOfKinSurname,
                             EmergencyContactFullName = entity.NextOfKinFirstName + " " + entity.NextOfKinSurname,
                             EmergencyContactPhoneNumber = entity.NextOfKinContactNumber,
-                            TenantId = tenantId,
+                            TenantId = _tenantId,
                             IsImported = true,
                             //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage,
                             WhatsAppNumber = whatsappNumberToImport,
@@ -1579,7 +1641,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     IsPrinciple = true,
                                     NumberPractitioners = 1,
                                     Hierarchy = newPractitioner.Hierarchy,
-                                    TenantId = tenantId,
+                                    TenantId = _tenantId,
                                     SiteAddressId = insertedAddress ? siteAddressId : null
                                 };
                                 _classroomGenericRepo.Insert(pracClass);
@@ -1591,7 +1653,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     UserId = Guid.Parse(userId),
                                     IsActive = true,
                                     Name = "Unsure",
-                                    TenantId = tenantId,
+                                    TenantId = _tenantId,
                                     Hierarchy = newPractitioner.Hierarchy,
                                     ProgrammeTypeId = programmeType.Id,
                                     ClassroomId = pracClass.Id
@@ -1701,7 +1763,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             FullName = entity.FirstName + " " + entity.Surname,
                             ContactPreference = MessageTypeConstants.SMS,
                             IsActive = true,
-                            TenantId = tenantId,
+                            TenantId = _tenantId,
                             IsImported = true,
                         };
 
@@ -1715,7 +1777,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             Id = Guid.NewGuid(),
                             UserId = userId,
                             IsActive = true,
-                            TenantId = tenantId,
+                            TenantId = _tenantId,
                             Allergies = entity.AllergyType,
                             Disabilities = entity.DisabilityType,
                             WorkflowStatusId = workflow.Id
@@ -1805,7 +1867,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                         {
                                             Id = Guid.NewGuid(),
                                             IsActive = true,
-                                            TenantId = tenantId,
+                                            TenantId = _tenantId,
                                             IdNumber = entity.Caregiver.IdNumber,
                                             FirstName = entity.Caregiver.FirstName,
                                             Surname = entity.Caregiver.Surname,
@@ -1872,7 +1934,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 if (sGrant != null)
                                 {
                                     //insert new grant
-                                    List<UserGrant> grants = new List<UserGrant>() { new UserGrant() { GrantId = sGrant.Id, TenantId = tenantId, UserId = userId } };
+                                    List<UserGrant> grants = new List<UserGrant>() { new UserGrant() { GrantId = sGrant.Id, TenantId = _tenantId, UserId = userId } };
                                     foreach (var grant in grants)
                                     {
                                         // Added safety from removing items from the list should the insertion of new items fail
@@ -1894,7 +1956,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             {
                                 try
                                 {
-                                    UserConsent consentPopia = new UserConsent() { Id = Guid.NewGuid(), ConsentId = 171, ConsentType = "PersonalInformationAgreement", UserId = userId, CreatedUserId = _uId, TenantId = tenantId, IsActive = true, InsertedDate = DateTime.Now };
+                                    UserConsent consentPopia = new UserConsent() { Id = Guid.NewGuid(), ConsentId = 171, ConsentType = "PersonalInformationAgreement", UserId = userId, CreatedUserId = _uId, TenantId = _tenantId, IsActive = true, InsertedDate = DateTime.Now };
                                     _dbContext.UserConsents.Add(consentPopia);
                                     _dbContext.SaveChanges();
                                 }
@@ -1909,7 +1971,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                                 try
                                 {
-                                    UserConsent consentPhoto = new UserConsent() { Id = Guid.NewGuid(), ConsentId = 175, ConsentType = "PhotoPermissions", UserId = userId, CreatedUserId = _uId, TenantId = tenantId, IsActive = true, InsertedDate = DateTime.Now };
+                                    UserConsent consentPhoto = new UserConsent() { Id = Guid.NewGuid(), ConsentId = 175, ConsentType = "PhotoPermissions", UserId = userId, CreatedUserId = _uId, TenantId = _tenantId, IsActive = true, InsertedDate = DateTime.Now };
                                     _dbContext.UserConsents.Add(consentPhoto);
                                     _dbContext.SaveChanges();
                                 }
@@ -2247,7 +2309,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     //EmergencyContactSurname = entity.NextOfKinSurname,
                                     //EmergencyContactFullName = entity.NextOfKinFirstName + " " + entity.NextOfKinSurname,
                                     //EmergencyContactPhoneNumber = entity.NextOfKinContactNumber,
-                                    TenantId = tenantId,
+                                    TenantId = _tenantId,
                                     IsImported = true,
                                     //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage,
                                     WhatsAppNumber = whatsappNumberToImport,
@@ -2423,7 +2485,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     IsPrinciple = true,
                                     NumberPractitioners = 1,
                                     Hierarchy = newPractitioner.Hierarchy,
-                                    TenantId = tenantId,
+                                    TenantId = _tenantId,
                                     //SiteAddressId = insertedAddress ? siteAddressId : null
                                 };
                                 _classroomGenericRepo.Insert(pracClass);
@@ -2435,7 +2497,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     UserId = Guid.Parse(userId),
                                     IsActive = true,
                                     Name = "Unsure",
-                                    TenantId = tenantId,
+                                    TenantId = _tenantId,
                                     Hierarchy = newPractitioner.Hierarchy,
                                     ProgrammeTypeId = programmeType.Id,
                                     ClassroomId = pracClass.Id
@@ -4760,4 +4822,49 @@ public class SmartStartIntegrationService : IIntegrationService
 
     #endregion
 
+    #region helper methods
+
+    private string MapStatusOutcomeToRatingColour(string statusOutcome)
+    {
+        switch (statusOutcome.ToLower())
+        {
+            case "green":
+                return MetricsColorEnum.Success.ToString();
+            case "orange":
+                return MetricsColorEnum.Warning.ToString();
+            case "red":
+                return MetricsColorEnum.Error.ToString();
+            case "not done":
+            default:
+                return MetricsColorEnum.None.ToString();
+        }
+    }
+
+    private string GetNumberOfStarsForPQA(int score, string overallRatingColour)
+    {
+        if (score < 13 || overallRatingColour.ToLower() == "red")
+        {
+            return Constants.SSSettings.zero_stars;
+        }
+
+        if (score < 27)
+        {
+            return Constants.SSSettings.one_star;
+        }
+
+        if (score < 33 || overallRatingColour.ToLower() == "orange")
+        {
+            return Constants.SSSettings.two_stars;
+
+        }
+
+        if (score < 39)
+        {
+            return Constants.SSSettings.three_stars;
+        }
+
+        return Constants.SSSettings.four_stars;
+    }
+
+    #endregion
 }

@@ -17,7 +17,13 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
-import { Alert, Button, DialogPosition, Typography, classNames } from '@ecdlink/ui';
+import {
+  Alert,
+  Button,
+  DialogPosition,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
 import {
   ArrowLeftIcon,
   DocumentDuplicateIcon,
@@ -76,7 +82,6 @@ export default function ContentEdit({
       }
   `;
 
-
   const dialog = useDialog();
 
   const [deleteContent] = useMutation(deleteMutation);
@@ -99,7 +104,7 @@ export default function ContentEdit({
               },
             })
               .then(() => {
-                cancelEdit()
+                cancelEdit();
                 setNotification({
                   title: 'Successfully Deleted Content!',
                   variant: NOTIFICATION.SUCCESS,
@@ -124,13 +129,14 @@ export default function ContentEdit({
           btnText={['Discard changes', 'Keep editing']}
           message={` If you leave now, you will lose all of your changes.`}
           onCancel={onCancel}
-          onSubmit={() => { cancelEdit(); onCancel() }}
-
+          onSubmit={() => {
+            cancelEdit();
+            onCancel();
+          }}
         />
       ),
     });
   };
-
 
   const [updateContent] = useMutation(updateMutation);
 
@@ -223,12 +229,11 @@ export default function ContentEdit({
   if (contentType && contentValues && template && !loading) {
     return (
       <div className="flex flex-col rounded-md ">
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
-                {cancelEdit && camelCaseToSentanceCase( content.name ?? '')}
+                {cancelEdit && camelCaseToSentanceCase(content.name ?? '')}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
@@ -243,7 +248,6 @@ export default function ContentEdit({
                 </button>
               )}
 
-
               {cancelEdit && (
                 <button
                   onClick={cancelDialog}
@@ -252,7 +256,6 @@ export default function ContentEdit({
                 >
                   Cancel
                   <XIcon width="22px" className="pl-1" />
-
                 </button>
               )}
             </div>
@@ -270,11 +273,13 @@ export default function ContentEdit({
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : <Alert
-              className="mt-2 mb-2 rounded-md"
-              message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
-              type="warning"
-            />}
+            ) : (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                message={`Note that any changes made below are not made to SmartLink. If you make any major edits below, discuss them with the SmartLink team.`}
+                type="warning"
+              />
+            )}
 
             <DynamicForm
               template={template}
@@ -287,7 +292,7 @@ export default function ContentEdit({
           <div className="flex flex-row">
             <button
               type="submit"
-              className="mt-3 bg-secondary hover:bg-uiMid focus:outline-none ml-4 inline-flex items-center rounded-md border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 ml-4 inline-flex items-center rounded-md border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
             >
               Save & publish
               <SaveAsIcon width="22px" className="pl-1" />
@@ -295,14 +300,13 @@ export default function ContentEdit({
 
             <button
               onClick={deleteAndRefresh}
-              className="mt-3 bg-transparent hover:bg-tertiary border-2 border-tertiary focus:outline-none ml-4 inline-flex items-center rounded-md  px-14 py-2.5 text-sm font-medium text-tertiary shadow-sm focus:ring-2 focus:ring-offset-2"
+              className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-md border-2  bg-transparent px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2"
             >
               Delete {content.name}
               <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
                 {' '}
               </TrashIcon>
             </button>
-
           </div>
         </form>
       </div>

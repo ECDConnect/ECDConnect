@@ -7,34 +7,46 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useState } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-basic-info';
 import { useAppDispatch } from '@store';
 import { childrenThunkActions, childrenActions } from '@store/children';
 import * as childRegisterUtils from '@utils/child/child-registration.utils';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
-import { ChildRegistrationSteps } from '../../child-registration/child-registration.types';
+import {
+  ChildRegistrationRouteState,
+  ChildRegistrationSteps,
+} from '../../child-registration/child-registration.types';
 import { classroomsActions, classroomsThunkActions } from '@store/classroom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
+import { CaregiverMultipleChildrenModal } from '../../components/caregiver-multiple-children-modal';
+import ROUTES from '@/routes/routes';
+
 export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;
+  onNewChild: () => void;
 }
 
 export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   childDetails,
+  onNewChild,
 }) => {
   const dialog = useDialog();
   const history = useHistory();
+  const location = useLocation<ChildRegistrationRouteState>();
   const dispatch = useAppDispatch();
   const [childId, setChildId] = useState();
   const [loadingLink, setLoadingLink] = useState(false);
+
   const [loadingManualUpload, setLoadingManualUpload] = useState(false);
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const { isOnline } = useOnlineStatus();
+
+  const practitionerId = location?.state?.practitionerId;
 
   const getChildToken = async () => {
     let token = '';
@@ -76,6 +88,10 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     });
   };
 
+  const onExit = () => {
+    history.push(ROUTES.COACH.PRACTITIONERS);
+  };
+
   const createLink = async () => {
     setLoadingLink(true);
     const token = await getChildToken();
@@ -100,6 +116,22 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     setLoadingLink(false);
     dialog({
       render: (onSubmit, onCancel) => {
+        if (!!practitionerId) {
+          return (
+            <CaregiverMultipleChildrenModal
+              title="Caregiver link copied!"
+              onSubmit={() => {
+                onNewChild();
+                onSubmit();
+              }}
+              onCancel={() => {
+                onExit();
+                onCancel();
+              }}
+            />
+          );
+        }
+
         return (
           <CaregiverChildRegistrationModal
             onSubmit={whatsapp}
@@ -140,6 +172,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
       childDetails,
       childId: result.ChildId,
       step: ChildRegistrationSteps.registrationForm,
+      practitionerId,
     });
   };
 

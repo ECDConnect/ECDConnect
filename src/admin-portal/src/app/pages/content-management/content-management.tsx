@@ -15,7 +15,12 @@ import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import { ArrowLeftIcon, ChartBarIcon, PresentationChartBarIcon, SearchIcon } from '@heroicons/react/solid';
+import {
+  ArrowLeftIcon,
+  ChartBarIcon,
+  PresentationChartBarIcon,
+  SearchIcon,
+} from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 
 export function ContentManagement() {
@@ -161,7 +166,7 @@ export function ContentManagement() {
       setSelectedType(currentType);
       setSelectedContent(contentManagementView);
     });
-    console.log(contentManagementView)
+    console.log(contentManagementView);
   };
 
   const refreshParent = () => {
@@ -191,18 +196,21 @@ export function ContentManagement() {
 
   const listItems: StackedListItemType[] = [];
 
-  console.log(dataTypes?.contentTypes)
+  console.log(dataTypes?.contentTypes);
 
   if (specialType === 'Progress') {
     listItems.push(
       {
         title: 'Levels',
-        description: 'Children will be placed at a specific level or stage of development',
+        description:
+          'Children will be placed at a specific level or stage of development',
         titleIcon: 'ChartBarIcon',
         titleIconClassName: 'bg-secondary text-white',
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'ProgressTrackingLevel'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'ProgressTrackingLevel'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
@@ -214,7 +222,9 @@ export function ContentManagement() {
         titleIconClassName: 'bg-secondary text-white',
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'ProgressTrackingCategory'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'ProgressTrackingCategory'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
@@ -226,7 +236,10 @@ export function ContentManagement() {
         titleIconClassName: 'bg-secondary text-white',
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'ProgressTrackingSubCategory'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) =>
+              type.name === 'ProgressTrackingSubCategory'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
@@ -238,35 +251,43 @@ export function ContentManagement() {
         titleIconClassName: 'bg-secondary text-white',
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'ProgressTrackingSkill'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'ProgressTrackingSkill'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
-      },
+      }
     );
   } else {
     listItems.push(
       {
         title: 'Themes',
-        description: 'An organized set of activities based around a particular topic',
+        description:
+          'An organized set of activities based around a particular topic',
         titleIcon: 'SparklesIcon',
         titleIconClassName: 'bg-secondary text-white',
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'Theme'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'Theme'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
       },
       {
         title: 'Small/large group activities',
-        description: 'Classroom activities for children to do either in small groups or as a whole class',
+        description:
+          'Classroom activities for children to do either in small groups or as a whole class',
         titleIcon: 'UsersIcon',
         titleIconClassName: 'bg-secondary text-white',
 
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'Activity'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'Activity'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
@@ -279,7 +300,9 @@ export function ContentManagement() {
 
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBook'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'StoryBook'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
@@ -291,7 +314,9 @@ export function ContentManagement() {
         titleIconClassName: 'bg-secondary text-white',
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBookParts'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'StoryBookParts'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
@@ -305,7 +330,9 @@ export function ContentManagement() {
 
         onActionClick: () => {
           setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find((type: ContentTypeDto) => (type.name === 'StoryBookPartQuestion'));
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'StoryBookPartQuestion'
+          );
           showGroupContentTypes(selectedTypeObject);
         },
         classNames: 'bg-uiBg',
@@ -313,12 +340,8 @@ export function ContentManagement() {
     );
   }
 
-
-
   return (
     <div className="">
-
-
       {dataTypes ? (
         <>
           {!selectedContent && (
@@ -340,7 +363,7 @@ export function ContentManagement() {
                       );
 
                       if (selectedTypeObject) {
-                        setSelectedTab(item.id)
+                        setSelectedTab(item.id);
                         setSpecialType('');
                         showGroupContentTypes(selectedTypeObject);
                       } else {
@@ -402,48 +425,51 @@ export function ContentManagement() {
                   className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
                 >
-                  {specialType === '' && <div className="relative w-6/12">
-                    <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                      {searchValue === '' && (
-                        <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-
-                      )}
-                    </span>
-                    <input
-                      className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                      placeholder="      Search by type..."
-                      onChange={search}
-                    />
-                  </div>}
-                  {selectedType && languages?.GetAllLanguage && specialType === '' && (
-                    <ContentList
-                      optionDefinitions={dataDefinitions.contentDefinitions}
-                      contentType={selectedType}
-                      languages={languages.GetAllLanguage}
-                      viewContent={getContentValues}
-                      refreshParent={() => refreshParent()}
-                      selectedTab={selectedTab}
-                    ></ContentList>
+                  {specialType === '' && (
+                    <div className="relative w-6/12">
+                      <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                        {searchValue === '' && (
+                          <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+                        )}
+                      </span>
+                      <input
+                        className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                        placeholder="      Search by type..."
+                        onChange={search}
+                      />
+                    </div>
                   )}
-                  {
-                    specialType === 'Programmes' && <div className="flex">
+                  {selectedType &&
+                    languages?.GetAllLanguage &&
+                    specialType === '' && (
+                      <ContentList
+                        optionDefinitions={dataDefinitions.contentDefinitions}
+                        contentType={selectedType}
+                        languages={languages.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                      ></ContentList>
+                    )}
+                  {specialType === 'Programmes' && (
+                    <div className="flex">
                       <StackedList
                         className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
                         type="TitleList"
                         listItems={listItems}
                       />
                     </div>
-                  }
+                  )}
 
-                  {
-                    specialType === 'Progress' && <div className="flex">
+                  {specialType === 'Progress' && (
+                    <div className="flex">
                       <StackedList
-                        className="w-full rounded-2xl -mt-0.5 flex flex-col gap-1"
+                        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
                         type="TitleList"
                         listItems={listItems}
                       />
                     </div>
-                  }
+                  )}
                 </div>
               </div>
             </div>
