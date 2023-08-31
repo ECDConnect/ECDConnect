@@ -254,7 +254,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
         <FormInput
           className="mt-4"
           label={item?.question}
-          placeholder={'e.g. 2'}
+          placeholder={'e.g. 410'}
           value={item.answer}
           onChange={(e) => onOptionSelected(e.target.value, index)}
           {...(!!item.answer &&
