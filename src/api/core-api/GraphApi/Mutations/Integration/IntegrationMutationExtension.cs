@@ -26,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         }
         public async Task<bool> IntegrationPQASmartSpaceVisitsData([Service] IIntegrationService integrationService)
         {
-            return await integrationService.IntegrationPQASmartSpaceVisitsData();
+            return await integrationService.PullPQAData();
         }
         public async Task<bool> IntegrationStatementsData([Service] IIntegrationService integrationService)//IIntegrationService
         {

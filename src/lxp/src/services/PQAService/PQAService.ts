@@ -261,8 +261,7 @@ class PQAService {
             pQARatings {
               visitId
               linkedVisitId
-              actualVisitDate
-              children {
+              sections {
                 sectionRating
                 sectionRatingColor
                 sectionScore
@@ -272,7 +271,6 @@ class PQAService {
               overallRatingColor
               overallRatingStars
               overallScore
-              plannedDate
               visitName
               visitTypeName
             }
@@ -313,7 +311,7 @@ class PQAService {
             reAccreditationRatings {
               visitId
               linkedVisitId
-              children {
+              sections {
                 sectionRating
                 sectionRatingColor
                 sectionScore
@@ -323,7 +321,6 @@ class PQAService {
               overallRatingColor
               overallRatingStars
               overallScore
-              plannedDate
               visitName
               visitTypeName
             }
