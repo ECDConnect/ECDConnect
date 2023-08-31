@@ -28,6 +28,7 @@ import {
   getAgeInYearsMonthsAndDays as getCurrentTimeInYearsMonthsAndDays,
   getFormattedDateInYearsMonthsAndDays,
   parseBool,
+  useSessionStorage,
 } from '@ecdlink/core';
 import {
   dateLongMonthOptions,
@@ -49,6 +50,7 @@ import {
 } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import { ExclamationIcon } from '@heroicons/react/solid';
+import { isDateWithinThreeMonths } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 
 interface PractitionerJourneyProps {
   onIsDisplayFormChange: (value: boolean) => void;
@@ -58,6 +60,7 @@ export const PractitionerJourney = ({
   onIsDisplayFormChange,
 }: PractitionerJourneyProps) => {
   const [showForm, setShowForm] = useState(false);
+  const [, setVisitId] = useSessionStorage(practitionerVisitIdKey);
 
   const appDispatch = useAppDispatch();
 
@@ -100,8 +103,9 @@ export const PractitionerJourney = ({
 
   const uncompletedVisits = [...uncompletedSelfAssessment];
 
-  const onStart = (visitName?: string) => {
+  const onStart = (visitName?: string, visitId?: string) => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
+    setVisitId(visitId);
     setShowForm(true);
     onIsDisplayFormChange(true);
   };
@@ -161,28 +165,36 @@ export const PractitionerJourney = ({
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
     .sort(sortVisit)
-    ?.map((visit): MenuListDataItem<{ visitId?: string }> => {
-      const isLate = new Date(visit?.plannedVisitDate || '') < new Date();
+    ?.map(
+      (
+        visit
+      ): MenuListDataItem<{ visitId?: string; plannedVisitDate?: string }> => {
+        const isLate = new Date(visit?.plannedVisitDate || '') < new Date();
 
-      return {
-        showIcon: true,
-        menuIcon: isLate ? 'ExclamationIcon' : 'ClipboardListIcon',
-        iconColor: 'white',
-        titleStyle: 'text-textDark',
-        title: visit?.visitType?.description || 'Visit',
-        subTitle: !!visit?.plannedVisitDate
-          ? `By ${new Date(visit?.plannedVisitDate).toLocaleDateString(
-              'en-ZA',
-              dateLongMonthOptions
-            )}`
-          : '',
-        subTitleStyle: 'text-textDark',
-        iconBackgroundColor: isLate ? 'alertMain' : 'primary',
-        backgroundColor: 'uiBg',
-        extraData: { visitId: visit?.id },
-        onActionClick: () => onStart(String(visit?.visitType?.name)),
-      };
-    })
+        return {
+          showIcon: true,
+          menuIcon: isLate ? 'ExclamationIcon' : 'ClipboardListIcon',
+          iconColor: 'white',
+          titleStyle: 'text-textDark',
+          title: visit?.visitType?.description || 'Visit',
+          subTitle: !!visit?.plannedVisitDate
+            ? `By ${new Date(visit?.plannedVisitDate).toLocaleDateString(
+                'en-ZA',
+                dateLongMonthOptions
+              )}`
+            : '',
+          subTitleStyle: 'text-textDark',
+          iconBackgroundColor: isLate ? 'alertMain' : 'primary',
+          backgroundColor: 'uiBg',
+          extraData: {
+            visitId: visit?.id,
+            plannedVisitDate: visit?.plannedVisitDate,
+          },
+          onActionClick: () =>
+            onStart(String(visit?.visitType?.name), visit?.id),
+        };
+      }
+    )
     .shift();
 
   const isRenderForm =
@@ -193,8 +205,8 @@ export const PractitionerJourney = ({
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
-    window.sessionStorage.removeItem(practitionerVisitIdKey);
     window.sessionStorage.setItem(isViewKey, 'false');
+    setVisitId('');
     setShowForm(false);
     onIsDisplayFormChange(false);
   };
@@ -392,13 +404,16 @@ export const PractitionerJourney = ({
 
   return (
     <div className="p-4">
-      {!!currentVisit && (
-        <StackedList
-          isFullHeight={false}
-          type="MenuList"
-          listItems={[currentVisit]}
-        />
-      )}
+      {!!currentVisit &&
+        isDateWithinThreeMonths(
+          currentVisit?.extraData?.plannedVisitDate || ''
+        ) && (
+          <StackedList
+            isFullHeight={false}
+            type="MenuList"
+            listItems={[currentVisit]}
+          />
+        )}
       {renderAlert()}
       <Typography
         className="mt-4 mb-2"

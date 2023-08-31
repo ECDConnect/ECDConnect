@@ -1,9 +1,11 @@
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
@@ -156,6 +158,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
             [Service] IReassignmentService reassignmentService,
+            [Service] INotificationService notificationService,
         string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -178,6 +181,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
 
                     status.AcceptedDate = null;
+                    int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
                     //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
                     if (practitioner.DateToBeRemoved != null)
                     {
@@ -201,8 +205,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                         }
 
-                        int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
-
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
                         practitioner.DateAccepted = null;
                         practitioner.IsLeaving = true;
@@ -210,6 +212,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                         status.Leaving = true;
                     }
+                    //send message of rejection
+                    List<TagsReplacements> replacements = new List<TagsReplacements>
+                    {
+                        new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
+                        new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToString() }
+                    };
+                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
                 }
                 else
                 {

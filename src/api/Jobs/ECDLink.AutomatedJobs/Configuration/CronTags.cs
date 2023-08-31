@@ -2,6 +2,7 @@
 {
     public static class CronTags
     {
+        //[0] [min] [hour] [day of month] [month] [day of week]
         public const string EveryMinute = "0 * * * * *";
 
         public const string EveryFiveMinutes = "0 */5 * * * *";
@@ -19,5 +20,7 @@
 
         public const string EveryTwoHours = "0 * */2 * * *";
         public const string EighthOfEveryMonth = "0 0 8 * * *";
+
+        public const string FirstofEveryMonth = "0 0 0 1 * *";
     }
 }
