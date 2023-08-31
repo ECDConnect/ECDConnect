@@ -6,4 +6,5 @@ export interface CareGiverReferencePanelFormProps
   extends FormComponentProps<CareGiverReferencePanelFormModel> {
   careGiverReferencePanelForm?: CareGiverReferencePanelFormModel;
   variation?: ChildRegistrationVariation;
+  isLoading?: boolean;
 }

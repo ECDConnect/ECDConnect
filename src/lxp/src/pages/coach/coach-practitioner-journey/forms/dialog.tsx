@@ -3,6 +3,7 @@ import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ChildRegistrationRouteState } from '@/pages/child/child-registration/child-registration.types';
 
 interface ChildrenDialogProps {
   name: string;
@@ -45,7 +46,7 @@ export const ChildrenDialog = ({
             onBack?.();
             history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
               practitionerId,
-            });
+            } as ChildRegistrationRouteState);
             onClose();
           },
         },
