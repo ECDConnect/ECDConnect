@@ -8,6 +8,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -28,17 +29,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
             else if (input.PractitionerId != null)
             {
-                Visit visit = visitDataManager.AddPractitionerVisitData(input, true);
+                var visit = visitDataManager.AddPractitionerVisitData(input, true);
                 // PQA Rating
                 if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
                 {
-                    PQARating pqaRating = visitDataManager.GetPractitionerPQARating(visit);
-                    visitManager.AddNextPQAOrFollowUpVisit(pqaRating.OverallRatingColor, (System.Guid)visit.PractitionerId, visit);
+                    var pqaRating = visitDataManager.CalculateAndSavePractitionerPQARating(visit);
+                    visitManager.AddNextPQAOrFollowUpVisit(pqaRating.OverallRatingColor, visit.PractitionerId.Value, visit);
                 } 
                 if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
                 {
-                    PQARating pqaRating = visitDataManager.GetPractitionerReAccreditationRating(visit);
-                    visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, (System.Guid)visit.PractitionerId, visit);
+                    var pqaRating = visitDataManager.CalculateAndSaveReAccreditationRating(visit);
+                    visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, visit.PractitionerId.Value, visit);
                 }
             }
             else if (input.TraineeId != null)

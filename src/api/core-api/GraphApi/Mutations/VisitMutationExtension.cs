@@ -163,7 +163,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             visitDataManager.AddPractitionerVisitData(input.FollowUpData, false);
 
             // PQA Rating
-            PQARating pqaRating = visitDataManager.GetPractitionerPQARating(visit);
+            var pqaRating = visitDataManager.CalculateAndSavePractitionerPQARating(visit);
             visitManager.AddNextPQAOrFollowUpVisit(pqaRating.OverallRatingColor, practitioner.Id, visit);
 
             return visit;
@@ -207,7 +207,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             visitDataManager.AddPractitionerVisitData(input.FollowUpData, false);
 
             // PQA Rating
-            PQARating pqaRating = visitDataManager.GetPractitionerReAccreditationRating(visit);
+            PQARating pqaRating = visitDataManager.CalculateAndSaveReAccreditationRating(visit);
             visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, practitioner.Id, visit);
 
             return visit;
@@ -255,7 +255,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             visitDataManager.AddPractitionerVisitData(input.ReAccreditationData, false);
 
             // PQA Rating
-            PQARating pqaRating = visitDataManager.GetPractitionerReAccreditationRating(visit);
+            PQARating pqaRating = visitDataManager.CalculateAndSaveReAccreditationRating(visit);
             visitManager.AddNextReAccreditationOrFollowUpVisit(pqaRating.OverallRatingColor, practitioner.Id, visit);
 
             return visit;
