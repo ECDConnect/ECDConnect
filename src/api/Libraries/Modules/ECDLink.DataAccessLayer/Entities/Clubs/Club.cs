@@ -3,7 +3,6 @@ using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Clubs
@@ -22,8 +21,6 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public string? UserId { get; set; }
         public Guid? LeagueId { get; set; }
         public virtual League League { get; set; }
-        public virtual ClubLeader ClubLeader { get; set; }
-        public virtual ClubSupport ClubSupport { get; set; }
     }
 
     public interface ClubJoin<TKey>
