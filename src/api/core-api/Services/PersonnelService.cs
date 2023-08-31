@@ -557,7 +557,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> reaccreditation_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
             List<Visit> support_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
             List<Visit> requested_coach_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
-            List<Visit> self_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
+            List<Visit> self_assessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
+            List<Visit> self_visits = new List<Visit>();
 
             foreach (Visit visit in pqa_visits)
             {
@@ -618,13 +619,26 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // Self Assessment
-            if (self_visits.Count > 0)
+            if (self_assessments.Count > 0)
             {
-                Visit selfVisit = self_visits.OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                // Only include a self assessment if the linked visit is not completed
+                foreach (var item in self_assessments)
+                {
+                    Visit linkedVisit = visits.Where(x => x.Id == item.LinkedVisitId).FirstOrDefault();
+                    if (linkedVisit != null && linkedVisit.Attended == false)
+                    {
+                        self_visits.Add(item);
+                    }
+                }
 
-                timeline.SelfAssessmentStatus = Constants.SSSettings.self_assessment;
-                timeline.SelfAssessmentColor = MetricsColorEnum.Success.ToString();
-                timeline.SelfAssessmentDate = selfVisit?.ActualVisitDate;
+                if (self_visits.Count > 0)
+                {
+                    Visit selfVisit = self_visits.OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+
+                    timeline.SelfAssessmentStatus = Constants.SSSettings.self_assessment;
+                    timeline.SelfAssessmentColor = MetricsColorEnum.Success.ToString();
+                    timeline.SelfAssessmentDate = selfVisit?.ActualVisitDate;
+                }
             }
 
             // Coach Circles

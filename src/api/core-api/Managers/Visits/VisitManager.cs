@@ -1063,6 +1063,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                  x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                  x.LinkedVisitId == _linkedVisitId &&
+                                                                 x.Attended == false &&
                                                                  x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1091,6 +1092,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                x.LinkedVisitId == _linkedVisitId &&
+                                                               x.Attended == false &&
                                                                x.VisitType.Name == _visitType.Name).FirstOrDefault();
                         if (visit == null)
                         {
@@ -1180,6 +1182,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                     x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                     x.LinkedVisitId == _linkedVisitId &&
+                                                                    x.Attended == false &&
                                                                     x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1343,6 +1346,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                              x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                              x.LinkedVisitId == _linkedVisitId &&
+                                                             x.Attended == false &&
                                                              x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1373,6 +1377,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                            x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                            x.LinkedVisitId == _linkedVisitId &&
+                                                           x.Attended == false &&
                                                            x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1457,6 +1462,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     Visit visit = allPractitionerVisits.Where(x => x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                     x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                     x.LinkedVisitId == _linkedVisitId &&
+                                                                    x.Attended == false &&
                                                                     x.VisitType.Name == _visitType.Name).FirstOrDefault();
                     if (visit == null)
                     {
@@ -1489,6 +1495,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 Visit visit = allPractitionerVisits.Where(x =>  x.PlannedVisitDate.Date == _deadlineDate.Date &&
                                                                 x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                                                 x.LinkedVisitId == _linkedVisitId &&
+                                                                x.Attended == false &&
                                                                 x.VisitType.Name == _visitType.Name).FirstOrDefault();
                 if (visit == null)
                 {

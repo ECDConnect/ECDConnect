@@ -38,7 +38,7 @@ export const ChildBasicInfo: React.FC<
   );
   const location = useLocation<PractitionerChildRegisterState>();
 
-  const { practitionerId } = location.state;
+  const practitionerId = location?.state?.practitionerId;
 
   const practitionerFromState = useSelector(
     getPractitionerByUserId(practitionerId || '')
@@ -49,7 +49,8 @@ export const ChildBasicInfo: React.FC<
     return item?.userId === userId || item?.isActive !== true;
   });
 
-  const isPrincipal = practitioner?.isPrincipal;
+  const isPrincipal =
+    practitioner?.isPrincipal || practitionerFromState?.isPrincipal;
 
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);

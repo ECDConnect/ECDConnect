@@ -19,6 +19,7 @@ import { timelineSteps } from './timeline-steps';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
+import { OverdueSteps } from './components/overdue-steps/overdue-steps';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
@@ -38,6 +39,7 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const [showSteps, setShowSteps] = useState(true);
+  const [showOverdueSteps, setShowOverdueSteps] = useState(false);
 
   const onView = async (notificationStep: string) => {
     if (notificationStep === 'Fill in the SmartSpace checklist') {
@@ -70,6 +72,17 @@ export const OnboardingTraineeDashboard: React.FC<
     new Date(),
     new Date(extradataTimeValue[0] as Date)
   );
+
+  const overdueSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined,
+    '',
+    isOnStipend
+  ).filter((item) => item?.subTitleColor === 'alertMain');
 
   const completedSteps = timelineSteps(
     timeline!,
@@ -121,6 +134,25 @@ export const OnboardingTraineeDashboard: React.FC<
     },
   ];
 
+  const overdueStepsNotificationItem: MenuListDataItem[] = [
+    {
+      showIcon: true,
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'border-0',
+      iconColor: 'white',
+      title: `${overdueSteps?.length} onboarding steps overdue`,
+      titleStyle: 'text-textDark semibold',
+      subTitle:
+        checkOverdueDate > 0
+          ? `${String(checkOverdueDate)} days overdue`
+          : filteredUncompletedSteps?.[0]?.subTitle,
+      subTitleStyle: 'text-textMid',
+      iconBackgroundColor: checkOverdueDate > 0 ? 'alertMain' : 'primary',
+      backgroundColor: 'uiBg',
+      onActionClick: () => setShowOverdueSteps(true),
+    },
+  ];
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -135,6 +167,16 @@ export const OnboardingTraineeDashboard: React.FC<
       className="h-screen"
     >
       <div className="h-screen p-4">
+        {overdueSteps?.length > 0 && (
+          <div className="pt-2 pb-6">
+            <StackedList
+              isFullHeight={false}
+              className={'flex flex-col gap-2'}
+              listItems={overdueStepsNotificationItem}
+              type={'MenuList'}
+            />
+          </div>
+        )}
         {showSteps && (
           <>
             {nextStep && (
@@ -189,6 +231,17 @@ export const OnboardingTraineeDashboard: React.FC<
           </>
         )}
       </div>
+      <Dialog
+        fullScreen
+        visible={showOverdueSteps}
+        position={DialogPosition.Full}
+      >
+        <OverdueSteps
+          overdueSteps={overdueSteps}
+          practitioner={practitioner}
+          setShowOverdueSteps={setShowOverdueSteps}
+        />
+      </Dialog>
     </BannerWrapper>
   );
 };

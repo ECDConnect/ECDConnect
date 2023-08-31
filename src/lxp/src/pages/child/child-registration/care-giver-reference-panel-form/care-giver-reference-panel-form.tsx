@@ -20,7 +20,7 @@ import { CareGiverReferencePanelFormProps } from './care-giver-reference-panel-f
 
 export const CareGiverReferencePanelForm: React.FC<
   CareGiverReferencePanelFormProps
-> = ({ careGiverReferencePanelForm, variation, onSubmit }) => {
+> = ({ careGiverReferencePanelForm, variation, isLoading, onSubmit }) => {
   const [joinReferencePanel, setJoinReferencePanel] = useState<boolean>();
 
   const {
@@ -50,7 +50,7 @@ export const CareGiverReferencePanelForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg pt-2 pb-4 px-4'}>
+    <div className={'bg-uiBg px-4 pt-2 pb-4'}>
       <Typography
         type={'h1'}
         text={'Caregiver reference panel'}
@@ -90,7 +90,8 @@ export const CareGiverReferencePanelForm: React.FC<
           size="small"
           color="primary"
           type="filled"
-          disabled={!isValid}
+          disabled={!isValid || isLoading}
+          isLoading={isLoading}
         >
           {renderIcon('SaveIcon', classNames('h-5 w-5 text-white'))}
           <Typography type="h6" className="ml-2" text="Save" color="white" />
