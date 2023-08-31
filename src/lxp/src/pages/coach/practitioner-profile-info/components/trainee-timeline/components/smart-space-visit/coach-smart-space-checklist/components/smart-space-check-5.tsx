@@ -55,20 +55,6 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   );
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
 
-  const maximumCapacity = useMemo(() => {
-    if (traineeProgrammeTypeObject?.description === 'Preschool') {
-      return '10';
-    }
-
-    if (traineeProgrammeTypeObject?.description === 'Day Mother') {
-      return '6';
-    }
-
-    if (traineeProgrammeTypeObject?.description === 'Playgroup') {
-      return '12';
-    }
-  }, [traineeProgrammeTypeObject?.description]);
-
   const renderAlert = useMemo(() => {
     if (traineeProgrammeTypeObject?.description === 'Day Mother') {
       return (
@@ -198,6 +184,50 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
     }
     setEnableButton(false);
   }, [questions]);
+
+  const maximumCapacity = useMemo(() => {
+    if (traineeProgrammeTypeObject?.description === 'Preschool') {
+      if (
+        (Number(questions[1].answer) * Number(questions[0].answer)) / 10000 <
+        10
+      ) {
+        return String(
+          Math.floor(
+            (Number(questions[1].answer) * Number(questions[0].answer)) / 10000
+          )
+        );
+      }
+      return '10';
+    }
+
+    if (traineeProgrammeTypeObject?.description === 'Day Mother') {
+      if (
+        (Number(questions[1].answer) * Number(questions[0].answer)) / 10000 <
+        6
+      ) {
+        return String(
+          Math.floor(
+            (Number(questions[1].answer) * Number(questions[0].answer)) / 10000
+          )
+        );
+      }
+      return '6';
+    }
+
+    if (traineeProgrammeTypeObject?.description === 'Playgroup') {
+      if (
+        (Number(questions[1].answer) * Number(questions[0].answer)) / 10000 <
+        12
+      ) {
+        return String(
+          Math.floor(
+            (Number(questions[1].answer) * Number(questions[0].answer)) / 10000
+          )
+        );
+      }
+      return '12';
+    }
+  }, [questions, traineeProgrammeTypeObject?.description]);
 
   return (
     <div className="p-4">
