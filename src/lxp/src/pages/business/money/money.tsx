@@ -38,28 +38,39 @@ export const Money: React.FC<MoneyProps> = ({
   const appDispatch = useAppDispatch();
   const income = useSelector(statementsSelectors.getIncome);
   const expense = useSelector(statementsSelectors.getExpenses);
-  const year = getYear(new Date());
-  const month =
-    balanceSheet?.[balanceSheet?.length - 1]?.submitted === false &&
-    balanceSheet?.[balanceSheet?.length - 1]?.month! === new Date().getMonth()
-      ? getMonth(new Date())
-      : getMonth(new Date()) + 1;
+  const currentDate = new Date();
 
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
-      await appDispatch(
-        statementsThunkActions.getAllExpenses({ month: month, year: year })
-      );
-      await appDispatch(
-        statementsThunkActions.getAllIncome({ month: month, year: year })
-      );
-      await appDispatch(
+      setIsLoading(true);
+      const statementResults = await appDispatch(
         statementsThunkActions.getAllStatementsBalanceSheet({
           // userId: userAuth?.id!,
-          year: year,
+          year: getYear(currentDate),
           month: undefined,
         })
+      ).unwrap();
+
+      const month =
+        balanceSheet?.[balanceSheet?.length - 1]?.submitted === false &&
+        balanceSheet?.[balanceSheet?.length - 1]?.month! ===
+          new Date().getMonth()
+          ? getMonth(currentDate)
+          : getMonth(currentDate) + 1;
+
+      await appDispatch(
+        statementsThunkActions.getAllExpenses({
+          month: month,
+          year: getYear(currentDate),
+        })
       );
+      await appDispatch(
+        statementsThunkActions.getAllIncome({
+          month: month,
+          year: getYear(currentDate),
+        })
+      );
+      setIsLoading(false);
     }
     setHandleAutoStartWalkthrough(true);
   };
@@ -103,9 +114,7 @@ export const Money: React.FC<MoneyProps> = ({
   }, [isOnline, userAuth?.auth_token]);
 
   useLayoutEffect(() => {
-    setIsLoading(true);
     updateStatements();
-    setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

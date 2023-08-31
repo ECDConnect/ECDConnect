@@ -20,6 +20,8 @@ using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.DataAccessLayer.Hierarchy;
+using DinkToPdf;
+using System.Globalization;
 
 namespace ECDLink.Core.Services
 {
@@ -562,7 +564,7 @@ namespace ECDLink.Core.Services
             ).Distinct().ToList();
         }
 
-        public List<IncomeExpensePDFDataModel> getMonetaryContributions(string userId, int year, int month, string preschoolFeeId, string moneyId)
+        public List<IncomeExpensePDFDataModel> GetMonetaryContributions(string userId, int year, int month, string preschoolFeeId, string moneyId)
         {
             List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
                     .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
@@ -614,7 +616,7 @@ namespace ECDLink.Core.Services
             return results;
         }
 
-        public List<IncomeExpensePDFDataModel> getSubsidiesDonationsContributions(string userId, int year, int month, string otherId, List<StatementsIncomeType> incomeTypes)
+        public List<IncomeExpensePDFDataModel> GetSubsidiesDonationsContributions(string userId, int year, int month, string otherId, List<StatementsIncomeType> incomeTypes)
         {
             List<string> incomeIds = incomeTypes.Select(x => x.Id.ToString()).ToList();
 
@@ -641,7 +643,7 @@ namespace ECDLink.Core.Services
             return results;
 
         }
-        public List<IncomeExpensePDFDataModel> getOtherIncome(string userId, int year, int month, string otherId)
+        public List<IncomeExpensePDFDataModel> GetOtherIncome(string userId, int year, int month, string otherId)
         {
             List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
                     .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true) && x.IncomeTypeId.Equals(otherId))
@@ -816,7 +818,6 @@ namespace ECDLink.Core.Services
                         //lock all entries
                         row.Submitted = true;
                         row.IncomeStatementId = submittedStatement.Id.ToString();
-                        //row.AutoSubmitted = autoSubmitted;
 
                         expenseRepo.Update(row);
                         rows++;
@@ -824,28 +825,21 @@ namespace ECDLink.Core.Services
                     retVal = true;
                 }
 
-                try
-                {
-                    //statement update
-                    submittedStatement.ExpenseTotal = allExpenses;
-                    submittedStatement.IncomeTotal = allIncome;
-                    submittedStatement.Balance = Math.Round(allIncome - allExpenses, 2);
-                    submittedStatement.UpdatedDate = DateTime.Now;
-                    submittedStatement.UpdatedBy = _applicationUserId;
+                //statement update
+                submittedStatement.ExpenseTotal = allExpenses;
+                submittedStatement.IncomeTotal = allIncome;
+                submittedStatement.Balance = Math.Round(allIncome - allExpenses, 2);
+                submittedStatement.UpdatedDate = DateTime.Now;
+                submittedStatement.UpdatedBy = _applicationUserId;
 
-                    //try generating autosubmit doc
-                    if (rows > 0) //dont create or send empty docs
-                    {
-                        Task<Document> pdfDoc = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFFile(_contextAccessor, _fileService, this, _documentManager, _personnelService, _userManager, _repoFactory, model.UserId, model.Year, model.Month);
-                        if (pdfDoc != null)
-                            submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
-                    }
-                    statementRepo.Insert(submittedStatement);
-                }
-                catch (Exception e)
+                //try generating autosubmit doc
+                if (rows > 0) //dont create or send empty docs
                 {
-
+                    var pdfDoc = CreateIncomeStatementPDFDocument(model.UserId, model.Year, model.Month);
+                    if (pdfDoc != null)
+                        submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
                 }
+                statementRepo.Insert(submittedStatement);
             }
             if (!autoSubmitted)
             {
@@ -914,6 +908,406 @@ namespace ECDLink.Core.Services
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).ToList();
+        }
+
+        public Document CreateIncomeStatementPDFDocument(string userId, int year, int month)
+        {
+            Console.WriteLine("Starting income statement pdf generation");
+            // Data for pdf
+            var htmlData = GetStatementsIncomeExpensesPDFData(userId, year, month);
+
+            var uId = _contextAccessor.HttpContext.GetUser().Id;
+            var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
+            nfi.NumberGroupSeparator = " ";
+
+            double allIncome = 0.0;
+            double allExpense = 0.0;
+            string incomeText = "";
+            string expenseText = "";
+            var hasExpenses = false;
+            var receipts = new List<ExpenseReceipt>();
+
+            string signDateRow = _documentManager.GetSignatureRow(
+                _personnelService.GetUserSignature(userId));
+            string filename = _documentManager.GetDocumentHeader(year, month) + " Statement";
+            string html = $"<html><head>{_documentManager.GetDocumentStyling()}</head><body>";
+
+            PdfDocumentHeader pdfDocumentHeader = new PdfDocumentHeader();
+            pdfDocumentHeader.UserId = userId;
+            pdfDocumentHeader.SiteAddress = _personnelService.GetUserSiteAddress(userId);
+            pdfDocumentHeader.ReportType = "StatementsPDF";
+            var userInfo = _documentManager.GetDocumentHeaderAddress(_userManager, pdfDocumentHeader);
+
+            html += userInfo;
+
+
+            //
+            //  INCOMES
+            //
+
+            incomeText += "<div style='padding-top:80px;'><h1>INCOME</h1></div>";
+
+            foreach (IncomeExpensePDFTableModel item in htmlData)
+            {
+                if (item.Type == "Expenses")
+                {
+                    hasExpenses = true;
+                }
+
+                if (item.Type == "Income")
+                {
+                    var totalIncome = 0.0;
+                    incomeText += "<table width='100%' cellspacing='0' cellpadding='0'><tbody>";
+                    incomeText += "<tr><th style='background-color: #C0C0C0;padding: 4px;' colspan='" + item.Headers.Count + "'>" + item.TableName + "</th></tr>";
+                    incomeText += "<tr>";
+
+                    foreach (IncomeExpensePDFHeaderModel header in item.Headers)
+                    {
+                        if (header.Header == "Amount")
+                        {
+                            incomeText += "<th style='background-color: #E5E5E5;text-align: right; padding-right: 4px;'>" + header.Header + "</th>";
+                        }
+                        else
+                        {
+                            incomeText += "<th style='background-color: #E5E5E5;'>" + header.Header + "</th>";
+                        }
+                    }
+                    incomeText += "</tr>";
+
+                    foreach (IncomeExpensePDFDataModel _data in item.Data)
+                    {
+                        incomeText += "<tr>";
+                        foreach (IncomeExpensePDFHeaderModel header in item.Headers)
+                        {
+                            if (header.Header == "Date")
+                            {
+                                incomeText += "<td style='border-bottom: 1px solid black;width:10%;'>" + _data.Date?.ToString("dd/MM/yyyy") + "</td>";
+                            }
+                            else if (header.Header == "Child")
+                            {
+                                incomeText += "<td style='border-bottom: 1px solid black;width:20%;'>" + _data?.Child + "</td>";
+                            }
+                            else if (header.Header == "Description")
+                            {
+                                incomeText += "<td style='border-bottom: 1px solid black;width:20%;'>" + _data?.Description + "</td>";
+                            }
+                            else if (header.Header == "Item")
+                            {
+                                incomeText += "<td style='border-bottom: 1px solid black;width:20%;'>" + _data?.Description ?? "-" + "</td>";
+                            }
+                            else if (header.Header == "Type")
+                            {
+                                incomeText += "<td style='border-bottom: 1px solid black;width:20%;'>" + _data?.Type + "</td>";
+                            }
+                            else if (header.Header == "Amount")
+                            {
+                                incomeText += "<td style='border-bottom: 1px solid black;width:10%;text-align: right;'>R " + _data?.Amount.ToString("#,0.00", nfi) + "</td>";
+
+                                allIncome += (double)_data?.Amount;
+                                totalIncome += (double)_data?.Amount;
+                            }
+
+                        }
+                        incomeText += "</tr>";
+                    }
+                    if (item.TableName == "Subsidies, donations, contributions" || item.TableName == "Preschool fees: monetary contributions" || item.TableName == "Other")
+                    {
+                        incomeText += "<tr><th style='border-bottom: 1px solid black;' colspan='" + (item.Headers.Count - 1) + "'>Total</th><td style='font-weight: bold;border-bottom: 1px solid black;text-align: right;'>R" + totalIncome.ToString("#,0.00", nfi) + "</td></tr>";
+                    }
+                    incomeText += "</tbody></table><br>";
+
+                }
+            }
+            html += incomeText;
+
+            string totalIncomeRow = "<table style='width: 100%; margin-top: 8px;'><tbody><tr><th style='background-color: #808080;padding: 4px;color: white;'>TOTAL INCOME</th><td style='background-color: #808080;padding: 4px;color: white;text-align: right;'>R " + allIncome.ToString("#,0.00", nfi) + "</td></tr></tbody></table>";
+            html += totalIncomeRow;
+            html += signDateRow;
+
+            //
+            //  EXPENSES
+            //
+
+            if (hasExpenses)
+            {
+                expenseText += "<div style='padding-top:80px;page-break-before: always;'><h1>EXPENSES</h1></div>";
+
+                foreach (IncomeExpensePDFTableModel item in htmlData)
+                {
+                    if (item.Type == "Expenses")
+                    {
+                        var totalExpense = 0.0;
+                        expenseText += "<table width='100%' cellspacing='0' cellpadding='0'><tbody>";
+                        expenseText += "<tr><th style='background-color: #C0C0C0;padding: 4px;' colspan='" + item.Headers.Count + "'>" + item.TableName + "</th></tr>";
+                        expenseText += "<tr>";
+
+                        foreach (IncomeExpensePDFHeaderModel header in item.Headers)
+                        {
+                            if (header.Header == "Amount")
+                            {
+                                expenseText += "<th style='background-color: #E5E5E5;text-align: right; padding-right: 4px;'>" + header.Header + "</th>";
+                            }
+                            else
+                            {
+                                expenseText += "<th style='background-color: #E5E5E5;'>" + header.Header + "</th>";
+                            }
+                        }
+                        expenseText += "</tr>";
+                        foreach (IncomeExpensePDFDataModel _data in item.Data)
+                        {
+                            if (_data.PhotoProof != null)
+                            {
+                                ExpenseReceipt expenseReceipt = new ExpenseReceipt();
+                                expenseReceipt.Name = _data.Description;
+                                expenseReceipt.PhotoProof = _data.PhotoProof;
+                                receipts.Add(expenseReceipt);
+                            }
+                            expenseText += "<tr>";
+                            foreach (IncomeExpensePDFHeaderModel header in item.Headers)
+                            {
+                                if (header.Header == "Date")
+                                {
+                                    expenseText += "<td style='border-bottom: 1px solid black;width:10%;'>" + _data.Date?.ToString("dd/MM/yyyy") + "</td>";
+                                }
+                                else if (header.Header == "Description")
+                                {
+                                    expenseText += "<td style='border-bottom: 1px solid black;width:50%;'>" + _data?.Description + "</td>";
+                                }
+                                else if (header.Header == "Invoice/Receipt #")
+                                {
+                                    expenseText += "<td style='border-bottom: 1px solid black;text-align: center; width:20%;'>" + _data?.InvoiceNr + "</td>";
+                                }
+                                else if (header.Header == "Amount")
+                                {
+                                    expenseText += "<td style='border-bottom: 1px solid black;width:20%;text-align: right;'>R " + _data?.Amount.ToString("#,0.00", nfi) + "</td>";
+
+                                    allExpense += (double)_data?.Amount;
+                                    totalExpense += (double)_data?.Amount;
+                                }
+
+                            }
+                            expenseText += "</tr>";
+                        }
+
+                        expenseText += "<tr><th style='border-bottom: 1px solid black;' colspan='" + (item.Headers.Count - 1) + "'>Total</th><td style='font-weight: bold;border-bottom: 1px solid black;text-align: right;'>R" + totalExpense.ToString("#,0.00", nfi) + "</td></tr>";
+                        expenseText += "</tbody></table><br>";
+                    }
+                }
+
+                html += expenseText;
+
+                string totalExpenseRow = "<table style='width: 100%; margin-top: 8px;'><tbody><tr><th style='background-color: #808080;padding: 4px;color: white;'>TOTAL EXPENSES</th><td style='background-color: #808080;padding: 4px;color: white;text-align: right;'>R " + allExpense.ToString("#,0.00", nfi) + "</td></tr></tbody></table>";
+                html += totalExpenseRow;
+                html += signDateRow;
+            }
+
+            //
+            //  RECEIPTS
+            //
+            if (receipts.Count > 0)
+            {
+                var receiptsText = "<div style='padding-top:80px;page-break-before: always;'><h1>RECEIPTS</h1></div>";
+                var count = 1;
+                foreach (var item in receipts)
+                {
+                    receiptsText += "<div><h2>" + item.Name + "</h2><img style='max-width: 400px;' src='" + item.PhotoProof + "'/></div>";
+
+                    if (count < receipts.Count && count % 2 == 0)
+                    {
+                        receiptsText += "<div style='page-break-before: always;'></div>";
+                    }
+                    count++;
+                }
+                html += receiptsText;
+            }
+
+            html += "</body></html>";
+
+            // discard result
+            Console.WriteLine($"HTML FOR DOCUMENT = {html.Length}");
+            var doc = _documentManager.GetPdfSettings(html, filename, "portrait");
+            var pdfConvertor = new SynchronizedConverter(new PdfTools());
+            byte[] pdf = pdfConvertor.Convert(doc);
+            string Base64Result = Convert.ToBase64String(pdf);
+
+            PdfDocumentModel pdfDoc = new PdfDocumentModel();
+            pdfDoc.Reference = Base64Result;
+            pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
+            pdfDoc.UserId = userId;
+            pdfDoc.CreatedUserId = uId;
+
+            Console.WriteLine("Returning income statement pdf");
+            return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
+        }
+
+        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(string userId, int year, int month, bool splitSupport = false)
+        {
+            List<IncomeExpensePDFTableModel> tables = new List<IncomeExpensePDFTableModel>();
+            var table = new IncomeExpensePDFTableModel();
+
+            //
+            //  EXPENSES
+            //
+            List<StatementsExpenseType> expenseTypes = GetAllStatementExpenseTypes(userId, year, month);
+            foreach (StatementsExpenseType type in expenseTypes)
+            {
+                table = new IncomeExpensePDFTableModel();
+                table.TableName = type.Description;
+                table.Type = IncomeExpensePDF.EXPENSES;
+                table.Headers = getExpensePDFHeader();
+                table.Data = GetAllStatementsExpensesForType(userId, year, month, type.Id.ToString());
+                if (table.Data != null && table.Data.Count > 0)
+                {
+                    table.Total = table.Data.Select(x => x.Amount).Sum();
+                    tables.Add(table);
+                }
+            }
+
+            //
+            //  INCOME
+            //
+            List<StatementsIncomeType> incomeTypes = GetAllStatementIncomeTypes(userId, year, month);
+            List<StatementsContributionType> contributionTypes = GetAllStatementContributionTypes(userId, year, month);
+            var otherId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.OTHER).Select(y => y.Id).FirstOrDefault();
+            var preschoolFeeId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.PRESCHOOL_FEE).Select(y => y.Id).FirstOrDefault();
+            var moneyId = contributionTypes.Where(x => x.Description == IncomeExpensePDF.MONEY).Select(y => y.Id).FirstOrDefault();
+
+            var includeChild = true;
+            var includeAmount = true;
+            var includeDescription = true;
+            var includeType = true;
+            var includeItem = true;
+
+            // Preschool fees: Monetary contributions
+            includeChild = true; includeAmount = true; includeDescription = false; includeType = false; includeItem = false;
+            table = new IncomeExpensePDFTableModel();
+            table.TableName = IncomeExpensePDF.MONETARY_CONTRIBUTIONS;
+            table.Type = IncomeExpensePDF.INCOME;
+            table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
+            table.Data = GetMonetaryContributions(userId, year, month, preschoolFeeId.ToString(), moneyId.ToString());
+            if (table.Data != null && table.Data.Count > 0)
+            {
+                table.Total = table.Data.Select(x => x.Amount).Sum();
+                tables.Add(table);
+            }
+
+            // Preschool fees: Non-monetary contributions
+            includeChild = true; includeAmount = false; includeDescription = false; includeType = false; includeItem = true;
+            table = new IncomeExpensePDFTableModel();
+            table.TableName = IncomeExpensePDF.NON_MONETARY_CONTRIBUTIONS;
+            table.Type = IncomeExpensePDF.INCOME;
+            table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
+            table.Data = getNonMonetaryContributions(userId, year, month, preschoolFeeId.ToString(), moneyId.ToString());
+            if (table.Data != null && table.Data.Count > 0)
+            {
+                tables.Add(table);
+            }
+
+            // Subsidies, donations, contributions
+            includeChild = false; includeAmount = true; includeDescription = false; includeType = true; includeItem = true;
+            table = new IncomeExpensePDFTableModel();
+            table.TableName = IncomeExpensePDF.SUBSIDIES_DONATIONS_CONTRIBUTIONS;
+            table.Type = IncomeExpensePDF.INCOME;
+            table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
+            table.Data = GetSubsidiesDonationsContributions(userId, year, month, otherId.ToString(), incomeTypes);
+            if (table.Data != null && table.Data.Count > 0)
+            {
+                table.Total = table.Data.Select(x => x.Amount).Sum();
+                tables.Add(table);
+            }
+
+            // Other
+            includeChild = false; includeAmount = true; includeDescription = true; includeType = false; includeItem = false;
+            table = new IncomeExpensePDFTableModel();
+            table.TableName = IncomeExpensePDF.OTHER;
+            table.Type = IncomeExpensePDF.INCOME;
+            table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
+            table.Data = GetOtherIncome(userId, year, month, otherId.ToString());
+            if (table.Data != null && table.Data.Count > 0)
+            {
+                table.Total = table.Data.Select(x => x.Amount).Sum();
+                tables.Add(table);
+            }
+
+            return tables;
+        }
+
+        private List<IncomeExpensePDFHeaderModel> getExpensePDFHeader()
+        {
+            List<IncomeExpensePDFHeaderModel> headers = new List<IncomeExpensePDFHeaderModel>();
+
+            var header = new IncomeExpensePDFHeaderModel();
+            header.Header = "Date";
+            header.DataKey = "date";
+            headers.Add(header);
+
+            header = new IncomeExpensePDFHeaderModel();
+            header.Header = "Description";
+            header.DataKey = "description";
+            headers.Add(header);
+
+            header = new IncomeExpensePDFHeaderModel();
+            header.Header = "Invoice/Receipt #";
+            header.DataKey = "invoiceNr";
+            headers.Add(header);
+
+            header = new IncomeExpensePDFHeaderModel();
+            header.Header = "Amount";
+            header.DataKey = "amount";
+            headers.Add(header);
+
+            return headers;
+        }
+
+        private List<IncomeExpensePDFHeaderModel> getIncomePDFHeader(bool includeChild, bool includeAmount, bool includeDescription, bool includeType, bool includeItem)
+        {
+            List<IncomeExpensePDFHeaderModel> headers = new List<IncomeExpensePDFHeaderModel>();
+
+            var header = new IncomeExpensePDFHeaderModel();
+            header.Header = "Date";
+            header.DataKey = "date";
+            headers.Add(header);
+
+            if (includeChild)
+            {
+                header = new IncomeExpensePDFHeaderModel();
+                header.Header = "Child";
+                header.DataKey = "child";
+                headers.Add(header);
+            }
+
+            if (includeDescription)
+            {
+                header = new IncomeExpensePDFHeaderModel();
+                header.Header = "Description";
+                header.DataKey = "description";
+                headers.Add(header);
+            }
+
+            if (includeType)
+            {
+                header = new IncomeExpensePDFHeaderModel();
+                header.Header = "Type";
+                header.DataKey = "type";
+                headers.Add(header);
+            }
+
+            if (includeItem)
+            {
+                header = new IncomeExpensePDFHeaderModel();
+                header.Header = "Item";
+                header.DataKey = "item";
+                headers.Add(header);
+            }
+
+            if (includeAmount)
+            {
+                header = new IncomeExpensePDFHeaderModel();
+                header.Header = "Amount";
+                header.DataKey = "amount";
+                headers.Add(header);
+            }
+            return headers;
         }
     }
     #endregion

@@ -85,18 +85,22 @@ export default function Practitioners() {
 
   useEffect(() => {
     if (data && data.GetAllPractitioner) {
-      const copyItems = data.GetAllPractitioner.filter(
+      const filterItems = data.GetAllPractitioner.filter(
         (v) => v.user !== null && v.user.isActive === true
-      ).map((item: PractitionerDto) => ({
-        ...item,
-        fullName: `${item.user?.firstName} ${item.user?.surname}`,
-        isActive: item.user?.isActive,
-        isPrinicpal: item?.isPrincipal,
-        idNumber: item.user?.idNumber,
-        _view: undefined,
-        _edit: undefined,
-        _url: undefined,
-      }));
+      );
+
+      const copyItems =
+        filterItems &&
+        filterItems.map((item: PractitionerDto) => ({
+          ...item,
+          fullName: `${item.user?.firstName} ${item.user?.surname}`,
+          isActive: item.user?.isActive,
+          isPrinicpal: item?.isPrincipal,
+          idNumber: item.user?.idNumber,
+          _view: undefined,
+          _edit: undefined,
+          _url: undefined,
+        }));
       setTableData(copyItems);
     }
   }, [data]);
@@ -147,6 +151,7 @@ export default function Practitioners() {
         <AlertModal
           title="Practitioner Invite"
           message={`You are about to send an invite to ${practitioner.user.firstName} ${practitioner.user.surname}`}
+          btnText={['Yes, Send Invitation', 'No, Cancel']}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();

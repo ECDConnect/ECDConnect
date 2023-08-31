@@ -1,4 +1,4 @@
-import { Maybe } from '@ecdlink/graphql';
+import { Maybe, Visit } from '@ecdlink/graphql';
 import { Colours } from '@ecdlink/ui';
 import { differenceInMonths, parseISO } from 'date-fns';
 
@@ -43,3 +43,37 @@ export const isDateWithinThreeMonths = (inputDateStr: string): boolean => {
 
   return monthDifference <= 3;
 };
+
+export const sortVisits = (visits: Maybe<Visit>[]) => {
+  return [...visits]?.sort((a, b) => {
+    if (!a?.attended && !b?.attended) {
+      return 0;
+    } else if (!a?.attended) {
+      return 1;
+    } else if (!b?.attended) {
+      return -1;
+    }
+
+    return (
+      new Date(a.actualVisitDate).getTime() -
+      new Date(b.actualVisitDate).getTime()
+    );
+  });
+};
+
+export function divideArrayByFollowUp(
+  visits: Maybe<Visit>[]
+): Maybe<Visit>[][] {
+  return visits.reduce((acc: Maybe<Visit>[][], visit) => {
+    const isFollowUp = visit?.visitType?.name?.includes('follow_up');
+    if (!isFollowUp) {
+      // If not a "follow-up", start a new sub-array with this element
+      acc.push([visit]);
+    } else if (acc.length > 0) {
+      // If it's a "follow-up", add to the last sub-array created
+      acc[acc.length - 1].push(visit);
+    }
+
+    return acc;
+  }, []);
+}

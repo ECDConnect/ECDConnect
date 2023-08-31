@@ -47,8 +47,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
       answer: false,
     },
     {
-      question:
-        'I reminded and showed Nothando how to keep child attendance (on paper and on Funda App).',
+      question: `I reminded and showed ${practitioner?.user?.firstName} how to keep child attendance (on paper and on Funda App).`,
       answer: false,
     },
     {
