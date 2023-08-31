@@ -44,6 +44,63 @@ export const contentTypes = gql`
   }
 `;
 
+export const contentTypesWithLanguage = gql`
+  query (
+    $search: String
+    $searchInContent: Boolean
+    $isVisiblePortal: Boolean
+    $showOnlyTypesWithName: [String!]
+    $showOnlyTypesWithIds: [Int!]
+    $pagingInput: PagedQueryInput
+  ) {
+    contentTypesWithLanguages(
+      search: $search
+      searchInContent: $searchInContent
+      isVisiblePortal: $isVisiblePortal
+      showOnlyTypesWithName: $showOnlyTypesWithName
+      showOnlyTypesWithIds: $showOnlyTypesWithIds
+      pagingInput: $pagingInput
+    ) {
+      id
+      name
+      description
+      isActive
+      content {
+        id
+        isActive
+        updatedDate
+        contentValues {
+          insertedDate
+          updatedDate
+          localeId
+          status {
+            id
+            name
+          }
+          value
+          contentTypeField {
+            fieldOrder
+            fieldName
+          }
+        }
+      }
+      fields {
+        fieldOrder
+        fieldName
+        fieldType {
+          name
+          dataType
+        }
+        dataLinkName
+      }
+      languages {
+        id
+        locale
+      }
+    }
+  }
+`;
+
 export const contentDefinitions = gql`
   {
     contentDefinitions {
