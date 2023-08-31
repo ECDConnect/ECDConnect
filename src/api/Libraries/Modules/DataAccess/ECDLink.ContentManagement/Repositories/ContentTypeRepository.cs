@@ -1,8 +1,10 @@
 using ECDLink.ContentManagement.Entities;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query;
+using Org.BouncyCastle.Bcpg;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +31,26 @@ namespace ECDLink.ContentManagement.Repositories
                   .ThenInclude(x => x.ContentTypeField)
               .Include(x => x.Fields)
                 .ThenInclude(x => x.FieldType);
+        }
+
+        public Dictionary<int, List<Language>> GetAllLanguages(IEnumerable<int> contentTypes)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var languages = _context.Languages
+                        .Where(x => x.IsActive == true)
+                        .OrderBy(l => l.TenantId)
+                        .OrderByDescending(l => l.Locale)
+                        .ToList();
+
+            var languagesLookup = _context.ContentValues
+                .Include(x => x.Content)
+                .Where(e => contentTypes.Contains(e.Content.ContentTypeId)
+                && e.TenantId == null || e.TenantId.Equals(tenantId))
+                .Select(x => new { x.Content.ContentTypeId, x.LocaleId })
+                .Distinct()
+                .GroupBy(x => x.ContentTypeId)
+                .ToDictionary(x => x.Key, x => x.Select(z => languages?.FirstOrDefault(l => l.Id == z.LocaleId)).ToList());
+            return languagesLookup;
         }
 
         public ContentType GetById(int id)
@@ -66,24 +88,34 @@ namespace ECDLink.ContentManagement.Repositories
 
             if (searchInContent == true)
             {
-                var contentValuesIds = _context.ContentValues.Where(cv =>
-                    (cv.TenantId == null || cv.TenantId == tenantId)
-                    && EF.Functions.ILike(cv.Value, $"%{search}%"))
-                .Select(cv => cv.Id);
+                var skipTypes = new List<string> { "image", "link", "staticLink", "color-picker", "video", "routineItems", "headerBanner", "imageUrl" };
+                var keepTypeIds = _context.ContentTypeFields.Where(x => !skipTypes.Contains(x.FieldType.DataType)).Select(fieldType => fieldType.Id);
+                var contentValues = _context.ContentValues
+                    .Include(cv => cv.Content)
+                        .ThenInclude(c => c.ContentType)
+                            .ThenInclude(ct => ct.Fields)
+                                .ThenInclude(f => f.FieldType)
+                    .Where(cv =>
+                        (cv.TenantId == null
+                            || cv.TenantId == tenantId
+                        )
+                        && EF.Functions.ILike(cv.Value, $"%{search}%")
+                        && keepTypeIds.Contains(cv.ContentTypeFieldId))
+                    .ToList();
 
-                result = _context.ContentTypes
-                    .Include(x => x.Content)
-                        .ThenInclude(x => x.ContentValues)
-                            .ThenInclude(x => x.ContentTypeField)
-                    .Include(x => x.Fields)
-                        .ThenInclude(x => x.FieldType)
-                    .Where(ct =>
-                    (ct.TenantId == null || ct.TenantId == tenantId)
-                    && ct.IsActive == true
-                    && (EF.Functions.ILike(ct.Name, $"%{search}%")
-                        || EF.Functions.ILike(ct.Description, $"%{search}%")
-                        || ct.Content.Any(c => c.IsActive && c.ContentValues.Any(cv => contentValuesIds.Contains(cv.Id))))
-                    );
+                var contents = contentValues.Select(cv => cv.Content);
+                var contentTypes = contents.Select(cv => cv.ContentType);
+
+                foreach (var ct in contentTypes)
+                {
+                    ct.Content = contents.Where(c => c.ContentTypeId == ct.Id).ToList();
+                    foreach (var c in ct.Content)
+                    {
+                        c.ContentValues = contentValues.Where(cv => cv.ContentId == c.Id).ToList();
+                    }
+                }
+                
+                result = contentTypes.AsQueryable();
             }
             else
             {
