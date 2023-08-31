@@ -17,7 +17,6 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.Abstractrions.Enums;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -66,50 +65,73 @@ namespace EcdLink.Api.CoreApi.Services
             return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template)).ToList();
         }
 
+        public async Task<bool> NotificationExists(Notification notification)
+        {
+            return _messageRepo.GetAll().Where(x => 
+                string.Equals(x.MessageProtocol, notification.MessageProtocol) && 
+                string.Equals(x.MessageTemplateType, notification.MessageTemplateType) && 
+                string.Equals(x.To, notification.To) && 
+                string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
+                x.MessageDate.Value.Date == notification.MessageDate.Value.Date
+            ).Any();
+            //check if any exact templates for exact person for exact same date and protocol exists
+        }
+
         public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null)
         {
-            bool bNeedsMapping = false;
-            var template = await RetrieveTemplate(templatetype);
-
-            if (template != null)
+            try
             {
-                foreach (var item in template)
+
+                bool bNeedsMapping = false;
+                var templates = await RetrieveTemplate(templatetype);
+
+                if (templates != null)
                 {
-                    //remap all field
-                    await RemapFields(item, user, replacements);
-
-                    Notification notification = new Notification() { 
-                        Id = Guid.NewGuid(), 
-                        MessageProtocol = item.Protocol, 
-                        Message = !string.IsNullOrWhiteSpace(message)? message : item.Message,
-                        MessageDate = messageDate,                       
-                        FromUserId = Guid.Parse(_uId),
-                        MessageTemplateType = item.TemplateType,
-                        MessageTemplate = item,
-                        To = (user!=null? user.Id : userType),
-                        Status = status
-                    };
-                    if(messageEndDate != null)
+                    foreach (var item in templates)
                     {
-                        notification.MessageEndDate = messageEndDate;
-                    }
+                        //remap all field
+                        MessageTemplateText templateItem = RemapFields(item, user, replacements);
 
-                    switch (item.Protocol)
-                    {
-                        case MessageTypeConstants.SMS:
-                            await SendSMSAsync(notification,user, item);
-                            break;
-                        case MessageTypeConstants.EMAIL:
-                            await SendEmailAsync(notification, user, item);
-                            break;
-                        case MessageTypeConstants.HUB:
-                        case MessageTypeConstants.PUSH:
-                            await SendHubMessageAsync(notification, user, item);
-                            break;
-                        default:
-                            break;
+                        Notification notification = new Notification()
+                        {
+                            Id = Guid.NewGuid(),
+                            MessageProtocol = item.Protocol,
+                            Message = !string.IsNullOrWhiteSpace(message) ? message : templateItem.Message,
+                            MessageDate = messageDate,
+                            FromUserId = Guid.Parse(_uId),
+                            MessageTemplateType = item.TemplateType,
+                            MessageTemplate = item,
+                            To = (user != null ? user.Id : userType),
+                            Status = status
+                        };
+                        if (messageEndDate != null)
+                        {
+                            notification.MessageEndDate = messageEndDate;
+                        }
+                        //skip if the enotification exists already for same date and person and template and protocol
+                        if (!await NotificationExists(notification))
+                        {
+                            switch (item.Protocol)
+                            {
+                                case MessageTypeConstants.SMS:
+                                    await SendSMSAsync(notification, user, item);
+                                    break;
+                                case MessageTypeConstants.EMAIL:
+                                    await SendEmailAsync(notification, user, item);
+                                    break;
+                                case MessageTypeConstants.HUB:
+                                case MessageTypeConstants.PUSH:
+                                    await SendHubMessageAsync(notification, user, item);
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
                     }
                 }
+            } catch (Exception ex)
+            {
+                return false;
             }
             return true;
         }
@@ -150,9 +172,8 @@ namespace EcdLink.Api.CoreApi.Services
         public async Task CommitNotification(Notification notification, MessageTemplate template)
         {
             try
-            {
-                //TODO: make sure there isnt another notification of the same sort for the same reason and time period and that it it doesnt duplicate
-               _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), FromUserId = Guid.Parse(_uId), To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status  });
+            {                
+               _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), FromUserId = notification.FromUserId, To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status, SentByUserId = notification.FromUserId });
             } catch (Exception ex)
             {
                 throw ex;
@@ -181,7 +202,7 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        private async Task<MessageTemplate> RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements)
+        private MessageTemplateText RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements)
         {
             //iterate through all placeholders, figure out which one it is and replace it based on the the placeholder name in 
             //setup some basics on all messages
@@ -202,17 +223,14 @@ namespace EcdLink.Api.CoreApi.Services
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.OrganisationName, ReplacementValue = organisationName });
             //add all basic tags here
 
-
             foreach (var replacement in replacements)
             {
                subject = subject.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
 
             }
-                       
-            template.Subject = subject;
-            template.Message = message;
-            return template;
+
+            return new MessageTemplateText() { Message = message, Subject = subject };
         }
 
     }

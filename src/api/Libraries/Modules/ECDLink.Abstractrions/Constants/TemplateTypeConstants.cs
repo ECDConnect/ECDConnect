@@ -33,9 +33,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string StartTraineeJourney = "start-trainee-journey";
         public const string AddedToProgramme = "added-to-programme";
         public const string DemotedFromPrincipalOrFAA = "demoted-from-principal-faa";
-
         public const string PromotedToPrincipalOrFAA = "promoted-to-prinicpal-or-faa";
-
         public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
         public const string ReassignedToNewClass = "reassigned-to-new-class";
         public const string TraineeOverdueTasks = "trainee-overdue-tasks";
@@ -44,7 +42,17 @@ namespace ECDLink.Abstractrions.Constants
         public const string RejectedInvitation = "rejected-invitation";
         public const string RemovedFromProgramme = "removed-from-programme";
         public const string PrincipalFAAChanged = "principal-changed";
-
+        public const string PrincipalMovedToProgramme = "reassigned-to-new-programme";
+        public const string PractitionerRemovedFromProgramme = "practitioner-removed-from-programme";
+        public const string UpdatePreschoolFee = "update-preschool-fee";
+        public const string IncomeStatementIncompleteBy1st = "income-statement-not-complete-by-1st";
+        public const string PractitionerNotLinkedToProgramme = "not-linked-to-programme";
+        public const string ChildRegistrationIncomplete = "child-reg-incomplete";
+        public const string ThreeWeekLoginNotification = "three-week-notification";
+        public const string ChildNotAssignedToClass = "child-unassigned-to-class";
+        public const string ClubLeaderRoleAssigned = "clubleader-role-assigned";
+        public const string GainCommunitySupport = "gain-community-support";
+        public const string SLChildDocumentFlagged = "child-document-flagged";
 
 
     }

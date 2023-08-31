@@ -3,7 +3,6 @@ using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
-//using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
@@ -169,8 +168,9 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IntegrationHelperManager>();
             services.AddTransient<DocumentManager>();
             services.AddTransient<INotificationService, NotificationService>();
+            services.AddTransient<INotificationTasksService, NotificationTasksService>();
             if (!Environment.IsDevelopment()) { //dont look at any jobs for development
-                ConfigureJobs(services);
+            ConfigureJobs(services);
             }            
             services.AddControllers();
         }

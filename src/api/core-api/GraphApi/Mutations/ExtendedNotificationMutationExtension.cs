@@ -44,7 +44,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
         {
-            List<TagsReplacements> replacements = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "principalOrFAA",
@@ -64,7 +64,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
         {
-            List<TagsReplacements> replacements = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "principalOrFAA",
@@ -84,7 +84,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalOrFAA)
         {
-            List<TagsReplacements> replacements = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "principalOrFAA",
@@ -106,7 +106,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId, string className, string oldClassName, string principalName)
         {
-            List<TagsReplacements> replacements = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "ClassName",
@@ -130,7 +130,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId, string className, string oldClassName, string principalName)
         {
-            List<TagsReplacements> replacements = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "ClassName",
@@ -150,7 +150,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId, DateTime dueDate)
         {
-            List<TagsReplacements> replacements = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "DueDate",
@@ -164,7 +164,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId)
         {
-            List<TagsReplacements> replacements = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
@@ -173,7 +173,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId, string programmeName, string principalName)
         {
-            List<TagsReplacements> replacements = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "ProgrammeName",
@@ -187,6 +187,75 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
 
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+
+        public async Task<bool> SendPractitionerRemovedFromProgrammeNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string practitionerName)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PractitionerName",
+                ReplacementValue = practitionerName
+            });
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+
+        public async Task<bool> SendUpdateFeeNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "CurrentYear",
+                ReplacementValue = DateTime.Now.Year.ToString()
+            });
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.UpdatePreschoolFee, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
+        }
+
+        public async Task<bool> SendPractitionerNotAssignedToProgrammeNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerNotLinkedToProgramme, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+
+        public async Task<bool> SendClubleaderRoleAssignedNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string clubName)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "ClubName",
+                ReplacementValue = clubName
+            });
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
+        }
+        public async Task<bool> SendGainedCommunitySupportNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string supportDate)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "SupportDate",
+                ReplacementValue = supportDate
+            });
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GainCommunitySupport, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
         }
 
     }

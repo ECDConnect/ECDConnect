@@ -335,7 +335,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
                 _userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
 
-                List<TagsReplacements> replacements = null;
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "principalOrFAA",
@@ -380,7 +380,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
 
                 //send notifications that user has been demoted
-                List<TagsReplacements> replacements = null;
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "principalOrFAA",

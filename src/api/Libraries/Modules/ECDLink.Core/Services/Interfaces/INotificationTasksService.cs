@@ -1,22 +1,20 @@
 ﻿using System;
+using System.Threading.Tasks;
 
 namespace ECDLink.Core.Services.Interfaces
 {
     public interface INotificationTasksService
     {
-        //public void ReassignAbsentees();
-        //public void ExpireRelationshipLinks();
+        //daily
+        public Task DailyUnassignedClassesNotification();
+        Task DailyChildrenRegistrationsIncompleteNotification();
+        Task Daily3WeekLogonCheck();
+        Task DailyChildrenNotAssignedToClassNotification();
+        Task DailyUnassignedProgrammesNotification();
 
-        //public bool AddReassignmentForPractitioner(string uId,
-        //    string fromUserId,
-        //    string toUserId,
-        //    string reason,
-        //    DateTime startDate,
-        //    string loggedByUser,
-        //    string classroomGroup = null,
-        //    bool permanentAssign = false
-        //    );
-        public void DailyUnassignedClassesNotification();
+        //other
+        Task MonthlyStatementsReminderAsync();
+        Task WeeklyAttendancesReminderAsync();
 
     }
 }
