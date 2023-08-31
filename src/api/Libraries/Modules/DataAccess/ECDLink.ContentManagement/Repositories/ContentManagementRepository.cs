@@ -431,7 +431,9 @@ namespace ECDLink.ContentManagement.Repositories
                             Value = fileUrl.ToString(),
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
-                            TenantId = currentTenant
+                            TenantId = currentTenant,
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
                         });
 
                     }
@@ -452,6 +454,7 @@ namespace ECDLink.ContentManagement.Repositories
             // Add existing content to the new content and replace the existing content.
             contentValues.AddRange(content.ContentValues);
             content.ContentValues = contentValues;
+            content.UpdatedDate = DateTime.UtcNow;
 
             _context.SaveChanges();
 

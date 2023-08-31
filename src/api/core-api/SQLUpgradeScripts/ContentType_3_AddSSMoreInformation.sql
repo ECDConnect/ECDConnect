@@ -12,6 +12,12 @@ where "DataLinkName" = 'Consent Image';
 -- Fix "SS" Consent Sections
 alter table "Content" drop column "Sections";
 
+-- Fix "ContentValue", add last modified date
+alter table "ContentValue"
+add column if not exists "InsertedDate" TIMESTAMP not null DEFAULT NOW(),
+add column if not exists "UpdatedDate" TIMESTAMP null;
+
+
 insert into "ContentTypeField"
 ("FieldOrder", "FieldName", "FieldTypeId", "IsActive", "DataLinkName", "ContentTypeId", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId")
 values

@@ -68,7 +68,10 @@ export const contentTypesWithLanguage = gql`
       content {
         id
         isActive
+        updatedDate
         contentValues {
+          insertedDate
+          updatedDate
           localeId
           status {
             id
