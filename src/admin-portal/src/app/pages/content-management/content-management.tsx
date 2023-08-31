@@ -22,7 +22,7 @@ export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
-  const [selectedTab, setSelectedTab] = useState(1);
+  const [selectedTab, setSelectedTab] = useState(0);
 
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
@@ -376,28 +376,31 @@ export function ContentManagement() {
               <div className="h-full py-3 px-4 sm:px-6 lg:px-8">
                 {(selectedType?.name === 'Theme' ||
                   selectedType?.name === 'Activity' ||
+                  selectedType?.name === 'ProgressTrackingLevel' ||
+                  selectedType?.name === 'ProgressTrackingCategory' ||
+                  selectedType?.name === 'StoryBookParts' ||
                   selectedType?.name === 'StoryBook' ||
                   selectedType?.name === 'StoryBookPartQuestion') && (
-                  <div className="justify-self col-end-3 pb-2">
-                    <button
-                      onClick={() => {
-                        setSelectedType(null);
-                        setSpecialType('Programmes');
-                      }}
-                      type="button"
-                      className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
-                    >
-                      <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
-                        {' '}
-                      </ArrowLeftIcon>
-                      Programme
-                      <span className="px-1 text-gray-400">
-                        {' '}
-                        / {selectedType?.name}
-                      </span>
-                    </button>
-                  </div>
-                )}
+                    <div className="justify-self col-end-3 pb-2">
+                      <button
+                        onClick={() => {
+                          setSelectedType(null);
+                          setSpecialType('Programmes');
+                        }}
+                        type="button"
+                        className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+                      >
+                        <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
+                          {' '}
+                        </ArrowLeftIcon>
+                        {selectedTab === 2 ? 'Progress' : 'Programme'}
+                        <span className="px-1 text-gray-400">
+                          {' '}
+                          / {selectedType?.name}
+                        </span>
+                      </button>
+                    </div>
+                  )}
                 <div
                   className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
