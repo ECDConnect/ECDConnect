@@ -35,7 +35,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
             var tenantId = TenantExecutionContext.Tenant.Id;
             IQueryable<ContentType> request;
             
-            if (search is not null || searchInContent is not null)
+            if (!string.IsNullOrWhiteSpace(search) || searchInContent is not null)
                 request = repository.GetAll(search, searchInContent ?? false);
             else
                 request = repository.GetAll();
@@ -78,7 +78,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
             var tenantId = TenantExecutionContext.Tenant.Id;
             IQueryable<ContentType> request;
 
-            if (search is not null || searchInContent is not null)
+            if (!string.IsNullOrWhiteSpace(search) || searchInContent is not null)
                 request = repository.GetAll(search, searchInContent ?? false);
             else
                 request = repository.GetAll();

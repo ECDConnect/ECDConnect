@@ -5,11 +5,15 @@ export const contentTypes = gql`
     $search: String
     $searchInContent: Boolean
     $isVisiblePortal: Boolean
+    $contentTypeIdFilter: [Int!]
+    $contentTypeNameFilter: [String!]
   ) {
     contentTypes(
       search: $search
       searchInContent: $searchInContent
       isVisiblePortal: $isVisiblePortal
+      showOnlyTypesWithIds: $contentTypeIdFilter
+      showOnlyTypesWithName: $contentTypeNameFilter
     ) {
       id
       name

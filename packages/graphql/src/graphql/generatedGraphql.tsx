@@ -2127,6 +2127,7 @@ export type Consent = {
   id?: Maybe<Scalars['Int']>;
   image?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  section?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
 };
 
@@ -2134,6 +2135,7 @@ export type ConsentInput = {
   description?: InputMaybe<Scalars['String']>;
   image?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  section?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
 };
 
@@ -2211,6 +2213,36 @@ export type ContentTypeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type ContentTypeWithLanguages = {
+  __typename?: 'ContentTypeWithLanguages';
+  content?: Maybe<Array<Maybe<Content>>>;
+  description?: Maybe<Scalars['String']>;
+  fields?: Maybe<Array<Maybe<ContentTypeField>>>;
+  id: Scalars['Int'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  isVisiblePortal: Scalars['Boolean'];
+  languages?: Maybe<Array<Maybe<Language>>>;
+  metaData?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  portalDisplayOrder: Scalars['Int'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type ContentTypeWithLanguagesSortInput = {
+  description?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  isVisiblePortal?: InputMaybe<SortEnumType>;
+  metaData?: InputMaybe<SortEnumType>;
+  name?: InputMaybe<SortEnumType>;
+  portalDisplayOrder?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+};
+
 export type ContentValue = {
   __typename?: 'ContentValue';
   content?: Maybe<Content>;
@@ -2218,9 +2250,11 @@ export type ContentValue = {
   contentTypeField?: Maybe<ContentTypeField>;
   contentTypeFieldId: Scalars['Int'];
   id: Scalars['Int'];
+  insertedDate?: Maybe<Scalars['DateTime']>;
   localeId: Scalars['UUID'];
   status?: Maybe<ContentStatus>;
   statusId?: Maybe<Scalars['Int']>;
+  updatedDate?: Maybe<Scalars['DateTime']>;
   value?: Maybe<Scalars['String']>;
 };
 
@@ -4815,13 +4849,24 @@ export type Mutation = {
   sendAnyNotificationWithReplacements: Scalars['Boolean'];
   sendBulkInviteToApp?: Maybe<BulkInvitationResult>;
   sendBulkInviteToPortal?: Maybe<BulkInvitationResult>;
+  sendClubleaderRoleAssignedNotification: Scalars['Boolean'];
   sendCoachInviteToApplication: Scalars['Boolean'];
+  sendCoachRemoveTraineeNotification: Scalars['Boolean'];
+  sendCoachVisitsOverdueNotification: Scalars['Boolean'];
   sendDemotedAsPrincipalFAAProgrammeNotification: Scalars['Boolean'];
+  sendGainedCommunitySupportNotification: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
   sendNotificationToUser: Scalars['Boolean'];
+  sendOnly2MoreTraineeTaskLeftsNotification: Scalars['Boolean'];
+  sendOverdueTraineeTasksNotification: Scalars['Boolean'];
   sendPractitionerAddedToProgrammeNotification: Scalars['Boolean'];
   sendPractitionerInviteToApplication: Scalars['Boolean'];
+  sendPractitionerNotAssignedToProgrammeNotification: Scalars['Boolean'];
+  sendPractitionerRemovedFromProgrammeNotification: Scalars['Boolean'];
+  sendPrincipalChangedNotification: Scalars['Boolean'];
   sendPromotedToPrincipalFAAProgrammeNotification: Scalars['Boolean'];
+  sendRemovedFromProgrammeNotification: Scalars['Boolean'];
+  sendUpdateFeeNotification: Scalars['Boolean'];
   sendUserAssignedToClassFromOldClassNotification: Scalars['Boolean'];
   sendUserAssignedToClassNotification: Scalars['Boolean'];
   submitStatement?: Maybe<ResultReturnObject>;
@@ -6343,13 +6388,32 @@ export type MutationSendBulkInviteToPortalArgs = {
   userIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
+export type MutationSendClubleaderRoleAssignedNotificationArgs = {
+  clubName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendCoachInviteToApplicationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendCoachRemoveTraineeNotificationArgs = {
+  traineeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendCoachVisitsOverdueNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationSendDemotedAsPrincipalFaaProgrammeNotificationArgs = {
   principalOrFAA?: InputMaybe<Scalars['String']>;
   programmeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGainedCommunitySupportNotificationArgs = {
+  supportDate?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -6364,6 +6428,15 @@ export type MutationSendNotificationToUserArgs = {
   userType?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendOnly2MoreTraineeTaskLeftsNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendOverdueTraineeTasksNotificationArgs = {
+  dueDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendPractitionerAddedToProgrammeNotificationArgs = {
   programmeName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -6373,9 +6446,34 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendPractitionerNotAssignedToProgrammeNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendPractitionerRemovedFromProgrammeNotificationArgs = {
+  practitionerName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendPrincipalChangedNotificationArgs = {
+  principalOrFAA?: InputMaybe<Scalars['String']>;
+  programmeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendPromotedToPrincipalFaaProgrammeNotificationArgs = {
   principalOrFAA?: InputMaybe<Scalars['String']>;
   programmeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendRemovedFromProgrammeNotificationArgs = {
+  principalName?: InputMaybe<Scalars['String']>;
+  programmeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendUpdateFeeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -9393,6 +9491,7 @@ export type Query = {
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
+  contentTypesWithLanguages?: Maybe<Array<Maybe<ContentTypeWithLanguages>>>;
   countAbsentees?: Maybe<Scalars['Int']>;
   countAuditLogType?: Maybe<Scalars['Int']>;
   countCalendarEvent?: Maybe<Scalars['Int']>;
@@ -10967,6 +11066,7 @@ export type QueryAllContentLanguagesArgs = {
 export type QueryAllDocumentArgs = {
   order?: InputMaybe<Array<DocumentSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
+  search?: InputMaybe<Scalars['String']>;
   showOnlyTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -11201,11 +11301,24 @@ export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
 };
 
 export type QueryContentTypesArgs = {
+  includeLanguages?: InputMaybe<Scalars['Boolean']>;
   isVisiblePortal?: InputMaybe<Scalars['Boolean']>;
   order?: InputMaybe<Array<ContentTypeSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
   searchInContent?: InputMaybe<Scalars['Boolean']>;
+  showOnlyTypesWithIds?: InputMaybe<Array<Scalars['Int']>>;
+  showOnlyTypesWithName?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type QueryContentTypesWithLanguagesArgs = {
+  isVisiblePortal?: InputMaybe<Scalars['Boolean']>;
+  order?: InputMaybe<Array<ContentTypeWithLanguagesSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  search?: InputMaybe<Scalars['String']>;
+  searchInContent?: InputMaybe<Scalars['Boolean']>;
+  showOnlyTypesWithIds?: InputMaybe<Array<Scalars['Int']>>;
+  showOnlyTypesWithName?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 export type QueryCountAbsenteesArgs = {
