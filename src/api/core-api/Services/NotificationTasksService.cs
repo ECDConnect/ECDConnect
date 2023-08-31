@@ -133,7 +133,7 @@ namespace ECDLink.Core.Services
             var adminId = _hierarchyEngine.GetAdminUserId();
             var principalRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
 
-            var userNotLoggedIn = principalRepo.GetAll().Where(p => p.User.LastSeen >= DateTime.Now.AddDays(-21)).ToList();
+            var userNotLoggedIn = principalRepo.GetAll().Where(p => p.User.LastSeen <= DateTime.Now.AddDays(-21).Date).ToList();
 
             foreach (var user in userNotLoggedIn)
             {

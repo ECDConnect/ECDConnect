@@ -60,11 +60,6 @@ namespace EcdLink.Api.CoreApi
                 c.TimeZoneInfo = TimeZoneInfo.Local;
                 c.CronExpression = CronTags.MidnightDaily;
             });
-            services.AddCronJob<DailyNotificationChecks>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.MidnightDaily;
-            });
 
             //Weekly
             services.AddCronJob<AttendanceWeekly>(c =>
