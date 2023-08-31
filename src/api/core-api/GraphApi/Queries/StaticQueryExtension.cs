@@ -32,7 +32,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             IGenericRepositoryFactory repoFactory,
             string userId,
             string[] showOnlyTypes,
-            PagedQueryInput pagingInput)
+            string search = null,
+            PagedQueryInput pagingInput = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
@@ -49,6 +50,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (pagingInput?.FilterBy is not null)
             {
                 docsQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, docsQuery);
+            }
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                docsQuery = docsQuery.Where(x => EF.Functions.ILike(x.User.FirstName, search) || EF.Functions.ILike(x.User.Surname, search)
+                 || EF.Functions.ILike(x.Name, search));
             }
 
             return docsQuery;
