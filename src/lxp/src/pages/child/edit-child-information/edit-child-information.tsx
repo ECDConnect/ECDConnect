@@ -126,7 +126,6 @@ export const EditChildInformation: React.FC = () => {
   // Data Cache
   const [currentChildLearnerRecord, setCurrentChildLearnerRecord] =
     useState<LearnerDto>();
-  //const [childCaregiver, setChildCaregiver] = useState<CaregiverDto>();
   const [classRoomGroupsList, setClassRoomGroupsList] = useState<
     DropDownOption<string>[]
   >([]);
