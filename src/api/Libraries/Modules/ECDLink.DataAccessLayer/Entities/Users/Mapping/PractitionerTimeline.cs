@@ -53,7 +53,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public virtual ICollection<Visit> ReAccreditationVisits { get; set; }
         public virtual ICollection<Visit> RequestedCoachVisits { get; set; }
         public virtual ICollection<Visit> SelfAssessmentVisits { get; set; }
-        public virtual PractitionerCoachCircle CoachCircles { get; set; }
+        public virtual PractitionerAttendance CoachCircles { get; set; }
         public virtual ICollection<PQARating> PQARatings { get; set; }
         public virtual ICollection<PQARating> ReAccreditationRatings { get; set; }
         public virtual PQARating PQARating1 { get; set; }
@@ -66,8 +66,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
 
     public class PractitionerCoachCircle
     {
-
-        public int TotalCirclesLogged { get; set; } //X = the number of coaching circles logged by coach for the practitioner's club in the current year
+        public int TotalMeetings { get; set; } //X = the number of coaching circles logged by coach for the practitioner's club in the current year
         public int TotalPresent { get; set; }// Y = the total number of presents & absents logged for the practitioner for coaching circles
         public double PercAttended { get; set; }
         public string AttendanceText { get; set; } // date on which the most recent coaching circle was held

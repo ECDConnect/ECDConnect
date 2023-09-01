@@ -14,7 +14,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     [EntityPermission(PermissionGroups.USER)]
     public class Coach : Coach<Guid>
     {
-
     }
 
     public class Coach<TKey> : EntityBase<TKey>,
@@ -43,7 +42,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual ICollection<Visit> TraineeVisits { get; set; }
         [NotMapped]
         public virtual ICollection<Visit> PractitionerVisits { get; set; }
-
+        public string AboutInfo { get; set; }
     }
 
     public interface CoachJoin<TKey>
