@@ -637,7 +637,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // Coach Circles
             // get all attendance for practitioner
             PractitionerAttendance attendance = _clubService.GetPractitionerAttendance(practitioner.Id, today, Constants.CoachingCircleSettings.meeting_type_coach_circle);
-            if (attendance.MeetingRegister.Count > 0)
+            if (attendance.MeetingRegister != null && attendance.MeetingRegister.Count > 0)
             {
                 // coach circle color application
                 attendance.AttendanceColor = attendance.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
