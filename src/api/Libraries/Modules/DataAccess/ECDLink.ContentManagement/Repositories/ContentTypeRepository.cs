@@ -86,7 +86,7 @@ namespace ECDLink.ContentManagement.Repositories
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             IQueryable<ContentType> result = null;
 
-            if (searchInContent == true)
+            if (!string.IsNullOrWhiteSpace(search) && searchInContent == true)
             {
                 var skipTypes = new List<string> { "image", "link", "staticLink", "color-picker", "video", "routineItems", "headerBanner", "imageUrl" };
                 var keepTypeIds = _context.ContentTypeFields.Where(x => !skipTypes.Contains(x.FieldType.DataType)).Select(fieldType => fieldType.Id);

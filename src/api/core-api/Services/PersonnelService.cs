@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -49,8 +50,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<Coach, Guid> _coachRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
 
-        private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
-        private IGenericRepository<ClubMeeting, Guid> _clubMeetingRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -59,7 +58,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IReassignmentService _reassignmentService;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
-
+        private IClubService _clubService;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -70,6 +69,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             UserLicenseManager userLicenseManager,
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
+            [Service] IClubService clubService,
             UserManager<ApplicationUser> userManager,
             [Service] HierarchyEngine hierarchyEngine)
         {
@@ -88,8 +88,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
-            _clubMeetingRegisterRepo = _repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _applicationUserId);
-            _clubMeetingRepo = _repoFactory.CreateGenericRepository<ClubMeeting>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
@@ -101,6 +99,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
+            _clubService = clubService;
         }
 
 
@@ -637,19 +636,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // Coach Circles
             // get all attendance for practitioner
-            List<ClubMeetingRegister> practitionerAttendance = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.ClubMeeting.MeetingDate.Value.Year == today.Year).OrderByDescending(x => x.ClubMeeting.MeetingDate).ToList();
-            if (practitionerAttendance.Count > 0)
+            PractitionerAttendance attendance = _clubService.GetPractitionerAttendance(practitioner.Id, today, Constants.CoachingCircleSettings.meeting_type_coach_circle);
+            if (attendance.MeetingRegister != null && attendance.MeetingRegister.Count > 0)
             {
-                timeline.CoachCircles = new PractitionerCoachCircle();
-                timeline.CoachCircles.TotalCirclesLogged = practitionerAttendance.Select(x => x.ClubMeeting.Id).Distinct().Count();
-                timeline.CoachCircles.TotalPresent = practitionerAttendance.Where(x => x.Attended == true).Count();
-                timeline.CoachCircles.PercAttended = (double)timeline.CoachCircles.TotalPresent / (double)timeline.CoachCircles.TotalCirclesLogged * 100;
-                if (timeline.CoachCircles.TotalPresent > 0)
-                {
-                    timeline.CoachCircles.AttendanceText = practitionerAttendance.GetItemByIndex(0).ClubMeeting.MeetingDate.Value.ToString();
-                    timeline.CoachCircles.AttendanceColor = timeline.CoachCircles.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
-                }
-                timeline.CoachCircles.MeetingRegister = practitionerAttendance;
+                // coach circle color application
+                attendance.AttendanceColor = attendance.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
+                timeline.CoachCircles = attendance;
             }
 
             timeline.PrePQASiteVisits = pre_pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
@@ -812,11 +804,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Visit visit = _visitManager.GetVisitForUserForType(trainee?.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
             if (visit != null)
             {
-                if (visit.Attended == false)
-                {
-                    visit = _visitDataManager.MarkChecklistVisitStatus(visit.Id);
-                }
-
                 if (visit?.Attended == true)
                 {
                     timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
