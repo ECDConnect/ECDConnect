@@ -152,6 +152,7 @@ export const WalkthroughInfoPage = ({
     return (
       <LoadingSpinner
         size="medium"
+        className="mt-4"
         spinnerColor={'primary'}
         backgroundColor={'uiLight'}
       />
