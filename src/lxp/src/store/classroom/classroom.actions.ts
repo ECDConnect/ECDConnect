@@ -304,6 +304,43 @@ export const upsertClassroom = createAsyncThunk<
   }
 );
 
+export const upsertClassroomSiteAddress = createAsyncThunk<
+  boolean[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'upsertClassroomSiteAddress',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      classroomData: { classroom },
+    } = getState();
+    try {
+      if (userAuth?.auth_token && classroom) {
+        const input: ClassroomInput = {
+          Id: classroom.id,
+          SiteAddressId: classroom.siteAddressId,
+          IsActive: classroom.isActive === false ? false : true,
+          SiteAddress: classroom?.siteAddress
+            ? mapSiteAddress(classroom?.siteAddress!)
+            : null,
+        };
+
+        const result = await new ClassroomService(
+          userAuth?.auth_token
+        ).updateClassroomSiteAddress(classroom.id ?? '', input);
+
+        return [result];
+      }
+      return [false];
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 type UpdateClassroomGroupdRequest = {
   classroomGroup: ClassroomGroupDto;
   id: string;

@@ -46,6 +46,12 @@ const classroomsSlice = createSlice({
     updateClassroom: (state, action: PayloadAction<ClassroomDto>) => {
       state.classroom = action.payload;
     },
+    updateClassroomSiteAddress: (
+      state,
+      action: PayloadAction<ClassroomDto>
+    ) => {
+      state.classroom = action.payload;
+    },
     updateClassroomNumberPractitioners: (
       state,
       action: PayloadAction<Pick<ClassroomDto, 'numberPractitioners'>>
