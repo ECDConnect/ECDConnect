@@ -22,6 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ClassroomMutationExtension
     {
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
         public ClassroomGroup UpdatePractitionerToTeachClassroom(
@@ -134,6 +135,66 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
 
             return new ClassroomGroup();
+        }
+
+        public Classroom updateClassroomSiteAddress(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] HierarchyEngine engine,
+            Guid id,
+            Classroom input)
+        {
+            string uId = contextAccessor.HttpContext.GetUser().Id;
+            IGenericRepository<SiteAddress, Guid> addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
+            IGenericRepository<Classroom, Guid> dbRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+
+            Classroom updateClass = dbRepo.GetById(input.Id);
+
+            if (input.SiteAddress != null)
+            {
+                SiteAddress address = addressRepo.GetById(input.SiteAddressId.Value);
+
+                if (address != null)
+                {
+                    if (input?.SiteAddress?.Ward != null)
+                        address.Ward = input.SiteAddress.Ward;
+                    if (input?.SiteAddress?.AddressLine1 != null)
+                        address.AddressLine1 = input.SiteAddress.AddressLine1;
+                    if (input?.SiteAddress?.AddressLine2 != null)
+                        address.AddressLine2 = input.SiteAddress.AddressLine2;
+                    if (input?.SiteAddress?.AddressLine3 != null)
+                        address.AddressLine3 = input.SiteAddress.AddressLine3;
+                    if (input?.SiteAddress?.PostalCode != null)
+                        address.PostalCode = input.SiteAddress.PostalCode;
+                    if (input?.SiteAddress.ProvinceId != null)
+                        address.ProvinceId = input.SiteAddress.ProvinceId;
+                    var updateAddressResult = addressRepo.Update(address);
+                }
+
+                if (address is null)
+                {
+                    //create siteaddress
+                    SiteAddress newAddress = new SiteAddress();
+                    if (input.SiteAddress.Ward != null)
+                        newAddress.Ward = input.SiteAddress.Ward;
+                    if (input.SiteAddress.AddressLine1 != null)
+                        newAddress.AddressLine1 = input.SiteAddress.AddressLine1;
+                    if (input.SiteAddress.AddressLine2 != null)
+                        newAddress.AddressLine2 = input.SiteAddress.AddressLine2;
+                    if (input.SiteAddress.AddressLine3 != null)
+                        newAddress.AddressLine3 = input.SiteAddress.AddressLine3;
+                    if (input.SiteAddress.PostalCode != null)
+                        newAddress.PostalCode = input.SiteAddress.PostalCode;
+                    if (input.SiteAddress.ProvinceId != null)
+                        newAddress.ProvinceId = input.SiteAddress.ProvinceId;
+                    var updateAddressResult = addressRepo.Insert(newAddress);
+                    if (updateAddressResult != null)
+                        updateClass.SiteAddressId = updateAddressResult.Id;
+                        var updateResult = dbRepo.Update(updateClass);
+                }
+            }
+
+            return updateClass;
         }
 
         public ClassProgramme UpdateClassProgramme(

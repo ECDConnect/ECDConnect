@@ -5098,6 +5098,7 @@ export type Mutation = {
   updateClassReassignmentHistory?: Maybe<ClassReassignmentHistory>;
   updateClassroom?: Maybe<Classroom>;
   updateClassroomGroup?: Maybe<ClassroomGroup>;
+  updateClassroomSiteAddress?: Maybe<Classroom>;
   updateClinic?: Maybe<Clinic>;
   updateClub?: Maybe<Club>;
   updateClubLeader?: Maybe<ClubLeader>;
@@ -6825,6 +6826,11 @@ export type MutationUpdateClassroomArgs = {
 export type MutationUpdateClassroomGroupArgs = {
   id: Scalars['UUID'];
   input?: InputMaybe<ClassroomGroupInput>;
+};
+
+export type MutationUpdateClassroomSiteAddressArgs = {
+  id: Scalars['UUID'];
+  input?: InputMaybe<ClassroomInput>;
 };
 
 export type MutationUpdateClinicArgs = {

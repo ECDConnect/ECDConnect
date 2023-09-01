@@ -1,5 +1,5 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { ClassroomDto, PractitionerDto } from '@ecdlink/core';
+import { ClassroomDto, PractitionerDto, SiteAddressDto } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -17,6 +17,7 @@ import {
   classroomsThunkActions,
 } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
+import { newGuid } from '@utils/common/uuid.utils';
 
 interface EditAdressProps {
   setShowEditAddress: (item: boolean) => void;
@@ -37,17 +38,22 @@ export const EditAddress: React.FC<EditAdressProps> = ({
 
   const changeSmartSpaceCheckAddress = async () => {
     const classroomCopy = { ...classroom };
+    const siteAddressId = classroomCopy.siteAddressId || newGuid();
 
-    classroomCopy.siteAddress = {
-      addressLine1: 'new street',
+    const siteAddress: SiteAddressDto = {
+      id: siteAddressId,
+      addressLine1: editedAddress || '',
     };
+    classroomCopy.siteAddress = siteAddress;
+    classroomCopy.siteAddressId = siteAddressId;
 
     if (classroomCopy.siteAddress) {
-      classroomCopy.siteAddress.addressLine1 = editedAddress;
       appDispatch(
-        classroomsActions.updateClassroom(classroomCopy as ClassroomDto)
+        classroomsActions.updateClassroomSiteAddress(
+          classroomCopy as ClassroomDto
+        )
       );
-      await appDispatch(classroomsThunkActions.upsertClassroom({}));
+      await appDispatch(classroomsThunkActions.upsertClassroomSiteAddress({}));
     }
   };
 
