@@ -31,5 +31,8 @@ namespace ECDLink.ContentManagement.Entities
         [GraphQLIgnore]
         [ForeignKey(nameof(TenantId))]
         public Guid? TenantId { get; set; }
+
+        public DateTime? InsertedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
     }
 }

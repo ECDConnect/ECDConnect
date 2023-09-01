@@ -31,4 +31,12 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public MessageTemplate MessageTemplate { get; set; }
         public TKey MessageTemplateId { get; set; }
     }
+
+    public class MessageTemplateText
+    {
+        public string Message { get; set; }
+        public string Subject { get; set; }
+
+
+    }
 }

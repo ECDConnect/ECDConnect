@@ -64,30 +64,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public virtual PQARating ReAccreditationRating3 { get; set; }
     }
 
-    public class PQARating
-    {
-        public string VisitName { get; set; }
-        public double OverallScore { get; set; }
-        public string OverallRating { get; set; }
-        public string OverallRatingStars { get; set; }
-        public string OverallRatingColor { get; set; }
-        public string VisitTypeName { get; set; }
-        public string LinkedVisitId { get; set; }
-        public string VisitId { get; set; }
-        public DateTime? PlannedDate { get; set; }
-        public DateTime? ActualVisitDate { get; set; }
-        public virtual ICollection<PQARatingChild> Children { get; set; }
-    }
-
-    public class PQARatingChild
-    {
-        public string VisitSection { get; set; }
-        public double SectionScore { get; set; }
-        public string SectionRating { get; set; }
-        public string SectionRatingColor { get; set; }
-    }
-
-    public class PractitionerAttendance
+    public class PractitionerCoachCircle
     {
         public int TotalMeetings { get; set; } //X = the number of coaching circles logged by coach for the practitioner's club in the current year
         public int TotalPresent { get; set; }// Y = the total number of presents & absents logged for the practitioner for coaching circles

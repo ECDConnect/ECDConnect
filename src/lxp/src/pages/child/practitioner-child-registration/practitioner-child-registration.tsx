@@ -18,6 +18,7 @@ export const PractitionerChildRegistration: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const [childDetails, setChildDetails] = useState<ChildBasicInfoModel>();
+
   const { activeStepKey, canGoBack, goBackOneStep, goToStep } =
     useStepNavigation(PractitionerChildRegistrationSteps.childBasicDetails);
 
@@ -64,6 +65,10 @@ export const PractitionerChildRegistration: React.FC = () => {
     });
   };
 
+  const onNewChild = () => {
+    goBackOneStep();
+  };
+
   return (
     <StepViewer
       title="Add a child"
@@ -88,7 +93,9 @@ export const PractitionerChildRegistration: React.FC = () => {
         stepKey={PractitionerChildRegistrationSteps.caregiverLink}
         viewBannerWapper={true}
       >
-        {childDetails && <CaregiverLink childDetails={childDetails} />}
+        {childDetails && (
+          <CaregiverLink onNewChild={onNewChild} childDetails={childDetails} />
+        )}
       </Step>
     </StepViewer>
   );

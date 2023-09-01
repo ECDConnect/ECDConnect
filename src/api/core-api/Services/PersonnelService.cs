@@ -48,6 +48,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<Coach, Guid> _coachRepo;
+        private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
 
 
         private VisitDataManager _visitDataManager;
@@ -74,7 +75,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : null;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
@@ -89,6 +90,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
+            _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -337,7 +339,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
                 _userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
 
-                List<TagsReplacements> replacements = null;
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "principalOrFAA",
@@ -382,7 +384,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
 
                 //send notifications that user has been demoted
-                List<TagsReplacements> replacements = null;
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "principalOrFAA",
@@ -459,21 +461,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // PQA Visits --------------------------
             List<Visit> allPqaVisits = _visitManager.GetPQAVisitsForPractitioner(userId);
             // Get rating for each visit for display in front-end
-            List<PQARating> _pqaRatings = new List<PQARating>();
-            foreach (Visit visit in allPqaVisits)
-            {
-                _pqaRatings.Add(_visitDataManager.GetPractitionerPQARating(visit));
-            }
-            timeline.PQARatings = _pqaRatings;
+            var pqaRatings = _pqaRatingRepo.GetAll().Where(x => allPqaVisits.Select(y  => y.Id).Contains(x.VisitId)).ToList();            
+            timeline.PQARatings = pqaRatings;
 
             // Re-accreditation --------------------------
             List<Visit> allAccreditationVisits = _visitManager.GetReAccreditationVisitsForPractitioner(userId);
-            List<PQARating> _accredRatings = new List<PQARating>();
-            foreach (Visit visit in allAccreditationVisits)
-            {
-                _accredRatings.Add(_visitDataManager.GetPractitionerReAccreditationRating(visit));
-            }
-            timeline.ReAccreditationRatings = _accredRatings;
+            var accreditationRatings = _pqaRatingRepo.GetAll().Where(x => allAccreditationVisits.Select(y => y.Id).Contains(x.VisitId)).ToList();
+            timeline.ReAccreditationRatings = accreditationRatings;
 
             // Starter license received
             License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
@@ -551,24 +545,24 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
             visits = visits.OrderBy(x => x.InsertedDate).ToList();
 
-            List<Visit> pre_pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2).ToList();
-            List<Visit> pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
-            List<Visit> reaccreditation_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
-            List<Visit> support_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
-            List<Visit> requested_coach_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
-            List<Visit> self_assessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
-            List<Visit> self_visits = new List<Visit>();
+            var pre_pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2).ToList();
+            var pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
+            var reaccreditation_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
+            var support_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
+            var requested_coach_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
+            var self_assessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
+            var self_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
 
             foreach (Visit visit in pqa_visits)
             {
-                PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
+                var pqaRating = pqaRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating(); // New PQA rating is just temp, since the DB is missing entries for old PQAs
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
                 visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
             }
 
             foreach (Visit visit in reaccreditation_visits)
             {
-                PQARating pqaRating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
+                var pqaRating = accreditationRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating();
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
                 visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
             }

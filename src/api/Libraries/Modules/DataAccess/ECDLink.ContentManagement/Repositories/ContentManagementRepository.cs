@@ -32,6 +32,15 @@ namespace ECDLink.ContentManagement.Repositories
         {
             var currentTenant = TenantExecutionContext.Tenant.Id;
 
+            if (localeId == Guid.Empty)
+            {
+                var deafultLocale = _context.Languages
+                .Where(x => x.Locale == "en-za")
+                .FirstOrDefault();
+
+                localeId = deafultLocale.Id;
+            }
+
             // Get the complete content for null tenant and current tenants.
             var contentType = _context.ContentTypes
                   .Include(ct => ct.Content)
@@ -422,7 +431,9 @@ namespace ECDLink.ContentManagement.Repositories
                             Value = fileUrl.ToString(),
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
-                            TenantId = currentTenant
+                            TenantId = currentTenant,
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
                         });
 
                     }
@@ -443,6 +454,7 @@ namespace ECDLink.ContentManagement.Repositories
             // Add existing content to the new content and replace the existing content.
             contentValues.AddRange(content.ContentValues);
             content.ContentValues = contentValues;
+            content.UpdatedDate = DateTime.UtcNow;
 
             _context.SaveChanges();
 

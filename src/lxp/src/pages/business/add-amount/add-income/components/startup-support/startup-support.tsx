@@ -144,7 +144,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
             title="We do not have start-up support information on-record for you"
             list={[
               'If you receive start-up support, please fill in the information below and SmartStart will be notified to change the information they have on record.',
-              'If you do not reveive start-up support, please use the back button and choose a different income type.',
+              'If you do not receive start-up support, please use the back button and choose a different income type.',
             ]}
             customIcon={
               <div className="rounded-full">
