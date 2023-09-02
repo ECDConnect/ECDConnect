@@ -78,7 +78,7 @@ namespace ECDLink.ContentManagement.Repositories
 
             var allContentValuePairs = new List<object>();
 
-            foreach (var item in contents)
+            foreach (var item in contents ?? new List<Content>())
             {
                 // keep our tenant's content values and fill in the gaps with the global tenant's content values
                 // Get the ContentValues for the current tenant, or the global tenant.
