@@ -21,6 +21,8 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string Subject { get; set; }
         public string Message { get; set; }
         public string Status { get; set; }
+        public string CTAText { get; set; }
+        public string CTA { get; set; }
         public Guid FromUserId { get; set; }
         public Guid SentByUserId { get; set; }
         public DateTime? MessageDate { get; set; }
@@ -47,6 +49,8 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string From { get; set; }
         public string To { get; set; }
         public string Subject { get; set; }
+        public string CTAText { get; set; }
+        public string CTA { get; set; }
         public string Message { get; set; }
         public string Status { get; set; }
         public Guid FromUserId { get; set; }

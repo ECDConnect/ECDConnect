@@ -1,8 +1,6 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading;
@@ -10,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
-public class WeeklyNotificationChecks : CronJobService
+public class YearlyNotificationChecks : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public WeeklyNotificationChecks(IServiceScopeFactory scopeFactory, IScheduleConfig<WeeklyNotificationChecks> config)
+    public YearlyNotificationChecks(IServiceScopeFactory scopeFactory, IScheduleConfig<YearlyNotificationChecks> config)
         : base(config.CronExpression, config.TimeZoneInfo)
     {
         _scopeFactory = scopeFactory;
@@ -27,10 +25,8 @@ public class WeeklyNotificationChecks : CronJobService
 
             TenancyContext.SetTenantContext(scope);
 
-            if (DateTime.Now.Hour >= 4)
-            { //run weekly attendance reminder
-                await service.WeeklyAttendancesReminderAsync();
-            }
+            //await service.DailyAttendanceNotTrackedNotification();
+
         }
     }
 }

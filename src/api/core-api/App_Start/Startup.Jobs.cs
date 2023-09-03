@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<ChildAnonymiseJob>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryFiveMinutes;
+                c.CronExpression = CronTags.MidnightDaily;
             });
             services.AddCronJob<ExpireInvitations>(c =>
             {
@@ -54,26 +54,26 @@ namespace EcdLink.Api.CoreApi
                 c.CronExpression = CronTags.MidnightDaily;
             });
 
-            //run all daily notification based checks in here
+            ////run all daily notification based checks in here
             services.AddCronJob<DailyNotificationChecks>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
                 c.CronExpression = CronTags.MidnightDaily;
             });
 
-            //Weekly
+            ////Weekly
             services.AddCronJob<AttendanceWeekly>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.NinePmEverySaturday;
+                c.CronExpression = CronTags.NinePmEverySunday;
             });
             services.AddCronJob<WeeklyNotificationChecks>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.NinePmEveryFriday;
+                c.CronExpression = CronTags.FourPmEveryFriday;
             });
 
-            //Monthly
+            ////Monthly
             services.AddCronJob<IncomeStatementsAutoSubmit>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
@@ -82,8 +82,10 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<MonthlyNotificationChecks>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.FirstofEveryMonth;
+                c.CronExpression = CronTags.FirstOfEveryMonth;
             });
+
+
         }
     }
 }
