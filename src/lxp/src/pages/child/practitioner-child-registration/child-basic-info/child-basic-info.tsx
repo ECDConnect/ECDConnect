@@ -33,24 +33,39 @@ export const ChildBasicInfo: React.FC<
 > = ({ onSubmit }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
-  const getAllClassroomGroups = useSelector(
+  const allClassroomGroups = useSelector(
     classroomsSelectors?.getAllClassroomGroups
   );
   const location = useLocation<PractitionerChildRegisterState>();
 
-  const practitionerId = location?.state?.practitionerId;
+  const practitionerIdFromCoach = location?.state?.practitionerId;
 
-  const practitionerFromState = useSelector(
-    getPractitionerByUserId(practitionerId || '')
+  const practitionerFromCoach = useSelector(
+    getPractitionerByUserId(practitionerIdFromCoach || '')
   );
+  const allPractitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const userId = practitioner?.userId || practitionerFromState?.userId;
-  const getClassroomForPractitioner = getAllClassroomGroups.filter((item) => {
-    return item?.userId === userId || item?.isActive !== true;
+  const userId = practitioner?.userId || practitionerFromCoach?.userId;
+  const classroomForPractitioner = allClassroomGroups.filter((item) => {
+    return practitionerIdFromCoach
+      ? item.userId === userId
+      : item?.userId === userId || item?.isActive !== true;
   });
+  const practitionersForPrincipal = allPractitioners?.filter(
+    (item) => item.principalHierarchy === practitionerIdFromCoach
+  );
+  const classroomsByPractitionersForPrincipal = allClassroomGroups.filter(
+    (item) =>
+      practitionersForPrincipal?.some(
+        (practitioner) => practitioner.userId === item.userId
+      )
+  );
+  const classroomsForPrincipal = practitionerIdFromCoach
+    ? [...classroomForPractitioner, ...classroomsByPractitionersForPrincipal]
+    : allClassroomGroups;
 
   const isPrincipal =
-    practitioner?.isPrincipal || practitionerFromState?.isPrincipal;
+    practitioner?.isPrincipal || practitionerFromCoach?.isPrincipal;
 
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
@@ -152,11 +167,11 @@ export const ChildBasicInfo: React.FC<
         selectedValue={getSelectedClassroom()}
         list={
           !isPrincipal
-            ? getClassroomForPractitioner.map((x) => ({
+            ? classroomForPractitioner.map((x) => ({
                 label: x.name,
                 value: x.id || '',
               }))
-            : getAllClassroomGroups.map((x) => ({
+            : classroomsForPrincipal.map((x) => ({
                 label: x.name,
                 value: x.id || '',
               }))

@@ -233,7 +233,8 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       stackedActionList.push(
         {
           title: 'Location',
-          subTitle: classroom?.siteAddress?.addressLine1,
+          subTitle:
+            classroom?.siteAddress?.addressLine1 || classroom?.classSiteAddress,
           switchTextStyles: true,
           actionName: isPrincipal ? 'Add/Edit' : '',
           actionIcon: 'PlusIcon',

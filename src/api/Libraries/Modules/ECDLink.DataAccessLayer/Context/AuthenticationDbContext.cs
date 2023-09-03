@@ -155,6 +155,9 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ClubMeeting> ClubMeetings { get; set; }
         public DbSet<ClubMeetingRegister> ClubMeetingRegisters { get; set; }
         public DbSet<MeetingType> MeetingType { get; set; }
+        public DbSet<ClubMember> ClubMember { get; set; }
+        public DbSet<ClubLeader> ClubLeader { get; set; }
+        public DbSet<ClubSupport> ClubSupport { get; set; }
 
         // Leagues
         public DbSet<LeagueType> LeagueType { get; set; }

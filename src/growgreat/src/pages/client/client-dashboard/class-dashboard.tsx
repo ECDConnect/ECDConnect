@@ -1,5 +1,4 @@
 import {
-  LocalStorageKeys,
   getStringFromClassNameOrId,
   replaceBraces,
   useDialog,
@@ -24,7 +23,6 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import { getStorageItem } from '@utils/common/local-storage.utils';
 import { ClientDashboardRouteState } from './class-dashboard.types';
 import { ClientList } from '../clients-tab/client-list';
 import { VisitList } from '../visits-tab/visit-dashboard';
@@ -49,6 +47,10 @@ import { clientSteps } from '../clients-tab/walkthrough/steps';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { getMothers } from '@/store/mother/mother.selectors';
 import { multipleClientsSteps } from '../clients-tab/walkthrough/steps_multiple_clients';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
+import { MotherActions } from '@/store/mother/mother.actions';
+import { InfantActions } from '@/store/infant/infant.actions';
 
 export const CLIENT_TABS = {
   CLIENT: 0,
@@ -63,7 +65,6 @@ export const ClassDashboard: React.FC = () => {
     walkthroughDispatch,
     walkthroughState,
     walkthroughStepIndex,
-    isWalkthroughSession,
     setIsWalkthroughSession,
   } = useWalkthrough();
 
@@ -80,14 +81,26 @@ export const ClassDashboard: React.FC = () => {
   const infants = useSelector(getInfants);
   const mothers = useSelector(getMothers);
 
+  const { isLoading: isLoadingCaregivers } = useThunkFetchCall(
+    'caregivers',
+    CaregiverActions.GET_CAREGIVER_CLIENTS
+  );
+  const { isLoading: isLoadingMothers } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_MOTHERS
+  );
+  const { isLoading: isLoadingInfants } = useThunkFetchCall(
+    'infants',
+    InfantActions.GET_INFANTS
+  );
+
+  const isLoading = isLoadingCaregivers || isLoadingMothers || isLoadingInfants;
+
   const totalClients = infants.length + mothers.length;
 
   const healthCareWorker = useSelector(
     healthCareWorkerSelectors?.getHealthCareWorker
   );
-
-  const [attendanceTutorialComplete, setAttendanceTutorialComplete] =
-    useState<boolean>(false);
 
   const tabItems: TabItem[] = [
     {
@@ -123,38 +136,24 @@ export const ClassDashboard: React.FC = () => {
     hideJoyRideBorders?: boolean;
     displayExtraComponent?: boolean;
   } => {
-    switch (state?.activeTabIndex ?? 0) {
-      // case CLIENT_TABS.VISIT:
-      //   return {
-      //     steps: visitSteps,
-      //     infoPageTitle: 'Visits',
-      //     infoPageSection: 'visits tab',
-      //     hideJoyRideBorders: walkthroughStepIndex === 2,
-      //   };
-      // case CLIENT_TABS.HIGHLIGHTS:
-      //   return {
-      //     steps: highlightSteps,
-      //     infoPageTitle: 'Highlights',
-      //     infoPageSection: 'highlights tab',
-      //     hideJoyRideBorders: walkthroughStepIndex === 2,
-      //   };
-      default:
-        var _clientSteps = clientSteps;
-        var _walkthroughStepIndex = 2;
-        if (totalClients > 3) {
-          _clientSteps = multipleClientsSteps;
-          _walkthroughStepIndex = 5;
-        }
+    const isMultipleClients = totalClients >= 5;
+    let _clientSteps = isMultipleClients
+      ? clientSteps.slice(0, 2)
+      : clientSteps;
 
-        return {
-          steps: _clientSteps,
-          infoPageTitle: 'Clients',
-          infoPageSection: 'clients tab',
-          hideJoyRideBorders: walkthroughStepIndex === _walkthroughStepIndex,
-          displayExtraComponent: true,
-        };
+    if (isMultipleClients) {
+      _clientSteps = [..._clientSteps, ...multipleClientsSteps];
     }
-  }, [state?.activeTabIndex, walkthroughStepIndex]);
+    const lastStepIndex = _clientSteps.length - 1;
+
+    return {
+      steps: _clientSteps,
+      infoPageTitle: 'Clients',
+      infoPageSection: 'clients tab',
+      hideJoyRideBorders: walkthroughStepIndex === lastStepIndex,
+      displayExtraComponent: true,
+    };
+  }, [totalClients, walkthroughStepIndex]);
 
   const onHelp = useCallback(() => {
     setIsInfoPage(false);
@@ -289,16 +288,6 @@ export const ClassDashboard: React.FC = () => {
   ]);
 
   useEffect(() => {
-    const isTutorialComplete = getStorageItem<boolean>(
-      LocalStorageKeys.attendanceTutorialComplete
-    );
-    if (isTutorialComplete !== undefined) {
-      setAttendanceTutorialComplete(isTutorialComplete);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
     if (!isOnline) {
       appDispatch(
         analyticsActions.createViewTracking({
@@ -309,13 +298,6 @@ export const ClassDashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
-
-  // useEffect(() => {
-  //   if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
-  //     setCurrentTab(tabItems[selectedTabIndex]);
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [selectedTabIndex]);
 
   const goBack = useCallback(() => {
     if (isInfoPage) {
@@ -332,11 +314,11 @@ export const ClassDashboard: React.FC = () => {
   }, [handleWelcomeDialog, previousActiveTab, state?.activeTabIndex]);
 
   useLayoutEffect(() => {
-    if (isWalkthroughSession) {
+    if (!walkthroughState?.isTourActive) {
       window.sessionStorage.clear();
       return;
     }
-  }, [appDispatch, isWalkthroughSession]);
+  }, [walkthroughState?.isTourActive]);
 
   return (
     <>
@@ -351,19 +333,27 @@ export const ClassDashboard: React.FC = () => {
         run={walkthroughState?.isTourActive}
         stepIndex={walkthroughStepIndex}
         callback={handleCallback}
-        continuous={true}
+        continuous
         tooltipComponent={({ ...props }) => (
           <Tooltip
             {...props}
+            className={
+              walkthroughStepIndex === 2 || walkthroughStepIndex === 3
+                ? 'mt-24'
+                : ''
+            }
             pollyInformationalSteps={[0, 2]}
             pollyNeutralSteps={[1]}
             pollyImpressedSteps={[3]}
             displayCloseButton={props.index < props.size - 1}
+            isLoading={isLoading}
           />
         )}
-        styles={getJoyrideStyles(hideJoyRideBorders)}
+        styles={getJoyrideStyles(
+          hideJoyRideBorders,
+          walkthroughStepIndex === 2 || walkthroughStepIndex === 3
+        )}
       />
-
       <BannerWrapper
         showBackground={false}
         size="medium"
@@ -373,7 +363,11 @@ export const ClassDashboard: React.FC = () => {
         subTitle={date}
         color={'primary'}
         onBack={() => backToDashboard()}
-        displayHelp={state?.activeTabIndex === 0 ? true : false}
+        displayHelp={
+          !isInfoPage && state?.activeTabIndex === 0 && !isLoading
+            ? true
+            : false
+        }
         onHelp={() => setIsInfoPage(true)}
         displayOffline={!isOnline}
       >
@@ -389,6 +383,7 @@ export const ClassDashboard: React.FC = () => {
                   customIcon={<AwardIcon className="h-14	w-14" />}
                   text={`Client folders in CHW Connect`}
                   subText={`Use this section to see all of your clients and to search for, filter, or sort your client folder list.`}
+                  subTextColours="successMain"
                   textColour="successDark"
                   color="successBg"
                 />
@@ -399,7 +394,7 @@ export const ClassDashboard: React.FC = () => {
           />
         ) : (
           <TabList
-            id="walkthrough-dashboard-client-step-1"
+            id={getStringFromClassNameOrId(clientSteps[0].target)}
             className="bg-uiBg"
             tabItems={tabItems}
             setSelectedIndex={state?.activeTabIndex ?? 0}
