@@ -14206,6 +14206,9 @@ export type TraineeOnBoardTimeline = {
   sSCoachVisitColor?: Maybe<Scalars['String']>;
   sSCoachVisitDate?: Maybe<Scalars['DateTime']>;
   sSCoachVisitDeadlineDate?: Maybe<Scalars['DateTime']>;
+  sSCoachVisitDone: Scalars['Boolean'];
+  sSCoachVisitEventId?: Maybe<Scalars['UUID']>;
+  sSCoachVisitId?: Maybe<Scalars['UUID']>;
   sSCoachVisitStatus?: Maybe<Scalars['String']>;
   signFranchiseeAgreementColor?: Maybe<Scalars['String']>;
   signFranchiseeAgreementDate?: Maybe<Scalars['DateTime']>;

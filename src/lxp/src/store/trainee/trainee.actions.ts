@@ -2,7 +2,11 @@ import { TraineeDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { TraineeService } from '@/services/TraineeService';
-import { TraineeOnBoardTimeline, VisitData } from '@ecdlink/graphql';
+import {
+  TraineeOnBoardTimeline,
+  UpdateVisitPlannedVisitDateModelInput,
+  VisitData,
+} from '@ecdlink/graphql';
 
 export const getTraineeById = createAsyncThunk<
   TraineeDto,
@@ -92,3 +96,30 @@ export const getTraineeVisitData = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
+
+export const updateTraineeOnboardTimelineSSVisitEvent = createAsyncThunk<
+  any,
+  UpdateVisitPlannedVisitDateModelInput,
+  ThunkApiType<RootState>
+>(
+  'updateTraineeOnboardTimelineSSVisitEvent',
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!Object.keys(input).length) {
+          const response = await new TraineeService(
+            userAuth?.auth_token
+          ).updateTraineeOnboardTimelineSSVisitEvent(input);
+
+          return response;
+        }
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);

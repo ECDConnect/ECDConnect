@@ -19,8 +19,13 @@ export const TraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
   practitioner,
 }) => {
   const [notificationStep, setNotificationStep] = useState('');
+  const [stepOptions, setStepOptions] = useState<any>(null);
   const user = useSelector(userSelectors.getUser);
   const [isSmartChecklist, setIsSmartChecklist] = useState(false);
+
+  const onDone = () => {
+    setNotificationStep('');
+  };
 
   const renderStep = (step: string) => {
     switch (step) {
@@ -45,11 +50,20 @@ export const TraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
       case 'Register 3 children':
         return null;
       case 'SmartSpace visit from coach':
-        return <SmartSpaceVisit practitioner={practitioner} />;
+        return (
+          <SmartSpaceVisit
+            onDone={onDone}
+            practitioner={practitioner}
+            options={stepOptions}
+          />
+        );
       default:
         return (
           <OnboardingTraineeDashboard
-            setNotificationStep={setNotificationStep}
+            setNotificationStep={(step: string, options?: any) => {
+              setNotificationStep(step);
+              setStepOptions(options);
+            }}
             setIsSmartChecklist={setIsSmartChecklist}
             practitioner={practitioner}
           />

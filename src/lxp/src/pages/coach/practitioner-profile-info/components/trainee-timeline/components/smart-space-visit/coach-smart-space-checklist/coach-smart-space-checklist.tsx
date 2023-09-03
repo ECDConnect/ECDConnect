@@ -27,13 +27,15 @@ import {
 import { TraineeService } from '@/services/TraineeService';
 import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@/store/user';
+import { practitionerSelectors } from '@/store/practitioner';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
 }
 
 export interface CoachSmartSpaceChecklistRouteState {
-  practitioner: PractitionerDto;
+  practitioner?: PractitionerDto;
+  practitionerUserId?: string;
 }
 
 export const CoachSmartSpaceChecklist: React.FC<
@@ -45,7 +47,10 @@ export const CoachSmartSpaceChecklist: React.FC<
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
-  const practitioner = location.state.practitioner;
+  const practitionerUserId = location.state.practitionerUserId;
+  const practitioner = (useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerUserId || '')
+  ) || location.state.practitioner) as PractitionerDto;
   const programmeName = useSelector(
     traineeSelectors.getTraineeVisitDataProgrammeName
   );
