@@ -32,6 +32,7 @@ export const contentTypes = gql`
           contentTypeField {
             fieldOrder
             fieldName
+            displayName
           }
         }
       }
