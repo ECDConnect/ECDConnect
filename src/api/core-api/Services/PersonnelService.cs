@@ -839,8 +839,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SSCoachVisit - normally this visit is linked to a coach id and a trainee id
             Visit coachVisit = _visitManager.GetVisitForUserForType(trainee?.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_trainee_visit);
-            //var coachVisitEventParticipant = _calendarEventParticipantRepo.GetAll().Where(x => x.ParticipantUserId == userId && x.CalendarEvent.EventType == "SmartSpace").FirstOrDefault();
-            //CalendarEvent coachVisitEvent = coachVisitEventParticipant != null ? coachVisitEventParticipant.CalendarEvent : null;
             if (coachVisit != null)
             {
                 timeline.SSCoachVisitStatus =  Constants.SSSettings.coach_visit;
@@ -877,7 +875,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     dates.Add(timeline.CommunitySupportDate.Value);
                 }
 
-                if (/*sections.Count == 4 &&*/ timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() /*&& dates.Count == 4*/)
+                if (sections.Count == 4 && timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() && dates.Count == 4)
                 {
                     var latestDate = dates.OrderDescending().First();
                     latestDate = latestDate.AddDays(7);
