@@ -47,6 +47,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string SSCoachVisitColor { get; set; }
         public DateTime? SSCoachVisitDate { get; set; }
         public DateTime? SSCoachVisitDeadlineDate { get; set; }
+        public Guid? SSCoachVisitId { get; set; }
+        public bool SSCoachVisitDone { get; set; }
+        public Guid? SSCoachVisitEventId { get; set; }
 
         public string SignFranchiseeAgreementStatus { get; set; }
         public string SignFranchiseeAgreementColor { get; set; }

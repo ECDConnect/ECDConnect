@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
-import { useSnackbar, useTheme } from '@ecdlink/core';
+import { PractitionerDto, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,

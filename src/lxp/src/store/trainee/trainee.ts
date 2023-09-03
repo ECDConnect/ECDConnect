@@ -5,9 +5,11 @@ import {
   getTraineeById,
   getTraineeTimeline,
   getTraineeVisitData,
+  updateTraineeOnboardTimelineSSVisitEvent,
 } from './trainee.actions';
 import { TraineeState } from './trainee.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
+import { UpdateVisitPlannedVisitDateModelInput } from '@ecdlink/graphql';
 
 const initialState: TraineeState = {
   trainee: undefined,
@@ -40,6 +42,16 @@ const traineeSlice = createSlice({
         ? checkData
         : action.payload;
     },
+    updateTraineeOnboardTimelineSSVisitEvent: (
+      state,
+      action: PayloadAction<UpdateVisitPlannedVisitDateModelInput>
+    ) => {
+      if (!state.traineeOnboardTimeline) return;
+      const input = action.payload;
+
+      state.traineeOnboardTimeline.sSCoachVisitEventId = input.eventId;
+      state.traineeOnboardTimeline.sSCoachVisitDate = input.plannedVisitDate;
+    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getTraineeVisitData);
@@ -53,6 +65,19 @@ const traineeSlice = createSlice({
       state.traineeVisitData = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(
+      updateTraineeOnboardTimelineSSVisitEvent.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+
+        const input = action.meta.arg;
+        if (state.traineeOnboardTimeline) {
+          state.traineeOnboardTimeline.sSCoachVisitDate =
+            input.plannedVisitDate;
+          state.traineeOnboardTimeline.sSCoachVisitEventId = input.eventId;
+        }
+      }
+    );
   },
 });
 
