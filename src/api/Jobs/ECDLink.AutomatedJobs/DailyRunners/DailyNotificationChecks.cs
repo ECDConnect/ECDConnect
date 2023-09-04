@@ -2,6 +2,7 @@
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -22,12 +23,23 @@ public class DailyNotificationChecks : CronJobService
         {
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
-           
+
+            await service.DailyAttendanceNotTrackedNotification();
+            
             await service.DailyUnassignedClassesNotification();
             await service.DailyChildrenRegistrationsIncompleteNotification();
             await service.DailyChildrenNotAssignedToClassNotification();
             await service.DailyUnassignedProgrammesNotification();
             //await service.Daily3WeekLogonCheck(); //deprecated
+
+
+
+            //specific day checks in year/month
+            if (DateTime.Now.Day == 15 && DateTime.Now.Month == 1) //15 Jan each year only
+            {
+                await service.YearlyPreschoolFeeReminderAsync();
+            }
+            
         }
     }
 }

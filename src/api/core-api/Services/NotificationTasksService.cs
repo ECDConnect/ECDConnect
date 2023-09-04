@@ -13,6 +13,10 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using System.Linq;
+using ECDLink.DataAccessLayer.Repositories;
+using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Models;
 
 namespace ECDLink.Core.Services
 {
@@ -23,17 +27,23 @@ namespace ECDLink.Core.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INotificationService _notificationService;
         private readonly IncomeExpenseService _incomeService;
+        private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
+        IHolidayService<Holiday> _holidayService;
 
         public NotificationTasksService(
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
             [Service] UserManager<ApplicationUser> userManager,
-            HierarchyEngine hierarchyEngine)
+            [Service] IncomeExpenseService incomeService,
+            HierarchyEngine hierarchyEngine, [Service] AttendanceTrackingRepository attendanceTrackingRepository, IHolidayService<Holiday> holidayService)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _userManager = userManager;
+            _attendanceTrackingRepository = attendanceTrackingRepository;
+            _holidayService = holidayService;
+            _incomeService = incomeService;
         }
 
         public async Task DailyUnassignedClassesNotification()
@@ -176,45 +186,209 @@ namespace ECDLink.Core.Services
 
             var pracsDueSubmits = _incomeService.GetUnsubmittedStatements();
             List<TagsReplacements> replacements = new List<TagsReplacements>();
+            string stipendText = "You need to submit your income statement to receive your stipend.";
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "StatementMonth",
-                ReplacementValue = DateTime.Now.AddMonths(-1).Month.ToString("ddd")
-            }); ;
+                ReplacementValue = DateTime.Now.AddMonths(-1).ToString("MMMM")
+            });
             replacements.Add(new TagsReplacements()
             {
                 FindValue = "StatementCutOffDate",
                 ReplacementValue = DateTime.Now.GetStartOfMonth().AddDays(7).ToString()
             });
+
             foreach (var pracData in pracsDueSubmits)
             {
                 DateTime duePeriod = pracData.Value;
                 var userToSend = await _userManager.FindByIdAsync(pracData.Key.ToString());
+                bool isStipendReceiver = false;
+                if (userToSend.principalObjectData != null)
+                {
+                    if (userToSend.principalObjectData.IsOnStipend.HasValue)
+                        isStipendReceiver = (bool)userToSend.principalObjectData.IsOnStipend;
+                }
+                else if (userToSend.practitionerObjectData != null)
+                {
+                    if (userToSend.practitionerObjectData.IsOnStipend.HasValue)
+                        isStipendReceiver = (bool)userToSend.practitionerObjectData.IsOnStipend;
+                }
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "StatementCutOffDate",
+                    ReplacementValue = isStipendReceiver ? stipendText : ""
+                });
+
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.IncomeStatementIncompleteBy1st, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
             }
         }
 
-        public async Task WeeklyAttendancesReminderAsync()
+        public async Task MonthlyStartupSupportEndReminderAsync()
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && (x.IsPrincipal.Equals(true) || x.IsFundaAppAdmin.Equals(true))).ToList();
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            //replacements.Add(new TagsReplacements()
+            //{
+            //    FindValue = "EndMonth",
+            //    ReplacementValue = startupsupportEndDate.Month.ToString("ddd")
+            //});
+            //replacements.Add(new TagsReplacements()
+            //{
+            //    FindValue = "EndYear",
+            //    ReplacementValue = startupsupportEndDate.Year.ToString()
+            //});
+            foreach (var pracData in practitioners)
+            {
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.StartupSupportEndingIn2Months, DateTime.Now, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            }
+        }
+        public async Task MonthlyPlanningReminderAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            //find all practitioners that has not yet created planning for their classes after a month of having the class
+            var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && (x.IsPrincipal.Equals(true) || x.IsFundaAppAdmin.Equals(true))).ToList();
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            foreach (var pracData in practitioners)
+            {
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PlanYourProgrammes, DateTime.Now, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+            }
+        }
 
-            var pracsDueSubmits = _incomeService.GetUnsubmittedStatements();
+        public async Task MonthlyPointsgReminderAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.MonthlyPointsReminderA, DateTime.Now, null, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+        public async Task ProgressReportsReminderAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();          
+        }
+        public async Task YearlyPreschoolFeeReminderAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            //get all principals and FAAs
+            List<Practitioner> principals = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && (x.IsPrincipal.Equals(true) || x.IsFundaAppAdmin.Equals(true))).ToList();
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             replacements.Add(new TagsReplacements()
             {
-                FindValue = "StatementMonth",
-                ReplacementValue = DateTime.Now.AddMonths(-1).Month.ToString("ddd")
-            }); ;
-            replacements.Add(new TagsReplacements()
-            {
-                FindValue = "StatementCutOffDate",
-                ReplacementValue = DateTime.Now.GetStartOfMonth().AddDays(7).ToString()
+                FindValue = "CurrentYear",
+                ReplacementValue = DateTime.Now.Year.ToString()
             });
-            foreach (var pracData in pracsDueSubmits)
+            foreach (var item in principals)
             {
-                DateTime duePeriod = pracData.Value;
-                var userToSend = await _userManager.FindByIdAsync(pracData.Key.ToString());
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.AttendanceWeekly, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UpdatePreschoolFee, DateTime.Now, item.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
+            }
+        }
+        public async Task WeeklyAttendancesReminderAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var classroomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: adminId);
+            var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: adminId);
+
+            DateTime inDate = DateTime.Now.Date;
+                    
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+
+            DateTime trackingWeekDate = inDate.StartOfWeek(DayOfWeek.Monday);
+            DateTime followingWeekDate = inDate.AddDays(7).StartOfWeek(DayOfWeek.Monday);
+
+            var allRequiredAttendance =
+            (
+                from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
+                join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId.ToString() equals practitionerData.UserId
+                join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= inDate && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
+                select new { classroomGroupData, practitionerData }
+            ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
+
+            string stipendReceiverText = " receive your stipend and ";
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            foreach (var requiredAttendance in allRequiredAttendance)
+            {
+                IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, requiredAttendance.classroomGroupData.UserId.ToString(), trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+
+                    if (!attendanceData.Any())
+                    {
+                        replacements.Add(new TagsReplacements()
+                        {
+                            FindValue = "IsStipendReceiverText",
+                            ReplacementValue = requiredAttendance.practitionerData.IsOnStipend.HasValue && requiredAttendance.practitionerData.IsOnStipend == true ? stipendReceiverText : ""
+                        });
+                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.SubmitWeeksAttendance, DateTime.Now, requiredAttendance.practitionerData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(2));
+                    }
+                
+            }
+        }
+
+        public async Task DailyAttendanceNotTrackedNotification()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var classroomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: adminId);
+            var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: adminId);
+
+            DateTime inDate = DateTime.Now.Date;
+                     
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+            var programmeRepo = _repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: adminId);
+
+            DateTime trackingWeekDate = inDate.StartOfWeek(DayOfWeek.Monday);
+            DateTime followingWeekDate = inDate.AddDays(7).StartOfWeek(DayOfWeek.Monday);
+            var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
+            //check that it is actuallya  meeting day and not a holiday and not a weeken
+            //if (!holidays.Contains(inDate))
+            //{
+                var allRequiredAttendance =
+                (
+                    from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
+                    join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId.ToString() equals practitionerData.UserId
+                    join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= inDate && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
+                    select new { classroomGroupData, practitionerData }
+                ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
+
+                string stipendReceiverText = "to receive your stipend and ";
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                foreach (var requiredAttendance in allRequiredAttendance)
+                {
+                    var classProgrammes = (programmeRepo.GetAll()
+                        .Where(p => p.ClassroomGroupId == requiredAttendance.classroomGroupData.Id)
+                        .ToList());
+                    //check if today is even a class day? by checking if the day of the week is a meeting day
+                    //var availableClassDays = availableDays.Where(a => classProgrammes.Select(cp => (DayOfWeek)cp.MeetingDay).Contains(a.DayOfWeek));
+                    var programmeDay = programmeRepo.GetAll().Where(d => d.MeetingDay == (int)inDate.DayOfWeek).ToList();
+                    if (programmeDay.Any())
+                    {
+                        IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetDailyAttendance(_attendanceTrackingRepository, requiredAttendance.classroomGroupData.UserId.ToString(), inDate).ToList();
+
+                        if (!attendanceData.Any())
+                        {
+                            replacements.Add(new TagsReplacements()
+                            {
+                                FindValue = "IsStipendReceiverText",
+                                ReplacementValue = requiredAttendance.practitionerData.IsOnStipend.HasValue && requiredAttendance.practitionerData.IsOnStipend == true ? stipendReceiverText : ""
+                            });
+                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.SubmitDailyAttendance, DateTime.Now, requiredAttendance.practitionerData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(1));
+                        }
+                    }
+                }
+            //}
+            }
+
+        public async Task WeeklyCoachTraineesCheckReminderAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var traineeRepo = _repositoryFactory.CreateGenericRepository<Trainee>(userContext: adminId);
+            //find all practitioners that has not yet created planning for their classes after a month of having the class
+            var newTrainee = traineeRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7)).ToList();
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            foreach (var trainee in newTrainee)
+            {
+                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
+                var userToSend = await _userManager.FindByIdAsync(parentUserId);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(2));
             }
         }
 

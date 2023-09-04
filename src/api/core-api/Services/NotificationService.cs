@@ -37,10 +37,7 @@ namespace EcdLink.Api.CoreApi.Services
         2 - a messaglog entry is set with the protocols an dthe templates called
         3 - if its a hub or a push message - signalr is invoked
         4 - the TO can be a user or a role like practitioners/coach/principal etc
-         
          */
-
-
         public NotificationService(INotificationProviderFactory<ApplicationUser> notificationProviderFactory, 
             ISystemSetting<InvitationOptions> optionAccessor, 
             IHttpContextAccessor contextAccessor, 
@@ -62,7 +59,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task<List<MessageTemplate>> RetrieveTemplate(string template)
         {
-            return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template)).ToList();
+            return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).ToList();
         }
 
         public async Task<bool> NotificationExists(Notification notification)
@@ -97,12 +94,15 @@ namespace EcdLink.Api.CoreApi.Services
                             Id = Guid.NewGuid(),
                             MessageProtocol = item.Protocol,
                             Message = !string.IsNullOrWhiteSpace(message) ? message : templateItem.Message,
+                            Subject = templateItem.Subject,
                             MessageDate = messageDate,
                             FromUserId = Guid.Parse(_uId),
                             MessageTemplateType = item.TemplateType,
                             MessageTemplate = item,
                             To = (user != null ? user.Id : userType),
-                            Status = status
+                            Status = status,
+                            CTA = templateItem.CTA,
+                            CTAText = templateItem.CTAText,
                         };
                         if (messageEndDate != null)
                         {
@@ -173,7 +173,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             try
             {                
-               _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), FromUserId = notification.FromUserId, To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status, SentByUserId = notification.FromUserId });
+               _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), FromUserId = notification.FromUserId, To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status, SentByUserId = notification.FromUserId, CTA = notification.CTA, CTAText = notification.CTAText });
             } catch (Exception ex)
             {
                 throw ex;
@@ -208,6 +208,8 @@ namespace EcdLink.Api.CoreApi.Services
             //setup some basics on all messages
             string subject = template.Subject;
             string message = template.Message;
+            string ctaText = template.CTAText;
+            string cta = template.CTA;
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
@@ -227,10 +229,11 @@ namespace EcdLink.Api.CoreApi.Services
             {
                subject = subject.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
                message = message.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
-
+               ctaText = ctaText.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
+               cta = cta.Replace("[[" + replacement.FindValue + "]]", replacement.ReplacementValue);
             }
 
-            return new MessageTemplateText() { Message = message, Subject = subject };
+            return new MessageTemplateText() { Message = message, Subject = subject, CTAText = ctaText, CTA = cta };
         }
 
     }

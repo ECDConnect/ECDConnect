@@ -55,6 +55,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? StarterLicenceDate { get; set; }
         public string StipendType { get; set; }
         public bool? IsOnStipend { get; set; }
+
+        public Guid? CoachHierarchy { get; set; }
     }
 
     public interface TraineeIdJoin<TKey>

@@ -1,0 +1,1 @@
+ALTER TABLE public."Trainee" ADD "CoachHierarchy" uuid NULL;
