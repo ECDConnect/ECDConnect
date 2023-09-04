@@ -2396,6 +2396,7 @@ export type ContentTypeField = {
   contentType?: Maybe<ContentType>;
   contentTypeId: Scalars['Int'];
   dataLinkName?: Maybe<Scalars['String']>;
+  displayName?: Maybe<Scalars['String']>;
   fieldName?: Maybe<Scalars['String']>;
   fieldOrder: Scalars['Int'];
   fieldType?: Maybe<FieldType>;
@@ -2897,6 +2898,7 @@ export type FieldDefinitionModel = {
   __typename?: 'FieldDefinitionModel';
   assemblyDataTypeName?: Maybe<Scalars['String']>;
   dataType?: Maybe<Scalars['String']>;
+  displayName?: Maybe<Scalars['String']>;
   fieldTypeId: Scalars['Int'];
   graphDataTypeName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
@@ -14204,6 +14206,9 @@ export type TraineeOnBoardTimeline = {
   sSCoachVisitColor?: Maybe<Scalars['String']>;
   sSCoachVisitDate?: Maybe<Scalars['DateTime']>;
   sSCoachVisitDeadlineDate?: Maybe<Scalars['DateTime']>;
+  sSCoachVisitDone: Scalars['Boolean'];
+  sSCoachVisitEventId?: Maybe<Scalars['UUID']>;
+  sSCoachVisitId?: Maybe<Scalars['UUID']>;
   sSCoachVisitStatus?: Maybe<Scalars['String']>;
   signFranchiseeAgreementColor?: Maybe<Scalars['String']>;
   signFranchiseeAgreementDate?: Maybe<Scalars['DateTime']>;
