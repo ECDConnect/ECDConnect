@@ -65,7 +65,18 @@ namespace ECDLink.Abstractrions.Constants
         //coach notifications
         public const string CoachVisitsOverdue = "coach-visits-overdue";
         public const string CoachRemoveTrainee = "coach-remove-trainee";
+        public const string Trainee2WeekOnboardingWarning = "trainee-two-week-onboarding-warning";
         public const string NewClubleader = "new-clubleader";
+        public const string CoachNewTrainees = "coach-new-trainees";
+        public const string CoachVisitRequested = "coach-visit-requested";
+        public const string CoachAddresUpdatedScheduleVisit = "coach-address-updated-schedule-visit";
+        public const string CoachNewPractitionersLinked = "coach-new-practitioners-linked";
+        public const string CoachTraineeReadySmartspaceCheck = "coach-trainee-ready-smartspace-check";
+
+        //GG notifications
+        public const string GGWalkthroughNotification = "gg-walkthrough-notification";
+        public const string GGUploadRTHNotification = "gg-upload-rth";
+        public const string GGExpectedMomDeliveryDateApproaching = "gg-expected-moms-delivery-date-approaching";
 
 
     }

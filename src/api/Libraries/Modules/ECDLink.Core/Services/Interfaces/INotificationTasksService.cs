@@ -16,6 +16,7 @@ namespace ECDLink.Core.Services.Interfaces
         //other
         Task MonthlyStatementsReminderAsync();
         Task WeeklyAttendancesReminderAsync();
+        Task WeeklyCoachTraineesCheckReminderAsync();
         Task ProgressReportsReminderAsync();
         Task YearlyPreschoolFeeReminderAsync();
         Task MonthlyStartupSupportEndReminderAsync();

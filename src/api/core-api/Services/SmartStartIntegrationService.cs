@@ -636,11 +636,11 @@ public class SmartStartIntegrationService : IIntegrationService
         bool isComplete = false;
 
         _mappedEntities = await GetMappedEntities();
-        int trackingDays = 7;
+        int trackingDays = 2;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
         var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays)) ).ToList(); 
 
-        DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
+         DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
         DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
 
         foreach (var parent in attendancesDueList)
@@ -1016,6 +1016,10 @@ public class SmartStartIntegrationService : IIntegrationService
                                         //Create franchisee and map in SS system
                                         franchisee.localParentEntityId = coach.LocalId;
                                         newPractitioner = await MapFranchisee(franchisee);
+
+                                        //send notification to coach
+                                        var userToSend = await _userManager.FindByIdAsync(coach.UserId);
+                                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
                                     }
                                     else
                                     {
@@ -2241,6 +2245,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             SmartSpaceLicenceDate = entity.SmartSpaceLicenceDate,
                             StipendType = entity.StipendType,
                             IsOnStipend = entity.StipendType != null ? true : false,
+                            CoachHierarchy = Guid.Parse(entity.localParentEntityUserId),
                             //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage
                             //HighestEducationLevel = entity.HighestEducationLevel,
                             //StartDate

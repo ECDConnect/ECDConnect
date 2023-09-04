@@ -377,6 +377,21 @@ namespace ECDLink.Core.Services
             //}
             }
 
+        public async Task WeeklyCoachTraineesCheckReminderAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var traineeRepo = _repositoryFactory.CreateGenericRepository<Trainee>(userContext: adminId);
+            //find all practitioners that has not yet created planning for their classes after a month of having the class
+            var newTrainee = traineeRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7)).ToList();
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            foreach (var trainee in newTrainee)
+            {
+                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
+                var userToSend = await _userManager.FindByIdAsync(parentUserId);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(2));
+            }
+        }
+
 
 
     }
