@@ -110,13 +110,14 @@ export const OnboardingTraineeDashboard: React.FC<
     isOnStipend
   ).length;
 
-  const completedFlow = stepperCount - 2 === completedSteps?.length;
-
   useEffect(() => {
-    if (completedFlow) {
+    if (
+      (practitioner?.isOnStipend && completedSteps?.length === 7) ||
+      (practitioner?.isOnStipend !== true && completedSteps.length === 6)
+    ) {
       setShowSteps(false);
     }
-  }, [completedFlow]);
+  }, [completedSteps.length, practitioner?.isOnStipend]);
 
   const filteredUncompletedSteps = uncompletedSteps.filter(
     (item) =>
@@ -176,7 +177,9 @@ export const OnboardingTraineeDashboard: React.FC<
           type={'h2'}
           text={'Trainee onboarding'}
         />
-        {completedFlow && (
+        {((practitioner?.isOnStipend && completedSteps.length === 7) ||
+          (practitioner?.isOnStipend !== true &&
+            completedSteps.length === 6)) && (
           <>
             <div className="bg-successBg grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
               <div className="flex">
@@ -215,7 +218,9 @@ export const OnboardingTraineeDashboard: React.FC<
                 color="primary"
                 className="mt-4 mb-2 w-full"
                 onClick={() => {
-                  history.push(ROUTES.DASHBOARD, { isFromTraineeFlow: true });
+                  history.push(ROUTES.DASHBOARD, {
+                    isFromTraineeFlow: true,
+                  });
                   window.location.reload();
                 }}
               >
@@ -249,7 +254,9 @@ export const OnboardingTraineeDashboard: React.FC<
         )}
         {showSteps && (
           <>
-            {!completedFlow && (
+            {((practitioner?.isOnStipend && completedSteps?.length < 7) ||
+              (practitioner?.isOnStipend !== true &&
+                completedSteps.length < 6)) && (
               <StackedList
                 isFullHeight={false}
                 className={'flex flex-col gap-2'}

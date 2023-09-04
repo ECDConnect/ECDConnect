@@ -1,4 +1,10 @@
-import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  Card,
+  SliderPagination,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
 import { TooltipRenderProps } from 'react-joyride';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
@@ -6,6 +12,8 @@ import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 
 type TooltipProps = TooltipRenderProps & {
+  className?: string;
+  isLoading?: boolean;
   pollyInformationalSteps?: number[];
   pollyImpressedSteps?: number[];
   pollyTimeSteps?: number[];
@@ -15,6 +23,8 @@ type TooltipProps = TooltipRenderProps & {
 
 export function Tooltip({
   index,
+  className,
+  isLoading,
   isLastStep,
   primaryProps,
   size,
@@ -27,7 +37,10 @@ export function Tooltip({
   displayCloseButton,
 }: TooltipProps) {
   return (
-    <div {...tooltipProps} className={!isLastStep ? 'ml-5' : 'mr-1'}>
+    <div
+      {...tooltipProps}
+      className={classNames(className, !isLastStep ? 'ml-5' : 'mr-1')}
+    >
       <Card className="mt-auto rounded-2xl p-6">
         {step.content && (
           <div className="flex items-center gap-4 align-middle">
@@ -70,6 +83,8 @@ export function Tooltip({
           {!step.spotlightClicks && (
             <div {...primaryProps} className={'flex w-full justify-end'}>
               <Button
+                isLoading={isLoading}
+                disabled={isLoading}
                 type="filled"
                 color="primary"
                 textColor="white"

@@ -93,6 +93,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return attendance;
         }
 
+        public IEnumerable<Attendance> GetDailyAttendance(
+[Service] AttendanceTrackingRepository trackingRepository,
+string userId,
+DateTime attendanceDate)
+        {
+            var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
+              .Where(x => x.Year == attendanceDate.Year);
+
+            if (attendanceDate != null)
+            {
+                attendance = attendance.Where(x => x.AttendanceDate == attendanceDate);
+            }
+
+            if (attendance == null)
+            {
+                return Enumerable.Empty<Attendance>().AsQueryable();
+            }
+
+            return attendance;
+        }
+
 
         public async Task<Document> GetClassroomAttendanceReportPDFFile(
             [Service] IHttpContextAccessor contextAccessor,

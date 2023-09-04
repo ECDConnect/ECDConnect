@@ -1,4 +1,7 @@
-export const getJoyrideStyles = (hideBorder?: boolean) => ({
+export const getJoyrideStyles = (
+  hideBorder?: boolean,
+  hideArrow?: boolean
+) => ({
   spotlight: {
     borderWidth: hideBorder ? 0 : 4,
     borderRadius: 20,
@@ -7,6 +10,6 @@ export const getJoyrideStyles = (hideBorder?: boolean) => ({
     background: hideBorder ? 'transparent' : 'gray',
   },
   options: {
-    arrowColor: hideBorder ? 'transparent' : 'white',
+    arrowColor: hideBorder || hideArrow ? 'transparent' : 'white',
   },
 });

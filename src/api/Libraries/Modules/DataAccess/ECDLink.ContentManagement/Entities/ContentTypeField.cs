@@ -11,6 +11,7 @@ namespace ECDLink.ContentManagement.Entities
     {
         public int FieldOrder { get; set; }
         public string FieldName { get; set; }
+        public string DisplayName { get; set; }
 
         public int FieldTypeId { get; set; }
         

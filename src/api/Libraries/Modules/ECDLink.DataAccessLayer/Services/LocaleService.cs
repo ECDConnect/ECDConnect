@@ -35,6 +35,20 @@ namespace ECDLink.DataAccessLayer.Services
             return language;
         }
 
+        public Language GetLocaleById(Guid localeId)
+        {
+            if (!_cacheService.Exists(CacheKeyConstants.LocaleCache))
+            {
+                CacheLanguages();
+            }
+
+            var cache = _cacheService.GetCacheItem<IEnumerable<Language>>(CacheKeyConstants.LocaleCache);
+
+            var language = cache.Where(x => x.Id == localeId).FirstOrDefault();
+
+            return language;
+        }
+
         public IEnumerable<Language> GetAvailableLocale()
         {
             if (!_cacheService.Exists(CacheKeyConstants.LocaleCache))

@@ -1,19 +1,11 @@
 ﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.Abstractrions.Notifications.Message;
-using ECDLink.Core.Services.Interfaces;
-using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.Notifications.iTouch;
 using ECDLink.Notifications.Model;
-using ECDLink.Notifications.NoSms;
 using ECDLink.Notifications.Templates;
-using Microsoft.AspNetCore.DataProtection;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Net.Http;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -56,6 +48,17 @@ namespace ECDLink.Notifications.Sms
 
             return this;
         }
+
+        public INotificationProvider<ApplicationUser> SetMessageMapped(TemplateTypeEnum template, string subject, string message)
+        {
+            var messageTemplate = GetTemplate(template);
+            _message.MessageBody = message;
+
+            _messageTemplate = messageTemplate;
+
+            return this;
+        }
+
 
         virtual public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
         {

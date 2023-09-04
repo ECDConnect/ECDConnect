@@ -252,6 +252,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         user.practitionerObjectData = null;
                         user.principalObjectData = userData;
                     }
+                    else if (userData.IsTrainee.HasValue && userData.IsTrainee == true)
+                    {
+                        var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: user.Id);
+                        var traineeUserData = traineeRepo.GetByUserId(user.Id);
+                        user.practitionerObjectData = null;
+                        user.principalObjectData = null;
+                        user.traineeObjectData = traineeUserData;
+                    }
                     else
                     {
                         user.principalObjectData = null;

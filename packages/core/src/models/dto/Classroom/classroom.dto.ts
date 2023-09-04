@@ -19,4 +19,5 @@ export interface ClassroomDto extends EntityBase {
   attendance?: AttendanceDto[];
   classroomImageUrl?: string;
   classroomId?: string;
+  classSiteAddress?: string;
 }

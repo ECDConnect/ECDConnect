@@ -5,5 +5,17 @@ namespace ECDLink.Abstractrions.Constants
         public const string SMS = "sms";
 
         public const string EMAIL = "email";
+        public const string HUB = "hub";
+        public const string PUSH = "push";
+
+    }
+
+    public static class MessageStatusConstants
+    {
+        public const string Amber = "amber";
+        public const string Blue = "blue";
+        public const string Red = "red";
+        public const string Green = "green";
+
     }
 }

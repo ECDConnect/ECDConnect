@@ -1,5 +1,5 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { ClassroomDto, PractitionerDto } from '@ecdlink/core';
+import { ClassroomDto, PractitionerDto, SiteAddressDto } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -17,6 +17,7 @@ import {
   classroomsThunkActions,
 } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
+import { newGuid } from '@utils/common/uuid.utils';
 
 interface EditAdressProps {
   setShowEditAddress: (item: boolean) => void;
@@ -37,17 +38,22 @@ export const EditAddress: React.FC<EditAdressProps> = ({
 
   const changeSmartSpaceCheckAddress = async () => {
     const classroomCopy = { ...classroom };
+    const siteAddressId = classroomCopy.siteAddressId || newGuid();
 
-    classroomCopy.siteAddress = {
-      addressLine1: 'new street',
+    const siteAddress: SiteAddressDto = {
+      id: siteAddressId,
+      addressLine1: editedAddress || '',
     };
+    classroomCopy.siteAddress = siteAddress;
+    classroomCopy.siteAddressId = siteAddressId;
 
     if (classroomCopy.siteAddress) {
-      classroomCopy.siteAddress.addressLine1 = editedAddress;
       appDispatch(
-        classroomsActions.updateClassroom(classroomCopy as ClassroomDto)
+        classroomsActions.updateClassroomSiteAddress(
+          classroomCopy as ClassroomDto
+        )
       );
-      await appDispatch(classroomsThunkActions.upsertClassroom({}));
+      await appDispatch(classroomsThunkActions.upsertClassroomSiteAddress({}));
     }
   };
 
@@ -55,8 +61,12 @@ export const EditAddress: React.FC<EditAdressProps> = ({
     setShowMap(true);
   };
 
+  const handleCloseMap = () => {
+    setShowMap(false);
+  };
+
   return (
-    <div onClick={handleShowMap}>
+    <div>
       <BannerWrapper
         size="small"
         renderOverflow
@@ -66,7 +76,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
         className="p-4"
       >
         <Typography type="h2" color="textDark" text={'Programme address'} />
-        <div>
+        <div onClick={handleShowMap}>
           <FormInput
             label={'Where is your site located?'}
             nameProp={'programmeAddress'}
@@ -99,7 +109,7 @@ export const EditAddress: React.FC<EditAdressProps> = ({
       </div>
       <Dialog visible={showMap} position={DialogPosition.Bottom} stretch>
         <AddressMap
-          onClose={() => setShowMap?.(false)}
+          onClose={handleCloseMap}
           onSubmit={(address) => {
             console.log(address);
             setEditedAddress(address);

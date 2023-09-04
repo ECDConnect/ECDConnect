@@ -200,11 +200,11 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
   }, []);
 
   useEffect(() => {
-    if (questions.every((item) => item.answer !== false)) {
+    if (answer !== undefined) {
       return setEnableButton?.(true);
     }
     setEnableButton(false);
-  }, [questions]);
+  }, [answer]);
 
   return (
     <div className="p-4">
@@ -268,27 +268,27 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
             </div>
             <Typography type={'body'} text={'score'} color={'textDark'} />
           </div>
-          <div className="mt-2 space-y-4">
-            <div>
-              <div>
-                <Button
-                  type="filled"
-                  color="primary"
-                  className="mt-1 mb-2 w-full"
-                  onClick={() => {
-                    handleNextSection();
-                    saveSmartSpaceCheckData();
-                  }}
-                  disabled={!enableButton}
-                >
-                  {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-                  <Typography type={'help'} text={'Next'} color={'white'} />
-                </Button>
-              </div>
-            </div>
-          </div>
         </div>
       )}
+      <div className="mt-2 space-y-4">
+        <div>
+          <div>
+            <Button
+              type="filled"
+              color="primary"
+              className="mt-1 mb-2 w-full"
+              onClick={() => {
+                handleNextSection();
+                saveSmartSpaceCheckData();
+              }}
+              disabled={!enableButton}
+            >
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography type={'help'} text={'Next'} color={'white'} />
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

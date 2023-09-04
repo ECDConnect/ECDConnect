@@ -83,7 +83,7 @@ namespace ECDLink.SmartStart.Services
             var learners = _dbContext.Learners
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
-                            .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId);
+                            .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId && l.User.IsActive);
             return learners.ToList();
         }
 

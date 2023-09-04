@@ -19,9 +19,10 @@ import { timelineSteps } from './timeline-steps';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
+import { OverdueSteps } from './components/overdue-steps/overdue-steps';
 
 interface OnboardingTraineeDashboardProps {
-  setNotificationStep: any;
+  setNotificationStep: (notificationStep: string, options?: any) => void;
   setIsSmartChecklist?: any;
   practitioner?: PractitionerDto;
 }
@@ -38,18 +39,19 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const [showSteps, setShowSteps] = useState(true);
+  const [showOverdueSteps, setShowOverdueSteps] = useState(false);
 
-  const onView = async (notificationStep: string) => {
+  const onView = async (notificationStep: string, options: any) => {
     if (notificationStep === 'Fill in the SmartSpace checklist') {
       setIsSmartChecklist(true);
     }
 
-    setNotificationStep(notificationStep);
+    setNotificationStep(notificationStep, options);
   };
 
   const uncompletedSteps = timelineSteps(
     timeline!,
-    () => {},
+    (a, b) => onView(a, b),
     false,
     isOnline,
     // @ts-ignore
@@ -60,20 +62,31 @@ export const OnboardingTraineeDashboard: React.FC<
     (item) =>
       item?.type !== 'completed' &&
       item?.type !== 'inProgress' &&
-      item?.title !== 'SmartSpace visit from coach' &&
+      !(
+        item?.title === 'SmartSpace visit from coach' && !item?.extraData?.date
+      ) &&
       item?.title !== 'SmartSpace Licence'
   );
 
-  const extradataTimeValue = Object.values(uncompletedSteps?.[0]?.extraData!);
+  const checkOverdueDate = (date?: Date | null) => {
+    if (!date) return 0;
+    return differenceInDays(new Date(), date);
+  };
 
-  const checkOverdueDate = differenceInDays(
-    new Date(),
-    new Date(extradataTimeValue[0] as Date)
-  );
+  const overdueSteps = timelineSteps(
+    timeline!,
+    (a, b) => onView(a, b),
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined,
+    '',
+    isOnStipend
+  ).filter((item) => item?.subTitleColor === 'alertMain');
 
   const completedSteps = timelineSteps(
     timeline!,
-    () => {},
+    (a, b) => onView(a, b),
     false,
     isOnline,
     // @ts-ignore
@@ -84,7 +97,7 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const stepperCount = timelineSteps(
     timeline!,
-    () => {},
+    (a, b) => onView(a, b),
     false,
     isOnline,
     // @ts-ignore
@@ -95,7 +108,6 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const filteredUncompletedSteps = uncompletedSteps.filter(
     (item) =>
-      item?.title !== 'SmartSpace visit from coach' &&
       item?.title !== 'SmartSpace Licence' &&
       item?.title !== 'Consolidation meeting scheduled'
   );
@@ -105,19 +117,52 @@ export const OnboardingTraineeDashboard: React.FC<
   const notificationItem: MenuListDataItem[] = [
     {
       showIcon: true,
-      menuIcon: checkOverdueDate > 0 ? 'ExclamationIcon' : 'PencilAltIcon',
+      menuIcon:
+        checkOverdueDate(nextStep?.extraData?.date) > 0
+          ? 'ExclamationIcon'
+          : 'PencilAltIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
-      title: filteredUncompletedSteps?.[0]?.title,
+      title: nextStep?.title,
       titleStyle: 'text-textDark semibold',
       subTitle:
-        checkOverdueDate > 0
-          ? `${String(checkOverdueDate)} days overdue`
+        checkOverdueDate(nextStep?.extraData?.date) > 0
+          ? `${String(
+              checkOverdueDate(nextStep?.extraData?.date)
+            )} days overdue`
+          : nextStep?.subTitle,
+      subTitleStyle: 'text-textMid',
+      iconBackgroundColor:
+        checkOverdueDate(nextStep?.extraData?.date) > 0
+          ? 'alertMain'
+          : 'primary',
+      backgroundColor:
+        checkOverdueDate(nextStep?.extraData?.date) > 0 ? 'alertBg' : 'uiBg',
+      onActionClick: nextStep?.actionButtonOnClick,
+    },
+  ];
+
+  const overdueStepsNotificationItem: MenuListDataItem[] = [
+    {
+      showIcon: true,
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'border-0',
+      iconColor: 'white',
+      title: `${overdueSteps?.length} onboarding steps overdue`,
+      titleStyle: 'text-textDark semibold',
+      subTitle:
+        checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0
+          ? `${String(
+              checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date)
+            )} days overdue`
           : filteredUncompletedSteps?.[0]?.subTitle,
       subTitleStyle: 'text-textMid',
-      iconBackgroundColor: checkOverdueDate > 0 ? 'alertMain' : 'primary',
-      backgroundColor: checkOverdueDate > 0 ? 'alertBg' : 'uiBg',
-      onActionClick: () => setNotificationStep(nextStep?.title),
+      iconBackgroundColor:
+        checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0
+          ? 'alertMain'
+          : 'primary',
+      backgroundColor: 'uiBg',
+      onActionClick: () => setShowOverdueSteps(true),
     },
   ];
 
@@ -126,8 +171,11 @@ export const OnboardingTraineeDashboard: React.FC<
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Business'}
-      subTitle={today}
+      title={'Trainee Onboarding'}
+      subTitle={
+        practitioner?.user?.fullName ||
+        `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`
+      }
       color={'primary'}
       onBack={() => history.goBack()}
       displayOffline={!isOnline}
@@ -135,6 +183,16 @@ export const OnboardingTraineeDashboard: React.FC<
       className="h-screen"
     >
       <div className="h-screen p-4">
+        {overdueSteps?.length > 0 && (
+          <div className="pt-2 pb-6">
+            <StackedList
+              isFullHeight={false}
+              className={'flex flex-col gap-2'}
+              listItems={overdueStepsNotificationItem}
+              type={'MenuList'}
+            />
+          </div>
+        )}
         {showSteps && (
           <>
             {nextStep && (
@@ -143,6 +201,11 @@ export const OnboardingTraineeDashboard: React.FC<
                 className={'flex flex-col gap-2'}
                 listItems={notificationItem}
                 type={'MenuList'}
+                onClickItem={
+                  notificationItem.length > 0
+                    ? notificationItem[0].onActionClick
+                    : undefined
+                }
               />
             )}
 
@@ -150,7 +213,7 @@ export const OnboardingTraineeDashboard: React.FC<
               <Steps
                 items={timelineSteps(
                   timeline,
-                  (a) => onView(a),
+                  (a, b) => onView(a, b),
                   false,
                   isOnline,
                   // @ts-ignore
@@ -189,6 +252,17 @@ export const OnboardingTraineeDashboard: React.FC<
           </>
         )}
       </div>
+      <Dialog
+        fullScreen
+        visible={showOverdueSteps}
+        position={DialogPosition.Full}
+      >
+        <OverdueSteps
+          overdueSteps={overdueSteps}
+          practitioner={practitioner}
+          setShowOverdueSteps={setShowOverdueSteps}
+        />
+      </Dialog>
     </BannerWrapper>
   );
 };

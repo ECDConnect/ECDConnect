@@ -4,7 +4,6 @@ using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Licenses;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -13,6 +12,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using NPOI.POIFS.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
-        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
 
         private UserLicenseManager _userLicenseManager;
 
@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
-            _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+            _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
         }
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
@@ -313,7 +313,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return true;
         }
 
-        public Boolean EditVisitData(CMSVisitDataInputModel input)
+        public bool EditVisitData(CMSVisitDataInputModel input)
         {
             if (input.VisitData.Sections == null)
             {
@@ -358,7 +358,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return true;
         }
 
-        private VisitData GetVisitDataFromInputModel(CMSQuestion input, String visitId, String visitName, String visitSection)
+        private VisitData GetVisitDataFromInputModel(CMSQuestion input, string visitId, string visitName, string visitSection)
         {
             if (input == null)
             {
@@ -470,43 +470,62 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return status;
         }
-        public PQARating GetPractitionerPQARating(Visit pqaVisit)
+        public PQARating CalculateAndSavePractitionerPQARating(Visit pqaVisit)
         {
             int totalSections = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
                                 Constants.SSSettings.step6_total + Constants.SSSettings.step7_total + Constants.SSSettings.step8_total;
             var totalScores = 0.0;
-            var rating = new PQARating();
+
+            // Check if we have a rating
+            var rating = _pqaRatingRepo.GetAll().FirstOrDefault(x => x.VisitId == pqaVisit.Id);
+            var isNewRating = false;
+            if (rating == null)
+            {
+                isNewRating = true;
+                rating = new PQARating() { Id = Guid.NewGuid() };
+            }
 
             if (pqaVisit != null) {
 
                 rating.VisitTypeName = pqaVisit.VisitType.Name;
-                rating.LinkedVisitId = pqaVisit.LinkedVisitId.ToString();
-                rating.Children = new List<PQARatingChild>();
-                List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == pqaVisit.Id).ToList();
+                rating.LinkedVisitId = pqaVisit.LinkedVisitId;
+                rating.VisitId = pqaVisit.Id;
+
+                if (rating.Sections == null)
+                {
+                    rating.Sections = new List<PQASectionRating>();
+                }
+
+                var vData = _visitDataRepo.GetAll().Where(y => y.VisitId == pqaVisit.Id).ToList();
                 double step5Score = -1;
 
                 if (vData.Count > 0)
                 {
-                    List<VisitData> step2 = vData.Where(x => x.VisitSection == Constants.SSSettings.step2_section).ToList();
-                    List<VisitData> step3 = vData.Where(x => x.VisitSection == Constants.SSSettings.step3_section && x.Question == Constants.SSSettings.step3_q1).ToList();
-                    List<VisitData> step4 = vData.Where(x => x.VisitSection == Constants.SSSettings.step4_section && x.Question != Constants.SSSettings.step3_q1).ToList();
-                    List<VisitData> step5 = vData.Where(x => x.VisitSection == Constants.SSSettings.step5_section).ToList();
-                    List<VisitData> step6 = vData.Where(x => x.VisitSection == Constants.SSSettings.step6_section).ToList();
-                    List<VisitData> step7 = vData.Where(x => x.VisitSection == Constants.SSSettings.step7_section).ToList();
-                    List<VisitData> step8 = vData.Where(x => x.VisitSection == Constants.SSSettings.step8_section).ToList();
+                    var step2 = vData.Where(x => x.VisitSection == Constants.SSSettings.step2_section).ToList();
+                    var step3 = vData.Where(x => x.VisitSection == Constants.SSSettings.step3_section && x.Question == Constants.SSSettings.step3_q1).ToList();
+                    var step4 = vData.Where(x => x.VisitSection == Constants.SSSettings.step4_section && x.Question != Constants.SSSettings.step3_q1).ToList();
+                    var step5 = vData.Where(x => x.VisitSection == Constants.SSSettings.step5_section).ToList();
+                    var step6 = vData.Where(x => x.VisitSection == Constants.SSSettings.step6_section).ToList();
+                    var step7 = vData.Where(x => x.VisitSection == Constants.SSSettings.step7_section).ToList();
+                    var step8 = vData.Where(x => x.VisitSection == Constants.SSSettings.step8_section).ToList();
 
                     if (step2.Count > 0)
                     {
                         rating.VisitName = step2.GetItemByIndex(0).VisitName;
-                        rating.PlannedDate = step2.GetItemByIndex(0).Visit.PlannedVisitDate;
-                        rating.ActualVisitDate = step2.GetItemByIndex(0).Visit.ActualVisitDate;
+                        //rating.PlannedDate = step2.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        //rating.ActualVisitDate = step2.GetItemByIndex(0).Visit.ActualVisitDate;
 
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == step2.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = step2.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getScoreForSection(step2);
+                        child.SectionScore = GetScoreForSection(step2);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step2_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step2_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
 
                     }
@@ -514,45 +533,60 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (step3.Count > 0)
                     {
                         rating.VisitName = step3.GetItemByIndex(0).VisitName;
-                        rating.PlannedDate = step3.GetItemByIndex(0).Visit.PlannedVisitDate;
-                        rating.ActualVisitDate = step3.GetItemByIndex(0).Visit.ActualVisitDate;
+                        //rating.PlannedDate = step3.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        //rating.ActualVisitDate = step3.GetItemByIndex(0).Visit.ActualVisitDate;
 
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == step3.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = step3.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getScoreForSection(step3);
+                        child.SectionScore = GetScoreForSection(step3);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step3_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStep3RatingColor(child.SectionScore);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
 
                     if (step4.Count > 0)
                     {
                         rating.VisitName = step4.GetItemByIndex(0).VisitName;
-                        rating.PlannedDate = step4.GetItemByIndex(0).Visit.PlannedVisitDate;
-                        rating.ActualVisitDate = step4.GetItemByIndex(0).Visit.ActualVisitDate;
+                        //rating.PlannedDate = step4.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        //rating.ActualVisitDate = step4.GetItemByIndex(0).Visit.ActualVisitDate;
 
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == step4.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = step4.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getScoreForSection(step4);
+                        child.SectionScore = GetScoreForSection(step4);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step4_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step4_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
 
                     if (step5.Count > 0)
                     {
                         rating.VisitName = step5.GetItemByIndex(0).VisitName;
-                        rating.PlannedDate = step5.GetItemByIndex(0).Visit.PlannedVisitDate;
-                        rating.ActualVisitDate = step5.GetItemByIndex(0).Visit.ActualVisitDate;
+                        //rating.PlannedDate = step5.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        //rating.ActualVisitDate = step5.GetItemByIndex(0).Visit.ActualVisitDate;
 
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == step5.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = step5.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getScoreForSection(step5);
+                        child.SectionScore = GetScoreForSection(step5);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step5_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step5_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                         step5Score = child.SectionScore;
                     }
@@ -560,45 +594,60 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (step6.Count > 0)
                     {
                         rating.VisitName = step6.GetItemByIndex(0).VisitName;
-                        rating.PlannedDate = step6.GetItemByIndex(0).Visit.PlannedVisitDate;
-                        rating.ActualVisitDate = step6.GetItemByIndex(0).Visit.ActualVisitDate;
+                        //rating.PlannedDate = step6.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        //rating.ActualVisitDate = step6.GetItemByIndex(0).Visit.ActualVisitDate;
 
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == step6.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = step6.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getScoreForSection(step6);
+                        child.SectionScore = GetScoreForSection(step6);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step6_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step6_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
 
                     if (step7.Count > 0)
                     {
                         rating.VisitName = step7.GetItemByIndex(0).VisitName;
-                        rating.PlannedDate = step7.GetItemByIndex(0).Visit.PlannedVisitDate;
-                        rating.ActualVisitDate = step7.GetItemByIndex(0).Visit.ActualVisitDate;
+                        //rating.PlannedDate = step7.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        //rating.ActualVisitDate = step7.GetItemByIndex(0).Visit.ActualVisitDate;
 
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == step7.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = step7.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getScoreForSection(step7);
+                        child.SectionScore = GetScoreForSection(step7);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step7_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step7_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
 
                     if (step8.Count > 0)
                     {
                         rating.VisitName = step8.GetItemByIndex(0).VisitName;
-                        rating.PlannedDate = step8.GetItemByIndex(0).Visit.PlannedVisitDate;
-                        rating.ActualVisitDate = step8.GetItemByIndex(0).Visit.ActualVisitDate;
+                        //rating.PlannedDate = step8.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        //rating.ActualVisitDate = step8.GetItemByIndex(0).Visit.ActualVisitDate;
 
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == step8.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = step8.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getScoreForSection(step8);
+                        child.SectionScore = GetScoreForSection(step8);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.step8_total;
                         child.SectionRatingColor = _visitDataStatusManager_practitioner.GetStepRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.step8_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
 
@@ -652,12 +701,34 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
+            // Save or update the rating
+            if (isNewRating)
+            {
+                _pqaRatingRepo.Insert(rating);
+            }
+            else
+            {
+                _pqaRatingRepo.Update(rating);
+            }
+
+            if (pqaVisit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+            {
+                pqaVisit.Rating = rating.OverallRatingColor;
+                _visitRepo.Update(pqaVisit);
+            }
             return rating;
         }
         
-        public PQARating GetPractitionerReAccreditationRating(Visit RAVisit) {
-
-            PQARating rating = new PQARating();
+        public PQARating CalculateAndSaveReAccreditationRating(Visit RAVisit) 
+        {
+            // Check if we have a rating
+            var rating = _pqaRatingRepo.GetAll().FirstOrDefault(x => x.VisitId == RAVisit.Id);
+            var isNewRating = false;
+            if (rating == null)
+            {
+                isNewRating = true;
+                rating = new PQARating() { Id = Guid.NewGuid() };
+            }
 
             int totalSections = Constants.SSSettings.re_accreditation_A_total + Constants.SSSettings.re_accreditation_B_total +
                                 Constants.SSSettings.re_accreditation_C_total + Constants.SSSettings.re_accreditation_D_total;
@@ -666,67 +737,92 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (RAVisit != null)
             {
                 rating.VisitTypeName = RAVisit.VisitType.Name;
-                rating.LinkedVisitId = RAVisit.LinkedVisitId.ToString();
-                rating.Children = new List<PQARatingChild>();
+                rating.LinkedVisitId = RAVisit.LinkedVisitId;
+                rating.VisitId = RAVisit.Id;
 
-                List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == RAVisit.Id).ToList();
+                if (rating.Sections == null)
+                {
+                    rating.Sections = new List<PQASectionRating>();
+                }
+
+                var vData = _visitDataRepo.GetAll().Where(y => y.VisitId == RAVisit.Id).ToList();
 
                 if (vData.Count > 0)
                 {
-                    List<VisitData> stepA = vData.Where(x => x.VisitSection == Constants.SSSettings.step_8_section).ToList();
-                    List<VisitData> stepB = vData.Where(x => x.VisitSection == Constants.SSSettings.step_10_section).ToList();
-                    List<VisitData> stepC = vData.Where(x => x.VisitSection == Constants.SSSettings.step_11_section).ToList();
-                    List<VisitData> stepD = vData.Where(x => x.VisitSection == Constants.SSSettings.step_12_section).ToList();
+                    var stepA = vData.Where(x => x.VisitSection == Constants.SSSettings.step_8_section).ToList();
+                    var stepB = vData.Where(x => x.VisitSection == Constants.SSSettings.step_10_section).ToList();
+                    var stepC = vData.Where(x => x.VisitSection == Constants.SSSettings.step_11_section).ToList();
+                    var stepD = vData.Where(x => x.VisitSection == Constants.SSSettings.step_12_section).ToList();
 
                     // Section A
                     if (stepA.Count > 0)
                     {
                         rating.VisitName = stepA.GetItemByIndex(0).VisitName;
-                        rating.PlannedDate = stepA.GetItemByIndex(0).Visit.PlannedVisitDate;
-                        rating.ActualVisitDate = stepA.GetItemByIndex(0).Visit.ActualVisitDate;
+                        //rating.PlannedDate = stepA.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        //rating.ActualVisitDate = stepA.GetItemByIndex(0).Visit.ActualVisitDate;
 
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == stepA.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = stepA.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getCheckBoxScore(stepA);
+                        child.SectionScore = GetCheckBoxScore(stepA);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_A_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_A_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
 
                     // Section B
                     if (stepB.Count > 0)
                     {
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == stepB.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = stepB.GetItemByIndex(0).VisitSection;
                         child.SectionScore = stepB.Select(x => Int32.Parse(x.QuestionAnswer)).Sum();
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_B_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_B_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
 
                     // Section C
                     if (stepC.Count > 0)
                     {
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == stepC.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = stepC.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getCheckBoxScore(stepC);
+                        child.SectionScore = GetCheckBoxScore(stepC);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_C_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_C_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
 
                     // Section D
                     if (stepD.Count > 0)
                     {
-                        var child = new PQARatingChild();
+                        var child = rating.Sections.FirstOrDefault(x => x.VisitSection == stepD.GetItemByIndex(0).VisitSection) ?? new PQASectionRating();
                         child.VisitSection = stepD.GetItemByIndex(0).VisitSection;
-                        child.SectionScore = getCheckBoxScore(stepD);
+                        child.SectionScore = GetCheckBoxScore(stepD);
                         child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_D_total;
                         child.SectionRatingColor = GetSectionRatingColor(((double)child.SectionScore / (double)Constants.SSSettings.re_accreditation_D_total) * 100);
-                        rating.Children.Add(child);
+                        if (child.Id == Guid.Empty)
+                        {
+                            child.Id = Guid.NewGuid();
+                            child.PQARatingId = rating.Id;
+                            rating.Sections.Add(child);
+                        }
                         totalScores += child.SectionScore;
                     }
                 }
@@ -781,9 +877,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
+            // Save or update the rating
+            if (isNewRating)
+            {
+                _pqaRatingRepo.Insert(rating);
+            }
+            else
+            {
+                _pqaRatingRepo.Update(rating);
+            }
+
+            if (RAVisit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
+            {
+                RAVisit.Rating = rating.OverallRatingColor;
+                _visitRepo.Update(RAVisit);
+            }
+            
             return rating;
         }
-        private int getScoreForSection(List<VisitData> records)
+        
+        private int GetScoreForSection(List<VisitData> records)
         {
             int score = 0;
             foreach (VisitData record in records)
@@ -815,7 +928,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return score;
         }
-        private int getCheckBoxScore(List<VisitData> records)
+       
+        private int GetCheckBoxScore(List<VisitData> records)
         {
             int score = 0;
 
