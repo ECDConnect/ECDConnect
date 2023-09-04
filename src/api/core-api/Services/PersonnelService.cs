@@ -550,29 +550,29 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
             visits = visits.OrderBy(x => x.InsertedDate).ToList();
 
-            var pre_pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2).ToList();
-            var pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
-            var reaccreditation_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
-            var support_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
-            var requested_coach_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
-            var self_assessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
-            var self_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
+            var prePqaVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2).ToList();
+            var pqaVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
+            var reaccreditationVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
+            var supportVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
+            var requestedCoachVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
+            var selfAssessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
+            List<Visit> selfVisits = new List<Visit>();
 
-            foreach (Visit visit in pqa_visits)
+            foreach (Visit visit in pqaVisits)
             {
                 var pqaRating = pqaRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating(); // New PQA rating is just temp, since the DB is missing entries for old PQAs
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
                 visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
             }
 
-            foreach (Visit visit in reaccreditation_visits)
+            foreach (Visit visit in reaccreditationVisits)
             {
                 var pqaRating = accreditationRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating();
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
                 visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
             }
 
-            foreach (Visit visit in pre_pqa_visits)
+            foreach (Visit visit in prePqaVisits)
             {
                 if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
                 {
@@ -609,29 +609,29 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // do not return any pqa visits if the pre pqa visits are not done.
             // first pqa visit is created when SmartSpace licence is received + 3 months
-            var pre_pqa_visits_completed = pre_pqa_visits.Where(x => x.Attended == false).FirstOrDefault();
-            if (pre_pqa_visits_completed != null)
+            var prePqaVisitsCompleted = prePqaVisits.Where(x => x.Attended == false).FirstOrDefault();
+            if (prePqaVisitsCompleted != null)
             {
-                pqa_visits = new List<Visit>();
-                reaccreditation_visits = new List<Visit>();
+                pqaVisits = new List<Visit>();
+                reaccreditationVisits = new List<Visit>();
             }
 
             // Self Assessment
-            if (self_assessments.Count > 0)
+            if (selfAssessments.Count > 0)
             {
                 // Only include a self assessment if the linked visit is not completed
-                foreach (var item in self_assessments)
+                foreach (var item in selfAssessments)
                 {
                     Visit linkedVisit = visits.Where(x => x.Id == item.LinkedVisitId).FirstOrDefault();
                     if (linkedVisit != null && linkedVisit.Attended == false)
                     {
-                        self_visits.Add(item);
+                        selfVisits.Add(item);
                     }
                 }
 
-                if (self_visits.Count > 0)
+                if (selfVisits.Count > 0)
                 {
-                    Visit selfVisit = self_visits.OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                    Visit selfVisit = selfVisits.OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
 
                     timeline.SelfAssessmentStatus = Constants.SSSettings.self_assessment;
                     timeline.SelfAssessmentColor = MetricsColorEnum.Success.ToString();
@@ -649,12 +649,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.CoachCircles = attendance;
             }
 
-            timeline.PrePQASiteVisits = pre_pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.PQASiteVisits = pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.SupportVisits = support_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.ReAccreditationVisits = reaccreditation_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.RequestedCoachVisits = requested_coach_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.SelfAssessmentVisits = self_visits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.PrePQASiteVisits = prePqaVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.PQASiteVisits = pqaVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.SupportVisits = supportVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.ReAccreditationVisits = reaccreditationVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.RequestedCoachVisits = requestedCoachVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.SelfAssessmentVisits = selfVisits.OrderBy(x => x.PlannedVisitDate).ToList();
 
             return timeline;
         }
