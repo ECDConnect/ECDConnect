@@ -110,6 +110,7 @@ namespace ECDLink.ContentManagement.Repositories
                 {
                     FieldTypeId = x.FieldTypeId,
                     Name = x.FieldName,
+                    DisplayName = x.DisplayName,
                     AssemblyDataTypeName = x.FieldType.AssemblyDataType,
                     DataType = x.FieldType.DataType,
                     GraphDataTypeName = GetFieldType(x)

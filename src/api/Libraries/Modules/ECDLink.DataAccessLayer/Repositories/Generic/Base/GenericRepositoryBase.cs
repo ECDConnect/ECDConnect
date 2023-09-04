@@ -128,7 +128,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual IEnumerable<T> InsertMany(IEnumerable<T> entityList)
         {
             if (entityList == null || !entityList.Any())
-                throw new ArgumentNullException("entity");
+                return entityList;
 
             //Populate Audit records
             if (typeof(ITrackableType).IsAssignableFrom(typeof(T))
@@ -282,8 +282,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                             }
                         }
                     }
-                    
-                    auditInsertRepo.InsertMany(changesList);
+
+                    if (changesList.Count > 0)
+                    {
+                        auditInsertRepo.InsertMany(changesList);
+                    }
                     break;
             }
             return isValidChange;

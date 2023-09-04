@@ -4,7 +4,6 @@ import {
   Alert,
   Button,
   Card,
-  CheckboxGroup,
   Colours,
   Divider,
   FormInput,
@@ -14,6 +13,7 @@ import {
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
+import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -44,6 +44,33 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
 }) => {
   const [enableButton, setEnableButton] = useState(false);
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const visitData1Completed = useSelector(
+    traineeSelectors.getCoachSmartSpaceSection1VisitDataCount
+  );
+  const visitData2Completed = useSelector(
+    traineeSelectors.getCoachSmartSpaceSection2VisitDataCount
+  );
+
+  const coachSmartSpaceVisit1DataNotAttendedStandards = useSelector(
+    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandards
+  );
+  const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
+    coachSmartSpaceVisit1DataNotAttendedStandards?.length! > 0
+      ? coachSmartSpaceVisit1DataNotAttendedStandards?.map((item: any) => {
+          return item?.question;
+        })
+      : [];
+
+  const coachSmartSpaceVisit2DataNotAttendedStandards = useSelector(
+    traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
+  );
+  const coachSmartSpaceVisit2DataNotAttendedStandardsFormatted =
+    coachSmartSpaceVisit2DataNotAttendedStandards?.length! > 0
+      ? coachSmartSpaceVisit2DataNotAttendedStandards?.map((item: any) => {
+          return item?.question;
+        })
+      : [];
+
   const question =
     'Together with the SmartStarter, agree on what next steps can be taken and note them here:';
   const [questions, setAnswers] = useState([
@@ -55,6 +82,11 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   ]);
 
   const visitSection = `Discuss next steps`;
+  const allStandardsAttended = useMemo(
+    () =>
+      Number(visitData1Completed) === 17 && Number(visitData2Completed) === 5,
+    [visitData1Completed, visitData2Completed]
+  );
 
   useEffect(() => {
     const previousData = questions.map((item) => {
@@ -119,23 +151,61 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
       />
       <Divider dividerType="dashed" className={'my-4'} />
 
-      <Card className="bg-uiBg rounded-2xl p-4">
-        <Typography
-          type={'body'}
-          weight="bold"
-          text={`${practitioner?.user?.firstName}'s venue meets all the basic SmartSpace standards. They are working towards these additional standards:`}
-          color={'textDark'}
-          className={'my-3'}
+      {(Number(visitData1Completed) < 17 ||
+        visitData1Completed === undefined) && (
+        <Alert
+          className={'mt-5 mb-3'}
+          title={`You cannot issue ${practitioner?.user?.firstName}'s SmartSpace Licence.`}
+          list={coachSmartSpaceVisit1DataNotAttendedStandardsFormatted || []}
+          type={'warning'}
         />
-        <Typography
-          type={'body'}
-          text={`• The outside area is clean, with no litter or animal faeces.
-            • There is a list of emergency numbers visible on the wall.`}
-          color={'textMid'}
-          className={'my-3'}
-        />
-      </Card>
+      )}
 
+      {(Number(visitData2Completed) < 5 || !visitData2Completed) && (
+        <Card className="bg-uiBg rounded-2xl p-4">
+          <Typography
+            type={'body'}
+            weight="bold"
+            text={`${practitioner?.user?.firstName}'s venue meets all the basic SmartSpace standards. They are working towards these additional standards:`}
+            color={'textDark'}
+            className={'my-3'}
+          />
+          {coachSmartSpaceVisit2DataNotAttendedStandardsFormatted?.map(
+            (item) => {
+              return (
+                <Typography
+                  type={'body'}
+                  text={`• ${item}`}
+                  color={'textMid'}
+                  className={'my-3'}
+                />
+              );
+            }
+          )}
+        </Card>
+      )}
+
+      {allStandardsAttended && (
+        <div>
+          <div className="bg-successMain mt-4 flex flex-row flex-nowrap items-center rounded-lg p-4">
+            <div className="rounded-full p-4">
+              <img
+                className={'h-14 w-32'}
+                src={PositiveBonusEmoticon}
+                alt="complete"
+              />
+            </div>
+            <div>
+              <Typography
+                className={'w-full p-2'}
+                type={'body'}
+                color={'white'}
+                text={`${practitioner?.user?.firstName}’s venue meets all the basic SmartSpace standards as well as the additional standards!`}
+              />
+            </div>
+          </div>
+        </div>
+      )}
       <FormInput
         className="mt-4"
         textInputType="textarea"
@@ -144,6 +214,19 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         value={questions[0].answer}
         onChange={onChange}
       />
+
+      {(Number(visitData1Completed) < 17 ||
+        visitData1Completed === undefined) && (
+        <Alert
+          className={'mt-5 mb-3'}
+          title={`You cannot issue ${practitioner?.user?.firstName}'s SmartSpace Licence.`}
+          list={[
+            `Discuss ways that ${practitioner?.user?.firstName} can prepare for the next SmartSpace visit.`,
+            `Schedule a follow-up visit with Nothando.`,
+          ]}
+          type={'error'}
+        />
+      )}
 
       <div className="mt-2 space-y-4">
         <div>
@@ -156,7 +239,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton}
+              disabled={!enableButton || Number(visitData1Completed) < 17}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

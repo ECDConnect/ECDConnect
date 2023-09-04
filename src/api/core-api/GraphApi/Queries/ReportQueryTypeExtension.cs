@@ -1210,6 +1210,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var clubMeetingRegisterRepo = repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: uId);
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
+            var pqaRatingRepo = repoFactory.CreateGenericRepository<PQARating>(userContext: uId);
 
             var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
             var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
@@ -1284,7 +1285,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         continue;
                     }
 
-                    var pqaRating1 = firstPqaVisit != null ? visitDataManager.GetPractitionerPQARating(firstPqaVisit) : new PQARating();
+                    var pqaRating1 = firstPqaVisit != null ? pqaRatingRepo.GetAll().FirstOrDefault(x => x.VisitId == firstPqaVisit.Id) ?? new PQARating() : new PQARating();
 
                     if ((new[] { pqaRating1 }).Count(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()) >= 2)
                     {
@@ -1301,7 +1302,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region NOT REGISTERED ON FUNDA APP
-                if (!practitioner.IsRegistered.HasValue || practitioner.IsRegistered.Value == false)
+                if (
+                    // If they are a trainee, check if they have logged in
+                    (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value && practitioner.User.LastSeen == DateTime.MinValue) 
+                    // If they are a practitioner, check is registered
+                    || ((!practitioner.IsTrainee.HasValue || !practitioner.IsTrainee.Value) && (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)))
                 {
                     notification.Subject = "Not registered on Funda App";
                     notification.Icon = MetricsIconEnum.Error.ToString();

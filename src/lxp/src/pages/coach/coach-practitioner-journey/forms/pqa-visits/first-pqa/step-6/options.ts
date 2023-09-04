@@ -23,7 +23,7 @@ export const options: Options = {
   ],
   question5: [
     '0 - Adults told children how to carry out activities or use materials and did not let them make choices or do things for themselves.',
-    '1 - Adults sometimes encouraged children to mak their own choices and to do things for themselves (such as put on their shoes or pour watr).',
+    '1 - Adults sometimes encouraged children to make their own choices and to do things for themselves (such as put on their shoes or pour water).',
     '2 - Adults often encouraged children to make choices about how to use materials and carry out activities.  Adults allowed children to do thing for themselves where developmentally appropriate.',
   ],
 };

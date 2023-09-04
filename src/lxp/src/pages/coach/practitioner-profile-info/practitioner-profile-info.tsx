@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
-import { useSnackbar, useTheme } from '@ecdlink/core';
+import { PractitionerDto, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -26,10 +26,7 @@ import { RemovePractioner } from './components/remove-practitioner/remove-practi
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { authSelectors } from '@store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
@@ -57,10 +54,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     useState<any>();
   const isTrainee = practitioner?.isTrainee;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-
-  const timelineStepsCompleted = timeline
-    ? Object.values(timeline)?.filter((item) => item === 'Success')
-    : [];
 
   const isOnStipend = practitioner?.isOnStipend;
   const traineeVisits = timeline?.traineeVisits;
@@ -221,8 +214,8 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       title: 'Trainee onboarding',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: isOnStipend
-        ? `${timelineStepsCompleted.length} of 9 steps completed`
-        : `${timelineStepsCompleted.length} of 8 steps completed`,
+        ? `${completedSteps?.length} of 9 steps completed`
+        : `${completedSteps?.length} of 8 steps completed`,
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'BadgeCheckIcon',

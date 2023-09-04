@@ -66,6 +66,7 @@ namespace ECDLink.ContentManagement.Configuration.Setup
                     {
                         FieldOrder = field.Order,
                         FieldName = field.Name.FirstCharToLowerCase(),
+                        DisplayName = field.Name,
                         FieldTypeId = matchingField.Id,
                         DataLinkName = field?.dataLink ?? string.Empty,
                         IsActive = true

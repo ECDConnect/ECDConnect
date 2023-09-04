@@ -3,6 +3,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -18,8 +19,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
            string section, 
            string locale)
         {
-            var language = localeService.GetLocale(locale);
-            return contentRepo.GetByValueKey("MoreInformation", "section", section, language.Id);
+            Guid languageId;
+            if (Guid.TryParse(locale, out languageId))
+            {
+                languageId = localeService.GetLocaleById(languageId)?.Id ?? Guid.Empty;
+            } else
+            {
+                languageId = localeService.GetLocale(locale)?.Id ?? Guid.Empty;
+            }
+            
+            return contentRepo.GetByValueKey("MoreInformation", "section", section, languageId);
         }
     }
 }

@@ -1,13 +1,17 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -19,6 +23,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using NPOI.Util;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -43,9 +48,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
-        private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<Coach, Guid> _coachRepo;
+        private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
+
+
+        private IGenericRepository<CalendarEventParticipant, Guid> _calendarEventParticipantRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -53,7 +61,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private UserManager<ApplicationUser> _userManager;
         private IReassignmentService _reassignmentService;
         private HierarchyEngine _hierarchyEngine;
-
+        private INotificationService _notificationService;
+        private IClubService _clubService;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -63,12 +72,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             VisitManager visitManager,
             UserLicenseManager userLicenseManager,
             [Service] IReassignmentService reassignmentService,
+            [Service] INotificationService notificationService,
+            [Service] IClubService clubService,
             UserManager<ApplicationUser> userManager,
             [Service] HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : null;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
@@ -81,9 +92,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
-            _clubMeetingRegisterRepo = _repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
+            _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
+            _calendarEventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -91,6 +103,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _reassignmentService = reassignmentService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
+            _notificationService = notificationService;
+            _clubService = clubService;
         }
 
 
@@ -329,6 +343,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var user = _userManager.FindByIdAsync(userId).Result;
                 _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
                 _userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "principalOrFAA",
+                    ReplacementValue = "Principal"
+                });
+                var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = classroom.Name
+                });
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+
+
             }
             return practitionerToPromote;
         }
@@ -357,6 +387,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var user = _userManager.FindByIdAsync(userId).Result;
                 _userManager.RemoveFromRoleAsync(user, Roles.PRINCIPAL);
                 _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
+
+                //send notifications that user has been demoted
+                List<TagsReplacements> replacements = new List<TagsReplacements>();
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "principalOrFAA",
+                    ReplacementValue = "Principal"
+                });
+
+                var classroom = GetClassroomDetailsForPractitioner(practitionerToDemote.UserId);
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = classroom.Name
+                });
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.DemotedFromPrincipalOrFAA, DateTime.Now, practitionerToDemote.User, null, MessageStatusConstants.Amber, replacements);
             }
 
             return practitionerToDemote;
@@ -413,27 +459,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             Trainee trainee = _traineeRepo.GetByUserId(userId);
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
+            Coach coach = _coachRepo.GetByUserId(practitioner.CoachHierarchy.ToString());
             PractitionerTimeline timeline = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
             // PQA Visits --------------------------
             List<Visit> allPqaVisits = _visitManager.GetPQAVisitsForPractitioner(userId);
             // Get rating for each visit for display in front-end
-            List<PQARating> _pqaRatings = new List<PQARating>();
-            foreach (Visit visit in allPqaVisits)
-            {
-                _pqaRatings.Add(_visitDataManager.GetPractitionerPQARating(visit));
-            }
-            timeline.PQARatings = _pqaRatings;
+            var pqaRatings = _pqaRatingRepo.GetAll().Where(x => allPqaVisits.Select(y  => y.Id).Contains(x.VisitId)).ToList();            
+            timeline.PQARatings = pqaRatings;
 
             // Re-accreditation --------------------------
             List<Visit> allAccreditationVisits = _visitManager.GetReAccreditationVisitsForPractitioner(userId);
-            List<PQARating> _accredRatings = new List<PQARating>();
-            foreach (Visit visit in allAccreditationVisits)
-            {
-                _accredRatings.Add(_visitDataManager.GetPractitionerReAccreditationRating(visit));
-            }
-            timeline.ReAccreditationRatings = _accredRatings;
+            var accreditationRatings = _pqaRatingRepo.GetAll().Where(x => allAccreditationVisits.Select(y => y.Id).Contains(x.VisitId)).ToList();
+            timeline.ReAccreditationRatings = accreditationRatings;
 
             // Starter license received
             License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
@@ -507,35 +546,33 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.ChildProgressTrainingStatus = Constants.SSSettings.child_progress_training;
             timeline.ChildProgressTrainingColor = practitioner.AttendedChildProgress == true ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
 
-            // Club meetings
-            timeline.ClubMeetings = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id).ToList();
-
             // PQA visits
             List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
             visits = visits.OrderBy(x => x.InsertedDate).ToList();
 
-            List<Visit> pre_pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2).ToList();
-            List<Visit> pqa_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
-            List<Visit> reaccreditation_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
-            List<Visit> support_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
-            List<Visit> requested_coach_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
-            List<Visit> self_visits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
+            var prePqaVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2).ToList();
+            var pqaVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
+            var reaccreditationVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
+            var supportVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
+            var requestedCoachVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
+            var selfAssessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
+            List<Visit> selfVisits = new List<Visit>();
 
-            foreach (Visit visit in pqa_visits)
+            foreach (Visit visit in pqaVisits)
             {
-                PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(visit);
+                var pqaRating = pqaRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating(); // New PQA rating is just temp, since the DB is missing entries for old PQAs
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
                 visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
             }
 
-            foreach (Visit visit in reaccreditation_visits)
+            foreach (Visit visit in reaccreditationVisits)
             {
-                PQARating pqaRating = _visitDataManager.GetPractitionerReAccreditationRating(visit);
+                var pqaRating = accreditationRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating();
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
                 visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
             }
 
-            foreach (Visit visit in pre_pqa_visits)
+            foreach (Visit visit in prePqaVisits)
             {
                 if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
                 {
@@ -572,29 +609,52 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // do not return any pqa visits if the pre pqa visits are not done.
             // first pqa visit is created when SmartSpace licence is received + 3 months
-            var pre_pqa_visits_completed = pre_pqa_visits.Where(x => x.Attended == false).FirstOrDefault();
-            if (pre_pqa_visits_completed != null)
+            var prePqaVisitsCompleted = prePqaVisits.Where(x => x.Attended == false).FirstOrDefault();
+            if (prePqaVisitsCompleted != null)
             {
-                pqa_visits = new List<Visit>();
-                reaccreditation_visits = new List<Visit>();
+                pqaVisits = new List<Visit>();
+                reaccreditationVisits = new List<Visit>();
             }
 
             // Self Assessment
-            if (self_visits.Count > 0)
+            if (selfAssessments.Count > 0)
             {
-                Visit selfVisit = self_visits.OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+                // Only include a self assessment if the linked visit is not completed
+                foreach (var item in selfAssessments)
+                {
+                    Visit linkedVisit = visits.Where(x => x.Id == item.LinkedVisitId).FirstOrDefault();
+                    if (linkedVisit != null && linkedVisit.Attended == false)
+                    {
+                        selfVisits.Add(item);
+                    }
+                }
 
-                timeline.SelfAssessmentStatus = Constants.SSSettings.self_assessment;
-                timeline.SelfAssessmentColor = MetricsColorEnum.Success.ToString();
-                timeline.SelfAssessmentDate = selfVisit?.ActualVisitDate;
+                if (selfVisits.Count > 0)
+                {
+                    Visit selfVisit = selfVisits.OrderBy(x => x.PlannedVisitDate).FirstOrDefault();
+
+                    timeline.SelfAssessmentStatus = Constants.SSSettings.self_assessment;
+                    timeline.SelfAssessmentColor = MetricsColorEnum.Success.ToString();
+                    timeline.SelfAssessmentDate = selfVisit?.ActualVisitDate;
+                }
             }
 
-            timeline.PrePQASiteVisits = pre_pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.PQASiteVisits = pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.SupportVisits = support_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.ReAccreditationVisits = reaccreditation_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.RequestedCoachVisits = requested_coach_visits.OrderBy(x => x.PlannedVisitDate).ToList();
-            timeline.SelfAssessmentVisits = self_visits.OrderBy(x => x.PlannedVisitDate).ToList();
+            // Coach Circles
+            // get all attendance for practitioner
+            PractitionerAttendance attendance = _clubService.GetPractitionerAttendance(practitioner.Id, today, Constants.CoachingCircleSettings.meeting_type_coach_circle);
+            if (attendance.MeetingRegister != null && attendance.MeetingRegister.Count > 0)
+            {
+                // coach circle color application
+                attendance.AttendanceColor = attendance.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
+                timeline.CoachCircles = attendance;
+            }
+
+            timeline.PrePQASiteVisits = prePqaVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.PQASiteVisits = pqaVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.SupportVisits = supportVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.ReAccreditationVisits = reaccreditationVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.RequestedCoachVisits = requestedCoachVisits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.SelfAssessmentVisits = selfVisits.OrderBy(x => x.PlannedVisitDate).ToList();
 
             return timeline;
         }
@@ -749,11 +809,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Visit visit = _visitManager.GetVisitForUserForType(trainee?.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
             if (visit != null)
             {
-                if (visit.Attended == false)
-                {
-                    visit = _visitDataManager.MarkChecklistVisitStatus(visit.Id);
-                }
-
                 if (visit?.Attended == true)
                 {
                     timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
@@ -786,9 +841,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Visit coachVisit = _visitManager.GetVisitForUserForType(trainee?.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_trainee_visit);
             if (coachVisit != null)
             {
-                timeline.SSCoachVisitStatus = Constants.SSSettings.coach_visit;
-                timeline.SSCoachVisitColor = MetricsColorEnum.Success.ToString();
+                timeline.SSCoachVisitStatus =  Constants.SSSettings.coach_visit;
+                timeline.SSCoachVisitColor = coachVisit.ActualVisitDate.HasValue && coachVisit.Attended ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.None.ToString();
                 timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
+                timeline.SSCoachVisitDeadlineDate = coachVisit.PlannedVisitDate;
+                timeline.SSCoachVisitId = coachVisit.Id;
+                timeline.SSCoachVisitDone = coachVisit.ActualVisitDate.HasValue && coachVisit.Attended;
+                timeline.SSCoachVisitEventId = coachVisit.EventId;
             }
             // SSCoachVisit deadline date 
             // SmartSpace visit from coach = date when steps 1 though 6 are complete + 7 days (in future, this will also link to calendar functionality)
@@ -820,7 +879,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 {
                     var latestDate = dates.OrderDescending().First();
                     latestDate = latestDate.AddDays(7);
-                    timeline.SSCoachVisitDeadlineDate = latestDate;
                     Coach coach = _coachRepo.GetByUserId(trainee?.Practitioner.CoachHierarchy.ToString());
 
                     VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
@@ -832,7 +890,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     input.TraineeId = trainee?.Id;
                     input.PlannedVisitDate = Convert.ToDateTime(latestDate, CultureInfo.InvariantCulture);
 
-                    _visitManager.AddVisitForCoach(input);
+                    coachVisit = _visitManager.AddVisitForCoach(input);
+                    timeline.SSCoachVisitStatus = Constants.SSSettings.coach_visit;
+                    timeline.SSCoachVisitColor = MetricsColorEnum.None.ToString();
+                    timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
+                    timeline.SSCoachVisitDeadlineDate = coachVisit.PlannedVisitDate;
+                    timeline.SSCoachVisitId = coachVisit.Id;
+                    timeline.SSCoachVisitDone = false;
+                    timeline.SSCoachVisitEventId = null;
                 }
             }
                 

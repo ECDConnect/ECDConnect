@@ -15,6 +15,7 @@ interface DropDownInfo {
 }
 
 export interface SearchDropDownProps<T> extends ComponentBaseProps {
+  id?: string;
   placeholder?: string;
   label?: string;
   disabled?: boolean;
@@ -31,6 +32,7 @@ export interface SearchDropDownProps<T> extends ComponentBaseProps {
 }
 
 export function SearchDropDown<T>({
+  id,
   placeholder,
   label,
   disabled,
@@ -142,6 +144,7 @@ export function SearchDropDown<T>({
         {({ open }) => (
           <>
             <Menu.Button
+              id={id}
               className={classNames(
                 className,
                 styles.getButtonStyles(color, open, hasSelectedValue(), touched)

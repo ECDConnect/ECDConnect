@@ -260,7 +260,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 IsSouthAfricanCitizen = false,
                 VerifiedByHomeAffairs = false,
                 IsActive = true,
-                LastSeen = DateTime.Now,
+                //LastSeen = DateTime.Now,
                 IsImported = false
             };
         }

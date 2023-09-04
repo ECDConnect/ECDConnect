@@ -58,7 +58,6 @@ export function Theme() {
         DefaultTheme.mainHeadingOverrideFontUrl;
       initialThemeColours.darkBackground = DefaultTheme.darkBackground;
     }
-    console.log(initialThemeColours.darkBackground);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [DefaultTheme]);
 

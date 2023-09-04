@@ -11,7 +11,13 @@ import {
   LoadingSpinner,
 } from '@ecdlink/ui';
 import { intervalToDuration } from 'date-fns';
-import { useDialog, getAvatarColor, MotherDto, InfantDto } from '@ecdlink/core';
+import {
+  useDialog,
+  getAvatarColor,
+  MotherDto,
+  InfantDto,
+  getStringFromClassNameOrId,
+} from '@ecdlink/core';
 import { IconInformationIndicator } from '@/components/icon-information-indicator/icon-information-indicator';
 import * as styles from './client-list.styles';
 import { useSelector } from 'react-redux';
@@ -57,6 +63,9 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getCaregiverClientsSelector } from '@/store/caregiver/caregiver.selectors';
 import { MotherActions } from '@/store/mother/mother.actions';
 import { InfantActions } from '@/store/infant/infant.actions';
+import { clientSteps } from './walkthrough/steps';
+import { multipleClientsSteps } from './walkthrough/steps_multiple_clients';
+import { useWalkthrough } from '@/context/walkthroughContext';
 
 export const useClientProfileDialog = () => {
   const history = useHistory();
@@ -171,6 +180,8 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     'infants',
     InfantActions.GET_INFANTS
   );
+
+  const { isWalkthroughSession } = useWalkthrough();
 
   const { isOnline } = useOnlineStatus();
 
@@ -409,7 +420,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   return (
     <div className={styles.overlay}>
       <SearchHeader<UserAlertListDataItem>
-        id="walkthrough-dashboard-client-multi-step-4"
+        id={getStringFromClassNameOrId(multipleClientsSteps[1].target)}
         searchItems={filteredList}
         onSearchChange={setSearch}
         isTextSearchActive={searchTextActive}
@@ -417,22 +428,20 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
         onSearchButtonClick={() => setSearchTextActive(true)}
         className="flex gap-2 overflow-auto"
       >
-        <div id="walkthrough-dashboard-client-multi-step-1">
-          <SearchDropDown<string>
-            displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 '}
-            overlayTopOffset={'120'}
-            options={clientTypeOptions}
-            selectedOptions={clientType}
-            onChange={onClientTypeChange}
-            placeholder={'Client type'}
-            color={'secondary'}
-            info={{
-              name: `Filter by: Client type`,
-            }}
-          />
-        </div>
-        <div id="walkthrough-dashboard-client-multi-step-2"></div>
+        <SearchDropDown<string>
+          id={getStringFromClassNameOrId(multipleClientsSteps[0].target)}
+          displayMenuOverlay={true}
+          menuItemClassName={'w-11/12 left-4 '}
+          overlayTopOffset={'120'}
+          options={clientTypeOptions}
+          selectedOptions={clientType}
+          onChange={onClientTypeChange}
+          placeholder={'Client type'}
+          color={'secondary'}
+          info={{
+            name: `Filter by: Client type`,
+          }}
+        />
         {clientType[0]?.value !== clientTypeOptions[0].value && (
           <SearchDropDown<string>
             displayMenuOverlay={true}
@@ -478,16 +487,20 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           />
         )}
         {filteredList.length > 0 && (
-          <div id="walkthrough-dashboard-client-step-2">
+          <div id={getStringFromClassNameOrId(clientSteps[1].target)}>
             <StackedList
               className={styles.stackedList}
-              listItems={filteredList || []}
+              listItems={
+                isWalkthroughSession
+                  ? filteredList.slice(0, 4)
+                  : filteredList || []
+              }
               type={'UserAlertList'}
             />
           </div>
         )}
         <FADButton
-          id="walkthrough-dashboard-client-multi-step-5"
+          id={getStringFromClassNameOrId(multipleClientsSteps[2].target)}
           title={'Open a folder'}
           icon={'PlusIcon'}
           iconDirection={'left'}

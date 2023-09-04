@@ -69,16 +69,23 @@ export const getStepType = (
   }
 };
 
-export const getStepDate = (date?: string) =>
-  !!date ? `By ${new Date(date).toLocaleDateString('en-ZA', dateOptions)}` : '';
+export const getStepDate = (date?: string, visitEventId?: string) =>
+  !!date
+    ? `${!!visitEventId ? 'Scheduled' : 'By'} ${new Date(
+        date
+      ).toLocaleDateString('en-ZA', dateOptions)}`
+    : '';
 
 export const setStep = (
   status?: Maybe<string>,
   date?: string,
   color?: Maybe<string>,
   onView?: (text: string) => void,
-  nextStep?: string
-) => {
+  nextStep?: string,
+  visitEventId?: string
+): StepItem<{
+  date?: Date | null;
+}> => {
   const lincenceReceveid = 'Starter Licence received';
   const smartSpaceLincenceReceveid = 'SmartSpace Licence received';
   const register3Children = 'Register 3 children';
@@ -105,9 +112,12 @@ export const setStep = (
   if (!!status) {
     return {
       title: status,
-      subTitle: getStepDate(date),
+      subTitle: getStepDate(date, visitEventId),
       inProgressStepIcon:
         (status === 'Consolidation meeting scheduled' && 'CalendarIcon') ||
+        (status === 'Smartspace visit from coach' &&
+          !!visitEventId &&
+          'CalendarIcon') ||
         ((color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon'),
       subTitleColor:
         new Date(date!) < new Date() && color?.toLowerCase() !== 'success'
@@ -124,17 +134,30 @@ export const setStep = (
         status !== register3Children
           ? true
           : false,
-      actionButtonText: stepCompleted ? 'View' : 'Schedule',
-      actionButtonTextColor: stepCompleted ? 'secondary' : 'primary',
+      actionButtonText: stepCompleted
+        ? 'View'
+        : !!visitEventId
+        ? 'Start'
+        : 'Schedule',
+      actionButtonTextColor: stepCompleted
+        ? 'secondary'
+        : !!visitEventId
+        ? 'white'
+        : 'primary',
       actionButtonColor: stepCompleted ? 'secondaryAccent2' : 'primary',
-      actionButtonIcon: stepCompleted ? '' : 'CalendarIcon',
+      actionButtonIcon: stepCompleted
+        ? ''
+        : !!visitEventId
+        ? 'ArrowCircleRightIcon'
+        : 'CalendarIcon',
       actionButtonOnClick: onView,
-      actionButtonType: stepCompleted ? 'filled' : 'outlined',
-      actionButtonIconStartPosition: stepCompleted ? false : true,
+      actionButtonType: stepCompleted || !!visitEventId ? 'filled' : 'outlined',
+      actionButtonIconStartPosition:
+        stepCompleted || !!visitEventId ? false : true,
       actionButtonClassName: stepCompleted
         ? ''
         : 'w-full whitespace-nowrap p-2 mt-2',
-    } as StepItem;
+    } as StepItem<{ date?: Date | null }>;
   }
 
   return {
@@ -146,18 +169,20 @@ export const setStep = (
     completedStepIcon: status === 'Community support gained' && 'ThumbUpIcon',
     type: getStepType(color).type,
     extraData: { date: date ? new Date(date) : null },
-  } as StepItem;
+  } as StepItem<{ date?: Date | null }>;
 };
 
 export const timelineSteps = (
   timeline: TraineeOnBoardTimeline,
-  onView: (notificationStep: string) => void,
+  onView: (notificationStep: string, options?: any) => void,
   isLoading: boolean,
   isOnline: boolean,
   visits?: Maybe<Visit>[],
   nextStep?: string,
   isOnStipend?: boolean
-): StepItem[] => {
+): StepItem<{
+  date?: Date;
+}>[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
 
   steps.push(
@@ -212,8 +237,14 @@ export const timelineSteps = (
       timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',
       timeline?.sSCoachVisitDate || timeline?.sSCoachVisitDeadlineDate,
       timeline?.sSCoachVisitColor,
-      () => onView('SmartSpace visit from coach'),
-      nextStep
+      () =>
+        onView('SmartSpace visit from coach', {
+          visitEventId: (timeline.sSCoachVisitEventId as string) || '',
+          plannedVisitDate: (timeline.sSCoachVisitDate as string) || '',
+          visitId: (timeline.sSCoachVisitId as string) || '',
+        }),
+      nextStep,
+      timeline?.sSCoachVisitEventId
     )
   );
   steps.push(

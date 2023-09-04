@@ -35,6 +35,9 @@ export const CoachTraineeFranchisorAgreement: React.FC<
   const appDispatch = useAppDispatch();
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
   const practitioner = location.state.practitioner;
+  const coachSmartSpaceVisit2DataNotAttendedStandards = useSelector(
+    traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
+  );
 
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
@@ -95,6 +98,9 @@ export const CoachTraineeFranchisorAgreement: React.FC<
             practitioner={practitioner}
             setSectionQuestions={setSectionQuestions}
             submitCoachFranchisorAgreement={submitCoachFranchisorAgreement}
+            coachSmartSpaceVisit2DataNotAttendedStandards={
+              coachSmartSpaceVisit2DataNotAttendedStandards
+            }
           />
         );
     }

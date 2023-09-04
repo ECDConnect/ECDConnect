@@ -3,13 +3,14 @@ import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
-import { getRatingData } from '../utils';
+import { getRatingData, sortVisits } from '../utils';
 import { visitTypes } from '../../coach-practitioner-journey.types';
 import { ScheduleProps, dateOptions } from '../timeline-steps';
 
 interface PQAVisitsProps {
   isLoading: boolean;
   currentVisit: Maybe<Visit>;
+  pQASiteVisits: Maybe<Visit>[];
   practitionerId: string;
   isOnline: boolean;
   onStart: (visitName: string) => void;
@@ -21,6 +22,7 @@ export const newPqaVisitId = 'new-pqa-visit';
 
 export const PQAVisits = ({
   currentVisit,
+  pQASiteVisits,
   practitionerId,
   onStart,
   onScheduleOrStart,
@@ -33,9 +35,7 @@ export const PQAVisits = ({
     (item) => item?.attended
   );
 
-  const nextPqaVisit = timeline?.pQASiteVisits
-    ?.filter((item) => !item?.attended)
-    .shift();
+  const nextPqaVisit = pQASiteVisits?.filter((item) => !item?.attended).shift();
 
   const pqaRatings =
     timeline?.pQARatings?.filter(
@@ -46,36 +46,23 @@ export const PQAVisits = ({
   const pqaRating2 = pqaRatings?.[1];
   const pqaRating3 = pqaRatings?.[2];
 
-  const isFirstVisit = timeline?.pQASiteVisits?.length === 1;
+  const isFirstVisit = pQASiteVisits?.length === 1;
 
-  const mergedVisits = timeline?.pQASiteVisits
+  const mergedVisits = pQASiteVisits
     ? [
         ...(isFirstVisit
-          ? timeline.pQASiteVisits
-          : timeline.pQASiteVisits.filter((item) => item?.attended)),
+          ? pQASiteVisits
+          : pQASiteVisits.filter((item) => item?.attended)),
         ...(!isFirstVisit && nextPqaVisit ? [nextPqaVisit] : []),
       ]
     : [];
 
-  const sortedVisits = mergedVisits.sort((a, b) => {
-    if (!a?.attended && !b?.attended) {
-      return 0;
-    } else if (!a?.attended) {
-      return 1;
-    } else if (!b?.attended) {
-      return -1;
-    }
-
-    return (
-      new Date(a.actualVisitDate).getTime() -
-      new Date(b.actualVisitDate).getTime()
-    );
-  });
+  const sortedVisits = sortVisits(mergedVisits);
 
   const getVisitRating = (item: Maybe<Visit>) => {
-    if (item?.id === pqaRating3?.linkedVisitId) {
+    if (item?.id === pqaRating3?.visitId) {
       return pqaRating3;
-    } else if (item?.id === pqaRating2?.linkedVisitId) {
+    } else if (item?.id === pqaRating2?.visitId) {
       return pqaRating2;
     } else {
       return pqaRating1;
