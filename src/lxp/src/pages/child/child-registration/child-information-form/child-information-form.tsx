@@ -40,6 +40,9 @@ import { calculateFullAge } from '@utils/common/date.utils';
 import * as styles from './child-information-form.styles';
 import { ChildInformationFormProps } from './child-information-form.types';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useLocation } from 'react-router';
+import { PractitionerChildRegisterState } from '../../practitioner-child-registration/types';
+import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 
 export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   childInformation,
@@ -61,6 +64,10 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   const [alerts, setAlerts] = useState<AlertProps[]>();
 
+  const location = useLocation<PractitionerChildRegisterState>();
+
+  const practitionerIdFromCoachView = location?.state?.practitionerId;
+
   const [provideReason, setProvideReason] = useState(false);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const allClassroomGroups = useSelector(
@@ -69,24 +76,57 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   const reasons = useSelector(
     staticDataSelectors.getProgrammeAttendanceReasons
   );
+  const allPractitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitionersForPrincipal = allPractitioners?.filter(
+    (item) => item.principalHierarchy === practitionerIdFromCoachView
+  );
+  const classroomsByPractitionersForPrincipal = allClassroomGroups.filter(
+    (item) =>
+      practitionersForPrincipal?.some(
+        (practitioner) => practitioner.userId === item.userId
+      )
+  );
+  const classroomsForPractitioner = allClassroomGroups.filter((item) => {
+    return practitionerIdFromCoachView
+      ? item.userId === practitionerIdFromCoachView
+      : item;
+  });
+
+  const classroomsForPrincipal = [
+    ...classroomsForPractitioner,
+    ...classroomsByPractitionersForPrincipal,
+  ];
+
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     DropDownOption<string>[]
   >([]);
 
-  const classroomsForPractitioner = useSelector(
+  const classroomsForPractitionerFromPractitionerFlow = useSelector(
     classroomsSelectors.getClassroom
   );
   const [
     classroomsForPractitionerAnyType,
     setClassroomsForPractitionerAnyType,
   ] = useState<any>([]);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+
+  const practitionerFromCoachView = useSelector(
+    getPractitionerByUserId(practitionerIdFromCoachView || '')
+  );
+
+  const practitionerFromPractitionerView = useSelector(
+    practitionerSelectors.getPractitioner
+  );
+
+  const practitioner =
+    practitionerFromPractitionerView || practitionerFromCoachView;
 
   useEffect(() => {
-    if (classroomsForPractitioner) {
-      setClassroomsForPractitionerAnyType([classroomsForPractitioner]);
+    if (classroomsForPractitionerFromPractitionerFlow) {
+      setClassroomsForPractitionerAnyType([
+        classroomsForPractitionerFromPractitionerFlow,
+      ]);
     }
-  }, [classroomsForPractitioner]);
+  }, [classroomsForPractitionerFromPractitionerFlow]);
 
   const {
     getValues: getChildInformationFormValues,
@@ -146,6 +186,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   useEffect(() => {
     if (
+      !practitionerIdFromCoachView &&
       practitioner?.isPrincipal !== true &&
       classroomsForPractitionerAnyType.length > 0
     ) {
@@ -162,12 +203,18 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
     if (classroomGroups.length > 0) {
       const groupedItems: DropDownOption<string>[] = [];
 
-      allClassroomGroups.forEach((groupedItem) => {
+      const currentClassroomGroups =
+        practitionerIdFromCoachView && practitioner?.isPrincipal
+          ? classroomsForPrincipal
+          : classroomsForPractitioner;
+
+      currentClassroomGroups.forEach((groupedItem) => {
         groupedItems.push({
           label: groupedItem.name,
           value: groupedItem.id ?? '',
         });
       });
+
       setUpdatedPlaygroups(groupedItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
