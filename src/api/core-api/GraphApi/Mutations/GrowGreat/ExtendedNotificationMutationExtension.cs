@@ -78,5 +78,132 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGExpectedMomDeliveryDateApproaching, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(1));
         }
 
+        public async Task<bool> SendGGRedAlertMaternalDistressNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string clientFirstName)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "ClientFirstName",
+                ReplacementValue = clientFirstName
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGRedAlertMaternalDistress, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+        }
+        public async Task<bool> SendGGChildMUACNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string childFirstName)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "childFirstName",
+                ReplacementValue = childFirstName
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildMUAC, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+        }
+        public async Task<bool> SendGGChildGrowthIssueNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string childFirstName)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "childFirstName",
+                ReplacementValue = childFirstName
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildGrowthIssue, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+        }
+
+        public async Task<bool> SendGGMultipleReferralsNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string clientFirstName, string noOfReferrals)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>(){
+                new TagsReplacements()
+            {
+                FindValue = "ClientFirstName",
+                ReplacementValue = clientFirstName
+            },new TagsReplacements()
+            {
+                FindValue = "NoOfReferrals",
+                ReplacementValue = noOfReferrals
+            } };
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGMultipleReferrals, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(1));
+        }
+
+        public async Task<bool> SendGGVisitOverdueNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string clientFirstName, string noOfReferrals)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>(){
+                new TagsReplacements()
+                {
+                    FindValue = "ClientFirstName",
+                    ReplacementValue = clientFirstName
+                } 
+            };
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGVisitOverdue, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements);
+        }
+
+        public async Task<bool> SendGGReferralDangerSignsNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string firstName, string dangerSignsList)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>(){
+                new TagsReplacements()
+            {
+                FindValue = "FirstName",
+                ReplacementValue = firstName
+            },new TagsReplacements()
+            {
+                FindValue = "DangerSignsList",
+                ReplacementValue = dangerSignsList
+            } };
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGReferralDangerSigns, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
+        }
+
+        public async Task<bool> SendGGTwoVisitsMissedNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string childFirstName, string clientFirstName)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>(){
+                new TagsReplacements()
+            {
+                FindValue = "ChildFirstName",
+                ReplacementValue = childFirstName
+            },new TagsReplacements()
+            {
+                FindValue = "ClientFirstName",
+                ReplacementValue = clientFirstName
+            } };
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTwoVisitsMissed, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
+        }
+
+        public async Task<bool> SendGGChildOlderThanFiveNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string childFirstName, string removalDate)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>(){
+                new TagsReplacements()
+            {
+                FindValue = "ChildFirstName",
+                ReplacementValue = childFirstName
+            },new TagsReplacements()
+            {
+                FindValue = "RemovalDate",
+                ReplacementValue = removalDate
+            } };
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGChildOlderThanFive, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+
     }
 }

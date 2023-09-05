@@ -77,6 +77,15 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGWalkthroughNotification = "gg-walkthrough-notification";
         public const string GGUploadRTHNotification = "gg-upload-rth";
         public const string GGExpectedMomDeliveryDateApproaching = "gg-expected-moms-delivery-date-approaching";
+        public const string GGRedAlertMaternalDistress = "gg-redalert-maternal-distress";
+
+        public const string GGVisitOverdue = "gg-visit-overdue";
+        public const string GGChildMUAC = "gg-child-muac";
+        public const string GGChildGrowthIssue = "gg-child-growth-issue"; 
+        public const string GGMultipleReferrals = "gg-multiple-referrals";
+        public const string GGReferralDangerSigns = "gg-referral-danger-signs";
+        public const string GGTwoVisitsMissed = "gg-two-visits-missed";
+        public const string GGChildOlderThanFive = "gg-child-older-than-five";
 
 
     }
