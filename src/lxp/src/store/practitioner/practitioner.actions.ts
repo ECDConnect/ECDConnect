@@ -1,4 +1,11 @@
-import { PractitionerDto } from '@ecdlink/core';
+import {
+  BalanceSheetDto,
+  ExpensesStatementsDto,
+  ExpensesStatementsTypes,
+  IncomeStatementsDto,
+  PractitionerDto,
+  ReportTableDataDto,
+} from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
@@ -10,6 +17,8 @@ import {
   LicenseModelInput,
   NotificationDisplay,
 } from '@ecdlink/graphql';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
@@ -18,6 +27,12 @@ export const PractitionerActions = {
   DELICENSE_PRACTITIONER: 'delicensePractitioner',
   UPDATE_PRACTITIONER_USEPHOTOINPROGRESS:
     'updatePractitionerUsePhotoInProgress',
+  GET_ALL_STATEMENTS_BALANCE_SHEET_FOR_PRACTITIONER:
+    'getAllStatementsBalanceSheetForPractitioner',
+  GET_ALL_EXPENSES_FOR_PRACTITIONER: 'getAllExpensesForPractitioner',
+  GET_ALL_INCOME_FOR_PRACTITIONER: 'getAllIncomeForPractitioner',
+  GET_INCOME_EXPENSES_PDF_REPORT_FOR_PRACTITIONER:
+    'getIncomeExpensesPDFreportForPractitioner',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -344,6 +359,140 @@ export const updatePractitionerUsePhotoInReport = createAsyncThunk<
           userAuth.auth_token
         ).UpdatePractitionerUsePhotoInReport(id, input.usePhotoInReport || '');
       }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllStatementsBalanceSheetForPractitioner = createAsyncThunk<
+  BalanceSheetDto[],
+  { userId: string; year: Number; month: Number | undefined },
+  ThunkApiType<RootState>
+>(
+  'getAllStatementsBalanceSheetForPractitioner',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId, year, month }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let statementsBalanceSheet: BalanceSheetDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        statementsBalanceSheet = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).getAllStatementsBalanceSheet(userId, year, month);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!statementsBalanceSheet) {
+        return rejectWithValue('Error getting income');
+      }
+      return statementsBalanceSheet;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllExpensesForPractitioner = createAsyncThunk<
+  any[],
+  { userId: string; month: Number; year: Number },
+  ThunkApiType<RootState>
+>(
+  'getAllExpenses',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId, month, year }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let expenses: ExpensesStatementsDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        expenses = await new ExpensesStatementsService(
+          userAuth?.auth_token
+        ).allStatementsExpenses(userId, month, year);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!expenses) {
+        return rejectWithValue('Error getting expenses');
+      }
+      console.log('practitioner expenses', expenses, month, year);
+      return expenses;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllIncomeForPractitioner = createAsyncThunk<
+  any[],
+  { userId: string; month: Number; year: Number },
+  ThunkApiType<RootState>
+>(
+  'getAllIncome',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId, month, year }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let income: IncomeStatementsDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        income = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).allStatementsIncome(userId, month, year);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!income) {
+        return rejectWithValue('Error getting income');
+      }
+      console.log('practitioner income', income);
+      return income;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getIncomeExpensesPDFreportForPractitioner = createAsyncThunk<
+  any[],
+  { userId: string; year: Number; month: Number },
+  ThunkApiType<RootState>
+>(
+  'getIncomeExpensesPDFreportForPractitioner',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId, year, month }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let report: ReportTableDataDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        report = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).getMonthsIncomeExpensesReport(userId, month, year);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!report) {
+        return rejectWithValue('Error getting pdf Report Data');
+      }
+      return report;
     } catch (err) {
       return rejectWithValue(err);
     }
