@@ -61,8 +61,10 @@ export const Video = ({ section }: VideoProps) => {
   }, [isLoading, video]);
 
   useEffect(() => {
-    getVideo();
-  }, [getVideo]);
+    if (isOnline) {
+      getVideo();
+    }
+  }, [getVideo, isOnline]);
 
   if (!isOnline) return <OfflineCard />;
 

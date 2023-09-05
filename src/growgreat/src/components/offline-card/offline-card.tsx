@@ -12,7 +12,7 @@ export const OfflineCard: React.FC = () => {
       />
 
       <Typography
-        text="Please go online and refresh the page to see previous months"
+        text="Please go online and refresh the page to see this information."
         type={'body'}
         color="textMid"
         align="center"
