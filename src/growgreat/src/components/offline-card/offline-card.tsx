@@ -1,28 +1,20 @@
-import { renderIcon, Typography } from '@ecdlink/ui';
-
+import { Typography } from '@ecdlink/ui';
+import { ReactComponent as ConnectionIcon } from '@/assets/connectionIcon.svg';
 export const OfflineCard: React.FC = () => {
   return (
-    <div
-      className={
-        'bg-white rounded-lg shadow-sm flex flex-col justify-around items-center w-full p-6'
-      }
-    >
-      <div className="rounded-full bg-alertBg w-12 h-12 flex flex-col justify-center items-center">
-        {renderIcon('InformationCircleIcon', 'h-5 w-5 text-alertMain')}
-      </div>
-
+    <div className={'flex flex-col items-center'}>
+      <ConnectionIcon className="my-4 h-28 w-28" />
       <Typography
         text="Information not available when offline"
-        type={'body'}
+        type="h3"
         weight={'bold'}
         align="center"
-        className="mt-2"
       />
 
       <Typography
         text="Please go online and refresh the page to see previous months"
         type={'body'}
-        color={'textLight'}
+        color="textMid"
         align="center"
         className="mt-2"
       />

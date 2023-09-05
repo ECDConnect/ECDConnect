@@ -1,4 +1,13 @@
-import { Button, classNames, renderIcon, Typography } from '@ecdlink/ui';
+import { OfflineActionModal } from '@/components/offline-action-modal';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useDialog } from '@ecdlink/core';
+import {
+  Button,
+  classNames,
+  DialogPosition,
+  renderIcon,
+  Typography,
+} from '@ecdlink/ui';
 
 interface TipCardProps {
   title?: string;
@@ -16,6 +25,26 @@ export const TipCard = ({
   buttonIcon,
   onClick,
 }: TipCardProps) => {
+  const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
+
+  const displayOfflineAlert = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => <OfflineActionModal onClose={onClose} />,
+    });
+  };
+
+  const handleOnClick = () => {
+    if (isOnline) {
+      onClick();
+    } else {
+      displayOfflineAlert();
+    }
+  };
+
   return (
     <div
       className={classNames(
@@ -42,7 +71,7 @@ export const TipCard = ({
         text={buttonText}
         icon={buttonIcon}
         iconPosition="end"
-        onClick={onClick}
+        onClick={handleOnClick}
       />
     </div>
   );
