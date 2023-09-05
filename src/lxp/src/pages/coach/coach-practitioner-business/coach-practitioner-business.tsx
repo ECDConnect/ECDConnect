@@ -17,9 +17,6 @@ export const CoachPractitionerBusiness = () => {
 
   const isStartUpSupportEnding = true;
 
-  // const balanceSheet = useSelector(practitionerSelectors.getPractitionerBalanceSheet);
-  // console.log('balanceSheet', balanceSheet);
-
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const [incomeStatementMonth, setIncomeStatementMonth] = useState('');
   const [lossProfitMonths, setLossProfitMonths] = useState('');

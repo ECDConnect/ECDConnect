@@ -70,9 +70,6 @@ export const MoneySummary: React.FC<MoneyProps> = ({
         ? getMonth(currentDate)
         : getMonth(currentDate) - 1;
 
-    console.log('month', month);
-    console.log('statementResults', statementResults);
-
     await appDispatch(
       practitionerThunkActions.getAllExpensesForPractitioner({
         userId: practitioner?.user?.id!,

@@ -360,15 +360,15 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
         statementYear
       );
 
-      const report = await appDispatch(
-        practitionerThunkActions.getIncomeExpensesPDFreportForPractitioner({
-          userId: practitioner?.user?.id!,
-          month: statementMonth,
-          year: statementYear,
-        })
-      ).unwrap();
+      // const report = await appDispatch(
+      //   practitionerThunkActions.getIncomeExpensesPDFreportForPractitioner({
+      //     userId: practitioner?.user?.id!,
+      //     month: statementMonth,
+      //     year: statementYear,
+      //   })
+      // ).unwrap();
 
-      setPdfReportData(report);
+      // setPdfReportData(report);
       setIncome(incomeData);
       setExpenses(expensesData);
     };
@@ -389,7 +389,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowPreschoolDetails(true),
+      // onActionClick: () => setShowPreschoolDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(preschoolFees)}`,
       notRounded: true,
@@ -400,7 +400,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowStartupSupportDetails(true),
+      // onActionClick: () => setShowStartupSupportDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(startupSupport)}`,
       notRounded: true,
@@ -411,7 +411,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowDonationsOrVouchersDetails(true),
+      // onActionClick: () => setShowDonationsOrVouchersDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(donationsOrVouchers)}`,
       notRounded: true,
@@ -422,7 +422,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowDbeSubsidyDetails(true),
+      // onActionClick: () => setShowDbeSubsidyDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(dbeSubsidy)}`,
       notRounded: true,
@@ -433,7 +433,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowOtherIncomeDetails(true),
+      // onActionClick: () => setShowOtherIncomeDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(otherIncomeValues)}`,
       notRounded: true,
@@ -447,7 +447,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowRentDetails(true),
+      // onActionClick: () => setShowRentDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(rent)}`,
       notRounded: true,
@@ -458,7 +458,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowSalaryDetails(true),
+      // onActionClick: () => setShowSalaryDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(salary)}`,
       notRounded: true,
@@ -469,7 +469,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowFoodDetails(true),
+      // onActionClick: () => setShowFoodDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(food)}`,
       notRounded: true,
@@ -480,7 +480,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowLearningMaterialsDetails(true),
+      // onActionClick: () => setShowLearningMaterialsDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(learningMaterials)}`,
       notRounded: true,
@@ -491,7 +491,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowMaintenaceDetails(true),
+      // onActionClick: () => setShowMaintenaceDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(maintenance)}`,
       notRounded: true,
@@ -502,7 +502,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowOtherExpensesDetails(true),
+      // onActionClick: () => setShowOtherExpensesDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(otherExpenseValues)}`,
       notRounded: true,
@@ -513,7 +513,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      onActionClick: () => setShowUtilitiesDetails(true),
+      // onActionClick: () => setShowUtilitiesDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(utilities)}`,
       notRounded: true,
@@ -650,7 +650,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
               className="w-8/12 text-right"
             />
           </Card>
-          <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+          {/* <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
             {isIncomeSubmitted && (
               <GeneratePdfReportButton
                 component="income-statements"
@@ -669,7 +669,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
                 downloadDate={today.toDateString()}
               />
             )}
-          </div>
+          </div> */}
         </div>
       </BannerWrapper>
       <Dialog
