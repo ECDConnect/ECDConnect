@@ -8,6 +8,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { OfflineCard } from '@/components/offline-card/offline-card';
 
 interface VideoProps {
   section: string;
@@ -15,6 +17,8 @@ interface VideoProps {
 
 export const Video = ({ section }: VideoProps) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
+
+  const { isOnline } = useOnlineStatus();
 
   const appDispatch = useAppDispatch();
 
@@ -59,6 +63,8 @@ export const Video = ({ section }: VideoProps) => {
   useEffect(() => {
     getVideo();
   }, [getVideo]);
+
+  if (!isOnline) return <OfflineCard />;
 
   return (
     <>
