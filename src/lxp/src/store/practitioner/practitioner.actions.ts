@@ -424,7 +424,6 @@ export const getAllExpensesForPractitioner = createAsyncThunk<
       if (!expenses) {
         return rejectWithValue('Error getting expenses');
       }
-      console.log('practitioner expenses', expenses, month, year);
       return expenses;
     } catch (err) {
       return rejectWithValue(err);
@@ -458,7 +457,6 @@ export const getAllIncomeForPractitioner = createAsyncThunk<
       if (!income) {
         return rejectWithValue('Error getting income');
       }
-      console.log('practitioner income', income);
       return income;
     } catch (err) {
       return rejectWithValue(err);

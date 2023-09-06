@@ -87,8 +87,10 @@ import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-prof
 import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
 import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-business/coach-practitioner-business';
-import { PractitionerPreviousStatementsList } from '@/pages/coach/coach-practitioner-business/components/previous-statements-list';
-import { PractitionerMonthStatementsDetails } from '@/pages/coach/coach-practitioner-business/components/month-statements-details';
+import { PractitionerPreviousStatementsList } from '@/pages/coach/coach-practitioner-business/components/statements/previous-statements-list';
+import { PractitionerMonthStatementsDetails } from '@/pages/coach/coach-practitioner-business/components/statements/month-statements-details';
+import { StatementNotSubmitted } from '@/pages/coach/coach-practitioner-business/components/statements/not-submitted';
+import { StartupSupportEnding } from '@/pages/coach/coach-practitioner-business/components/support/startup-support-ending';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -434,18 +436,28 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS}
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS}
         component={CoachPractitionerBusiness}
       />
       <Route
         exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS_PREV_STATEMENT}
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS}
         component={PractitionerPreviousStatementsList}
       />
       <Route
         exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS_STATEMENT_DETAILS}
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS}
         component={PractitionerMonthStatementsDetails}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.NOT_SUBMITTED}
+        component={StatementNotSubmitted}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.STARTUP_SUPPORT_ENDING}
+        component={StartupSupportEnding}
       />
 
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />

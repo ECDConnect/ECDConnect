@@ -14,7 +14,7 @@ import { numberWithSpaces } from '@/utils/statements/statements-utils';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { LocalStorageKeys } from '@ecdlink/core';
 import { practitionerSelectors } from '@/store/practitioner';
-import { PractitionerBusinessParams } from '../coach-practitioner-business.types';
+import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 
 export const PractitionerPreviousStatementsList: React.FC = () => {
   const history = useHistory();
@@ -26,7 +26,7 @@ export const PractitionerPreviousStatementsList: React.FC = () => {
 
   const goBack = () => {
     history.push(
-      ROUTES.COACH.PRACTITIONER_BUSINESS.replace(
+      ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
         ':practitionerId',
         practitionerId
       )
@@ -51,7 +51,7 @@ export const PractitionerPreviousStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () =>
         history.push(
-          ROUTES.COACH.PRACTITIONER_BUSINESS_STATEMENT_DETAILS.replace(
+          ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS.replace(
             ':practitionerId',
             practitionerId
           ),
@@ -76,7 +76,7 @@ export const PractitionerPreviousStatementsList: React.FC = () => {
       text: '1',
       onActionClick: () =>
         history.push(
-          ROUTES.COACH.PRACTITIONER_BUSINESS_STATEMENT_DETAILS.replace(
+          ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS.replace(
             ':practitionerId',
             practitionerId
           ),

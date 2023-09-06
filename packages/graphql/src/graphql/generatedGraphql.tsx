@@ -4399,6 +4399,8 @@ export type MeetingTypeSortInput = {
 
 export type MessageLog = {
   __typename?: 'MessageLog';
+  cTA?: Maybe<Scalars['String']>;
+  cTAText?: Maybe<Scalars['String']>;
   from?: Maybe<Scalars['String']>;
   fromUserId: Scalars['UUID'];
   id: Scalars['UUID'];
@@ -4420,6 +4422,8 @@ export type MessageLog = {
 
 export type MessageLogFilterInput = {
   and?: InputMaybe<Array<MessageLogFilterInput>>;
+  cTA?: InputMaybe<StringOperationFilterInput>;
+  cTAText?: InputMaybe<StringOperationFilterInput>;
   from?: InputMaybe<StringOperationFilterInput>;
   fromUserId?: InputMaybe<ComparableGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -4441,6 +4445,8 @@ export type MessageLogFilterInput = {
 };
 
 export type MessageLogInput = {
+  CTA?: InputMaybe<Scalars['String']>;
+  CTAText?: InputMaybe<Scalars['String']>;
   From?: InputMaybe<Scalars['String']>;
   FromUserId: Scalars['UUID'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -4459,6 +4465,8 @@ export type MessageLogInput = {
 };
 
 export type MessageLogSortInput = {
+  cTA?: InputMaybe<SortEnumType>;
+  cTAText?: InputMaybe<SortEnumType>;
   from?: InputMaybe<SortEnumType>;
   fromUserId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -5058,17 +5066,30 @@ export type Mutation = {
   resetUserPassword: Scalars['Boolean'];
   saveIncomeStatementPDF?: Maybe<Document>;
   scheduleConsolidationMeetingDate?: Maybe<Trainee>;
+  sendAllProgressReportsCompletedForClassNotification: Scalars['Boolean'];
+  sendAnyGGNotification: Scalars['Boolean'];
+  sendAnyGGNotificationWithReplacements: Scalars['Boolean'];
   sendAnyNotification: Scalars['Boolean'];
   sendAnyNotificationWithReplacements: Scalars['Boolean'];
   sendBulkInviteToApp?: Maybe<BulkInvitationResult>;
   sendBulkInviteToPortal?: Maybe<BulkInvitationResult>;
   sendClubleaderRoleAssignedNotification: Scalars['Boolean'];
+  sendCoachAddresUpdatedScheduleVisitNotification: Scalars['Boolean'];
   sendCoachInviteToApplication: Scalars['Boolean'];
+  sendCoachNewTraineesNotification: Scalars['Boolean'];
   sendCoachRemoveTraineeNotification: Scalars['Boolean'];
+  sendCoachTraineeReadySmartspaceCheckNotification: Scalars['Boolean'];
+  sendCoachVisitRequestedNotification: Scalars['Boolean'];
   sendCoachVisitsOverdueNotification: Scalars['Boolean'];
   sendDemotedAsPrincipalFAAProgrammeNotification: Scalars['Boolean'];
+  sendEndofyearPointEarnedNotification: Scalars['Boolean'];
+  sendFillInSelfAsessmentFormNotification: Scalars['Boolean'];
+  sendGGExpectedMomDeliveryDateApproachingNotification: Scalars['Boolean'];
+  sendGGUploadRTHNotification: Scalars['Boolean'];
+  sendGGWalkthroughNotificationNotification: Scalars['Boolean'];
   sendGainedCommunitySupportNotification: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
+  sendNewClubleaderNotification: Scalars['Boolean'];
   sendNotificationToUser: Scalars['Boolean'];
   sendOnly2MoreTraineeTaskLeftsNotification: Scalars['Boolean'];
   sendOverdueTraineeTasksNotification: Scalars['Boolean'];
@@ -5076,10 +5097,21 @@ export type Mutation = {
   sendPractitionerInviteToApplication: Scalars['Boolean'];
   sendPractitionerNotAssignedToProgrammeNotification: Scalars['Boolean'];
   sendPractitionerRemovedFromProgrammeNotification: Scalars['Boolean'];
+  sendPrincipalAllReportsDoneNotification: Scalars['Boolean'];
   sendPrincipalChangedNotification: Scalars['Boolean'];
+  sendPrincipalMovedToProgrammeNotification: Scalars['Boolean'];
+  sendPrincipalReportDeadlinePassedNotification: Scalars['Boolean'];
   sendPromotedToPrincipalFAAProgrammeNotification: Scalars['Boolean'];
+  sendRecordCaregiverMeetingNotification: Scalars['Boolean'];
   sendRemovedFromProgrammeNotification: Scalars['Boolean'];
+  sendReportDeadlinePassedNotification: Scalars['Boolean'];
+  sendSetAbsenteeNotification: Scalars['Boolean'];
+  sendSetLeaveNotification: Scalars['Boolean'];
+  sendStartupSupportEndingIn2MonthsNotification: Scalars['Boolean'];
+  sendTopSmartStarterPointsNotification: Scalars['Boolean'];
+  sendTrainee2WeekOnboardingWarningNotification: Scalars['Boolean'];
   sendUpdateFeeNotification: Scalars['Boolean'];
+  sendUserAddedToClubNotification: Scalars['Boolean'];
   sendUserAssignedToClassFromOldClassNotification: Scalars['Boolean'];
   sendUserAssignedToClassNotification: Scalars['Boolean'];
   submitStatement?: Maybe<ResultReturnObject>;
@@ -6615,6 +6647,21 @@ export type MutationScheduleConsolidationMeetingDateArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendAllProgressReportsCompletedForClassNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendAnyGgNotificationArgs = {
+  templateType?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendAnyGgNotificationWithReplacementsArgs = {
+  replacements?: InputMaybe<Array<InputMaybe<TagsReplacementsInput>>>;
+  templateType?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendAnyNotificationArgs = {
   templateType?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -6639,12 +6686,33 @@ export type MutationSendClubleaderRoleAssignedNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendCoachAddresUpdatedScheduleVisitNotificationArgs = {
+  principalOrFAAName?: InputMaybe<Scalars['String']>;
+  programmeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendCoachInviteToApplicationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendCoachNewTraineesNotificationArgs = {
+  traineeFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationSendCoachRemoveTraineeNotificationArgs = {
   traineeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendCoachTraineeReadySmartspaceCheckNotificationArgs = {
+  traineeFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendCoachVisitRequestedNotificationArgs = {
+  practitionerFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -6658,6 +6726,32 @@ export type MutationSendDemotedAsPrincipalFaaProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendEndofyearPointEarnedNotificationArgs = {
+  pointsEarned?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendFillInSelfAsessmentFormNotificationArgs = {
+  dueDate?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgExpectedMomDeliveryDateApproachingNotificationArgs = {
+  clientFirstName?: InputMaybe<Scalars['String']>;
+  expectedDeliveryDate?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgUploadRthNotificationArgs = {
+  childFirstName?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgWalkthroughNotificationNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendGainedCommunitySupportNotificationArgs = {
   supportDate?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -6665,6 +6759,12 @@ export type MutationSendGainedCommunitySupportNotificationArgs = {
 
 export type MutationSendInviteToApplicationArgs = {
   inviteToPortal?: Scalars['Boolean'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendNewClubleaderNotificationArgs = {
+  clubLeaderName?: InputMaybe<Scalars['String']>;
+  clubName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -6701,9 +6801,25 @@ export type MutationSendPractitionerRemovedFromProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendPrincipalAllReportsDoneNotificationArgs = {
+  practitionerFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendPrincipalChangedNotificationArgs = {
   principalOrFAA?: InputMaybe<Scalars['String']>;
   programmeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendPrincipalMovedToProgrammeNotificationArgs = {
+  noOfChildren?: InputMaybe<Scalars['String']>;
+  trackingMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendPrincipalReportDeadlinePassedNotificationArgs = {
+  practitionerFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -6713,13 +6829,57 @@ export type MutationSendPromotedToPrincipalFaaProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendRecordCaregiverMeetingNotificationArgs = {
+  meetingDate?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendRemovedFromProgrammeNotificationArgs = {
   principalName?: InputMaybe<Scalars['String']>;
   programmeName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendReportDeadlinePassedNotificationArgs = {
+  noOfChildren?: InputMaybe<Scalars['String']>;
+  trackingMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendSetAbsenteeNotificationArgs = {
+  absentStartDate?: InputMaybe<Scalars['String']>;
+  parentPrincipalFAACoachName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendSetLeaveNotificationArgs = {
+  absentEndDate?: InputMaybe<Scalars['String']>;
+  absentStartDate?: InputMaybe<Scalars['String']>;
+  parentPrincipalFAACoachName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendStartupSupportEndingIn2MonthsNotificationArgs = {
+  startupsupportEndDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendTopSmartStarterPointsNotificationArgs = {
+  previousMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendTrainee2WeekOnboardingWarningNotificationArgs = {
+  traineeFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendUpdateFeeNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendUserAddedToClubNotificationArgs = {
+  clubName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -7741,6 +7901,8 @@ export type NoteTypeSortInput = {
 
 export type Notification = {
   __typename?: 'Notification';
+  cTA?: Maybe<Scalars['String']>;
+  cTAText?: Maybe<Scalars['String']>;
   from?: Maybe<Scalars['String']>;
   fromUserId: Scalars['UUID'];
   id: Scalars['UUID'];
@@ -7769,6 +7931,8 @@ export type NotificationDisplay = {
 };
 
 export type NotificationSortInput = {
+  cTA?: InputMaybe<SortEnumType>;
+  cTAText?: InputMaybe<SortEnumType>;
   from?: InputMaybe<SortEnumType>;
   fromUserId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -9861,6 +10025,7 @@ export type Query = {
   countVisitType?: Maybe<Scalars['Int']>;
   countWorkflowStatus?: Maybe<Scalars['Int']>;
   countWorkflowStatusType?: Maybe<Scalars['Int']>;
+  dailyAttendance?: Maybe<Array<Maybe<Attendance>>>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
   entityChangesToSync?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -12120,6 +12285,11 @@ export type QueryCountWorkflowStatusTypeArgs = {
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
 
+export type QueryDailyAttendanceArgs = {
+  attendanceDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryDisplayMetricsArgs = {
   type?: InputMaybe<Scalars['String']>;
 };
@@ -14058,6 +14228,7 @@ export type Trainee = {
   attendedStartUpTraining?: Maybe<Scalars['Boolean']>;
   childProgressTraining?: Maybe<Scalars['Boolean']>;
   childrenAddedDate?: Maybe<Scalars['DateTime']>;
+  coachHierarchy?: Maybe<Scalars['UUID']>;
   communitySupportGained?: Maybe<Scalars['DateTime']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;
   franchiseeAgreementAcceptedDate?: Maybe<Scalars['DateTime']>;
@@ -14109,6 +14280,7 @@ export type TraineeFilterInput = {
   attendedStartUpTraining?: InputMaybe<BooleanOperationFilterInput>;
   childProgressTraining?: InputMaybe<BooleanOperationFilterInput>;
   childrenAddedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   communitySupportGained?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   franchiseeAgreementAcceptedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -14153,6 +14325,7 @@ export type TraineeInput = {
   AttendedStartUpTraining?: InputMaybe<Scalars['Boolean']>;
   ChildProgressTraining?: InputMaybe<Scalars['Boolean']>;
   ChildrenAddedDate?: InputMaybe<Scalars['DateTime']>;
+  CoachHierarchy?: InputMaybe<Scalars['UUID']>;
   CommunitySupportGained?: InputMaybe<Scalars['DateTime']>;
   ConsolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
   FranchiseeAgreementAcceptedDate?: InputMaybe<Scalars['DateTime']>;
@@ -14225,6 +14398,9 @@ export type TraineeOnBoardTimeline = {
   smartSpaceLicenseColor?: Maybe<Scalars['String']>;
   smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
+  startUpSupportAmount?: Maybe<Scalars['Float']>;
+  startUpSupportEndDate?: Maybe<Scalars['DateTime']>;
+  startUpSupportStartDate?: Maybe<Scalars['DateTime']>;
   starterLicenseColor?: Maybe<Scalars['String']>;
   starterLicenseDate?: Maybe<Scalars['DateTime']>;
   starterLicenseStatus?: Maybe<Scalars['String']>;
@@ -14240,6 +14416,7 @@ export type TraineeSortInput = {
   attendedStartUpTraining?: InputMaybe<SortEnumType>;
   childProgressTraining?: InputMaybe<SortEnumType>;
   childrenAddedDate?: InputMaybe<SortEnumType>;
+  coachHierarchy?: InputMaybe<SortEnumType>;
   communitySupportGained?: InputMaybe<SortEnumType>;
   consolidationMeetingDate?: InputMaybe<SortEnumType>;
   franchiseeAgreementAcceptedDate?: InputMaybe<SortEnumType>;

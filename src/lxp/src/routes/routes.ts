@@ -99,11 +99,13 @@ const ROUTES = {
     PRACTITIONERS: '/practitioners',
     PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
     PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
-    PRACTITIONER_BUSINESS: '/practitioner-business/:practitionerId',
-    PRACTITIONER_BUSINESS_PREV_STATEMENT:
-      '/practitioner-business/:practitionerId/previous-statements-list',
-    PRACTITIONER_BUSINESS_STATEMENT_DETAILS:
-      '/practitioner-business/:practitionerId/statement-details',
+    PRACTITIONER_BUSINESS: addPrefix('/practitioner-business', {
+      BUSINESS: '/:practitionerId',
+      LIST_STATEMENTS: '/:practitionerId/previous-statements-list',
+      STATEMENT_DETAILS: '/:practitionerId/statement-details',
+      NOT_SUBMITTED: '/:practitionerId/not-submitted',
+      STARTUP_SUPPORT_ENDING: '/:practitionerId/startup-support-ending',
+    }),
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',
     PRACTIONER_REMOVE: '/practioner-remove',

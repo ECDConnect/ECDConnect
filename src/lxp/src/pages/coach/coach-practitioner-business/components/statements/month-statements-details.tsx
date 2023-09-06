@@ -6,6 +6,7 @@ import {
   BannerWrapper,
   Dialog,
   DialogPosition,
+  Alert,
 } from '@ecdlink/ui';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation, useParams } from 'react-router-dom';
@@ -15,7 +16,6 @@ import { statementsSelectors } from '@/store/statements';
 import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
-  ReportTableDataDto,
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -26,18 +26,15 @@ import {
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { UserOptions } from 'jspdf-autotable';
-import {
-  practitionerSelectors,
-  practitionerThunkActions,
-} from '@/store/practitioner';
+import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
 import { useAppDispatch } from '@/store';
 import { MonthStatementsDetailsState } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-details.types';
-import GeneratePdfReportButton from '@/components/download-pdf-button/download-pdf-button';
 import { IncomeDetailsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/income-details-list.tsx/income-details-list';
 import { ExpenseDetailsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/expense-details-list.tsx/expense-details-list';
-import { PractitionerBusinessParams } from '../coach-practitioner-business.types';
+import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
+import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 
 interface ReportDetailsForPractitionerData {
   classroomGroupName: string;
@@ -54,7 +51,7 @@ interface ReportDetailsForPractitionerData {
 
 export const PractitionerMonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const [reportDeatils, setReportDetails] =
+  const [reportDetails, setReportDetails] =
     useState<ReportDetailsForPractitionerData>();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -70,7 +67,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
 
   const goBack = () => {
     history.push(
-      ROUTES.COACH.PRACTITIONER_BUSINESS_PREV_STATEMENT.replace(
+      ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS.replace(
         ':practitionerId',
         practitionerId
       )
@@ -116,7 +113,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
     practitionerSelectors.getPractitionerBalanceSheet
   );
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
-  const [pdfReportData, setPdfReportData] = useState<ReportTableDataDto[]>([]);
+  // const [pdfReportData, setPdfReportData] = useState<ReportTableDataDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
 
   const submittedIncome = useMemo(
@@ -219,9 +216,10 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
 
-  const enableDownload = income.length > 0;
-  const isIncomeSubmitted = income?.every((item) => item?.submitted === true);
-  const signature = practitioner?.signingSignature ?? '';
+  // const enableDownload = income.length > 0;
+  const isIncomeSubmitted =
+    income.length > 0 && income?.every((item) => item?.submitted === true);
+  // const signature = practitioner?.signingSignature ?? '';
 
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
@@ -530,8 +528,8 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
     subtitle: '',
     //column2 with 3 rows of text
     text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_column_two_row_two: `ID: ${reportDeatils?.idNumber}`,
-    text_column_two_row_three: `Phone: ${reportDeatils?.phone}`,
+    text_column_two_row_two: `ID: ${reportDetails?.idNumber}`,
+    text_column_two_row_three: `Phone: ${reportDetails?.phone}`,
   };
 
   const tableHeadStyles: UserOptions['headStyles'] = {
@@ -650,6 +648,24 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
               className="w-8/12 text-right"
             />
           </Card>
+          <div>
+            {isIncomeSubmitted && (
+              <Alert
+                className="mt-4"
+                variant="flat"
+                type="success"
+                title={`${practitioner?.user?.firstName} submitted this statement!`}
+                customIcon={<Emoji3 className="h-12 w-12" />}
+              />
+            )}
+            {!isIncomeSubmitted && (
+              <Alert
+                type={'warning'}
+                className="items-left justify-left mt-4 flex"
+                title={`${practitioner?.user?.firstName} did not submit this income statement`}
+              />
+            )}
+          </div>
           {/* <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
             {isIncomeSubmitted && (
               <GeneratePdfReportButton

@@ -15,8 +15,7 @@ import {
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
 import { practitionerSelectors } from '@/store/practitioner';
-import { PractitionerBusinessParams } from '../coach-practitioner-business.types';
-import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
+import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 
 interface StatementProps {
   setIncomeStatementMonth: (item: string) => void;
@@ -75,7 +74,7 @@ export const IncomeStatements: React.FC<StatementProps> = ({
         balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
           ?.submitted || false
       );
-      setIsIncomeStatementSubmitted(isThisMonthSubmitted);
+      // setIsIncomeStatementSubmitted(isThisMonthSubmitted);
 
       const nextMonth = getNextMonth(currentDate);
       const nextSubmit = new Date(
@@ -93,7 +92,7 @@ export const IncomeStatements: React.FC<StatementProps> = ({
           balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
             ?.submitted || false
         );
-        setIsIncomeStatementSubmitted(isThisMonthSubmitted);
+        // setIsIncomeStatementSubmitted(isThisMonthSubmitted);
 
         const nextMonth = getNextMonth(currentDate);
         const nextSubmit = new Date(
@@ -110,7 +109,7 @@ export const IncomeStatements: React.FC<StatementProps> = ({
           balanceSheet?.find((x) => x.month === currentDate.getMonth())
             ?.submitted || false
         );
-        setIsIncomeStatementSubmitted(isThisMonthSubmitted);
+        // setIsIncomeStatementSubmitted(isThisMonthSubmitted);
 
         const nextSubmit = new Date(
           currentDate.getFullYear(),
@@ -212,8 +211,8 @@ export const IncomeStatements: React.FC<StatementProps> = ({
       balanceSheet?.[balanceSheet?.length! - 2]?.balance! < 0 &&
       balanceSheet?.[balanceSheet?.length! - 3]?.balance! < 0
     ) {
-      setIsLoss(true);
-      setIsProfit(false);
+      // setIsLoss(true);
+      // setIsProfit(false);
     }
 
     // Profit check
@@ -221,8 +220,8 @@ export const IncomeStatements: React.FC<StatementProps> = ({
       balanceSheet?.[balanceSheet?.length! - 2]?.balance! > 0 &&
       balanceSheet?.[balanceSheet?.length! - 3]?.balance! > 0
     ) {
-      setIsProfit(true);
-      setIsLoss(false);
+      // setIsProfit(true);
+      // setIsLoss(false);
     }
     // set months for parent
     setLossProfitMonths(previousMonthRecord + ' to ' + currentMonthRecord);
@@ -396,7 +395,7 @@ export const IncomeStatements: React.FC<StatementProps> = ({
           icon="DocumentSearchIcon"
           onClick={() =>
             history.push(
-              ROUTES.COACH.PRACTITIONER_BUSINESS_PREV_STATEMENT.replace(
+              ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS.replace(
                 ':practitionerId',
                 practitionerId
               )

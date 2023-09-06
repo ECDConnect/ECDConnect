@@ -1,3 +1,4 @@
+import ROUTES from '@/routes/routes';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import { BannerWrapper, StackedList } from '@ecdlink/ui';
@@ -5,26 +6,38 @@ import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { PractitionerBusinessParams } from './coach-practitioner-business.types';
-import { MoneySummary } from './components/money-summary';
+import { MoneySummary } from './components/statements/money-summary';
+import { traineeSelectors } from '@/store/trainee';
+import { differenceInMonths, format } from 'date-fns';
 
 export const CoachPractitionerBusiness = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
-
   const { practitionerId } = useParams<PractitionerBusinessParams>();
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const practitionerFirstName = practitioner?.user?.firstName;
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
-  const isStartUpSupportEnding = true;
+  const currentDate = new Date();
+  const hasStartUpSupport =
+    timeline?.startUpSupportStartDate !== null &&
+    timeline?.startUpSupportEndDate !== null;
+  const startUpSupportEndDate = new Date(timeline?.startUpSupportEndDate);
+  const monthDifference = differenceInMonths(
+    currentDate,
+    startUpSupportEndDate
+  );
 
+  const isStartUpSupportEnding =
+    hasStartUpSupport && monthDifference >= -3 && monthDifference <= 0;
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const [incomeStatementMonth, setIncomeStatementMonth] = useState('');
   const [lossProfitMonths, setLossProfitMonths] = useState('');
 
-  const [isLoss, setIsLoss] = useState(false);
-  const [isProfit, setIsProfit] = useState(false);
+  const [isLoss, setIsLoss] = useState(true);
+  const [isProfit, setIsProfit] = useState(true);
   const [isIncomeStatementSubmitted, setIsIncomeStatementSubmitted] =
-    useState(false);
+    useState(true);
 
   const listItems = [];
 
@@ -38,6 +51,14 @@ export const CoachPractitionerBusiness = () => {
       menuIcon: 'ExclamationIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_BUSINESS.NOT_SUBMITTED.replace(
+            ':practitionerId',
+            practitionerId
+          ),
+          { incomeStatementMonth: incomeStatementMonth }
+        ),
       iconBackgroundColor: 'alertMain',
       chipConfig: {
         colorPalette: {
@@ -55,12 +76,19 @@ export const CoachPractitionerBusiness = () => {
     listItems.push({
       title: 'Start-up support ending soon',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: 'Ending Month 2023',
+      subTitle: format(startUpSupportEndDate, 'LLL yyyy'),
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'ExclamationIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_BUSINESS.STARTUP_SUPPORT_ENDING.replace(
+            ':practitionerId',
+            practitionerId
+          )
+        ),
       iconBackgroundColor: 'alertMain',
       chipConfig: {
         colorPalette: {
@@ -120,6 +148,10 @@ export const CoachPractitionerBusiness = () => {
     });
   }
 
+  const goBack = () => {
+    history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, { practitionerId });
+  };
+
   return (
     <>
       <BannerWrapper
@@ -128,7 +160,7 @@ export const CoachPractitionerBusiness = () => {
         displayOffline={!isOnline}
         title="SmartStarter business"
         subTitle={`${practitionerFirstName} ${practitioner?.user?.surname}`}
-        onBack={() => history.goBack()}
+        onBack={() => goBack()}
         className="p-4"
       >
         <div className="mt-4 flex justify-center">
@@ -141,7 +173,6 @@ export const CoachPractitionerBusiness = () => {
           </div>
         </div>
 
-        {/* {!isIncomeStatementSubmitted &&(   */}
         <MoneySummary
           hasIncomeStatements={hasIncomeStatements}
           setHasIncomeStatements={setHasIncomeStatements}
@@ -151,8 +182,6 @@ export const CoachPractitionerBusiness = () => {
           setLossProfitMonths={setLossProfitMonths}
           setIsIncomeStatementSubmitted={setIsIncomeStatementSubmitted}
         />
-        {/* ) */}
-        {/* } */}
       </BannerWrapper>
     </>
   );

@@ -1,16 +1,11 @@
 import { Typography, LoadingSpinner, Alert, Button } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
-// import * as styles from './money.styles';
 import React, { useEffect, useLayoutEffect, useState } from 'react';
-// import ROUTES from '@/routes/routes';
-import { useHistory, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@/store';
 import { getMonth, getYear } from 'date-fns';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-
 import { useAppContext } from '@/walkthrougContext';
-import { PractitionerBusinessParams } from '../coach-practitioner-business.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import {
   practitionerSelectors,
@@ -18,6 +13,7 @@ import {
 } from '@/store/practitioner';
 import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { IncomeStatements } from './income-statements';
+import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 
 interface MoneyProps {
   setHasIncomeStatements: (item: boolean) => void;
@@ -38,8 +34,6 @@ export const MoneySummary: React.FC<MoneyProps> = ({
   setLossProfitMonths,
   setIsIncomeStatementSubmitted,
 }) => {
-  const history = useHistory();
-  const { isOnline } = useOnlineStatus();
   const [isLoading, setIsLoading] = useState(false);
   const appDispatch = useAppDispatch();
 
@@ -47,6 +41,7 @@ export const MoneySummary: React.FC<MoneyProps> = ({
   const { practitionerId } = useParams<PractitionerBusinessParams>();
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const practitionerFirstName = practitioner?.user?.firstName;
+  const { state } = useAppContext();
 
   const balanceSheet = useSelector(
     practitionerSelectors.getPractitionerBalanceSheet
@@ -87,44 +82,6 @@ export const MoneySummary: React.FC<MoneyProps> = ({
     setIsLoading(false);
   };
 
-  // useEffect(() => {
-  //   if (isOnline) {
-  //     income
-  //       ?.filter((item) => item?.isOffline === true)
-  //       .map(async (item) => {
-  //         let { id, isOffline, ...input } = item;
-  //         await new IncomeStatementsService(
-  //           userAuth?.auth_token!
-  //         ).UpdateStatementsIncome(item?.id!, input! as StatementsIncomeInput);
-  //       });
-
-  //     if (income?.filter((e) => e?.isOffline === true).length! > 0) {
-  //       updateStatements();
-  //     }
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isOnline, userAuth?.auth_token]);
-
-  // useEffect(() => {
-  //   if (isOnline) {
-  //     expense
-  //       ?.filter((item) => item?.isOffline === true)
-  //       .map(async (item) => {
-  //         let { id, isOffline, ...input } = item;
-  //         await new ExpensesStatementsService(
-  //           userAuth?.auth_token!
-  //         ).UpdateStatementsExpense(
-  //           item?.id!,
-  //           input! as StatementsExpensesInput
-  //         );
-  //       });
-  //     if (expense?.filter((e) => e?.isOffline === true).length! > 0) {
-  //       updateStatements();
-  //     }
-  //   }
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [isOnline, userAuth?.auth_token]);
-
   useLayoutEffect(() => {
     updateStatements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -142,8 +99,6 @@ export const MoneySummary: React.FC<MoneyProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [income, expense, balanceSheet]);
-
-  const { state } = useAppContext();
 
   const callForHelp = () => {
     window.open('tel:' + practitioner?.user?.phoneNumber);
