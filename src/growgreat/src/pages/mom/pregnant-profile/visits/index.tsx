@@ -170,7 +170,7 @@ export const Visits: React.FC = () => {
   );
 
   const getType = useCallback(
-    (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
+    (item: VisitDto): StepItem['type'] => {
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
 
@@ -180,14 +180,13 @@ export const Visits: React.FC = () => {
       if (
         (isWeekDeadline &&
           currentVisit?.visitType?.id === item.visitType?.id) ||
-        isMissedVisit ||
         (isAdditionalVisit && previousVisit?.attended)
       ) {
         return 'inProgress';
       }
       return 'todo';
     },
-    [currentVisit, isWeekDeadline]
+    [currentVisit?.visitType?.id, isWeekDeadline, previousVisit?.attended]
   );
 
   const visitSteps = useMemo(() => {
@@ -209,17 +208,16 @@ export const Visits: React.FC = () => {
     const sortedVisits = getSortedVisits(filteredVisits);
     const isToShowPastVisits = visits.length > filteredVisits.length;
 
-    const array: StepItem[] = sortedVisits.map((item) => {
+    const array: StepItem[] = sortedVisits.map((item, index) => {
+      const previousItem = index > 0 ? sortedVisits[index - 1] : undefined;
+
       const orderDateString = item?.orderDate
         ? item?.orderDate?.split('T')?.[0]
         : item?.plannedVisitDate?.split('T')?.[0];
       const day = orderDateString?.split('-')?.[2];
 
       const orderDate = getDateWithoutTimeZone(orderDateString);
-      const dueDate = getDateWithoutTimeZone(item.dueDate);
-      const isMissedVisit = dueDate
-        ? dueDate < todayDate!
-        : orderDate! < todayDate!;
+
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
 
@@ -230,17 +228,17 @@ export const Visits: React.FC = () => {
         subTitle:
           isAdditionalVisit && item.comment!
             ? item.comment
-            : isMissedVisit
-            ? 'Missed visit deadline'
             : `By ${day} ${orderDate?.toLocaleString('default', {
                 month: 'long',
               })} ${orderDate?.getFullYear()}`,
-        ...((isMissedVisit || isAdditionalVisit) && {
+        ...(isAdditionalVisit && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: 'CalendarIcon',
-        type: getType(item, isMissedVisit),
-        showActionButton: getType(item, isMissedVisit) === 'inProgress',
+        type: getType(item),
+        showActionButton:
+          (!previousItem || previousItem?.attended) &&
+          getType(item) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
