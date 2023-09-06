@@ -134,7 +134,7 @@ export const VisitsTab: React.FC = () => {
   );
 
   const getType = useCallback(
-    (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
+    (item: VisitDto): StepItem['type'] => {
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
 
@@ -149,7 +149,6 @@ export const VisitsTab: React.FC = () => {
       // }
       if (
         (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
-        isMissedVisit ||
         (isAdditionalVisit && previousVisit?.attended)
       ) {
         return 'inProgress';
@@ -157,7 +156,7 @@ export const VisitsTab: React.FC = () => {
 
       return 'todo';
     },
-    [currentVisit, infantAgeDays, isWeekDeadline, previousVisit?.attended]
+    [currentVisit, isWeekDeadline, previousVisit?.attended]
   );
 
   const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
@@ -188,32 +187,16 @@ export const VisitsTab: React.FC = () => {
   }, []);
 
   const getSubTitle = useCallback(
-    (
-      item: VisitDto,
-      isMissedVisit: boolean,
-      isAdditionalVisit: boolean,
-      date: Date
-    ): string => {
+    (item: VisitDto, isAdditionalVisit: boolean, date: Date): string => {
       if (isAdditionalVisit && item.comment) {
         return item.comment;
-      }
-
-      if (isMissedVisit) {
-        if (item.visitType?.normalizedName === 'Day 3') {
-          if (infantAgeDays > 3) {
-            return `By ${date.getDate()} ${date.toLocaleString('default', {
-              month: 'long',
-            })} ${date.getFullYear()}`;
-          }
-        }
-        return 'Missed visit deadline';
       }
 
       return `By ${date.getDate()} ${date.toLocaleString('default', {
         month: 'long',
       })} ${date.getFullYear()}`;
     },
-    [infantAgeDays]
+    []
   );
 
   const visitSteps = useMemo(() => {
@@ -235,11 +218,13 @@ export const VisitsTab: React.FC = () => {
     const sortedVisits = getSortedVisits(filteredVisits);
     const isToShowPastVisits = visits.length > filteredVisits.length;
 
-    const array: StepItem[] = sortedVisits.map((item) => {
+    const array: StepItem[] = sortedVisits.map((item, index) => {
+      const previousItem = index > 0 ? sortedVisits[index - 1] : undefined;
+
       const date = new Date(item.orderDate);
       currentDate.setHours(0, 0, 0, 0);
       date.setHours(0, 0, 0, 0);
-      const isMissedVisit = date < currentDate;
+
       const isAdditionalVisit =
         item.visitType?.normalizedName === 'Additional visits';
 
@@ -247,15 +232,15 @@ export const VisitsTab: React.FC = () => {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName || 'Visit',
-        subTitle: getSubTitle(item, isMissedVisit, isAdditionalVisit, date),
-        ...((isMissedVisit || isAdditionalVisit) && {
+        subTitle: getSubTitle(item, isAdditionalVisit, date),
+        ...(isAdditionalVisit && {
           subTitleColor: 'alertDark',
         }),
-        inProgressStepIcon: isMissedVisit
-          ? 'ExclamationCircleIcon'
-          : 'CalendarIcon',
-        type: getType(item, isMissedVisit),
-        showActionButton: getType(item, isMissedVisit) === 'inProgress',
+        inProgressStepIcon: 'CalendarIcon',
+        type: getType(item),
+        showActionButton:
+          (!previousItem || previousItem?.attended) &&
+          getType(item) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
@@ -288,6 +273,7 @@ export const VisitsTab: React.FC = () => {
   }, [
     currentDate,
     getSortedVisits,
+    getSubTitle,
     getType,
     history,
     infantInsertedDate,
