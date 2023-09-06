@@ -264,7 +264,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           avatarColor: getAvatarColor('growgreat') || '',
           extraData: {
             ...infant,
-            under6Months: !!years || (!!months && months > 6),
+            under6Months: !years && (!months || months < 6),
             age: `${years}.${months}`,
           },
           onActionClick: async () => {
@@ -331,7 +331,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           avatarColor: getAvatarColor('growgreat') || '',
           extraData: {
             ...mother,
-            under6Months: true,
+            under6Months: false,
           },
           onActionClick: () =>
             profileDialog({ client: mother, clientType: 'mother' }),

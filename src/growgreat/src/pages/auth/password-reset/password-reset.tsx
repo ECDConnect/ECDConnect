@@ -311,8 +311,8 @@ export const PasswordReset: React.FC = () => {
           icon={'InformationCircleIcon'}
           iconColor="infoMain"
           iconBorderColor="infoBb"
-          importantText={'Please call our toll free number'}
-          linkText={'0800 014 817'}
+          importantText="Please call our helpline"
+          linkText="087 148 5229"
           linkClick={callForHelp}
           linkTextWeight={'bold'}
           actionButtons={[
