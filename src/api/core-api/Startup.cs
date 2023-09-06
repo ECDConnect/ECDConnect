@@ -89,9 +89,11 @@ namespace EcdLink.Api.CoreApi
             services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
                             .AllowAnyMethod()
                             .AllowAnyHeader()
+                            .AllowCredentials()
+                            .AllowAnyOrigin()
                             .SetIsOriginAllowedToAllowWildcardSubdomains()
                             .SetIsOriginAllowed(origin => true)
-                            .WithOrigins(corsAllowedDomains)
+                            //.WithOrigins(corsAllowedDomains)
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
 
