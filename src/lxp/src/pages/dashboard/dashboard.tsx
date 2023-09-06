@@ -11,6 +11,7 @@ import {
   StackedListItemType,
   Typography,
   UserAvatar,
+  Button,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -750,6 +751,8 @@ export const Dashboard: React.FC = () => {
         <PointsSummaryCard
           currentPoints={pointsTotal}
           maxPoints={pointsMax}
+          showIcon={true}
+          useColourBackground={true}
           onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY)}
         />
       </div>
