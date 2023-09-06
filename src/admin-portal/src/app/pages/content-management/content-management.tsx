@@ -27,7 +27,7 @@ export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
-  const [selectedTab, setSelectedTab] = useState(1);
+  const [selectedTab, setSelectedTab] = useState(0);
 
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
@@ -47,6 +47,8 @@ export function ContentManagement() {
         search: '',
         searchInContent: null,
         isVisiblePortal: true,
+        // contentTypeIdFilter: '',
+        // contentTypeNameFilter: ''
       },
       fetchPolicy: 'cache-and-network',
     }
@@ -181,6 +183,8 @@ export function ContentManagement() {
         search: searchValue,
         searchInContent: true,
         isVisiblePortal: true,
+        // contentTypeIdFilter: null,
+        // contentTypeNameFilter: ''
       },
     });
     // TODO: Use actual pagination when table component supports it.
@@ -399,6 +403,9 @@ export function ContentManagement() {
               <div className="h-full py-3 px-4 sm:px-6 lg:px-8">
                 {(selectedType?.name === 'Theme' ||
                   selectedType?.name === 'Activity' ||
+                  selectedType?.name === 'ProgressTrackingLevel' ||
+                  selectedType?.name === 'ProgressTrackingCategory' ||
+                  selectedType?.name === 'StoryBookParts' ||
                   selectedType?.name === 'StoryBook' ||
                   selectedType?.name === 'StoryBookPartQuestion') && (
                   <div className="justify-self col-end-3 pb-2">
@@ -413,7 +420,7 @@ export function ContentManagement() {
                       <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
                         {' '}
                       </ArrowLeftIcon>
-                      Programme
+                      {selectedTab === 2 ? 'Progress' : 'Programme'}
                       <span className="px-1 text-gray-400">
                         {' '}
                         / {selectedType?.name}

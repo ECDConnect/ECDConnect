@@ -50,8 +50,9 @@ import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { calendarThunkActions } from '@/store/calendar';
-import { differenceInHours, isSameDay } from 'date-fns';
-// import { browserName, browserVersion } from 'react-device-detect';
+import { pointsSelectors, pointsThunkActions } from '@/store/points';
+import { pointsConstants } from '@/constants/points';
+import { PointsSummaryCard } from './components/points-summary-card/points-summary-card';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -115,6 +116,19 @@ export const Dashboard: React.FC = () => {
     // @ts-ignore
     undefined
   ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
+
+  const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
+  const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
+  const pointsTotal = pointsSummaryData.reduce((total, current) => {
+    if (current.month == currentMonth) {
+      return (total += current.pointsTotal);
+    }
+    return total;
+  }, 0);
+  const pointsMax =
+    isPrincipal || isFundaAppAdmin
+      ? pointsConstants.principalOrAdminMonthlyMax
+      : pointsConstants.practitionerMonthlyMax;
 
   const { userProfilePicture } = useDocuments();
 
@@ -211,7 +225,7 @@ export const Dashboard: React.FC = () => {
    * 2. Children of Practitioners
    */
   useEffect(() => {
-    if (isOnline) {
+    if (isOnline && !!userData) {
       if (isCoach) {
         (async () =>
           await appDispatch(
@@ -231,7 +245,7 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
       }
 
-      if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
+      if (userData.roles?.some((role) => role.name === 'Practitioner')) {
         const currentPrincipal = practitionerData?.filter(
           (x) => x?.user?.id === userData.id
         );
@@ -244,6 +258,13 @@ export const Dashboard: React.FC = () => {
               })
             ).unwrap())();
         }
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
       }
     }
   }, [userData]);
@@ -725,6 +746,11 @@ export const Dashboard: React.FC = () => {
         <DashboardItems
           listItems={dashboardItems}
           notification={dashboardNotification}
+        />
+        <PointsSummaryCard
+          currentPoints={pointsTotal}
+          maxPoints={pointsMax}
+          onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY)}
         />
       </div>
     </BannerWrapper>

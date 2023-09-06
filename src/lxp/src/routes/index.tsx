@@ -86,6 +86,7 @@ import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-inf
 import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
 import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
+import { PointsSummary } from '@/pages/points/points-summary';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -217,6 +218,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.PROFILE.EDIT}
         component={EditPractitionerProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.POINTS.SUMMARY}
+        component={PointsSummary}
       />
       <Route
         exact

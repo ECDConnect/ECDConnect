@@ -63,6 +63,9 @@ const ROUTES = {
       PLAYGROUPS: '/playgroups',
       EDIT: '/edit',
     }),
+    POINTS: addPrefix('/points', {
+      SUMMARY: '/summary',
+    }),
   }),
   TRAINEE: addPrefix('/trainee', {
     SETUP_TRAINEE: '/setup-trainee',

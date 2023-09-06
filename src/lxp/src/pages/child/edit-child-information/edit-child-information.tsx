@@ -126,7 +126,6 @@ export const EditChildInformation: React.FC = () => {
   // Data Cache
   const [currentChildLearnerRecord, setCurrentChildLearnerRecord] =
     useState<LearnerDto>();
-  const [childCaregiver, setChildCaregiver] = useState<CaregiverDto>();
   const [classRoomGroupsList, setClassRoomGroupsList] = useState<
     DropDownOption<string>[]
   >([]);
@@ -176,13 +175,6 @@ export const EditChildInformation: React.FC = () => {
   }, [classroomGroups]);
 
   useEffect(() => {
-    if (caregiver) {
-      setChildCaregiver(caregiver);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [caregiver]);
-
-  useEffect(() => {
     if (currentChild && classroomGroupLearners) {
       const currentChildL = classroomGroupLearners.find(
         (x) => x.userId === currentChild.userId && x.stoppedAttendance == null
@@ -194,10 +186,10 @@ export const EditChildInformation: React.FC = () => {
 
   useEffect(() => {
     if (currentChild) {
-      setNewStackListItems(currentChild, childCaregiver);
+      setNewStackListItems(currentChild, caregiver);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentChild, childCaregiver, currentChildLearnerRecord]);
+  }, [currentChild, caregiver, currentChildLearnerRecord]);
 
   const openChildConfirmEditClassPrompt = () => {
     dialog({
@@ -589,9 +581,9 @@ export const EditChildInformation: React.FC = () => {
   const saveChildCareGiver = async (
     childCaregiverForm: ChildCaregiverInformationModel
   ) => {
-    if (childCaregiver) {
+    if (caregiver) {
       const careGiverInputModel: CaregiverDto = {
-        id: newGuid(),
+        id: caregiver?.id ?? newGuid(),
         isActive: true,
         idNumber: caregiver?.idNumber ?? '',
         phoneNumber: childCaregiverForm.phoneNumber,
@@ -628,35 +620,41 @@ export const EditChildInformation: React.FC = () => {
   const saveChildEmergencyContact = async (
     childEmergencyContactForm: ChildEmergencyContactFormModel
   ) => {
-    if (childCaregiver) {
-      const updateCareGiver: CaregiverDto = Object.assign({}, childCaregiver);
+    if (caregiver) {
+      const careGiverInputModel: CaregiverDto = {
+        id: caregiver?.id ?? newGuid(),
+        isActive: true,
+        idNumber: caregiver?.idNumber ?? '',
+        phoneNumber: caregiver?.phoneNumber,
+        firstName: caregiver?.firstName ?? '',
+        surname: caregiver?.surname ?? '',
+        insertedDate: new Date().toISOString(),
+        relationId: caregiver?.relationId,
+        siteAddress: caregiver?.siteAddress,
+        educationId: caregiver?.educationId,
+        emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
+        emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
+        emergencyContactPhoneNumber:
+          childEmergencyContactForm?.phoneNumber ?? '',
+        additionalFirstName:
+          childEmergencyContactForm?.custodianFirstname ?? '',
+        additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
+        additionalPhoneNumber:
+          childEmergencyContactForm?.custodianPhoneNumber ?? '',
+        joinReferencePanel: caregiver?.joinReferencePanel ?? false,
+        contribution: caregiver?.contribution ?? false,
+      };
 
-      if (updateCareGiver) {
-        updateCareGiver.emergencyContactFirstName =
-          childEmergencyContactForm?.firstname;
-        updateCareGiver.emergencyContactSurname =
-          childEmergencyContactForm?.surname;
-        updateCareGiver.emergencyContactPhoneNumber =
-          childEmergencyContactForm?.phoneNumber;
-        updateCareGiver.additionalFirstName =
-          childEmergencyContactForm?.custodianFirstname;
-        updateCareGiver.additionalSurname =
-          childEmergencyContactForm?.custodianSurname;
-        updateCareGiver.additionalPhoneNumber =
-          childEmergencyContactForm?.custodianPhoneNumber;
-        setChildCaregiver(updateCareGiver);
-
-        appDispatch(caregiverActions.updateCaregiver(updateCareGiver));
-        await appDispatch(
-          caregiverThunkActions.updateCaregiver({
-            id: updateCareGiver.id as string,
-            caregiver: updateCareGiver,
-          })
-        );
-      }
-
-      setViewInfomationVisible(false);
+      appDispatch(caregiverActions.updateCaregiver(careGiverInputModel));
+      await appDispatch(
+        caregiverThunkActions.updateCaregiver({
+          id: careGiverInputModel.id as string,
+          caregiver: careGiverInputModel,
+        })
+      );
     }
+
+    setViewInfomationVisible(false);
   };
 
   const saveChildHealthInformation = async (
@@ -688,9 +686,9 @@ export const EditChildInformation: React.FC = () => {
   const saveChildAddress = async (
     childHealthInformationForm: CareGiverChildInformationFormModel
   ) => {
-    if (childCaregiver) {
+    if (caregiver) {
       const updateCareGiver: CaregiverDto = JSON.parse(
-        JSON.stringify(childCaregiver)
+        JSON.stringify(caregiver)
       );
       if (updateCareGiver) {
         const siteAddress: SiteAddressDto = {
@@ -707,7 +705,6 @@ export const EditChildInformation: React.FC = () => {
         };
         updateCareGiver.siteAddress = siteAddress;
         updateCareGiver.siteAddressId = siteAddress.id;
-        setChildCaregiver(updateCareGiver);
 
         appDispatch(caregiverActions.updateCaregiver(updateCareGiver));
       }
