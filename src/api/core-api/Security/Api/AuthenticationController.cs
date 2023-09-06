@@ -36,6 +36,8 @@ namespace ECDLink.Security.Api
             [FromServices] UserManager<ApplicationUser> _userManager,
             [FromBody] LoginRequestModel login)
         {
+            Console.WriteLine("Login: Referrer:{0}", HttpContext.Request.Headers.Referer);
+            Console.WriteLine("Login: Origin  :{0}", HttpContext.Request.Headers.Origin);
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
