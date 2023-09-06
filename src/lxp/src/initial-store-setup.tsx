@@ -52,6 +52,7 @@ import { childrenForPractitionerThunkActions } from './store/childrenForPractiti
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
+import { pointsThunkActions } from './store/points';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -138,6 +139,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         (async () =>
           await appDispatch(
             practitionerForCoachThunkActions.getPractitionersForCoach({})
+          ).unwrap())();
+      }
+      if (!isCoach) {
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: userData?.id!,
+            })
           ).unwrap())();
       }
     }
