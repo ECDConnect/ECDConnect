@@ -60,6 +60,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string ReportDeadlinePassed = "report-deadline-passed";
         public const string PrincipalMovedToNewProgramme = "report-deadline-passed";
         public const string FillInSelfAsessmentForm = "fillin-self-asessment-form";
+        public const string TraineeJourneyStartSelf = "start-trainee-journey";
 
 
         //coach notifications
@@ -78,6 +79,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGUploadRTHNotification = "gg-upload-rth";
         public const string GGExpectedMomDeliveryDateApproaching = "gg-expected-moms-delivery-date-approaching";
         public const string GGRedAlertMaternalDistress = "gg-redalert-maternal-distress";
+        public const string GGMaternalDistress = "gg-maternal-distress";
 
         public const string GGVisitOverdue = "gg-visit-overdue";
         public const string GGChildMUAC = "gg-child-muac";
@@ -86,6 +88,12 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGReferralDangerSigns = "gg-referral-danger-signs";
         public const string GGTwoVisitsMissed = "gg-two-visits-missed";
         public const string GGChildOlderThanFive = "gg-child-older-than-five";
+        public const string GGReferDOHA = "gg-refer-home-affairs";
+        public const string GGReferSASSA = "gg-refer-sassa";
+        public const string GGClinicVisitsNotUpToDate = "gg-clinic-visits-not-uptodate";
+        public const string GGPregnantMomLowMUAC = "gg-pregnant-low-muac";
+        public const string GGChildMUACMalnutrition = "gg-child-muac-malnutrution";
+        public const string GGyoungerthan20 = "gg-younger-than-20";
 
 
     }
