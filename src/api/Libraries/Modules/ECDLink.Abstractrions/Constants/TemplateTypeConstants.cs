@@ -98,10 +98,23 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGLowBirthWeight = "gg-low-birth-weight";
         public const string GGSubstanceAbuse = "gg-substance-abuse";
         public const string GGAddBreastfeedingClub = "gg-breastfeeding-club";
+        public const string GGAddedABreastfeedingClub = "gg-added-breastfeeding-club";
+        public const string GGVisitsNotCompleted14days = "gg-visits-not-completed-14days";
 
+        //GG points and ranking
         public const string GGEarningPoints = "gg-earning-points";
+        public const string GGPointsYearlySummary = "gg-points-yearly-summary";
         public const string GGEarningXPoints = "gg-earning-x-points";
-
+        public const string GGTopPointsEarner = "gg-top-points-earner";
+        public const string GGTopPointsTeam = "gg-top-points-team";
+        public const string GGTop25PercPointsTeam = "gg-top-25-perc-points-team";
+        public const string GGBottom75PercPointsTeam = "gg-bottom-75-perc-points-team";
+        public const string GGGoldTierPointsTeam = "gg-points-gold-tier-team";
+        public const string GGSilverTierPointsTeam = "gg-points-silver-tier-team";
+        public const string GGBronzeTierPointsTeam = "gg-points-bronze-tier-team";
+        public const string GGPointsTeamPlacement = "gg-points-placement-team";
+        public const string GGPointsTeamPlacementNotTop3 = "gg-points-placement-team-top-25-perc-not-top-three";
+        public const string GGPointsTeamPlacementNotBottom75Perc = "gg-points-placement-team-bottom-75perc";
 
     }
 }

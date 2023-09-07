@@ -186,6 +186,14 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTwoVisitsMissed, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(3));
         }
+        public async Task<bool> SendGGVisitsNotCompleted14daysNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGVisitsNotCompleted14days, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
 
         public async Task<bool> SendGGXVisitsMissedNotification(
 [Service] UserManager<ApplicationUser> userManager,
@@ -368,7 +376,27 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGAddBreastfeedingClub, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
         }
+        public async Task<bool> SendGGGGAddedABreastfeedingClubNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string currentMonth, string currentClubs)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "CurrentMonth",
+                ReplacementValue = currentMonth
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "CurrentClubs",
+                ReplacementValue = currentClubs
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGAddedABreastfeedingClub, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
 
+
+        //GG points and Ranking
         public async Task<bool> SendGGEarningPointsNotification(
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId, string currentMonth)
@@ -397,7 +425,187 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGEarningXPoints, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(10));
         }
 
+        public async Task<bool> SendGGTopPointsEarnerNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTopPointsEarner, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(10));
+        }
 
+        public async Task<bool> SendGGTopPointsTeamNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string totalTeamPoints)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "TotalTeamPoints",
+                ReplacementValue = totalTeamPoints
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTopPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(3));
+        }
+        public async Task<bool> SendGGTop25PercPointsTeamNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string totalTeamPoints, string pointsBehindWinningTeam)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "TotalTeamPoints",
+                ReplacementValue = totalTeamPoints
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PointsBehindWinningTeam",
+                ReplacementValue = pointsBehindWinningTeam
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGTop25PercPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+        }
+        public async Task<bool> GGBottom75PercPointsTeam(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string ranking)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "Ranking",
+                ReplacementValue = ranking
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBottom75PercPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+        }
+
+        public async Task<bool> SendGGGoldTierPointsTeamNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string totalTeamPoints, string quarter)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "TotalTeamPoints",
+                ReplacementValue = totalTeamPoints
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "Quarter",
+                ReplacementValue = quarter
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGGoldTierPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+        }
+        public async Task<bool> SendGGSilverTierPointsTeamNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string totalTeamPoints, string quarter)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "TotalTeamPoints",
+                ReplacementValue = totalTeamPoints
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "Quarter",
+                ReplacementValue = quarter
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGSilverTierPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+        }
+        public async Task<bool> SendGGBronzeTierPointsTeamNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string totalTeamPoints, string quarter)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "TotalTeamPoints",
+                ReplacementValue = totalTeamPoints
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "Quarter",
+                ReplacementValue = quarter
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGBronzeTierPointsTeam, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+        }
+        public async Task<bool> SendGGPointsTeamPlacementNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string placement, string currentYear)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "Placement",
+                ReplacementValue = placement
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "CurrentYear",
+                ReplacementValue = currentYear
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacement, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+        }
+        public async Task<bool> SendGGPointsTeamPlacementNotTop3Notification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string placement, string currentYear)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "Placement",
+                ReplacementValue = placement
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "CurrentYear",
+                ReplacementValue = currentYear
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacementNotTop3, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+        }
+        public async Task<bool> SendGGPointsTeamPlacementNotBottom75PercNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string placement, string currentYear)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "Placement",
+                ReplacementValue = placement
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "CurrentYear",
+                ReplacementValue = currentYear
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsTeamPlacementNotBottom75Perc, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(3));
+        }
+
+        public async Task<bool> SendGGPointsYearlySummaryNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, string pointsEarned, string currentYear)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "PointsEarned",
+                ReplacementValue = pointsEarned
+            });
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "CurrentYear",
+                ReplacementValue = currentYear
+            });
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.GGPointsYearlySummary, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(7));
+        }
 
     }
 }
