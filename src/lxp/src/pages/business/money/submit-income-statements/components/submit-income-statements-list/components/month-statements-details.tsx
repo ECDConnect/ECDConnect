@@ -218,7 +218,6 @@ export const MonthStatementsDetails: React.FC = () => {
     const dbeSubsidyValue: IncomeStatementsDto[] = [];
     const otherValue: IncomeStatementsDto[] = [];
 
-    console.log('offlineFilteredIncome', offlineFilteredIncome);
     offlineFilteredIncome?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
         preschoolValue.push(item);
