@@ -148,6 +148,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               userId: userData?.id!,
             })
           ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsLibrary({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
       }
     }
   }, [appDispatch, userData, isCoach, practitioner]);

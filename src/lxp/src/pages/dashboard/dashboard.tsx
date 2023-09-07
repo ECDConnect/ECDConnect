@@ -266,6 +266,13 @@ export const Dashboard: React.FC = () => {
               userId: userData?.id!,
             })
           ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsLibrary({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
       }
     }
   }, [userData]);
