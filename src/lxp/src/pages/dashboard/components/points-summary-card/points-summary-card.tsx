@@ -1,24 +1,27 @@
-import { Button, ProgressBar, Typography } from '@ecdlink/ui';
+import { ProgressBar } from '@ecdlink/ui';
 import * as styles from './points-summary-card.styles';
 import { PointsSummaryCardProps } from './points-summary-card.types';
 import { ChevronRightIcon } from '@heroicons/react/solid';
-import { ReactComponent as EmojiGreat } from '@/assets/ECD_Connect_emoji1.svg';
-import { ReactComponent as EmojiGood } from '@/assets/ECD_Connect_emoji3.svg';
-import { ReactComponent as EmojiTry } from '@/assets/ECD_Connect_emoji11.svg';
+import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
+import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
+import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 
 export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
   currentPoints,
   maxPoints,
+  showIcon,
+  useColourBackground,
   onClick,
 }) => {
   const percentageScore = (currentPoints / maxPoints) * 100;
 
-  const cardBgColour =
-    percentageScore < 60
-      ? 'errorBg'
-      : percentageScore < 80
-      ? 'infoBb'
-      : 'successBg';
+  const cardBgColour = !useColourBackground
+    ? 'uiBg'
+    : percentageScore < 60
+    ? 'errorBg'
+    : percentageScore < 80
+    ? 'infoBb'
+    : 'successBg';
   const progressColour =
     percentageScore < 60
       ? 'errorMain'
@@ -28,14 +31,14 @@ export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
 
   const getImage = () => {
     if (percentageScore < 60) {
-      return <EmojiTry className="mr-2 h-16 w-16" />;
+      return <EmojiOrangeSmile className="mr-2 h-16 w-16" />;
     }
 
     if (percentageScore < 80) {
-      return <EmojiGood className="mr-2 h-16 w-16" />;
+      return <EmojiBlueSmile className="mr-2 h-16 w-16" />;
     }
 
-    return <EmojiGreat className="mr-2 h-16 w-16" />;
+    return <EmojiGreenSmile className="mr-2 h-16 w-16" />;
   };
 
   return (
@@ -47,7 +50,7 @@ export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
       }}
     >
       <div className={styles.content}>
-        {getImage()}
+        {showIcon && getImage()}
         <div className="h-16 w-full">
           <ProgressBar
             className="h-2"
@@ -55,10 +58,10 @@ export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
             subLabel=""
             value={percentageScore}
             primaryColour={progressColour}
-            secondaryColour={'uiBg'}
+            secondaryColour={useColourBackground ? 'uiBg' : 'uiLight'}
           />
         </div>
-        <ChevronRightIcon className={styles.menuChevron} />
+        {!!onClick && <ChevronRightIcon className={styles.menuChevron} />}
       </div>
     </div>
   );

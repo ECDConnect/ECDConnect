@@ -40,6 +40,7 @@ export const AddOrEditPractitioner = ({
     mode: 'onChange',
   });
   const [isValidPractitioner, setIsValidPractitioner] = useState<boolean>();
+  const [isPrincipal, setIsPrincipal] = useState<boolean>(false);
   const [isPractitionerRegistered, setIsPractitionerRegistered] =
     useState<boolean>();
   const [addNote, setAddNote] = useState();
@@ -78,6 +79,8 @@ export const AddOrEditPractitioner = ({
 
     if (validPassportOrIdNumber) {
       getPractitionerDetailsByIdNumber().then((p: any) => {
+        setIsPrincipal(p?.appUser?.practitionerObjectData?.isPrincipal);
+
         if (p?.note !== undefined) {
           setAddNote(p?.note);
         }
@@ -196,6 +199,33 @@ export const AddOrEditPractitioner = ({
             )}
           </div>
         </div>
+        {(addNote || isPrincipal) && (
+          <div>
+            <Alert
+              type={'error'}
+              title={
+                isPrincipal
+                  ? 'This practitioner is linked to a different SmartStart programme.'
+                  : addNote
+              }
+              list={[
+                'Check if the ID you entered is correct.',
+                'Make sure the practitioner is still in your programme.',
+                'If your practitioner needs help, please contact the SmartStart call centre.',
+              ]}
+              button={
+                <Button
+                  text="Contact call centre"
+                  icon="PhoneIcon"
+                  type={'filled'}
+                  color={'primary'}
+                  textColor={'white'}
+                  onClick={() => callForHelp()}
+                />
+              }
+            />
+          </div>
+        )}
         {isValidPractitioner === true && !addNote && (
           <>
             <FormInput<AddPractitionerModel>
@@ -216,7 +246,7 @@ export const AddOrEditPractitioner = ({
             />
           </>
         )}
-        {isValidPractitioner === false && (
+        {isValidPractitioner === false && !isPrincipal && (
           <div className="mb-8">
             <Alert
               type={'error'}
@@ -238,35 +268,12 @@ export const AddOrEditPractitioner = ({
             />
           </div>
         )}
-        {isValidPractitioner === true && !addNote && (
+        {isValidPractitioner === true && !addNote && !isPrincipal && (
           <div className="mb-8">
             <Alert type={'success'} title={'Practitioner found!'} />
           </div>
         )}
-        {addNote && (
-          <div>
-            <Alert
-              type={'error'}
-              title={addNote}
-              list={[
-                'Check if the ID you entered is correct.',
-                'Make sure the practitioner is still in your programme.',
-                'If your practitioner needs help, please contact the SmartStart call centre.',
-              ]}
-              button={
-                <Button
-                  text="Contact call centre"
-                  icon="PhoneIcon"
-                  type={'filled'}
-                  color={'primary'}
-                  textColor={'white'}
-                  onClick={() => callForHelp()}
-                />
-              }
-            />
-          </div>
-        )}
-        {!addNote && isPractitionerRegistered !== undefined && (
+        {!addNote && isPractitionerRegistered !== undefined && !isPrincipal && (
           <div>
             <Alert
               type={isPractitionerRegistered ? 'success' : 'error'}
@@ -307,7 +314,9 @@ export const AddOrEditPractitioner = ({
           text="Save"
           textColor="white"
           icon="SaveIcon"
-          disabled={!isValid || isValidPractitioner === false || addNote}
+          disabled={
+            !isValid || isValidPractitioner === false || addNote || isPrincipal
+          }
           onClick={handleSubmit}
         />
         {isValidPractitioner === false && (
