@@ -38,21 +38,27 @@ export const ChildBasicInfo: React.FC<
   );
   const location = useLocation<PractitionerChildRegisterState>();
 
-  const practitionerIdFromCoach = location?.state?.practitionerId;
+  const practitionerIdFromCoachFlow = location?.state?.practitionerId;
 
-  const practitionerFromCoach = useSelector(
-    getPractitionerByUserId(practitionerIdFromCoach || '')
+  const practitionerFromCoachFlow = useSelector(
+    getPractitionerByUserId(practitionerIdFromCoachFlow || '')
   );
   const allPractitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const userId = practitioner?.userId || practitionerFromCoach?.userId;
-  const classroomForPractitioner = allClassroomGroups.filter((item) => {
-    return practitionerIdFromCoach
-      ? item.userId === userId
-      : item?.userId === userId || item?.isActive !== true;
-  });
+  const practitionerFromPractitionerFlow = useSelector(
+    practitionerSelectors.getPractitioner
+  );
+  const userId =
+    practitionerFromPractitionerFlow?.userId ||
+    practitionerFromCoachFlow?.userId;
+  const classroomForPractitioner = allClassroomGroups.filter(
+    (item) => item.userId === userId
+  );
+  const isPrincipal =
+    practitionerFromPractitionerFlow?.isPrincipal ||
+    practitionerFromCoachFlow?.isPrincipal;
+
   const practitionersForPrincipal = allPractitioners?.filter(
-    (item) => item.principalHierarchy === practitionerIdFromCoach
+    (item) => item.principalHierarchy === userId
   );
   const classroomsByPractitionersForPrincipal = allClassroomGroups.filter(
     (item) =>
@@ -60,12 +66,9 @@ export const ChildBasicInfo: React.FC<
         (practitioner) => practitioner.userId === item.userId
       )
   );
-  const classroomsForPrincipal = practitionerIdFromCoach
+  const classroomsForPrincipal = isPrincipal
     ? [...classroomForPractitioner, ...classroomsByPractitionersForPrincipal]
     : allClassroomGroups;
-
-  const isPrincipal =
-    practitioner?.isPrincipal || practitionerFromCoach?.isPrincipal;
 
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
