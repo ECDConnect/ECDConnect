@@ -218,6 +218,41 @@ class CoachService {
 
     return true;
   }
+
+  async coachNameByUGetAllCoachingCircleClubsForCoachserId(
+    userId: string
+  ): Promise<CoachDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllCoachingCircleClubsForCoach($userId: String, $startDate: DateTime!, $endDate: DateTime!) {
+        allCoachingCircleClubsForCoach(userId: $userId, startDate: $startDate, endDate: $endDate) {
+            clubsWithNoLinkedMeetings {
+                id
+                name
+                cCMeetingStatus
+                cCMeetingStatusColor
+            }
+            clubsWithLinkedMeetings {
+                id
+                name
+                cCMeetingStatus
+                cCMeetingStatusColor
+            }
+        }
+    }
+      `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Coach circles Failed - Server connection error');
+    }
+
+    return response.data.data.allCoachingCircleClubsForCoach;
+  }
 }
 
 export default CoachService;

@@ -5,6 +5,7 @@ import { Connect } from './connect-tab/connect';
 import { useState } from 'react';
 import { CommunityRouteState } from './community.types';
 import format from 'date-fns/format';
+import { CoachCircles } from './coach-circles/coach-circles';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,
@@ -31,6 +32,11 @@ export const Community: React.FC = () => {
       title: 'Leagues',
       initActive: false,
       child: 'Coming Soon!',
+    },
+    {
+      title: 'Circles',
+      initActive: false,
+      child: <CoachCircles />,
     },
     {
       title: 'Connect',
