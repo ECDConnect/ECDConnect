@@ -73,7 +73,7 @@ namespace EcdLink.Api.CoreApi
             var corsAllowedDomainsEnv = System.Environment.GetEnvironmentVariable("CORS_ALLOWED_DOMAINS");
             if (string.IsNullOrEmpty(corsAllowedDomainsEnv))
             {
-                corsAllowedDomainsEnv = "https://ecdconnect.co.za,https://*.ecdconnect.co.za,https://*.ecdlink.co.za,https://*.azurewebsites.net,http://localhost:3001,http://localhost:3000,https://smartstart-ecdconnect-co-za-funda.datafree.co";
+                corsAllowedDomainsEnv = "https://ecdconnect.co.za,https://*.ecdconnect.co.za,https://*.azurewebsites.net,https://portal.smartstart.ecdconnect.co.za,https://portal.chwconnect.ecdconnect.co.za,http://localhost:3000,http://localhost:3001,http://localhost:3002,http://localhost:3003,http://localhost:3005,https://*.datafree.co,https://*.sbox.datafree.co";
             }
             //var allowedDomains = new[] { "https://ecdconnect.co.za",
             //"https://ecdconnect-co-za-fundasmartstart.datafree.co",
@@ -88,12 +88,13 @@ namespace EcdLink.Api.CoreApi
             services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
                             .AllowAnyMethod()
                             .AllowAnyHeader()
+                            .AllowCredentials()
                             .SetIsOriginAllowedToAllowWildcardSubdomains()
                             .SetIsOriginAllowed(origin => true)
                             .WithOrigins(corsAllowedDomains)
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
-
+            
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
             PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
