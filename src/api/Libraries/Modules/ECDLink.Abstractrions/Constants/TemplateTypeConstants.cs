@@ -94,6 +94,13 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGPregnantMomLowMUAC = "gg-pregnant-low-muac";
         public const string GGChildMUACMalnutrition = "gg-child-muac-malnutrution";
         public const string GGyoungerthan20 = "gg-younger-than-20";
+        public const string GGXVisitsMissed = "gg-x-visits-missed";
+        public const string GGLowBirthWeight = "gg-low-birth-weight";
+        public const string GGSubstanceAbuse = "gg-substance-abuse";
+        public const string GGAddBreastfeedingClub = "gg-breastfeeding-club";
+
+        public const string GGEarningPoints = "gg-earning-points";
+        public const string GGEarningXPoints = "gg-earning-x-points";
 
 
     }
