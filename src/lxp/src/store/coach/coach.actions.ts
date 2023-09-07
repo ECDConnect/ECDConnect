@@ -190,6 +190,45 @@ export const updateCoach = createAsyncThunk<
   }
 );
 
+export const getAllCoachingCircleClubsForCoach = createAsyncThunk<
+  CoachDto,
+  { coachId: string; startDate: Date; endDate: Date },
+  ThunkApiType<RootState>
+>(
+  'getAllCoachingCircleClubsForCoach',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ coachId, startDate, endDate }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      coach: { coachCircles: coachCirclesCache },
+    } = getState();
+
+    if (!coachCirclesCache) {
+      try {
+        let coach: CoachDto | undefined;
+
+        if (userAuth?.auth_token) {
+          coach = await new CoachService(
+            userAuth?.auth_token
+          ).GetAllCoachingCircleClubsForCoachserId(coachId, startDate, endDate);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+        if (!coach) {
+          return rejectWithValue(
+            'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
+          );
+        }
+        return coach;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return coachCirclesCache;
+    }
+  }
+);
+
 const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   SecondaryAreaOfOperation: coach.secondaryAreaOfOperation,
   SigningSignature: coach.signingSignature || undefined,

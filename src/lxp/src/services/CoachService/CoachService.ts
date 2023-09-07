@@ -219,8 +219,10 @@ class CoachService {
     return true;
   }
 
-  async coachNameByUGetAllCoachingCircleClubsForCoachserId(
-    userId: string
+  async GetAllCoachingCircleClubsForCoachserId(
+    userId: string,
+    startDate: Date | string,
+    endDate: Date | string
   ): Promise<CoachDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -244,6 +246,8 @@ class CoachService {
       `,
       variables: {
         userId: userId,
+        startDate: startDate,
+        endDate: endDate,
       },
     });
 

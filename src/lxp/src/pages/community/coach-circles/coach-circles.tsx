@@ -1,6 +1,8 @@
+import { coachSelectors } from '@/store/coach';
 import { getQuarterMonths } from '@/utils/common/date.utils';
 import { Typography } from '@ecdlink/ui';
 import { format, getQuarter, getYear, lastDayOfQuarter } from 'date-fns';
+import { useSelector } from 'react-redux';
 
 export const CoachCircles = () => {
   const date = new Date();
@@ -8,6 +10,9 @@ export const CoachCircles = () => {
   const year = getYear(date);
   const quarterMonths = getQuarterMonths(date);
   const quarterLastDay = format(lastDayOfQuarter(date), 'd MMM');
+  const coachCircleData = useSelector(coachSelectors.getCoachCircles);
+
+  console.log({ coachCircleData });
   return (
     <div className="p-4">
       <Typography
