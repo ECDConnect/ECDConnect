@@ -93,6 +93,7 @@ import { StatementNotSubmitted } from '@/pages/coach/coach-practitioner-business
 import { StartupSupportEnding } from '@/pages/coach/coach-practitioner-business/components/support/startup-support-ending';
 import { MonthsLoss } from '@/pages/coach/coach-practitioner-business/components/statements/loss';
 import { MonthsProfit } from '@/pages/coach/coach-practitioner-business/components/statements/profit';
+import { PointsSummary } from '@/pages/points/points-summary';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -224,6 +225,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.PROFILE.EDIT}
         component={EditPractitionerProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.POINTS.SUMMARY}
+        component={PointsSummary}
       />
       <Route
         exact

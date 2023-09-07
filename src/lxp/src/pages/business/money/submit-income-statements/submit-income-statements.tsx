@@ -43,7 +43,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     'statements',
     'submitIncomeStatement'
   );
-  console.log('isSubmittingStatement', isSubmittingStatement);
 
   const [submitMonthAndYear, setSubmitMonthAndYear] = useState<Date>(
     new Date()
