@@ -1,11 +1,11 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { Alert, BannerWrapper, Button, Typography } from '@ecdlink/ui';
+import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { traineeSelectors } from '@/store/trainee';
+import { WhatsappCall } from '../contact/whatsapp-call';
 
 export const StatementNotSubmitted = () => {
   const { isOnline } = useOnlineStatus();
@@ -19,14 +19,6 @@ export const StatementNotSubmitted = () => {
   const hasStartUpSupport =
     timeline?.startUpSupportStartDate !== null &&
     timeline?.startUpSupportEndDate !== null;
-
-  const callForHelp = () => {
-    window.open('tel:' + practitioner?.user?.phoneNumber);
-  };
-
-  const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
-  };
 
   return (
     <>
@@ -107,63 +99,9 @@ export const StatementNotSubmitted = () => {
               />
             </div>
 
-            <div className="mt-14">
-              <Typography
-                type="h4"
-                weight="bold"
-                lineHeight="snug"
-                text={'Contact ' + practitionerFirstName}
-              />
-              <Typography
-                type="h5"
-                weight="bold"
-                lineHeight="snug"
-                color="secondary"
-                text={`${
-                  practitioner?.user?.phoneNumber == null
-                    ? 'Number not available'
-                    : practitioner?.user?.phoneNumber
-                }`}
-              />
-              <Button
-                color={'primary'}
-                type={'outlined'}
-                className={'mr-4 mt-2'}
-                size={'small'}
-                onClick={whatsapp}
-              >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className="text-primary mr-1 h-5 w-5"
-                />
-                <Typography
-                  color={'primary'}
-                  type={'small'}
-                  weight="bold"
-                  text={`WhatsApp client`}
-                />
-              </Button>
-              <Button
-                text="Call client"
-                icon="PhoneIcon"
-                type="outlined"
-                size="small"
-                color="primary"
-                textColor="primary"
-                iconPosition="start"
-                onClick={callForHelp}
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Alert
-                type={'info'}
-                className="items-left justify-left mt-4 flex"
-                title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
-              />
-            </div>
-            <div className="flex flex-col justify-center p-4">
+            <WhatsappCall />
+
+            <div className="flex flex-col justify-center">
               <Button
                 shape="normal"
                 color="primary"

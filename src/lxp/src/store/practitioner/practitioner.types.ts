@@ -1,5 +1,4 @@
 import {
-  BalanceSheetDto,
   ExpensesStatementsDto,
   IncomeStatementsDto,
   PractitionerDto,
@@ -18,10 +17,4 @@ export interface PractitionerState {
   balanceSheet?: any[];
   expenses?: ExpensesStatementsDto[];
   income?: IncomeStatementsDto[];
-  feeTypes: any[] | undefined;
-  expensesTypes: any[] | undefined;
-  incomeTypes: any[] | undefined;
-  pdfReportData: any[] | undefined;
-  contributionTypes: any[] | undefined;
-  payTypes: undefined;
 }

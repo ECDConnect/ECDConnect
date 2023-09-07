@@ -1,10 +1,8 @@
 import {
   BalanceSheetDto,
   ExpensesStatementsDto,
-  ExpensesStatementsTypes,
   IncomeStatementsDto,
   PractitionerDto,
-  ReportTableDataDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
@@ -31,8 +29,6 @@ export const PractitionerActions = {
     'getAllStatementsBalanceSheetForPractitioner',
   GET_ALL_EXPENSES_FOR_PRACTITIONER: 'getAllExpensesForPractitioner',
   GET_ALL_INCOME_FOR_PRACTITIONER: 'getAllIncomeForPractitioner',
-  GET_INCOME_EXPENSES_PDF_REPORT_FOR_PRACTITIONER:
-    'getIncomeExpensesPDFreportForPractitioner',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -458,39 +454,6 @@ export const getAllIncomeForPractitioner = createAsyncThunk<
         return rejectWithValue('Error getting income');
       }
       return income;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const getIncomeExpensesPDFreportForPractitioner = createAsyncThunk<
-  any[],
-  { userId: string; year: Number; month: Number },
-  ThunkApiType<RootState>
->(
-  'getIncomeExpensesPDFreportForPractitioner',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ userId, year, month }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      let report: ReportTableDataDto[] | undefined;
-
-      if (userAuth?.auth_token) {
-        report = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).getMonthsIncomeExpensesReport(userId, month, year);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!report) {
-        return rejectWithValue('Error getting pdf Report Data');
-      }
-      return report;
     } catch (err) {
       return rejectWithValue(err);
     }

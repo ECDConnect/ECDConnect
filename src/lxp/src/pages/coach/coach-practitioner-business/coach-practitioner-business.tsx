@@ -16,6 +16,7 @@ export const CoachPractitionerBusiness = () => {
   const { practitionerId } = useParams<PractitionerBusinessParams>();
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const practitionerFirstName = practitioner?.user?.firstName;
+  const practitionerFullname = practitioner?.user?.fullName;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   const currentDate = new Date();
@@ -34,10 +35,10 @@ export const CoachPractitionerBusiness = () => {
   const [incomeStatementMonth, setIncomeStatementMonth] = useState('');
   const [lossProfitMonths, setLossProfitMonths] = useState('');
 
-  const [isLoss, setIsLoss] = useState(true);
-  const [isProfit, setIsProfit] = useState(true);
+  const [isLoss, setIsLoss] = useState(false);
+  const [isProfit, setIsProfit] = useState(false);
   const [isIncomeStatementSubmitted, setIsIncomeStatementSubmitted] =
-    useState(true);
+    useState(false);
 
   const listItems = [];
 
@@ -112,6 +113,14 @@ export const CoachPractitionerBusiness = () => {
       menuIcon: 'SparklesIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_BUSINESS.PROFIT.replace(
+            ':practitionerId',
+            practitionerId
+          ),
+          { lossProfitMonths: lossProfitMonths }
+        ),
       iconBackgroundColor: 'successMain',
       chipConfig: {
         colorPalette: {
@@ -135,6 +144,14 @@ export const CoachPractitionerBusiness = () => {
       menuIcon: 'ExclamationIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_BUSINESS.LOSS.replace(
+            ':practitionerId',
+            practitionerId
+          ),
+          { lossProfitMonths: lossProfitMonths }
+        ),
       iconBackgroundColor: 'alertMain',
       chipConfig: {
         colorPalette: {
@@ -159,7 +176,7 @@ export const CoachPractitionerBusiness = () => {
         renderOverflow
         displayOffline={!isOnline}
         title="SmartStarter business"
-        subTitle={`${practitionerFirstName} ${practitioner?.user?.surname}`}
+        subTitle={`${practitionerFullname}`}
         onBack={() => goBack()}
         className="p-4"
       >

@@ -64,15 +64,7 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
 
   const { practitionerId } = useParams<PractitionerBusinessParams>();
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
-
-  const goBack = () => {
-    history.push(
-      ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS.replace(
-        ':practitionerId',
-        practitionerId
-      )
-    );
-  };
+  const today = new Date();
 
   const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
   const [showStartupSupportDetails, setShowStartupSupportDetails] =
@@ -113,7 +105,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
     practitionerSelectors.getPractitionerBalanceSheet
   );
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
-  // const [pdfReportData, setPdfReportData] = useState<ReportTableDataDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
 
   const submittedIncome = useMemo(
@@ -121,7 +112,14 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
     [income]
   );
 
-  const today = new Date();
+  const goBack = () => {
+    history.push(
+      ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS.replace(
+        ':practitionerId',
+        practitionerId
+      )
+    );
+  };
 
   const isSameMonth =
     today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
@@ -358,15 +356,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
         statementYear
       );
 
-      // const report = await appDispatch(
-      //   practitionerThunkActions.getIncomeExpensesPDFreportForPractitioner({
-      //     userId: practitioner?.user?.id!,
-      //     month: statementMonth,
-      //     year: statementYear,
-      //   })
-      // ).unwrap();
-
-      // setPdfReportData(report);
       setIncome(incomeData);
       setExpenses(expensesData);
     };
@@ -387,7 +376,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowPreschoolDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(preschoolFees)}`,
       notRounded: true,
@@ -398,7 +386,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowStartupSupportDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(startupSupport)}`,
       notRounded: true,
@@ -409,7 +396,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowDonationsOrVouchersDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(donationsOrVouchers)}`,
       notRounded: true,
@@ -420,7 +406,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowDbeSubsidyDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(dbeSubsidy)}`,
       notRounded: true,
@@ -431,7 +416,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowOtherIncomeDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(otherIncomeValues)}`,
       notRounded: true,
@@ -445,7 +429,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowRentDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(rent)}`,
       notRounded: true,
@@ -456,7 +439,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowSalaryDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(salary)}`,
       notRounded: true,
@@ -467,7 +449,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowFoodDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(food)}`,
       notRounded: true,
@@ -478,7 +459,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowLearningMaterialsDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(learningMaterials)}`,
       notRounded: true,
@@ -489,7 +469,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowMaintenaceDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(maintenance)}`,
       notRounded: true,
@@ -500,7 +479,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowOtherExpensesDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(otherExpenseValues)}`,
       notRounded: true,
@@ -511,7 +489,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       text: '1',
-      // onActionClick: () => setShowUtilitiesDetails(true),
       classNames: 'bg-uiBg',
       subItem: `R ${incomesValueFunc(utilities)}`,
       notRounded: true,
@@ -522,34 +499,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
     'Total',
     '', // Placeholder for Day 2 column
   ];
-
-  const tableTopContent = {
-    pageTitle: `Income Statement`,
-    subtitle: '',
-    //column2 with 3 rows of text
-    text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_column_two_row_two: `ID: ${reportDetails?.idNumber}`,
-    text_column_two_row_three: `Phone: ${reportDetails?.phone}`,
-  };
-
-  const tableHeadStyles: UserOptions['headStyles'] = {
-    fillColor: [211, 211, 211], // Light grey
-    textColor: [0, 0, 0],
-    fontSize: 8,
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
-  const tableStyles: UserOptions['styles'] = {
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
-  const tableFootStyles: UserOptions['footStyles'] = {
-    textColor: [0, 0, 0],
-    fillColor: [211, 211, 211], // Light grey
-    fontSize: 10,
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
 
   return (
     <>
@@ -666,26 +615,6 @@ export const PractitionerMonthStatementsDetails: React.FC = () => {
               />
             )}
           </div>
-          {/* <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-            {isIncomeSubmitted && (
-              <GeneratePdfReportButton
-                component="income-statements"
-                title="Download Statement"
-                outputName={`${getMonthName(
-                  Number(statementMonth) - 1
-                )}-income-statement-report.pdf`}
-                tableFooter={footer}
-                tableData={pdfReportData}
-                content={tableTopContent}
-                tableHeadStyles={tableHeadStyles}
-                tableFootStyles={tableFootStyles}
-                tableStyles={tableStyles}
-                pageOriantations={'portrait'}
-                signature={signature}
-                downloadDate={today.toDateString()}
-              />
-            )}
-          </div> */}
         </div>
       </BannerWrapper>
       <Dialog

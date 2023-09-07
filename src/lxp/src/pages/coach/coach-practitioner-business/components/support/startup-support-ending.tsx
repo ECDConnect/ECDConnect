@@ -1,18 +1,12 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  Alert,
-  BannerWrapper,
-  Button,
-  StackedList,
-  Typography,
-} from '@ecdlink/ui';
-import { useHistory, useLocation, useParams } from 'react-router';
+import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
+import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 import { traineeSelectors } from '@/store/trainee';
 import { differenceInMonths, format } from 'date-fns';
+import { WhatsappCall } from '../contact/whatsapp-call';
 
 export const StartupSupportEnding = () => {
   const { isOnline } = useOnlineStatus();
@@ -29,21 +23,13 @@ export const StartupSupportEnding = () => {
     currentDate
   );
 
-  const callForHelp = () => {
-    window.open('tel:' + practitioner?.user?.phoneNumber);
-  };
-
-  const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
-  };
-
   return (
     <>
       <BannerWrapper
         size="small"
         renderOverflow
         displayOffline={!isOnline}
-        title="Not submitted"
+        title="Start-up support"
         onBack={() => history.goBack()}
         className="p-4"
       >
@@ -53,7 +39,6 @@ export const StartupSupportEnding = () => {
               <span
                 className={`text-l p-3 font-semibold text-white bg-${'alertMain'} rounded-full`}
               >
-                {' '}
                 &nbsp;{monthDifference}&nbsp;
               </span>
               <Typography
@@ -74,7 +59,7 @@ export const StartupSupportEnding = () => {
                   practitionerFirstName +
                   '’s monthly start-up support of R ' +
                   timeline?.startUpSupportAmount?.toFixed(2) +
-                  ' will be coming to and on '
+                  ' will be coming to an end on '
                 }
                 type={'h3'}
               />
@@ -86,63 +71,9 @@ export const StartupSupportEnding = () => {
               />
             </div>
 
-            <div className="mt-10">
-              <Typography
-                type="h4"
-                weight="bold"
-                lineHeight="snug"
-                text={'Contact ' + practitionerFirstName}
-              />
-              <Typography
-                type="h5"
-                weight="bold"
-                lineHeight="snug"
-                color="secondary"
-                text={`${
-                  practitioner?.user?.phoneNumber == null
-                    ? 'Number not available'
-                    : practitioner?.user?.phoneNumber
-                }`}
-              />
-              <Button
-                color={'primary'}
-                type={'outlined'}
-                className={'mr-4 mt-2'}
-                size={'small'}
-                onClick={whatsapp}
-              >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className="text-primary mr-1 h-5 w-5"
-                />
-                <Typography
-                  color={'primary'}
-                  type={'small'}
-                  weight="bold"
-                  text={`WhatsApp client`}
-                />
-              </Button>
-              <Button
-                text="Call client"
-                icon="PhoneIcon"
-                type="outlined"
-                size="small"
-                color="primary"
-                textColor="primary"
-                iconPosition="start"
-                onClick={callForHelp}
-                className="mt-2"
-              />
-            </div>
-            <div>
-              <Alert
-                type={'info'}
-                className="items-left justify-left mt-4 flex"
-                title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
-              />
-            </div>
-            <div className="flex flex-col justify-center p-4">
+            <WhatsappCall />
+
+            <div className="flex flex-col justify-center">
               <Button
                 shape="normal"
                 color="primary"

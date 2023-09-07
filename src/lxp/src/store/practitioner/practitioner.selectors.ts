@@ -3,7 +3,6 @@ import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
   PractitionerDto,
-  ReportTableDataDto,
 } from '@ecdlink/core';
 import { RootState } from '../types';
 import { PrincipalPractitioners } from './practitioner.types';
@@ -59,7 +58,3 @@ export const getPractitionerIncome = (
 export const getPractitionerExpenses = (
   state: RootState
 ): ExpensesStatementsDto[] | undefined => state?.practitioner?.expenses || [];
-
-export const getPractitionerIncomeExpensesPDFreport = (
-  state: RootState
-): ReportTableDataDto[] | undefined => state?.practitioner?.pdfReportData || [];

@@ -11,7 +11,6 @@ import {
   getAllStatementsBalanceSheetForPractitioner,
   getAllExpensesForPractitioner,
   getAllIncomeForPractitioner,
-  getIncomeExpensesPDFreportForPractitioner,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -26,12 +25,6 @@ const initialState: PractitionerState = {
   balanceSheet: undefined,
   expenses: undefined,
   income: undefined,
-  expensesTypes: undefined,
-  incomeTypes: undefined,
-  feeTypes: undefined,
-  contributionTypes: undefined,
-  payTypes: undefined,
-  pdfReportData: undefined,
 };
 
 const practitionerSlice = createSlice({
@@ -45,12 +38,6 @@ const practitionerSlice = createSlice({
       state.balanceSheet = initialState.balanceSheet;
       state.expenses = initialState.expenses;
       state.income = initialState.income;
-      state.expensesTypes = initialState.expensesTypes;
-      state.incomeTypes = initialState.incomeTypes;
-      state.feeTypes = initialState.feeTypes;
-      state.contributionTypes = initialState.contributionTypes;
-      state.payTypes = initialState.payTypes;
-      state.pdfReportData = initialState.pdfReportData;
     },
     addPrincipalPractitioners: (
       state,
@@ -96,12 +83,6 @@ const practitionerSlice = createSlice({
     builder.addCase(getAllIncomeForPractitioner.fulfilled, (state, action) => {
       state.income = action.payload;
     });
-    builder.addCase(
-      getIncomeExpensesPDFreportForPractitioner.fulfilled,
-      (state, action) => {
-        state.pdfReportData = action.payload;
-      }
-    );
     builder.addCase(
       updatePractitionerUsePhotoInReport.fulfilled,
       (state, action) => {

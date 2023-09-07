@@ -91,6 +91,8 @@ import { PractitionerPreviousStatementsList } from '@/pages/coach/coach-practiti
 import { PractitionerMonthStatementsDetails } from '@/pages/coach/coach-practitioner-business/components/statements/month-statements-details';
 import { StatementNotSubmitted } from '@/pages/coach/coach-practitioner-business/components/statements/not-submitted';
 import { StartupSupportEnding } from '@/pages/coach/coach-practitioner-business/components/support/startup-support-ending';
+import { MonthsLoss } from '@/pages/coach/coach-practitioner-business/components/statements/loss';
+import { MonthsProfit } from '@/pages/coach/coach-practitioner-business/components/statements/profit';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -458,6 +460,16 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_BUSINESS.STARTUP_SUPPORT_ENDING}
         component={StartupSupportEnding}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.PROFIT}
+        component={MonthsProfit}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.LOSS}
+        component={MonthsLoss}
       />
 
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />

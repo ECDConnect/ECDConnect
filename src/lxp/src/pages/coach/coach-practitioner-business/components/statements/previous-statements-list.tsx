@@ -139,7 +139,7 @@ export const PractitionerPreviousStatementsList: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'View & download previous statements'}
+      title={'View previous statements'}
       color={'primary'}
       onBack={goBack}
       displayOffline={!isOnline}
@@ -150,7 +150,7 @@ export const PractitionerPreviousStatementsList: React.FC = () => {
           className="mb-4"
           weight="bold"
           color="textDark"
-          text={'Choose a statement to view and download'}
+          text={'Choose a statement to view'}
         />
         {prevStatementsItems && (
           <StackedList

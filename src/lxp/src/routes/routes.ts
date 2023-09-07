@@ -105,6 +105,8 @@ const ROUTES = {
       STATEMENT_DETAILS: '/:practitionerId/statement-details',
       NOT_SUBMITTED: '/:practitionerId/not-submitted',
       STARTUP_SUPPORT_ENDING: '/:practitionerId/startup-support-ending',
+      PROFIT: '/:practitionerId/profit',
+      LOSS: '/:practitionerId/loss',
     }),
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',

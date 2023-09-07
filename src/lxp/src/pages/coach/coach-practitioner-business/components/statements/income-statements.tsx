@@ -47,11 +47,6 @@ export const IncomeStatements: React.FC<StatementProps> = ({
 
   const { practitionerId } = useParams<PractitionerBusinessParams>();
 
-  // const { isLoading: isSubmittingStatement } = useThunkFetchCall(
-  //   'statements',
-  //   'submitIncomeStatement'
-  // );
-
   const [submitMonthAndYear, setSubmitMonthAndYear] = useState<Date>(
     new Date()
   );
@@ -74,7 +69,7 @@ export const IncomeStatements: React.FC<StatementProps> = ({
         balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
           ?.submitted || false
       );
-      // setIsIncomeStatementSubmitted(isThisMonthSubmitted);
+      setIsIncomeStatementSubmitted(isThisMonthSubmitted);
 
       const nextMonth = getNextMonth(currentDate);
       const nextSubmit = new Date(
@@ -92,7 +87,7 @@ export const IncomeStatements: React.FC<StatementProps> = ({
           balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
             ?.submitted || false
         );
-        // setIsIncomeStatementSubmitted(isThisMonthSubmitted);
+        setIsIncomeStatementSubmitted(isThisMonthSubmitted);
 
         const nextMonth = getNextMonth(currentDate);
         const nextSubmit = new Date(
@@ -109,7 +104,7 @@ export const IncomeStatements: React.FC<StatementProps> = ({
           balanceSheet?.find((x) => x.month === currentDate.getMonth())
             ?.submitted || false
         );
-        // setIsIncomeStatementSubmitted(isThisMonthSubmitted);
+        setIsIncomeStatementSubmitted(isThisMonthSubmitted);
 
         const nextSubmit = new Date(
           currentDate.getFullYear(),
@@ -211,8 +206,8 @@ export const IncomeStatements: React.FC<StatementProps> = ({
       balanceSheet?.[balanceSheet?.length! - 2]?.balance! < 0 &&
       balanceSheet?.[balanceSheet?.length! - 3]?.balance! < 0
     ) {
-      // setIsLoss(true);
-      // setIsProfit(false);
+      setIsLoss(true);
+      setIsProfit(false);
     }
 
     // Profit check
@@ -220,8 +215,8 @@ export const IncomeStatements: React.FC<StatementProps> = ({
       balanceSheet?.[balanceSheet?.length! - 2]?.balance! > 0 &&
       balanceSheet?.[balanceSheet?.length! - 3]?.balance! > 0
     ) {
-      // setIsProfit(true);
-      // setIsLoss(false);
+      setIsProfit(true);
+      setIsLoss(false);
     }
     // set months for parent
     setLossProfitMonths(previousMonthRecord + ' to ' + currentMonthRecord);
