@@ -104,6 +104,9 @@ class TraineeService {
             signStartUpSupportAgreementColor
             signStartUpSupportAgreementDate
             signStartUpSupportAgreementDeadlineDate
+            startUpSupportStartDate
+            startUpSupportEndDate
+            startUpSupportAmount
             traineeVisits {
                 id
                 plannedVisitDate

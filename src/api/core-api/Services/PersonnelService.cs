@@ -10,6 +10,7 @@ using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -52,8 +53,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<Coach, Guid> _coachRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
 
-
         private IGenericRepository<CalendarEventParticipant, Guid> _calendarEventParticipantRepo;
+        private IGenericRepository<StatementsStartupSupport, Guid> _statementStartupSupportRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -96,6 +97,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
             _calendarEventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>(userContext: _applicationUserId);
+            _statementStartupSupportRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -925,6 +927,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     timeline.SignStartUpSupportAgreementDate = supportVisit.InsertedDate;
                 }
             }
+
+            // Startup Support
+            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == trainee.UserId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
+            if (startupSupport != null)
+            {
+                timeline.StartUpSupportStartDate = startupSupport?.StartDate;
+                timeline.StartUpSupportEndDate = startupSupport?.EndDate;
+                timeline.StartUpSupportAmount = startupSupport?.Amount;
+            }
+
 
             return timeline;
         }

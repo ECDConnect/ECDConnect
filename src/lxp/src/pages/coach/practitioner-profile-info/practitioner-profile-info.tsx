@@ -52,9 +52,12 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal === true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
+
   const isTrainee = practitioner?.isTrainee;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
+  const showBusinessItem =
+    practitioner?.isFundaAppAdmin || practitioner?.isPrincipal;
   const isOnStipend = practitioner?.isOnStipend;
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
@@ -239,6 +242,36 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 practitionerId
               )
             ),
+      classNames: 'bg-uiBg',
+    });
+  }
+
+  if (showBusinessItem && !isTrainee) {
+    listItems?.push({
+      title: 'Business',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: `Business, Income & expenses`,
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'BriefcaseIcon',
+      menuIconClassName: 'text-white',
+      showIcon: true,
+      iconBackgroundColor: 'tertiary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'white',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
+            ':practitionerId',
+            practitionerId
+          )
+        ),
       classNames: 'bg-uiBg',
     });
   }

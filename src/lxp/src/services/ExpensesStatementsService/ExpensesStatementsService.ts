@@ -124,7 +124,6 @@ class ExpensesStatementsService {
         'Get all statements expenses Failed - Server connection error'
       );
     }
-
     return response.data.data.allStatementsExpenses;
   }
 }

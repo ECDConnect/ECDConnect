@@ -277,7 +277,6 @@ class IncomeStatementsService {
         'Get all statements income Failed - Server connection error'
       );
     }
-
     return response.data.data.allStatementsIncome;
   }
 
