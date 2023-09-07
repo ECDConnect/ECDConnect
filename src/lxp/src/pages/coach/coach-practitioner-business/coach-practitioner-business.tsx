@@ -9,6 +9,7 @@ import { PractitionerBusinessParams } from './coach-practitioner-business.types'
 import { MoneySummary } from './components/statements/money-summary';
 import { traineeSelectors } from '@/store/trainee';
 import { differenceInMonths, format } from 'date-fns';
+import { IncomeStatementDates } from '@/constants/Dates';
 
 export const CoachPractitionerBusiness = () => {
   const { isOnline } = useOnlineStatus();
@@ -29,6 +30,10 @@ export const CoachPractitionerBusiness = () => {
     startUpSupportEndDate
   );
 
+  const isSubmitWindowOpen =
+    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
+    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
+
   const isStartUpSupportEnding =
     hasStartUpSupport && monthDifference >= -3 && monthDifference <= 0;
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
@@ -42,7 +47,7 @@ export const CoachPractitionerBusiness = () => {
 
   const listItems = [];
 
-  if (isIncomeStatementSubmitted) {
+  if (isIncomeStatementSubmitted && isSubmitWindowOpen) {
     listItems.push({
       title: 'Income Statement not submitted',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
