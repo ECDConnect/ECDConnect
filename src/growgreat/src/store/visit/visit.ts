@@ -173,8 +173,8 @@ const visitSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
       const updatedDataIndex = state.moreInformation?.findIndex(
         (item) =>
-          item.visit === action.payload.visit &&
-          item.type === action.payload.type
+          item?.visit === action.payload?.visit &&
+          item?.type === action.payload?.type
       );
 
       if (
