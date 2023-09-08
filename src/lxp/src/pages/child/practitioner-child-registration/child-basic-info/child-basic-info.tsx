@@ -105,7 +105,7 @@ export const ChildBasicInfo: React.FC<
           }${checkChild?.fullName?.split(' ')[1].toUpperCase()}` || '',
         alertSeverity: 'none',
         avatarColor: getAvatarColor() || '',
-        childMatching: true,
+        breaksSubtitleLine: true,
       },
     ];
 

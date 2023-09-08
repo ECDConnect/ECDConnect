@@ -1,19 +1,22 @@
+import { SuccessCard } from '@/components/success-card/success-card';
 import { coachSelectors } from '@/store/coach';
 import { getQuarterMonths } from '@/utils/common/date.utils';
+import { getAvatarColor } from '@ecdlink/core';
 import {
-  ClubsLinkedMeetingsDto,
-  CoachCirclesDto,
-  getAvatarColor,
-} from '@ecdlink/core';
-import {
+  Alert,
   AlertSeverityType,
+  Button,
   StackedList,
   Typography,
   UserAlertListDataItem,
+  classNames,
+  renderIcon,
 } from '@ecdlink/ui';
+import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { format, getQuarter, getYear, lastDayOfQuarter } from 'date-fns';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 
 export const CoachCircles = () => {
   const date = new Date();
@@ -24,12 +27,22 @@ export const CoachCircles = () => {
   const coachCircleData = useSelector(coachSelectors.getCoachCircles);
   const clubsWithoutMeetings = coachCircleData?.clubsWithNoLinkedMeetings;
   const clubsWithMeetings = coachCircleData?.clubsWithLinkedMeetings;
-  console.log({ clubsWithoutMeetings });
   const [clubsWithoutMeetingsList, setClubsWithoutMeetingsList] =
     useState<UserAlertListDataItem[]>();
   const [clubsWithMeetingsList, setClubsWithMeetingsList] =
     useState<UserAlertListDataItem[]>();
-
+  const noSubmittedAnyClub = useMemo(
+    () => clubsWithMeetings?.length === 0,
+    [clubsWithMeetings?.length]
+  );
+  const submittedAllClubs = useMemo(
+    () =>
+      clubsWithMeetings &&
+      clubsWithoutMeetings?.length === 0 &&
+      clubsWithMeetings?.length > 0,
+    [clubsWithMeetings, clubsWithoutMeetings?.length]
+  );
+  const [showSuccessCard, setShowSuccessCard] = useState(false);
   console.log({ coachCircleData });
 
   const handleNotificiationsItems = useCallback(() => {
@@ -38,7 +51,6 @@ export const CoachCircles = () => {
 
     if (clubsWithoutMeetings) {
       clubsWithoutMeetings?.map((item) => {
-        console.log(item?.cCMeetingStatusColor);
         return noMeetingsNotification.push({
           id: item.id,
           title: item?.name,
@@ -54,7 +66,6 @@ export const CoachCircles = () => {
 
     if (clubsWithMeetings) {
       clubsWithMeetings?.map((item) => {
-        console.log(item?.cCMeetingStatusColor);
         return withMeetingsNotification.push({
           id: item.id,
           title: item?.name,
@@ -64,6 +75,7 @@ export const CoachCircles = () => {
             'error',
           avatarColor: getAvatarColor() || '',
           onActionClick: () => {},
+          breaksSubtitleLine: true,
         });
       });
     }
@@ -75,8 +87,23 @@ export const CoachCircles = () => {
     handleNotificiationsItems();
   }, [handleNotificiationsItems]);
 
+  useEffect(() => {
+    if (submittedAllClubs) {
+      setShowSuccessCard(true);
+    }
+  }, [submittedAllClubs]);
+
   return (
-    <div className="p-4">
+    <div className="mb-4 p-4">
+      {showSuccessCard && (
+        <CustomSuccessCard
+          className="my-4"
+          customIcon={<CelebrateIcon className="h-14	w-14" />}
+          text={`Well done, you held coaching circles for every club this month!`}
+          color="successMain"
+          onClose={() => setShowSuccessCard(false)}
+        />
+      )}
       <Typography
         type="h2"
         color="textDark"
@@ -93,7 +120,7 @@ export const CoachCircles = () => {
         text={`Schedule a coaching circle with these clubs before ${quarterLastDay}:`}
         className="pt-4"
       ></Typography>
-      <div className="flex w-11/12 justify-center">
+      <div className="w-fulljustify-center flex py-4">
         <StackedList
           listItems={clubsWithoutMeetingsList || []}
           type={'UserAlertList'}
@@ -103,13 +130,52 @@ export const CoachCircles = () => {
         type="body"
         color="textMid"
         text={`Coaching circles held this quarter:`}
-        className="pt-4"
+        className="py-4"
       ></Typography>
-      <div className="flex w-11/12 justify-center">
+      <div className="flex w-full justify-center pt-2">
         <StackedList
           listItems={clubsWithMeetingsList || []}
           type={'UserAlertList'}
         ></StackedList>
+      </div>
+      {noSubmittedAnyClub && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title={`You haven’t held any coaching circles this quarter yet!`}
+        />
+      )}
+      <div className="absolute bottom-0 left-0 right-0 max-h-40 bg-white p-4">
+        <Button
+          onClick={() => {}}
+          className="mb-4 w-full rounded-2xl"
+          size="small"
+          color="primary"
+          type="filled"
+        >
+          {renderIcon('PlusCircleIcon', classNames('h-5 w-5 text-white'))}
+          <Typography
+            type="h6"
+            className="ml-2"
+            text="Add a coaching circle"
+            color="white"
+          />
+        </Button>
+        <Button
+          onClick={() => {}}
+          className="mb-4 w-full rounded-2xl"
+          size="small"
+          color="primary"
+          type="outlined"
+        >
+          {renderIcon('EyeIcon', classNames('h-5 w-5 text-primary'))}
+          <Typography
+            type="h6"
+            className="ml-2"
+            text="See topics"
+            color="primary"
+          />
+        </Button>
       </div>
     </div>
   );
