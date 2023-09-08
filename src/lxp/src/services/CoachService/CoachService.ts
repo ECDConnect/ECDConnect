@@ -1,5 +1,5 @@
 import { CoachInput } from '@ecdlink/graphql';
-import { CoachDto } from '@ecdlink/core';
+import { CoachCirclesDto, CoachDto } from '@ecdlink/core';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
 
@@ -223,7 +223,7 @@ class CoachService {
     userId: string,
     startDate: Date | string,
     endDate: Date | string
-  ): Promise<CoachDto> {
+  ): Promise<CoachCirclesDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `

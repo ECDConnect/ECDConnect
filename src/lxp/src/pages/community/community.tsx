@@ -71,14 +71,16 @@ export const Community: React.FC = () => {
       onHelp={() => displayTutorial(currentTab?.title)}
       displayOffline={!isOnline}
     >
-      <TabList
-        className="bg-uiBg"
-        tabItems={tabItems}
-        setSelectedIndex={selectedTabIndex}
-        tabSelected={(tab: TabItem, tabIndex: number) =>
-          setTabSelected(tab, tabIndex)
-        }
-      />
+      <div className="h-screen">
+        <TabList
+          className="bg-uiBg"
+          tabItems={tabItems}
+          setSelectedIndex={selectedTabIndex}
+          tabSelected={(tab: TabItem, tabIndex: number) =>
+            setTabSelected(tab, tabIndex)
+          }
+        />
+      </div>
     </BannerWrapper>
   );
 };

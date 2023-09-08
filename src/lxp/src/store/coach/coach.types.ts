@@ -1,6 +1,6 @@
-import { CoachDto } from '@ecdlink/core';
+import { CoachDto, CoachCirclesDto } from '@ecdlink/core';
 
 export interface CoachState {
   coach: CoachDto | undefined;
-  coachCircles: CoachDto | undefined;
+  coachCircles: CoachCirclesDto | undefined;
 }

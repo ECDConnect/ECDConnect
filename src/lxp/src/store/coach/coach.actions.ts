@@ -3,7 +3,7 @@ import {
   CoachInput,
   SiteAddressInput,
 } from '@ecdlink/graphql';
-import { CoachDto, SiteAddressDto } from '@ecdlink/core';
+import { CoachCirclesDto, CoachDto, SiteAddressDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import { SiteAddressService } from '@/services/SiteAddressService';
@@ -191,7 +191,7 @@ export const updateCoach = createAsyncThunk<
 );
 
 export const getAllCoachingCircleClubsForCoach = createAsyncThunk<
-  CoachDto,
+  CoachCirclesDto,
   { coachId: string; startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
@@ -205,7 +205,7 @@ export const getAllCoachingCircleClubsForCoach = createAsyncThunk<
 
     if (!coachCirclesCache) {
       try {
-        let coach: CoachDto | undefined;
+        let coach: CoachCirclesDto | undefined;
 
         if (userAuth?.auth_token) {
           coach = await new CoachService(
