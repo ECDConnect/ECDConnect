@@ -11,6 +11,7 @@ import {
   getAllStatementsBalanceSheetForPractitioner,
   getAllExpensesForPractitioner,
   getAllIncomeForPractitioner,
+  updatePractitionerBusinessWalkThrough,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -68,6 +69,15 @@ const practitionerSlice = createSlice({
     builder.addCase(deActivatePractitioner.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(
+      updatePractitionerBusinessWalkThrough.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          isCompletedBusinessWalkThrough: action.payload,
+        };
+      }
+    );
     builder.addCase(
       getAllStatementsBalanceSheetForPractitioner.fulfilled,
       (state, action) => {

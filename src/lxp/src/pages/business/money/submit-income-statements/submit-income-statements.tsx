@@ -47,6 +47,7 @@ export const SubmitIncomeStatements: React.FC = () => {
   const [submitMonthAndYear, setSubmitMonthAndYear] = useState<Date>(
     new Date()
   );
+
   const [isThisMonthSubmitted, setIsThisMonthSubmitted] =
     useState<boolean>(false);
   const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
@@ -76,7 +77,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
     } else {
       // In window and current month
-      if (currentDate.getDate() >= IncomeStatementDates.SubmitStartDay) {
+      if (currentDate.getDay() >= IncomeStatementDates.SubmitStartDay) {
         setSubmitMonthAndYear(currentDate);
 
         setIsThisMonthSubmitted(
@@ -108,7 +109,7 @@ export const SubmitIncomeStatements: React.FC = () => {
         setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
       }
     }
-  }, []);
+  }, [balanceSheet, currentDate, isSubmitWindowOpen]);
 
   const balanceNotifications = useMemo(() => {
     if (
@@ -293,7 +294,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                 shadowSize={'md'}
               >
                 <Typography
-                  text={`${format(submitMonthAndYear, 'LLLL')} balance`}
+                  text={`${format(currentDate, 'LLLL')} balance`}
                   type="h4"
                   color={'white'}
                   className="w-6/12"
@@ -589,6 +590,8 @@ export const SubmitIncomeStatements: React.FC = () => {
     walkthroughSteps,
     isThisMonthSubmitted,
     isSubmitWindowOpen,
+    currentDate,
+    isSubmittingStatement,
   ]);
 
   return (
