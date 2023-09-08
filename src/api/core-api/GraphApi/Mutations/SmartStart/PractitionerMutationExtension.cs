@@ -405,5 +405,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             return true;
         }
+
+        public bool UpdatePractitionerBusinessWalkthrough([Service] PersonnelService personnelService, string userId)
+        {
+            return personnelService.UpdatePractitionerBusinessWalkthrough(userId);
+        }
     }
 }

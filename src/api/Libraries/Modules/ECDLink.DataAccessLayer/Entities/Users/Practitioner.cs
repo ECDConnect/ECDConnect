@@ -92,6 +92,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         public bool? SetupTraineeInitiated { get; set; }
 
+        public bool? IsCompletedBusinessWalkThrough { get; set; }
+
     }
 
     public interface PractitionerJoin<TKey>

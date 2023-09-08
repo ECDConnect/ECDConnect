@@ -2,7 +2,7 @@ import ROUTES from '@/routes/routes';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import { BannerWrapper, StackedList } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { PractitionerBusinessParams } from './coach-practitioner-business.types';
@@ -45,130 +45,140 @@ export const CoachPractitionerBusiness = () => {
   const [isIncomeStatementSubmitted, setIsIncomeStatementSubmitted] =
     useState(false);
 
-  const listItems = [];
+  const renderData = useMemo(() => {
+    const listItems = [];
 
-  if (isIncomeStatementSubmitted && isSubmitWindowOpen) {
-    listItems.push({
-      title: 'Income Statement not submitted',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: incomeStatementMonth,
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'text-white',
-      showIcon: true,
-      onActionClick: () =>
-        history.push(
-          ROUTES.COACH.PRACTITIONER_BUSINESS.NOT_SUBMITTED.replace(
-            ':practitionerId',
-            practitionerId
+    if (isIncomeStatementSubmitted && isSubmitWindowOpen) {
+      listItems.push({
+        title: 'Income Statement not submitted',
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: incomeStatementMonth,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'ExclamationIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () =>
+          history.push(
+            ROUTES.COACH.PRACTITIONER_BUSINESS.NOT_SUBMITTED.replace(
+              ':practitionerId',
+              practitionerId
+            ),
+            { incomeStatementMonth: incomeStatementMonth }
           ),
-          { incomeStatementMonth: incomeStatementMonth }
-        ),
-      iconBackgroundColor: 'alertMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'alertMain',
-          textColour: 'white',
+        iconBackgroundColor: 'alertMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
         },
-      },
-      text: '1',
-      classNames: 'bg-uiBg',
-    });
-  }
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
 
-  if (isStartUpSupportEnding) {
-    listItems.push({
-      title: 'Start-up support ending soon',
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: format(startUpSupportEndDate, 'LLL yyyy'),
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'text-white',
-      showIcon: true,
-      onActionClick: () =>
-        history.push(
-          ROUTES.COACH.PRACTITIONER_BUSINESS.STARTUP_SUPPORT_ENDING.replace(
-            ':practitionerId',
-            practitionerId
-          )
-        ),
-      iconBackgroundColor: 'alertMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'alertMain',
-          textColour: 'white',
-        },
-      },
-      text: '1',
-      classNames: 'bg-uiBg',
-    });
-  }
-
-  if (isProfit) {
-    listItems.push({
-      title: `${practitionerFirstName} made a profit for 2 months in a row!`,
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: lossProfitMonths,
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'SparklesIcon',
-      menuIconClassName: 'text-white',
-      showIcon: true,
-      onActionClick: () =>
-        history.push(
-          ROUTES.COACH.PRACTITIONER_BUSINESS.PROFIT.replace(
-            ':practitionerId',
-            practitionerId
+    if (isStartUpSupportEnding) {
+      listItems.push({
+        title: 'Start-up support ending soon',
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: format(startUpSupportEndDate, 'LLL yyyy'),
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'ExclamationIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () =>
+          history.push(
+            ROUTES.COACH.PRACTITIONER_BUSINESS.STARTUP_SUPPORT_ENDING.replace(
+              ':practitionerId',
+              practitionerId
+            )
           ),
-          { lossProfitMonths: lossProfitMonths }
-        ),
-      iconBackgroundColor: 'successMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'successMain',
-          textColour: 'white',
+        iconBackgroundColor: 'alertMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
         },
-      },
-      text: '1',
-      classNames: 'bg-uiBg',
-    });
-  }
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
 
-  if (isLoss) {
-    listItems.push({
-      title: `Programme running at a loss`,
-      titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: lossProfitMonths,
-      subTitleStyle:
-        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'ExclamationIcon',
-      menuIconClassName: 'text-white',
-      showIcon: true,
-      onActionClick: () =>
-        history.push(
-          ROUTES.COACH.PRACTITIONER_BUSINESS.LOSS.replace(
-            ':practitionerId',
-            practitionerId
+    if (isProfit) {
+      listItems.push({
+        title: `${practitionerFirstName} made a profit for 2 months in a row!`,
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: lossProfitMonths,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'SparklesIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () =>
+          history.push(
+            ROUTES.COACH.PRACTITIONER_BUSINESS.PROFIT.replace(
+              ':practitionerId',
+              practitionerId
+            ),
+            { lossProfitMonths: lossProfitMonths }
           ),
-          { lossProfitMonths: lossProfitMonths }
-        ),
-      iconBackgroundColor: 'alertMain',
-      chipConfig: {
-        colorPalette: {
-          backgroundColour: 'white',
-          borderColour: 'alertMain',
-          textColour: 'white',
+        iconBackgroundColor: 'successMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'successMain',
+            textColour: 'white',
+          },
         },
-      },
-      text: '1',
-      classNames: 'bg-uiBg',
-    });
-  }
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
+
+    if (isLoss) {
+      listItems.push({
+        title: `Programme running at a loss`,
+        titleStyle: 'text-textDark font-semibold text-base leading-snug',
+        subTitle: lossProfitMonths,
+        subTitleStyle:
+          'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+        menuIcon: 'ExclamationIcon',
+        menuIconClassName: 'text-white',
+        showIcon: true,
+        onActionClick: () =>
+          history.push(
+            ROUTES.COACH.PRACTITIONER_BUSINESS.LOSS.replace(
+              ':practitionerId',
+              practitionerId
+            ),
+            { lossProfitMonths: lossProfitMonths }
+          ),
+        iconBackgroundColor: 'alertMain',
+        chipConfig: {
+          colorPalette: {
+            backgroundColour: 'white',
+            borderColour: 'alertMain',
+            textColour: 'white',
+          },
+        },
+        text: '1',
+        classNames: 'bg-uiBg',
+      });
+    }
+
+    return (
+      <StackedList
+        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+        type="MenuList"
+        listItems={listItems}
+      />
+    );
+  }, []);
 
   const goBack = () => {
     history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, { practitionerId });
@@ -186,13 +196,7 @@ export const CoachPractitionerBusiness = () => {
         className="p-4"
       >
         <div className="mt-4 flex justify-center">
-          <div className="w-11/12">
-            <StackedList
-              className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
-              type="MenuList"
-              listItems={listItems}
-            />
-          </div>
+          <div className="w-11/12">{renderData}</div>
         </div>
 
         <MoneySummary

@@ -3,8 +3,3 @@ export interface PractitionerBusinessParams {
   incomeStatementMonth: string;
   lossProfitMonths: string;
 }
-
-// export interface CoachPractitionerBusinessPageState {
-//   action?: string;
-//   actionParams?: any;
-// }

@@ -91,9 +91,8 @@ export const MoneySummary: React.FC<MoneyProps> = ({
     if (
       (income && income?.length > 0) ||
       (expense && expense?.length! > 0) ||
-      (balanceSheet &&
-        balanceSheet?.length! > 0 &&
-        balanceSheet?.[0]?.balance !== 0)
+      (balanceSheet && balanceSheet?.length! > 0) //&&
+      //balanceSheet?.[0]?.balance !== 0
     ) {
       setHasIncomeStatements(true);
     }

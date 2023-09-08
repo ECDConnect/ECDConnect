@@ -88,6 +88,7 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            isCompletedBusinessWalkThrough
           }
         }
       `,

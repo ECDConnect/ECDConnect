@@ -1,0 +1,1 @@
+alter table "Practitioner" add column "IsCompletedBusinessWalkThrough" bool DEFAULT false;

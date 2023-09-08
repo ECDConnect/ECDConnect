@@ -17,7 +17,7 @@ import { IncomeStatementDates } from '@/constants/Dates';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 
-interface StatementProps {
+interface IncomeStatementProps {
   setIncomeStatementMonth: (item: string) => void;
   setIsLoss: (item: boolean) => void;
   setIsProfit: (item: boolean) => void;
@@ -25,7 +25,7 @@ interface StatementProps {
   setIsIncomeStatementSubmitted: (item: boolean) => void;
 }
 
-export const IncomeStatements: React.FC<StatementProps> = ({
+export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   setIncomeStatementMonth,
   setIsLoss,
   setIsProfit,
@@ -237,7 +237,7 @@ export const IncomeStatements: React.FC<StatementProps> = ({
               shadowSize={'md'}
             >
               <Typography
-                text={`${format(submitMonthAndYear, 'LLLL')} balance`}
+                text={`${format(currentDate, 'LLLL')} balance`}
                 type="h4"
                 color={'white'}
                 className="w-6/12"
