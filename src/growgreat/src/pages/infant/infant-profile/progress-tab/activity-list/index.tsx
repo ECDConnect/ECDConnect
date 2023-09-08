@@ -73,6 +73,8 @@ import {
 import { maternalDistressVisitSection } from './forms/care-for-mom-steps/maternal-distress-screening';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@/hooks/useStaticData';
+import { ReferralActions } from '@/store/referral/referral.actions';
+import { InfantActions } from '@/store/infant/infant.actions';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -103,6 +105,44 @@ export const ActivityList: React.FC = () => {
 
   const { visitId, id: infantId } = useParams<InfantProfileParams>();
 
+  const { isLoading: isLoadingPreviousVisit } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
+  );
+  const { isLoading: isLoadingCompletedVisits } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_COMPLETED_VISITS_FOR_VISIT_ID
+  );
+  const { isLoading: isLoadingSummary } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_INFANT_SUMMARY_BY_PRIORITY
+  );
+  const { isLoading: isLoadingReferrals } = useThunkFetchCall(
+    'referrals',
+    ReferralActions.GET_REFERRAL_FOR_INFANT
+  );
+  const { isLoading: isLoadingVisits } = useThunkFetchCall(
+    'infants',
+    InfantActions.GET_INFANT_VISITS
+  );
+  const { isLoading: isLoadingGrowthData } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_GROWTH_DATA_FOR_INFANT
+  );
+  const { isLoading: isLoadingVisitsAnswers } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_VISIT_ANSWERS_FOR_INFANT
+  );
+
+  const isLoading =
+    isLoadingPreviousVisit ||
+    isLoadingCompletedVisits ||
+    isLoadingSummary ||
+    isLoadingReferrals ||
+    isLoadingVisits ||
+    isLoadingGrowthData ||
+    isLoadingVisitsAnswers;
+
   const user = useSelector(userSelectors.getUser);
   const documents = useSelector(
     documentSelectors.getDocumentsByUserId(infantId)
@@ -128,12 +168,12 @@ export const ActivityList: React.FC = () => {
         visitId,
       })
     ).unwrap();
+    appDispatch(
+      visitThunkActions.GetInfantSummaryByPriority({
+        visitId,
+      })
+    );
   }, [visitId, appDispatch]);
-
-  const { isLoading } = useThunkFetchCall(
-    'visits',
-    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
-  );
 
   const previousCurrentVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
