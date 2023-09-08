@@ -29,6 +29,8 @@ export const PractitionerActions = {
     'getAllStatementsBalanceSheetForPractitioner',
   GET_ALL_EXPENSES_FOR_PRACTITIONER: 'getAllExpensesForPractitioner',
   GET_ALL_INCOME_FOR_PRACTITIONER: 'getAllIncomeForPractitioner',
+  UPDATE_PRACTITIONER_BUSINESS_WALK_THROUGH:
+    'updatePractitionerBusinessWalkThrough',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -205,6 +207,7 @@ export const updatePractitionerById = createAsyncThunk<
     }
   }
 );
+
 export const updatePractitioner = createAsyncThunk<
   any,
   PractitionerInput,
@@ -454,6 +457,31 @@ export const getAllIncomeForPractitioner = createAsyncThunk<
         return rejectWithValue('Error getting income');
       }
       return income;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerBusinessWalkThrough = createAsyncThunk<
+  boolean | undefined,
+  {
+    userId: string;
+  },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_BUSINESS_WALK_THROUGH,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PractitionerService(
+          userAuth.auth_token
+        ).UpdatePractitionerBusinessWalkthrough(userId);
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

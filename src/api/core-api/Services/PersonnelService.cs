@@ -697,6 +697,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return false;
         }
 
+        public bool UpdatePractitionerBusinessWalkthrough(string userId)
+        {
+            Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
+            practitioner.IsCompletedBusinessWalkThrough = true;
+            practitioner.UpdatedBy = _applicationUserId;
+            practitioner.UpdatedDate = DateTime.UtcNow;
+            _practiGenericRepo.Update(practitioner);
+            return true;
+        }
+
+
         #endregion
 
         #region Trainees
