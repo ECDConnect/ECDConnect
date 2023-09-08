@@ -111,6 +111,7 @@ class PractitionerService {
                 attended
                 comment
                 insertedDate
+                overallRatingColor
                 visitType {
                   type
                   order
@@ -127,6 +128,7 @@ class PractitionerService {
                 attended
                 comment
                 insertedDate
+                overallRatingColor
                 visitType {
                   type
                   order
