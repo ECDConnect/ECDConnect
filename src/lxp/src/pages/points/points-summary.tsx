@@ -35,6 +35,9 @@ export const PointsSummary: React.FC = () => {
   const pointsSummaryDataWithLibrary = useSelector((state: RootState) =>
     pointsSelectors.getPointsSummaryWithLibrary(state, new Date())
   );
+  const pointsAvailable = pointsSummaryDataWithLibrary?.filter(
+    (x) => x.pointsTotal !== x.maxMonthlyPoints
+  );
   const pointsTotal = pointsSummaryDataWithLibrary.reduce(
     (total, current) => (total += current.pointsTotal),
     0
@@ -89,7 +92,7 @@ export const PointsSummary: React.FC = () => {
       title="Points"
       backgroundColour="white"
     >
-      <div className="flex-col justify-center p-4">
+      <div className="mt-5 flex-col justify-center p-4">
         <Typography
           type={'h1'}
           color="black"
@@ -103,7 +106,8 @@ export const PointsSummary: React.FC = () => {
         />
         {!!celebrationCardDetails && (
           <Card
-            className={`rounded-10 mt-2 px-4 py-4 sm:px-6 bg-${celebrationCardDetails.backgroundColour}`}
+            className={`mt-2 px-4 py-4 sm:px-6 bg-${celebrationCardDetails.backgroundColour}`}
+            borderRaduis="lg"
           >
             <div className="flex gap-3">
               {celebrationCardDetails.image}
@@ -124,20 +128,29 @@ export const PointsSummary: React.FC = () => {
             </div>
           </Card>
         )}
-        {!!pointsSummaryDataWithLibrary &&
-          pointsSummaryDataWithLibrary
-            .filter((x) => x.pointsTotal !== x.maxMonthlyPoints)
-            .map((pointsLibraryScore) => {
-              return (
-                <PointsLibraryStatusCard
-                  currentPoints={pointsLibraryScore.pointsTotal}
-                  maxPoints={pointsLibraryScore.maxMonthlyPoints}
-                  description={pointsLibraryScore.description}
-                />
-              );
-            })}
+        {!!pointsAvailable && !!pointsAvailable.length && (
+          <Typography
+            className="mt-10"
+            type={'h1'}
+            color="black"
+            text={`How you can earn more points in ${format(
+              new Date(),
+              'MMMM'
+            )}:`}
+          />
+        )}
+        {!!pointsAvailable &&
+          pointsAvailable.map((pointsLibraryScore) => {
+            return (
+              <PointsLibraryStatusCard
+                currentPoints={pointsLibraryScore.pointsTotal}
+                maxPoints={pointsLibraryScore.maxMonthlyPoints}
+                description={pointsLibraryScore.description}
+              />
+            );
+          })}
       </div>
-      <div className="flex-column justify-end p-4">
+      <div className="flex-column mt-10 justify-end p-4">
         <Button
           size="normal"
           className="mb-4 w-full"
