@@ -10,6 +10,8 @@ import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/e
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
+import { RootState } from '@/store/types';
+import { PointsLibraryStatusCard } from '../dashboard/components/points-library-status-card/points-library-status-card';
 
 // TODO - fetch club standings
 // TODO - add text that depends on relative club points
@@ -30,14 +32,16 @@ export const PointsSummary: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
 
-  const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
-  const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
-  const pointsTotal = pointsSummaryData.reduce((total, current) => {
-    if (current.month == currentMonth) {
-      return (total += current.pointsTotal);
-    }
-    return total;
-  }, 0);
+  const pointsSummaryDataWithLibrary = useSelector((state: RootState) =>
+    pointsSelectors.getPointsSummaryWithLibrary(state, new Date())
+  );
+  const pointsAvailable = pointsSummaryDataWithLibrary?.filter(
+    (x) => x.pointsTotal !== x.maxMonthlyPoints
+  );
+  const pointsTotal = pointsSummaryDataWithLibrary.reduce(
+    (total, current) => (total += current.pointsTotal),
+    0
+  );
   const pointsMax =
     isPrincipal || isFundaAppAdmin
       ? pointsConstants.principalOrAdminMonthlyMax
@@ -66,7 +70,7 @@ export const PointsSummary: React.FC = () => {
         primaryMessage: `Wow, great job ${practitioner?.user?.firstName}!`,
         secondaryMessage:
           "You're doing well, keep it up! You can still earn more points this month.",
-        textColour: 'infoMain',
+        textColour: 'secondary',
         backgroundColour: 'infoBb',
       });
     } else {
@@ -88,7 +92,7 @@ export const PointsSummary: React.FC = () => {
       title="Points"
       backgroundColour="white"
     >
-      <div className="flex-col justify-center p-4">
+      <div className="mt-5 flex-col justify-center p-4">
         <Typography
           type={'h1'}
           color="black"
@@ -102,7 +106,8 @@ export const PointsSummary: React.FC = () => {
         />
         {!!celebrationCardDetails && (
           <Card
-            className={`mt-2 rounded-xl p-4 bg-${celebrationCardDetails.backgroundColour}`}
+            className={`mt-2 px-4 py-4 sm:px-6 bg-${celebrationCardDetails.backgroundColour}`}
+            borderRaduis="lg"
           >
             <div className="flex gap-3">
               {celebrationCardDetails.image}
@@ -123,8 +128,29 @@ export const PointsSummary: React.FC = () => {
             </div>
           </Card>
         )}
+        {!!pointsAvailable && !!pointsAvailable.length && (
+          <Typography
+            className="mt-10"
+            type={'h1'}
+            color="black"
+            text={`How you can earn more points in ${format(
+              new Date(),
+              'MMMM'
+            )}:`}
+          />
+        )}
+        {!!pointsAvailable &&
+          pointsAvailable.map((pointsLibraryScore) => {
+            return (
+              <PointsLibraryStatusCard
+                currentPoints={pointsLibraryScore.pointsTotal}
+                maxPoints={pointsLibraryScore.maxMonthlyPoints}
+                description={pointsLibraryScore.description}
+              />
+            );
+          })}
       </div>
-      <div className="flex-column justify-end p-4">
+      <div className="flex-column mt-10 justify-end p-4">
         <Button
           size="normal"
           className="mb-4 w-full"

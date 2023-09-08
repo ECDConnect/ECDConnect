@@ -20,13 +20,14 @@ export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
     : percentageScore < 60
     ? 'errorBg'
     : percentageScore < 80
-    ? 'infoBb'
+    ? 'InfoBb'
     : 'successBg';
+
   const progressColour =
     percentageScore < 60
       ? 'errorMain'
       : percentageScore < 80
-      ? 'infoMain'
+      ? 'secondary'
       : 'successMain';
 
   const getImage = () => {
@@ -44,7 +45,6 @@ export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
   return (
     <div
       className={`${styles.wrapper} bg-${cardBgColour}`}
-      style={{ marginTop: '5px' }}
       onClick={() => {
         !!onClick && onClick();
       }}
@@ -59,6 +59,7 @@ export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
             value={percentageScore}
             primaryColour={progressColour}
             secondaryColour={useColourBackground ? 'uiBg' : 'uiLight'}
+            textColour={useColourBackground ? progressColour : 'black'}
           />
         </div>
         {!!onClick && <ChevronRightIcon className={styles.menuChevron} />}
