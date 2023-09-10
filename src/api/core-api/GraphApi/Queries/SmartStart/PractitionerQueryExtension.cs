@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -417,6 +418,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 .ToList();
 
             return result;
+        }
+
+        public List<PractitionerModel> GetAllPractitioners([Service] PersonnelService personnelService)
+        {
+            return personnelService.GetAllPractitioners();
         }
     }
 }

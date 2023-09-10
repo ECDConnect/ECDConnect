@@ -2061,6 +2061,16 @@ export type CoachInput = {
   UserId?: InputMaybe<Scalars['String']>;
 };
 
+export type CoachPractitioner = {
+  __typename?: 'CoachPractitioner';
+  id: Scalars['UUID'];
+  isClubLeader?: Maybe<Scalars['Boolean']>;
+  isClubSupport?: Maybe<Scalars['Boolean']>;
+  programmeType?: Maybe<Scalars['String']>;
+  timeline?: Maybe<PractitionerTimeline>;
+  userId?: Maybe<Scalars['String']>;
+};
+
 export type CoachSortInput = {
   aboutInfo?: InputMaybe<SortEnumType>;
   areaOfOperation?: InputMaybe<SortEnumType>;
@@ -4295,13 +4305,6 @@ export type ListFilterInputTypeOfNoteFilterInput = {
   any?: InputMaybe<Scalars['Boolean']>;
   none?: InputMaybe<NoteFilterInput>;
   some?: InputMaybe<NoteFilterInput>;
-};
-
-export type ListFilterInputTypeOfPqaRatingFilterInput = {
-  all?: InputMaybe<PqaRatingFilterInput>;
-  any?: InputMaybe<Scalars['Boolean']>;
-  none?: InputMaybe<PqaRatingFilterInput>;
-  some?: InputMaybe<PqaRatingFilterInput>;
 };
 
 export type ListFilterInputTypeOfPqaSectionRatingFilterInput = {
@@ -8714,7 +8717,6 @@ export type Practitioner = {
   siteAddressId?: Maybe<Scalars['UUID']>;
   startDate?: Maybe<Scalars['DateTime']>;
   stipendType?: Maybe<Scalars['String']>;
-  timeline?: Maybe<PractitionerTimeline>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   usePhotoInReport?: Maybe<Scalars['String']>;
@@ -8734,34 +8736,6 @@ export type PractitionerAttendance = {
   percAttended: Scalars['Float'];
   totalMeetings: Scalars['Int'];
   totalPresent: Scalars['Int'];
-};
-
-export type PractitionerAttendanceFilterInput = {
-  and?: InputMaybe<Array<PractitionerAttendanceFilterInput>>;
-  attendanceColor?: InputMaybe<StringOperationFilterInput>;
-  attendanceText?: InputMaybe<StringOperationFilterInput>;
-  meetingRegister?: InputMaybe<ListFilterInputTypeOfClubMeetingRegisterFilterInput>;
-  or?: InputMaybe<Array<PractitionerAttendanceFilterInput>>;
-  percAttended?: InputMaybe<ComparableDoubleOperationFilterInput>;
-  totalMeetings?: InputMaybe<ComparableInt32OperationFilterInput>;
-  totalPresent?: InputMaybe<ComparableInt32OperationFilterInput>;
-};
-
-export type PractitionerAttendanceInput = {
-  attendanceColor?: InputMaybe<Scalars['String']>;
-  attendanceText?: InputMaybe<Scalars['String']>;
-  meetingRegister?: InputMaybe<Array<InputMaybe<ClubMeetingRegisterInput>>>;
-  percAttended: Scalars['Float'];
-  totalMeetings: Scalars['Int'];
-  totalPresent: Scalars['Int'];
-};
-
-export type PractitionerAttendanceSortInput = {
-  attendanceColor?: InputMaybe<SortEnumType>;
-  attendanceText?: InputMaybe<SortEnumType>;
-  percAttended?: InputMaybe<SortEnumType>;
-  totalMeetings?: InputMaybe<SortEnumType>;
-  totalPresent?: InputMaybe<SortEnumType>;
 };
 
 export type PractitionerClassroomName = {
@@ -8827,7 +8801,6 @@ export type PractitionerFilterInput = {
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   startDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   stipendType?: InputMaybe<StringOperationFilterInput>;
-  timeline?: InputMaybe<PractitionerTimelineFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   usePhotoInReport?: InputMaybe<StringOperationFilterInput>;
@@ -8880,7 +8853,6 @@ export type PractitionerInput = {
   UsePhotoInReport?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
-  timeline?: InputMaybe<PractitionerTimelineInput>;
 };
 
 export type PractitionerMetricReport = {
@@ -8893,6 +8865,35 @@ export type PractitionerMetricReport = {
   outstandingSyncs: Scalars['Int'];
   programTypesData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   statusData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
+};
+
+export type PractitionerModel = {
+  __typename?: 'PractitionerModel';
+  attendedChildProgress?: Maybe<Scalars['Boolean']>;
+  coachHierarchy?: Maybe<Scalars['UUID']>;
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  dateLinked?: Maybe<Scalars['DateTime']>;
+  dateToBeRemoved?: Maybe<Scalars['DateTime']>;
+  id: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
+  isClubLeader?: Maybe<Scalars['Boolean']>;
+  isClubSupport?: Maybe<Scalars['Boolean']>;
+  isCompletedBusinessWalkThrough?: Maybe<Scalars['Boolean']>;
+  isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
+  isLeaving?: Maybe<Scalars['Boolean']>;
+  isOnStipend?: Maybe<Scalars['Boolean']>;
+  isPrincipal?: Maybe<Scalars['Boolean']>;
+  isRegistered?: Maybe<Scalars['Boolean']>;
+  isTrainee?: Maybe<Scalars['Boolean']>;
+  principalHierarchy?: Maybe<Scalars['UUID']>;
+  programmeType?: Maybe<Scalars['String']>;
+  progress: Scalars['Decimal'];
+  shareInfo?: Maybe<Scalars['Boolean']>;
+  signingSignature?: Maybe<Scalars['String']>;
+  siteAddress?: Maybe<SiteAddress>;
+  usePhotoInReport?: Maybe<Scalars['String']>;
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerNotes = {
@@ -9023,7 +9024,6 @@ export type PractitionerSortInput = {
   siteAddressId?: InputMaybe<SortEnumType>;
   startDate?: InputMaybe<SortEnumType>;
   stipendType?: InputMaybe<SortEnumType>;
-  timeline?: InputMaybe<PractitionerTimelineSortInput>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   usePhotoInReport?: InputMaybe<SortEnumType>;
@@ -9080,144 +9080,6 @@ export type PractitionerTimeline = {
   supportVisits?: Maybe<Array<Maybe<Visit>>>;
 };
 
-export type PractitionerTimelineFilterInput = {
-  and?: InputMaybe<Array<PractitionerTimelineFilterInput>>;
-  childProgressTrainingColor?: InputMaybe<StringOperationFilterInput>;
-  childProgressTrainingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  childProgressTrainingStatus?: InputMaybe<StringOperationFilterInput>;
-  coachCircles?: InputMaybe<PractitionerAttendanceFilterInput>;
-  consolidationMeetingColor?: InputMaybe<StringOperationFilterInput>;
-  consolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  consolidationMeetingStatus?: InputMaybe<StringOperationFilterInput>;
-  firstAidCourseColor?: InputMaybe<StringOperationFilterInput>;
-  firstAidCourseStatus?: InputMaybe<StringOperationFilterInput>;
-  firstAidDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  or?: InputMaybe<Array<PractitionerTimelineFilterInput>>;
-  pQARating1?: InputMaybe<PqaRatingFilterInput>;
-  pQARating2?: InputMaybe<PqaRatingFilterInput>;
-  pQARating3?: InputMaybe<PqaRatingFilterInput>;
-  pQARatings?: InputMaybe<ListFilterInputTypeOfPqaRatingFilterInput>;
-  pQASiteVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  practiceLicenseColor?: InputMaybe<StringOperationFilterInput>;
-  practiceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  practiceLicenseStatus?: InputMaybe<StringOperationFilterInput>;
-  prePQASiteVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  prePQAVisitDate1?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  prePQAVisitDate1Color?: InputMaybe<StringOperationFilterInput>;
-  prePQAVisitDate1Status?: InputMaybe<StringOperationFilterInput>;
-  prePQAVisitDate2?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  prePQAVisitDate2Color?: InputMaybe<StringOperationFilterInput>;
-  prePQAVisitDate2Status?: InputMaybe<StringOperationFilterInput>;
-  reAccreditationRating1?: InputMaybe<PqaRatingFilterInput>;
-  reAccreditationRating2?: InputMaybe<PqaRatingFilterInput>;
-  reAccreditationRating3?: InputMaybe<PqaRatingFilterInput>;
-  reAccreditationRatings?: InputMaybe<ListFilterInputTypeOfPqaRatingFilterInput>;
-  reAccreditationVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  requestedCoachVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  selfAssessmentColor?: InputMaybe<StringOperationFilterInput>;
-  selfAssessmentDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  selfAssessmentStatus?: InputMaybe<StringOperationFilterInput>;
-  selfAssessmentVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  smartSpaceLicenseColor?: InputMaybe<StringOperationFilterInput>;
-  smartSpaceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  smartSpaceLicenseStatus?: InputMaybe<StringOperationFilterInput>;
-  smartStarterUniteConferenceColor?: InputMaybe<StringOperationFilterInput>;
-  smartStarterUniteConferenceDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  smartStarterUniteConferenceStatus?: InputMaybe<StringOperationFilterInput>;
-  starterLicenseColor?: InputMaybe<StringOperationFilterInput>;
-  starterLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  starterLicenseStatus?: InputMaybe<StringOperationFilterInput>;
-  supportVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-};
-
-export type PractitionerTimelineInput = {
-  childProgressTrainingColor?: InputMaybe<Scalars['String']>;
-  childProgressTrainingDate?: InputMaybe<Scalars['DateTime']>;
-  childProgressTrainingStatus?: InputMaybe<Scalars['String']>;
-  coachCircles?: InputMaybe<PractitionerAttendanceInput>;
-  consolidationMeetingColor?: InputMaybe<Scalars['String']>;
-  consolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
-  consolidationMeetingStatus?: InputMaybe<Scalars['String']>;
-  firstAidCourseColor?: InputMaybe<Scalars['String']>;
-  firstAidCourseStatus?: InputMaybe<Scalars['String']>;
-  firstAidDate?: InputMaybe<Scalars['DateTime']>;
-  pQARating1?: InputMaybe<PqaRatingInput>;
-  pQARating2?: InputMaybe<PqaRatingInput>;
-  pQARating3?: InputMaybe<PqaRatingInput>;
-  pQARatings?: InputMaybe<Array<InputMaybe<PqaRatingInput>>>;
-  pQASiteVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  practiceLicenseColor?: InputMaybe<Scalars['String']>;
-  practiceLicenseDate?: InputMaybe<Scalars['DateTime']>;
-  practiceLicenseStatus?: InputMaybe<Scalars['String']>;
-  prePQASiteVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  prePQAVisitDate1?: InputMaybe<Scalars['DateTime']>;
-  prePQAVisitDate1Color?: InputMaybe<Scalars['String']>;
-  prePQAVisitDate1Status?: InputMaybe<Scalars['String']>;
-  prePQAVisitDate2?: InputMaybe<Scalars['DateTime']>;
-  prePQAVisitDate2Color?: InputMaybe<Scalars['String']>;
-  prePQAVisitDate2Status?: InputMaybe<Scalars['String']>;
-  reAccreditationRating1?: InputMaybe<PqaRatingInput>;
-  reAccreditationRating2?: InputMaybe<PqaRatingInput>;
-  reAccreditationRating3?: InputMaybe<PqaRatingInput>;
-  reAccreditationRatings?: InputMaybe<Array<InputMaybe<PqaRatingInput>>>;
-  reAccreditationVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  requestedCoachVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  selfAssessmentColor?: InputMaybe<Scalars['String']>;
-  selfAssessmentDate?: InputMaybe<Scalars['DateTime']>;
-  selfAssessmentStatus?: InputMaybe<Scalars['String']>;
-  selfAssessmentVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  smartSpaceLicenseColor?: InputMaybe<Scalars['String']>;
-  smartSpaceLicenseDate?: InputMaybe<Scalars['DateTime']>;
-  smartSpaceLicenseStatus?: InputMaybe<Scalars['String']>;
-  smartStarterUniteConferenceColor?: InputMaybe<Scalars['String']>;
-  smartStarterUniteConferenceDate?: InputMaybe<Scalars['DateTime']>;
-  smartStarterUniteConferenceStatus?: InputMaybe<Scalars['String']>;
-  starterLicenseColor?: InputMaybe<Scalars['String']>;
-  starterLicenseDate?: InputMaybe<Scalars['DateTime']>;
-  starterLicenseStatus?: InputMaybe<Scalars['String']>;
-  supportVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-};
-
-export type PractitionerTimelineSortInput = {
-  childProgressTrainingColor?: InputMaybe<SortEnumType>;
-  childProgressTrainingDate?: InputMaybe<SortEnumType>;
-  childProgressTrainingStatus?: InputMaybe<SortEnumType>;
-  coachCircles?: InputMaybe<PractitionerAttendanceSortInput>;
-  consolidationMeetingColor?: InputMaybe<SortEnumType>;
-  consolidationMeetingDate?: InputMaybe<SortEnumType>;
-  consolidationMeetingStatus?: InputMaybe<SortEnumType>;
-  firstAidCourseColor?: InputMaybe<SortEnumType>;
-  firstAidCourseStatus?: InputMaybe<SortEnumType>;
-  firstAidDate?: InputMaybe<SortEnumType>;
-  pQARating1?: InputMaybe<PqaRatingSortInput>;
-  pQARating2?: InputMaybe<PqaRatingSortInput>;
-  pQARating3?: InputMaybe<PqaRatingSortInput>;
-  practiceLicenseColor?: InputMaybe<SortEnumType>;
-  practiceLicenseDate?: InputMaybe<SortEnumType>;
-  practiceLicenseStatus?: InputMaybe<SortEnumType>;
-  prePQAVisitDate1?: InputMaybe<SortEnumType>;
-  prePQAVisitDate1Color?: InputMaybe<SortEnumType>;
-  prePQAVisitDate1Status?: InputMaybe<SortEnumType>;
-  prePQAVisitDate2?: InputMaybe<SortEnumType>;
-  prePQAVisitDate2Color?: InputMaybe<SortEnumType>;
-  prePQAVisitDate2Status?: InputMaybe<SortEnumType>;
-  reAccreditationRating1?: InputMaybe<PqaRatingSortInput>;
-  reAccreditationRating2?: InputMaybe<PqaRatingSortInput>;
-  reAccreditationRating3?: InputMaybe<PqaRatingSortInput>;
-  selfAssessmentColor?: InputMaybe<SortEnumType>;
-  selfAssessmentDate?: InputMaybe<SortEnumType>;
-  selfAssessmentStatus?: InputMaybe<SortEnumType>;
-  smartSpaceLicenseColor?: InputMaybe<SortEnumType>;
-  smartSpaceLicenseDate?: InputMaybe<SortEnumType>;
-  smartSpaceLicenseStatus?: InputMaybe<SortEnumType>;
-  smartStarterUniteConferenceColor?: InputMaybe<SortEnumType>;
-  smartStarterUniteConferenceDate?: InputMaybe<SortEnumType>;
-  smartStarterUniteConferenceStatus?: InputMaybe<SortEnumType>;
-  starterLicenseColor?: InputMaybe<SortEnumType>;
-  starterLicenseDate?: InputMaybe<SortEnumType>;
-  starterLicenseStatus?: InputMaybe<SortEnumType>;
-};
-
 export type PractitionerUserAndNote = {
   __typename?: 'PractitionerUserAndNote';
   appUser?: Maybe<ApplicationUser>;
@@ -9268,7 +9130,6 @@ export type Principal = {
   siteAddressId?: Maybe<Scalars['UUID']>;
   startDate?: Maybe<Scalars['DateTime']>;
   stipendType?: Maybe<Scalars['String']>;
-  timeline?: Maybe<PractitionerTimeline>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   usePhotoInReport?: Maybe<Scalars['String']>;
@@ -9336,7 +9197,6 @@ export type PrincipalFilterInput = {
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   startDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   stipendType?: InputMaybe<StringOperationFilterInput>;
-  timeline?: InputMaybe<PractitionerTimelineFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   usePhotoInReport?: InputMaybe<StringOperationFilterInput>;
@@ -9389,7 +9249,6 @@ export type PrincipalInput = {
   UsePhotoInReport?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
-  timeline?: InputMaybe<PractitionerTimelineInput>;
 };
 
 export type PrincipalInvitationStatus = {
@@ -9441,7 +9300,6 @@ export type PrincipalSortInput = {
   siteAddressId?: InputMaybe<SortEnumType>;
   startDate?: InputMaybe<SortEnumType>;
   stipendType?: InputMaybe<SortEnumType>;
-  timeline?: InputMaybe<PractitionerTimelineSortInput>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   usePhotoInReport?: InputMaybe<SortEnumType>;
@@ -10114,7 +9972,8 @@ export type Query = {
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
   allNotifications?: Maybe<Array<Maybe<Notification>>>;
   allPractitionerInvites?: Maybe<Array<Scalars['DateTime']>>;
-  allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
+  allPractitioners?: Maybe<Array<Maybe<PractitionerModel>>>;
+  allPractitionersForCoach?: Maybe<Array<Maybe<CoachPractitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipals?: Maybe<Array<Maybe<Principal>>>;
