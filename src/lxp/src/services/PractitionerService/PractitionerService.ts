@@ -361,7 +361,7 @@ class PractitionerService {
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllPractitioners {
-          GetAllPractitioner {
+          allPractitioners {
             id
             userId
             isPrincipal
@@ -425,6 +425,8 @@ class PractitionerService {
             usePhotoInReport
             isOnStipend
             isCompletedBusinessWalkThrough
+            isClubLeader
+            isClubSupport
           }
         }
       `,
