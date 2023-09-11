@@ -15,6 +15,8 @@ import { useWindowSize } from '@reach/window-size';
 import { activitiesTypes } from './activity-list/activities-list';
 import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
 import { useWalkthrough } from '@/context/walkthroughContext';
+import { visitThunkActions } from '@/store/visit';
+import { getMotherNearestPreviousVisitByOrderDate } from '@/store/mother/mother.selectors';
 
 const HEADER_HEIGHT = { filled: 470, empty: 540 };
 
@@ -32,16 +34,27 @@ export const ProgressTab = () => {
 
   const { id: pregnantId } = useParams<PregnantProfileParams>();
 
-  const { isLoading } = useThunkFetchCall(
+  const { isLoading: isLoadingPreviousVisitData } = useThunkFetchCall(
     'visits',
     VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER
   );
+  const { isLoading: isLoadingSummary } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_MOTHER_SUMMARY_BY_PRIORITY
+  );
+
+  const isLoading = isLoadingPreviousVisitData || isLoadingSummary;
 
   const mother = useSelector((state: RootState) =>
     motherSelectors.getMotherById(state, pregnantId)
   );
-  const previousVisit = useSelector(
+
+  const previousVisitData = useSelector(
     getPreviousVisitInformationForMotherSelector
+  );
+
+  const previousVisitByOrderDate = useSelector(
+    getMotherNearestPreviousVisitByOrderDate
   );
 
   const walkthroughData: FollowUpWalkthroughData = {
@@ -79,6 +92,21 @@ export const ProgressTab = () => {
     });
   }, [history, location.pathname]);
 
+  useLayoutEffect(() => {
+    if (previousVisitByOrderDate?.id && previousVisitByOrderDate?.attended) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: previousVisitByOrderDate.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetMotherSummaryByPriority({
+          visitId: previousVisitByOrderDate.id,
+        })
+      );
+    }
+  }, [appDispatch, previousVisitByOrderDate]);
+
   if (isLoading) {
     return (
       <LoadingSpinner
@@ -99,7 +127,7 @@ export const ProgressTab = () => {
           : {
               height:
                 height -
-                (!!previousVisit?.visitDataStatus?.length
+                (!!previousVisitData?.visitDataStatus?.length
                   ? HEADER_HEIGHT.filled
                   : HEADER_HEIGHT.empty),
             }
@@ -117,7 +145,7 @@ export const ProgressTab = () => {
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">
-        {!!previousVisit?.visitDataStatus?.length ? (
+        {!!previousVisitData?.visitDataStatus?.length ? (
           <>
             <Button
               className="mt-auto"

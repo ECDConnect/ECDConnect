@@ -20,7 +20,6 @@ import {
   Fragment,
   useCallback,
   useEffect,
-  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -51,11 +50,8 @@ import {
   getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
 import { progressSteps } from '../../../../walkthrough/steps';
-import { useAppDispatch } from '@/store';
-import { visitThunkActions } from '@/store/visit';
 import { InfoCard, Item } from './info-card';
 import { getAge } from '../../care-for-baby-steps/care-for-baby';
-import { getPreviousVisitInformationForInfant } from '@/store/visit/visit.actions';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -85,7 +81,7 @@ export interface FollowUpWalkthroughData {
 interface FollowUpComponentProps {
   infant: InfantDto;
   walkthroughData?: FollowUpWalkthroughData;
-  isPrint?: any;
+  isPrint?: boolean;
   isFromProgressTab?: boolean;
 }
 
@@ -105,7 +101,6 @@ export const FollowUp = ({
   isFromProgressTab,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const appDispatch = useAppDispatch();
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
@@ -142,39 +137,6 @@ export const FollowUp = ({
       }, 100);
     }
   }, [isPrint]);
-
-  useLayoutEffect(() => {
-    // get data from previous visit
-    if (
-      isFromProgressTab &&
-      previousVisit?.id &&
-      previousVisit?.attended &&
-      !currentVisit?.visitInProgress
-    ) {
-      appDispatch(
-        getPreviousVisitInformationForInfant({
-          visitId: previousVisit?.id,
-        })
-      );
-      appDispatch(
-        visitThunkActions.GetInfantSummaryByPriority({
-          visitId: previousVisit?.id || '',
-        })
-      );
-      // get data from current visit
-    } else if (currentVisit?.id) {
-      appDispatch(
-        getPreviousVisitInformationForInfant({
-          visitId: currentVisit.id,
-        })
-      );
-      appDispatch(
-        visitThunkActions.GetInfantSummaryByPriority({
-          visitId: currentVisit?.id || '',
-        })
-      );
-    }
-  }, [appDispatch, currentVisit, isFromProgressTab, previousVisit]);
 
   const printData = useSelector(GetInfantSummaryByPrioritySelector);
 
@@ -333,10 +295,12 @@ export const FollowUp = ({
   }, [previousVisitStatus?.visitDataStatus, walkthroughData]) as
     | Status
     | undefined;
+
   if (
-    !previousVisitStatus?.visitDataStatus?.length &&
-    previousVisitStatus?.scoreComment === 'No data available for visit' &&
-    !walkthroughData
+    (!previousVisitStatus?.visitDataStatus?.length &&
+      previousVisitStatus?.scoreComment === 'No data available for visit' &&
+      !walkthroughData) ||
+    (isFromProgressTab && !previousVisit)
   ) {
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
