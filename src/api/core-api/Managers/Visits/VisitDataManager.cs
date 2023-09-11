@@ -693,8 +693,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // (4.note that if the user selected ""Yes"" to the first question in use case 21, then the scenario in use case 23 applies - please see use case 23 above for that red rating case, not covered here) 
 
                     if (rating.OverallScore < 18 || (step5Score > 0 && step5Score < 5) ||
-                        (step14_q1 != null && step14_q1.QuestionAnswer == Constants.GGSettings.answer_no) ||
-                        (step16_q1 != null && step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes))
+                        (step14_q1 != null && step14_q1.QuestionAnswer == Constants.GGSettings.answer_yes) ||
+                        (step16_q1 != null && step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes)
+                    )
                     {
                         rating.OverallRatingColor = MetricsColorEnum.Error.ToString();
                     }
