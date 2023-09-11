@@ -11,3 +11,8 @@ export interface ClubsLinkedMeetingsDto {
   cCMeetingStatusColor: AlertSeverityType;
   name: string;
 }
+
+export interface ClubDto {
+  id: string;
+  name: string;
+}

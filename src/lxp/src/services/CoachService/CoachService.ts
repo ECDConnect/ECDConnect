@@ -257,6 +257,29 @@ class CoachService {
 
     return response.data.data.allCoachingCircleClubsForCoach;
   }
+
+  async GetAllClubsForCoach(userId: string): Promise<CoachCirclesDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllClubsForCoach($userId: String) {
+        allClubsForCoach(userId: $userId) {
+          id
+          name
+        }
+       }
+      `,
+      variables: {
+        userId: userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Get Coach circles Failed - Server connection error');
+    }
+
+    return response.data.data.allCoachingCircleClubsForCoach;
+  }
 }
 
 export default CoachService;

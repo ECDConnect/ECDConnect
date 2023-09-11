@@ -6,6 +6,8 @@ import {
   Alert,
   AlertSeverityType,
   Button,
+  Dialog,
+  DialogPosition,
   StackedList,
   Typography,
   UserAlertListDataItem,
@@ -17,6 +19,7 @@ import { format, getQuarter, getYear, lastDayOfQuarter } from 'date-fns';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
+import { AddCoachingCircle } from './components/add-coaching-circle/add-coaching-circle';
 
 export const CoachCircles = () => {
   const date = new Date();
@@ -43,7 +46,9 @@ export const CoachCircles = () => {
     [clubsWithMeetings, clubsWithoutMeetings?.length]
   );
   const [showSuccessCard, setShowSuccessCard] = useState(false);
+  const [showAddCircles, setShowAddCircles] = useState(false);
   console.log({ coachCircleData });
+  console.log({ showAddCircles });
 
   const handleNotificiationsItems = useCallback(() => {
     const noMeetingsNotification: UserAlertListDataItem[] = [];
@@ -147,7 +152,7 @@ export const CoachCircles = () => {
       )}
       <div className="absolute bottom-0 left-0 right-0 max-h-40 bg-white p-4">
         <Button
-          onClick={() => {}}
+          onClick={() => setShowAddCircles(true)}
           className="mb-4 w-full rounded-2xl"
           size="small"
           color="primary"
@@ -177,6 +182,13 @@ export const CoachCircles = () => {
           />
         </Button>
       </div>
+      <Dialog
+        visible={showAddCircles}
+        stretch={true}
+        position={DialogPosition.Full}
+      >
+        <AddCoachingCircle setShowAddCircles={setShowAddCircles} />
+      </Dialog>
     </div>
   );
 };
