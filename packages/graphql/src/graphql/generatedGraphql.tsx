@@ -2064,8 +2064,6 @@ export type CoachInput = {
 export type CoachPractitioner = {
   __typename?: 'CoachPractitioner';
   id: Scalars['UUID'];
-  isClubLeader?: Maybe<Scalars['Boolean']>;
-  isClubSupport?: Maybe<Scalars['Boolean']>;
   programmeType?: Maybe<Scalars['String']>;
   timeline?: Maybe<PractitionerTimeline>;
   userId?: Maybe<Scalars['String']>;
@@ -10160,6 +10158,7 @@ export type Query = {
   openLanguage: Array<Maybe<Language>>;
   ownershipMetrics?: Maybe<PractitionerMetricReport>;
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
+  pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
   practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
   practitionerByIdNumberInternal?: Maybe<ApplicationUser>;

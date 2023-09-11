@@ -432,11 +432,11 @@ class PractitionerService {
       `,
     });
 
-    if (response.status !== 200) {
-      throw new Error('Get Practitioner Failed - Server connection error');
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get All Practitioners Failed - Server connection error');
     }
 
-    return response.data.data.GetAllPractitioner;
+    return response.data.data.allPractitioners;
   }
 
   async getPractitionerByIdNumber(idNumber: string): Promise<UserDto> {
