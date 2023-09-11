@@ -934,16 +934,14 @@ public class SmartStartIntegrationService : IIntegrationService
         _mappedEntities = await GetMappedEntities();
         foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
         {
-            if (coach.UserId == "01c83faf-ab9e-4607-9a51-7e5020275ae6") {
-                List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
-                if (remoteTrainees.Any())
+            List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
+            if (remoteTrainees.Any())
+            {
+                foreach (var trainee in remoteTrainees)
                 {
-                    foreach (var trainee in remoteTrainees)
-                    {
-                        trainee.localParentEntityUserId = coach.UserId;
-                        trainee.localParentEntityId = coach.Id.ToString();
-                        await MapTrainee(trainee);
-                    }
+                    trainee.localParentEntityUserId = coach.UserId;
+                    trainee.localParentEntityId = coach.Id.ToString();
+                    await MapTrainee(trainee);
                 }
             }
         }
