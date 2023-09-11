@@ -1,7 +1,6 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
@@ -27,27 +26,18 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
-
         public string AttendanceRegisterLink { get; set; }
-
         public int? MaxChildren { get; set; }
-
         public bool? ConsentForPhoto { get; set; }
-
         public decimal? ParentFees { get; set; }
-
         public string LanguageUsedInGroups { get; set; }
-
         public DateTime? StartDate { get; set; }
-
         public int? MonthSinceFranchisee { get; set; }
-
         public virtual ICollection<Document> Documents { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public string UserId { get; set; }
-
 
         [ForeignKey(nameof(SiteAddressId))]
         public virtual SiteAddress SiteAddress { get; set; }
@@ -56,7 +46,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(CoachHierarchy))]
         public virtual Coach Coach { get; set; }
         public Guid? CoachHierarchy { get; set; }
-
 
         [ForeignKey(nameof(PrincipalHierarchy))]
         public virtual Practitioner Principal { get; set; }
@@ -86,12 +75,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string UsePhotoInReport { get; set; }
         public bool? IsOnStipend { get; set; }
         public bool? AttendedFirstAidCourse { get; set; }
-
-        [NotMapped]
-        public virtual PractitionerTimeline timeline  { get; set; }
-
         public bool? SetupTraineeInitiated { get; set; }
-
+        public bool? IsCompletedBusinessWalkThrough { get; set; }
     }
 
     public interface PractitionerJoin<TKey>

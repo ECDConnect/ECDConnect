@@ -2061,6 +2061,16 @@ export type CoachInput = {
   UserId?: InputMaybe<Scalars['String']>;
 };
 
+export type CoachPractitioner = {
+  __typename?: 'CoachPractitioner';
+  id: Scalars['UUID'];
+  isClubLeader?: Maybe<Scalars['Boolean']>;
+  isClubSupport?: Maybe<Scalars['Boolean']>;
+  programmeType?: Maybe<Scalars['String']>;
+  timeline?: Maybe<PractitionerTimeline>;
+  userId?: Maybe<Scalars['String']>;
+};
+
 export type CoachSortInput = {
   aboutInfo?: InputMaybe<SortEnumType>;
   areaOfOperation?: InputMaybe<SortEnumType>;
@@ -4297,13 +4307,6 @@ export type ListFilterInputTypeOfNoteFilterInput = {
   some?: InputMaybe<NoteFilterInput>;
 };
 
-export type ListFilterInputTypeOfPqaRatingFilterInput = {
-  all?: InputMaybe<PqaRatingFilterInput>;
-  any?: InputMaybe<Scalars['Boolean']>;
-  none?: InputMaybe<PqaRatingFilterInput>;
-  some?: InputMaybe<PqaRatingFilterInput>;
-};
-
 export type ListFilterInputTypeOfPqaSectionRatingFilterInput = {
   all?: InputMaybe<PqaSectionRatingFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -4399,6 +4402,8 @@ export type MeetingTypeSortInput = {
 
 export type MessageLog = {
   __typename?: 'MessageLog';
+  cTA?: Maybe<Scalars['String']>;
+  cTAText?: Maybe<Scalars['String']>;
   from?: Maybe<Scalars['String']>;
   fromUserId: Scalars['UUID'];
   id: Scalars['UUID'];
@@ -4420,6 +4425,8 @@ export type MessageLog = {
 
 export type MessageLogFilterInput = {
   and?: InputMaybe<Array<MessageLogFilterInput>>;
+  cTA?: InputMaybe<StringOperationFilterInput>;
+  cTAText?: InputMaybe<StringOperationFilterInput>;
   from?: InputMaybe<StringOperationFilterInput>;
   fromUserId?: InputMaybe<ComparableGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -4441,6 +4448,8 @@ export type MessageLogFilterInput = {
 };
 
 export type MessageLogInput = {
+  CTA?: InputMaybe<Scalars['String']>;
+  CTAText?: InputMaybe<Scalars['String']>;
   From?: InputMaybe<Scalars['String']>;
   FromUserId: Scalars['UUID'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -4459,6 +4468,8 @@ export type MessageLogInput = {
 };
 
 export type MessageLogSortInput = {
+  cTA?: InputMaybe<SortEnumType>;
+  cTAText?: InputMaybe<SortEnumType>;
   from?: InputMaybe<SortEnumType>;
   fromUserId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -5032,6 +5043,7 @@ export type Mutation = {
   editVisitData: Scalars['Boolean'];
   expireRelationshipLinksService: Scalars['Boolean'];
   fileUpload?: Maybe<DocumentModel>;
+  gGBottom75PercPointsTeam: Scalars['Boolean'];
   generateCaregiverChildToken?: Maybe<Scalars['String']>;
   importHealthCareWorkers?: Maybe<UserImportModel>;
   importTeamLeads?: Maybe<UserImportModel>;
@@ -5058,17 +5070,63 @@ export type Mutation = {
   resetUserPassword: Scalars['Boolean'];
   saveIncomeStatementPDF?: Maybe<Document>;
   scheduleConsolidationMeetingDate?: Maybe<Trainee>;
+  sendAllProgressReportsCompletedForClassNotification: Scalars['Boolean'];
+  sendAnyGGNotification: Scalars['Boolean'];
+  sendAnyGGNotificationWithReplacements: Scalars['Boolean'];
   sendAnyNotification: Scalars['Boolean'];
   sendAnyNotificationWithReplacements: Scalars['Boolean'];
   sendBulkInviteToApp?: Maybe<BulkInvitationResult>;
   sendBulkInviteToPortal?: Maybe<BulkInvitationResult>;
   sendClubleaderRoleAssignedNotification: Scalars['Boolean'];
+  sendCoachAddresUpdatedScheduleVisitNotification: Scalars['Boolean'];
   sendCoachInviteToApplication: Scalars['Boolean'];
+  sendCoachNewTraineesNotification: Scalars['Boolean'];
   sendCoachRemoveTraineeNotification: Scalars['Boolean'];
+  sendCoachTraineeReadySmartspaceCheckNotification: Scalars['Boolean'];
+  sendCoachVisitRequestedNotification: Scalars['Boolean'];
   sendCoachVisitsOverdueNotification: Scalars['Boolean'];
   sendDemotedAsPrincipalFAAProgrammeNotification: Scalars['Boolean'];
+  sendEndofyearPointEarnedNotification: Scalars['Boolean'];
+  sendFillInSelfAsessmentFormNotification: Scalars['Boolean'];
+  sendGGAddBreastfeedingClubNotification: Scalars['Boolean'];
+  sendGGBronzeTierPointsTeamNotification: Scalars['Boolean'];
+  sendGGChildGrowthIssueNotification: Scalars['Boolean'];
+  sendGGChildMUACMalnutritionNotification: Scalars['Boolean'];
+  sendGGChildMUACNotification: Scalars['Boolean'];
+  sendGGChildOlderThanFiveNotification: Scalars['Boolean'];
+  sendGGClinicVisitsNotUpToDateNotification: Scalars['Boolean'];
+  sendGGEarningPointsNotification: Scalars['Boolean'];
+  sendGGEarningXPointsNotification: Scalars['Boolean'];
+  sendGGExpectedMomDeliveryDateApproachingNotification: Scalars['Boolean'];
+  sendGGGGAddedABreastfeedingClubNotification: Scalars['Boolean'];
+  sendGGGoldTierPointsTeamNotification: Scalars['Boolean'];
+  sendGGLowBirthWeightNotification: Scalars['Boolean'];
+  sendGGMaternalDistressNotification: Scalars['Boolean'];
+  sendGGMultipleReferralsNotification: Scalars['Boolean'];
+  sendGGPointsTeamPlacementNotBottom75PercNotification: Scalars['Boolean'];
+  sendGGPointsTeamPlacementNotTop3Notification: Scalars['Boolean'];
+  sendGGPointsTeamPlacementNotification: Scalars['Boolean'];
+  sendGGPointsYearlySummaryNotification: Scalars['Boolean'];
+  sendGGPregnantMomLowMUACNotification: Scalars['Boolean'];
+  sendGGRedAlertMaternalDistressNotification: Scalars['Boolean'];
+  sendGGReferDOHANotification: Scalars['Boolean'];
+  sendGGReferSASSANotification: Scalars['Boolean'];
+  sendGGReferralDangerSignsNotification: Scalars['Boolean'];
+  sendGGSilverTierPointsTeamNotification: Scalars['Boolean'];
+  sendGGSubstanceAbuseNotification: Scalars['Boolean'];
+  sendGGTop25PercPointsTeamNotification: Scalars['Boolean'];
+  sendGGTopPointsEarnerNotification: Scalars['Boolean'];
+  sendGGTopPointsTeamNotification: Scalars['Boolean'];
+  sendGGTwoVisitsMissedNotification: Scalars['Boolean'];
+  sendGGUploadRTHNotification: Scalars['Boolean'];
+  sendGGVisitOverdueNotification: Scalars['Boolean'];
+  sendGGVisitsNotCompleted14daysNotification: Scalars['Boolean'];
+  sendGGWalkthroughNotificationNotification: Scalars['Boolean'];
+  sendGGXVisitsMissedNotification: Scalars['Boolean'];
+  sendGGyoungerthan20Notification: Scalars['Boolean'];
   sendGainedCommunitySupportNotification: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
+  sendNewClubleaderNotification: Scalars['Boolean'];
   sendNotificationToUser: Scalars['Boolean'];
   sendOnly2MoreTraineeTaskLeftsNotification: Scalars['Boolean'];
   sendOverdueTraineeTasksNotification: Scalars['Boolean'];
@@ -5076,10 +5134,22 @@ export type Mutation = {
   sendPractitionerInviteToApplication: Scalars['Boolean'];
   sendPractitionerNotAssignedToProgrammeNotification: Scalars['Boolean'];
   sendPractitionerRemovedFromProgrammeNotification: Scalars['Boolean'];
+  sendPrincipalAllReportsDoneNotification: Scalars['Boolean'];
   sendPrincipalChangedNotification: Scalars['Boolean'];
+  sendPrincipalMovedToProgrammeNotification: Scalars['Boolean'];
+  sendPrincipalReportDeadlinePassedNotification: Scalars['Boolean'];
   sendPromotedToPrincipalFAAProgrammeNotification: Scalars['Boolean'];
+  sendRecordCaregiverMeetingNotification: Scalars['Boolean'];
   sendRemovedFromProgrammeNotification: Scalars['Boolean'];
+  sendReportDeadlinePassedNotification: Scalars['Boolean'];
+  sendSetAbsenteeNotification: Scalars['Boolean'];
+  sendSetLeaveNotification: Scalars['Boolean'];
+  sendStartupSupportEndingIn2MonthsNotification: Scalars['Boolean'];
+  sendTopSmartStarterPointsNotification: Scalars['Boolean'];
+  sendTrainee2WeekOnboardingWarningNotification: Scalars['Boolean'];
+  sendTraineeJourneyStartSelfNotification: Scalars['Boolean'];
   sendUpdateFeeNotification: Scalars['Boolean'];
+  sendUserAddedToClubNotification: Scalars['Boolean'];
   sendUserAssignedToClassFromOldClassNotification: Scalars['Boolean'];
   sendUserAssignedToClassNotification: Scalars['Boolean'];
   submitStatement?: Maybe<ResultReturnObject>;
@@ -5166,6 +5236,7 @@ export type Mutation = {
   updatePointsUser?: Maybe<PointsUser>;
   updatePointsUserSummary?: Maybe<PointsUserSummary>;
   updatePractitioner?: Maybe<Practitioner>;
+  updatePractitionerBusinessWalkthrough: Scalars['Boolean'];
   updatePractitionerContactInfo?: Maybe<ApplicationUser>;
   updatePractitionerEmergencyContact: Scalars['Boolean'];
   updatePractitionerIsFundaAppAdmin: Scalars['Boolean'];
@@ -6521,6 +6592,11 @@ export type MutationFileUploadArgs = {
   fileType: FileTypeEnum;
 };
 
+export type MutationGgBottom75PercPointsTeamArgs = {
+  ranking?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationGenerateCaregiverChildTokenArgs = {
   classgroupId: Scalars['UUID'];
   firstname?: InputMaybe<Scalars['String']>;
@@ -6615,6 +6691,21 @@ export type MutationScheduleConsolidationMeetingDateArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendAllProgressReportsCompletedForClassNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendAnyGgNotificationArgs = {
+  templateType?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendAnyGgNotificationWithReplacementsArgs = {
+  replacements?: InputMaybe<Array<InputMaybe<TagsReplacementsInput>>>;
+  templateType?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendAnyNotificationArgs = {
   templateType?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -6639,12 +6730,33 @@ export type MutationSendClubleaderRoleAssignedNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendCoachAddresUpdatedScheduleVisitNotificationArgs = {
+  principalOrFAAName?: InputMaybe<Scalars['String']>;
+  programmeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendCoachInviteToApplicationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendCoachNewTraineesNotificationArgs = {
+  traineeFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationSendCoachRemoveTraineeNotificationArgs = {
   traineeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendCoachTraineeReadySmartspaceCheckNotificationArgs = {
+  traineeFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendCoachVisitRequestedNotificationArgs = {
+  practitionerFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -6658,6 +6770,212 @@ export type MutationSendDemotedAsPrincipalFaaProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendEndofyearPointEarnedNotificationArgs = {
+  pointsEarned?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendFillInSelfAsessmentFormNotificationArgs = {
+  dueDate?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgAddBreastfeedingClubNotificationArgs = {
+  currentMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgBronzeTierPointsTeamNotificationArgs = {
+  quarter?: InputMaybe<Scalars['String']>;
+  totalTeamPoints?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgChildGrowthIssueNotificationArgs = {
+  childFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgChildMuacMalnutritionNotificationArgs = {
+  childFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgChildMuacNotificationArgs = {
+  childFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgChildOlderThanFiveNotificationArgs = {
+  childFirstName?: InputMaybe<Scalars['String']>;
+  removalDate?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgClinicVisitsNotUpToDateNotificationArgs = {
+  caregiverFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgEarningPointsNotificationArgs = {
+  currentMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgEarningXPointsNotificationArgs = {
+  averagePoints?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgExpectedMomDeliveryDateApproachingNotificationArgs = {
+  clientFirstName?: InputMaybe<Scalars['String']>;
+  expectedDeliveryDate?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgggAddedABreastfeedingClubNotificationArgs = {
+  currentClubs?: InputMaybe<Scalars['String']>;
+  currentMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgGoldTierPointsTeamNotificationArgs = {
+  quarter?: InputMaybe<Scalars['String']>;
+  totalTeamPoints?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgLowBirthWeightNotificationArgs = {
+  caregiverFirstName?: InputMaybe<Scalars['String']>;
+  childFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgMaternalDistressNotificationArgs = {
+  caregiverFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgMultipleReferralsNotificationArgs = {
+  clientFirstName?: InputMaybe<Scalars['String']>;
+  noOfReferrals?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgPointsTeamPlacementNotBottom75PercNotificationArgs = {
+  currentYear?: InputMaybe<Scalars['String']>;
+  placement?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgPointsTeamPlacementNotTop3NotificationArgs = {
+  currentYear?: InputMaybe<Scalars['String']>;
+  placement?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgPointsTeamPlacementNotificationArgs = {
+  currentYear?: InputMaybe<Scalars['String']>;
+  placement?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgPointsYearlySummaryNotificationArgs = {
+  currentYear?: InputMaybe<Scalars['String']>;
+  pointsEarned?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgPregnantMomLowMuacNotificationArgs = {
+  caregiverFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgRedAlertMaternalDistressNotificationArgs = {
+  clientFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgReferDohaNotificationArgs = {
+  caregiverFirstName?: InputMaybe<Scalars['String']>;
+  childFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgReferSassaNotificationArgs = {
+  caregiverFirstName?: InputMaybe<Scalars['String']>;
+  childFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgReferralDangerSignsNotificationArgs = {
+  dangerSignsList?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgSilverTierPointsTeamNotificationArgs = {
+  quarter?: InputMaybe<Scalars['String']>;
+  totalTeamPoints?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgSubstanceAbuseNotificationArgs = {
+  caregiverFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgTop25PercPointsTeamNotificationArgs = {
+  pointsBehindWinningTeam?: InputMaybe<Scalars['String']>;
+  totalTeamPoints?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgTopPointsEarnerNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgTopPointsTeamNotificationArgs = {
+  totalTeamPoints?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgTwoVisitsMissedNotificationArgs = {
+  childFirstName?: InputMaybe<Scalars['String']>;
+  clientFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgUploadRthNotificationArgs = {
+  childFirstName?: InputMaybe<Scalars['String']>;
+  firstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgVisitOverdueNotificationArgs = {
+  clientFirstName?: InputMaybe<Scalars['String']>;
+  noOfReferrals?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgVisitsNotCompleted14daysNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgWalkthroughNotificationNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGgxVisitsMissedNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+  visitsOverdue?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendGGyoungerthan20NotificationArgs = {
+  caregiverFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendGainedCommunitySupportNotificationArgs = {
   supportDate?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -6665,6 +6983,12 @@ export type MutationSendGainedCommunitySupportNotificationArgs = {
 
 export type MutationSendInviteToApplicationArgs = {
   inviteToPortal?: Scalars['Boolean'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendNewClubleaderNotificationArgs = {
+  clubLeaderName?: InputMaybe<Scalars['String']>;
+  clubName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -6701,9 +7025,25 @@ export type MutationSendPractitionerRemovedFromProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendPrincipalAllReportsDoneNotificationArgs = {
+  practitionerFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendPrincipalChangedNotificationArgs = {
   principalOrFAA?: InputMaybe<Scalars['String']>;
   programmeName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendPrincipalMovedToProgrammeNotificationArgs = {
+  noOfChildren?: InputMaybe<Scalars['String']>;
+  trackingMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendPrincipalReportDeadlinePassedNotificationArgs = {
+  practitionerFirstName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -6713,13 +7053,61 @@ export type MutationSendPromotedToPrincipalFaaProgrammeNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendRecordCaregiverMeetingNotificationArgs = {
+  meetingDate?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendRemovedFromProgrammeNotificationArgs = {
   principalName?: InputMaybe<Scalars['String']>;
   programmeName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSendReportDeadlinePassedNotificationArgs = {
+  noOfChildren?: InputMaybe<Scalars['String']>;
+  trackingMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendSetAbsenteeNotificationArgs = {
+  absentStartDate?: InputMaybe<Scalars['String']>;
+  parentPrincipalFAACoachName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendSetLeaveNotificationArgs = {
+  absentEndDate?: InputMaybe<Scalars['String']>;
+  absentStartDate?: InputMaybe<Scalars['String']>;
+  parentPrincipalFAACoachName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendStartupSupportEndingIn2MonthsNotificationArgs = {
+  startupsupportEndDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendTopSmartStarterPointsNotificationArgs = {
+  previousMonth?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendTrainee2WeekOnboardingWarningNotificationArgs = {
+  traineeFirstName?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendTraineeJourneyStartSelfNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendUpdateFeeNotificationArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendUserAddedToClubNotificationArgs = {
+  clubName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -7179,6 +7567,10 @@ export type MutationUpdatePointsUserSummaryArgs = {
 export type MutationUpdatePractitionerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PractitionerInput>;
+};
+
+export type MutationUpdatePractitionerBusinessWalkthroughArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdatePractitionerContactInfoArgs = {
@@ -7741,6 +8133,8 @@ export type NoteTypeSortInput = {
 
 export type Notification = {
   __typename?: 'Notification';
+  cTA?: Maybe<Scalars['String']>;
+  cTAText?: Maybe<Scalars['String']>;
   from?: Maybe<Scalars['String']>;
   fromUserId: Scalars['UUID'];
   id: Scalars['UUID'];
@@ -7769,6 +8163,8 @@ export type NotificationDisplay = {
 };
 
 export type NotificationSortInput = {
+  cTA?: InputMaybe<SortEnumType>;
+  cTAText?: InputMaybe<SortEnumType>;
   from?: InputMaybe<SortEnumType>;
   fromUserId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -8295,6 +8691,7 @@ export type Practitioner = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isClubOwner?: Maybe<Scalars['Boolean']>;
+  isCompletedBusinessWalkThrough?: Maybe<Scalars['Boolean']>;
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
   isLeaving?: Maybe<Scalars['Boolean']>;
   isOnStipend?: Maybe<Scalars['Boolean']>;
@@ -8320,7 +8717,6 @@ export type Practitioner = {
   siteAddressId?: Maybe<Scalars['UUID']>;
   startDate?: Maybe<Scalars['DateTime']>;
   stipendType?: Maybe<Scalars['String']>;
-  timeline?: Maybe<PractitionerTimeline>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   usePhotoInReport?: Maybe<Scalars['String']>;
@@ -8340,34 +8736,6 @@ export type PractitionerAttendance = {
   percAttended: Scalars['Float'];
   totalMeetings: Scalars['Int'];
   totalPresent: Scalars['Int'];
-};
-
-export type PractitionerAttendanceFilterInput = {
-  and?: InputMaybe<Array<PractitionerAttendanceFilterInput>>;
-  attendanceColor?: InputMaybe<StringOperationFilterInput>;
-  attendanceText?: InputMaybe<StringOperationFilterInput>;
-  meetingRegister?: InputMaybe<ListFilterInputTypeOfClubMeetingRegisterFilterInput>;
-  or?: InputMaybe<Array<PractitionerAttendanceFilterInput>>;
-  percAttended?: InputMaybe<ComparableDoubleOperationFilterInput>;
-  totalMeetings?: InputMaybe<ComparableInt32OperationFilterInput>;
-  totalPresent?: InputMaybe<ComparableInt32OperationFilterInput>;
-};
-
-export type PractitionerAttendanceInput = {
-  attendanceColor?: InputMaybe<Scalars['String']>;
-  attendanceText?: InputMaybe<Scalars['String']>;
-  meetingRegister?: InputMaybe<Array<InputMaybe<ClubMeetingRegisterInput>>>;
-  percAttended: Scalars['Float'];
-  totalMeetings: Scalars['Int'];
-  totalPresent: Scalars['Int'];
-};
-
-export type PractitionerAttendanceSortInput = {
-  attendanceColor?: InputMaybe<SortEnumType>;
-  attendanceText?: InputMaybe<SortEnumType>;
-  percAttended?: InputMaybe<SortEnumType>;
-  totalMeetings?: InputMaybe<SortEnumType>;
-  totalPresent?: InputMaybe<SortEnumType>;
 };
 
 export type PractitionerClassroomName = {
@@ -8406,6 +8774,7 @@ export type PractitionerFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isClubOwner?: InputMaybe<BooleanOperationFilterInput>;
+  isCompletedBusinessWalkThrough?: InputMaybe<BooleanOperationFilterInput>;
   isFundaAppAdmin?: InputMaybe<BooleanOperationFilterInput>;
   isLeaving?: InputMaybe<BooleanOperationFilterInput>;
   isOnStipend?: InputMaybe<BooleanOperationFilterInput>;
@@ -8432,7 +8801,6 @@ export type PractitionerFilterInput = {
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   startDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   stipendType?: InputMaybe<StringOperationFilterInput>;
-  timeline?: InputMaybe<PractitionerTimelineFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   usePhotoInReport?: InputMaybe<StringOperationFilterInput>;
@@ -8455,6 +8823,7 @@ export type PractitionerInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsClubOwner?: InputMaybe<Scalars['Boolean']>;
+  IsCompletedBusinessWalkThrough?: InputMaybe<Scalars['Boolean']>;
   IsFundaAppAdmin?: InputMaybe<Scalars['Boolean']>;
   IsLeaving?: InputMaybe<Scalars['Boolean']>;
   IsOnStipend?: InputMaybe<Scalars['Boolean']>;
@@ -8484,7 +8853,6 @@ export type PractitionerInput = {
   UsePhotoInReport?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
-  timeline?: InputMaybe<PractitionerTimelineInput>;
 };
 
 export type PractitionerMetricReport = {
@@ -8497,6 +8865,35 @@ export type PractitionerMetricReport = {
   outstandingSyncs: Scalars['Int'];
   programTypesData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   statusData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
+};
+
+export type PractitionerModel = {
+  __typename?: 'PractitionerModel';
+  attendedChildProgress?: Maybe<Scalars['Boolean']>;
+  coachHierarchy?: Maybe<Scalars['UUID']>;
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  dateLinked?: Maybe<Scalars['DateTime']>;
+  dateToBeRemoved?: Maybe<Scalars['DateTime']>;
+  id: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
+  isClubLeader?: Maybe<Scalars['Boolean']>;
+  isClubSupport?: Maybe<Scalars['Boolean']>;
+  isCompletedBusinessWalkThrough?: Maybe<Scalars['Boolean']>;
+  isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
+  isLeaving?: Maybe<Scalars['Boolean']>;
+  isOnStipend?: Maybe<Scalars['Boolean']>;
+  isPrincipal?: Maybe<Scalars['Boolean']>;
+  isRegistered?: Maybe<Scalars['Boolean']>;
+  isTrainee?: Maybe<Scalars['Boolean']>;
+  principalHierarchy?: Maybe<Scalars['UUID']>;
+  programmeType?: Maybe<Scalars['String']>;
+  progress: Scalars['Decimal'];
+  shareInfo?: Maybe<Scalars['Boolean']>;
+  signingSignature?: Maybe<Scalars['String']>;
+  siteAddress?: Maybe<SiteAddress>;
+  usePhotoInReport?: Maybe<Scalars['String']>;
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerNotes = {
@@ -8601,6 +8998,7 @@ export type PractitionerSortInput = {
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   isClubOwner?: InputMaybe<SortEnumType>;
+  isCompletedBusinessWalkThrough?: InputMaybe<SortEnumType>;
   isFundaAppAdmin?: InputMaybe<SortEnumType>;
   isLeaving?: InputMaybe<SortEnumType>;
   isOnStipend?: InputMaybe<SortEnumType>;
@@ -8626,7 +9024,6 @@ export type PractitionerSortInput = {
   siteAddressId?: InputMaybe<SortEnumType>;
   startDate?: InputMaybe<SortEnumType>;
   stipendType?: InputMaybe<SortEnumType>;
-  timeline?: InputMaybe<PractitionerTimelineSortInput>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   usePhotoInReport?: InputMaybe<SortEnumType>;
@@ -8683,144 +9080,6 @@ export type PractitionerTimeline = {
   supportVisits?: Maybe<Array<Maybe<Visit>>>;
 };
 
-export type PractitionerTimelineFilterInput = {
-  and?: InputMaybe<Array<PractitionerTimelineFilterInput>>;
-  childProgressTrainingColor?: InputMaybe<StringOperationFilterInput>;
-  childProgressTrainingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  childProgressTrainingStatus?: InputMaybe<StringOperationFilterInput>;
-  coachCircles?: InputMaybe<PractitionerAttendanceFilterInput>;
-  consolidationMeetingColor?: InputMaybe<StringOperationFilterInput>;
-  consolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  consolidationMeetingStatus?: InputMaybe<StringOperationFilterInput>;
-  firstAidCourseColor?: InputMaybe<StringOperationFilterInput>;
-  firstAidCourseStatus?: InputMaybe<StringOperationFilterInput>;
-  firstAidDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  or?: InputMaybe<Array<PractitionerTimelineFilterInput>>;
-  pQARating1?: InputMaybe<PqaRatingFilterInput>;
-  pQARating2?: InputMaybe<PqaRatingFilterInput>;
-  pQARating3?: InputMaybe<PqaRatingFilterInput>;
-  pQARatings?: InputMaybe<ListFilterInputTypeOfPqaRatingFilterInput>;
-  pQASiteVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  practiceLicenseColor?: InputMaybe<StringOperationFilterInput>;
-  practiceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  practiceLicenseStatus?: InputMaybe<StringOperationFilterInput>;
-  prePQASiteVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  prePQAVisitDate1?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  prePQAVisitDate1Color?: InputMaybe<StringOperationFilterInput>;
-  prePQAVisitDate1Status?: InputMaybe<StringOperationFilterInput>;
-  prePQAVisitDate2?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  prePQAVisitDate2Color?: InputMaybe<StringOperationFilterInput>;
-  prePQAVisitDate2Status?: InputMaybe<StringOperationFilterInput>;
-  reAccreditationRating1?: InputMaybe<PqaRatingFilterInput>;
-  reAccreditationRating2?: InputMaybe<PqaRatingFilterInput>;
-  reAccreditationRating3?: InputMaybe<PqaRatingFilterInput>;
-  reAccreditationRatings?: InputMaybe<ListFilterInputTypeOfPqaRatingFilterInput>;
-  reAccreditationVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  requestedCoachVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  selfAssessmentColor?: InputMaybe<StringOperationFilterInput>;
-  selfAssessmentDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  selfAssessmentStatus?: InputMaybe<StringOperationFilterInput>;
-  selfAssessmentVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-  smartSpaceLicenseColor?: InputMaybe<StringOperationFilterInput>;
-  smartSpaceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  smartSpaceLicenseStatus?: InputMaybe<StringOperationFilterInput>;
-  smartStarterUniteConferenceColor?: InputMaybe<StringOperationFilterInput>;
-  smartStarterUniteConferenceDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  smartStarterUniteConferenceStatus?: InputMaybe<StringOperationFilterInput>;
-  starterLicenseColor?: InputMaybe<StringOperationFilterInput>;
-  starterLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  starterLicenseStatus?: InputMaybe<StringOperationFilterInput>;
-  supportVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
-};
-
-export type PractitionerTimelineInput = {
-  childProgressTrainingColor?: InputMaybe<Scalars['String']>;
-  childProgressTrainingDate?: InputMaybe<Scalars['DateTime']>;
-  childProgressTrainingStatus?: InputMaybe<Scalars['String']>;
-  coachCircles?: InputMaybe<PractitionerAttendanceInput>;
-  consolidationMeetingColor?: InputMaybe<Scalars['String']>;
-  consolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
-  consolidationMeetingStatus?: InputMaybe<Scalars['String']>;
-  firstAidCourseColor?: InputMaybe<Scalars['String']>;
-  firstAidCourseStatus?: InputMaybe<Scalars['String']>;
-  firstAidDate?: InputMaybe<Scalars['DateTime']>;
-  pQARating1?: InputMaybe<PqaRatingInput>;
-  pQARating2?: InputMaybe<PqaRatingInput>;
-  pQARating3?: InputMaybe<PqaRatingInput>;
-  pQARatings?: InputMaybe<Array<InputMaybe<PqaRatingInput>>>;
-  pQASiteVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  practiceLicenseColor?: InputMaybe<Scalars['String']>;
-  practiceLicenseDate?: InputMaybe<Scalars['DateTime']>;
-  practiceLicenseStatus?: InputMaybe<Scalars['String']>;
-  prePQASiteVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  prePQAVisitDate1?: InputMaybe<Scalars['DateTime']>;
-  prePQAVisitDate1Color?: InputMaybe<Scalars['String']>;
-  prePQAVisitDate1Status?: InputMaybe<Scalars['String']>;
-  prePQAVisitDate2?: InputMaybe<Scalars['DateTime']>;
-  prePQAVisitDate2Color?: InputMaybe<Scalars['String']>;
-  prePQAVisitDate2Status?: InputMaybe<Scalars['String']>;
-  reAccreditationRating1?: InputMaybe<PqaRatingInput>;
-  reAccreditationRating2?: InputMaybe<PqaRatingInput>;
-  reAccreditationRating3?: InputMaybe<PqaRatingInput>;
-  reAccreditationRatings?: InputMaybe<Array<InputMaybe<PqaRatingInput>>>;
-  reAccreditationVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  requestedCoachVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  selfAssessmentColor?: InputMaybe<Scalars['String']>;
-  selfAssessmentDate?: InputMaybe<Scalars['DateTime']>;
-  selfAssessmentStatus?: InputMaybe<Scalars['String']>;
-  selfAssessmentVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-  smartSpaceLicenseColor?: InputMaybe<Scalars['String']>;
-  smartSpaceLicenseDate?: InputMaybe<Scalars['DateTime']>;
-  smartSpaceLicenseStatus?: InputMaybe<Scalars['String']>;
-  smartStarterUniteConferenceColor?: InputMaybe<Scalars['String']>;
-  smartStarterUniteConferenceDate?: InputMaybe<Scalars['DateTime']>;
-  smartStarterUniteConferenceStatus?: InputMaybe<Scalars['String']>;
-  starterLicenseColor?: InputMaybe<Scalars['String']>;
-  starterLicenseDate?: InputMaybe<Scalars['DateTime']>;
-  starterLicenseStatus?: InputMaybe<Scalars['String']>;
-  supportVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
-};
-
-export type PractitionerTimelineSortInput = {
-  childProgressTrainingColor?: InputMaybe<SortEnumType>;
-  childProgressTrainingDate?: InputMaybe<SortEnumType>;
-  childProgressTrainingStatus?: InputMaybe<SortEnumType>;
-  coachCircles?: InputMaybe<PractitionerAttendanceSortInput>;
-  consolidationMeetingColor?: InputMaybe<SortEnumType>;
-  consolidationMeetingDate?: InputMaybe<SortEnumType>;
-  consolidationMeetingStatus?: InputMaybe<SortEnumType>;
-  firstAidCourseColor?: InputMaybe<SortEnumType>;
-  firstAidCourseStatus?: InputMaybe<SortEnumType>;
-  firstAidDate?: InputMaybe<SortEnumType>;
-  pQARating1?: InputMaybe<PqaRatingSortInput>;
-  pQARating2?: InputMaybe<PqaRatingSortInput>;
-  pQARating3?: InputMaybe<PqaRatingSortInput>;
-  practiceLicenseColor?: InputMaybe<SortEnumType>;
-  practiceLicenseDate?: InputMaybe<SortEnumType>;
-  practiceLicenseStatus?: InputMaybe<SortEnumType>;
-  prePQAVisitDate1?: InputMaybe<SortEnumType>;
-  prePQAVisitDate1Color?: InputMaybe<SortEnumType>;
-  prePQAVisitDate1Status?: InputMaybe<SortEnumType>;
-  prePQAVisitDate2?: InputMaybe<SortEnumType>;
-  prePQAVisitDate2Color?: InputMaybe<SortEnumType>;
-  prePQAVisitDate2Status?: InputMaybe<SortEnumType>;
-  reAccreditationRating1?: InputMaybe<PqaRatingSortInput>;
-  reAccreditationRating2?: InputMaybe<PqaRatingSortInput>;
-  reAccreditationRating3?: InputMaybe<PqaRatingSortInput>;
-  selfAssessmentColor?: InputMaybe<SortEnumType>;
-  selfAssessmentDate?: InputMaybe<SortEnumType>;
-  selfAssessmentStatus?: InputMaybe<SortEnumType>;
-  smartSpaceLicenseColor?: InputMaybe<SortEnumType>;
-  smartSpaceLicenseDate?: InputMaybe<SortEnumType>;
-  smartSpaceLicenseStatus?: InputMaybe<SortEnumType>;
-  smartStarterUniteConferenceColor?: InputMaybe<SortEnumType>;
-  smartStarterUniteConferenceDate?: InputMaybe<SortEnumType>;
-  smartStarterUniteConferenceStatus?: InputMaybe<SortEnumType>;
-  starterLicenseColor?: InputMaybe<SortEnumType>;
-  starterLicenseDate?: InputMaybe<SortEnumType>;
-  starterLicenseStatus?: InputMaybe<SortEnumType>;
-};
-
 export type PractitionerUserAndNote = {
   __typename?: 'PractitionerUserAndNote';
   appUser?: Maybe<ApplicationUser>;
@@ -8845,6 +9104,7 @@ export type Principal = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isClubOwner?: Maybe<Scalars['Boolean']>;
+  isCompletedBusinessWalkThrough?: Maybe<Scalars['Boolean']>;
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
   isLeaving?: Maybe<Scalars['Boolean']>;
   isOnStipend?: Maybe<Scalars['Boolean']>;
@@ -8870,7 +9130,6 @@ export type Principal = {
   siteAddressId?: Maybe<Scalars['UUID']>;
   startDate?: Maybe<Scalars['DateTime']>;
   stipendType?: Maybe<Scalars['String']>;
-  timeline?: Maybe<PractitionerTimeline>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   usePhotoInReport?: Maybe<Scalars['String']>;
@@ -8911,6 +9170,7 @@ export type PrincipalFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isClubOwner?: InputMaybe<BooleanOperationFilterInput>;
+  isCompletedBusinessWalkThrough?: InputMaybe<BooleanOperationFilterInput>;
   isFundaAppAdmin?: InputMaybe<BooleanOperationFilterInput>;
   isLeaving?: InputMaybe<BooleanOperationFilterInput>;
   isOnStipend?: InputMaybe<BooleanOperationFilterInput>;
@@ -8937,7 +9197,6 @@ export type PrincipalFilterInput = {
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   startDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   stipendType?: InputMaybe<StringOperationFilterInput>;
-  timeline?: InputMaybe<PractitionerTimelineFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   usePhotoInReport?: InputMaybe<StringOperationFilterInput>;
@@ -8960,6 +9219,7 @@ export type PrincipalInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   IsClubOwner?: InputMaybe<Scalars['Boolean']>;
+  IsCompletedBusinessWalkThrough?: InputMaybe<Scalars['Boolean']>;
   IsFundaAppAdmin?: InputMaybe<Scalars['Boolean']>;
   IsLeaving?: InputMaybe<Scalars['Boolean']>;
   IsOnStipend?: InputMaybe<Scalars['Boolean']>;
@@ -8989,7 +9249,6 @@ export type PrincipalInput = {
   UsePhotoInReport?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
-  timeline?: InputMaybe<PractitionerTimelineInput>;
 };
 
 export type PrincipalInvitationStatus = {
@@ -9015,6 +9274,7 @@ export type PrincipalSortInput = {
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   isClubOwner?: InputMaybe<SortEnumType>;
+  isCompletedBusinessWalkThrough?: InputMaybe<SortEnumType>;
   isFundaAppAdmin?: InputMaybe<SortEnumType>;
   isLeaving?: InputMaybe<SortEnumType>;
   isOnStipend?: InputMaybe<SortEnumType>;
@@ -9040,7 +9300,6 @@ export type PrincipalSortInput = {
   siteAddressId?: InputMaybe<SortEnumType>;
   startDate?: InputMaybe<SortEnumType>;
   stipendType?: InputMaybe<SortEnumType>;
-  timeline?: InputMaybe<PractitionerTimelineSortInput>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   usePhotoInReport?: InputMaybe<SortEnumType>;
@@ -9713,7 +9972,8 @@ export type Query = {
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
   allNotifications?: Maybe<Array<Maybe<Notification>>>;
   allPractitionerInvites?: Maybe<Array<Scalars['DateTime']>>;
-  allPractitionersForCoach?: Maybe<Array<Maybe<Practitioner>>>;
+  allPractitioners?: Maybe<Array<Maybe<PractitionerModel>>>;
+  allPractitionersForCoach?: Maybe<Array<Maybe<CoachPractitioner>>>;
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipals?: Maybe<Array<Maybe<Principal>>>;
@@ -9861,6 +10121,7 @@ export type Query = {
   countVisitType?: Maybe<Scalars['Int']>;
   countWorkflowStatus?: Maybe<Scalars['Int']>;
   countWorkflowStatusType?: Maybe<Scalars['Int']>;
+  dailyAttendance?: Maybe<Array<Maybe<Attendance>>>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
   entityChangesToSync?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -9899,6 +10160,7 @@ export type Query = {
   openLanguage: Array<Maybe<Language>>;
   ownershipMetrics?: Maybe<PractitionerMetricReport>;
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
+  pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
   practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
   practitionerByIdNumberInternal?: Maybe<ApplicationUser>;
   practitionerByUserId?: Maybe<Practitioner>;
@@ -12120,6 +12382,11 @@ export type QueryCountWorkflowStatusTypeArgs = {
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
 
+export type QueryDailyAttendanceArgs = {
+  attendanceDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryDisplayMetricsArgs = {
   type?: InputMaybe<Scalars['String']>;
 };
@@ -12270,6 +12537,10 @@ export type QueryOpenAccessAddChildDetailArgs = {
 export type QueryOpenConsentArgs = {
   locale?: InputMaybe<Scalars['String']>;
   type?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPointsSummaryForUserArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPractitionerByIdNumberArgs = {
@@ -14058,6 +14329,7 @@ export type Trainee = {
   attendedStartUpTraining?: Maybe<Scalars['Boolean']>;
   childProgressTraining?: Maybe<Scalars['Boolean']>;
   childrenAddedDate?: Maybe<Scalars['DateTime']>;
+  coachHierarchy?: Maybe<Scalars['UUID']>;
   communitySupportGained?: Maybe<Scalars['DateTime']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;
   franchiseeAgreementAcceptedDate?: Maybe<Scalars['DateTime']>;
@@ -14109,6 +14381,7 @@ export type TraineeFilterInput = {
   attendedStartUpTraining?: InputMaybe<BooleanOperationFilterInput>;
   childProgressTraining?: InputMaybe<BooleanOperationFilterInput>;
   childrenAddedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   communitySupportGained?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   franchiseeAgreementAcceptedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -14153,6 +14426,7 @@ export type TraineeInput = {
   AttendedStartUpTraining?: InputMaybe<Scalars['Boolean']>;
   ChildProgressTraining?: InputMaybe<Scalars['Boolean']>;
   ChildrenAddedDate?: InputMaybe<Scalars['DateTime']>;
+  CoachHierarchy?: InputMaybe<Scalars['UUID']>;
   CommunitySupportGained?: InputMaybe<Scalars['DateTime']>;
   ConsolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
   FranchiseeAgreementAcceptedDate?: InputMaybe<Scalars['DateTime']>;
@@ -14225,6 +14499,9 @@ export type TraineeOnBoardTimeline = {
   smartSpaceLicenseColor?: Maybe<Scalars['String']>;
   smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
+  startUpSupportAmount?: Maybe<Scalars['Float']>;
+  startUpSupportEndDate?: Maybe<Scalars['DateTime']>;
+  startUpSupportStartDate?: Maybe<Scalars['DateTime']>;
   starterLicenseColor?: Maybe<Scalars['String']>;
   starterLicenseDate?: Maybe<Scalars['DateTime']>;
   starterLicenseStatus?: Maybe<Scalars['String']>;
@@ -14240,6 +14517,7 @@ export type TraineeSortInput = {
   attendedStartUpTraining?: InputMaybe<SortEnumType>;
   childProgressTraining?: InputMaybe<SortEnumType>;
   childrenAddedDate?: InputMaybe<SortEnumType>;
+  coachHierarchy?: InputMaybe<SortEnumType>;
   communitySupportGained?: InputMaybe<SortEnumType>;
   consolidationMeetingDate?: InputMaybe<SortEnumType>;
   franchiseeAgreementAcceptedDate?: InputMaybe<SortEnumType>;

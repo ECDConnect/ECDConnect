@@ -111,6 +111,7 @@ class PractitionerService {
                 attended
                 comment
                 insertedDate
+                overallRatingColor
                 visitType {
                   type
                   order
@@ -127,6 +128,7 @@ class PractitionerService {
                 attended
                 comment
                 insertedDate
+                overallRatingColor
                 visitType {
                   type
                   order
@@ -267,6 +269,7 @@ class PractitionerService {
             setupTraineeInitiated
             isOnStipend
             stipendType
+            isCompletedBusinessWalkThrough
           }
         }
       `,
@@ -358,7 +361,7 @@ class PractitionerService {
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllPractitioners {
-          GetAllPractitioner {
+          allPractitioners {
             id
             userId
             isPrincipal
@@ -421,6 +424,9 @@ class PractitionerService {
             attendedChildProgress
             usePhotoInReport
             isOnStipend
+            isCompletedBusinessWalkThrough
+            isClubLeader
+            isClubSupport
           }
         }
       `,
@@ -460,6 +466,7 @@ class PractitionerService {
                 isTrainee
                 attendedChildProgress
                 usePhotoInReport
+                isCompletedBusinessWalkThrough
               }
             }
             note
@@ -1453,6 +1460,32 @@ class PractitionerService {
     }
 
     return response.data.data.switchPrincipal;
+  }
+
+  async UpdatePractitionerBusinessWalkthrough(
+    userId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation UpdatePractitionerBusinessWalkthrough($userId: String) {
+        updatePractitionerBusinessWalkthrough(userId: $userId) {
+          
+        }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Update practitioner business walk through Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerBusinessWalkthrough;
   }
 }
 

@@ -1,7 +1,6 @@
 ﻿
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.DataAccessLayer.Entities.Clubs;
-using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using System;
 using System.Collections.Generic;
@@ -19,5 +18,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ClubLeader GetLeaderForClub(Guid clubId);
         public ClubSupport GetSupportForClub(Guid clubId);
         public Club ChangeClubName(Guid clubId, string clubName);
+        public bool IsClubLeader(Guid practitionerId);
+        public bool IsClubSupport(Guid practitionerId);
     }
 }
