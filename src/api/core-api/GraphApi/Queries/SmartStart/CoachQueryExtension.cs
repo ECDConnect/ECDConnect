@@ -41,14 +41,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             var practitioners = dbRepo.GetAll().Where(x => x.IsActive && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(userId)).ToList();
-            List<CoachPractitioner> coachPractitioners = new List<CoachPractitioner>();
+            var coachPractitioners = new List<CoachPractitioner>();
 
-            CoachPractitioner coachPractitioner = new CoachPractitioner();
             foreach (var practitioner in practitioners)
             {
-                coachPractitioner.Id = practitioner.Id;
-                coachPractitioner.UserId = practitioner.UserId;
-                coachPractitioner.ProgrammeType = practitioner.ProgrammeType;
+                var coachPractitioner = new CoachPractitioner
+                {
+                    Id = practitioner.Id,
+                    UserId = practitioner.UserId,
+                    ProgrammeType = practitioner.ProgrammeType
+                };
 
                 // let's make sure that the default visits are added when the smartSpace license is available
                 var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId);
@@ -58,6 +60,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 }
                 coachPractitioners.Add(coachPractitioner);
             }
+
             return coachPractitioners;
         }
 
