@@ -232,9 +232,11 @@ export const ActivityList: React.FC = () => {
     [documentTypeId, documents]
   );
 
+  const previousWeightAtBirth = usePrevious(infant?.weightAtBirth);
   const previousHasRoadToHealthBook = usePrevious(hasRoadToHealthBook);
 
-  const isRoadToHealthBookStep = !previousHasRoadToHealthBook;
+  const isRoadToHealthBookStep =
+    !previousHasRoadToHealthBook || !previousWeightAtBirth;
 
   const isDangerSignsFollowUpForBaby = getIsFollowUp(
     dangerSignsVisitSectionForBaby,
