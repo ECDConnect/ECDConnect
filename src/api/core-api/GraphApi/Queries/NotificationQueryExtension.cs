@@ -53,31 +53,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 List<MessageLog> typeLogs = new List<MessageLog>();
                 if (user?.franchisorObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Franchisor")).ToList();
+                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Franchisor") || x.ToGroups.Contains("Franchisor")).ToList();
                 }
                 else if (user?.coachObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Coach")).ToList();
+                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Coach") || x.ToGroups.Contains("Coach")).ToList();
                 }
                 else if (user?.principalObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Principal")).ToList();
+                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Principal") || x.ToGroups.Contains("Principal")).ToList();
                 }
                 else if (user?.practitionerObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Practitioner")).ToList();
+                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Practitioner") || x.ToGroups.Contains("Practitioner")).ToList();
                 }
                 else if (user?.traineeObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Trainee")).ToList();
+                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Trainee") || x.ToGroups.Contains("Trainee")).ToList();
                 }
                 else if (user?.traineeObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "CHW")).ToList();
+                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "CHW") || x.ToGroups.Contains("CHW")).ToList();
                 }
                 else
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "AllUsers")).ToList();
+                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "AllUsers") || x.ToGroups.Contains("AllUsers")).ToList();
                 }
                 logs.AddRange(typeLogs);
             }
@@ -85,7 +85,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             foreach (var item in logs)
             {
                 var template = templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, item.MessageTemplateType)).FirstOrDefault();
-                notifications.Add(new Notification() { From = item.From, FromUserId = item.FromUserId, Id = item.Id, Message = item.Message, MessageProtocol = item.MessageProtocol, To = item.To, SentByUserId = item.SentByUserId, Subject = item.Subject, MessageTemplateType = item.MessageTemplateType, MessageTemplate = template, CTA = item.CTA, CTAText = item.CTAText, MessageDate = item.MessageDate, MessageEndDate = item.MessageEndDate, Status = item.Status  });
+                string toGroups = item.ToGroups.Replace("Region:", "").Replace("Province:", "").Replace("Role:", ""); //Clean out group text for display
+                notifications.Add(new Notification() { From = item.From, FromUserId = item.FromUserId, Id = item.Id, Message = item.Message, MessageProtocol = item.MessageProtocol, To = item.To, SentByUserId = item.SentByUserId, Subject = item.Subject, MessageTemplateType = item.MessageTemplateType, MessageTemplate = template, CTA = item.CTA, CTAText = item.CTAText, MessageDate = item.MessageDate, MessageEndDate = item.MessageEndDate, Status = item.Status, ToGroups = item.ToGroups, ReadDate = item.ReadDate  });
 
             }
 
