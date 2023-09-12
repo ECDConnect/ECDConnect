@@ -71,10 +71,16 @@ export const CoachCircles = () => {
 
     if (clubsWithMeetings) {
       clubsWithMeetings?.map((item) => {
+        const splittedString = item?.cCMeetingStatus?.split(': ');
+        const dateFormatted = new Date(splittedString[1] || new Date());
+
         return withMeetingsNotification.push({
           id: item.id,
           title: item?.name,
-          subTitle: item?.cCMeetingStatus || '',
+          subTitle: `${splittedString[0]}: ${format(
+            dateFormatted,
+            'd MMM yyyy'
+          )}`,
           alertSeverity:
             (item?.cCMeetingStatusColor.toLowerCase() as AlertSeverityType) ||
             'error',

@@ -15,12 +15,15 @@ import { CoachingCirclesAttendanceProps } from '../add-coaching-circle';
 
 interface Step2Props {
   setCoachingCircleAttendance: (item: CoachingCirclesAttendanceProps[]) => void;
+  addCoachingCircle: () => void;
 }
 
 export const Step2: React.FC<Step2Props> = ({
   setCoachingCircleAttendance,
+  addCoachingCircle,
 }) => {
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const [confirmAttendance, setConfirmAttendance] = useState(false);
   console.log({ practitioners });
   const [attendanceList, setAttendanceList] = useState<
     AttendanceListDataItem[]
@@ -38,15 +41,10 @@ export const Step2: React.FC<Step2Props> = ({
       }),
     [coachingCiclesPractitionersList]
   );
-  const coachingCircleMeetingAttendes = useMemo(
-    () =>
-      coachingCiclesPractitionersListFormatted?.filter(
-        (item) => item?.attended === true
-      )?.length,
-    [coachingCiclesPractitionersListFormatted]
-  );
-
-  console.log({ coachingCiclesPractitionersListFormatted });
+  const coachingCircleMeetingAttendes =
+    coachingCiclesPractitionersListFormatted?.filter(
+      (item) => item?.attended === true
+    )?.length;
 
   const getAttendanceCircleMeeting = useCallback(
     (practitioners?: PractitionerDto[]) => {
@@ -86,11 +84,8 @@ export const Step2: React.FC<Step2Props> = ({
   const onAttendanceListUpdated = (
     updatedAttendanceList: AttendanceListDataItem[]
   ) => {
-    console.log({ updatedAttendanceList });
     setCoachingCiclesPractitionersList(updatedAttendanceList);
-    console.log('olaaaaaaa');
   };
-  console.log('testeeeeee');
 
   return (
     <div className="flex flex-col p-4">
@@ -121,8 +116,11 @@ export const Step2: React.FC<Step2Props> = ({
           onAttendanceListUpdated(updateList);
         }}
       />
-      <div className="mt-4 mb-16 flex items-start gap-2" onClick={() => {}}>
-        <Checkbox onCheckboxChange={(e) => {}} checked={true} />
+      <div
+        className="mt-4 mb-20 flex items-start gap-2"
+        onClick={() => setConfirmAttendance(!confirmAttendance)}
+      >
+        <Checkbox checked={confirmAttendance} />
         <Typography
           text={`Check to confirm that you have accurately captured practitioner attendance for the event (${coachingCircleMeetingAttendes} practitioners attended).`}
           type="body"
@@ -131,11 +129,12 @@ export const Step2: React.FC<Step2Props> = ({
       </div>
       <div className="absolute bottom-0 left-0 right-0 max-h-40 bg-white p-4">
         <Button
-          onClick={() => {}}
+          onClick={() => addCoachingCircle()}
           className="mb-4 w-full rounded-2xl"
           size="small"
           color="primary"
           type="filled"
+          disabled={!confirmAttendance}
         >
           {renderIcon('SaveIcon', classNames('h-5 w-5 text-white'))}
           <Typography type="help" className="ml-2" text="Save" color="white" />

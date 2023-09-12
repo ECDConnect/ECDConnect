@@ -1,4 +1,4 @@
-import { CoachInput } from '@ecdlink/graphql';
+import { ClubMeetingModelInput, CoachInput } from '@ecdlink/graphql';
 import { ClubDto, CoachCirclesDto, CoachDto } from '@ecdlink/core';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
@@ -279,6 +279,30 @@ class CoachService {
     }
 
     return response.data.data.allClubsForCoach;
+  }
+
+  async addCoachCircleMeeting(input: ClubMeetingModelInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation AddCoachCircleMeeting($input: ClubMeetingModelInput ) {
+        addCoachCircleMeeting(input: $input) {
+            id
+            meetingDate
+            meetingNotes
+        }
+    }
+      `,
+      variables: {
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating Coach failed - Server connection error');
+    }
+
+    return true;
   }
 }
 

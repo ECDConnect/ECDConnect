@@ -1,5 +1,6 @@
 import {
   ApplicationUserInput,
+  ClubMeetingModelInput,
   CoachInput,
   SiteAddressInput,
 } from '@ecdlink/graphql';
@@ -269,6 +270,44 @@ export const getAllClubsForCoach = createAsyncThunk<
       }
     } else {
       return coachClubsCache;
+    }
+  }
+);
+
+export const addCoachCircleMeeting = createAsyncThunk<
+  boolean[],
+  { input: ClubMeetingModelInput },
+  ThunkApiType<RootState>
+>(
+  'addCoachCircleMeeting',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      coach: { coach },
+    } = getState();
+
+    try {
+      let clubMeetingInput: boolean | undefined;
+
+      if (userAuth?.auth_token && coach) {
+        clubMeetingInput = await new CoachService(
+          userAuth?.auth_token
+        ).addCoachCircleMeeting(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!clubMeetingInput) {
+        return rejectWithValue('Error adding meeting circle');
+      }
+
+      return [clubMeetingInput];
+    } catch (err) {
+      if (err instanceof Error) {
+        return rejectWithValue(err.message);
+      }
+      return rejectWithValue(err);
     }
   }
 );

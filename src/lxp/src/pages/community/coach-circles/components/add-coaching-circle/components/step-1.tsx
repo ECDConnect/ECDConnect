@@ -17,14 +17,16 @@ import { useSelector } from 'react-redux';
 interface Step1Props {
   setActiveStep: (item: number) => void;
   activeStep: number;
+  setAddCoachingCircleForm: (input: ClubMeetingModelInput) => void;
+  addCoachingCircleForm: ClubMeetingModelInput;
 }
 
-export const Step1: React.FC<Step1Props> = ({ activeStep, setActiveStep }) => {
-  const [addCoachingCirlceForm, setAddCoachingCirlceForm] =
-    useState<ClubMeetingModelInput>({
-      clubId: '',
-      meetingDate: '',
-    });
+export const Step1: React.FC<Step1Props> = ({
+  activeStep,
+  setActiveStep,
+  setAddCoachingCircleForm,
+  addCoachingCircleForm,
+}) => {
   const coachClubs = useSelector(coachSelectors.getCoachClubs);
   const coachClubsList = coachClubs?.map((item) => {
     return {
@@ -33,7 +35,7 @@ export const Step1: React.FC<Step1Props> = ({ activeStep, setActiveStep }) => {
     };
   });
   console.log({ coachClubsList });
-  console.log(addCoachingCirlceForm);
+  console.log(addCoachingCircleForm);
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -54,13 +56,13 @@ export const Step1: React.FC<Step1Props> = ({ activeStep, setActiveStep }) => {
               wrapperClassName="text-center w-full"
               className="text-textMid bg-uiBg mx-auto w-full rounded-md border-none"
               selected={
-                addCoachingCirlceForm?.meetingDate
-                  ? new Date(addCoachingCirlceForm?.meetingDate)
+                addCoachingCircleForm?.meetingDate
+                  ? new Date(addCoachingCircleForm?.meetingDate)
                   : undefined
               }
               onChange={(date: Date) => {
-                setAddCoachingCirlceForm({
-                  ...addCoachingCirlceForm,
+                setAddCoachingCircleForm({
+                  ...addCoachingCircleForm,
                   meetingDate: date,
                 });
               }}
@@ -82,12 +84,12 @@ export const Step1: React.FC<Step1Props> = ({ activeStep, setActiveStep }) => {
             className="w-full border-none"
             placeholder={'Tap to select club...'}
             fillType="clear"
-            selectedValue={addCoachingCirlceForm?.clubId}
+            selectedValue={addCoachingCircleForm?.clubId}
             list={coachClubsList || []}
             onChange={(item) => {
               console.log(item);
-              setAddCoachingCirlceForm({
-                ...addCoachingCirlceForm,
+              setAddCoachingCircleForm({
+                ...addCoachingCircleForm,
                 clubId: item,
               });
             }}
@@ -103,11 +105,11 @@ export const Step1: React.FC<Step1Props> = ({ activeStep, setActiveStep }) => {
             className="w-full border-none"
             placeholder={'Tap to select topic...'}
             fillType="clear"
-            selectedValue={addCoachingCirlceForm?.clubId}
+            selectedValue={addCoachingCircleForm?.clubId}
             list={[]}
             onChange={(item) => {
-              setAddCoachingCirlceForm({
-                ...addCoachingCirlceForm,
+              setAddCoachingCircleForm({
+                ...addCoachingCircleForm,
                 meetingType: 'a',
               });
             }}
@@ -118,10 +120,10 @@ export const Step1: React.FC<Step1Props> = ({ activeStep, setActiveStep }) => {
         label={'Meeting notes'}
         textInputType="textarea"
         placeholder={'e.g. We discussed increasing preschool fees.'}
-        onChange={() =>
-          setAddCoachingCirlceForm({
-            ...addCoachingCirlceForm,
-            meetingNotes: 'aadfdsfd',
+        onChange={(e) =>
+          setAddCoachingCircleForm({
+            ...addCoachingCircleForm,
+            meetingNotes: e.target.value,
           })
         }
       />
