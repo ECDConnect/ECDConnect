@@ -9,7 +9,7 @@ export const EmptyPage = ({ image, title, subTitle }: EmptyPageProps) => {
     <div className="flex flex-col items-center justify-center pt-16 text-center">
       <img src={image} alt="alien" />
       <p className="text-textDark text-18 mt-4 mb-2 font-semibold">{title}</p>
-      <p>{subTitle}</p>
+      <p className="text-textMid">{subTitle}</p>
     </div>
   );
 };

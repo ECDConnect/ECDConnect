@@ -62,7 +62,7 @@ export const CommunityWelcome: React.FC = () => {
       className="z-10"
       size="small"
       title="Welcome to the Community section!"
-      onBack={() => {}}
+      onBack={() => history.push(ROUTES.DASHBOARD)}
       onClose={() => history.push(ROUTES.DASHBOARD)}
     >
       <div className="h-48 overflow-hidden">

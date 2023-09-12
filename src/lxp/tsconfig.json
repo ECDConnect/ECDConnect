@@ -27,6 +27,5 @@
   },
   "include": [
     "src",
-    "../../packages/ui/src/components/empty-page"
   ]
 }
