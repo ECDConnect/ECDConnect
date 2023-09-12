@@ -160,6 +160,18 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeOverdueTasks, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
         }
+
+        public async Task<bool> SendTraineeSetupVenueNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSetupVenue, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+
+
         public async Task<bool> SendOnly2MoreTraineeTaskLeftsNotification(
 [Service] UserManager<ApplicationUser> userManager,
 [Service] INotificationService notificationService, string userId)
@@ -167,6 +179,45 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             var userToSend = await userManager.FindByIdAsync(userId);
             return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.TwoOnboardingStepsLeft, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+
+        public async Task<bool> SendRegisterThreeChildrenNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.RegisterThreeChildren, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        }
+
+        public async Task<bool> SendTraineeSignAgreementNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, DateTime dueDate)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "DueDate",
+                ReplacementValue = dueDate.ToString()
+            });
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignAgreement, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+        }
+
+        public async Task<bool> SendTraineeSignStartupSupportAgreementNotification(
+[Service] UserManager<ApplicationUser> userManager,
+[Service] INotificationService notificationService, string userId, DateTime dueDate)
+        {
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            replacements.Add(new TagsReplacements()
+            {
+                FindValue = "DueDate",
+                ReplacementValue = dueDate.ToString()
+            });
+
+            var userToSend = await userManager.FindByIdAsync(userId);
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.TraineeSignStartupSupportAgreement, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
         }
 
         public async Task<bool> SendRemovedFromProgrammeNotification(
