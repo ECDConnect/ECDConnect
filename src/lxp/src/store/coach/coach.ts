@@ -5,6 +5,7 @@ import localForage from 'localforage';
 import { CoachState } from './coach.types';
 import {
   coachNameByUserId,
+  getAllClubsForCoach,
   getAllCoachingCircleClubsForCoach,
   getCoachByCoachId,
   getCoachByUserId,
@@ -13,6 +14,7 @@ import {
 const initialState: CoachState = {
   coach: undefined,
   coachCircles: undefined,
+  coachClubs: undefined,
 };
 
 const coachSlice = createSlice({
@@ -44,6 +46,9 @@ const coachSlice = createSlice({
         state.coachCircles = action.payload;
       }
     );
+    builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
+      state.coachClubs = action.payload;
+    });
   },
 });
 

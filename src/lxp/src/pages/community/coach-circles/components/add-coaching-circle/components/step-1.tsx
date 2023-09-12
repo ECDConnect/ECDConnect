@@ -1,3 +1,5 @@
+import { coachSelectors } from '@/store/coach';
+import { ClubDto } from '@ecdlink/core';
 import { ClubMeetingModelInput } from '@ecdlink/graphql';
 import {
   Button,
@@ -10,20 +12,34 @@ import {
 import { CalendarIcon } from '@heroicons/react/solid';
 import { useState } from 'react';
 import ReactDatePicker from 'react-datepicker';
+import { useSelector } from 'react-redux';
 
-export const Step1 = () => {
+interface Step1Props {
+  setActiveStep: (item: number) => void;
+  activeStep: number;
+}
+
+export const Step1: React.FC<Step1Props> = ({ activeStep, setActiveStep }) => {
   const [addCoachingCirlceForm, setAddCoachingCirlceForm] =
     useState<ClubMeetingModelInput>({
       clubId: '',
       meetingDate: '',
     });
+  const coachClubs = useSelector(coachSelectors.getCoachClubs);
+  const coachClubsList = coachClubs?.map((item) => {
+    return {
+      label: item?.name,
+      value: item?.id,
+    };
+  });
+  console.log({ coachClubsList });
   console.log(addCoachingCirlceForm);
 
   return (
     <div className="flex flex-col gap-4 p-4">
       <Typography
         type="h2"
-        color="textMid"
+        color="textDark"
         text={'Add a coaching circle'}
         className="mt-4"
       />
@@ -67,9 +83,13 @@ export const Step1 = () => {
             placeholder={'Tap to select club...'}
             fillType="clear"
             selectedValue={addCoachingCirlceForm?.clubId}
-            list={[]}
+            list={coachClubsList || []}
             onChange={(item) => {
-              setAddCoachingCirlceForm({ ...addCoachingCirlceForm, clubId: 1 });
+              console.log(item);
+              setAddCoachingCirlceForm({
+                ...addCoachingCirlceForm,
+                clubId: item,
+              });
             }}
           />
         </div>
@@ -107,7 +127,7 @@ export const Step1 = () => {
       />
       <div className="absolute bottom-0 left-0 right-0 max-h-40 bg-white p-4">
         <Button
-          onClick={() => {}}
+          onClick={() => setActiveStep(activeStep + 1)}
           className="mb-4 w-full rounded-2xl"
           size="small"
           color="primary"

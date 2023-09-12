@@ -3,7 +3,12 @@ import {
   CoachInput,
   SiteAddressInput,
 } from '@ecdlink/graphql';
-import { CoachCirclesDto, CoachDto, SiteAddressDto } from '@ecdlink/core';
+import {
+  ClubDto,
+  CoachCirclesDto,
+  CoachDto,
+  SiteAddressDto,
+} from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import { SiteAddressService } from '@/services/SiteAddressService';
@@ -225,6 +230,45 @@ export const getAllCoachingCircleClubsForCoach = createAsyncThunk<
       }
     } else {
       return coachCirclesCache;
+    }
+  }
+);
+
+export const getAllClubsForCoach = createAsyncThunk<
+  ClubDto[],
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  'getAllClubsForCoach',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      coach: { coachClubs: coachClubsCache },
+    } = getState();
+
+    if (!coachClubsCache) {
+      try {
+        let coachClubs: ClubDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          coachClubs = await new CoachService(
+            userAuth?.auth_token
+          ).GetAllClubsForCoach(userId);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+        if (!coachClubs) {
+          return rejectWithValue(
+            'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
+          );
+        }
+        return coachClubs;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return coachClubsCache;
     }
   }
 );

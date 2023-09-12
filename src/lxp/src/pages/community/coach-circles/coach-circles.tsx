@@ -1,4 +1,3 @@
-import { SuccessCard } from '@/components/success-card/success-card';
 import { coachSelectors } from '@/store/coach';
 import { getQuarterMonths } from '@/utils/common/date.utils';
 import { getAvatarColor } from '@ecdlink/core';
@@ -47,6 +46,7 @@ export const CoachCircles = () => {
   );
   const [showSuccessCard, setShowSuccessCard] = useState(false);
   const [showAddCircles, setShowAddCircles] = useState(false);
+
   console.log({ coachCircleData });
   console.log({ showAddCircles });
 

@@ -1,5 +1,5 @@
 import { CoachInput } from '@ecdlink/graphql';
-import { CoachCirclesDto, CoachDto } from '@ecdlink/core';
+import { ClubDto, CoachCirclesDto, CoachDto } from '@ecdlink/core';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
 
@@ -258,7 +258,7 @@ class CoachService {
     return response.data.data.allCoachingCircleClubsForCoach;
   }
 
-  async GetAllClubsForCoach(userId: string): Promise<CoachCirclesDto> {
+  async GetAllClubsForCoach(userId: string): Promise<ClubDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -275,10 +275,10 @@ class CoachService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Coach circles Failed - Server connection error');
+      throw new Error('Get Coach clubs Failed - Server connection error');
     }
 
-    return response.data.data.allCoachingCircleClubsForCoach;
+    return response.data.data.allClubsForCoach;
   }
 }
 

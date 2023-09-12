@@ -157,6 +157,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               endDate: quarterLastDay,
             })
           ).unwrap())();
+        (async () =>
+          await appDispatch(
+            coachThunkActions.getAllClubsForCoach({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
       }
       if (!isCoach) {
         (async () =>
