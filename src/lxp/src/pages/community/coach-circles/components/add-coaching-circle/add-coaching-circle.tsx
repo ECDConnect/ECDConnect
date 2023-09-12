@@ -8,6 +8,11 @@ export enum ChildProgressAssessmentSteps {
   AddCoachingCircleStepTwo = 2,
 }
 
+export interface CoachingCirclesAttendanceProps {
+  practitionerId: string;
+  attended: boolean;
+}
+
 interface AddCoachingCircleProps {
   setShowAddCircles: (item: boolean) => void;
 }
@@ -16,14 +21,20 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
   setShowAddCircles,
 }) => {
   const [activeStep, setActiveStep] = useState(1);
+  const [coachingCircleAttendance, setCoachingCircleAttendance] =
+    useState<CoachingCirclesAttendanceProps[]>();
   const AddCoachingCircleSteps = (step: ChildProgressAssessmentSteps) => {
     switch (step) {
       case ChildProgressAssessmentSteps?.AddCoachingCircleStepTwo:
-        return <Step2 />;
+        return (
+          <Step2 setCoachingCircleAttendance={setCoachingCircleAttendance} />
+        );
       default:
         return <Step1 setActiveStep={setActiveStep} activeStep={activeStep} />;
     }
   };
+
+  console.log({ coachingCircleAttendance });
 
   return (
     <>
