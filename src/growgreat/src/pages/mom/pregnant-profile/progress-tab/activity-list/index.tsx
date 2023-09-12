@@ -27,7 +27,6 @@ import ROUTES from '@/routes/routes';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
-import { infantThunkActions } from '@/store/infant';
 import { referralThunkActions } from '@/store/referral';
 import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
@@ -52,6 +51,7 @@ import {
   getMotherFirstVisitSelector,
 } from '@/store/mother/mother.selectors';
 import { usePrevious } from '@ecdlink/core';
+import { MotherActions } from '@/store/mother/mother.actions';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -78,24 +78,51 @@ export const MomActivityList: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const location = useLocation();
-  const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
+
+  const { isLoading: isLoadingPreviousVisitData } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER
+  );
+  const { isLoading: isLoadingVisits } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_MOTHER_VISITS
+  );
+  const { isLoading: isLoadingVisitsAnswers } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_VISIT_ANSWERS_FOR_MOTHER
+  );
+  const { isLoading: isLoadingCompletedVisits } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_MOM_COMPLETED_VISITS_FOR_VISIT_ID
+  );
+  const { isLoading: isLoadingReferrals } = useThunkFetchCall(
+    'visits',
+    MotherActions.GET_REFERRALS_FOR_MOTHER
+  );
+  const { isLoading: isLoadingSummary } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_MOTHER_SUMMARY_BY_PRIORITY
+  );
+
+  const isLoading =
+    isLoadingPreviousVisitData ||
+    isLoadingVisits ||
+    isLoadingVisitsAnswers ||
+    isLoadingCompletedVisits ||
+    isLoadingReferrals ||
+    isLoadingSummary;
 
   const currentVisit = useSelector((state: RootState) =>
     getMotherLastVisitSelector(state, visitId)
   );
 
   useLayoutEffect(() => {
-    appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
-
     appDispatch(motherThunkActions?.getMotherVisits({ motherId }));
-    appDispatch(
-      visitThunkActions.getGrowthDataForInfant({ infantId })
-    ).unwrap();
     appDispatch(
       referralThunkActions.getReferralsForVisitId({ visitId })
     ).unwrap();
-  }, [appDispatch, infantId, motherId, visitId]);
+  }, [appDispatch, motherId, visitId]);
 
   const firstVisit = useSelector(getMotherFirstVisitSelector);
   const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
@@ -211,11 +238,6 @@ export const MomActivityList: React.FC = () => {
   );
 
   const name = mother?.user?.firstName;
-
-  const { isLoading } = useThunkFetchCall(
-    'visits',
-    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
-  );
 
   const isLargeName =
     (name || '').length + (mother?.user?.surname || '').length > 22;
@@ -346,6 +368,11 @@ export const MomActivityList: React.FC = () => {
   useLayoutEffect(() => {
     appDispatch(
       visitThunkActions.getPreviousVisitInformationForMother({
+        visitId,
+      })
+    );
+    appDispatch(
+      visitThunkActions.GetMotherSummaryByPriority({
         visitId,
       })
     );

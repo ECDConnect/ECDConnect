@@ -16,14 +16,7 @@ import {
   getWeeksDiff,
   toCamelCase,
 } from '@ecdlink/core';
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as Home } from '@/assets/home.svg';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
@@ -35,20 +28,18 @@ import P5 from '@/assets/pillar/p5.svg';
 import Pregnant from '@/assets/pregnant.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
-import { useAppDispatch } from '@/store';
-import {
-  getMotherCurrentVisitSelector,
-  getMotherNearestPreviousVisitByOrderDate,
-} from '@/store/mother/mother.selectors';
-import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
 import {
   activitiesColours,
   activitiesSectionTypes,
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
-import { useLocation } from 'react-router';
 import { RootState } from '@/store/types';
+import {
+  getMotherCurrentVisitSelector,
+  getMotherNearestPreviousVisitByOrderDate,
+} from '@/store/mother/mother.selectors';
+import { useLocation } from 'react-router';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -70,7 +61,6 @@ interface FollowUpComponentProps {
   mother: MotherDto;
   walkthroughData?: FollowUpWalkthroughData;
   isPrint?: boolean;
-  isVisit: boolean;
   isFromProgressTab?: boolean;
 }
 
@@ -87,11 +77,9 @@ export const FollowUp = ({
   mother,
   walkthroughData,
   isPrint,
-  isVisit,
   isFromProgressTab,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const appDispatch = useAppDispatch();
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
   const location = useLocation();
@@ -127,37 +115,6 @@ export const FollowUp = ({
   const previousVisit = useSelector((state: RootState) =>
     getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
   );
-
-  useLayoutEffect(() => {
-    if (
-      isFromProgressTab &&
-      previousVisit?.id &&
-      previousVisit?.attended &&
-      !currentVisit?.visitInProgress
-    ) {
-      appDispatch(
-        visitThunkActions.getPreviousVisitInformationForMother({
-          visitId: previousVisit.id,
-        })
-      );
-      appDispatch(
-        visitThunkActions.GetMotherSummaryByPriority({
-          visitId: previousVisit.id,
-        })
-      );
-    } else if (currentVisit?.id) {
-      appDispatch(
-        visitThunkActions.getPreviousVisitInformationForMother({
-          visitId: currentVisit.id,
-        })
-      );
-      appDispatch(
-        visitThunkActions.GetMotherSummaryByPriority({
-          visitId: currentVisit.id,
-        })
-      );
-    }
-  }, [appDispatch, currentVisit, isFromProgressTab, previousVisit]);
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -277,7 +234,10 @@ export const FollowUp = ({
     | Status
     | undefined;
 
-  if (!previousVisitStatus?.visitDataStatus?.length && !walkthroughData) {
+  if (
+    (!previousVisitStatus?.visitDataStatus?.length && !walkthroughData) ||
+    (isFromProgressTab && !previousVisit)
+  ) {
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />

@@ -173,7 +173,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             try
             {                
-               _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), FromUserId = notification.FromUserId, To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status, SentByUserId = notification.FromUserId, CTA = notification.CTA, CTAText = notification.CTAText });
+               _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), From = notification.FromUserId.ToString(),  FromUserId = notification.FromUserId, To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status, SentByUserId = notification.FromUserId, CTA = notification.CTA, CTAText = notification.CTAText });
             } catch (Exception ex)
             {
                 throw ex;

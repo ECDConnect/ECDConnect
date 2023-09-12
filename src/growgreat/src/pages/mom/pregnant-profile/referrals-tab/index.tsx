@@ -63,19 +63,32 @@ export const ReferralsTab: React.FC = () => {
   const location = useLocation();
   const appDispatch = useAppDispatch();
 
-  const { isLoading } = useThunkFetchCall(
-    'mothers',
-    MotherActions.GET_REFERRALS_FOR_MOTHER
-  );
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
-  const [showMarkAllButton, setShowMarkAllButton] = useState(true);
+  const [showMarkAllButton] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
   const [isReferralsView, setIsReferralsView] = useState(true);
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
+
+  const { isLoading: isLoadingReferrals } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_REFERRALS_FOR_MOTHER
+  );
+  const { isLoading: isLoadingCompletedReferrals } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_COMPLETED_REFERRALS_FOR_MOTHER
+  );
+  const { isLoading: isLoadingUpdateVisitData } = useThunkFetchCall(
+    'mothers',
+    MotherActions.UPDATE_VISIT_DATA_STATUS
+  );
+
+  const isLoading =
+    isLoadingReferrals ||
+    isLoadingCompletedReferrals ||
+    isLoadingUpdateVisitData;
 
   const { walkthroughState, isWalkthroughSession, walkthroughDispatch } =
     useWalkthrough();
@@ -182,10 +195,6 @@ export const ReferralsTab: React.FC = () => {
     );
     return groupedData;
   }, [referralsForMother]) as GroupedData;
-
-  const previousGroupedData = usePrevious(groupedData) as
-    | GroupedData
-    | undefined;
 
   const walkthroughData = {
     sections: [
@@ -410,7 +419,7 @@ export const ReferralsTab: React.FC = () => {
         size="medium"
         spinnerColor={'primary'}
         backgroundColor={'uiLight'}
-        className="pt-4"
+        className="pt-20"
       />
     );
   }
