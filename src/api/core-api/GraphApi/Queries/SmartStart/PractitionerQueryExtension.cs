@@ -29,12 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
     [ExtendObjectType(OperationTypeNames.Query)]
     public class PractitionerQueryExtension
     {
-        public PractitionerQueryExtension()
-        {
-        }
-
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-
         public Practitioner GetPractitionerByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

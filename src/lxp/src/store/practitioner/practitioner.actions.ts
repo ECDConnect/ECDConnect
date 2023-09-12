@@ -107,6 +107,44 @@ export const getPractitionerById = createAsyncThunk<
   }
 );
 
+export const getPractitionerByUserId = createAsyncThunk<
+  PractitionerDto,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  'getPractitionerByUserId',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let practitioner: PractitionerDto | undefined;
+
+      if (userId === null || userId.trim() === '') {
+        return rejectWithValue('no user id supplied');
+      }
+
+      if (userAuth?.auth_token) {
+        practitioner = await new PractitionerService(
+          userAuth?.auth_token
+        ).getPractitionerByUserId(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!practitioner) {
+        return rejectWithValue('Error getting practitioner by user id');
+      }
+
+      return practitioner;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getAllPractitioners = createAsyncThunk<
   PractitionerDto[],
   {},

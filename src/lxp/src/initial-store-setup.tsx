@@ -161,19 +161,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     if (userData) {
-      if (practitioners && practitioners?.length > 0) {
-        const currentPractitioner = practitioners.find(
-          (item) => item?.userId === userData?.id!
-        );
-        if (currentPractitioner) {
-          (async () =>
-            await appDispatch(
-              practitionerThunkActions.getPractitionerById({
-                id: currentPractitioner?.id || '',
-              })
-            ).unwrap())();
-        }
-      }
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionerByUserId({
+            userId: userData?.id || '',
+          })
+        ).unwrap())();
     }
   }, [appDispatch, userData, practitioners]);
 

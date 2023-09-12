@@ -100,9 +100,7 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
   const isTrainee = practitioner?.isTrainee;
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -247,18 +245,12 @@ export const Dashboard: React.FC = () => {
       }
 
       if (userData.roles?.some((role) => role.name === 'Practitioner')) {
-        const currentPrincipal = practitionerData?.filter(
-          (x) => x?.user?.id === userData.id
-        );
-        const _current = currentPrincipal?.at(0);
-        if (_current) {
-          (async () =>
-            await appDispatch(
-              practitionerThunkActions.getPractitionerById({
-                id: _current?.id || '',
-              })
-            ).unwrap())();
-        }
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: userData?.id || '',
+            })
+          ).unwrap())();
 
         (async () =>
           await appDispatch(

@@ -12,6 +12,7 @@ import {
   getAllExpensesForPractitioner,
   getAllIncomeForPractitioner,
   updatePractitionerBusinessWalkThrough,
+  getPractitionerByUserId,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -55,6 +56,9 @@ const practitionerSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, deActivatePractitioner);
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
+      state.practitioner = action.payload;
+    });
+    builder.addCase(getPractitionerByUserId.fulfilled, (state, action) => {
       state.practitioner = action.payload;
     });
     builder.addCase(getAllPractitioners.fulfilled, (state, action) => {
