@@ -11,11 +11,10 @@ import {
   StackedListItemType,
   Typography,
   UserAvatar,
-  Button,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
@@ -48,8 +47,6 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
-import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
-import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
@@ -78,12 +75,10 @@ export interface DashboardRouteState {
 }
 
 export const Dashboard: React.FC = () => {
-  const location = useLocation<DashboardRouteState>();
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
-  const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const { isOnline } = useOnlineStatus();
@@ -105,16 +100,6 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
-
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-  const uncompletedSteps = timelineSteps(
-    timeline!,
-    () => {},
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined
-  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const currentMonth = new Date().getMonth() + 1; // +1 for 0 index

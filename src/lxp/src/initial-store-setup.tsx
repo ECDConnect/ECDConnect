@@ -44,8 +44,6 @@ import {
   practitionerForCoachThunkActions,
 } from './store/practitionerForCoach';
 import { analyticsActions } from './store/analytics';
-import localforage from 'localforage';
-import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
