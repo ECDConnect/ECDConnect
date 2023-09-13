@@ -131,6 +131,11 @@ namespace EcdLink.Api.CoreApi.Services
             return _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
         }
 
+        public ClubMember GetClubForPractitioner(Guid practitionerId)
+        {
+            return _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive == true).FirstOrDefault();
+        }
+
         public Coach GetCoachForClub(string userId)
         {
             return _coachRepo.GetByUserId(userId);

@@ -18,10 +18,11 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public List<LeagueClub> GetAllLeagues(string userId);
         public List<ClubLeader> GetLeadersForClub(Guid clubId);
         public ClubSupport GetSupportForClub(Guid clubId);
+        public ClubMember GetClubForPractitioner(Guid practitionerId);
+        public Club ChangeClubName(Guid clubId, string clubName);
         public bool IsClubLeader(Guid practitionerId);
         public bool IsClubSupport(Guid practitionerId);
         public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input);
-        public Club ChangeClubName(Guid clubId, string clubName);
         Task<ClubLeader> AddNewClubLeader(Guid clubId, Guid practitionerId);
         public bool AddNewClubMembers(NewClubMember input);
         public bool MoveClubMembers(NewClubMember input);

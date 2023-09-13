@@ -8963,8 +8963,12 @@ export type PractitionerMetricReport = {
 
 export type PractitionerModel = {
   __typename?: 'PractitionerModel';
+  attendanceRegisterLink?: Maybe<Scalars['String']>;
   attendedChildProgress?: Maybe<Scalars['Boolean']>;
+  clubId?: Maybe<Scalars['UUID']>;
+  clubName?: Maybe<Scalars['String']>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
+  consentForPhoto?: Maybe<Scalars['Boolean']>;
   dateAccepted?: Maybe<Scalars['DateTime']>;
   dateLinked?: Maybe<Scalars['DateTime']>;
   dateToBeRemoved?: Maybe<Scalars['DateTime']>;
@@ -8979,12 +8983,19 @@ export type PractitionerModel = {
   isPrincipal?: Maybe<Scalars['Boolean']>;
   isRegistered?: Maybe<Scalars['Boolean']>;
   isTrainee?: Maybe<Scalars['Boolean']>;
+  languageUsedInGroups?: Maybe<Scalars['String']>;
+  maxChildren?: Maybe<Scalars['Int']>;
+  monthSinceFranchisee?: Maybe<Scalars['Int']>;
+  parentFees?: Maybe<Scalars['Decimal']>;
   principalHierarchy?: Maybe<Scalars['UUID']>;
   programmeType?: Maybe<Scalars['String']>;
   progress: Scalars['Decimal'];
+  setupTraineeInitiated?: Maybe<Scalars['Boolean']>;
   shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
+  startDate?: Maybe<Scalars['DateTime']>;
+  stipendType?: Maybe<Scalars['String']>;
   usePhotoInReport?: Maybe<Scalars['String']>;
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['String']>;
@@ -10257,9 +10268,10 @@ export type Query = {
   permissionGroups?: Maybe<Array<Maybe<PermissionGroupModel>>>;
   pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
   pointsSummaryForUser?: Maybe<Array<Maybe<PointsUserSummary>>>;
+  practitionerById?: Maybe<PractitionerModel>;
   practitionerByIdNumber?: Maybe<PractitionerUserAndNote>;
   practitionerByIdNumberInternal?: Maybe<ApplicationUser>;
-  practitionerByUserId?: Maybe<Practitioner>;
+  practitionerByUserId?: Maybe<PractitionerModel>;
   practitionerColleagues?: Maybe<Array<Maybe<PractitionerColleagues>>>;
   practitionerExcelTemplateGenerator?: Maybe<FileModel>;
   practitionerInviteCount: Scalars['Int'];
@@ -12643,6 +12655,10 @@ export type QueryOpenConsentArgs = {
 
 export type QueryPointsSummaryForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPractitionerByIdArgs = {
+  id?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryPractitionerByIdNumberArgs = {
