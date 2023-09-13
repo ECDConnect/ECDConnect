@@ -14,7 +14,6 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories;
 using HotChocolate;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -1456,7 +1455,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
-                            IsOnStipend = entity.StipendType != null ? true : false                           
+                            IsOnStipend = entity.StipendType != null ? true : false
                         };
 
                         //check phone number is valid
@@ -1653,7 +1652,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             //map licenses
                             List<License> licenses = new List<License>();
                             var licenseTypes = _licenseTypeRepo.GetAll();
-                            licenses.Add(new License() { LicenseDate = entity.StartDate, LicenseTypeId = licenseTypes.Where(x => x.Description.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId });                           
+                            licenses.Add(new License() { LicenseDate = (entity.StarterLicenceDate!=null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.Description.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId });                           
                             _licenseRepo.InsertMany(licenses);
 
                             //create classrooms and classroomgroups - only map for principals or FAAs
