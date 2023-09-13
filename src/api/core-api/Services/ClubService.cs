@@ -1,18 +1,26 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clubs;
+using ECDLink.DataAccessLayer.Entities.Leagues;
+using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -28,26 +36,40 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<ClubMember, Guid> _clubMemberRepo;
         private readonly IGenericRepository<ClubLeader, Guid> _clubLeaderRepo;
         private readonly IGenericRepository<ClubSupport, Guid> _clubSupportRepo;
+        private readonly IGenericRepository<Coach, Guid> _coachRepo;
+        private readonly IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private readonly IGenericRepository<League, Guid> _leagueRepo;
+
+        private readonly string _applicationUserId;
 
 
-        private readonly string _uId;
+        INotificationService _notificationService;
+        UserManager<ApplicationUser> _userManager;
 
         public ClubService(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repositoryFactory
+            IGenericRepositoryFactory repositoryFactory,
+            [Service] INotificationService notificationService,
+            [Service] UserManager<ApplicationUser> userManager
             )
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
-            _uId = _contextAccessor.HttpContext.GetUser()?.Id;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
 
-            _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
-            _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _uId);
-            _clubMeetingRegisterRepo = _repositoryFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _uId);
-            _meetingTypeRepo = _repositoryFactory.CreateGenericRepository<MeetingType>(userContext: _uId);
-            _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
-            _clubLeaderRepo = _repositoryFactory.CreateGenericRepository<ClubLeader>(userContext: _uId);
-            _clubSupportRepo = _repositoryFactory.CreateGenericRepository<ClubSupport>(userContext: _uId);
+            _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _applicationUserId);
+            _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _applicationUserId);
+            _clubMeetingRegisterRepo = _repositoryFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _applicationUserId);
+            _meetingTypeRepo = _repositoryFactory.CreateGenericRepository<MeetingType>(userContext: _applicationUserId);
+            _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _applicationUserId);
+            _clubLeaderRepo = _repositoryFactory.CreateGenericRepository<ClubLeader>(userContext: _applicationUserId);
+            _clubSupportRepo = _repositoryFactory.CreateGenericRepository<ClubSupport>(userContext: _applicationUserId);
+            _coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
+            _leagueRepo = _repositoryFactory.CreateGenericRepository<League>(userContext: _applicationUserId);
+            _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+
+            _notificationService = notificationService;
+            _userManager = userManager;
         }
 
         public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input)
@@ -60,8 +82,8 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 Id = Guid.NewGuid(),
                 IsActive = true,
-                InsertedDate = DateTime.Now,
-                UpdatedBy = _uId,
+                InsertedDate = DateTime.UtcNow,
+                UpdatedBy = _applicationUserId,
                 MeetingDate = input.MeetingDate,
                 Name = input.Name,
                 ClubId = input.ClubId,
@@ -76,8 +98,8 @@ namespace EcdLink.Api.CoreApi.Services
                 participants.Add(new ClubMeetingRegister {
                     Id = Guid.NewGuid(),
                     IsActive = true,
-                    InsertedDate = DateTime.Now,
-                    UpdatedBy = _uId,
+                    InsertedDate = DateTime.UtcNow,
+                    UpdatedBy = _applicationUserId,
                     PractitionerId = participant.PractitionerId,
                     Attended = participant.Attended,
                     ClubMeetingId = clubMeeting.Id
@@ -99,14 +121,19 @@ namespace EcdLink.Api.CoreApi.Services
             return clubSupport == null ? false : true;
         }
 
-        public ClubLeader GetLeaderForClub(Guid clubId)
+        public List<ClubLeader> GetLeadersForClub(Guid clubId)
         {
-            return _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
+            return _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true).OrderBy(x => x.DateAssigned).ToList();
         }
 
         public ClubSupport GetSupportForClub(Guid clubId)
         {
             return _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
+        }
+
+        public Coach GetCoachForClub(string userId)
+        {
+            return _coachRepo.GetByUserId(userId);
         }
 
         public PractitionerAttendance GetPractitionerAttendance(Guid practitionerId, DateTime date, string meetingType)
@@ -173,6 +200,207 @@ namespace EcdLink.Api.CoreApi.Services
             return _clubRepo.Update(club);
         }
 
+        public async Task<ClubLeader> AddNewClubLeader(Guid clubId, Guid practitionerId)
+        {
+            ClubLeader clubLeader = _clubLeaderRepo.Insert(
+                new ClubLeader()
+                {
+                    Id = Guid.NewGuid(),
+                    ClubId = clubId,
+                    PractitionerId = practitionerId,
+                    InsertedDate = DateTime.UtcNow,
+                    UpdatedDate = DateTime.UtcNow,
+                    UpdatedBy = _applicationUserId,
+                    DateAssigned = DateTime.UtcNow,
+                    IsActive = true
+                });
+
+            // Add notification for new club leader assignment
+            Practitioner practitioner = _practitionerRepo.GetById(practitionerId);
+            Club club = _clubRepo.GetById(clubId);
+
+            List<TagsReplacements> replacements = new List<TagsReplacements>
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "ClubName",
+                    ReplacementValue = club.Name
+                }
+            };
+
+            var userToSend = await _userManager.FindByIdAsync(practitioner.UserId);
+            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
+
+            // TODO: notifications to members
+            return clubLeader;
+        }
+
+        public bool AddNewClubMembers(NewClubMember input)
+        {
+            List<ClubMember> members = new List<ClubMember>();
+            foreach (var Id in input.PractitionerIds)
+            {
+                members.Add(new ClubMember
+                {
+                    Id = Guid.NewGuid(),
+                    IsActive = true,
+                    InsertedDate = DateTime.UtcNow,
+                    DateClubJoined = DateTime.UtcNow,
+                    UpdatedBy = _applicationUserId,
+                    PractitionerId = new Guid(Id),
+                    ClubId = new Guid(input.ClubId),
+                    IsNewInClub = true
+                });
+            }
+            _clubMemberRepo.InsertMany(members);
+
+            // TODO: Add notification
+            return true;
+        }
+
+        public bool MoveClubMembers(NewClubMember input)
+        {
+            ClubMember clubMember = new ClubMember();
+            foreach (var Id in input.PractitionerIds)
+            {
+                clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId.ToString() == Id).FirstOrDefault();
+                clubMember.IsNewInClub = true;
+                clubMember.ClubId = new Guid(input.ClubId);
+                clubMember.UpdatedBy = _applicationUserId;
+                clubMember.UpdatedDate = DateTime.UtcNow;
+                clubMember.DateClubJoined = DateTime.UtcNow;
+                _clubMemberRepo.Update(clubMember);
+            }
+
+            // TODO: Add notification
+            return true;
+        }
+
+        public ClubLeader AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId)
+        {
+            List<ClubLeader> clubLeaders = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId).OrderBy(x => x.InsertedDate).ToList();
+            ClubLeader newClubLeader = clubLeaders.Where(x => x.ClubId == clubId && x.IsActive == true && x.PractitionerId == practitionerId && !x.DateAccepted.HasValue).FirstOrDefault();
+            ClubLeader oldClubLeader = clubLeaders.Where(x => x.ClubId == clubId && x.IsActive == true && x.DateAccepted.HasValue).OrderBy(x => x.DateAccepted).FirstOrDefault();
+
+            // Set new club leader
+            newClubLeader.DateAccepted = DateTime.UtcNow;
+            newClubLeader.UpdatedDate = DateTime.UtcNow;
+            newClubLeader.UpdatedBy = _applicationUserId;
+            _clubLeaderRepo.Update(newClubLeader);
+
+            // Archive other club leader
+            oldClubLeader.DateAccepted = DateTime.UtcNow;
+            oldClubLeader.UpdatedDate = DateTime.UtcNow;
+            oldClubLeader.UpdatedBy = _applicationUserId;
+            oldClubLeader.IsActive = false;
+            _clubLeaderRepo.Update(oldClubLeader);
+
+            // TODO: Add notification
+
+            return newClubLeader;
+        }
+
+        public Club AddNewClub(NewClubInput input)
+        {
+            Club newClub = new Club()
+            {
+                Id = Guid.NewGuid(),
+                Name = input.Name,
+                UserId = input.UserId,
+                InsertedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow,
+                UpdatedBy = _applicationUserId,
+                IsActive = true
+            };
+            Club club = _clubRepo.Insert(newClub);
+
+            List<ClubMember> newMembers = new List<ClubMember>();
+            if (input.NewClubMembers.Count > 0)
+            {
+                foreach (var Id in input.NewClubMembers)
+                {
+                    newMembers.Add(new ClubMember
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.UtcNow,
+                        UpdatedDate = DateTime.UtcNow,
+                        UpdatedBy = _applicationUserId,
+                        ClubId = club.Id,
+                        PractitionerId = new Guid(Id),
+                        IsNewInClub = true,
+                        DateClubJoined = DateTime.UtcNow
+                    });
+                }
+                _clubMemberRepo.InsertMany(newMembers);
+            }
+
+            if (input.TransferredClubMembers.Count > 0)
+            {
+                ClubMember clubMember = new ClubMember();
+                foreach (var Id in input.TransferredClubMembers)
+                {
+                    clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId.ToString() == Id).FirstOrDefault();
+
+                    clubMember.IsNewInClub = true;
+                    clubMember.ClubId = club.Id;
+                    clubMember.DateClubJoined = DateTime.UtcNow;
+                    clubMember.UpdatedDate = DateTime.UtcNow;
+                    clubMember.UpdatedBy = _applicationUserId;
+                    _clubMemberRepo.Update(clubMember);
+                }
+             }
+
+            return club;
+        }
+
+        public List<LeagueClub> GetAllLeagues(string userId)
+        {
+            List<LeagueClub> leagueClubs = new List<LeagueClub>();
+
+            // Get all league ids in use - must be restricted
+            List<Guid?> activeLeagueIds = _clubRepo.GetAll().Where(x => x.IsActive && x.LeagueId != null && x.UserId != null).Select(x => x.LeagueId).Distinct().ToList();
+            
+            // get leagues and order by purple, new stars and then rising stars
+            List<League> leagues = _leagueRepo.GetAll().Where(x => activeLeagueIds.Contains(x.Id)).
+                OrderBy(x => x.LeagueType.Name == Constants.ClubSettings.name_purple).
+                ThenBy(x => x.LeagueType.Name == Constants.ClubSettings.name_new_stars).
+                ThenBy(x => x.LeagueType.Name == Constants.ClubSettings.name_rising_stars).
+                Distinct().
+                ToList();
+
+            LeagueClub leagueClub = new LeagueClub();
+            LeagueClubDetail leagueClubDetail = new LeagueClubDetail();
+            foreach (var item in leagues)
+            {
+                leagueClub = new LeagueClub();
+                leagueClub.Id = item.Id;
+                leagueClub.Name = item.Name;
+                leagueClub.LeagueType = item.LeagueType;
+                leagueClub.Clubs = new List<LeagueClubDetail>();
+
+                List<Club> clubs = _clubRepo.GetAll().Where(x => x.LeagueId == item.Id && x.IsActive == true).ToList();
+                foreach (var club in clubs) {
+                    leagueClubDetail = new LeagueClubDetail();
+                    leagueClubDetail.Id = club.Id;
+                    leagueClubDetail.UserId = club.UserId;
+                    leagueClubDetail.Name = club.Name;
+                    leagueClubDetail.CoachName = "Coach: " + club.User.FullName;
+                    if (club.User.Id == userId)
+                    {
+                        leagueClubDetail.CoachName = "Coach: You";
+                    }
+                    leagueClubDetail.Points = 0;
+                    leagueClubDetail.ClubPosition = 0;
+                    leagueClub.Clubs.Add(leagueClubDetail);
+                 }
+
+                leagueClubs.Add(leagueClub);
+            }
+
+            return leagueClubs;
+        }
+
         public List<CoachingClub> GetAllClubsForCoach(string userId)
         {
             var secondaryText = "";
@@ -191,8 +419,10 @@ namespace EcdLink.Api.CoreApi.Services
                 List<ClubMember> members = GetClubMembers(club.Id);
                 double clubAttendance = GetClubAttendanceForMonth(club.Id, prevMonth);
                 bool hasAttendanceRegister = HasAttendanceRegisterForMonth(club.Id, prevMonth);
-                ClubLeader clubLeader = GetLeaderForClub(club.Id);
+                List <ClubLeader> clubLeaders = GetLeadersForClub(club.Id); // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
                 ClubSupport clubSupport = GetSupportForClub(club.Id);
+                Coach coach = GetCoachForClub(club.UserId);
+                ClubLeader activeClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
 
                 // Secondary Text in Priority Desc Order
 
@@ -273,9 +503,9 @@ namespace EcdLink.Api.CoreApi.Services
                 }
 
                 // Priority 4 - Choose a new club leader->If a practitioner has been a club leader of the club for more than 6 months
-                if (clubLeader != null)
+                if (activeClubLeader != null)
                 {
-                    DateTime clubLeaderLengthDate = clubLeader.DateAccepted.Value.AddMonths(6);
+                    DateTime clubLeaderLengthDate = activeClubLeader.DateAccepted.Value.AddMonths(6);
                     if (clubLeaderLengthDate.Date >= today.Date)
                     {
                         secondaryText = Constants.ClubSettings.choose_club_leader;
@@ -295,11 +525,21 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
                 }
                 // Priority 1 - No club leader->IF the club does not have a club leader assigned
-                if (clubLeader == null)
+                if (activeClubLeader == null)
                 {
                     secondaryText = Constants.ClubSettings.no_club_leader;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
                 }
+
+                List<ClubMeeting> clubMeetings = new List<ClubMeeting>();
+                List<ClubActivity> clubActivities = new List<ClubActivity>
+                {
+                    // tmp implementation until we get to the development of activities
+                    new ClubActivity() { Name = "Meet regularly", Points = 100 },
+                    new ClubActivity() { Name = "Be creative", Points = 80 },
+                    new ClubActivity() { Name = "Host family days", Points = 120 },
+                    new ClubActivity() { Name = "Leave no one behind", Points = 60 }
+                };
 
                 result.Add(
                     new CoachingClub()
@@ -309,13 +549,16 @@ namespace EcdLink.Api.CoreApi.Services
                         UserId = club.UserId,
                         SecondaryText = secondaryText,
                         SecondaryTextColor = secondaryTextColor,
-                        ClubLeader = clubLeader,
+                        ClubLeaders = clubLeaders,
                         ClubSupport = clubSupport,
                         ClubMembers = members,
+                        Coach = coach,
                         League = club.League,
                         MaxClubPoints = maxClubPoints,
                         TotalClubPoints = totalClubPoints,
-                        LeaguePosition = leaguePosition
+                        LeaguePosition = leaguePosition,
+                        ClubMeetings = clubMeetings,
+                        ClubActivities = clubActivities
                     }
                 );
             }
