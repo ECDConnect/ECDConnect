@@ -56,7 +56,7 @@ export const Club: React.FC = () => {
   const history = useHistory();
 
   // TODO: replace mocked rule with real data
-  const isClubInALeague = false;
+  const isClubInALeague = true;
   const isTop25Percent = true;
 
   const leader: MenuListDataItem = {
@@ -199,6 +199,11 @@ export const Club: React.FC = () => {
           textColor="primary"
           color="primary"
           text="Change club name"
+          onClick={() =>
+            history.push(
+              ROUTES.COMMUNITY.CLUB.EDIT.replace(':clubId', mockedClub.id)
+            )
+          }
         />
       </div>
     </BannerWrapper>
