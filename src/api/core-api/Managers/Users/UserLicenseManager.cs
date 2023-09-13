@@ -81,7 +81,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     LicenseType = licenseType,
                     LicenseDate = dateAwarded,
                     InsertedDate = DateTime.UtcNow,
-                    IsActive = true
+                    IsActive = true,
+                    CollectedSSHandbook = false,
+                    CollectedSSPlaykit = false,
                 };
 
                 return _licenseRepo.Insert(input);
