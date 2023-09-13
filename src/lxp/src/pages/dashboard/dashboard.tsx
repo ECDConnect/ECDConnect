@@ -97,6 +97,9 @@ export const Dashboard: React.FC = () => {
   const hasConsent = practitioner?.shareInfo;
   const isTrainee = practitioner?.isTrainee;
 
+  // TODO: add integration
+  const isFirstTimeCommunitySection = true;
+
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
@@ -376,7 +379,7 @@ export const Dashboard: React.FC = () => {
   if (!isTrainee) {
     navigation.splice(3, 0, {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
+      href: ROUTES.COMMUNITY.ROOT,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -458,7 +461,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
+      href: ROUTES.COMMUNITY.ROOT,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -479,22 +482,27 @@ export const Dashboard: React.FC = () => {
       {
         title: 'SmartStarters',
         titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.smartStarterIcon,
+        titleIconClassName: styles.icon,
         onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
         classNames: 'bg-uiBg',
       },
       {
-        title: 'Clubs',
-        titleIcon: 'BriefcaseIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
+        title: 'Community',
+        titleIcon: 'UserGroupIcon',
+        titleIconClassName: styles.icon,
+        onActionClick: () =>
+          history.push(
+            isFirstTimeCommunitySection
+              ? ROUTES.COMMUNITY.WELCOME
+              : ROUTES.COMMUNITY.ROOT
+          ),
         classNames: 'bg-uiBg',
       }
     );
     dashboardItems.push({
       title: 'Calendar',
       titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.calendarIcon,
+      titleIconClassName: styles.icon,
       classNames: 'bg-uiBg',
       onActionClick: () => {
         goToCalendar();

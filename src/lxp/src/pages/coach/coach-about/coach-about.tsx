@@ -1,7 +1,14 @@
-import { LocalStorageKeys, CoachDto, UserDto, useTheme } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  CoachDto,
+  UserDto,
+  useTheme,
+  useDialog,
+} from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
+  Avatar,
   BannerWrapper,
   Button,
   Dialog,
@@ -13,8 +20,8 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { useHistory } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useHistory, useLocation } from 'react-router-dom';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
 import { cloneDeep } from 'lodash';
@@ -38,6 +45,9 @@ import {
   CoachAboutModel,
   coachAboutModelSchema,
 } from '@schemas/coach/coach-about';
+import { CoachAboutRouteState } from './coach-about.types';
+import { usePrevious } from 'react-use';
+import { BackToCommunityDialog } from './components/back-to-community-dialog/indext';
 
 export const CoachAbout: React.FC = () => {
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
@@ -55,6 +65,12 @@ export const CoachAbout: React.FC = () => {
     updateDocument,
     userProfilePicture,
   } = useDocuments();
+
+  const dialog = useDialog();
+
+  const location = useLocation<CoachAboutRouteState>();
+  const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
+  const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
 
   const pictureStorageKey = LocalStorageKeys.coachProfilePicture;
 
@@ -76,6 +92,11 @@ export const CoachAbout: React.FC = () => {
   const children = useSelector(childrenSelectors.getChildren);
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(userSelectors.getUser);
+
+  const avatar =
+    userProfilePicture?.file ||
+    user?.profileImageUrl ||
+    userProfilePicture?.reference;
 
   useEffect(() => {
     if (coach) setNewStackListItems(coach);
@@ -246,9 +267,48 @@ export const CoachAbout: React.FC = () => {
     value: '',
   });
 
-  const displayProfilePicturePrompt = () => {
+  const displayProfilePicturePrompt = useCallback(() => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
-  };
+  }, [editProfilePictureVisible]);
+
+  const handlePicturePromptOnClose = useCallback(() => {
+    if (isFromCommunityWelcome) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <BackToCommunityDialog
+              hideTitle={!avatar}
+              avatar={
+                avatar ? (
+                  <Avatar dataUrl={avatar} size="header" className="mb-4" />
+                ) : undefined
+              }
+              onSubmit={() => {
+                history.push(ROUTES.COMMUNITY.ROOT, {
+                  isFromCommunityWelcome: false,
+                } as CoachAboutRouteState);
+                onClose();
+              }}
+              onClose={() => {
+                displayProfilePicturePrompt();
+                onClose();
+              }}
+            />
+          );
+        },
+      });
+    }
+
+    displayProfilePicturePrompt();
+  }, [
+    avatar,
+    dialog,
+    displayProfilePicturePrompt,
+    history,
+    isFromCommunityWelcome,
+  ]);
 
   const closeEditField = () => {
     setEditFieldVisible(false);
@@ -267,12 +327,17 @@ export const CoachAbout: React.FC = () => {
       appDispatch(userActions.updateUser(userCopy));
     }
 
-    setEditProfilePictureVisible(!editProfilePictureVisible);
+    if (!isFromCommunityWelcome) {
+      setEditProfilePictureVisible(!editProfilePictureVisible);
+    }
   };
 
   const picturePromptOnAction = async (imageBaseString: string) => {
     setStorageItem(imageBaseString, pictureStorageKey);
-    setEditProfilePictureVisible(!editProfilePictureVisible);
+
+    if (!isFromCommunityWelcome) {
+      setEditProfilePictureVisible(!editProfilePictureVisible);
+    }
 
     const copy = Object.assign({}, user);
     if (copy) {
@@ -321,6 +386,16 @@ export const CoachAbout: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (isFromCommunityWelcome && !wasFromCommunityWelcome) {
+      displayProfilePicturePrompt();
+    }
+  }, [
+    displayProfilePicturePrompt,
+    wasFromCommunityWelcome,
+    isFromCommunityWelcome,
+  ]);
+
   return (
     <div className={styles.container}>
       <BannerWrapper
@@ -332,18 +407,18 @@ export const CoachAbout: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={true}
-        onBack={() => history.push(ROUTES.COACH.PROFILE.ROOT)}
+        onBack={() =>
+          history.push(ROUTES.COACH.PROFILE.ROOT, {
+            isFromCommunityWelcome: false,
+          } as CoachAboutRouteState)
+        }
         displayOffline={!isOnline}
         backgroundColour={'white'}
       >
         <div className="px-4">
           <div className={'inline-flex w-full justify-center pt-8'}>
             <ProfileAvatar
-              dataUrl={
-                userProfilePicture?.file ||
-                user?.profileImageUrl ||
-                userProfilePicture?.reference
-              }
+              dataUrl={avatar}
               size={'header'}
               onPressed={displayProfilePicturePrompt}
               hasConsent={true}
@@ -447,14 +522,14 @@ export const CoachAbout: React.FC = () => {
         visible={editProfilePictureVisible}
         position={DialogPosition.Bottom}
       >
-        <div className={'p-4'}>
-          <PhotoPrompt
-            title="Profile Photo"
-            onClose={displayProfilePicturePrompt}
-            onAction={picturePromptOnAction}
-            onDelete={userProfilePicture ? deleteProfilePicture : undefined}
-          ></PhotoPrompt>
-        </div>
+        <PhotoPrompt
+          title="Profile Photo"
+          onClose={handlePicturePromptOnClose}
+          onAction={picturePromptOnAction}
+          onDelete={
+            userProfilePicture || avatar ? deleteProfilePicture : undefined
+          }
+        ></PhotoPrompt>
       </Dialog>
     </div>
   );
