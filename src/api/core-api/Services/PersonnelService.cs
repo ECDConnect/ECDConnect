@@ -152,7 +152,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerItem.IsOnStipend = practitioner.IsOnStipend;
                 practitionerItem.IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough;
                 practitionerItem.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
-                practitionerItem.IsClubSupport = _clubService.IsClubSupport(practitioner.Id); ;
+                practitionerItem.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
                 practitionerList.Add(practitionerItem);
             }
 

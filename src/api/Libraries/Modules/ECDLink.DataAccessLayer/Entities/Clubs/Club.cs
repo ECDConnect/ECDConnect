@@ -1,5 +1,6 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Leagues;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -19,6 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public string Name { get; set; }
         public int NumberOfMembers { get; set; }
         public string? UserId { get; set; }
+        public virtual ApplicationUser User { get; set; }
         public Guid? LeagueId { get; set; }
         public virtual League League { get; set; }
     }
