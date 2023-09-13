@@ -128,6 +128,34 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             PractitionerModel practitionerRecord = new PractitionerModel();
             foreach (var practitioner in practitioners)
             {
+                practitionerItem = new PractitionerModel();
+                practitionerItem.Id = practitioner.Id;
+                practitionerItem.UserId = practitioner.UserId;
+                practitionerItem.IsPrincipal = practitioner.IsPrincipal;
+                practitionerItem.IsFundaAppAdmin = practitioner.IsFundaAppAdmin;
+                practitionerItem.IsTrainee = practitioner.IsTrainee;
+                practitionerItem.ProgrammeType = practitioner.ProgrammeType;
+                practitionerItem.PrincipalHierarchy = practitioner.PrincipalHierarchy;
+                practitionerItem.IsActive = practitioner.IsActive;
+                practitionerItem.CoachHierarchy = practitioner.CoachHierarchy;
+                practitionerItem.IsRegistered = practitioner.IsRegistered;
+                practitionerItem.ShareInfo = practitioner.ShareInfo;
+                practitionerItem.SigningSignature = practitioner.SigningSignature;
+                practitionerItem.DateLinked = practitioner.DateLinked;
+                practitionerItem.DateAccepted = practitioner.DateAccepted;
+                practitionerItem.DateToBeRemoved = practitioner.DateToBeRemoved;
+                practitionerItem.SiteAddress = practitioner.SiteAddress;
+                practitionerItem.IsLeaving = practitioner.IsLeaving;
+                practitionerItem.Progress = practitioner.Progress;
+                practitionerItem.User = practitioner.User;
+                practitionerItem.AttendedChildProgress = practitioner.AttendedChildProgress;
+                practitionerItem.UsePhotoInReport = practitioner.UsePhotoInReport;
+                practitionerItem.IsOnStipend = practitioner.IsOnStipend;
+                practitionerItem.IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough;
+                practitionerItem.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
+                practitionerItem.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+                practitionerList.Add(practitionerItem);
+            }
                 practitionerList.Add(GetPractitionerDetails(practitioner));
             }
             return practitionerList;
