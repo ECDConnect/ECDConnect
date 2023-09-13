@@ -17,6 +17,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public List<CoachingClub> GetAllClubsForCoach(string userId);
         public ClubLeader GetLeaderForClub(Guid clubId);
         public ClubSupport GetSupportForClub(Guid clubId);
+        public ClubMember GetClubForPractitioner(Guid practitionerId);
         public Club ChangeClubName(Guid clubId, string clubName);
         public bool IsClubLeader(Guid practitionerId);
         public bool IsClubSupport(Guid practitionerId);
