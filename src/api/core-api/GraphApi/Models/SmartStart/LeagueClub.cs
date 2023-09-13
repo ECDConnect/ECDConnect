@@ -18,6 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string Name { get; set; }
         public string CoachName { get; set; }
         public double Points { get; set; }
+        public int ClubPosition { get; set; }
     }
 
 }

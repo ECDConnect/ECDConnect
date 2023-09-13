@@ -391,6 +391,7 @@ namespace EcdLink.Api.CoreApi.Services
                         leagueClubDetail.CoachName = "Coach: You";
                     }
                     leagueClubDetail.Points = 0;
+                    leagueClubDetail.ClubPosition = 0;
                     leagueClub.Clubs.Add(leagueClubDetail);
                  }
 
