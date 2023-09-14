@@ -28,6 +28,8 @@ import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { DocumentActions } from '@/store/document/document.actions';
 import { currentActivityKey } from '..';
+import { InfantModelInput } from '@/../../../packages/graphql/lib';
+import { infantThunkActions } from '@/store/infant';
 
 export interface Question {
   question: string;
@@ -67,6 +69,7 @@ export interface DynamicFormProps {
   onClose?: () => void;
   setGrowthMonitoring?: (value: GrowthMonitoring) => void;
   setRisk?: (value: number) => void;
+  setInfantInput?: (value?: InfantModelInput) => void;
 }
 
 export const DynamicForm = ({
@@ -87,6 +90,7 @@ export const DynamicForm = ({
     useState<VisitDataStatusFilterInput[]>();
   const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
   const [risk, setRisk] = useState<Risk>(0);
+  const [infantInput, setInfantInput] = useState<InfantModelInput>();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -184,6 +188,10 @@ export const DynamicForm = ({
     []
   );
 
+  const handleSetInfant = useCallback((value: InfantModelInput) => {
+    setInfantInput?.((prevState) => ({ ...prevState, ...value }));
+  }, []);
+
   const handleGrowthMonitoring = useCallback((value: GrowthMonitoring) => {
     setGrowthMonitoring?.((prevState) => ({ ...prevState, ...value }));
   }, []);
@@ -269,16 +277,26 @@ export const DynamicForm = ({
           referralThunkActions.updateVisitDataStatus({ input: referrals })
         );
       }
+
+      if (!!infantInput && infant?.user?.id) {
+        appDispatch(
+          infantThunkActions.updateInfant({
+            input: infantInput,
+            id: infant?.user?.id,
+          })
+        ).unwrap();
+      }
     }
   }, [
+    canEdit,
+    dialog,
+    sectionQuestions,
     visitId,
-    appDispatch,
     infant?.user?.id,
     name,
     referralsInput,
-    sectionQuestions,
-    canEdit,
-    dialog,
+    appDispatch,
+    infantInput,
   ]);
 
   // TODO: sync visit form
@@ -304,6 +322,7 @@ export const DynamicForm = ({
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
         setRisk={handleRisk}
+        setInfantInput={handleSetInfant}
       />
     );
   }, [
@@ -312,6 +331,7 @@ export const DynamicForm = ({
     handleGrowthMonitoring,
     handleSetQuestions,
     handleSetReferrals,
+    handleSetInfant,
     infant,
     isTipPage,
     onNextStep,
