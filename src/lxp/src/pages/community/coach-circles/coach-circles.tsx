@@ -5,6 +5,7 @@ import {
   Alert,
   AlertSeverityType,
   Button,
+  Card,
   Dialog,
   DialogPosition,
   StackedList,
@@ -19,6 +20,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 import { AddCoachingCircle } from './components/add-coaching-circle/add-coaching-circle';
+import { CircleTopics } from './components/circle-topics/circle-topics';
+import { CheckCircleIcon, XIcon } from '@heroicons/react/solid';
 
 export const CoachCircles = () => {
   const date = new Date();
@@ -46,8 +49,9 @@ export const CoachCircles = () => {
   );
   const [showSuccessCard, setShowSuccessCard] = useState(false);
   const [showAddCircles, setShowAddCircles] = useState(false);
-
-  console.log({ coachCircleData });
+  const [showCircleTopics, setShowCircleTopics] = useState(false);
+  const [showSuccessCircleMeetingAdded, setShowSuccessCircleMeetingAdded] =
+    useState(false);
 
   const handleNotificiationsItems = useCallback(() => {
     const noMeetingsNotification: UserAlertListDataItem[] = [];
@@ -172,7 +176,7 @@ export const CoachCircles = () => {
           />
         </Button>
         <Button
-          onClick={() => {}}
+          onClick={() => setShowCircleTopics(true)}
           className="mb-4 w-full rounded-2xl"
           size="small"
           color="primary"
@@ -186,13 +190,47 @@ export const CoachCircles = () => {
             color="primary"
           />
         </Button>
+        {showSuccessCircleMeetingAdded && (
+          <Card
+            className={
+              'bg-successMain absolute bottom-16 left-0 right-0 mx-4 mt-4 rounded-xl'
+            }
+          >
+            <div className="flex items-center gap-2 p-4">
+              <CheckCircleIcon className="h-4 w-4" />
+              <Typography
+                type="h4"
+                className="ml-2"
+                text="Coaching circle added!"
+                color="white"
+              />
+              <XIcon
+                className="absolute right-4 h-6 w-6"
+                onClick={() => setShowSuccessCircleMeetingAdded(false)}
+              />
+            </div>
+          </Card>
+        )}
       </div>
       <Dialog
         visible={showAddCircles}
         stretch={true}
         position={DialogPosition.Full}
       >
-        <AddCoachingCircle setShowAddCircles={setShowAddCircles} />
+        <AddCoachingCircle
+          setShowAddCircles={setShowAddCircles}
+          setShowSuccessCircleMeetingAdded={setShowSuccessCircleMeetingAdded}
+        />
+      </Dialog>
+      <Dialog
+        visible={showCircleTopics}
+        stretch={true}
+        position={DialogPosition.Full}
+      >
+        <CircleTopics
+          setShowCircleTopics={setShowCircleTopics}
+          setShowAddCircles={setShowAddCircles}
+        />
       </Dialog>
     </div>
   );

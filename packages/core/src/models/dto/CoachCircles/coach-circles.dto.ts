@@ -16,3 +16,11 @@ export interface ClubDto {
   id: string;
   name: string;
 }
+
+export interface CoachingCircleTopicDto {
+  id: number;
+  name: string;
+  title: string;
+  description: string;
+  topicContent: string;
+}

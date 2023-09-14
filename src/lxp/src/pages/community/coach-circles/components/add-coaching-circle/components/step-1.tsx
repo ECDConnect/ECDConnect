@@ -10,7 +10,6 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { CalendarIcon } from '@heroicons/react/solid';
-import { useState } from 'react';
 import ReactDatePicker from 'react-datepicker';
 import { useSelector } from 'react-redux';
 
@@ -28,14 +27,19 @@ export const Step1: React.FC<Step1Props> = ({
   addCoachingCircleForm,
 }) => {
   const coachClubs = useSelector(coachSelectors.getCoachClubs);
+  const coachCircleTopics = useSelector(coachSelectors.getCircleTopics);
   const coachClubsList = coachClubs?.map((item) => {
     return {
       label: item?.name,
       value: item?.id,
     };
   });
-  console.log({ coachClubsList });
-  console.log(addCoachingCircleForm);
+  const coachCircleTopicsList = coachCircleTopics?.map((item) => {
+    return {
+      label: item?.title,
+      value: item?.id,
+    };
+  });
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -87,7 +91,6 @@ export const Step1: React.FC<Step1Props> = ({
             selectedValue={addCoachingCircleForm?.clubId}
             list={coachClubsList || []}
             onChange={(item) => {
-              console.log(item);
               setAddCoachingCircleForm({
                 ...addCoachingCircleForm,
                 clubId: item,
@@ -106,11 +109,11 @@ export const Step1: React.FC<Step1Props> = ({
             placeholder={'Tap to select topic...'}
             fillType="clear"
             selectedValue={addCoachingCircleForm?.clubId}
-            list={[]}
+            list={coachCircleTopicsList || []}
             onChange={(item) => {
               setAddCoachingCircleForm({
                 ...addCoachingCircleForm,
-                meetingType: 'a',
+                meetingType: item,
               });
             }}
           />

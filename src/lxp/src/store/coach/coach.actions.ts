@@ -2,14 +2,13 @@ import {
   ApplicationUserInput,
   ClubMeetingModelInput,
   CoachInput,
-  MoreInformation,
   SiteAddressInput,
 } from '@ecdlink/graphql';
 import {
   ClubDto,
   CoachCirclesDto,
   CoachDto,
-  ConsentDto,
+  CoachingCircleTopicDto,
   SiteAddressDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -315,7 +314,7 @@ export const addCoachCircleMeeting = createAsyncThunk<
 );
 
 export const getCoachingCircleTopics = createAsyncThunk<
-  ConsentDto,
+  CoachingCircleTopicDto[],
   { locale: string },
   ThunkApiType<RootState>
 >(
@@ -327,7 +326,7 @@ export const getCoachingCircleTopics = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
-        const [content] = await new CoachService(
+        const content = await new CoachService(
           userAuth?.auth_token ?? ''
         ).getCoachingCircleTopics(locale);
 

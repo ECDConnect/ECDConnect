@@ -21,16 +21,16 @@ export interface CoachingCirclesAttendanceProps {
 
 interface AddCoachingCircleProps {
   setShowAddCircles: (item: boolean) => void;
+  setShowSuccessCircleMeetingAdded: (item: boolean) => void;
 }
 
 export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
   setShowAddCircles,
+  setShowSuccessCircleMeetingAdded,
 }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const [language, setLanguage] = useState({ locale: 'en-za' });
-  const coachCircleTopics = useSelector(coachSelectors.getCircleTopics);
-  console.log({ coachCircleTopics });
   const [addCoachingCircleForm, setAddCoachingCircleForm] =
     useState<ClubMeetingModelInput>({
       clubId: '',
@@ -61,8 +61,6 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
     }
   };
 
-  console.log({ coachingCircleAttendance });
-
   const addCoachingCircle = useCallback(() => {
     const input: ClubMeetingModelInput = {
       name: 'Test 1',
@@ -71,13 +69,17 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
       meetingNotes: addCoachingCircleForm?.meetingNotes,
       clubMeetingParticipants: coachingCircleAttendance,
     };
-    console.log({ input });
+
     appDispatch(coachThunkActions?.addCoachCircleMeeting({ input }));
+    setShowAddCircles(false);
+    setShowSuccessCircleMeetingAdded(true);
   }, [
     addCoachingCircleForm?.meetingDate,
     addCoachingCircleForm?.meetingNotes,
     appDispatch,
     coachingCircleAttendance,
+    setShowAddCircles,
+    setShowSuccessCircleMeetingAdded,
   ]);
 
   const getContent = useCallback(async () => {

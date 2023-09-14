@@ -24,13 +24,11 @@ export const Step2: React.FC<Step2Props> = ({
 }) => {
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const [confirmAttendance, setConfirmAttendance] = useState(false);
-  console.log({ practitioners });
   const [attendanceList, setAttendanceList] = useState<
     AttendanceListDataItem[]
   >([]);
   const [coachingCiclesPractitionersList, setCoachingCiclesPractitionersList] =
     useState<AttendanceListDataItem[]>();
-  console.log({ coachingCiclesPractitionersList });
   const coachingCiclesPractitionersListFormatted = useMemo(
     () =>
       coachingCiclesPractitionersList?.map((item) => {

@@ -1,5 +1,11 @@
 import { ClubMeetingModelInput, CoachInput } from '@ecdlink/graphql';
-import { ClubDto, CoachCirclesDto, CoachDto, ConsentDto } from '@ecdlink/core';
+import {
+  ClubDto,
+  CoachCirclesDto,
+  CoachDto,
+  CoachingCircleTopicDto,
+  ConsentDto,
+} from '@ecdlink/core';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
 
@@ -305,18 +311,20 @@ class CoachService {
     return true;
   }
 
-  async getCoachingCircleTopics(locale: string): Promise<ConsentDto[]> {
+  async getCoachingCircleTopics(
+    locale: string
+  ): Promise<CoachingCircleTopicDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query getAllCoachingCircleTopics($locale: String) {
-          getAllCoachingCircleTopics(locale: $locale) {
-            id
-            resource
-            title
-            topicContent
-          }
+      query GetAllCoachingCircleTopics($locale: String) {
+        GetAllCoachingCircleTopics(locale: $locale) {
+          id
+          resource
+          title
+          topicContent
         }
+      }
       `,
       variables: {
         locale,
