@@ -281,21 +281,6 @@ export const Dashboard: React.FC = () => {
     }
   }, [practitioner?.userId]);
 
-  const traineeNavigation = [
-    {
-      name: NavigationTypes.Children,
-      href: ROUTES.CLASSROOM,
-      params: { activeTabIndex: 1 },
-      current: false,
-    },
-    {
-      name: NavigationTypes.Programme,
-      href: ROUTES.CLASSROOM,
-      params: { activeTabIndex: 2 },
-      current: false,
-    },
-  ];
-
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -336,7 +321,7 @@ export const Dashboard: React.FC = () => {
               },
             ]
           : isTrainee
-          ? traineeNavigation
+          ? []
           : [
               {
                 name: NavigationTypes.Attendance,
@@ -593,15 +578,15 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (((classroom && classroom.id) ||
+      ((classroom && classroom.id) ||
         (classroomGroup && classroomGroup.length > 0)) &&
-        isRegistered &&
-        isProgress &&
-        isProgress > 0 &&
-        hasConsent) ||
-      isTrainee
+      isRegistered &&
+      isProgress &&
+      isProgress > 0 &&
+      hasConsent &&
+      !isTrainee
     ) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
     } else {
       showCompleteProfileBlockingDialog();
     }
@@ -661,10 +646,15 @@ export const Dashboard: React.FC = () => {
                 textColour: 'white',
                 type: 'filled',
                 leadingIcon: 'PlusIcon',
-                onClick: async () => {
-                  onSubmit();
-                  history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
-                },
+                onClick: isTrainee
+                  ? async () => {
+                      onSubmit();
+                      history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                    }
+                  : async () => {
+                      onSubmit();
+                      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                    },
               },
               {
                 colour: 'primary',
