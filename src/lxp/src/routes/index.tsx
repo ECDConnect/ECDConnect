@@ -99,6 +99,8 @@ import { Club } from '@/pages/community/clubs-tab/club/individual-club-view';
 import { ClubMembers } from '@/pages/community/clubs-tab/club/club-members';
 import { ClubMembersEdit } from '@/pages/community/clubs-tab/club/club-members-edit';
 import { ClubEdit } from '@/pages/community/clubs-tab/club/club-edit';
+import { ClubLeaderEdit } from '@/pages/community/clubs-tab/club/club-leader-edit';
+import { ClubAdd } from '@/pages/community/clubs-tab/club/club-add';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -193,15 +195,21 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />
+      <Route path={ROUTES.COMMUNITY.CLUB.ADD} component={ClubAdd} exact />
       <Route path={ROUTES.COMMUNITY.CLUB.EDIT} component={ClubEdit} exact />
       <Route
-        path={ROUTES.COMMUNITY.CLUB.MEMBERS}
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT}
         component={ClubMembers}
         exact
       />
       <Route
-        path={ROUTES.COMMUNITY.CLUB.MEMBERS_EDIT}
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT}
         component={ClubMembersEdit}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.LEADER.EDIT}
+        component={ClubLeaderEdit}
         exact
       />
       <Route
