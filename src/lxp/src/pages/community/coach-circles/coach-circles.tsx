@@ -48,7 +48,6 @@ export const CoachCircles = () => {
   const [showAddCircles, setShowAddCircles] = useState(false);
 
   console.log({ coachCircleData });
-  console.log({ showAddCircles });
 
   const handleNotificiationsItems = useCallback(() => {
     const noMeetingsNotification: UserAlertListDataItem[] = [];
@@ -105,7 +104,7 @@ export const CoachCircles = () => {
   }, [submittedAllClubs]);
 
   return (
-    <div className="mb-4 p-4">
+    <div className="mb-4 h-screen p-4">
       {showSuccessCard && (
         <CustomSuccessCard
           className="my-4"
@@ -141,9 +140,9 @@ export const CoachCircles = () => {
         type="body"
         color="textMid"
         text={`Coaching circles held this quarter:`}
-        className="py-4"
+        className="py-2"
       ></Typography>
-      <div className="flex w-full justify-center pt-2">
+      <div className="flex w-full justify-center py-2">
         <StackedList
           listItems={clubsWithMeetingsList || []}
           type={'UserAlertList'}

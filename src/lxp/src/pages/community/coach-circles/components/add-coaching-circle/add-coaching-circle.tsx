@@ -58,13 +58,14 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
 
   const addCoachingCircle = useCallback(() => {
     const input: ClubMeetingModelInput = {
+      name: 'Test 1',
       clubId: 'c2432594-521d-e911-824d-0800274bb0e4',
       meetingDate: addCoachingCircleForm?.meetingDate,
       meetingNotes: addCoachingCircleForm?.meetingNotes,
       clubMeetingParticipants: coachingCircleAttendance,
     };
     console.log({ input });
-    // appDispatch(coachThunkActions?.addCoachCircleMeeting({input}))
+    appDispatch(coachThunkActions?.addCoachCircleMeeting({ input }));
   }, [
     addCoachingCircleForm?.meetingDate,
     addCoachingCircleForm?.meetingNotes,

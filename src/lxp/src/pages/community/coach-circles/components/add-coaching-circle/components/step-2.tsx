@@ -59,7 +59,7 @@ export const Step2: React.FC<Step2Props> = ({
           return {
             title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
             profileText: profileTextString.toLocaleUpperCase(),
-            attenendeeId: practitioner?.userId || index.toString(),
+            attenendeeId: practitioner?.id || index.toString(),
             avatarColor: getAvatarColor(),
             status: 1,
           };

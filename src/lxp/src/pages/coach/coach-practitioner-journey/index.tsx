@@ -95,6 +95,8 @@ export const CoachPractitionerJourney = () => {
     getPractitionerTimelineByIdSelector(practitionerId)
   );
 
+  console.log({ timeline });
+
   const prePqaFormData = useSelector(
     getPrePqaFormDataByIdSelector(practitionerId)
   );

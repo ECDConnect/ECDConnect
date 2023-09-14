@@ -365,6 +365,7 @@ class PractitionerService {
             isPrincipal
             isFundaAppAdmin
             isTrainee
+            isClubOwner
             programmeType
             principalHierarchy
             isActive
