@@ -51,8 +51,6 @@ import {
   practitionerForCoachThunkActions,
 } from './store/practitionerForCoach';
 import { analyticsActions } from './store/analytics';
-import localforage from 'localforage';
-import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
@@ -171,25 +169,25 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               userId: userData?.id!,
             })
           ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsLibrary({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
       }
     }
   }, [appDispatch, userData, isCoach, practitioner]);
 
   useEffect(() => {
     if (userData) {
-      if (practitioners && practitioners?.length > 0) {
-        const currentPractitioner = practitioners.find(
-          (item) => item?.userId === userData?.id!
-        );
-        if (currentPractitioner) {
-          (async () =>
-            await appDispatch(
-              practitionerThunkActions.getPractitionerById({
-                id: currentPractitioner?.id || '',
-              })
-            ).unwrap())();
-        }
-      }
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionerByUserId({
+            userId: userData?.id || '',
+          })
+        ).unwrap())();
     }
   }, [appDispatch, userData, practitioners]);
 

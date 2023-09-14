@@ -479,6 +479,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // Check if we have a rating
             var rating = _pqaRatingRepo.GetAll().FirstOrDefault(x => x.VisitId == pqaVisit.Id);
             var isNewRating = false;
+            var step12_count = 0;
             if (rating == null)
             {
                 isNewRating = true;
@@ -508,6 +509,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     var step6 = vData.Where(x => x.VisitSection == Constants.SSSettings.step6_section).ToList();
                     var step7 = vData.Where(x => x.VisitSection == Constants.SSSettings.step7_section).ToList();
                     var step8 = vData.Where(x => x.VisitSection == Constants.SSSettings.step8_section).ToList();
+                    var step12 = vData.Where(x => x.VisitSection == Constants.SSSettings.step12_section).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                     if (step2.Count > 0)
                     {
@@ -651,6 +653,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         totalScores += child.SectionScore;
                     }
 
+                    if (step12 != null)
+                    {
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a1) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a2) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a3) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a4) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a5) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a6) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a7) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a8) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a9) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a10) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a11) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a12) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a13) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a14) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a15) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a16) != -1) { step12_count++; }
+                        if (step12.IndexOf(Constants.SSSettings.step12_q1_a17) != -1) { step12_count++; }
+                    }
+
                     // overall rating calc
                     rating.OverallScore = totalScores;
                     rating.OverallRating = totalScores + "/" + totalSections;
@@ -694,7 +717,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                     if (rating.OverallScore < 18 || (step5Score > 0 && step5Score < 5) ||
                         (step14_q1 != null && step14_q1.QuestionAnswer == Constants.GGSettings.answer_no) ||
-                        (step16_q1 != null && step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes))
+                        (step16_q1 != null && step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes) ||
+                        (step12 != null && step12_count <= 12))
                     {
                         rating.OverallRatingColor = MetricsColorEnum.Error.ToString();
                     }

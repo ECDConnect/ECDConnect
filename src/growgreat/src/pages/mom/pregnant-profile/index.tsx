@@ -138,32 +138,35 @@ export const PregnantProfile: React.FC = () => {
       (mother?.user?.surname || '').length >
     22;
 
-  const tabItems: TabItem[] = [
-    {
-      title: 'Visits',
-      index: PREGNANT_PROFILE_TABS.VISITS,
-      initActive: true,
-      child: <Visits />,
-    },
-    {
-      title: 'Progress',
-      index: PREGNANT_PROFILE_TABS.PROGRESS,
-      initActive: false,
-      child: <ProgressTab />,
-    },
-    {
-      title: 'Referrals',
-      initActive: false,
-      child: <ReferralsTab />,
-      index: PREGNANT_PROFILE_TABS.REFERRALS,
-    },
-    {
-      title: 'Contact',
-      index: PREGNANT_PROFILE_TABS.CONTACT,
-      initActive: false,
-      child: <Contact />,
-    },
-  ];
+  const tabItems: TabItem[] = useMemo(
+    () => [
+      {
+        title: 'Visits',
+        index: PREGNANT_PROFILE_TABS.VISITS,
+        initActive: true,
+        child: <Visits />,
+      },
+      {
+        title: 'Progress',
+        index: PREGNANT_PROFILE_TABS.PROGRESS,
+        initActive: false,
+        child: <ProgressTab />,
+      },
+      {
+        title: 'Referrals',
+        initActive: false,
+        child: <ReferralsTab />,
+        index: PREGNANT_PROFILE_TABS.REFERRALS,
+      },
+      {
+        title: 'Contact',
+        index: PREGNANT_PROFILE_TABS.CONTACT,
+        initActive: false,
+        child: <Contact />,
+      },
+    ],
+    []
+  );
 
   const {
     steps,

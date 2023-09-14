@@ -282,6 +282,7 @@ class PQAService {
               comment
               actualVisitDate
               insertedDate
+              overallRatingColor
               visitType {
                 type
                 order
@@ -299,6 +300,7 @@ class PQAService {
               comment
               actualVisitDate
               insertedDate
+              overallRatingColor
               visitType {
                 type
                 order

@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
@@ -24,7 +25,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using NPOI.Util;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -111,6 +111,72 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
 
         #region Practitioners
+
+        public List<PractitionerModel> GetAllPractitioners()
+        {
+            ApplicationUser currentUser = (ApplicationUser)_contextAccessor.HttpContext.GetUser();
+            List<Practitioner> practitioners = new List<Practitioner>();
+            if (currentUser.coachObjectData != null)
+            {
+                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
+            } else if (currentUser.principalObjectData != null)
+            {
+                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
+            }
+
+            List<PractitionerModel> practitionerList = new List<PractitionerModel>();
+            foreach (var practitioner in practitioners)
+            {
+                practitionerList.Add(GetPractitionerDetails(practitioner));
+            }
+            return practitionerList;
+        }
+
+        public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
+        {
+            PractitionerModel practitionerRecord = new PractitionerModel();
+
+            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
+
+            practitionerRecord.Id = practitioner.Id;
+            practitionerRecord.UserId = practitioner.UserId;
+            practitionerRecord.User = practitioner.User;
+            practitionerRecord.SiteAddress = practitioner.SiteAddress;
+            practitionerRecord.IsPrincipal = practitioner.IsPrincipal;
+            practitionerRecord.IsRegistered = practitioner.IsRegistered;
+            practitionerRecord.PrincipalHierarchy = practitioner.PrincipalHierarchy;
+            practitionerRecord.AttendanceRegisterLink = practitioner.AttendanceRegisterLink;
+            practitionerRecord.MaxChildren = practitioner.MaxChildren;
+            practitionerRecord.ConsentForPhoto = practitioner.ConsentForPhoto;
+            practitionerRecord.ParentFees = practitioner.ParentFees;
+            practitionerRecord.LanguageUsedInGroups = practitioner.LanguageUsedInGroups;
+            practitionerRecord.SigningSignature = practitioner.SigningSignature;
+            practitionerRecord.StartDate = practitioner.StartDate;
+            practitionerRecord.MonthSinceFranchisee = practitioner.MonthSinceFranchisee;
+            practitionerRecord.ShareInfo = practitioner.ShareInfo;
+            practitionerRecord.DateLinked = practitioner.DateLinked;
+            practitionerRecord.DateAccepted = practitioner.DateAccepted;
+            practitionerRecord.DateToBeRemoved = practitioner.DateToBeRemoved;
+            practitionerRecord.IsLeaving = practitioner.IsLeaving;
+            practitionerRecord.Progress = practitioner.Progress;
+            practitionerRecord.IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough;
+            practitionerRecord.ProgrammeType = practitioner.ProgrammeType;
+            practitionerRecord.IsTrainee = practitioner.IsTrainee;
+            practitionerRecord.CoachHierarchy = practitioner.CoachHierarchy;
+            practitionerRecord.AttendedChildProgress = practitioner.AttendedChildProgress;
+            practitionerRecord.UsePhotoInReport = practitioner.UsePhotoInReport;
+            practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
+            practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
+            practitionerRecord.StipendType = practitioner.StipendType;
+            practitionerRecord.ClubId = clubMember?.Club?.Id;
+            practitionerRecord.ClubName = clubMember?.Club?.Name;
+            practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
+            practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+
+            return practitionerRecord;
+        }
+
+
         public List<Practitioner> GetPractitionerPeers(string practitionerId)
         {
             List<Practitioner> peers = new List<Practitioner>();
@@ -349,7 +415,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
-                    FindValue = "principalOrFAA",
+                    FindValue = "PrincipalOrFAA",
                     ReplacementValue = "Principal"
                 });
                 var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);

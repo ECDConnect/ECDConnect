@@ -1,10 +1,11 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { PointsState } from './points.types';
-import { getPointsSummaryForUser } from './points.actions';
+import { getPointsLibrary, getPointsSummaryForUser } from './points.actions';
 
 const initialState: PointsState = {
   pointsSummary: [],
+  pointsLibrary: [],
 };
 
 const pointsState = createSlice({
@@ -18,6 +19,9 @@ const pointsState = createSlice({
   extraReducers: (builder) => {
     builder.addCase(getPointsSummaryForUser.fulfilled, (state, action) => {
       state.pointsSummary = action.payload;
+    });
+    builder.addCase(getPointsLibrary.fulfilled, (state, action) => {
+      state.pointsLibrary = action.payload;
     });
   },
 });

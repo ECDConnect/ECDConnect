@@ -44,6 +44,7 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 
 namespace EcdLink.Api.CoreApi.Services;
 public class SmartStartIntegrationService : IIntegrationService
@@ -84,6 +85,8 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<Visit, Guid> _visitsRepo;
     private IGenericRepository<VisitType, Guid> _visitTypeRepo;
     private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
+    private IGenericRepository<License, Guid> _licenseRepo;
+    private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
 
     IHolidayService<Holiday> _holidayService;
     private IntegrationLogManager _logManager;
@@ -177,6 +180,9 @@ public class SmartStartIntegrationService : IIntegrationService
         _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
         _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
         _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
+
+        _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
+        _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
 
         _attendanceTrackingRepository = attendanceTrackingRepository;
         _incomeManager = incomeManager;
@@ -466,6 +472,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationStatementsData()
     {
+        await _logManager.IntegrationLog($"IntegrationStatementsData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationStatementsData");
+        int statementsSent = 0;
         bool isComplete = false;
         StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();//from the 25th of the previous month is open submission time        
         if (DateTime.Now.Date > submitPeriod.Start || DateTime.Now.Date < submitPeriod.End)//only run task daily withing submit window
@@ -516,7 +524,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         }
                         List<StatementReport> statementLines = _incomeManager.GetStatementLinesToReport(prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
 
-
+                        if (statementLines.Count > 0) { 
                         double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
                         double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
                         //calculate based on categories
@@ -606,6 +614,8 @@ public class SmartStartIntegrationService : IIntegrationService
                                         //update entity to note its statements has been sent
                                         prac.LastIncomeSubmittedDate = DateTime.Now;
                                         _mapperRepo.Update(prac);
+
+                                        statementsSent++;
                                     } else
                                     {
                                         await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
@@ -621,18 +631,21 @@ public class SmartStartIntegrationService : IIntegrationService
                         {
                             await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse > Remote ID : " + prac.RemoteId);
                         }
-                    //}
+                    }
                 }
-                }
+                } //end statementlinses > 0 check
             }
             /**/
         }
+        await _logManager.IntegrationLog($"IntegrationStatementsData Completed at {DateTime.Now}", $"statements sent {statementsSent}", null, LogRelatedType.Log, "IntegrationStatementsData");
         return isComplete;
     }
 
 
     public async Task<bool> IntegrationAttendanceData()
     {
+        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
+        int attendancesSent = 0;
         bool isComplete = false;
 
         _mappedEntities = await GetMappedEntities();
@@ -666,11 +679,11 @@ public class SmartStartIntegrationService : IIntegrationService
                         int daysPresent = 0;
                         int daysAbsent = 0;
                         //set everything to nosession and override as teh days are iterated through - whether absent or present or a holiday
-                        string mondayPresent = nosession;
-                        string tuesdayPresent = nosession;
-                        string wednesdayPresent = nosession;
-                        string thursdayPresent = nosession;
-                        string fridayPresent = nosession;
+                        string mondayPresent = unknown;
+                        string tuesdayPresent = unknown;
+                        string wednesdayPresent = unknown;
+                        string thursdayPresent = unknown;
+                        string fridayPresent = unknown;
                         //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
                         var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
                         if (mappedChild != null)
@@ -803,6 +816,8 @@ public class SmartStartIntegrationService : IIntegrationService
                                     //mark mapped parent practitioner of last date attendance was sent
                                     parent.LastAttendanceSubmittedDate = DateTime.Now;
                                     _mapperRepo.Update(parent);
+
+                                    attendancesSent++;
                                 }
                                 else //error empty response received
                                 {
@@ -822,7 +837,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 }
             }
         }
-
+        await _logManager.IntegrationLog($"IntegrationAttendanceData Completed at {DateTime.Now}", $"Attendances sent {attendancesSent}", null, LogRelatedType.Log, "IntegrationAttendanceData");
         return isComplete;
     }
 
@@ -1418,6 +1433,8 @@ public class SmartStartIntegrationService : IIntegrationService
                         Guid siteAddressId = Guid.NewGuid();
                         //start creating the practitioner mapped
 
+                        //NEW TODO: pull in trainee record as well and map the has StarterLicenceDate and HasStarterLicence and HasAttendedStartupTraining and others
+
                         //a) create franchisee, b) create children, c) create caregivers, d) create integration mapping, e) create documents, f) notes
 
                         var programmeTypeDesc = entity.ProgrammeType == "ECD Centre" ? "Preschool" : entity.ProgrammeType == "Full Week (Daymothers)" ? "Day Mother" : entity.ProgrammeType == "SmartStart ECD" ? "Preschool" : entity.ProgrammeType == "PlayGroup" ? "Preschool" : "Preschool";
@@ -1439,7 +1456,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
-                            IsOnStipend = entity.StipendType != null ? true : false,
+                            IsOnStipend = entity.StipendType != null ? true : false                           
                         };
 
                         //check phone number is valid
@@ -1633,6 +1650,12 @@ public class SmartStartIntegrationService : IIntegrationService
 
                         if (pracCreated)
                         {
+                            //map licenses
+                            List<License> licenses = new List<License>();
+                            var licenseTypes = _licenseTypeRepo.GetAll();
+                            licenses.Add(new License() { LicenseDate = entity.StartDate, LicenseTypeId = licenseTypes.Where(x => x.Description.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId });                           
+                            _licenseRepo.InsertMany(licenses);
+
                             //create classrooms and classroomgroups - only map for principals or FAAs
                             if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin)
                             {

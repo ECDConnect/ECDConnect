@@ -111,6 +111,7 @@ class PractitionerService {
                 attended
                 comment
                 insertedDate
+                overallRatingColor
                 visitType {
                   type
                   order
@@ -127,6 +128,7 @@ class PractitionerService {
                 attended
                 comment
                 insertedDate
+                overallRatingColor
                 visitType {
                   type
                   order
@@ -198,7 +200,7 @@ class PractitionerService {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error(
         'Get Practitioners For Coach Failed - Server connection error'
       );
@@ -276,7 +278,7 @@ class PractitionerService {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Get Practitioner Failed - Server connection error');
     }
 
@@ -292,18 +294,17 @@ class PractitionerService {
             id
             userId
             user {
-              id
+              gender {
+                description
+              }
               firstName
               surname
               fullName
               email
-              idNumber
-              phoneNumber
               isSouthAfricanCitizen
               verifiedByHomeAffairs
-              gender {
-                description
-              }
+              idNumber
+              phoneNumber
             }
             siteAddress {
               id
@@ -320,8 +321,11 @@ class PractitionerService {
             }
             programmeType
             isPrincipal
+            isTrainee
             isRegistered
+            isTrainee
             principalHierarchy
+            coachHierarchy
             attendanceRegisterLink
             maxChildren
             consentForPhoto
@@ -338,7 +342,10 @@ class PractitionerService {
             progress
             attendedChildProgress
             usePhotoInReport
-            IsOnStipend
+            setupTraineeInitiated
+            isOnStipend
+            stipendType
+            isCompletedBusinessWalkThrough
           }
         }
       `,
@@ -348,7 +355,9 @@ class PractitionerService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Get Practitioner Failed - Server connection error');
+      throw new Error(
+        'Get Practitioner by user id Failed - Server connection error'
+      );
     }
 
     return response.data.data.practitionerByUserId;
@@ -359,7 +368,7 @@ class PractitionerService {
     const response = await apiInstance.post<any>(``, {
       query: `
         query GetAllPractitioners {
-          GetAllPractitioner {
+          allPractitioners {
             id
             userId
             isPrincipal
@@ -424,16 +433,18 @@ class PractitionerService {
             usePhotoInReport
             isOnStipend
             isCompletedBusinessWalkThrough
+            isClubLeader
+            isClubSupport
           }
         }
       `,
     });
 
-    if (response.status !== 200) {
-      throw new Error('Get Practitioner Failed - Server connection error');
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get All Practitioners Failed - Server connection error');
     }
 
-    return response.data.data.GetAllPractitioner;
+    return response.data.data.allPractitioners;
   }
 
   async getPractitionerByIdNumber(idNumber: string): Promise<UserDto> {

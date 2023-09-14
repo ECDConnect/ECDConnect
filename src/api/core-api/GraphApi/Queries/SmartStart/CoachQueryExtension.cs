@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<Practitioner> GetAllPractitionersForCoach(
+        public List<CoachPractitioner> GetAllPractitionersForCoach(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] PersonnelService personnelService,
             [Service] VisitManager visitManager,
@@ -41,17 +41,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             var practitioners = dbRepo.GetAll().Where(x => x.IsActive && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(userId)).ToList();
+            var coachPractitioners = new List<CoachPractitioner>();
 
             foreach (var practitioner in practitioners)
             {
+                var coachPractitioner = new CoachPractitioner
+                {
+                    Id = practitioner.Id,
+                    UserId = practitioner.UserId,
+                    ProgrammeType = practitioner.ProgrammeType
+                };
+
                 // let's make sure that the default visits are added when the smartSpace license is available
                 var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId);
                 if (isAdded)
                 {
-                    practitioner.timeline = personnelService.GetPractitionerTimeline(practitioner.UserId);
+                    coachPractitioner.timeline = personnelService.GetPractitionerTimeline(practitioner.UserId);
                 }
+                coachPractitioners.Add(coachPractitioner);
             }
-            return practitioners;
+
+            return coachPractitioners;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -185,55 +195,55 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var clubRepo = repoFactory.CreateRepository<Club>(userContext: uId);
             var clubMeetingRepo = repoFactory.CreateRepository<ClubMeeting>(userContext: uId);
 
-            List<Club> all_clubs = clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
-            List<CircleClub> no_meetings = new List<CircleClub>();
-            List<CircleClub> meetings = new List<CircleClub>();
-            CircleClub _club = new CircleClub();
+            List<Club> allClubs = clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<CircleClub> noMeetings = new List<CircleClub>();
+            List<CircleClub> haveMeetings = new List<CircleClub>();
+            CircleClub circleClub = new CircleClub();
 
-            foreach (var club in all_clubs)
+            foreach (var club in allClubs)
             {
                 // get all meetings for club for year
-                List<ClubMeeting> _meetings = clubMeetingRepo.GetAll().Where(x => x.ClubId == club.Id &&
+                List<ClubMeeting> meetings = clubMeetingRepo.GetAll().Where(x => x.ClubId == club.Id &&
                                                                                 x.IsActive == true &&
                                                                                 x.MeetingDate.Value.Year == startDate.Year &&
                                                                                 x.MeetingType.Name == Constants.CoachingCircleSettings.meeting_type_coach_circle).ToList();
-                if (_meetings.Count == 0)
+                if (meetings.Count == 0)
                 {
-                    _club = new CircleClub();
-                    _club.Id = club.Id.ToString();
-                    _club.Name = club.Name;
-                    _club.ClubMeetings = _meetings;
-                    no_meetings.Add(_club);
+                    circleClub = new CircleClub();
+                    circleClub.Id = club.Id.ToString();
+                    circleClub.Name = club.Name;
+                    circleClub.ClubMeetings = meetings;
+                    noMeetings.Add(circleClub);
                 } else
                 {
-                    _club = new CircleClub();
-                    _club.Id = club.Id.ToString();
-                    _club.Name = club.Name;
-                    _club.ClubMeetings = _meetings;
+                    circleClub = new CircleClub();
+                    circleClub.Id = club.Id.ToString();
+                    circleClub.Name = club.Name;
+                    circleClub.ClubMeetings = meetings;
 
-                    ClubMeeting latest_meeting_inside_quarter = _meetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date >= startDate && x.MeetingDate.Value.Date <= endDate).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
-                    ClubMeeting latest_meeting_outside_quarter = _meetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date < startDate).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
+                    ClubMeeting latest_meeting_inside_quarter = meetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date >= startDate && x.MeetingDate.Value.Date <= endDate).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
+                    ClubMeeting latest_meeting_outside_quarter = meetings.Where(x => x.IsActive == true && x.MeetingDate.Value.Date < startDate).OrderByDescending(x => x.MeetingDate).FirstOrDefault();
 
                     if (latest_meeting_inside_quarter != null)
                     {
-                        _club.CCMeetingStatus = Constants.CoachingCircleSettings.circle_meetings_held + latest_meeting_inside_quarter.MeetingDate;
-                        _club.CCMeetingStatusColor = MetricsColorEnum.Success.ToString();
+                        circleClub.CCMeetingStatus = Constants.CoachingCircleSettings.circle_meetings_held + latest_meeting_inside_quarter.MeetingDate;
+                        circleClub.CCMeetingStatusColor = MetricsColorEnum.Success.ToString();
                     }
                     else
                     {
                         if (latest_meeting_outside_quarter != null)
                         {
-                            _club.CCMeetingStatus = Constants.CoachingCircleSettings.no_circle_meetings_held + latest_meeting_outside_quarter.MeetingDate;
-                            _club.CCMeetingStatusColor = MetricsColorEnum.Error.ToString();
+                            circleClub.CCMeetingStatus = Constants.CoachingCircleSettings.no_circle_meetings_held + latest_meeting_outside_quarter.MeetingDate;
+                            circleClub.CCMeetingStatusColor = MetricsColorEnum.Error.ToString();
                         }
                     }
-                    meetings.Add(_club);
+                    haveMeetings.Add(circleClub);
                 }
             }
 
             CircleTabClubs result = new CircleTabClubs();
-            result.ClubsWithNoLinkedMeetings = no_meetings;
-            result.ClubsWithLinkedMeetings = meetings;
+            result.ClubsWithNoLinkedMeetings = noMeetings;
+            result.ClubsWithLinkedMeetings = haveMeetings;
 
             return result;
         }
@@ -242,6 +252,5 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             return clubService.GetAllClubsForCoach(userId);
         }
-
     }
 }

@@ -877,8 +877,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var lColor = "";
             var mColor = "";
 
-            var q1 = growthData.Where(x => x.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
-            var q2 = growthData.Where(x => x.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
+            var q1 = growthData.Where(x => x.Question == Constants.GGSettings.q_weight && x.VisitName != Constants.GGSettings.careForBaby).OrderBy(x => x.Id).FirstOrDefault();
+            var q2 = growthData.Where(x => x.Question == Constants.GGSettings.q_length && x.VisitName != Constants.GGSettings.careForBaby).OrderBy(x => x.Id).FirstOrDefault();
             var q3 = growthData.Where(x => x.Question == Constants.GGSettings.q_muac).OrderBy(x => x.Id).FirstOrDefault();
 
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {

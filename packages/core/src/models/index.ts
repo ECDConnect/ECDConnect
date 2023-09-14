@@ -18,6 +18,7 @@ export * from './dto/CoachCircles';
 export * from './dto/Content';
 export * from './dto/Documents';
 export * from './dto/Note';
+export * from './dto/Points';
 export * from './dto/ProgrammeRoutine';
 export * from './dto/ProgrammeTheme';
 export * from './dto/ProgressTracking';

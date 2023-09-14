@@ -94,6 +94,7 @@ import { StartupSupportEnding } from '@/pages/coach/coach-practitioner-business/
 import { MonthsLoss } from '@/pages/coach/coach-practitioner-business/components/statements/loss';
 import { MonthsProfit } from '@/pages/coach/coach-practitioner-business/components/statements/profit';
 import { PointsSummary } from '@/pages/points/points-summary';
+import { CommunityWelcome } from '@/pages/community/welcome';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -180,8 +181,13 @@ const AuthRoutes: React.FC = () => {
         component={MonthStatementsDetails}
         exact={true}
       />
-      <Route path={ROUTES.TRAINING} component={Training} exact={true} />
-      <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
+      <Route path={ROUTES.TRAINING} component={Training} exact />
+      <Route path={ROUTES.COMMUNITY.ROOT} component={Community} exact />
+      <Route
+        path={ROUTES.COMMUNITY.WELCOME}
+        component={CommunityWelcome}
+        exact
+      />
       <Route
         path={ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH}
         component={WalkthroughTutorial}

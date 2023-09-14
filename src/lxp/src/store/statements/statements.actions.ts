@@ -143,7 +143,7 @@ export const getAllStatementsBalanceSheet = createAsyncThunk<
       }
 
       if (!statementsBalanceSheet) {
-        return rejectWithValue('Error getting income');
+        return rejectWithValue('Error getting income balance sheets');
       }
 
       return statementsBalanceSheet;
@@ -325,14 +325,14 @@ export const submitIncomeStatement = createAsyncThunk<
       let result: any | undefined;
 
       if (userAuth?.auth_token) {
-        await new IncomeStatementsService(userAuth?.auth_token).submitStatement(
-          {
-            period,
-            userId,
-            month,
-            year,
-          }
-        );
+        result = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).submitStatement({
+          period,
+          userId,
+          month,
+          year,
+        });
       } else {
         return rejectWithValue('no access token, profile check required');
       }

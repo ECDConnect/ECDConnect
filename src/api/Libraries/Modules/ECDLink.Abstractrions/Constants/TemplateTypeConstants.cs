@@ -25,7 +25,11 @@ namespace ECDLink.Abstractrions.Constants
         public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
         public const string ReassignedToNewClass = "reassigned-to-new-class";
         public const string TraineeOverdueTasks = "trainee-overdue-tasks";
+        public const string TraineeSetupVenue = "trainee-setup-venue";
         public const string TwoOnboardingStepsLeft = "two-more-steps-to-complete";
+        public const string RegisterThreeChildren = "trainee-register-children";
+        public const string TraineeSignAgreement = "trainee-sign-agreement";
+        public const string TraineeSignStartupSupportAgreement = "trainee-sign-startup-agreement";
         public const string UnassignedClasses = "unassigned-classes";
         public const string RejectedInvitation = "rejected-invitation";
         public const string RemovedFromProgramme = "removed-from-programme";
@@ -116,5 +120,8 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGPointsTeamPlacementNotTop3 = "gg-points-placement-team-top-25-perc-not-top-three";
         public const string GGPointsTeamPlacementNotBottom75Perc = "gg-points-placement-team-bottom-75perc";
 
+
+        //Bulk messaging
+        public const string GenericMessage = "generic-message";
     }
 }
