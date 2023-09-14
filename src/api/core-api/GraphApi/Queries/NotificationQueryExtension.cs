@@ -14,6 +14,8 @@ using System.Linq;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
 using System;
+using EcdLink.Api.CoreApi.Services;
+using ECDLink.Tenancy.Context;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -29,6 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<Notification> GetAllNotifications(
     [Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
+    [Service] NotificationService notificationService,
     IGenericRepositoryFactory repoFactory,
     string userId, bool inApp = true, string protocol = "")
         {
@@ -36,15 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
             var templateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
-            List<MessageLog> logs = dbRepo.GetAll().Where(x => string.Equals(x.To, userId) && x.IsActive==true && (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null)).ToList();
-            if (inApp)
-            {
-                logs = logs.Where(y => y.MessageProtocol.ToLower() == "push"  || y.MessageProtocol.ToLower() == "hub").ToList();
-            }
-            if (!string.IsNullOrWhiteSpace(protocol))
-            {
-                logs = logs.Where(y => y.MessageProtocol.ToLower() == protocol).ToList();
-            }
+            List<MessageLog> logs = new List<MessageLog>();
 
             ApplicationUser user = userManager.FindByIdAsync(userId).Result;
             //even if there are no logs for the user specifically there might be notifications for the usertype
@@ -53,33 +48,56 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 List<MessageLog> typeLogs = new List<MessageLog>();
                 if (user?.franchisorObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Franchisor") || x.ToGroups.Contains("Franchisor")).ToList();
+                    typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("Franchisor")).ToList());
                 }
-                else if (user?.coachObjectData != null)
+                if (user?.coachObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Coach") || x.ToGroups.Contains("Coach")).ToList();
+                    typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("Coach")).ToList());
                 }
-                else if (user?.principalObjectData != null)
+               if (user?.principalObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Principal") || x.ToGroups.Contains("Principal")).ToList();
+                    typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("Principal")).ToList());
                 }
-                else if (user?.practitionerObjectData != null)
+               if (user?.practitionerObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Practitioner") || x.ToGroups.Contains("Practitioner")).ToList();
+                    typeLogs.AddRange(dbRepo.GetAll().Where(x =>  x.ToGroups.Contains("Practitioner")).ToList());
                 }
-                else if (user?.traineeObjectData != null)
+                if (user?.traineeObjectData != null)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "Trainee") || x.ToGroups.Contains("Trainee")).ToList();
+                    typeLogs.AddRange(dbRepo.GetAll().Where(x =>x.ToGroups.Contains("Trainee")).ToList());
                 }
-                else if (user?.traineeObjectData != null)
+                 if (user?.traineeObjectData != null) //todo - fix this correctly and team leads, this is a placeholder
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "CHW") || x.ToGroups.Contains("CHW")).ToList();
+                    typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("CHW")).ToList());
                 }
-                else
+                 //catch all
+                typeLogs.AddRange(dbRepo.GetAll().Where(x => x.ToGroups.Contains("AllUsers")).ToList());
+                //TODO: check regions and provinces etc as well
+                
+                //altertypelogs first by repllacing tags
+                List<TagsReplacements> replacements = new List<TagsReplacements>();                
+                foreach (var item in typeLogs)
                 {
-                    typeLogs = dbRepo.GetAll().Where(x => string.Equals(x.To, "AllUsers") || x.ToGroups.Contains("AllUsers")).ToList();
+
+                    //replace any mapped values in the message that is addressed to the group. -  applicationName ,organisationName, firstName are the basics that gets replaced automatically
+                    MessageTemplateText templateItem = notificationService.RemapFields(item.MessageTemplate, user, replacements);
+                    item.Message = templateItem.Message;
+                    item.Subject = templateItem.Subject;
+                    item.CTAText = templateItem.CTAText;
+
+                    logs.Add(item);
                 }
-                logs.AddRange(typeLogs);
+            }
+
+            logs.AddRange(dbRepo.GetAll().Where(x => string.Equals(x.To, userId) && x.IsActive == true).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
+            //only send in the relevcant prototcol types
+            if (inApp)
+            {
+                logs = logs.Where(y => y.MessageProtocol.ToLower() == "push" || y.MessageProtocol.ToLower() == "hub").ToList();
+            }
+            if (!string.IsNullOrWhiteSpace(protocol))
+            {
+                logs = logs.Where(y => y.MessageProtocol.ToLower() == protocol).ToList();
             }
 
             foreach (var item in logs)
