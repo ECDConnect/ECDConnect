@@ -30,7 +30,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public bool? IsCompletedBusinessWalkThrough { get; set; }
         public bool? IsClubLeader { get; set; }
         public bool? IsClubSupport { get; set; }
-
+        public Guid? ClubId { get; set; }
+        public string ClubName { get; set; }
+        public string AttendanceRegisterLink { get; set; }
+        public int? MaxChildren { get; set; }
+        public bool? ConsentForPhoto { get; set; }
+        public decimal? ParentFees { get; set; }
+        public string LanguageUsedInGroups { get; set; }
+        public DateTime? StartDate { get; set; }
+        public int? MonthSinceFranchisee { get; set; }
+        public bool? SetupTraineeInitiated { get; set; }
+        public string StipendType { get; set; }
     }
 
 }

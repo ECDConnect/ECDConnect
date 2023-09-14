@@ -194,6 +194,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return coach;
         }
 
+        public Coach UpdateCoachAboutInfo([Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId, string aboutInfo)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            Coach coach = coachRepo.GetByUserId(userId);
+
+            if (coach != null)
+            {
+                coach.AboutInfo = aboutInfo;
+                coach.UpdatedDate = DateTime.UtcNow;
+                coach.UpdatedBy = uId;
+                coachRepo.Update(coach);
+
+                return coach;
+            }
+            return coach;
+        }
+
 
     }
 }

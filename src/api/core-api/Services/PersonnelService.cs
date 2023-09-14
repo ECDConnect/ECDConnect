@@ -9,6 +9,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Licenses;
@@ -124,39 +125,55 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             List<PractitionerModel> practitionerList = new List<PractitionerModel>();
-            PractitionerModel practitionerItem = new PractitionerModel();
             foreach (var practitioner in practitioners)
             {
-                practitionerItem = new PractitionerModel();
-                practitionerItem.Id = practitioner.Id;
-                practitionerItem.UserId = practitioner.UserId;
-                practitionerItem.IsPrincipal = practitioner.IsPrincipal;
-                practitionerItem.IsFundaAppAdmin = practitioner.IsFundaAppAdmin;
-                practitionerItem.IsTrainee = practitioner.IsTrainee;
-                practitionerItem.ProgrammeType = practitioner.ProgrammeType;
-                practitionerItem.PrincipalHierarchy = practitioner.PrincipalHierarchy;
-                practitionerItem.IsActive = practitioner.IsActive;
-                practitionerItem.CoachHierarchy = practitioner.CoachHierarchy;
-                practitionerItem.IsRegistered = practitioner.IsRegistered;
-                practitionerItem.ShareInfo = practitioner.ShareInfo;
-                practitionerItem.SigningSignature = practitioner.SigningSignature;
-                practitionerItem.DateLinked = practitioner.DateLinked;
-                practitionerItem.DateAccepted = practitioner.DateAccepted;
-                practitionerItem.DateToBeRemoved = practitioner.DateToBeRemoved;
-                practitionerItem.SiteAddress = practitioner.SiteAddress;
-                practitionerItem.IsLeaving = practitioner.IsLeaving;
-                practitionerItem.Progress = practitioner.Progress;
-                practitionerItem.User = practitioner.User;
-                practitionerItem.AttendedChildProgress = practitioner.AttendedChildProgress;
-                practitionerItem.UsePhotoInReport = practitioner.UsePhotoInReport;
-                practitionerItem.IsOnStipend = practitioner.IsOnStipend;
-                practitionerItem.IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough;
-                practitionerItem.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
-                practitionerItem.IsClubSupport = _clubService.IsClubSupport(practitioner.Id); ;
-                practitionerList.Add(practitionerItem);
+                practitionerList.Add(GetPractitionerDetails(practitioner));
             }
-
             return practitionerList;
+        }
+
+        public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
+        {
+            PractitionerModel practitionerRecord = new PractitionerModel();
+
+            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
+
+            practitionerRecord.Id = practitioner.Id;
+            practitionerRecord.UserId = practitioner.UserId;
+            practitionerRecord.User = practitioner.User;
+            practitionerRecord.SiteAddress = practitioner.SiteAddress;
+            practitionerRecord.IsPrincipal = practitioner.IsPrincipal;
+            practitionerRecord.IsRegistered = practitioner.IsRegistered;
+            practitionerRecord.PrincipalHierarchy = practitioner.PrincipalHierarchy;
+            practitionerRecord.AttendanceRegisterLink = practitioner.AttendanceRegisterLink;
+            practitionerRecord.MaxChildren = practitioner.MaxChildren;
+            practitionerRecord.ConsentForPhoto = practitioner.ConsentForPhoto;
+            practitionerRecord.ParentFees = practitioner.ParentFees;
+            practitionerRecord.LanguageUsedInGroups = practitioner.LanguageUsedInGroups;
+            practitionerRecord.SigningSignature = practitioner.SigningSignature;
+            practitionerRecord.StartDate = practitioner.StartDate;
+            practitionerRecord.MonthSinceFranchisee = practitioner.MonthSinceFranchisee;
+            practitionerRecord.ShareInfo = practitioner.ShareInfo;
+            practitionerRecord.DateLinked = practitioner.DateLinked;
+            practitionerRecord.DateAccepted = practitioner.DateAccepted;
+            practitionerRecord.DateToBeRemoved = practitioner.DateToBeRemoved;
+            practitionerRecord.IsLeaving = practitioner.IsLeaving;
+            practitionerRecord.Progress = practitioner.Progress;
+            practitionerRecord.IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough;
+            practitionerRecord.ProgrammeType = practitioner.ProgrammeType;
+            practitionerRecord.IsTrainee = practitioner.IsTrainee;
+            practitionerRecord.CoachHierarchy = practitioner.CoachHierarchy;
+            practitionerRecord.AttendedChildProgress = practitioner.AttendedChildProgress;
+            practitionerRecord.UsePhotoInReport = practitioner.UsePhotoInReport;
+            practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
+            practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
+            practitionerRecord.StipendType = practitioner.StipendType;
+            practitionerRecord.ClubId = clubMember?.Club?.Id;
+            practitionerRecord.ClubName = clubMember?.Club?.Name;
+            practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
+            practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+
+            return practitionerRecord;
         }
 
 
@@ -398,7 +415,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
-                    FindValue = "principalOrFAA",
+                    FindValue = "PrincipalOrFAA",
                     ReplacementValue = "Principal"
                 });
                 var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);

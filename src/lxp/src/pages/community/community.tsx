@@ -5,6 +5,8 @@ import { Connect } from './connect-tab/connect';
 import { useState } from 'react';
 import { CommunityRouteState } from './community.types';
 import format from 'date-fns/format';
+import ROUTES from '@/routes/routes';
+import { ClubsTab } from './clubs-tab';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,
@@ -24,8 +26,8 @@ export const Community: React.FC = () => {
   const tabItems: TabItem[] = [
     {
       title: 'Clubs',
-      initActive: false,
-      child: 'Coming Soon!',
+      initActive: true,
+      child: <ClubsTab />,
     },
     {
       title: 'Leagues',
@@ -60,7 +62,7 @@ export const Community: React.FC = () => {
       title={'Community'}
       subTitle={date}
       color={'primary'}
-      onBack={() => history.goBack()}
+      onBack={() => history.push(ROUTES.DASHBOARD)}
       displayHelp
       onHelp={() => displayTutorial(currentTab?.title)}
       displayOffline={!isOnline}

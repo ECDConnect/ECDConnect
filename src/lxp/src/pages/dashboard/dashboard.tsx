@@ -11,11 +11,10 @@ import {
   StackedListItemType,
   Typography,
   UserAvatar,
-  Button,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
@@ -48,8 +47,6 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
-import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
-import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
@@ -78,12 +75,10 @@ export interface DashboardRouteState {
 }
 
 export const Dashboard: React.FC = () => {
-  const location = useLocation<DashboardRouteState>();
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
-  const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const { isOnline } = useOnlineStatus();
@@ -100,23 +95,14 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
   const isTrainee = practitioner?.isTrainee;
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+  // TODO: add integration
+  const isFirstTimeCommunitySection = true;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
-
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-  const uncompletedSteps = timelineSteps(
-    timeline!,
-    () => {},
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined
-  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
@@ -247,18 +233,12 @@ export const Dashboard: React.FC = () => {
       }
 
       if (userData.roles?.some((role) => role.name === 'Practitioner')) {
-        const currentPrincipal = practitionerData?.filter(
-          (x) => x?.user?.id === userData.id
-        );
-        const _current = currentPrincipal?.at(0);
-        if (_current) {
-          (async () =>
-            await appDispatch(
-              practitionerThunkActions.getPractitionerById({
-                id: _current?.id || '',
-              })
-            ).unwrap())();
-        }
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: userData?.id || '',
+            })
+          ).unwrap())();
 
         (async () =>
           await appDispatch(
@@ -399,7 +379,7 @@ export const Dashboard: React.FC = () => {
   if (!isTrainee) {
     navigation.splice(3, 0, {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
+      href: ROUTES.COMMUNITY.ROOT,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -481,7 +461,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
+      href: ROUTES.COMMUNITY.ROOT,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -502,22 +482,27 @@ export const Dashboard: React.FC = () => {
       {
         title: 'SmartStarters',
         titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.smartStarterIcon,
+        titleIconClassName: styles.icon,
         onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
         classNames: 'bg-uiBg',
       },
       {
-        title: 'Clubs',
-        titleIcon: 'BriefcaseIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
+        title: 'Community',
+        titleIcon: 'UserGroupIcon',
+        titleIconClassName: styles.icon,
+        onActionClick: () =>
+          history.push(
+            isFirstTimeCommunitySection
+              ? ROUTES.COMMUNITY.WELCOME
+              : ROUTES.COMMUNITY.ROOT
+          ),
         classNames: 'bg-uiBg',
       }
     );
     dashboardItems.push({
       title: 'Calendar',
       titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.calendarIcon,
+      titleIconClassName: styles.icon,
       classNames: 'bg-uiBg',
       onActionClick: () => {
         goToCalendar();
