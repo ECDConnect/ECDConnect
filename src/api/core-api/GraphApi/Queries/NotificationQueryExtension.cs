@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.Tenancy.Context;
+using ECDLink.Core.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -31,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<Notification> GetAllNotifications(
     [Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
-    [Service] NotificationService notificationService,
+    [Service] INotificationService notificationService,
     IGenericRepositoryFactory repoFactory,
     string userId, bool inApp = true, string protocol = "")
         {
@@ -103,7 +104,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             foreach (var item in logs)
             {
                 var template = templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, item.MessageTemplateType)).FirstOrDefault();
-                string toGroups = item.ToGroups.Replace("Region:", "").Replace("Province:", "").Replace("Role:", ""); //Clean out group text for display
+                string toGroups = "";
+                if (item.ToGroups != null)
+                {
+                    toGroups = item.ToGroups.Replace("Region:", "").Replace("Province:", "").Replace("Role:", ""); //Clean out group text for display
+                }
                 notifications.Add(new Notification() { From = item.From, FromUserId = item.FromUserId, Id = item.Id, Message = item.Message, MessageProtocol = item.MessageProtocol, To = item.To, SentByUserId = item.SentByUserId, Subject = item.Subject, MessageTemplateType = item.MessageTemplateType, MessageTemplate = template, CTA = item.CTA, CTAText = item.CTAText, MessageDate = item.MessageDate, MessageEndDate = item.MessageEndDate, Status = item.Status, ToGroups = item.ToGroups, ReadDate = item.ReadDate  });
 
             }
