@@ -1,4 +1,3 @@
-import { LocalStorageKeys } from '@ecdlink/core';
 import {
   BannerWrapper,
   TabItem,
@@ -13,7 +12,6 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import { getStorageItem } from '@utils/common/local-storage.utils';
 import { ClassDashboardRouteState } from './business.types';
 import { Money } from './money/money';
 import { StatementsInfoPage } from './components/statements-info-page';
@@ -26,14 +24,10 @@ export const Business: React.FC = () => {
   const history = useHistory();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
-  const [incomeStatementTutorialComplete, setIncomeStatementTutorialComplete] =
-    useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
   const appDispatch = useAppDispatch();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
   const [showInfo, setShowInfo] = useState(false);
@@ -67,16 +61,6 @@ export const Business: React.FC = () => {
       setShowInfo(true);
     }
   }, [practitioner?.isCompletedBusinessWalkThrough]);
-
-  useEffect(() => {
-    const isTutorialComplete = getStorageItem<boolean>(
-      LocalStorageKeys.incomeStatementTutorialComplete
-    );
-    if (isTutorialComplete !== undefined) {
-      setIncomeStatementTutorialComplete(isTutorialComplete);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -119,8 +103,7 @@ export const Business: React.FC = () => {
     },
   ];
 
-  const setTabSelected = (tab: TabItem, tabIndex: number) => {
-    setPreviousTabIndex(selectedTabIndex);
+  const setTabSelected = (tabIndex: number) => {
     setSelectedTabIndex(tabIndex);
   };
 
@@ -131,7 +114,7 @@ export const Business: React.FC = () => {
   const displayHelp =
     currentTab?.title === 'Money' || currentTab?.title === 'Programme';
 
-  const { setState, state: walkThroughState } = useAppContext();
+  const { setState } = useAppContext();
 
   return (
     <div key={String(hasIncomeStatements)} className="h-screen">
@@ -154,9 +137,7 @@ export const Business: React.FC = () => {
           className="bg-uiBg"
           tabItems={tabItemsForPrincipal}
           setSelectedIndex={selectedTabIndex}
-          tabSelected={(tab: TabItem, tabIndex: number) =>
-            setTabSelected(tab, tabIndex)
-          }
+          tabSelected={(_, tabIndex: number) => setTabSelected(tabIndex)}
         />
       </BannerWrapper>
       <Dialog
