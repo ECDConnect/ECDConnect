@@ -202,7 +202,18 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        private MessageTemplateText RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements)
+        public async Task<bool> MarkAsReadNotification(string notificationId)
+        {
+            if (notificationId != null)
+            {
+                var notification = _messageRepo.GetById(Guid.Parse(notificationId));
+                notification.ReadDate = DateTime.Now;
+                _messageRepo.Update(notification);
+            }
+            return true;
+        }
+
+        public MessageTemplateText RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements)
         {
             //iterate through all placeholders, figure out which one it is and replace it based on the the placeholder name in 
             //setup some basics on all messages
