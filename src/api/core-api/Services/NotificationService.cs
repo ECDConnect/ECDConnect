@@ -169,17 +169,53 @@ namespace EcdLink.Api.CoreApi.Services
             await CommitNotification(notification, template);
         }
 
-        public async Task CommitNotification(Notification notification, MessageTemplate template)
+        public async Task<MessageLog> CommitNotification(Notification notification, MessageTemplate template)
         {
             try
-            {                
-               _messageRepo.Insert(new MessageLog() { Id = Guid.NewGuid(), From = notification.FromUserId.ToString(),  FromUserId = notification.FromUserId, To = notification.To, InsertedDate =DateTime.Now, IsActive = true, MessageProtocol = notification.MessageProtocol, MessageTemplateType = notification.MessageTemplate.TemplateType, Message = notification.Message, Subject = notification.Subject, MessageDate = notification.MessageDate, MessageEndDate = notification.MessageEndDate, Status = notification.Status, SentByUserId = notification.FromUserId, CTA = notification.CTA, CTAText = notification.CTAText });
+            {
+                return _messageRepo.Insert(new MessageLog()
+                {
+                    Id = Guid.NewGuid(),
+                    From = notification.FromUserId.ToString(),
+                    FromUserId = notification.FromUserId,
+                    To = notification.To,
+                    InsertedDate = DateTime.Now,
+                    IsActive = true,
+                    MessageProtocol = notification.MessageProtocol,
+                    MessageTemplateType = notification.MessageTemplate.TemplateType,
+                    Message = notification.Message,
+                    Subject = notification.Subject,
+                    MessageDate = notification.MessageDate,
+                    MessageEndDate = notification.MessageEndDate,
+                    Status = notification.Status,
+                    SentByUserId = notification.FromUserId,
+                    CTA = notification.CTA,
+                    CTAText = notification.CTAText
+                });
             } catch (Exception ex)
             {
-                throw ex;
+                throw ex;                
             }
 
         }
+
+        public async Task<bool> SendGenericMessage(string to, string toGroups, string message,string subject, string ctaText, DateTime sendDate, DateTime messageEndDate)
+        {
+            Notification notification = new Notification()
+            {
+                To = to,
+                ToGroups = toGroups,
+                Message = message,
+                Subject = subject,
+                MessageDate = sendDate,
+                MessageEndDate = messageEndDate,
+                FromUserId = Guid.Parse(_uId)
+            };
+            MessageTemplate template = RetrieveTemplate(TemplateTypeConstants.GenericMessage).Result.FirstOrDefault();
+            await CommitNotification(notification, template);
+            return true;
+        }
+
 
         public async Task<bool> DisableNotification(string notificationId)
         {

@@ -415,7 +415,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
-                    FindValue = "principalOrFAA",
+                    FindValue = "PrincipalOrFAA",
                     ReplacementValue = "Principal"
                 });
                 var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
