@@ -1,7 +1,8 @@
-import { CoachDto, CoachCirclesDto, ClubDto } from '@ecdlink/core';
+import { CoachDto, CoachCirclesDto, ClubDto, ConsentDto } from '@ecdlink/core';
 
 export interface CoachState {
   coach: CoachDto | undefined;
   coachCircles: CoachCirclesDto | undefined;
   coachClubs: ClubDto[] | undefined;
+  coachCicleTopics?: ConsentDto[] | ConsentDto;
 }

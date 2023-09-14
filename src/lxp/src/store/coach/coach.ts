@@ -9,12 +9,14 @@ import {
   getAllCoachingCircleClubsForCoach,
   getCoachByCoachId,
   getCoachByUserId,
+  getCoachingCircleTopics,
 } from './coach.actions';
 
 const initialState: CoachState = {
   coach: undefined,
   coachCircles: undefined,
   coachClubs: undefined,
+  coachCicleTopics: undefined,
 };
 
 const coachSlice = createSlice({
@@ -48,6 +50,9 @@ const coachSlice = createSlice({
     );
     builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
       state.coachClubs = action.payload;
+    });
+    builder.addCase(getCoachingCircleTopics.fulfilled, (state, action) => {
+      state.coachCicleTopics = action.payload;
     });
   },
 });

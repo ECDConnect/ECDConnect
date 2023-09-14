@@ -3,8 +3,11 @@ import { Step1 } from './components/step-1';
 import { useCallback, useEffect, useState } from 'react';
 import { Step2 } from './components/step-2';
 import { useAppDispatch } from '@/store';
-import { coachThunkActions } from '@/store/coach';
+import { coachSelectors, coachThunkActions } from '@/store/coach';
 import { ClubMeetingModelInput } from '@ecdlink/graphql';
+// import { visitThunkActions } from '@/store/visit';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useSelector } from 'react-redux';
 
 export enum ChildProgressAssessmentSteps {
   AddCoachingCircleStepOne = 1,
@@ -24,6 +27,10 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
   setShowAddCircles,
 }) => {
   const appDispatch = useAppDispatch();
+  const { isOnline } = useOnlineStatus();
+  const [language, setLanguage] = useState({ locale: 'en-za' });
+  const coachCircleTopics = useSelector(coachSelectors.getCircleTopics);
+  console.log({ coachCircleTopics });
   const [addCoachingCircleForm, setAddCoachingCircleForm] =
     useState<ClubMeetingModelInput>({
       clubId: '',
@@ -72,6 +79,20 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
     appDispatch,
     coachingCircleAttendance,
   ]);
+
+  const getContent = useCallback(async () => {
+    if (!isOnline) return;
+
+    appDispatch(
+      coachThunkActions.getCoachingCircleTopics({
+        locale: language.locale,
+      })
+    );
+  }, [appDispatch, isOnline, language.locale]);
+
+  useEffect(() => {
+    getContent();
+  }, [getContent]);
 
   return (
     <>

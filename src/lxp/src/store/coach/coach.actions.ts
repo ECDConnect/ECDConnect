@@ -2,12 +2,14 @@ import {
   ApplicationUserInput,
   ClubMeetingModelInput,
   CoachInput,
+  MoreInformation,
   SiteAddressInput,
 } from '@ecdlink/graphql';
 import {
   ClubDto,
   CoachCirclesDto,
   CoachDto,
+  ConsentDto,
   SiteAddressDto,
 } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -307,6 +309,33 @@ export const addCoachCircleMeeting = createAsyncThunk<
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getCoachingCircleTopics = createAsyncThunk<
+  ConsentDto,
+  { locale: string },
+  ThunkApiType<RootState>
+>(
+  'getCoachingCircleTopics',
+  async ({ locale }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const [content] = await new CoachService(
+          userAuth?.auth_token ?? ''
+        ).getCoachingCircleTopics(locale);
+
+        return content;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
       return rejectWithValue(err);
     }
   }
