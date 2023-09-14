@@ -36,7 +36,9 @@ const ROUTES = {
   COMMUNITY: addPrefix('/community', {
     WELCOME: '/welcome',
     CLUB: addPrefix('/club/:clubId', {
+      EDIT: '/edit',
       MEMBERS: '/members',
+      MEMBERS_EDIT: '/members/edit',
     }),
   }),
   CHILD: addPrefix('/child', {

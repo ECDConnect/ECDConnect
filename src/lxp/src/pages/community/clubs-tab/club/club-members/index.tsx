@@ -151,6 +151,14 @@ export const ClubMembers: React.FC = () => {
           textColor="primary"
           text="Move members"
           icon="ArrowsExpandIcon"
+          onClick={() =>
+            history.push(
+              ROUTES.COMMUNITY.CLUB.MEMBERS_EDIT.replace(
+                ':clubId',
+                mockedClub.id
+              )
+            )
+          }
         />
       </div>
       <div>
