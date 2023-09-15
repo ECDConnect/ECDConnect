@@ -13,12 +13,13 @@ import {
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useMemo } from 'react';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
 import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
 import partnershipIcon from '@/assets/icon/partnership.svg';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
+import { ClubsRouteState } from '../../index.types';
 
 // TODO: replace mockedClub with real data
 export const mockedClub = {
@@ -56,6 +57,7 @@ export const mockedClub = {
 
 export const Club: React.FC = () => {
   const history = useHistory();
+  const params = useParams<ClubsRouteState>();
 
   const totalMembers = mockedClub.members.length;
   // const totalMembers = 0;
@@ -70,6 +72,8 @@ export const Club: React.FC = () => {
     title: mockedClub.leader,
     titleStyle: 'text-textDark',
     menuIconUrl: mockedClub.iconUrl,
+    onActionClick: () =>
+      history.push(ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER),
   };
 
   const leagueCard: MenuListDataItem = useMemo(
@@ -107,6 +111,7 @@ export const Club: React.FC = () => {
     iconBackgroundColor: 'tertiary',
     showIcon: true,
   }));
+
   const renderLeagueContent = useMemo(() => {
     if (isClubInALeague) {
       return (
@@ -217,7 +222,7 @@ export const Club: React.FC = () => {
               ? history.push(
                   ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(
                     ':clubId',
-                    mockedClub.id
+                    params.clubId
                   )
                 )
               : {}
@@ -231,7 +236,7 @@ export const Club: React.FC = () => {
           text="Change club name"
           onClick={() =>
             history.push(
-              ROUTES.COMMUNITY.CLUB.EDIT.replace(':clubId', mockedClub.id)
+              ROUTES.COMMUNITY.CLUB.EDIT.replace(':clubId', params.clubId)
             )
           }
         />

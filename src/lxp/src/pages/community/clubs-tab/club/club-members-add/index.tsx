@@ -1,24 +1,30 @@
 import { BannerWrapper, Button } from '@ecdlink/ui';
+import { mockedClub } from '../individual-club-view';
 import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useState } from 'react';
 import { Step1 } from './steps/step-1';
-import { Step2 } from './steps/step-2';
 import { useSnackbar } from '@ecdlink/core';
+import { Step2 } from '../club-add/steps/step-2';
+import { MockedStep2 } from '../club-add';
 import { ClubsRouteState } from '../../index.types';
 
 interface MockedMember {}
-interface MockedClub {}
 
 export interface ClubMembersEditProps {
   setSelectedMembers?: (selectedMembers: MockedMember[]) => void;
-  setSelectedClub?: (selectedClub: MockedClub) => void;
+  setSelectedMembersFromDifferentClub?: (
+    selectedMembers: MockedMember[]
+  ) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
 }
 
-export const ClubMembersEdit: React.FC = () => {
+export const ClubMembersAdd: React.FC = () => {
   const [selectedMembers, setSelectedMembers] = useState<MockedMember>([]);
-  const [selectedClub, setSelectedClub] = useState<MockedClub>();
+  const [
+    selectedMembersFromDifferentClub,
+    setSelectedMembersFromDifferentClub,
+  ] = useState<MockedStep2>();
 
   const [step, setStep] = useState(0);
   const [isEnabledButton, setIsEnabledButton] = useState(false);
@@ -35,13 +41,12 @@ export const ClubMembersEdit: React.FC = () => {
       ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', params.clubId)
     );
   };
-
   const onSubmit = () => {
     // TODO: call API
-    console.log({ selectedClub, selectedMembers });
+    console.log({ selectedMembersFromDifferentClub, selectedMembers });
 
     // TODO: move it to a success callback (useEffect)
-    showMessage({ message: '{value} club members moved.', type: 'success' });
+    showMessage({ message: '{value} club members added!.', type: 'success' });
     onClose();
   };
 
@@ -66,7 +71,7 @@ export const ClubMembersEdit: React.FC = () => {
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"
-      title="Edit club members"
+      title="Add club members"
       subTitle={`${step + 1} of 2`}
       onBack={handleOnBack}
     >
@@ -77,8 +82,9 @@ export const ClubMembersEdit: React.FC = () => {
         />
       ) : (
         <Step2
+          title={`Add SmartStarters to ${mockedClub.name} club`}
           setIsEnabledButton={setIsEnabledButton}
-          setSelectedClub={setSelectedClub}
+          setStep2={setSelectedMembersFromDifferentClub}
         />
       )}
       <Button

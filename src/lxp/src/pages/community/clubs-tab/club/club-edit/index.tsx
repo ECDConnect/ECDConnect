@@ -1,13 +1,14 @@
 import { BannerWrapper, Button, FormInput, Typography } from '@ecdlink/ui';
-import { mockedClub } from '../individual-club-view';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useState } from 'react';
+import { ClubsRouteState } from '../../index.types';
 
 export const ClubEdit: React.FC = () => {
   const [value, setValue] = useState('');
 
   const history = useHistory();
+  const params = useParams<ClubsRouteState>();
 
   const onSubmit = () => {
     // TODO: call API
@@ -23,7 +24,7 @@ export const ClubEdit: React.FC = () => {
       subTitle="step 1 of 1"
       onBack={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', mockedClub.id)
+          ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', params.clubId)
         )
       }
     >
