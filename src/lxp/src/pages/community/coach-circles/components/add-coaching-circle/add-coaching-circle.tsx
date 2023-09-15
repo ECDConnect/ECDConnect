@@ -106,7 +106,6 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
         onBack={() => setShowAddCircles(false)}
         renderOverflow
         backgroundColour={'white'}
-        //   displayOffline={!isOnline}
       >
         {AddCoachingCircleSteps(activeStep)}
       </BannerWrapper>

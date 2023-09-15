@@ -78,7 +78,7 @@ export const getQuarterMonths = (date: Date) => {
   if (quarter === 2) {
     return 'April to June';
   }
-  if (quarter === 2) {
+  if (quarter === 3) {
     return 'July to September';
   } else {
     return 'October to December';

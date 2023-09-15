@@ -4,7 +4,6 @@ import {
   CoachCirclesDto,
   CoachDto,
   CoachingCircleTopicDto,
-  ConsentDto,
 } from '@ecdlink/core';
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
@@ -231,7 +230,10 @@ class CoachService {
     endDate: Date | string
   ): Promise<CoachCirclesDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { allCoachingCircleClubsForCoach: CoachCirclesDto };
+      errors?: {};
+    }>(``, {
       query: `
       query GetAllCoachingCircleClubsForCoach($userId: String, $startDate: DateTime!, $endDate: DateTime!) {
         allCoachingCircleClubsForCoach(userId: $userId, startDate: $startDate, endDate: $endDate) {
@@ -266,7 +268,10 @@ class CoachService {
 
   async GetAllClubsForCoach(userId: string): Promise<ClubDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { allClubsForCoach: ClubDto[] };
+      errors?: {};
+    }>(``, {
       query: `
       query GetAllClubsForCoach($userId: String) {
         allClubsForCoach(userId: $userId) {
@@ -280,7 +285,7 @@ class CoachService {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Get Coach clubs Failed - Server connection error');
     }
 
@@ -289,7 +294,9 @@ class CoachService {
 
   async addCoachCircleMeeting(input: ClubMeetingModelInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      errors?: {};
+    }>(``, {
       query: `
       mutation AddCoachCircleMeeting($input: ClubMeetingModelInput ) {
         addCoachCircleMeeting(input: $input) {
@@ -304,7 +311,7 @@ class CoachService {
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error('Updating Coach failed - Server connection error');
     }
 
