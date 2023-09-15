@@ -11,11 +11,10 @@ import {
   StackedListItemType,
   Typography,
   UserAvatar,
-  Button,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
@@ -33,6 +32,7 @@ import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import {
+  practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
@@ -48,12 +48,13 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
-import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
-import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { PointsSummaryCard } from './components/points-summary-card/points-summary-card';
+import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { traineeSelectors } from '@/store/trainee';
+import { PractitionerInput } from '@ecdlink/graphql';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -78,12 +79,10 @@ export interface DashboardRouteState {
 }
 
 export const Dashboard: React.FC = () => {
-  const location = useLocation<DashboardRouteState>();
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
-  const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const { isOnline } = useOnlineStatus();
@@ -100,9 +99,9 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
   const isTrainee = practitioner?.isTrainee;
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const isOnStipend = practitioner?.isOnStipend;
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   // TODO: add integration
   const isFirstTimeCommunitySection = true;
@@ -110,16 +109,17 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
-
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-  const uncompletedSteps = timelineSteps(
+  const completedSteps = timelineSteps(
     timeline!,
     () => {},
     false,
     isOnline,
     // @ts-ignore
-    undefined
-  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
+  ).filter((item) => item?.type === 'completed');
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
@@ -139,6 +139,29 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     convertImageToBase64(offlineStatments, setStorageItem);
   }, []);
+
+  useEffect(() => {
+    if (
+      (practitioner?.isTrainee &&
+        practitioner?.isOnStipend &&
+        completedSteps?.length === 7) ||
+      (practitioner?.isTrainee &&
+        practitioner?.isOnStipend !== true &&
+        completedSteps?.length === 6)
+    ) {
+      const copy = Object.assign({}, practitioner);
+
+      const input: PractitionerInput = {
+        Id: copy.id,
+        IsActive: true,
+        Progress: copy.progress,
+        IsTrainee: false,
+      };
+
+      appDispatch(practitionerActions.updatePractitioner(copy));
+      appDispatch(practitionerThunkActions.updatePractitioner(input));
+    }
+  }, [completedSteps?.length]);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -250,18 +273,12 @@ export const Dashboard: React.FC = () => {
       }
 
       if (userData.roles?.some((role) => role.name === 'Practitioner')) {
-        const currentPrincipal = practitionerData?.filter(
-          (x) => x?.user?.id === userData.id
-        );
-        const _current = currentPrincipal?.at(0);
-        if (_current) {
-          (async () =>
-            await appDispatch(
-              practitionerThunkActions.getPractitionerById({
-                id: _current?.id || '',
-              })
-            ).unwrap())();
-        }
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: userData?.id || '',
+            })
+          ).unwrap())();
 
         (async () =>
           await appDispatch(
@@ -624,7 +641,7 @@ export const Dashboard: React.FC = () => {
         hasConsent) ||
       isTrainee
     ) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
     } else {
       showCompleteProfileBlockingDialog();
     }
@@ -684,10 +701,15 @@ export const Dashboard: React.FC = () => {
                 textColour: 'white',
                 type: 'filled',
                 leadingIcon: 'PlusIcon',
-                onClick: async () => {
-                  onSubmit();
-                  history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
-                },
+                onClick: isTrainee
+                  ? async () => {
+                      onSubmit();
+                      history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                    }
+                  : async () => {
+                      onSubmit();
+                      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                    },
               },
               {
                 colour: 'primary',

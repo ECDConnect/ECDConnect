@@ -18,49 +18,29 @@ import {
   statementsSelectors,
   statementsThunkActions,
 } from '@/store/statements';
-import {
-  ExpensesStatementsDto,
-  IncomeStatementsDto,
-  ReportTableDataDto,
-} from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import {
   incomesValueFunc,
   numberWithSpaces,
 } from '@/utils/statements/statements-utils';
-import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
-import { practitionerSelectors } from '@/store/practitioner';
-import { UserOptions } from 'jspdf-autotable';
-import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { useAppDispatch } from '@/store';
-import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
-import { PractitionerService } from '@/services/PractitionerService';
-import { getPreviousMonth } from '@ecdlink/core';
+import {
+  ExpensesStatementsDto,
+  IncomeStatementsDto,
+  getPreviousMonth,
+  useSnackbar,
+} from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
-
-interface ReportDetailsForPractitionerData {
-  classroomGroupName: string;
-  name: string;
-  principalName: string;
-  classroomGroupId: string;
-  programmeTypeName: string;
-  idNumber: string;
-  insertedDate: string;
-  programmeDays: string;
-  phone: string;
-  classSiteAddress: null | string;
-}
 
 export const SubmitIncomeStatementsList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
+  const { showMessage } = useSnackbar();
 
   const date = format(new Date(), 'EEEE, d LLLL');
   const { isOnline } = useOnlineStatus();
   const [confimSubmitIncomeValues, setConfimSubmitIncomeValues] =
     useState(false);
-  const { errorDialog } = useRequestResponseDialog();
 
   const goBack = () => {
     history.push(ROUTES.BUSINESS);
@@ -122,60 +102,6 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   const [otherExpenseValues, setOtherExpenseValues] = useState<any>([]);
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const signature = practitioner?.signingSignature ?? '';
-
-  const { generateReport } = useGeneratePdfReport();
-
-  const [reportDetails, setReportDetails] =
-    useState<ReportDetailsForPractitionerData>();
-
-  useEffect(() => {
-    const getClassroomDetails = async () => {
-      const res = await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).getReportDetailsForPractitioner(userAuth?.id || '');
-      return res;
-    };
-
-    getClassroomDetails().then((data) => {
-      setReportDetails(data);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const footer = [
-    'Total',
-    '', // Placeholder for Day 2 column
-  ];
-
-  const tableTopContent = {
-    pageTitle: `Income Statement`,
-    subtitle: '',
-    //column2 with 3 rows of text
-    text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_column_two_row_two: `ID: ${reportDetails?.idNumber}`,
-    text_column_two_row_three: `Phone: ${reportDetails?.phone}`,
-  };
-
-  const tableHeadStyles: UserOptions['headStyles'] = {
-    fillColor: [211, 211, 211], // Light grey
-    textColor: [0, 0, 0],
-    fontSize: 8,
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
-  const tableStyles: UserOptions['styles'] = {
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
-  const tableFootStyles: UserOptions['footStyles'] = {
-    textColor: [0, 0, 0],
-    fillColor: [211, 211, 211], // Light grey
-    fontSize: 10,
-    lineWidth: 0.1,
-    lineColor: 0x000000,
-  };
 
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
@@ -280,14 +206,25 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
-      await appDispatch(
+      appDispatch(
         statementsThunkActions.submitIncomeStatement({
           period: 'Monthly',
           userId: userAuth?.id!,
           month: submitMonth.getMonth() + 1, // +1 for 0 index
           year: submitMonth.getFullYear(),
         })
-      );
+      ).then((result) => {
+        if (result.meta.requestStatus === 'rejected') {
+          showMessage({
+            message: `Error submitting statement`,
+            type: 'error',
+          });
+        } else {
+          showMessage({
+            message: `Statement submitted`,
+          });
+        }
+      });
     }
   };
 
@@ -428,32 +365,6 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       notRounded: true,
     },
   ];
-
-  const submitPdfReport = async (reportValues: ReportTableDataDto[]) => {
-    const report = generateReport(
-      reportValues,
-      signature,
-      new Date().toDateString(),
-      tableHeadStyles,
-      tableTopContent,
-      tableStyles,
-      `${getMonthName(submitMonth.getMonth())}-income-statement-report.pdf`,
-      'submit-statements',
-      tableStyles,
-      footer,
-      tableFootStyles,
-      'portrait'
-    );
-    await appDispatch(
-      statementsThunkActions.saveIncomeStatementPDF({
-        fileName: `${getMonthName(
-          submitMonth.getMonth()
-        )}-income-statement-report.pdf`,
-        reference: report ?? '',
-        userId: practitioner?.userId ?? '',
-      })
-    );
-  };
 
   return (
     <BannerWrapper

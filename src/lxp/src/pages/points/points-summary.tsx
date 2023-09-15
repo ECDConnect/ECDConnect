@@ -1,4 +1,4 @@
-import { pointsConstants } from '@/constants/points';
+import { pointsActivitiesIds, pointsConstants } from '@/constants/points';
 import { pointsSelectors } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
 import { BannerWrapper, Button, Card, Colours, Typography } from '@ecdlink/ui';
@@ -9,9 +9,10 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { RootState } from '@/store/types';
 import { PointsLibraryStatusCard } from '../dashboard/components/points-library-status-card/points-library-status-card';
+import { PointsSummaryDto } from '@ecdlink/core';
 
 // TODO - fetch club standings
 // TODO - add text that depends on relative club points
@@ -35,9 +36,37 @@ export const PointsSummary: React.FC = () => {
   const pointsSummaryDataWithLibrary = useSelector((state: RootState) =>
     pointsSelectors.getPointsSummaryWithLibrary(state, new Date())
   );
-  const pointsAvailable = pointsSummaryDataWithLibrary?.filter(
-    (x) => x.pointsTotal !== x.maxMonthlyPoints
-  );
+
+  const pointsTodoList = useMemo(() => {
+    const pointsList: PointsSummaryDto[] = [];
+
+    pointsSummaryDataWithLibrary.forEach((pointsActivity) => {
+      // Regular non-maxed monthly activities
+      if (
+        (pointsActivity.pointsLibraryId ===
+          pointsActivitiesIds.SubmitAttendance ||
+          pointsActivity.pointsLibraryId ===
+            pointsActivitiesIds.SubmitIncomeStatement ||
+          pointsActivity.pointsLibraryId ===
+            pointsActivitiesIds.MonthlyPreschoolFeesAdded) &&
+        pointsActivity.pointsTotal !== pointsActivity.maxMonthlyPoints
+      ) {
+        pointsList.push(pointsActivity);
+      }
+      // Updated fees for the year (Principals/FAAs only)
+      else if (
+        pointsActivity.pointsLibraryId ===
+          pointsActivitiesIds.MonthlyPreschoolFeeUpdated &&
+        pointsActivity.pointsYTD === 0 &&
+        (practitioner?.isPrincipal || practitioner?.isFundaAppAdmin)
+      ) {
+        pointsList.push(pointsActivity);
+      }
+    });
+
+    return pointsList;
+  }, [pointsSummaryDataWithLibrary]);
+
   const pointsTotal = pointsSummaryDataWithLibrary.reduce(
     (total, current) => (total += current.pointsTotal),
     0
@@ -128,7 +157,7 @@ export const PointsSummary: React.FC = () => {
             </div>
           </Card>
         )}
-        {!!pointsAvailable && !!pointsAvailable.length && (
+        {!!pointsTodoList && !!pointsTodoList.length && (
           <Typography
             className="mt-10"
             type={'h1'}
@@ -139,12 +168,16 @@ export const PointsSummary: React.FC = () => {
             )}:`}
           />
         )}
-        {!!pointsAvailable &&
-          pointsAvailable.map((pointsLibraryScore) => {
+        {!!pointsTodoList &&
+          pointsTodoList.map((pointsLibraryScore) => {
             return (
               <PointsLibraryStatusCard
                 currentPoints={pointsLibraryScore.pointsTotal}
-                maxPoints={pointsLibraryScore.maxMonthlyPoints}
+                maxPoints={
+                  pointsLibraryScore.maxMonthlyPoints !== 0
+                    ? pointsLibraryScore.maxMonthlyPoints
+                    : pointsLibraryScore.maxYearlyPoints
+                }
                 description={pointsLibraryScore.description}
               />
             );

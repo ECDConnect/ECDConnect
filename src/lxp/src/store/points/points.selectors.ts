@@ -30,9 +30,13 @@ export const getPointsSummaryWithLibrary = createSelector(
       (pointsLibrary) => {
         // Get the points summary for the user for
         const pointsSummaryForMonth = pointsSummary.find(
-          (x) => x.month == month && x.year == year
+          (x) =>
+            x.month == month &&
+            x.year == year &&
+            x.pointsLibrary?.id === pointsLibrary.id
         );
         return {
+          pointsLibraryId: pointsLibrary.id,
           month: month,
           year: year,
 
@@ -46,6 +50,10 @@ export const getPointsSummaryWithLibrary = createSelector(
             practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
               ? pointsLibrary.maxPointsPrincipalMonthly
               : pointsLibrary.maxPointsNonPrincipalMonthly,
+          maxYearlyPoints:
+            practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+              ? pointsLibrary.maxPointsPrincipalYearly
+              : pointsLibrary.maxPointsNonPrincipalYearly,
           pointsPerAward: pointsLibrary.points,
         };
       }

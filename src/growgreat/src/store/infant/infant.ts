@@ -17,6 +17,7 @@ import {
   addAdditionalVisitForInfant,
   getReferralsForInfant,
   getCompletedReferralsForInfant,
+  updateVisitDataStatus,
 } from './infant.actions';
 import { InfantState } from './infant.types';
 
@@ -56,7 +57,10 @@ const infantSlice = createSlice({
     setThunkActionStatus(builder, addAdditionalVisitForInfant);
     setThunkActionStatus(builder, getReferralsForInfant);
     setThunkActionStatus(builder, getCompletedReferralsForInfant);
-
+    setThunkActionStatus(builder, updateVisitDataStatus);
+    builder.addCase(updateVisitDataStatus.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
       state.infantCountForMonth = action.payload;
 

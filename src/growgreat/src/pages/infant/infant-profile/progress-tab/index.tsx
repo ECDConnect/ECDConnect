@@ -1,5 +1,8 @@
-import { getInfantById } from '@/store/infant/infant.selectors';
-import { Button } from '@ecdlink/ui';
+import {
+  getInfantById,
+  getInfantNearestPreviousVisitByOrderDate,
+} from '@/store/infant/infant.selectors';
+import { Button, LoadingSpinner } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { IntroScreen } from './activity-list/intro-screen';
@@ -13,6 +16,12 @@ import { INFANT_PROFILE_TABS } from '..';
 import { activitiesTypes } from './activity-list/activities-list';
 import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
 import { useWalkthrough } from '@/context/walkthroughContext';
+import {
+  VisitActions,
+  getPreviousVisitInformationForInfant,
+} from '@/store/visit/visit.actions';
+import { visitThunkActions } from '@/store/visit';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 const HEADER_HEIGHT = 540;
 
@@ -22,6 +31,17 @@ export const ProgressTab = () => {
   const { height } = useWindowSize();
 
   const { id: infantId } = useParams<InfantProfileParams>();
+
+  const { isLoading: isLoadingPreviousVisitData } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
+  );
+  const { isLoading: isLoadingSummary } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_INFANT_SUMMARY_BY_PRIORITY
+  );
+
+  const isLoading = isLoadingPreviousVisitData || isLoadingSummary;
 
   const appDispatch = useAppDispatch();
 
@@ -35,6 +55,10 @@ export const ProgressTab = () => {
   );
   const previousVisitData = useSelector(
     getPreviousVisitInformationForInfantSelector
+  );
+
+  const previousVisitByOrderDate = useSelector(
+    getInfantNearestPreviousVisitByOrderDate
   );
 
   const infantName = useMemo(
@@ -82,13 +106,40 @@ export const ProgressTab = () => {
       window.sessionStorage.clear();
       return;
     }
-  }, [appDispatch, isWalkthroughSession]);
+  }, [isWalkthroughSession]);
 
   useLayoutEffect(() => {
     history.push(location.pathname, {
       activeTabIndex: INFANT_PROFILE_TABS.PROGRESS,
     });
   }, [history, location.pathname]);
+
+  useLayoutEffect(() => {
+    if (previousVisitByOrderDate?.id && previousVisitByOrderDate?.attended) {
+      appDispatch(
+        getPreviousVisitInformationForInfant({
+          visitId: previousVisitByOrderDate?.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetInfantSummaryByPriority({
+          visitId: previousVisitByOrderDate?.id || '',
+        })
+      );
+    } else {
+    }
+  }, [appDispatch, previousVisitByOrderDate]);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="primary"
+        backgroundColor="uiLight"
+        className="p-20"
+      />
+    );
+  }
 
   return (
     <div

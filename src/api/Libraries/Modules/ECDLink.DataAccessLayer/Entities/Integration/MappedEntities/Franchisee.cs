@@ -41,6 +41,9 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public Principal Principal { get; set; }
         public MappedAddress SiteAddress { get; set; }
         public string StipendType { get; set; }
-
+        public DateTime? StarterLicenceDate { get; set; }
+        public string ConsolidationMeetingStatus { get; set; }
+        public DateTime? ConsolidationMeetingDate { get; set; }
+        public DateTime? LatestPQADate { get; set; }
     }
 }
