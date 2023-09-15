@@ -17,7 +17,6 @@ import {
   StatementsIncomeInput,
 } from '@/../../../packages/graphql/lib';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
-import { useAppContext } from '@/walkthrougContext';
 
 interface MoneyProps {
   setHasIncomeStatements: (item: boolean) => void;
@@ -41,7 +40,7 @@ export const Money: React.FC<MoneyProps> = ({
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
       setIsLoading(true);
-      const statementResults = await appDispatch(
+      await appDispatch(
         statementsThunkActions.getAllStatementsBalanceSheet({
           // userId: userAuth?.id!,
           year: getYear(currentDate),
@@ -126,8 +125,6 @@ export const Money: React.FC<MoneyProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [income, expense, balanceSheet]);
-
-  const { state } = useAppContext();
 
   return (
     <>

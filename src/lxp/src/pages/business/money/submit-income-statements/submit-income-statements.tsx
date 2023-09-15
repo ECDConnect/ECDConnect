@@ -9,6 +9,7 @@ import {
   FADButton,
   Alert,
   renderIcon,
+  ComponentBaseProps,
 } from '@ecdlink/ui';
 import { differenceInDays, format } from 'date-fns';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -19,11 +20,7 @@ import StatementsWrapper from './components/statements-wrapper/StatementsWrapper
 import { useAppContext } from '@/walkthrougContext';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  LocalStorageKeys,
-  getNextMonth,
-  getPreviousMonth,
-} from '@ecdlink/core';
+import { LocalStorageKeys, getNextMonth } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
@@ -44,10 +41,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     'submitIncomeStatement'
   );
 
-  const [submitMonthAndYear, setSubmitMonthAndYear] = useState<Date>(
-    new Date()
-  );
-
   const [isThisMonthSubmitted, setIsThisMonthSubmitted] =
     useState<boolean>(false);
   const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
@@ -61,8 +54,6 @@ export const SubmitIncomeStatements: React.FC = () => {
   useEffect(() => {
     // Outside submit
     if (!isSubmitWindowOpen) {
-      setSubmitMonthAndYear(currentDate);
-
       setIsThisMonthSubmitted(
         balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
           ?.submitted || false
@@ -77,9 +68,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
     } else {
       // In window and current month
-      if (currentDate.getDay() >= IncomeStatementDates.SubmitStartDay) {
-        setSubmitMonthAndYear(currentDate);
-
+      if (currentDate.getDate() >= IncomeStatementDates.SubmitStartDay) {
         setIsThisMonthSubmitted(
           balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
             ?.submitted || false
@@ -93,9 +82,6 @@ export const SubmitIncomeStatements: React.FC = () => {
         );
         setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
       } else {
-        // In window but next month
-        setSubmitMonthAndYear(getPreviousMonth(currentDate));
-
         setIsThisMonthSubmitted(
           balanceSheet?.find((x) => x.month === currentDate.getMonth())
             ?.submitted || false

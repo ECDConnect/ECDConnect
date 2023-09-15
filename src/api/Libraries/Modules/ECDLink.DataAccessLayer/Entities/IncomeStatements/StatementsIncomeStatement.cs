@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
@@ -29,7 +30,8 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public bool AutoSubmitted { get; set; }
         public DateTime? AnnualSubmittedDate { get; set; }
         public string RelatedDocumentId { get; set; }
-
+        public virtual ICollection<StatementsIncome> IncomeItems { get; set; }
+        public virtual ICollection<StatementsExpenses> ExpenseItems { get; set; }
     }
 
     public interface StatementsIncomeStatementJoin<TKey>

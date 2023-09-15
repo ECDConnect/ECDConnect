@@ -426,7 +426,7 @@ export const getAllStatementsBalanceSheetForPractitioner = createAsyncThunk<
       }
 
       if (!statementsBalanceSheet) {
-        return rejectWithValue('Error getting income');
+        return rejectWithValue('Error getting balance sheets for practitioner');
       }
       return statementsBalanceSheet;
     } catch (err) {

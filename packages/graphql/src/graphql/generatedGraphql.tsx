@@ -4363,6 +4363,20 @@ export type ListFilterInputTypeOfProgrammeFilterInput = {
   some?: InputMaybe<ProgrammeFilterInput>;
 };
 
+export type ListFilterInputTypeOfStatementsExpensesFilterInput = {
+  all?: InputMaybe<StatementsExpensesFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<StatementsExpensesFilterInput>;
+  some?: InputMaybe<StatementsExpensesFilterInput>;
+};
+
+export type ListFilterInputTypeOfStatementsIncomeFilterInput = {
+  all?: InputMaybe<StatementsIncomeFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<StatementsIncomeFilterInput>;
+  some?: InputMaybe<StatementsIncomeFilterInput>;
+};
+
 export type ListFilterInputTypeOfVisitFilterInput = {
   all?: InputMaybe<VisitFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -13710,11 +13724,12 @@ export type StatementsExpenses = {
   description?: Maybe<Scalars['String']>;
   expenseTypeId?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
-  incomeStatementId?: Maybe<Scalars['String']>;
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   notes?: Maybe<Scalars['String']>;
   photoProof?: Maybe<Scalars['String']>;
+  statementsIncomeStatement?: Maybe<StatementsIncomeStatement>;
+  statementsIncomeStatementId?: Maybe<Scalars['UUID']>;
   submitted: Scalars['Boolean'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -13728,12 +13743,13 @@ export type StatementsExpensesFilterInput = {
   description?: InputMaybe<StringOperationFilterInput>;
   expenseTypeId?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
-  incomeStatementId?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   notes?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<StatementsExpensesFilterInput>>;
   photoProof?: InputMaybe<StringOperationFilterInput>;
+  statementsIncomeStatement?: InputMaybe<StatementsIncomeStatementFilterInput>;
+  statementsIncomeStatementId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   submitted?: InputMaybe<BooleanOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -13746,10 +13762,11 @@ export type StatementsExpensesInput = {
   Description?: InputMaybe<Scalars['String']>;
   ExpenseTypeId?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
-  IncomeStatementId?: InputMaybe<Scalars['String']>;
   IsActive: Scalars['Boolean'];
   Notes?: InputMaybe<Scalars['String']>;
   PhotoProof?: InputMaybe<Scalars['String']>;
+  StatementsIncomeStatement?: InputMaybe<StatementsIncomeStatementInput>;
+  StatementsIncomeStatementId?: InputMaybe<Scalars['UUID']>;
   Submitted: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['String']>;
@@ -13761,11 +13778,12 @@ export type StatementsExpensesSortInput = {
   description?: InputMaybe<SortEnumType>;
   expenseTypeId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
-  incomeStatementId?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   notes?: InputMaybe<SortEnumType>;
   photoProof?: InputMaybe<SortEnumType>;
+  statementsIncomeStatement?: InputMaybe<StatementsIncomeStatementSortInput>;
+  statementsIncomeStatementId?: InputMaybe<SortEnumType>;
   submitted?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
@@ -13824,13 +13842,14 @@ export type StatementsIncome = {
   description?: Maybe<Scalars['String']>;
   feeTypeId?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
-  incomeStatementId?: Maybe<Scalars['String']>;
   incomeTypeId?: Maybe<Scalars['String']>;
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   notes?: Maybe<Scalars['String']>;
   payTypeId?: Maybe<Scalars['String']>;
   photoProof?: Maybe<Scalars['String']>;
+  statementsIncomeStatement?: Maybe<StatementsIncomeStatement>;
+  statementsIncomeStatementId?: Maybe<Scalars['UUID']>;
   submitted: Scalars['Boolean'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -13848,7 +13867,6 @@ export type StatementsIncomeFilterInput = {
   description?: InputMaybe<StringOperationFilterInput>;
   feeTypeId?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
-  incomeStatementId?: InputMaybe<StringOperationFilterInput>;
   incomeTypeId?: InputMaybe<StringOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -13856,6 +13874,8 @@ export type StatementsIncomeFilterInput = {
   or?: InputMaybe<Array<StatementsIncomeFilterInput>>;
   payTypeId?: InputMaybe<StringOperationFilterInput>;
   photoProof?: InputMaybe<StringOperationFilterInput>;
+  statementsIncomeStatement?: InputMaybe<StatementsIncomeStatementFilterInput>;
+  statementsIncomeStatementId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   submitted?: InputMaybe<BooleanOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -13872,12 +13892,13 @@ export type StatementsIncomeInput = {
   Description?: InputMaybe<Scalars['String']>;
   FeeTypeId?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
-  IncomeStatementId?: InputMaybe<Scalars['String']>;
   IncomeTypeId?: InputMaybe<Scalars['String']>;
   IsActive: Scalars['Boolean'];
   Notes?: InputMaybe<Scalars['String']>;
   PayTypeId?: InputMaybe<Scalars['String']>;
   PhotoProof?: InputMaybe<Scalars['String']>;
+  StatementsIncomeStatement?: InputMaybe<StatementsIncomeStatementInput>;
+  StatementsIncomeStatementId?: InputMaybe<Scalars['UUID']>;
   Submitted: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['String']>;
@@ -13893,13 +13914,14 @@ export type StatementsIncomeSortInput = {
   description?: InputMaybe<SortEnumType>;
   feeTypeId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
-  incomeStatementId?: InputMaybe<SortEnumType>;
   incomeTypeId?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   notes?: InputMaybe<SortEnumType>;
   payTypeId?: InputMaybe<SortEnumType>;
   photoProof?: InputMaybe<SortEnumType>;
+  statementsIncomeStatement?: InputMaybe<StatementsIncomeStatementSortInput>;
+  statementsIncomeStatementId?: InputMaybe<SortEnumType>;
   submitted?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
@@ -13911,8 +13933,10 @@ export type StatementsIncomeStatement = {
   annualSubmittedDate?: Maybe<Scalars['DateTime']>;
   autoSubmitted: Scalars['Boolean'];
   balance: Scalars['Float'];
+  expenseItems?: Maybe<Array<Maybe<StatementsExpenses>>>;
   expenseTotal: Scalars['Float'];
   id: Scalars['UUID'];
+  incomeItems?: Maybe<Array<Maybe<StatementsIncome>>>;
   incomeTotal: Scalars['Float'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -13933,8 +13957,10 @@ export type StatementsIncomeStatementFilterInput = {
   annualSubmittedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   autoSubmitted?: InputMaybe<BooleanOperationFilterInput>;
   balance?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  expenseItems?: InputMaybe<ListFilterInputTypeOfStatementsExpensesFilterInput>;
   expenseTotal?: InputMaybe<ComparableDoubleOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  incomeItems?: InputMaybe<ListFilterInputTypeOfStatementsIncomeFilterInput>;
   incomeTotal?: InputMaybe<ComparableDoubleOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -13955,8 +13981,10 @@ export type StatementsIncomeStatementInput = {
   AnnualSubmittedDate?: InputMaybe<Scalars['DateTime']>;
   AutoSubmitted: Scalars['Boolean'];
   Balance: Scalars['Float'];
+  ExpenseItems?: InputMaybe<Array<InputMaybe<StatementsExpensesInput>>>;
   ExpenseTotal: Scalars['Float'];
   Id?: InputMaybe<Scalars['UUID']>;
+  IncomeItems?: InputMaybe<Array<InputMaybe<StatementsIncomeInput>>>;
   IncomeTotal: Scalars['Float'];
   IsActive: Scalars['Boolean'];
   Month: Scalars['Int'];

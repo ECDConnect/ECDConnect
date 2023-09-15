@@ -95,6 +95,10 @@ import { MonthsLoss } from '@/pages/coach/coach-practitioner-business/components
 import { MonthsProfit } from '@/pages/coach/coach-practitioner-business/components/statements/profit';
 import { PointsSummary } from '@/pages/points/points-summary';
 import { CommunityWelcome } from '@/pages/community/welcome';
+import { Club } from '@/pages/community/clubs-tab/club/individual-club-view';
+import { ClubMembers } from '@/pages/community/clubs-tab/club/club-members';
+import { ClubMembersEdit } from '@/pages/community/clubs-tab/club/club-members-edit';
+import { ClubEdit } from '@/pages/community/clubs-tab/club/club-edit';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -186,6 +190,18 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.COMMUNITY.WELCOME}
         component={CommunityWelcome}
+        exact
+      />
+      <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />
+      <Route path={ROUTES.COMMUNITY.CLUB.EDIT} component={ClubEdit} exact />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS}
+        component={ClubMembers}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS_EDIT}
+        component={ClubMembersEdit}
         exact
       />
       <Route

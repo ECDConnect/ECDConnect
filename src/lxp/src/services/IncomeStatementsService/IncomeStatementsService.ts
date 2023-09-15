@@ -32,7 +32,7 @@ class IncomeStatementsService {
           dateReceived
           description
           id
-          incomeStatementId
+          statementsIncomeStatementId
           incomeTypeId
           insertedDate
           isActive
@@ -257,7 +257,7 @@ class IncomeStatementsService {
             amountExpected 
             contributionTypeId 
             payTypeId 
-            incomeStatementId 
+            statementsIncomeStatementId 
             incomeTypeId
             photoProof
             childCoverAmount
@@ -320,21 +320,23 @@ class IncomeStatementsService {
   async submitStatement(input: StatementsSubmitInput): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation submitStatement($input: StatementsSubmitInput) {      
-           submitStatement(input: $input) {
+      query: `mutation submitStatement($input: StatementsSubmitInput) {      
+          submitStatement(input: $input) {
             result  resultObject resultMessage 
-           } 
-       }
-      `,
+          } 
+        }`,
       variables: {
         input,
       },
     });
 
-    if (response.status !== 200) {
+    if (
+      response.status !== 200 ||
+      !!response.data.errors ||
+      !response.data.data.submitStatement.result
+    ) {
       throw new Error(
-        'Update income statement Failed - Server connection error'
+        'Submit income statement Failed - Server connection error'
       );
     }
 
@@ -348,21 +350,19 @@ class IncomeStatementsService {
   ): Promise<BalanceSheetDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int) { 
-         allStatementsBalanceSheet(userId: $userId, year: $year, month: $month) { 
-           userId 
-           incomeTotal
-           expenseTotal
-           balance
-           month
-           year
-           autoSubmitted
-           submittedDate
-           submitted        
+      query: `query allStatementsBalanceSheet($userId: String, $year: Int!, $month: Int) { 
+          allStatementsBalanceSheet(userId: $userId, year: $year, month: $month) { 
+            userId 
+            incomeTotal
+            expenseTotal
+            balance
+            month
+            year
+            autoSubmitted
+            submittedDate
+            submitted        
           }
-}
-          `,
+        }`,
       variables: {
         userId,
         year,

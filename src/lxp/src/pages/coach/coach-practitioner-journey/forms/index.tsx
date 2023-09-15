@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ReasonsForPractitionerLeaving,
-  chunkArray,
   parseBool,
   useDialog,
   usePrevious,
@@ -14,7 +13,6 @@ import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
-  maxNumberOfVisits,
   visitTypes,
 } from '../coach-practitioner-journey.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
