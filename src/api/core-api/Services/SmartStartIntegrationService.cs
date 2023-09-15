@@ -1441,9 +1441,11 @@ public class SmartStartIntegrationService : IIntegrationService
                         string siteName = "N/A";
                         bool pracCreated = false;
 
+                        Guid newId = Guid.NewGuid();
+
                         var newPractitioner = new Practitioner
                         {
-                            Id = Guid.NewGuid(),
+                            Id = newId,
                             UserId = userId,
                             CoachHierarchy = Guid.Parse(entity.localParentEntityId),
                             IsActive = true,
@@ -1455,7 +1457,25 @@ public class SmartStartIntegrationService : IIntegrationService
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
-                            IsOnStipend = entity.StipendType != null ? true : false
+                            IsOnStipend = entity.StipendType != null ? true : false,
+                            SetupTraineeInitiated = true     ,                                                      
+                        };
+
+                        var newTrainee = new Trainee
+                        {
+                            Id = newId,
+                            UserId = userId,
+                            SmartSpaceLicenceDate = entity.StartDate,
+                            IsActive = true,
+                            CoachHierarchy = Guid.Parse(entity.localParentEntityId),
+                            TraineeConvertedDate = entity.StartDate,
+                            ConsolidationMeetingDate = entity.ConsolidationMeetingDate,
+                            ChildrenAddedDate = entity.StartDate,
+                            ProgrammeType = entity.ProgrammeType,
+                            PractitionerId = newId,
+                            AttendedStartUpTraining = true,
+                            StarterLicenceReceived = true,
+                            StarterLicenceDate = entity.StartDate
                         };
 
                         //check phone number is valid
@@ -1652,8 +1672,18 @@ public class SmartStartIntegrationService : IIntegrationService
                             //map licenses
                             List<License> licenses = new List<License>();
                             var licenseTypes = _licenseTypeRepo.GetAll();
-                            licenses.Add(new License() { LicenseDate = (entity.StarterLicenceDate!=null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.Description.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId });                           
+                            licenses.Add(
+                               new License() { LicenseDate = (entity.StarterLicenceDate!=null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }                                 
+                            );
+                            licenses.Add(
+                               new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Practice Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                            );
+                            licenses.Add(
+                               new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("SmartSpace Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                            );
                             _licenseRepo.InsertMany(licenses);
+
+                            _traineeRepo.Insert(newTrainee);//create shell trainee record
 
                             //create classrooms and classroomgroups - only map for principals or FAAs
                             if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin)
@@ -1686,6 +1716,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                 };
                                 _classroomGroupGenericRepo.Insert(pracUnsureClass);
                             }
+
+
+
 
                             mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSPractitioner;
                             mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLPractitioner;
