@@ -5,6 +5,7 @@ import {
   Alert,
   BannerWrapper,
   Button,
+  EmptyPage,
   MenuListDataItem,
   StackedList,
   StackedListType,
@@ -17,6 +18,7 @@ import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
 import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
 import partnershipIcon from '@/assets/icon/partnership.svg';
+import AlienImage from '@/assets/ECD_Connect_alien.svg';
 
 // TODO: replace mockedClub with real data
 export const mockedClub = {
@@ -55,9 +57,14 @@ export const mockedClub = {
 export const Club: React.FC = () => {
   const history = useHistory();
 
+  const totalMembers = mockedClub.members.length;
+  // const totalMembers = 0;
+
   // TODO: replace mocked rule with real data
-  const isClubInALeague = true;
+  const isClubInALeague = totalMembers && true;
   const isTop25Percent = true;
+  const hasLeader = true;
+  const isLeaderRequestSent = true;
 
   const leader: MenuListDataItem = {
     title: mockedClub.leader,
@@ -164,33 +171,56 @@ export const Club: React.FC = () => {
           <Tag icon="StarIcon" title="Purple" color="primary" />
         )}
         <Tag
-          title={String(mockedClub.members.length)}
+          title={String(totalMembers)}
           subTitle="members"
-          color="successMain"
+          color={!!totalMembers ? 'successMain' : 'errorMain'}
         />
       </div>
-      {renderLeagueContent}
-      <Typography className="mb-2" type="h3" text="Club leader" />
-      <div>
-        <StackedList
-          isFullHeight={false}
-          type={'MenuList' as StackedListType}
-          listItems={[leader]}
+      {!!totalMembers ? (
+        <>
+          {renderLeagueContent}
+          <Typography className="mb-2" type="h3" text="Club leader" />
+          {hasLeader && (
+            <div>
+              <StackedList
+                isFullHeight={false}
+                type={'MenuList' as StackedListType}
+                listItems={[leader]}
+              />
+            </div>
+          )}
+          {!hasLeader && isLeaderRequestSent && (
+            <Alert
+              type="warning"
+              title="Waiting for new club leader to accept agreement."
+            />
+          )}
+          {renderActivitiesContent}
+        </>
+      ) : (
+        <EmptyPage
+          image={AlienImage}
+          title="This club does not have any members yet!"
+          subTitle=""
         />
-      </div>
-      {renderActivitiesContent}
+      )}
       <div className="mt-auto flex flex-col">
         <Button
-          icon="UserGroupIcon"
+          icon={!!totalMembers ? 'UserGroupIcon' : 'PlusCircleIcon'}
           className="mb-4 mt-8"
           type="filled"
           textColor="white"
           color="primary"
-          text="See all members"
+          text={!!totalMembers ? 'See all members' : 'Add club members'}
           onClick={() =>
-            history.push(
-              ROUTES.COMMUNITY.CLUB.MEMBERS.replace(':clubId', mockedClub.id)
-            )
+            !!totalMembers
+              ? history.push(
+                  ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(
+                    ':clubId',
+                    mockedClub.id
+                  )
+                )
+              : {}
           }
         />
         <Button
