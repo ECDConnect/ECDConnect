@@ -17,9 +17,10 @@ export const ClubMembers: React.FC = () => {
   const history = useHistory();
 
   // TODO: replace mocked rule with real data
-  const hasLeader = true;
-  const isLeaderMoreThan6Months = hasLeader && true;
+  const hasLeader = false;
+  const isLeaderMoreThan6Months = hasLeader && false;
   const isLeaderAcceptedAgreement = false;
+  const isLeaderRequestSent = true;
 
   const coach: MenuListDataItem = {
     title: mockedClub.coach,
@@ -48,7 +49,7 @@ export const ClubMembers: React.FC = () => {
     let list;
 
     // Scenario: there is no club leader assigned
-    if (!hasLeader) {
+    if (!hasLeader && !isLeaderRequestSent) {
       title = 'No club leader!';
     }
 
@@ -102,7 +103,12 @@ export const ClubMembers: React.FC = () => {
         }
       />
     );
-  }, [hasLeader, isLeaderAcceptedAgreement, isLeaderMoreThan6Months]);
+  }, [
+    hasLeader,
+    isLeaderAcceptedAgreement,
+    isLeaderMoreThan6Months,
+    isLeaderRequestSent,
+  ]);
 
   return (
     <BannerWrapper
@@ -131,8 +137,16 @@ export const ClubMembers: React.FC = () => {
           type="outlined"
           color="primary"
           textColor="primary"
-          text="Change club leader"
+          text={hasLeader ? 'Change club leader' : 'Assign club leader'}
           icon="RefreshIcon"
+          onClick={() =>
+            history.push(
+              ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(
+                ':clubId',
+                mockedClub.id
+              )
+            )
+          }
         />
       </div>
       <div>
@@ -153,7 +167,7 @@ export const ClubMembers: React.FC = () => {
           icon="ArrowsExpandIcon"
           onClick={() =>
             history.push(
-              ROUTES.COMMUNITY.CLUB.MEMBERS_EDIT.replace(
+              ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(
                 ':clubId',
                 mockedClub.id
               )

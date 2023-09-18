@@ -6,45 +6,51 @@ import { useState } from 'react';
 import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { useSnackbar } from '@ecdlink/core';
+import { Step3 } from './steps/step-3';
 
-interface MockedMember {}
-interface MockedClub {}
+interface MockedStep1 {}
+interface MockedStep2 {}
+interface MockedStep3 {}
 
-export interface ClubMembersEditProps {
-  setSelectedMembers?: (selectedMembers: MockedMember[]) => void;
-  setSelectedClub?: (selectedClub: MockedClub) => void;
+export interface ClubAddProps {
+  setStep1?: (step1: MockedStep1) => void;
+  setStep2?: (step2: MockedStep2) => void;
+  setStep3?: (step3: MockedStep3) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
 }
 
-export const ClubMembersEdit: React.FC = () => {
-  const [selectedMembers, setSelectedMembers] = useState<MockedMember>([]);
-  const [selectedClub, setSelectedClub] = useState<MockedClub>();
+export const ClubAdd: React.FC = () => {
+  const [step1, setStep1] = useState<MockedStep1>();
+  const [step2, setStep2] = useState<MockedStep2>();
+  const [step3, setStep3] = useState<MockedStep3>();
 
   const [step, setStep] = useState(0);
   const [isEnabledButton, setIsEnabledButton] = useState(false);
 
   const isFirstStep = step === 0;
+  const isLastStep = step === 2;
+
   const history = useHistory();
 
   const { showMessage } = useSnackbar();
 
   const onClose = () => {
-    history.push(
-      ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', mockedClub.id)
-    );
+    history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', mockedClub.id));
   };
   const onSubmit = () => {
     // TODO: call API
-    console.log({ selectedClub, selectedMembers });
+    console.log({ step1, step2, step3 });
 
     // TODO: move it to a success callback (useEffect)
-    showMessage({ message: '{value} club members moved.', type: 'success' });
+    /////////////////////////////////
+    showMessage({ message: '{clubName} club added', type: 'success' });
     onClose();
+    /////////////////////////////////
   };
 
   const handleOnClick = () => {
-    if (step === 0) {
-      setStep(1);
+    if (!isLastStep) {
+      setStep((prevStep) => prevStep + 1);
     } else {
       onSubmit();
     }
@@ -63,28 +69,26 @@ export const ClubMembersEdit: React.FC = () => {
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"
-      title="Edit club members"
-      subTitle={`${step + 1} of 2`}
+      title="Add a club"
+      subTitle={`${step + 1} of 3`}
       onBack={handleOnBack}
     >
-      {isFirstStep ? (
-        <Step1
-          setIsEnabledButton={setIsEnabledButton}
-          setSelectedMembers={setSelectedMembers}
-        />
-      ) : (
-        <Step2
-          setIsEnabledButton={setIsEnabledButton}
-          setSelectedClub={setSelectedClub}
-        />
+      {isFirstStep && (
+        <Step1 setIsEnabledButton={setIsEnabledButton} setStep1={setStep1} />
+      )}
+      {step === 1 && (
+        <Step2 setIsEnabledButton={setIsEnabledButton} setStep2={setStep2} />
+      )}
+      {isLastStep && (
+        <Step3 setIsEnabledButton={setIsEnabledButton} setStep3={setStep3} />
       )}
       <Button
         className="mt-auto"
-        icon={isFirstStep ? 'ArrowCircleRightIcon' : 'SaveIcon'}
+        icon={!isLastStep ? 'ArrowCircleRightIcon' : 'SaveIcon'}
         type="filled"
         color="primary"
         textColor="white"
-        text={isFirstStep ? 'Next' : 'Save'}
+        text={!isLastStep ? 'Next' : 'Save'}
         disabled={!isEnabledButton}
         onClick={handleOnClick}
       />

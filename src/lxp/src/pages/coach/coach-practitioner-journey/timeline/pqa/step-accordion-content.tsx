@@ -3,9 +3,15 @@ import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
-import { getRatingData, sortVisits } from '../utils';
+import {
+  getRatingData,
+  getScheduleOrStartButtonIcon,
+  getScheduleOrStartButtonText,
+  getScheduleOrStartSubTitleText,
+  sortVisits,
+} from '../utils';
 import { visitTypes } from '../../coach-practitioner-journey.types';
-import { ScheduleProps, dateOptions } from '../timeline-steps';
+import { ScheduleOrStartProps, dateOptions } from '../timeline-steps';
 
 interface PQAVisitsProps {
   isLoading: boolean;
@@ -14,7 +20,7 @@ interface PQAVisitsProps {
   practitionerId: string;
   isOnline: boolean;
   onStart: (visitName: string) => void;
-  onScheduleOrStart: (schedule: ScheduleProps) => void;
+  onScheduleOrStart: (schedule: ScheduleOrStartProps) => void;
 }
 
 export const newPqaFollowUpId = 'new-pqa-follow-up';
@@ -84,34 +90,8 @@ export const PQAVisits = ({
     );
   };
 
-  const getSubTitleText = (item: Maybe<Visit>) => {
-    if (!!currentVisit?.eventId) {
-      return 'Scheduled ';
-    }
-
-    if (!item?.attended) {
-      return 'By ';
-    }
-
-    return '';
-  };
-
-  const getButtonText = (item: Maybe<Visit>) => {
-    if (!currentVisit?.eventId) {
-      return 'Schedule';
-    }
-    return 'Start';
-  };
-
-  const getButtonIcon = (item: Maybe<Visit>) => {
-    if (!currentVisit?.eventId) {
-      return 'CalendarIcon';
-    }
-    return 'ArrowCircleRightIcon';
-  };
-
-  const onClick = (options: ScheduleProps) => {
-    if (!currentVisit?.eventId) {
+  const onClick = (options: ScheduleOrStartProps) => {
+    if (!options.visit?.eventId) {
       onScheduleOrStart(options);
     } else {
       onStart(options.visit.visitType?.name as string);
@@ -144,14 +124,21 @@ export const PQAVisits = ({
                   textColor="primary"
                   type="outlined"
                   color="primary"
-                  text={getButtonText(item)}
+                  text={getScheduleOrStartButtonText(item)}
                   iconPosition="start"
-                  icon={getButtonIcon(item)}
+                  icon={getScheduleOrStartButtonIcon(item)}
                   onClick={() =>
                     onClick({
                       visit: item as Visit,
                       visitEventId: currentVisit?.eventId,
-                      eventType: 'First PQA',
+                      eventType:
+                        item?.visitType?.name === visitTypes.pqa.firstPQA.name
+                          ? visitTypes.pqa.firstPQA.eventType
+                          : visitTypes.pqa.followUp.eventType,
+                      scheduleStartText:
+                        item?.visitType?.name === visitTypes.pqa.firstPQA.name
+                          ? visitTypes.pqa.firstPQA.scheduleStartText
+                          : visitTypes.pqa.followUp.scheduleStartText,
                     })
                   }
                 />
@@ -166,7 +153,7 @@ export const PQAVisits = ({
             }
             text={
               !!item?.plannedVisitDate
-                ? `${getSubTitleText(item)}${new Date(
+                ? `${getScheduleOrStartSubTitleText(item)}${new Date(
                     item.attended ? item.actualVisitDate : item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''

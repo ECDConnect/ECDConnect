@@ -48,7 +48,7 @@ export const Checkbox = <T extends FieldValues>({
   return (
     <>
       {visible && (
-        <label className="item-center flex gap-2">
+        <label className={classNames(className, 'item-center flex gap-2')}>
           <div className={styles.inputContainer}>
             {nameProp && register && (
               <input
