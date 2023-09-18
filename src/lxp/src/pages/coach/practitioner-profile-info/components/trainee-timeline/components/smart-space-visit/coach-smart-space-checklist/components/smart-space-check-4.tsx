@@ -1,4 +1,5 @@
 import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
+import { staticDataSelectors } from '@/store/static-data';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import {
@@ -41,6 +42,13 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const programData = useSelector(staticDataSelectors.getProgrammeTypes);
+  const traineeProgrammeType = useSelector(
+    traineeSelectors.getTraineeProgrammeType
+  );
+  const traineeProgrammeTypeObject = programData?.find(
+    (item) => item?.id === traineeProgrammeType
+  );
   const [enableButton, setEnableButton] = useState(false);
   const [questions, setAnswers] = useState([
     {
@@ -127,10 +135,11 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
       />
       <Typography
         type={'h3'}
-        text={`Programme type:`}
+        text={`Programme type: ${traineeProgrammeTypeObject?.description}`}
         color={'textDark'}
         className={'my-3'}
       />
+
       <Divider dividerType="dashed" className={'my-4'} />
 
       {questions.map((item, index) => (
