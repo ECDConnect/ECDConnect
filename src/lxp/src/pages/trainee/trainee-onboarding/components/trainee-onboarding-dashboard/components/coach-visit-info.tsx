@@ -14,11 +14,13 @@ import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 
 interface CoachVisitInfoProps {
-  setSHowCoachVisit: any;
+  setShowCoachVisit: any;
+  setNotificationStep?: any;
 }
 
 export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
-  setSHowCoachVisit,
+  setShowCoachVisit,
+  setNotificationStep,
 }) => {
   const { isOnline } = useOnlineStatus();
   const coach = useSelector(coachSelectors.getCoach);
@@ -42,7 +44,10 @@ export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
       renderBorder={true}
       title={'Business'}
       color={'primary'}
-      onBack={() => setSHowCoachVisit(false)}
+      onBack={() => {
+        setNotificationStep && setNotificationStep('');
+        setShowCoachVisit(false);
+      }}
       displayOffline={!isOnline}
       renderOverflow={true}
       className="h-screen"
@@ -127,7 +132,10 @@ export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
           type="filled"
           color="primary"
           className="mt-4 mb-2 w-full"
-          onClick={() => setSHowCoachVisit(false)}
+          onClick={() => {
+            setNotificationStep && setNotificationStep('');
+            setShowCoachVisit(false);
+          }}
         >
           {renderIcon('XIcon', 'mr-2 text-white w-5')}
           <Typography type={'body'} text={'Close'} color={'white'} />

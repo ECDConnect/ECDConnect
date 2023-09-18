@@ -12,9 +12,9 @@ import {
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router-dom';
+import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
@@ -32,6 +32,7 @@ import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import {
+  practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
@@ -47,11 +48,10 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
-import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
+import { traineeSelectors } from '@/store/trainee';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { calendarThunkActions } from '@/store/calendar';
-import { differenceInHours, isSameDay } from 'date-fns';
-// import { browserName, browserVersion } from 'react-device-detect';
+import { PractitionerInput } from '@ecdlink/graphql';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -76,7 +76,6 @@ export interface DashboardRouteState {
 }
 
 export const Dashboard: React.FC = () => {
-  const location = useLocation<DashboardRouteState>();
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
@@ -98,29 +97,75 @@ export const Dashboard: React.FC = () => {
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
-  const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
   const isTrainee = practitioner?.isTrainee;
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const isOnStipend = practitioner?.isOnStipend;
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
 
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-  const uncompletedSteps = timelineSteps(
+  const completedSteps = timelineSteps(
     timeline!,
     () => {},
     false,
     isOnline,
     // @ts-ignore
-    undefined
-  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
+  ).filter((item) => item?.type === 'completed');
 
   const { userProfilePicture } = useDocuments();
 
   useEffect(() => {
     convertImageToBase64(offlineStatments, setStorageItem);
   }, []);
+
+  useEffect(() => {
+    if (
+      (practitioner?.isTrainee &&
+        practitioner?.isOnStipend &&
+        completedSteps?.length === 7) ||
+      (practitioner?.isTrainee &&
+        practitioner?.isOnStipend !== true &&
+        completedSteps?.length === 6)
+    ) {
+      const copy = Object.assign({}, practitioner);
+      const input: PractitionerInput = {
+        Id: copy.id,
+        IsActive: true,
+        Progress: copy.progress,
+        IsTrainee: false,
+      };
+      appDispatch(practitionerActions.updatePractitioner(copy));
+      appDispatch(practitionerThunkActions.updatePractitioner(input));
+    }
+  }, [completedSteps?.length]);
+
+  useEffect(() => {
+    if (
+      (practitioner?.isTrainee &&
+        practitioner?.isOnStipend &&
+        completedSteps?.length === 7) ||
+      (practitioner?.isTrainee &&
+        practitioner?.isOnStipend !== true &&
+        completedSteps?.length === 6)
+    ) {
+      const copy = Object.assign({}, practitioner);
+
+      const input: PractitionerInput = {
+        Id: copy.id,
+        IsActive: true,
+        Progress: copy.progress,
+        IsTrainee: false,
+      };
+
+      appDispatch(practitionerActions.updatePractitioner(copy));
+      appDispatch(practitionerThunkActions.updatePractitioner(input));
+    }
+  }, [completedSteps?.length]);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -587,7 +632,7 @@ export const Dashboard: React.FC = () => {
         hasConsent) ||
       isTrainee
     ) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
     } else {
       showCompleteProfileBlockingDialog();
     }
@@ -647,10 +692,15 @@ export const Dashboard: React.FC = () => {
                 textColour: 'white',
                 type: 'filled',
                 leadingIcon: 'PlusIcon',
-                onClick: async () => {
-                  onSubmit();
-                  history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
-                },
+                onClick: isTrainee
+                  ? async () => {
+                      onSubmit();
+                      history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                    }
+                  : async () => {
+                      onSubmit();
+                      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                    },
               },
               {
                 colour: 'primary',
