@@ -1,6 +1,10 @@
 import { TraineeDto } from '@ecdlink/core';
 import { RootState } from '../types';
-import { TraineeOnBoardTimeline, VisitData } from '@ecdlink/graphql';
+import {
+  Practitioner,
+  TraineeOnBoardTimeline,
+  VisitData,
+} from '@ecdlink/graphql';
 import { SectionQuestions } from '@/pages/trainee/trainee-onboarding/components/startup-support-agreement/startup-accept-agreement.types';
 
 export const getTrainee = (state: RootState): TraineeDto | undefined =>
