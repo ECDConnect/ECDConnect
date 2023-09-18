@@ -4,6 +4,7 @@ import {
   CheckboxChange,
   CheckboxGroup,
   Divider,
+  LoadingSpinner,
   RoundIcon,
   Typography,
 } from '@ecdlink/ui';
@@ -39,6 +40,8 @@ import ROUTES from '@/routes/routes';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import { referralsSteps } from './walkthrough/steps';
 import { useWalkthrough } from '@/context/walkthroughContext';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { InfantActions } from '@/store/infant/infant.actions';
 
 const HEADER_HEIGHT = 64;
 interface GroupedData {
@@ -58,11 +61,29 @@ export const ReferralsTab: React.FC = () => {
   const location = useLocation();
   const appDispatch = useAppDispatch();
 
-  const [showMarkAllButton, setShowMarkAllButton] = useState(true);
+  const [showMarkAllButton] = useState(true);
   const [showCelebration, setShowCelebration] = useState(false);
   const [isReferralsView, setIsReferralsView] = useState(true);
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
+
+  const { isLoading: isLoadingReferrals } = useThunkFetchCall(
+    'visits',
+    InfantActions.GET_REFERRALS_FOR_INFANT
+  );
+  const { isLoading: isLoadingCompletedReferrals } = useThunkFetchCall(
+    'visits',
+    InfantActions.GET_COMPLETED_REFERRALS_FOR_INFANT
+  );
+  const { isLoading: isLoadingUpdateVisitData } = useThunkFetchCall(
+    'visits',
+    InfantActions.UPDATE_VISIT_DATA_STATUS
+  );
+
+  const isLoading =
+    isLoadingReferrals ||
+    isLoadingCompletedReferrals ||
+    isLoadingUpdateVisitData;
 
   const { walkthroughState, isWalkthroughSession, walkthroughDispatch } =
     useWalkthrough();
@@ -215,10 +236,6 @@ export const ReferralsTab: React.FC = () => {
     );
     return groupedData;
   }, [referralsForInfant]) as GroupedData;
-
-  const previousGroupedData = usePrevious(groupedData) as
-    | GroupedData
-    | undefined;
 
   const walkthroughData = {
     sections: [
@@ -404,6 +421,17 @@ export const ReferralsTab: React.FC = () => {
     },
     [history, location]
   );
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor={'primary'}
+        backgroundColor={'uiLight'}
+        className="pt-20"
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>

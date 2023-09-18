@@ -22,7 +22,7 @@ class ExpensesStatementsService {
             submitted
             amount
             expenseTypeId
-            incomeStatementId
+            statementsIncomeStatementId
             photoProof
             datePaid
         }
@@ -107,7 +107,7 @@ class ExpensesStatementsService {
             amount 
             datePaid
             insertedDate
-            incomeStatementId
+            statementsIncomeStatementId
             photoProof
         }
     }

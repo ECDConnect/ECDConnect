@@ -8,6 +8,7 @@ import {
   Alert,
   Button,
   Divider,
+  LoadingSpinner,
   renderIcon,
   RoundIcon,
   Typography,
@@ -20,6 +21,9 @@ import ROUTES from '@/routes/routes';
 import { visitSelectors, visitThunkActions } from '@/store/visit';
 import { useAppDispatch } from '@/store';
 import { CLIENT_TABS } from '../client-dashboard/class-dashboard';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { VisitActions } from '@/store/visit/visit.actions';
 
 interface CardProps {
   value?: number;
@@ -42,6 +46,13 @@ export const HighlightsTab = () => {
   const highlightsData = useSelector(
     visitSelectors.getHealthCareWorkerHighlightsSelector
   );
+
+  const { isLoading } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_HCW_HIGHLIGHTS
+  );
+
+  const { isOnline } = useOnlineStatus();
 
   // Display Monday through Friday of the current week as subtitle text (show this from Monday 00:00 to Sunday 23:59; then switch to the next week -
   // so the user can review the summary for the previous week's visits on Saturday & Sunday as well)
@@ -92,12 +103,12 @@ export const HighlightsTab = () => {
   }, []);
 
   useLayoutEffect(() => {
-    if (user?.id) {
+    if (user?.id && isOnline) {
       appDispatch(
         visitThunkActions.getHealthCareWorkerHighlights({ userId: user?.id })
       ).unwrap();
     }
-  }, [appDispatch, user?.id]);
+  }, [appDispatch, isOnline, user?.id]);
 
   const navigate = useCallback(
     (location) => () => {
@@ -227,6 +238,17 @@ export const HighlightsTab = () => {
     highlightsData,
     showThisWeek,
   ]);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="primary"
+        backgroundColor="uiLight"
+        className="pt-4"
+      />
+    );
+  }
 
   return (
     <div

@@ -6,6 +6,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -20,6 +21,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -29,15 +31,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
     [ExtendObjectType(OperationTypeNames.Query)]
     public class PractitionerQueryExtension
     {
-        public PractitionerQueryExtension()
-        {
-        }
-
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-
-        public Practitioner GetPractitionerByUserId(
+        public PractitionerModel GetPractitionerByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            [Service] PersonnelService personnelService,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -45,9 +43,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             Practitioner practitioner = practiRepo.GetByUserId(userId);
             if (practitioner != null)
             {
-                return practitioner;
+                return personnelService.GetPractitionerDetails(practitioner);
             }
+            return null;
+        }
 
+        public PractitionerModel GetPractitionerById(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] PersonnelService personnelService,
+            string id)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = practiRepo.GetById(new Guid(id));
+            if (practitioner != null)
+            {
+                return personnelService.GetPractitionerDetails(practitioner);
+            }
             return null;
         }
 
@@ -257,7 +270,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             [Service] PersonnelService practiManager,
             string userId)
         {
-            string role = await (new RoleQueryTypeExtension()).GetRoleForUser(contextAccessor, userManager, repoFactory, roleManager, userId);
+            string role = await (new RoleQueryTypeExtension()).GetRoleForUser(contextAccessor, userManager, repoFactory, roleManager, practiManager, userId);
             List<Child> children = new List<Child>();
             if (role != null)
             {

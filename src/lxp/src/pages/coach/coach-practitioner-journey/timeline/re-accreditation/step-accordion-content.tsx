@@ -1,5 +1,5 @@
 import { Visit, Maybe, PqaRating } from '@ecdlink/graphql';
-import { ScheduleProps, dateOptions } from '../timeline-steps';
+import { ScheduleOrStartProps, dateOptions } from '../timeline-steps';
 import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
@@ -8,7 +8,13 @@ import {
   maxNumberOfVisits,
   visitTypes,
 } from '../../coach-practitioner-journey.types';
-import { getRatingData, isDateWithinThreeMonths } from '../utils';
+import {
+  getRatingData,
+  getScheduleOrStartButtonIcon,
+  getScheduleOrStartButtonText,
+  getScheduleOrStartSubTitleText,
+  isDateWithinThreeMonths,
+} from '../utils';
 import { chunkArray } from '@ecdlink/core';
 
 interface ReAccreditationVisitsProps {
@@ -17,7 +23,8 @@ interface ReAccreditationVisitsProps {
   reAccreditationVisits: Maybe<Visit>[];
   practitionerId: string;
   isOnline: boolean;
-  onScheduleOrStart: (schedule: ScheduleProps) => void;
+  onStart: (visitName: string) => void;
+  onScheduleOrStart: (schedule: ScheduleOrStartProps) => void;
 }
 
 export const newReAccreditationFollowUpId = 'new-re-accreditation-follow-up';
@@ -27,6 +34,7 @@ export const ReAccreditationVisits = ({
   currentVisit,
   reAccreditationVisits,
   practitionerId,
+  onStart,
   onScheduleOrStart,
 }: ReAccreditationVisitsProps) => {
   const timeline = useSelector(
@@ -124,16 +132,12 @@ export const ReAccreditationVisits = ({
     );
   };
 
-  const getSubTitleText = (item: Maybe<Visit>) => {
-    if (!!currentVisit?.eventId) {
-      return 'Scheduled ';
+  const onClick = (options: ScheduleOrStartProps) => {
+    if (!options.visit?.eventId) {
+      onScheduleOrStart(options);
+    } else {
+      onStart(options.visit.visitType?.name as string);
     }
-
-    if (!item?.attended) {
-      return 'By ';
-    }
-
-    return '';
   };
 
   return (
@@ -164,14 +168,24 @@ export const ReAccreditationVisits = ({
                   textColor="primary"
                   type="outlined"
                   color="primary"
-                  text="Schedule"
+                  text={getScheduleOrStartButtonText(item)}
                   iconPosition="start"
-                  icon="CalendarIcon"
+                  icon={getScheduleOrStartButtonIcon(item)}
                   onClick={() =>
-                    onScheduleOrStart({
+                    onClick({
                       visit: item as Visit,
                       visitEventId: currentVisit?.eventId,
-                      eventType: 'ReAccreditation',
+                      eventType:
+                        item?.visitType?.name ===
+                        visitTypes.reaccreditation.first.name
+                          ? visitTypes.reaccreditation.first.eventType
+                          : visitTypes.reaccreditation.followUp.eventType,
+                      scheduleStartText:
+                        item?.visitType?.name ===
+                        visitTypes.reaccreditation.first.name
+                          ? visitTypes.reaccreditation.first.scheduleStartText
+                          : visitTypes.reaccreditation.followUp
+                              .scheduleStartText,
                     })
                   }
                 />
@@ -186,7 +200,7 @@ export const ReAccreditationVisits = ({
             }
             text={
               !!item?.plannedVisitDate
-                ? `${getSubTitleText(item)}${new Date(
+                ? `${getScheduleOrStartSubTitleText(item)}${new Date(
                     item.attended ? item.actualVisitDate : item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''

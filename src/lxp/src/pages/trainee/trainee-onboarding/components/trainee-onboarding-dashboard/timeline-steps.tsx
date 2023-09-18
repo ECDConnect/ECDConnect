@@ -20,6 +20,8 @@ const nextStepButtontext = (step: string) => {
       return 'Sign';
     case 'Sign start-up support agreement':
       return 'Sign';
+    case 'SmartSpace visit from coach':
+      return 'Request visit';
     default:
       return '';
   }
@@ -216,7 +218,7 @@ export const timelineSteps = (
       timeline?.sSCoachVisitColor,
       () => onView('SmartSpace visit from coach'),
       nextStep,
-      consolidationMeetingDataStatus
+      timeline?.sSCoachVisitStatus
     )
   );
   steps.push(

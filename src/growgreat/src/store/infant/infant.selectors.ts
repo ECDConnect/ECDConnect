@@ -170,9 +170,9 @@ export function getInfantNearestPreviousVisitByOrderDate(
 ): VisitDto | undefined {
   const visits = state.infants.visits;
 
-  if (!visits?.length || !currentVisit) return undefined;
+  if (!visits?.length) return undefined;
 
-  if (currentVisit.visitType?.name === 'additional_visits') {
+  if (currentVisit?.visitType?.name === 'additional_visits') {
     const currentPlannedDate = new Date(currentVisit?.plannedVisitDate!);
     currentPlannedDate?.setHours(23, 59, 59, 0);
 
@@ -203,7 +203,9 @@ export function getInfantNearestPreviousVisitByOrderDate(
     return nearestDateObject;
   }
 
-  const currentOrderDate = new Date(currentVisit?.orderDate!);
+  const currentOrderDate = currentVisit
+    ? new Date(currentVisit?.orderDate!)
+    : new Date();
 
   const previousVisits = visits.filter(
     (item) =>
