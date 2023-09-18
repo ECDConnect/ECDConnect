@@ -10,6 +10,7 @@ import {
   StackedList,
   StackedListType,
   Typography,
+  UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useMemo } from 'react';
@@ -20,6 +21,9 @@ import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
 import partnershipIcon from '@/assets/icon/partnership.svg';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { ClubsRouteState } from '../../index.types';
+import { useSelector } from 'react-redux';
+import { clubSelectors } from '@/store/club';
+import { LeagueType } from '@/constants/club';
 
 // TODO: replace mockedClub with real data
 export const mockedClub = {
@@ -59,26 +63,46 @@ export const Club: React.FC = () => {
   const history = useHistory();
   const params = useParams<ClubsRouteState>();
 
-  const totalMembers = mockedClub.members.length;
-  // const totalMembers = 0;
+  const club = useSelector(clubSelectors.getClubByIdSelector(params.clubId));
+  const currentLeader = useSelector(
+    clubSelectors.getCurrentClubLeaderByClubIdSelector(params.clubId)
+  );
+  const nextLeader = useSelector(
+    clubSelectors.getNextClubLeaderByClubIdSelector(params.clubId)
+  );
 
-  // TODO: replace mocked rule with real data
-  const isClubInALeague = totalMembers && true;
-  const isTop25Percent = true;
-  const hasLeader = true;
-  const isLeaderRequestSent = true;
+  const totalMembers = club?.clubMembers?.length;
 
-  const leader: MenuListDataItem = {
-    title: mockedClub.leader,
+  const isClubInALeague = !!club?.league?.id;
+  const isTop25Percent =
+    !!club?.leaguePosition && Number(club?.leaguePosition) <= 3;
+  const hasLeader = !!currentLeader;
+  const isLeaderRequestSent = !!nextLeader;
+
+  const leader: UserAlertListDataItem = {
+    title: `${currentLeader?.practitioner?.user?.firstName ?? ''} ${
+      currentLeader?.practitioner?.user?.surname ?? ''
+    }`,
     titleStyle: 'text-textDark',
-    menuIconUrl: mockedClub.iconUrl,
+    profileDataUrl: currentLeader?.practitioner?.user?.profileImageUrl ?? '',
+    profileText: `${currentLeader?.practitioner?.user?.firstName ?? ''} ${
+      currentLeader?.practitioner?.user?.surname ?? ''
+    }`,
+    avatarColor: 'var(--primaryAccent2)',
+    alertSeverity: 'none',
+    hideAlertSeverity: true,
     onActionClick: () =>
-      history.push(ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER),
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+          ':clubId',
+          params.clubId
+        ).replace(':leaderId', currentLeader?.practitioner?.id) // TODO: check if it's practitionerId or userId
+      ),
   };
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: mockedClub.leader,
+      title: club?.league?.name ?? '',
       titleStyle: 'text-textDark',
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
@@ -90,13 +114,13 @@ export const Club: React.FC = () => {
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(mockedClub.leagueRank)}
+            text={String(club?.leaguePosition || 0)}
           />
         </div>
       ),
       backgroundColor: isTop25Percent ? 'successBg' : 'infoBb',
     }),
-    [isTop25Percent]
+    [isTop25Percent, club]
   );
 
   const activities: MenuListDataItem[] = [
@@ -127,8 +151,9 @@ export const Club: React.FC = () => {
             listItems={[leagueCard]}
           />
           <PointsSummaryCard
-            currentPoints={mockedClub.points}
-            maxPoints={mockedClub.maxPoints}
+            currentPoints={club?.totalClubPoints || 0}
+            hint="Points"
+            maxPoints={club?.maxClubPoints || 0}
             showIcon={false}
             useColourBackground={false}
             // TODO: add onClick
@@ -145,7 +170,7 @@ export const Club: React.FC = () => {
         title="This club is not in a league."
       />
     );
-  }, [isClubInALeague, leagueCard]);
+  }, [isClubInALeague, leagueCard, club]);
 
   const renderActivitiesContent = useMemo(() => {
     if (isClubInALeague) return <></>;
@@ -167,18 +192,22 @@ export const Club: React.FC = () => {
       showBackground={false}
       className="flex flex-col p-4 pt-6 "
       size="small"
-      title={`${mockedClub.name} club`}
+      title={`${club?.name} club`}
       onBack={() => history.push(ROUTES.COMMUNITY.ROOT)}
     >
-      <Typography type="h2" text={mockedClub.name} />
+      <Typography type="h2" text={club?.name ?? ''} />
       <div className="mt-3 flex gap-2">
-        {isClubInALeague && (
+        {club?.league?.leagueType?.name === LeagueType.Purple && (
           <Tag icon="StarIcon" title="Purple" color="primary" />
         )}
         <Tag
           title={String(totalMembers)}
           subTitle="members"
-          color={!!totalMembers ? 'successMain' : 'errorMain'}
+          color={
+            !!totalMembers && totalMembers >= 4 && totalMembers <= 17
+              ? 'successMain'
+              : 'errorMain'
+          }
         />
       </div>
       {!!totalMembers ? (
@@ -189,10 +218,31 @@ export const Club: React.FC = () => {
             <div>
               <StackedList
                 isFullHeight={false}
-                type={'MenuList' as StackedListType}
+                type={'UserAlertList' as StackedListType}
                 listItems={[leader]}
               />
             </div>
+          )}
+          {!hasLeader && !isLeaderRequestSent && (
+            <Alert
+              title="No club leader!"
+              type="warning"
+              button={
+                <Button
+                  type="filled"
+                  color="primary"
+                  textColor="white"
+                  icon="UserAddIcon"
+                  text="Assign a club leader!"
+                  onClick={() =>
+                    ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(
+                      ':clubId',
+                      params.clubId
+                    )
+                  }
+                />
+              }
+            />
           )}
           {!hasLeader && isLeaderRequestSent && (
             <Alert

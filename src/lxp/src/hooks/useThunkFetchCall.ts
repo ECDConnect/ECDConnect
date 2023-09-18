@@ -1,5 +1,6 @@
 import { RootState, Status, ThunkActionStatuses } from '@/store/types';
 import { useSelector } from 'react-redux';
+import { usePrevious } from 'react-use';
 
 type RootStateKeys = keyof RootState;
 
@@ -10,10 +11,14 @@ export const useThunkFetchCall = (slice: RootStateKeys, actionName: string) => {
     )
   );
 
+  const error = useSelector((state: RootState | any) => state[slice]?.error);
+
   const isFulfilled = status?.value === ThunkActionStatuses.Fulfilled;
   const isUnset = status?.value === ThunkActionStatuses.Unset || !status?.value;
   const isLoading = status?.value === ThunkActionStatuses.Pending;
   const isRejected = status?.value === ThunkActionStatuses.Rejected;
 
-  return { isFulfilled, isUnset, isLoading, isRejected };
+  const wasLoading = usePrevious(isLoading);
+
+  return { isFulfilled, isUnset, isLoading, wasLoading, isRejected, error };
 };
