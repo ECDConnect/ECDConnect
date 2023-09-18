@@ -48,9 +48,9 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
+import { calendarThunkActions } from '@/store/calendar';
 import { traineeSelectors } from '@/store/trainee';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { calendarThunkActions } from '@/store/calendar';
 import { PractitionerInput } from '@ecdlink/graphql';
 const { version } = require('../../../package.json');
 
