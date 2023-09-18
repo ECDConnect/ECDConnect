@@ -12,10 +12,12 @@ import { useHistory } from 'react-router';
 import { useAppDispatch } from '@/store';
 import { traineeThunkActions } from '@/store/trainee';
 import { userSelectors } from '@/store/user';
+import { CoachVisitInfo } from './components/trainee-onboarding-dashboard/components/coach-visit-info';
 
 export const TraineeOnboarding = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const [notificationStep, setNotificationStep] = useState('');
+  const [showCoachVisit, setShowCoachVisit] = useState(false);
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const user = useSelector(userSelectors.getUser);
@@ -56,6 +58,13 @@ export const TraineeOnboarding = () => {
           <SmartSpaceChecklist
             setNotificationStep={setNotificationStep}
             isSmartChecklist={isSmartChecklist}
+          />
+        );
+      case 'SmartSpace visit from coach':
+        return (
+          <CoachVisitInfo
+            setShowCoachVisit={setShowCoachVisit}
+            setNotificationStep={setNotificationStep}
           />
         );
       case 'Get community support':

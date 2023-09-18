@@ -1045,7 +1045,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && (y.Name == Constants.SSSettings.visitType_smart_space_checklist)) on visit.VisitTypeId equals visitType.Id
                 join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                 select visitData
-            ).Select(y => y.VisitName).Distinct().ToList();
+            ).Select(y => y.VisitSection).Distinct().ToList();
 
             return vData;
         }
