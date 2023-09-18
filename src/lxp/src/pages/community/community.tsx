@@ -5,6 +5,7 @@ import { Connect } from './connect-tab/connect';
 import { useState } from 'react';
 import { CommunityRouteState } from './community.types';
 import format from 'date-fns/format';
+import { CoachCircles } from './coach-circles/coach-circles';
 import ROUTES from '@/routes/routes';
 import { ClubsTab } from './clubs-tab';
 
@@ -33,6 +34,11 @@ export const Community: React.FC = () => {
       title: 'Leagues',
       initActive: false,
       child: 'Coming Soon!',
+    },
+    {
+      title: 'Circles',
+      initActive: false,
+      child: <CoachCircles />,
     },
     {
       title: 'Connect',
@@ -67,14 +73,16 @@ export const Community: React.FC = () => {
       onHelp={() => displayTutorial(currentTab?.title)}
       displayOffline={!isOnline}
     >
-      <TabList
-        className="bg-uiBg"
-        tabItems={tabItems}
-        setSelectedIndex={selectedTabIndex}
-        tabSelected={(tab: TabItem, tabIndex: number) =>
-          setTabSelected(tab, tabIndex)
-        }
-      />
+      <div className="h-screen">
+        <TabList
+          className="bg-uiBg"
+          tabItems={tabItems}
+          setSelectedIndex={selectedTabIndex}
+          tabSelected={(tab: TabItem, tabIndex: number) =>
+            setTabSelected(tab, tabIndex)
+          }
+        />
+      </div>
     </BannerWrapper>
   );
 };
