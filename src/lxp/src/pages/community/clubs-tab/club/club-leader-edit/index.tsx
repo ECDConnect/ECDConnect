@@ -8,18 +8,21 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { mockedClub } from '../individual-club-view';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useSnackbar } from '@ecdlink/core';
+import { ClubsRouteState } from '../../index.types';
 
 export const ClubLeaderEdit: React.FC = () => {
   // TODO: replace mocked rule with real data
-  const hasLeader = false;
+  const hasLeader = true;
 
   // TODO: add logic to display checkbox
   const isToShowCheckbox = true;
 
   const history = useHistory();
+  const params = useParams<ClubsRouteState>();
+
   const { showMessage } = useSnackbar();
 
   const onSubmit = () => {
@@ -29,7 +32,7 @@ export const ClubLeaderEdit: React.FC = () => {
     /////////////////////////////
     showMessage({ message: 'Club leader request sent!' });
     history.push(
-      ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', mockedClub.id)
+      ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', params.clubId)
     );
     /////////////////////////////
   };
@@ -41,11 +44,7 @@ export const ClubLeaderEdit: React.FC = () => {
       size="small"
       title={`${hasLeader ? 'Change' : 'Assign'} club leader`}
       subTitle="step 1 of 1"
-      onBack={() =>
-        history.push(
-          ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', mockedClub.id)
-        )
-      }
+      onBack={() => history.goBack()}
     >
       <Typography
         type="h2"

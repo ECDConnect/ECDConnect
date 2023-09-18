@@ -10,9 +10,16 @@ import {
 import { ClubAddProps } from '..';
 import { useEffect, useState } from 'react';
 
-export const Step2 = ({ setIsEnabledButton }: ClubAddProps) => {
-  const [answer1, setAnswer1] = useState<boolean>();
-  const [answer2, setAnswer2] = useState<number>();
+interface Step2Props extends ClubAddProps {
+  title: string;
+}
+
+export const Step2 = ({ title, setIsEnabledButton }: Step2Props) => {
+  const [
+    isToMoveSmartStartersFromOtherClub,
+    setIsToMoveSmartStartersFromOtherClub,
+  ] = useState<boolean>();
+  const [smartStartersCount, setSmartStartersCount] = useState<number>();
 
   const options = [
     { text: 'Yes', value: true },
@@ -26,7 +33,7 @@ export const Step2 = ({ setIsEnabledButton }: ClubAddProps) => {
 
   return (
     <>
-      <Typography type="h2" text="Add a club" />
+      <Typography type="h2" text={title} />
       <Typography
         className="mt-4 mb-2"
         type="h4"
@@ -36,11 +43,13 @@ export const Step2 = ({ setIsEnabledButton }: ClubAddProps) => {
         color="secondary"
         type={ButtonGroupTypes.Button}
         options={options}
-        onOptionSelected={(value) => setAnswer1(value as boolean)}
+        onOptionSelected={(value) =>
+          setIsToMoveSmartStartersFromOtherClub(value as boolean)
+        }
         className="mb-4"
       />
       {/* TODO: add real rule */}
-      {answer1 === false && (
+      {isToMoveSmartStartersFromOtherClub === false && (
         <Alert
           type="warning"
           title="You must select at least 1 SmartStarter to continue!"
@@ -49,20 +58,20 @@ export const Step2 = ({ setIsEnabledButton }: ClubAddProps) => {
           ]}
         />
       )}
-      {answer1 && (
+      {isToMoveSmartStartersFromOtherClub && (
         <>
           <FormInput
             type="number"
             label="How many SmartStarters would you like to move from a different club into the Winners club?"
             placeholder="Add a number..."
-            value={answer2}
+            value={smartStartersCount}
             onChange={(event) =>
-              setAnswer2(
+              setSmartStartersCount(
                 event.target.value ? Number(event.target.value) : undefined
               )
             }
-            {...(answer2 &&
-              answer2 > 18 && {
+            {...(smartStartersCount &&
+              smartStartersCount > 18 && {
                 error: {
                   message:
                     'Please enter a number greater than 0 and less than 18.',
@@ -71,14 +80,14 @@ export const Step2 = ({ setIsEnabledButton }: ClubAddProps) => {
               })}
           />
 
-          {answer2 && answer2 <= 18 && (
+          {smartStartersCount && smartStartersCount <= 18 && (
             <>
               <Typography
                 className="mt-4"
                 type="h4"
-                text={`Choose ${answer2} SmartStarters:`}
+                text={`Choose ${smartStartersCount} SmartStarters:`}
               />
-              {Array.from(Array(answer2)).map((_, index) => (
+              {Array.from(Array(smartStartersCount)).map((_, index) => (
                 <>
                   {/* TODO: add integration */}
                   <Dropdown

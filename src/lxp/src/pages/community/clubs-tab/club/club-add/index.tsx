@@ -1,15 +1,15 @@
 import { BannerWrapper, Button } from '@ecdlink/ui';
-import { mockedClub } from '../individual-club-view';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useState } from 'react';
 import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { useSnackbar } from '@ecdlink/core';
 import { Step3 } from './steps/step-3';
+import { ClubsRouteState } from '../../index.types';
 
 interface MockedStep1 {}
-interface MockedStep2 {}
+export interface MockedStep2 {}
 interface MockedStep3 {}
 
 export interface ClubAddProps {
@@ -31,11 +31,12 @@ export const ClubAdd: React.FC = () => {
   const isLastStep = step === 2;
 
   const history = useHistory();
+  const params = useParams<ClubsRouteState>();
 
   const { showMessage } = useSnackbar();
 
   const onClose = () => {
-    history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', mockedClub.id));
+    history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', params.clubId));
   };
   const onSubmit = () => {
     // TODO: call API
@@ -77,7 +78,11 @@ export const ClubAdd: React.FC = () => {
         <Step1 setIsEnabledButton={setIsEnabledButton} setStep1={setStep1} />
       )}
       {step === 1 && (
-        <Step2 setIsEnabledButton={setIsEnabledButton} setStep2={setStep2} />
+        <Step2
+          title="Add a club"
+          setIsEnabledButton={setIsEnabledButton}
+          setStep2={setStep2}
+        />
       )}
       {isLastStep && (
         <Step3 setIsEnabledButton={setIsEnabledButton} setStep3={setStep3} />

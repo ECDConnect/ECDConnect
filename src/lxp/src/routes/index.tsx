@@ -102,6 +102,8 @@ import { ClubEdit } from '@/pages/community/clubs-tab/club/club-edit';
 import { PointsYearView } from '@/pages/points/points-year-view/points-year-view';
 import { ClubLeaderEdit } from '@/pages/community/clubs-tab/club/club-leader-edit';
 import { ClubAdd } from '@/pages/community/clubs-tab/club/club-add';
+import { ClubMembersAdd } from '@/pages/community/clubs-tab/club/club-members-add';
+import { UserProfile } from '@/pages/community/clubs-tab/club/user-profile';
 import { CoachTraineeOnboarding } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/trainee-onboarding';
 
 const PublicRoutes: React.FC = () => {
@@ -205,6 +207,11 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS.ADD}
+        component={ClubMembersAdd}
+        exact
+      />
+      <Route
         path={ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT}
         component={ClubMembersEdit}
         exact
@@ -212,6 +219,14 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={ROUTES.COMMUNITY.CLUB.LEADER.EDIT}
         component={ClubLeaderEdit}
+        exact
+      />
+      <Route
+        path={[
+          ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER,
+          ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER,
+        ]}
+        component={UserProfile}
         exact
       />
       <Route

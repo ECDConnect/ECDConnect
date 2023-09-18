@@ -9,15 +9,17 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { mockedClub } from '../individual-club-view';
-import { useHistory } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useMemo } from 'react';
+import { ClubsRouteState } from '../../index.types';
 
 export const ClubMembers: React.FC = () => {
   const history = useHistory();
+  const params = useParams<ClubsRouteState>();
 
   // TODO: replace mocked rule with real data
-  const hasLeader = false;
+  const hasLeader = true;
   const isLeaderMoreThan6Months = hasLeader && false;
   const isLeaderAcceptedAgreement = false;
   const isLeaderRequestSent = true;
@@ -34,6 +36,13 @@ export const ClubMembers: React.FC = () => {
     subTitle: mockedClub.leaderDescription,
     subTitleStyle: 'text-infoDark',
     menuIconUrl: mockedClub.iconUrl,
+    onActionClick: () =>
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+          ':clubId',
+          params.clubId
+        ).replace(':leaderId', mockedClub.id)
+      ),
   };
 
   const members: MenuListDataItem[] = mockedClub.members.map((member) => ({
@@ -42,6 +51,13 @@ export const ClubMembers: React.FC = () => {
     subTitle: member.description,
     subTitleStyle: 'text-infoDark',
     menuIconUrl: mockedClub.iconUrl,
+    onActionClick: () =>
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
+          ':clubId',
+          params.clubId
+        ).replace(':practitionerId', mockedClub.id)
+      ),
   }));
 
   const renderAlert = useMemo(() => {
@@ -118,7 +134,7 @@ export const ClubMembers: React.FC = () => {
       title={`${mockedClub.name} club`}
       onBack={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', mockedClub.id)
+          ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', params.clubId)
         )
       }
     >
@@ -143,7 +159,7 @@ export const ClubMembers: React.FC = () => {
             history.push(
               ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(
                 ':clubId',
-                mockedClub.id
+                params.clubId
               )
             )
           }
@@ -169,7 +185,7 @@ export const ClubMembers: React.FC = () => {
             history.push(
               ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(
                 ':clubId',
-                mockedClub.id
+                params.clubId
               )
             )
           }
@@ -192,8 +208,11 @@ export const ClubMembers: React.FC = () => {
         color="primary"
         shape="round"
         className="absolute bottom-1 right-1 z-10 m-3 px-3.5 py-2.5"
-        // TODO: add onClick
-        click={() => {}}
+        click={() =>
+          history.push(
+            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', params.clubId)
+          )
+        }
       />
     </BannerWrapper>
   );
