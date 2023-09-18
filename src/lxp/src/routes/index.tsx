@@ -102,6 +102,7 @@ import { ClubEdit } from '@/pages/community/clubs-tab/club/club-edit';
 import { PointsYearView } from '@/pages/points/points-year-view/points-year-view';
 import { ClubLeaderEdit } from '@/pages/community/clubs-tab/club/club-leader-edit';
 import { ClubAdd } from '@/pages/community/clubs-tab/club/club-add';
+import { CoachTraineeOnboarding } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/trainee-onboarding';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -403,6 +404,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH_SMARTSPACE_CHECK}
         component={CoachSmartSpaceChecklist}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH_TRAINEE_ONBOARDING}
+        component={CoachTraineeOnboarding}
       />
       <Route
         exact
