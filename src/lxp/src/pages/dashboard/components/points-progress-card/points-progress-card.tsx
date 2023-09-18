@@ -1,11 +1,13 @@
-import { IconBadge, ProgressBar, RoundIcon, Typography } from '@ecdlink/ui';
-import * as styles from './points-library-status-card.styles';
-import { PointsLibraryStatusCardProps } from './points-library-status-card.types';
+import { ProgressBar, RoundIcon, Typography } from '@ecdlink/ui';
+import * as styles from './points-progress-card.styles';
+import { PointsProgressCardProps } from './points-progress-card.types';
 import { ReactComponent as BadgePurple } from '@ecdlink/ui/src/assets/badge/badge_purple.svg';
 
-export const PointsLibraryStatusCard: React.FC<
-  PointsLibraryStatusCardProps
-> = ({ currentPoints, maxPoints, description }) => {
+export const PointsProgressCard: React.FC<PointsProgressCardProps> = ({
+  currentPoints,
+  maxPoints,
+  description,
+}) => {
   const percentageScore = (currentPoints / maxPoints) * 100;
 
   return (

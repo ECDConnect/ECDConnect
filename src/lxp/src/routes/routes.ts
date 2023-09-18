@@ -77,6 +77,7 @@ const ROUTES = {
     }),
     POINTS: addPrefix('/points', {
       SUMMARY: '/summary',
+      YEAR: '/year',
     }),
   }),
   TRAINEE: addPrefix('/trainee', {
