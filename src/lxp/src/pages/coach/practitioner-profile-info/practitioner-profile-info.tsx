@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
-import { PractitionerDto, useSnackbar, useTheme } from '@ecdlink/core';
+import { useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -33,7 +33,7 @@ import { CoachPractitionerNotRegistered } from './components/coach-practitioner-
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { TraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
+import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
@@ -631,7 +631,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             position={DialogPosition.Top}
           >
             <div className={styles.dialogContent}>
-              <TraineeOnboarding practitioner={practitioner} />
+              <CoachTraineeOnboarding practitioner={practitioner} />
             </div>
           </Dialog>
         </div>

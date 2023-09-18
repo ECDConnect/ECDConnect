@@ -15,12 +15,11 @@ interface TraineeOnboardingProps {
   practitioner: PractitionerDto | undefined;
 }
 
-export const TraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
+export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
   practitioner,
 }) => {
   const [notificationStep, setNotificationStep] = useState('');
   const [stepOptions, setStepOptions] = useState<any>(null);
-  const user = useSelector(userSelectors.getUser);
   const [isSmartChecklist, setIsSmartChecklist] = useState(false);
 
   const onDone = () => {
