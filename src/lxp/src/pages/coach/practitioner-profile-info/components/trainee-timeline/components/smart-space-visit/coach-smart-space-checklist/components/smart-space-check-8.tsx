@@ -51,7 +51,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
       answer: false,
     },
     {
-      question: `I have checked that all of ${practitioner?.user?.firstName} personal information is correct on the Funda App system.`,
+      question: `I have checked that all of ${practitioner?.user?.firstName}'s personal information is correct on the Funda App system.`,
       answer: false,
     },
   ]);
