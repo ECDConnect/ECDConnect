@@ -1,6 +1,6 @@
 import { RootState, Status, ThunkActionStatuses } from '@/store/types';
+import { usePrevious } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
-import { usePrevious } from 'react-use';
 
 type RootStateKeys = keyof RootState;
 
