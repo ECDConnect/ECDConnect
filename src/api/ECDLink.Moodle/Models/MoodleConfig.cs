@@ -19,6 +19,7 @@
             public string Address { get; set; }
             public string DefaultPassword { get; set; }
             public string UserNameFormatString { get; set; }
+            public string EmailFormatString { get; set; }
         }
 
         public UserTypeConfig[] UserTypes { get; set; }

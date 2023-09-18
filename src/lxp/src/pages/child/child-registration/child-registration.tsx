@@ -2,6 +2,7 @@ import {
   CaregiverDto,
   ChildDto,
   ContentConsentTypeEnum,
+  useDialog,
   useStepNavigation,
 } from '@ecdlink/core';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
@@ -61,6 +62,7 @@ import { CaregiverService } from '@/services/CaregiverService';
 import { authSelectors } from '@store/auth';
 import { childrenForPractitionerThunkActions } from '@/store/childrenForPractitioner';
 import { practitionerSelectors } from '@/store/practitioner';
+import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple-children-modal';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -68,9 +70,10 @@ export const ChildRegistration: React.FC = () => {
   const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
     useStaticData();
   const location = useLocation<ChildRegistrationRouteState>();
-  const routeStep = location.state.step;
-  const childId = location.state.childId;
-  const childDetails = location.state.childDetails;
+  const routeStep = location?.state?.step;
+  const childId = location?.state?.childId;
+  const childDetails = location?.state?.childDetails;
+  const practitionerId = location?.state?.practitionerId;
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
   const consentList = useSelector(contentConsentSelectors.getConsent);
@@ -80,6 +83,9 @@ export const ChildRegistration: React.FC = () => {
   const practitionerUserId = practitioner?.userId;
   const isPrincipal = practitioner?.isPrincipal === true;
   const isTrainee = practitioner?.isTrainee;
+  const isFromPqa = !!practitionerId;
+
+  const dialog = useDialog();
 
   const existingLearner = useSelector(
     classroomsSelectors.getChildLearner(existingChild)
@@ -110,6 +116,7 @@ export const ChildRegistration: React.FC = () => {
   };
   const [caregiverData, setCaregiverData] = useState<CaregiverDto>();
   const [sendGrants, setSendGrants] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!isOnline) {
@@ -315,7 +322,7 @@ export const ChildRegistration: React.FC = () => {
     caregiverReferencePanelForm: CareGiverReferencePanelFormModel
   ) => {
     if (!formState.childInformationFormModel) return;
-
+    setIsLoading(true);
     const siteAddressDto = childRegisterUtils.mapSiteAddressDto(
       formState.careGiverChildInformationFormModel,
       existingCaregiver?.siteAddress
@@ -359,6 +366,30 @@ export const ChildRegistration: React.FC = () => {
     childInputModel.insertedBy = user?.fullName;
 
     await updateChild(childInputModel);
+    setIsLoading(false);
+    if (isFromPqa) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <CaregiverMultipleChildrenModal
+              title="Child registered!"
+              onSubmit={() => {
+                history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
+                  practitionerId,
+                } as ChildRegistrationRouteState);
+                onClose();
+              }}
+              onCancel={() => {
+                history.push(ROUTES.COACH.PRACTITIONERS);
+                onClose();
+              }}
+            />
+          );
+        },
+      });
+    }
 
     if (isTrainee) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
@@ -703,6 +734,7 @@ export const ChildRegistration: React.FC = () => {
               onSubmit={(form) => {
                 saveCaregiver(form);
               }}
+              isLoading={isLoading}
             />
           </Step>
         </StepViewer>

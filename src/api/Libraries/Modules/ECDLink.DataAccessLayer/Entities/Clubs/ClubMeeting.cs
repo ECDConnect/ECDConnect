@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Clubs
@@ -19,9 +20,18 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public DateTime? MeetingDate { get; set; }
         public string Name { get; set; }
 
+        // Coaching circle meeting fields - start
+        public int? ContentValueId { get; set; } // this link to the Coaching Circle Topic in CMS
+        public Guid? MeetingTypeId { get; set; }
+        public virtual MeetingType MeetingType { get; set; }
+        public string? MeetingNotes { get; set; }
+        // Coaching circle meeting fields - end
+        public virtual ICollection<ClubMeetingRegister> ClubMeetingRegister { get; set; }
+
         public TKey ClubId { get; set; }
         [ForeignKey(nameof(ClubId))]
         public virtual Club Club { get; set; }
+        public bool CoachAttended { get; set; }
     }
 
     public interface ClubMeetingJoin<TKey>

@@ -102,7 +102,7 @@ public class IntegrationAPIManager
 
     public async Task<List<RecordChange>> GetRecordChangesBetweenDates(DateTime startDate, DateTime endDate)
     {
-        try
+        try 
         {
             string[] columns = null;
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
@@ -561,10 +561,26 @@ public class IntegrationAPIManager
     {
         try
         {
-            string[] columns = null;
-            List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
-            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
-            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Franchisee", Operator = "Equals", Value = remoteFranchiseeId });
+            var columns = new string[] 
+            { 
+                "DateOfVisit", 
+                "StatusOutcome", 
+                "Guid", 
+                "Coach", 
+                "StableAndNurturingScore",
+                "StimulatingAndResourcedScore",
+                "UseOfSmartStartRoutineScore",
+                "InteractiveStoryTellingScore",
+                "ChildOpportunitiesScore",
+                "PositiveInteractionScore",
+                "TotalScore"
+            };
+
+            var optionConditions = new List<IntegrationOptionConditionEntity>
+            {
+                new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" },
+                new IntegrationOptionConditionEntity() { Column = "Franchisee", Operator = "Equals", Value = remoteFranchiseeId }
+            };
 
             var responseString = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLPQA + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
             return JsonConvert.DeserializeObject<List<MappedPQA>>(responseString);
@@ -581,10 +597,12 @@ public class IntegrationAPIManager
     {
         try
         {
-            string[] columns = null;
-            List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
-            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
-            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Trainee", Operator = "Equals", Value = remoteFranchiseeId });
+            string[] columns = { "DateOfVisit", "StatusOutcome", "Guid", "Coach" };
+            var optionConditions = new List<IntegrationOptionConditionEntity>
+            {
+                new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" },
+                new IntegrationOptionConditionEntity() { Column = "Trainee", Operator = "Equals", Value = remoteFranchiseeId }
+            };
 
             var responseString = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
             return JsonConvert.DeserializeObject<List<MappedSmartSpaceVisits>>(responseString);

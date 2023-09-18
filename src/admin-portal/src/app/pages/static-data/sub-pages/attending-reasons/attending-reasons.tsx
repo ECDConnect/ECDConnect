@@ -79,7 +79,6 @@ export default function AttendingReasonsView() {
               },
             })
               .then((response: any) => {
-                console.log(response);
                 if (response) {
                   refetch();
 

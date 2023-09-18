@@ -24,6 +24,20 @@ class ClassroomService {
             numberPractitioners
             numberOfOtherAssistants
             insertedDate
+            siteAddressId
+            siteAddress {
+              id
+              province {
+                id
+                description
+              }
+              name
+              addressLine1
+              addressLine2
+              addressLine3
+              postalCode
+              ward
+            }
           }
         }
           `,
@@ -59,6 +73,33 @@ class ClassroomService {
     return true;
   }
 
+  async updateClassroomSiteAddress(
+    id: string,
+    input: ClassroomInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateClassroomSiteAddress($id: UUID!,$input: ClassroomInput) {
+          updateClassroomSiteAddress(id: $id, input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        id: id,
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating classroom site address failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateClassroomSiteAddress;
+  }
   async getAllClassroomForCoach(userId: string): Promise<ClassroomDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 

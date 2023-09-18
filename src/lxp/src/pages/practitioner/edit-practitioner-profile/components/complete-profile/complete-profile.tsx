@@ -14,6 +14,7 @@ export const CompleteProfile: React.FC = () => {
   const history = useHistory();
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const { isOnline } = useOnlineStatus();
+  const isOnStipend = practitioner?.isOnStipend;
 
   const completedSteps = timelineSteps(
     timeline!,
@@ -21,7 +22,10 @@ export const CompleteProfile: React.FC = () => {
     false,
     isOnline,
     // @ts-ignore
-    undefined
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
   ).filter((item) => item?.type === 'completed');
 
   const hasPractitionerRole = userData?.roles?.some(
@@ -35,7 +39,9 @@ export const CompleteProfile: React.FC = () => {
   const showNotificationForPractitionerFlow =
     (hasPractitionerRole || addedByPrincipal) && notRegistered;
   if (
-    (practitioner?.isTrainee && completedSteps?.length < 7) ||
+    (practitioner?.isTrainee &&
+      practitioner?.isOnStipend &&
+      completedSteps?.length < 7) ||
     (practitioner?.isTrainee &&
       practitioner?.isOnStipend !== true &&
       completedSteps?.length < 6)

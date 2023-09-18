@@ -76,7 +76,6 @@ export default function EducationLevelView() {
               },
             })
               .then((response: any) => {
-                console.log(response);
                 if (response) {
                   refetch();
 

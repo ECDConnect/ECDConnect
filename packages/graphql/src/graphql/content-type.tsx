@@ -5,11 +5,15 @@ export const contentTypes = gql`
     $search: String
     $searchInContent: Boolean
     $isVisiblePortal: Boolean
+    $contentTypeIdFilter: [Int!]
+    $contentTypeNameFilter: [String!]
   ) {
     contentTypes(
       search: $search
       searchInContent: $searchInContent
       isVisiblePortal: $isVisiblePortal
+      showOnlyTypesWithIds: $contentTypeIdFilter
+      showOnlyTypesWithName: $contentTypeNameFilter
     ) {
       id
       name
@@ -19,6 +23,60 @@ export const contentTypes = gql`
         id
         isActive
         contentValues {
+          localeId
+          status {
+            id
+            name
+          }
+          value
+          contentTypeField {
+            fieldOrder
+            fieldName
+            displayName
+          }
+        }
+      }
+      fields {
+        fieldOrder
+        fieldName
+        fieldType {
+          name
+          dataType
+        }
+        dataLinkName
+      }
+    }
+  }
+`;
+
+export const contentTypesWithLanguage = gql`
+  query (
+    $search: String
+    $searchInContent: Boolean
+    $isVisiblePortal: Boolean
+    $showOnlyTypesWithName: [String!]
+    $showOnlyTypesWithIds: [Int!]
+    $pagingInput: PagedQueryInput
+  ) {
+    contentTypesWithLanguages(
+      search: $search
+      searchInContent: $searchInContent
+      isVisiblePortal: $isVisiblePortal
+      showOnlyTypesWithName: $showOnlyTypesWithName
+      showOnlyTypesWithIds: $showOnlyTypesWithIds
+      pagingInput: $pagingInput
+    ) {
+      id
+      name
+      description
+      isActive
+      content {
+        id
+        isActive
+        updatedDate
+        contentValues {
+          insertedDate
+          updatedDate
           localeId
           status {
             id
@@ -39,6 +97,10 @@ export const contentTypes = gql`
           dataType
         }
         dataLinkName
+      }
+      languages {
+        id
+        locale
       }
     }
   }

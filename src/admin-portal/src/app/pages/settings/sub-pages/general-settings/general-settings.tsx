@@ -77,7 +77,6 @@ export default function GeneralSettingsView() {
                 },
               })
                 .then((response: any) => {
-                  console.log(response);
                   if (response) {
                     refetch();
 

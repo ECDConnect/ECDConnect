@@ -39,7 +39,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
           colour: 'secondary',
           type: 'outlined',
           onClick: () => onCancel && onCancel(),
-          leadingIcon: 'XIcon',
+          leadingIcon: btnText[1] === 'Keep editing' ? 'PencilIcon' : 'XIcon',
         },
       ]}
     />

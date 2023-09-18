@@ -401,10 +401,29 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                                .Where(x => string.Equals(x.UserId, userId))
                                .OrderBy(x => x.Id)
                                .FirstOrDefault();
-
             entity.IsActive = false;
 
             userHierarchyRepo.Update(entity);
+
+
+            return true;
+        }
+
+        public bool DeleteHierarchy(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                return false;
+            }
+
+            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
+
+            var entity = userHierarchyRepo.GetAll()
+                               .Where(x => string.Equals(x.UserId, userId))
+                               .OrderBy(x => x.Id)
+                               .FirstOrDefault();
+
+            userHierarchyRepo.Delete(entity.Id);
 
             return true;
         }

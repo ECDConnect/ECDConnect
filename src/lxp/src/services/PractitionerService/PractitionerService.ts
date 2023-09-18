@@ -89,9 +89,9 @@ class PractitionerService {
                 eventId
               }
               pQARatings {
+                visitId
                 linkedVisitId
-                actualVisitDate
-                children {
+                sections {
                   sectionRating
                   sectionRatingColor
                   sectionScore
@@ -101,12 +101,12 @@ class PractitionerService {
                 overallRatingColor
                 overallRatingStars
                 overallScore
-                plannedDate
                 visitName
                 visitTypeName
               }
               pQASiteVisits {
                 id
+                hasAnswerData
                 plannedVisitDate
                 attended
                 comment
@@ -122,6 +122,7 @@ class PractitionerService {
               }
               reAccreditationVisits {
                 id
+                hasAnswerData
                 plannedVisitDate
                 attended
                 comment
@@ -136,8 +137,9 @@ class PractitionerService {
                 eventId
               }
               reAccreditationRatings {
+                visitId
                 linkedVisitId
-                children {
+                sections {
                   sectionRating
                   sectionRatingColor
                   sectionScore
@@ -147,7 +149,6 @@ class PractitionerService {
                 overallRatingColor
                 overallRatingStars
                 overallScore
-                plannedDate
                 visitName
                 visitTypeName
               }
@@ -557,6 +558,7 @@ class PractitionerService {
             classroomGroupName
             classroomGroupId
             insertedDate
+            classSiteAddress
           }
         }
       `,
@@ -901,7 +903,6 @@ class PractitionerService {
       },
     });
 
-    console.log('response', response);
     if (
       response.status !== 200 ||
       !!response.data.errors ||

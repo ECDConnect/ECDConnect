@@ -384,18 +384,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return practiManager.GetTraineeByUserId(userLicenseManager, userId);
         }
 
-        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, string userId)
-        {
-            Visit visit = visitManager.GetPQAVisitsForPractitioner(userId).FirstOrDefault();
-            return visit != null ? visitDataManager.GetPractitionerPQARating(visit): new PQARating();
-        }
-
-        public PQARating GetPractitionerReAccreditationRating([Service] VisitDataManager visitDataManager, [Service] VisitManager visitManager, string userId)
-        {
-            Visit visit = visitManager.GetReAccreditationVisitsForPractitioner(userId).FirstOrDefault();
-            return visit != null ? visitDataManager.GetPractitionerReAccreditationRating(visit) : new PQARating();
-        }
-
         public List<PractitionerNotes> GetVisitNotesForPractitioner([Service] VisitDataManager visitDataManager, string userId)
         {
             return visitDataManager.GetVisitNotesForPractitioner(userId);

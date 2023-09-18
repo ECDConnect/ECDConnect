@@ -12,15 +12,23 @@ import {
 import { ContentTypeDto, DocumentTypeDto } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
-import { classNames } from '@ecdlink/ui';
+import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import { SearchIcon } from '@heroicons/react/solid';
+import {
+  ArrowLeftIcon,
+  ChartBarIcon,
+  PresentationChartBarIcon,
+  SearchIcon,
+} from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
+  const [specialType, setSpecialType] = useState('');
+  const [selectedTab, setSelectedTab] = useState(1);
+
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
 
@@ -73,48 +81,59 @@ export function ContentManagement() {
         {
           name: 'Consent',
           // href: '/',
+          id: 0,
         },
         {
           name: 'Info  pages',
           href: 'MoreInformation',
+          id: 1,
         },
         {
           name: 'Postnatal',
+          href: 'MoreInformation',
+          id: 2,
         },
         {
           name: 'Antenatal',
-          // href: '/',
+          href: 'MoreInformation',
+          id: 3,
         },
         {
           name: 'Danger signs',
           // href: '/',
+          id: 4,
         },
         {
           name: 'Community',
           href: 'CommunitySectionGG',
+          id: 5,
         },
       ];
     } else {
       return [
         {
           name: 'Consent',
-          href: '/content-management',
+          // href: '/content-management',
+          id: 0,
         },
         {
           name: 'Info pages',
-          // href: '/',
+          href: 'MoreInformation',
+          id: 1,
         },
         {
           name: 'Progress',
           // href: '/',
+          id: 2,
         },
         {
-          name: 'Programme',
+          name: 'Programmes',
           // href: '/',
+          id: 3,
         },
         {
           name: 'Community',
-          // href: '/',
+          id: 4,
         },
       ];
     }
@@ -147,6 +166,7 @@ export function ContentManagement() {
       setSelectedType(currentType);
       setSelectedContent(contentManagementView);
     });
+    console.log(contentManagementView);
   };
 
   const refreshParent = () => {
@@ -170,11 +190,155 @@ export function ContentManagement() {
     // });
   }, [searchValue]);
 
-  console.log(dataTypes?.contentTypes);
-
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
+
+  const listItems: StackedListItemType[] = [];
+
+  console.log(dataTypes?.contentTypes);
+
+  if (specialType === 'Progress') {
+    listItems.push(
+      {
+        title: 'Levels',
+        description:
+          'Children will be placed at a specific level or stage of development',
+        titleIcon: 'ChartBarIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'ProgressTrackingLevel'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Progress categories',
+        description: 'Development areas',
+        titleIcon: 'PresentationChartBarIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'ProgressTrackingCategory'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Progress subcategories',
+        description: 'Development areas',
+        titleIcon: 'PresentationChartBarIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) =>
+              type.name === 'ProgressTrackingSubCategory'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Progress tool',
+        description: 'Edit the skills shown in the progress tracker',
+        titleIcon: 'PresentationChartBarIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'ProgressTrackingSkill'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      }
+    );
+  } else {
+    listItems.push(
+      {
+        title: 'Themes',
+        description:
+          'An organized set of activities based around a particular topic',
+        titleIcon: 'SparklesIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'Theme'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Small/large group activities',
+        description:
+          'Classroom activities for children to do either in small groups or as a whole class',
+        titleIcon: 'UsersIcon',
+        titleIconClassName: 'bg-secondary text-white',
+
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'Activity'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Stories',
+        description: 'Read aloud stories and story books',
+        titleIcon: 'BookOpenIcon',
+        titleIconClassName: 'bg-secondary text-white',
+
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'StoryBook'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Story Book Parts',
+        description: 'Read aloud stories and story books',
+        titleIcon: 'BookOpenIcon',
+        titleIconClassName: 'bg-secondary text-white',
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'StoryBookParts'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      },
+      {
+        title: 'Story activities',
+        description: 'Activities to do during story time ',
+
+        titleIcon: 'BriefcaseIcon',
+        titleIconClassName: 'bg-secondary text-white',
+
+        onActionClick: () => {
+          setSpecialType('');
+          const selectedTypeObject = dataTypes?.contentTypes.find(
+            (type: ContentTypeDto) => type.name === 'StoryBookPartQuestion'
+          );
+          showGroupContentTypes(selectedTypeObject);
+        },
+        classNames: 'bg-uiBg',
+      }
+    );
+  }
 
   return (
     <div className="">
@@ -198,11 +362,16 @@ export function ContentManagement() {
                           type.name === item.name || type.name === item.href
                       );
                       if (selectedTypeObject) {
+                        setSelectedTab(item.id);
+                        setSpecialType('');
                         showGroupContentTypes(selectedTypeObject);
+                      } else {
+                        setSelectedTab(item.id);
+                        setSpecialType(item.name);
                       }
                     }}
                     className={classNames(
-                      selectedType?.name === item.name
+                      item.id === selectedTab
                         ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                       'consent-tabs text-md flex h-14 items-center font-medium'
@@ -226,31 +395,79 @@ export function ContentManagement() {
             />
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+              <div className="h-full py-3 px-4 sm:px-6 lg:px-8">
+                {(selectedType?.name === 'Theme' ||
+                  selectedType?.name === 'Activity' ||
+                  selectedType?.name === 'StoryBook' ||
+                  selectedType?.name === 'StoryBookPartQuestion') && (
+                  <div className="justify-self col-end-3 pb-2">
+                    <button
+                      onClick={() => {
+                        setSelectedType(null);
+                        setSpecialType('Programmes');
+                      }}
+                      type="button"
+                      className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+                    >
+                      <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
+                        {' '}
+                      </ArrowLeftIcon>
+                      Programme
+                      <span className="px-1 text-gray-400">
+                        {' '}
+                        / {selectedType?.name}
+                      </span>
+                    </button>
+                  </div>
+                )}
                 <div
                   className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
                 >
-                  <div className="relative w-6/12">
-                    <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                      {searchValue === '' && (
-                        <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-                      )}
-                    </span>
-                    <input
-                      className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                      placeholder="      Search by email or name..."
-                      onChange={search}
-                    />
-                  </div>
-                  {selectedType && languages?.GetAllLanguage && (
-                    <ContentList
-                      optionDefinitions={dataDefinitions.contentDefinitions}
-                      contentType={selectedType}
-                      languages={languages.GetAllLanguage}
-                      viewContent={getContentValues}
-                      refreshParent={() => refreshParent()}
-                    ></ContentList>
+                  {specialType === '' && (
+                    <div className="relative w-6/12">
+                      <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                        {searchValue === '' && (
+                          <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+                        )}
+                      </span>
+                      <input
+                        className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                        placeholder="      Search by type..."
+                        onChange={search}
+                      />
+                    </div>
+                  )}
+                  {selectedType &&
+                    languages?.GetAllLanguage &&
+                    specialType === '' && (
+                      <ContentList
+                        optionDefinitions={dataDefinitions.contentDefinitions}
+                        contentType={selectedType}
+                        languages={languages.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                      ></ContentList>
+                    )}
+                  {specialType === 'Programmes' && (
+                    <div className="flex">
+                      <StackedList
+                        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+                        type="TitleList"
+                        listItems={listItems}
+                      />
+                    </div>
+                  )}
+
+                  {specialType === 'Progress' && (
+                    <div className="flex">
+                      <StackedList
+                        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+                        type="TitleList"
+                        listItems={listItems}
+                      />
+                    </div>
                   )}
                 </div>
               </div>
