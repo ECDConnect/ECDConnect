@@ -72,6 +72,9 @@ export const Step16ReAccreditation = ({
     reAccreditationRating?.color,
   ];
 
+  const reAccreditationRatingOrangeColorCount =
+    reAccreditationRatingColorList.filter((item) => item === 'Warning').length;
+
   const reAccreditationRatingRedColorCount =
     reAccreditationRatingColorList.filter((item) => item === 'Error').length;
 
@@ -169,10 +172,12 @@ export const Step16ReAccreditation = ({
         sectionQuestions={sectionQuestions}
         sections={sections}
         isToRemoveSmartStarter={isToRemoveSmartStarter}
+        isTwoOrangeRatings={reAccreditationRatingOrangeColorCount === 2}
         setReAccreditationRating={setReAccreditationRating}
       />
     );
   }, [
+    reAccreditationRatingOrangeColorCount,
     firstName,
     isToRemoveSmartStarter,
     sectionQuestions,
@@ -200,6 +205,16 @@ export const Step16ReAccreditation = ({
         })}`}
         color="textMid"
       />
+      {reAccreditationRatingOrangeColorCount === 2 && (
+        <Alert
+          className="mt-4"
+          type="error"
+          title={`${firstName} has received 2 orange ratings`}
+          list={[
+            `This means ${firstName} must go through a full PQA visit again.`,
+          ]}
+        />
+      )}
       {reAccreditationRatingRedColorCount === 2 && (
         <Alert
           className="mt-4"

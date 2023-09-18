@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -9,8 +10,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
     [Table(nameof(Club))]
     [EntityPermission(PermissionGroups.GENERAL)]
     public class Club : Club<Guid>
-    {
-
+    {       
     }
 
     public class Club<TKey> : EntityBase<TKey>
@@ -18,6 +18,9 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
     {
         public string Name { get; set; }
         public int NumberOfMembers { get; set; }
+        public string? UserId { get; set; }
+        public Guid? LeagueId { get; set; }
+        public virtual League League { get; set; }
     }
 
     public interface ClubJoin<TKey>

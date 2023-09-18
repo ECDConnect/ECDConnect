@@ -12,6 +12,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
+import covid_guidelines from '@/assets/CC14_COVID19_Reopening_Support_&_Verification_Visit.pdf';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -228,6 +229,15 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
     [questions, setSectionQuestions]
   );
 
+  const onDownloadCovidGuidelines = () => {
+    const pdfUrl = covid_guidelines;
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', 'covid_guidelines.pdf');
+    document.body.appendChild(link);
+    link.click();
+  };
+
   useEffect(() => {
     const previousData = questions.map((item) => {
       const visitDataWithoutTypo = visitData as any;
@@ -286,7 +296,7 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
               type="outlined"
               color="primary"
               className="mt-1 mb-2 w-full"
-              onClick={() => {}}
+              onClick={() => onDownloadCovidGuidelines()}
             >
               {renderIcon('DownloadIcon', 'mr-2 text-primary w-5')}
               <Typography

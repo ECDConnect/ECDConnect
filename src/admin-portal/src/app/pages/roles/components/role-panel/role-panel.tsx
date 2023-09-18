@@ -64,7 +64,6 @@ export default function RolePanel(props: RolePanelProps) {
 
   useEffect(() => {
     if (props.role) {
-      console.log(props.role);
       setValue('name', props.role.name, { shouldValidate: true });
       setValue('normalizedName', props.role.normalizedName, {
         shouldValidate: true,
@@ -89,7 +88,6 @@ export default function RolePanel(props: RolePanelProps) {
   };
 
   const onSubmit = async (values: any) => {
-    console.log(isValid);
     if (isValid) {
       if (!isEdit) {
         await addRole({
@@ -125,7 +123,6 @@ export default function RolePanel(props: RolePanelProps) {
               title: 'Successfully Updated Role!',
               variant: NOTIFICATION.SUCCESS,
             });
-            console.log(response);
             emitCloseDialog(true);
           })
           .catch((error) => {
@@ -146,9 +143,7 @@ export default function RolePanel(props: RolePanelProps) {
           permissionIds: [permissionId],
         },
       })
-        .then((response: any) => {
-          console.log(currentRole);
-        })
+        .then((response: any) => {})
         .catch((error) => {
           console.log(error);
         });
@@ -159,9 +154,7 @@ export default function RolePanel(props: RolePanelProps) {
           permissionIds: [permissionId],
         },
       })
-        .then((response: any) => {
-          console.log(currentRole);
-        })
+        .then((response: any) => {})
         .catch((error) => {
           console.log(error);
         });
@@ -176,20 +169,20 @@ export default function RolePanel(props: RolePanelProps) {
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="pt-8">
           <div className="grid grid-cols-2">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
+            <h3 className="text-lg font-medium leading-6 text-gray-900">
               Role Information
             </h3>
             <div className="flex justify-end">
               <button
                 onClick={() => emitCloseDialog(false)}
                 type="button"
-                className="bg-white py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="focus:outline-none focus:ring-primary rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-offset-2"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="ml-3 inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="bg-primary hover:bg-uiLight focus:outline-none focus:ring-primary ml-3 inline-flex justify-center rounded-md border border-transparent py-2 px-4 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
               >
                 {!isEdit ? <span> Save & Continue </span> : <span> Save </span>}
               </button>
@@ -208,7 +201,7 @@ export default function RolePanel(props: RolePanelProps) {
                   type="text"
                   {...register('name')}
                   name="name"
-                  className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                  className="focus:ring-primary focus:border-primary block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
                 />
               </div>
             </div>
@@ -225,7 +218,7 @@ export default function RolePanel(props: RolePanelProps) {
                   type="text"
                   {...register('normalizedName')}
                   name="normalizedName"
-                  className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
+                  className="focus:ring-primary focus:border-primary block w-full rounded-md border-gray-300 shadow-sm sm:text-sm"
                 />
               </div>
             </div>
@@ -245,8 +238,8 @@ export default function RolePanel(props: RolePanelProps) {
       ) : null}
 
       {isEdit ? (
-        <div className="py-8 align-middle inline-block min-w-full">
-          <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+        <div className="inline-block min-w-full py-8 align-middle">
+          <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
             {dataPermissionGroups && dataPermissionGroups.permissionGroups ? (
               <>
                 <table className="min-w-full divide-y divide-gray-200">
@@ -254,7 +247,7 @@ export default function RolePanel(props: RolePanelProps) {
                     <tr>
                       <th
                         scope="col"
-                        className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                        className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                       >
                         Content
                       </th>
@@ -263,7 +256,7 @@ export default function RolePanel(props: RolePanelProps) {
                         <th
                           key={permission.id}
                           scope="col"
-                          className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                          className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
                         >
                           {permission.name}
                         </th>
@@ -274,11 +267,11 @@ export default function RolePanel(props: RolePanelProps) {
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="z-10 bg-white divide-y divide-gray-200">
+                  <tbody className="z-10 divide-y divide-gray-200 bg-white">
                     {tableData &&
                       tableData.map((permissionGroup: any) => (
                         <tr key={permissionGroup.groupName}>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="whitespace-nowrap px-6 py-4">
                             <div className="flex items-center">
                               <div className="ml-4">
                                 <div className="text-sm font-medium text-gray-900">
@@ -300,14 +293,14 @@ export default function RolePanel(props: RolePanelProps) {
                                 return (
                                   <td
                                     key={permission.id}
-                                    className="px-6 py-4 whitespace-nowrap"
+                                    className="whitespace-nowrap px-6 py-4"
                                   >
                                     <div className="flex items-center">
                                       <div className="text-sm font-medium text-gray-900">
                                         <input
                                           defaultChecked={checked}
                                           type="checkbox"
-                                          className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
+                                          className="focus:ring-primary text-primary h-4 w-4 rounded border-gray-300"
                                           onChange={(e) =>
                                             handleRolePermissionChange(
                                               permission.id,

@@ -32,8 +32,9 @@ namespace ECDLink.Moodle.Managers
 
         public async Task<bool> CreateUserAsync(MoodleConfig config, MoodleUser user)
         {
-            user.UserName = string.Format(config.Site.UserNameFormatString, user);
+            user.UserName = $"{user.IdNumber}@ecdconnect.co.za"; //string.Format(config.Site.UserNameFormatString, user);
             user.Password = config.Site.DefaultPassword;
+            user.Email = $"{user.IdNumber}@ecdconnect.co.za";  //string.Format(config.Site.EmailFormatString, user);
 
             var cohorts = new List<string>();
             var allCohorts = config.UserTypes.First(x => x.UserType == "*").Cohorts;

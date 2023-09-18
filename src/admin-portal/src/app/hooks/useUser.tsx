@@ -44,8 +44,8 @@ export function UserProvider({
   }, [userData]);
 
   const hasPermission = (permissionName: string): boolean => {
-    const permissionNames = userPermissions.map((x) => x.name);
-    return permissionNames.includes(permissionName);
+    const permissionNames = userPermissions?.map((x) => x.name);
+    return permissionNames?.includes(permissionName);
   };
 
   const memoedValue = useMemo(

@@ -19,6 +19,7 @@ interface CoachTraineeFranchisorAgreement1Props {
   setSectionQuestions: (value?: SectionQuestions[]) => void;
   saveFranchisorAgreementData: () => void;
   submitCoachFranchisorAgreement: () => void;
+  coachSmartSpaceVisit2DataNotAttendedStandards: SectionQuestions[] | undefined;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -40,10 +41,15 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
   setSectionQuestions,
   saveFranchisorAgreementData,
   submitCoachFranchisorAgreement,
+  coachSmartSpaceVisit2DataNotAttendedStandards,
 }) => {
   const visitData = useSelector(
     traineeSelectors.getCoachFranchisorAgreementData
   );
+  const coachVisitNextSteps = useSelector(
+    traineeSelectors?.getCoachVisitDataNextSteps
+  );
+
   const [questions, setAnswers] = useState([
     {
       question: `${practitioner?.user?.firstName} agrees to take the actions described in the box above in order to meet & maintain all SmartSpace standards.`,
@@ -139,21 +145,23 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
         color={'textDark'}
         className={'my-3'}
       />
-      <Card className="bg-uiBg rounded-2xl p-4">
-        <Typography
-          type={'h4'}
-          weight="bold"
-          text={`Next steps for ${practitioner?.user?.firstName}`}
-          color={'textDark'}
-          className={'my-3'}
-        />
-        <Typography
-          type={'body'}
-          text={`Create a list of emergency numbers. Clean outside area.`}
-          color={'textMid'}
-          className={'my-3'}
-        />
-      </Card>
+      {coachVisitNextSteps && (
+        <Card className="bg-uiBg rounded-2xl p-4">
+          <Typography
+            type={'body'}
+            weight="bold"
+            text={`Next steps for ${practitioner?.user?.firstName}`}
+            color={'textDark'}
+            className={'my-3'}
+          />
+          <Typography
+            type={'body'}
+            text={`• ${coachVisitNextSteps}`}
+            color={'textMid'}
+            className={'my-3'}
+          />
+        </Card>
+      )}
 
       <Typography
         type={'h4'}

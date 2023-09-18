@@ -53,8 +53,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public virtual ICollection<Visit> ReAccreditationVisits { get; set; }
         public virtual ICollection<Visit> RequestedCoachVisits { get; set; }
         public virtual ICollection<Visit> SelfAssessmentVisits { get; set; }
-        public virtual ICollection<PractitionerCoachCircle> CoachCircles { get; set; }
-        public virtual ICollection<ClubMeetingRegister> ClubMeetings { get; set; }
+        public virtual PractitionerAttendance CoachCircles { get; set; }
         public virtual ICollection<PQARating> PQARatings { get; set; }
         public virtual ICollection<PQARating> ReAccreditationRatings { get; set; }
         public virtual PQARating PQARating1 { get; set; }
@@ -65,32 +64,15 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public virtual PQARating ReAccreditationRating3 { get; set; }
     }
 
-    public class PQARating
+    public class PractitionerAttendance
     {
-        public string VisitName { get; set; }
-        public double OverallScore { get; set; }
-        public string OverallRating { get; set; }
-        public string OverallRatingStars { get; set; }
-        public string OverallRatingColor { get; set; }
-        public string VisitTypeName { get; set; }
-        public string LinkedVisitId { get; set; }
-        public DateTime? PlannedDate { get; set; }
-        public DateTime? ActualVisitDate { get; set; }
-        public virtual ICollection<PQARatingChild> Children { get; set; }
-    }
+        public int TotalMeetings { get; set; } //X = the number of coaching circles logged by coach for the practitioner's club in the current year
+        public int TotalPresent { get; set; }// Y = the total number of presents & absents logged for the practitioner for coaching circles
+        public double PercAttended { get; set; }
+        public string AttendanceText { get; set; } // date on which the most recent coaching circle was held
+        public string AttendanceColor { get; set; } // 60% or more - green & 60% less - amber
+        public virtual ICollection<ClubMeetingRegister> MeetingRegister { get; set; }
 
-    public class PQARatingChild
-    {
-        public string VisitSection { get; set; }
-        public double SectionScore { get; set; }
-        public string SectionRating { get; set; }
-        public string SectionRatingColor { get; set; }
-    }
-
-    public class PractitionerCoachCircle
-    {
-        public string Name { get; set; }
-        public DateTime? MeetingDate { get; set; }
     }
     public class PractitionerNotes
     {

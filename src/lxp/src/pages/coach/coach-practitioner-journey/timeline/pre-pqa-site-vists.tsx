@@ -93,7 +93,7 @@ export const PrePqaVisits = ({
                 !!visit?.plannedVisitDate
                   ? `${visit?.attended ? '' : 'By '}${new Date(
                       visit?.attended
-                        ? visit.insertedDate
+                        ? visit.actualVisitDate
                         : visit.plannedVisitDate
                     ).toLocaleDateString('en-ZA', dateOptions)}`
                   : ''

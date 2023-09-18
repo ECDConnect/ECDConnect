@@ -128,7 +128,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual IEnumerable<T> InsertMany(IEnumerable<T> entityList)
         {
             if (entityList == null || !entityList.Any())
-                throw new ArgumentNullException("entity");
+                return entityList;
 
             //Populate Audit records
             if (typeof(ITrackableType).IsAssignableFrom(typeof(T))
@@ -158,28 +158,36 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (entity == null)
                 throw new ArgumentNullException("entity");
 
-            entity.UpdatedBy = _userId;
-
-            // Notify update would get input values without this:
-            entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
-            entity.InsertedDate = entities.Entry(entity).Property(e => e.InsertedDate).OriginalValue;
-
-            //Populate Audit records
-            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+            if (Exists(entity.Id))
             {
-                DoAudit(entity, "Update", entity);
-            }
+                entity.UpdatedBy = _userId;
+
+                // Notify update would get input values without this:
+                entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
+                entity.InsertedDate = entities.Entry(entity).Property(e => e.InsertedDate).OriginalValue;
+
+                //Populate Audit records
+                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                {
+                    DoAudit(entity, "Update", entity);
+                }
                 
-            entity.UpdatedDate = DateTime.Now;
+                entity.UpdatedDate = DateTime.Now;
+                
+                entities.Update(entity);
+                // Do not update Inserted Date:
+                entities.Entry(entity).Property(e => e.InsertedDate).IsModified = false;
+                // Do not allow replacing or changing TenantId.
+                entities.Entry(entity).Property(e => e.TenantId).IsModified = false;
 
-            entities.Update(entity);
-            // Do not update Inserted Date:
-            entities.Entry(entity).Property(e => e.InsertedDate).IsModified = false;
-            // Do not allow replacing or changing TenantId.
-            entities.Entry(entity).Property(e => e.TenantId).IsModified = false;
+                // Publish notification with correct data.
+                _domainEventService.NotifyUpdate<T>(_userId, entity);
+            }
+            else
+            {
+                Insert(entity);
+            }
 
-            // Publish notification with correct data.
-            _domainEventService.NotifyUpdate<T>(_userId, entity);
 
             context.SaveChanges();
 
@@ -282,8 +290,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                             }
                         }
                     }
-                    
-                    auditInsertRepo.InsertMany(changesList);
+
+                    if (changesList.Count > 0)
+                    {
+                        auditInsertRepo.InsertMany(changesList);
+                    }
                     break;
             }
             return isValidChange;

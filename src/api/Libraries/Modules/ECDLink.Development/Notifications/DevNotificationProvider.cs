@@ -137,6 +137,17 @@ namespace ECDLink.Development.Notifications
 
             return this;
         }
+        public INotificationProvider<ApplicationUser> SetMessageMapped(TemplateTypeEnum template, string subject, string message)
+        {
+            var messageTemplate = GetTemplate(template);
+            _dropModel["Body"] = message;
+            _messageTemplate = messageTemplate;
+
+            base.AddUserFieldOverrides(message);
+
+            return this;
+        }
+
 
         public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
         {

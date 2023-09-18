@@ -40,7 +40,6 @@ import {
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
   getReAccreditationFormDataByIdSelector,
-  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import {
   ScheduleProps,
@@ -62,7 +61,6 @@ import { ExclamationIcon } from '@heroicons/react/solid';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
 import { isDateWithinThreeMonths } from './timeline/utils';
-import { reAccreditationFollowUpQuestion } from './forms/general-support-visit/coaching-visit-or-call/constants';
 import { getReAccreditationStepData } from './timeline/re-accreditation/step';
 
 export const CoachPractitionerJourney = () => {
@@ -133,27 +131,16 @@ export const CoachPractitionerJourney = () => {
     )
   );
 
-  const reAccreditationFollowUpAnswers = useSelector(
-    getVisitDataByVisitIdSelector(
-      lastAttendedReAccreditationFollowUpVisit?.id || '',
-      'reAccreditationFollowUpVisitPreviousFormData'
-    )
-  );
   const reAccreditationVisitData =
-    timeline &&
+    timeline?.reAccreditationVisits &&
     getReAccreditationStepData({
-      timeline,
+      reAccreditationVisits: timeline?.reAccreditationVisits,
       currentRating: currentReAccreditationRating,
     });
 
   const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
     (item) => item?.attended
   );
-
-  const previousReAccreditationFollowUpAnswer =
-    reAccreditationFollowUpAnswers?.find(
-      (item) => item.question === reAccreditationFollowUpQuestion
-    )?.questionAnswer;
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
@@ -167,10 +154,6 @@ export const CoachPractitionerJourney = () => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
   };
-
-  // TODO: check this rule
-  const isReadyToReAccreditationVisit =
-    previousReAccreditationFollowUpAnswer === 'true';
 
   const onSchedule = ({ eventType, visit, visitEventId }: ScheduleProps) => {
     const today = new Date();
@@ -650,7 +633,6 @@ export const CoachPractitionerJourney = () => {
                 isLoading,
                 isOnline,
                 visits: uncompletedVisits,
-                currentPqaRating,
                 currentReAccreditationRating,
               })}
               typeColor={{ completed: 'successMain' }}

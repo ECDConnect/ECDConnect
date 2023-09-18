@@ -18,4 +18,5 @@ export interface ChildRegistrationRouteState {
   step?: ChildRegistrationSteps;
   childId?: string;
   childDetails?: ChildBasicInfoModel;
+  practitionerId?: string;
 }

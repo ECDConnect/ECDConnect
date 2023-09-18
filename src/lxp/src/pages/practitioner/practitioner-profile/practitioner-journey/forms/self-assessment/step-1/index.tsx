@@ -1,10 +1,19 @@
 import { Divider, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useLayoutEffect } from 'react';
+import { useSelector } from 'react-redux';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+import { dateLongMonthOptions } from '../../../timeline/utils';
 
-const mockDate = '3 February 2022';
+export const Step1 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(smartStarter?.id || '')
+  );
 
-export const Step1 = ({ setEnableButton }: DynamicFormProps) => {
+  const selfAssessment = timeline?.selfAssessmentVisits?.find(
+    (item) => !item?.attended
+  );
+
   useLayoutEffect(() => {
     setEnableButton?.(true);
   }, [setEnableButton]);
@@ -16,7 +25,13 @@ export const Step1 = ({ setEnableButton }: DynamicFormProps) => {
         text="About the self assessment form"
         color="textDark"
       />
-      <Typography type="h4" text={`Due date: ${mockDate}`} color="textMid" />
+      <Typography
+        type="h4"
+        text={`Due date: ${new Date(
+          selfAssessment?.plannedVisitDate
+        ).toLocaleDateString('en-ZA', dateLongMonthOptions)}`}
+        color="textMid"
+      />
       <Divider dividerType="dashed" className="my-4" />
       <Typography
         type="h4"

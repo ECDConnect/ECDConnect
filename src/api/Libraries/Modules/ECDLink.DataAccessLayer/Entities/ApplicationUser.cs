@@ -63,6 +63,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public virtual Practitioner principalObjectData { get; set; }
         public virtual Practitioner practitionerObjectData { get; set; }
         public virtual Child childObjectData { get; set; }
+        public virtual Trainee traineeObjectData { get; set; }
 
         public override DateTimeOffset? LockoutEnd { get => base.LockoutEnd; set => base.LockoutEnd = value; }
 
