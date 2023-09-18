@@ -54,7 +54,6 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
             onDone={onDone}
             practitioner={practitioner}
             options={stepOptions}
-            setNotificationStep={setNotificationStep}
           />
         );
       default:
