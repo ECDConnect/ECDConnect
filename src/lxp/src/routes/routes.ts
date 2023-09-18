@@ -35,6 +35,16 @@ const ROUTES = {
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
     WELCOME: '/welcome',
+    CLUB: addPrefix('/club/:clubId', {
+      ADD: '/add',
+      EDIT: '/edit',
+      MEMBERS: addPrefix('/members', {
+        EDIT: '/edit',
+      }),
+      LEADER: addPrefix('/leader', {
+        EDIT: '/edit',
+      }),
+    }),
   }),
   CHILD: addPrefix('/child', {
     INFORMATION: addPrefix('/information', {
@@ -67,6 +77,7 @@ const ROUTES = {
     }),
     POINTS: addPrefix('/points', {
       SUMMARY: '/summary',
+      YEAR: '/year',
     }),
   }),
   TRAINEE: addPrefix('/trainee', {

@@ -1,6 +1,6 @@
 import { ComponentBaseProps } from '@ecdlink/ui';
 
-export interface PointsLibraryStatusCardProps extends ComponentBaseProps {
+export interface PointsProgressCardProps extends ComponentBaseProps {
   currentPoints: number;
   maxPoints: number;
   description: string;

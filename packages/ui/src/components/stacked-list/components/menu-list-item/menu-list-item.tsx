@@ -45,7 +45,9 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({
         }
       >
         <div className={stackedListStyles.textRowsWrapper}>
-          {(item.menuIcon || item.menuIconUrl) &&
+          {item?.customIcon}
+          {!item?.customIcon &&
+            (item.menuIcon || item.menuIconUrl) &&
             (item.showIcon ? (
               <RoundIcon
                 className="mr-4"

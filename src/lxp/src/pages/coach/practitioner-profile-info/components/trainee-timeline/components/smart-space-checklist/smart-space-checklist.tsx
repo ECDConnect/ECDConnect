@@ -1,36 +1,21 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { authSelectors } from '@/store/auth';
 import {
-  Alert,
   BannerWrapper,
-  Button,
-  Dialog,
-  DialogPosition,
   LoadingSpinner,
   MenuListDataItem,
   StackedList,
   Typography,
-  renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ProgrammeDetails } from './components/programme-details/programme-details';
-import {
-  CmsVisitDataInputModelInput,
-  CmsVisitSectionInput,
-  InputMaybe,
-  SsChecklistVisitModelInput,
-} from '@ecdlink/graphql';
-import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
+import { traineeSelectors } from '@/store/trainee';
 import { SectionQuestions } from './components/programme-details/programme-details.types';
-import { TraineeService } from '@/services/TraineeService';
-import { practitionerSelectors } from '@/store/practitioner';
 import { SmartSpaceChecklisstStepsSteps } from './smart-space-checklist.types';
 import { HealthSanitationSafety } from './components/health-sanitation-safety/health-sanitation-safety';
 import { HealthStructureArea } from './components/safety-structure-area/health-strutcture-area.';
 import { SpaceEmergencyPlanning } from './components/space-emergency-planning/space-emergency-planning';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useAppDispatch } from '@/store';
 
 interface SmartSpaceChecklistProps {
   setNotificationStep: any;
@@ -39,15 +24,11 @@ interface SmartSpaceChecklistProps {
 
 export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   setNotificationStep,
-  isSmartChecklist,
 }) => {
   const { isOnline } = useOnlineStatus();
-  const appDispatch = useAppDispatch();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [visitSection, setVisitSection] = useState('');
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [activeStep, setActiveStep] = useState(
     SmartSpaceChecklisstStepsSteps.INITIAL
   );
@@ -57,18 +38,8 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const traineeVisitData = useSelector(traineeSelectors.getTraineeVisitData);
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
-  const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
-  const [showCoachVisit, setSHowCoachVisit] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
-
-  const communitySupportGained =
-    traineeTimeline?.communitySupportStatus === 'Community support gained';
-  const registeredThreeChildren =
-    traineeTimeline?.threeChildrenRegisteredStatus ===
-    '3 or more children registered';
-  const availableForCoachVisit =
-    communitySupportGained && registeredThreeChildren;
 
   const completedItems = (visitSectionName: string) => {
     const completedItems = traineeVisitData
@@ -80,29 +51,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       );
     return completedItems?.length;
   };
-
-  // useEffect(() => {
-  //   if (activeStep) {
-  //     const getTraineeTimeline = async () => {
-  //       await appDispatch(
-  //         traineeThunkActions.getTraineeTimeline({
-  //           userId: practitioner?.userId ? practitioner?.userId : '',
-  //         })
-  //       );
-  //     };
-
-  //     const getVisitData = async () => {
-  //       await appDispatch(
-  //         traineeThunkActions.getTraineeVisitData({
-  //           visitId: traineeCurrentVisit?.id,
-  //         })
-  //       );
-  //     };
-
-  //     getTraineeTimeline();
-  //     getVisitData();
-  //   }
-  // }, [activeStep, appDispatch, practitioner?.userId, traineeCurrentVisit?.id]);
 
   const handleNextSection = () => {
     if (activeStep < 5) {

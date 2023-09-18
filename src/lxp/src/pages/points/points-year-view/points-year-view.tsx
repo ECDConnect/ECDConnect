@@ -4,14 +4,14 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { BannerWrapper, Button, Card, Colours, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { PointsSummaryCard } from '../dashboard/components/points-summary-card/points-summary-card';
+import { PointsSummaryCard } from '../../dashboard/components/points-summary-card/points-summary-card';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { RootState } from '@/store/types';
-import { PointsLibraryStatusCard } from '../dashboard/components/points-library-status-card/points-library-status-card';
+import { PointsMonthSummary } from './components/points-month-summary';
 
 // TODO - fetch club standings
 // TODO - add text that depends on relative club points
@@ -25,33 +25,44 @@ type CardData = {
   backgroundColour: Colours;
 };
 
-export const PointsSummary: React.FC = () => {
+export const PointsYearView: React.FC = () => {
   const history = useHistory();
+  const currentMonth = new Date().getMonth();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
 
-  const pointsSummaryDataWithLibrary = useSelector((state: RootState) =>
+  const [monthsLoaded, setMonthsLoaded] = useState<number[]>([currentMonth]);
+  const [loadNextMonthDisabled, setLoadNextMonthDisabled] = useState<boolean>(
+    currentMonth === 0
+  );
+
+  const currentMonthPoints = useSelector((state: RootState) =>
     pointsSelectors.getPointsSummaryWithLibrary(state, new Date())
   );
-  const pointsAvailable = pointsSummaryDataWithLibrary?.filter(
-    (x) => x.pointsTotal !== x.maxMonthlyPoints
-  );
-  const pointsTotal = pointsSummaryDataWithLibrary.reduce(
-    (total, current) => (total += current.pointsTotal),
+
+  const pointsTotalForYear = currentMonthPoints.reduce(
+    (total, current) => (total += current.pointsYTD),
     0
   );
+
   const pointsMax =
     isPrincipal || isFundaAppAdmin
-      ? pointsConstants.principalOrAdminMonthlyMax
-      : pointsConstants.practitionerMonthlyMax;
+      ? pointsConstants.principalOrAdminYearlyMax
+      : pointsConstants.practitionerYearlyMax;
 
-  const percentageScore = (pointsTotal / pointsMax) * 100;
+  const percentageScore = (pointsTotalForYear / pointsMax) * 100;
 
   const [celebrationCardDetails, setCelebrationCardDetails] = useState<
     CardData | undefined
   >(undefined);
+
+  const loadNextMonth = useCallback(() => {
+    const nextMonthToLoad = Math.min(...monthsLoaded) - 1;
+    setMonthsLoaded([...monthsLoaded, nextMonthToLoad]);
+    setLoadNextMonthDisabled(nextMonthToLoad === 0);
+  }, [monthsLoaded, setMonthsLoaded, setLoadNextMonthDisabled]);
 
   //TODO - Update this to use club data to set messages when available
   useEffect(() => {
@@ -59,8 +70,7 @@ export const PointsSummary: React.FC = () => {
       setCelebrationCardDetails({
         image: <EmojiOrangeSmile className="mr-2 h-16 w-16" />,
         primaryMessage: `Keep going ${practitioner?.user?.firstName}!`,
-        secondaryMessage:
-          'Check out the tips below to earn more points this month.',
+        secondaryMessage: 'Keep using Funda App to earn points.',
         textColour: 'alertMain',
         backgroundColour: 'alertBg',
       });
@@ -68,8 +78,7 @@ export const PointsSummary: React.FC = () => {
       setCelebrationCardDetails({
         image: <EmojiBlueSmile className="mr-2 h-16 w-16" />,
         primaryMessage: `Wow, great job ${practitioner?.user?.firstName}!`,
-        secondaryMessage:
-          "You're doing well, keep it up! You can still earn more points this month.",
+        secondaryMessage: "You're doing well, keep earning points!",
         textColour: 'secondary',
         backgroundColour: 'infoBb',
       });
@@ -99,7 +108,7 @@ export const PointsSummary: React.FC = () => {
           text={format(new Date(), 'MMM yyyy')}
         />
         <PointsSummaryCard
-          currentPoints={pointsTotal}
+          currentPoints={pointsTotalForYear}
           maxPoints={pointsMax}
           showIcon={false}
           useColourBackground={false}
@@ -128,29 +137,28 @@ export const PointsSummary: React.FC = () => {
             </div>
           </Card>
         )}
-        {!!pointsAvailable && !!pointsAvailable.length && (
-          <Typography
-            className="mt-10"
-            type={'h1'}
-            color="black"
-            text={`How you can earn more points in ${format(
-              new Date(),
-              'MMMM'
-            )}:`}
-          />
-        )}
-        {!!pointsAvailable &&
-          pointsAvailable.map((pointsLibraryScore) => {
-            return (
-              <PointsLibraryStatusCard
-                currentPoints={pointsLibraryScore.pointsTotal}
-                maxPoints={pointsLibraryScore.maxMonthlyPoints}
-                description={pointsLibraryScore.description}
-              />
-            );
-          })}
+        <Typography
+          className="mt-10"
+          type={'h1'}
+          color="black"
+          text={'What you earned points for:'}
+        />
+        {monthsLoaded.map((month) => {
+          return <PointsMonthSummary month={month} />;
+        })}
       </div>
       <div className="flex-column mt-10 justify-end p-4">
+        <Button
+          size="normal"
+          className="mb-4 w-full"
+          type="outlined"
+          color="primary"
+          text="See more months"
+          textColor="primary"
+          icon="EyeIcon"
+          disabled={loadNextMonthDisabled}
+          onClick={loadNextMonth}
+        />
         <Button
           size="normal"
           className="mb-4 w-full"
@@ -159,16 +167,6 @@ export const PointsSummary: React.FC = () => {
           text="Share"
           textColor="white"
           icon="ShareIcon"
-          onClick={() => {}} // TODO
-        />
-        <Button
-          size="normal"
-          className="mb-4 w-full"
-          type="outlined"
-          color="primary"
-          text="See detailed report"
-          textColor="primary"
-          icon="EyeIcon"
           onClick={() => {}} // TODO
         />
       </div>

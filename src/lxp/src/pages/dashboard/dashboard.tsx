@@ -32,6 +32,7 @@ import { analyticsActions } from '@store/analytics';
 import { DashboardItems } from './components/dashboard-items/dashboard-items';
 import { practitionerForCoachThunkActions } from '@/store/practitionerForCoach';
 import {
+  practitionerActions,
   practitionerSelectors,
   practitionerThunkActions,
 } from '@/store/practitioner';
@@ -51,6 +52,9 @@ import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
 import { PointsSummaryCard } from './components/points-summary-card/points-summary-card';
+import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { traineeSelectors } from '@/store/trainee';
+import { PractitionerInput } from '@ecdlink/graphql';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -96,6 +100,8 @@ export const Dashboard: React.FC = () => {
   const isProgress = practitioner?.progress;
   const hasConsent = practitioner?.shareInfo;
   const isTrainee = practitioner?.isTrainee;
+  const isOnStipend = practitioner?.isOnStipend;
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   // TODO: add integration
   const isFirstTimeCommunitySection = true;
@@ -103,6 +109,17 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+  const completedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined,
+    '',
+    timeline?.consolidationMeetingStatus,
+    isOnStipend
+  ).filter((item) => item?.type === 'completed');
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
   const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
@@ -122,6 +139,29 @@ export const Dashboard: React.FC = () => {
   useEffect(() => {
     convertImageToBase64(offlineStatments, setStorageItem);
   }, []);
+
+  useEffect(() => {
+    if (
+      (practitioner?.isTrainee &&
+        practitioner?.isOnStipend &&
+        completedSteps?.length === 7) ||
+      (practitioner?.isTrainee &&
+        practitioner?.isOnStipend !== true &&
+        completedSteps?.length === 6)
+    ) {
+      const copy = Object.assign({}, practitioner);
+
+      const input: PractitionerInput = {
+        Id: copy.id,
+        IsActive: true,
+        Progress: copy.progress,
+        IsTrainee: false,
+      };
+
+      appDispatch(practitionerActions.updatePractitioner(copy));
+      appDispatch(practitionerThunkActions.updatePractitioner(input));
+    }
+  }, [completedSteps?.length]);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -601,7 +641,7 @@ export const Dashboard: React.FC = () => {
         hasConsent) ||
       isTrainee
     ) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+      history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
     } else {
       showCompleteProfileBlockingDialog();
     }
@@ -661,10 +701,15 @@ export const Dashboard: React.FC = () => {
                 textColour: 'white',
                 type: 'filled',
                 leadingIcon: 'PlusIcon',
-                onClick: async () => {
-                  onSubmit();
-                  history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
-                },
+                onClick: isTrainee
+                  ? async () => {
+                      onSubmit();
+                      history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                    }
+                  : async () => {
+                      onSubmit();
+                      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                    },
               },
               {
                 colour: 'primary',

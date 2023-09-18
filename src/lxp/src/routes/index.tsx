@@ -93,8 +93,15 @@ import { StatementNotSubmitted } from '@/pages/coach/coach-practitioner-business
 import { StartupSupportEnding } from '@/pages/coach/coach-practitioner-business/components/support/startup-support-ending';
 import { MonthsLoss } from '@/pages/coach/coach-practitioner-business/components/statements/loss';
 import { MonthsProfit } from '@/pages/coach/coach-practitioner-business/components/statements/profit';
-import { PointsSummary } from '@/pages/points/points-summary';
+import { PointsSummary } from '@/pages/points/points-summary/points-summary';
 import { CommunityWelcome } from '@/pages/community/welcome';
+import { Club } from '@/pages/community/clubs-tab/club/individual-club-view';
+import { ClubMembers } from '@/pages/community/clubs-tab/club/club-members';
+import { ClubMembersEdit } from '@/pages/community/clubs-tab/club/club-members-edit';
+import { ClubEdit } from '@/pages/community/clubs-tab/club/club-edit';
+import { PointsYearView } from '@/pages/points/points-year-view/points-year-view';
+import { ClubLeaderEdit } from '@/pages/community/clubs-tab/club/club-leader-edit';
+import { ClubAdd } from '@/pages/community/clubs-tab/club/club-add';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -188,6 +195,24 @@ const AuthRoutes: React.FC = () => {
         component={CommunityWelcome}
         exact
       />
+      <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />
+      <Route path={ROUTES.COMMUNITY.CLUB.ADD} component={ClubAdd} exact />
+      <Route path={ROUTES.COMMUNITY.CLUB.EDIT} component={ClubEdit} exact />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT}
+        component={ClubMembers}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT}
+        component={ClubMembersEdit}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.LEADER.EDIT}
+        component={ClubLeaderEdit}
+        exact
+      />
       <Route
         path={ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH}
         component={WalkthroughTutorial}
@@ -236,6 +261,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.POINTS.SUMMARY}
         component={PointsSummary}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.POINTS.YEAR}
+        component={PointsYearView}
       />
       <Route
         exact
