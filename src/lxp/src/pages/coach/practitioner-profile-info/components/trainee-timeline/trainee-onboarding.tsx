@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { useAppDispatch } from '@/store';
 import { traineeThunkActions } from '@/store/trainee';
 import { userSelectors } from '@/store/user';
@@ -15,12 +15,18 @@ interface TraineeOnboardingProps {
   practitioner: PractitionerDto | undefined;
 }
 
+export interface TraineeOnboardingRouteState {
+  practitionerState: PractitionerDto;
+}
+
 export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
   practitioner,
 }) => {
   const [notificationStep, setNotificationStep] = useState('');
   const [stepOptions, setStepOptions] = useState<any>(null);
   const [isSmartChecklist, setIsSmartChecklist] = useState(false);
+  const { state } = useLocation<TraineeOnboardingRouteState>();
+  const practitionerState = state?.practitionerState;
 
   const onDone = () => {
     setNotificationStep('');
@@ -29,14 +35,17 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
   const renderStep = (step: string) => {
     switch (step) {
       case 'Sign franchisee agreement':
-        if (practitioner?.signingSignature) {
+        if (
+          practitioner?.signingSignature ||
+          practitionerState?.signingSignature
+        ) {
           return null;
         }
         return null;
       case 'Sign start-up support agreement':
         return (
           <StartupSupportDetails
-            practitioner={practitioner}
+            practitioner={practitioner || practitionerState}
             setNotificationStep={setNotificationStep}
           />
         );
@@ -52,7 +61,7 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
         return (
           <SmartSpaceVisit
             onDone={onDone}
-            practitioner={practitioner}
+            practitioner={practitioner || practitionerState}
             options={stepOptions}
           />
         );
@@ -64,7 +73,7 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
               setStepOptions(options);
             }}
             setIsSmartChecklist={setIsSmartChecklist}
-            practitioner={practitioner}
+            practitioner={practitioner || practitionerState}
           />
         );
     }

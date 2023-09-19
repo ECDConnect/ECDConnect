@@ -155,8 +155,8 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
           icon={'InformationCircleIcon'}
           iconColor="alertMain"
           iconBorderColor="alertBg"
-          importantText={`Are you sure you want to exit now?`}
-          detailText={'If you exit now you will lose your progress.'}
+          importantText={`Schedule a follow up visit with ${practitioner?.user?.firstName}`}
+          detailText={`Encourage ${practitioner?.user?.firstName} to work on the next steps and agree on a date & time for a follow-up visit now.`}
           actionButtons={[
             {
               text: 'Go to calendar',
@@ -176,7 +176,9 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
               type: 'outlined',
               onClick: () => {
                 onCancel();
-                history.push(ROUTES.COACH_TRAINEE_ONBOARDING);
+                history.push(ROUTES.COACH_TRAINEE_ONBOARDING, {
+                  practitionerState: practitioner,
+                });
               },
               leadingIcon: 'ClockIcon',
             },
