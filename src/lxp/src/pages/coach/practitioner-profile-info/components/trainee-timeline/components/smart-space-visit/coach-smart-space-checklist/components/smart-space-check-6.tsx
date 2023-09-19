@@ -67,6 +67,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
     traineeSelectors.getTraineeSmartSpaceAddress
   );
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
   const [showMap, setShowMap] = useState(false);
 
   const [questions, setAnswers] = useState([
@@ -85,8 +86,8 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   ]);
 
   const visitSection = `Property details`;
-
-  const programmeDetailsSections = visitData
+  console.log({ traineeVisitData });
+  const programmeDetailsSections = traineeVisitData
     ?.filter((item) => item?.visitSection === 'Programme details')
     .filter(
       (item) =>
@@ -96,9 +97,31 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         item?.question === 'Do you live at the property?'
     );
 
+  console.log({ programmeDetailsSections });
+
   const propertyOwnAnswer = useMemo(() => {
-    if (programmeDetailsSections?.[1]?.questionAnswer === 'true') {
+    const ownTheProperty =
+      programmeDetailsSections?.find(
+        (item) =>
+          item?.question ===
+          'Do you own the property where you will run your SmartStart programme?'
+      )?.questionAnswer === 'true';
+    const hasTheTitleDeeds =
+      programmeDetailsSections?.find(
+        (item) =>
+          item?.question === 'Do you have the Title Deeds for the property?'
+      )?.questionAnswer === 'true';
+    const isUnproclaimedLand =
+      programmeDetailsSections?.find(
+        (item) => item?.question === 'Is the property on un-proclaimed land?'
+      )?.questionAnswer === 'true';
+
+    if (ownTheProperty && hasTheTitleDeeds) {
       return `${practitioner?.user?.firstName} owns the property and has the title deeds.`;
+    }
+
+    if (ownTheProperty && isUnproclaimedLand) {
+      return `${practitioner?.user?.firstName} owns the property and the property is on un-proclaimed land.`;
     }
 
     return `${practitioner?.user?.firstName} does not own the property and lives at the property.`;
