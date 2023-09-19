@@ -106,7 +106,7 @@ export const ClubMembers: React.FC = () => {
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
             ':clubId',
             params.clubId
-          ).replace(':practitionerId', member?.practitioner?.id) // TODO: check if it's practitionerId or userId
+          ).replace(':practitionerId', member?.practitioner?.id)
         ),
     })) ?? [];
 

@@ -1,49 +1,84 @@
 import { BannerWrapper, Button } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { useSnackbar } from '@ecdlink/core';
 import { ClubsRouteState } from '../../index.types';
-
-interface MockedMember {}
-interface MockedClub {}
+import { ClubMember, CoachingClub, NewClubMemberInput } from '@ecdlink/graphql';
+import { useAppDispatch } from '@/store';
+import {
+  ClubActions,
+  moveClubMembers,
+  getAllClubsForCoach,
+} from '@/store/club/club.actions';
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export interface ClubMembersEditProps {
-  setSelectedMembers?: (selectedMembers: MockedMember[]) => void;
-  setSelectedClub?: (selectedClub: MockedClub) => void;
+  selectedMembers: (ClubMember | undefined)[];
+  selectedClub?: CoachingClub;
+  setSelectedMembers?: (selectedMembers: (ClubMember | undefined)[]) => void;
+  setSelectedClub?: (selectedClub: CoachingClub) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
 }
 
 export const ClubMembersEdit: React.FC = () => {
-  const [selectedMembers, setSelectedMembers] = useState<MockedMember>([]);
-  const [selectedClub, setSelectedClub] = useState<MockedClub>();
+  const [selectedMembers, setSelectedMembers] = useState<
+    (ClubMember | undefined)[]
+  >([]);
+  const [selectedClub, setSelectedClub] = useState<CoachingClub>();
 
   const [step, setStep] = useState(0);
   const [isEnabledButton, setIsEnabledButton] = useState(false);
 
   const isFirstStep = step === 0;
 
+  const user = useSelector(userSelectors.getUser);
+
   const history = useHistory();
-  const params = useParams<ClubsRouteState>();
+  const { clubId } = useParams<ClubsRouteState>();
+  const appDispatch = useAppDispatch();
 
   const { showMessage } = useSnackbar();
 
-  const onClose = () => {
-    history.push(
-      ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', params.clubId)
-    );
+  const { isLoading, isRejected, error } = useThunkFetchCall(
+    'clubs',
+    ClubActions.MOVE_CLUB_MEMBERS
+  );
+  const {
+    isLoading: isLoadingClubs,
+    wasLoading: wasLoadingClubs,
+    isRejected: isRejectedGetAllClubs,
+    error: errorGetAllClubs,
+  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_FOR_COACH);
+
+  const onClose = useCallback(() => {
+    history.push(ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', clubId));
+  }, [clubId, history]);
+
+  const onSubmit = async () => {
+    const payload: NewClubMemberInput = {
+      clubId: selectedClub?.id,
+      practitionerIds: selectedMembers?.map(
+        (member) => member?.practitioner?.id
+      ) as string[],
+    };
+
+    await appDispatch(moveClubMembers({ input: payload }));
+    // TODO: change to another endpoint to get only the specific club
+    await appDispatch(getAllClubsForCoach({ userId: user?.id! }));
   };
 
-  const onSubmit = () => {
-    // TODO: call API
-    console.log({ selectedClub, selectedMembers });
-
-    // TODO: move it to a success callback (useEffect)
-    showMessage({ message: '{value} club members moved.', type: 'success' });
+  const onSuccess = useCallback(async () => {
+    showMessage({
+      message: `${selectedMembers.length} club members moved.`,
+      type: 'success',
+    });
     onClose();
-  };
+  }, [onClose, selectedMembers.length, showMessage]);
 
   const handleOnClick = () => {
     if (step === 0) {
@@ -61,6 +96,27 @@ export const ClubMembersEdit: React.FC = () => {
     setStep(0);
   };
 
+  useEffect(() => {
+    if (wasLoadingClubs && !isLoadingClubs) {
+      if (isRejected || isRejectedGetAllClubs) {
+        showMessage({ message: error || errorGetAllClubs, type: 'error' });
+      }
+
+      if (!isRejected) {
+        onSuccess();
+      }
+    }
+  }, [
+    error,
+    isRejected,
+    showMessage,
+    onSuccess,
+    wasLoadingClubs,
+    isLoadingClubs,
+    isRejectedGetAllClubs,
+    errorGetAllClubs,
+  ]);
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -72,11 +128,14 @@ export const ClubMembersEdit: React.FC = () => {
     >
       {isFirstStep ? (
         <Step1
+          selectedMembers={selectedMembers}
           setIsEnabledButton={setIsEnabledButton}
           setSelectedMembers={setSelectedMembers}
         />
       ) : (
         <Step2
+          selectedMembers={selectedMembers}
+          selectedClub={selectedClub}
           setIsEnabledButton={setIsEnabledButton}
           setSelectedClub={setSelectedClub}
         />
@@ -88,7 +147,8 @@ export const ClubMembersEdit: React.FC = () => {
         color="primary"
         textColor="white"
         text={isFirstStep ? 'Next' : 'Save'}
-        disabled={!isEnabledButton}
+        isLoading={isLoading || isLoadingClubs}
+        disabled={!isEnabledButton || isLoading || isLoadingClubs}
         onClick={handleOnClick}
       />
     </BannerWrapper>
