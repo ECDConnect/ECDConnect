@@ -5,9 +5,7 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
-  Card,
   Checkbox,
-  CheckboxGroup,
   Colours,
   Dialog,
   DialogPosition,
@@ -67,6 +65,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
     traineeSelectors.getTraineeSmartSpaceAddress
   );
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
   const [showMap, setShowMap] = useState(false);
 
   const [questions, setAnswers] = useState([
@@ -86,7 +85,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
 
   const visitSection = `Property details`;
 
-  const programmeDetailsSections = visitData
+  const programmeDetailsSections = traineeVisitData
     ?.filter((item) => item?.visitSection === 'Programme details')
     .filter(
       (item) =>
@@ -97,8 +96,28 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
     );
 
   const propertyOwnAnswer = useMemo(() => {
-    if (programmeDetailsSections?.[1]?.questionAnswer === 'true') {
+    const ownTheProperty =
+      programmeDetailsSections?.find(
+        (item) =>
+          item?.question ===
+          'Do you own the property where you will run your SmartStart programme?'
+      )?.questionAnswer === 'true';
+    const hasTheTitleDeeds =
+      programmeDetailsSections?.find(
+        (item) =>
+          item?.question === 'Do you have the Title Deeds for the property?'
+      )?.questionAnswer === 'true';
+    const isUnproclaimedLand =
+      programmeDetailsSections?.find(
+        (item) => item?.question === 'Is the property on un-proclaimed land?'
+      )?.questionAnswer === 'true';
+
+    if (ownTheProperty && hasTheTitleDeeds) {
       return `${practitioner?.user?.firstName} owns the property and has the title deeds.`;
+    }
+
+    if (ownTheProperty && isUnproclaimedLand) {
+      return `${practitioner?.user?.firstName} owns the property and the property is on un-proclaimed land.`;
     }
 
     return `${practitioner?.user?.firstName} does not own the property and lives at the property.`;
@@ -166,8 +185,6 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
 
     setAnswers(previousData);
   }, []);
-
-  console.log({ questions });
 
   useEffect(() => {
     if (
@@ -240,7 +257,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           textInputType="input"
           label={questions?.[2]?.question}
           placeholder={'e.g. street a'}
-          value={answer}
+          value={newAddress}
           onChange={(e) => setAnswer(e.target.value)}
         />
       )}
@@ -307,7 +324,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           onClose={() => setShowMap(false)}
           onSubmit={(address) => {
             onOptionSelected(address, 2);
-            setNewAddress(address);
+            setNewAddress(newAddress);
           }}
         />
       </Dialog>
