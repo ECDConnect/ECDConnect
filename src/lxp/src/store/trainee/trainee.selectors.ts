@@ -1,10 +1,6 @@
 import { TraineeDto } from '@ecdlink/core';
 import { RootState } from '../types';
-import {
-  Practitioner,
-  TraineeOnBoardTimeline,
-  VisitData,
-} from '@ecdlink/graphql';
+import { TraineeOnBoardTimeline, VisitData } from '@ecdlink/graphql';
 import { SectionQuestions } from '@/pages/trainee/trainee-onboarding/components/startup-support-agreement/startup-accept-agreement.types';
 
 export const getTrainee = (state: RootState): TraineeDto | undefined =>
@@ -128,25 +124,4 @@ export const getTraineeSmartSpaceAddress = (
     .find((item) => item?.question === 'Where is your site located?');
 
   return programmeDetailsSections?.questionAnswer;
-};
-
-export const getTraineePropertyOwn = (
-  state: RootState
-): string | null | undefined | VisitData[] => {
-  const visitData = state.trainee.traineeVisitData;
-  const programmeDetailsSections = visitData
-    ?.filter((item) => item?.visitSection === 'Programme details')
-    .filter(
-      (item) =>
-        item?.question ===
-          'Do you own the property where you will run your SmartStart programme?' ||
-        item?.question === 'Do you have the Title Deeds for the property?' ||
-        item?.question === 'Do you live at the property?'
-    );
-
-  if (programmeDetailsSections?.[1]?.questionAnswer === 'true') {
-    return 'Nothando owns the property and has the title deeds.';
-  }
-
-  return 'Nothando does not own the property and lives at the property.';
 };

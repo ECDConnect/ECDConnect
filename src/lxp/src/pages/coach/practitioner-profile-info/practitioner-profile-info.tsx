@@ -85,7 +85,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       item?.title === 'Consolidation meeting attended'
   );
   const onboardingNotCompleted = completedSteps?.length < 8;
-  console.log({ isOnStipend });
+
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
   const { theme } = useTheme();

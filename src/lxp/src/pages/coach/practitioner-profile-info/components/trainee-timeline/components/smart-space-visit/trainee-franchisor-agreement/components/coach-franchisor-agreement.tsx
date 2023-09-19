@@ -165,9 +165,7 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
 
       <Typography
         type={'h4'}
-        text={
-          'Give the phone to Nothando & ask them to confirm each item by tapping the box:'
-        }
+        text={`Give the phone to ${practitioner?.user?.firstName} & ask them to confirm each item by tapping the box:`}
         color={'textDark'}
         className={'my-3'}
       />
@@ -190,7 +188,7 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
       <Alert
         type="warning"
         className="mt-4"
-        title={`By tapping the “Next” button below, you are confirming that Nothando checked the boxes above and agrees to all of the steps.`}
+        title={`By tapping the “Next” button below, you are confirming that ${practitioner?.user?.firstName} checked the boxes above and agrees to all of the steps.`}
       />
 
       <div className="mt-4 space-y-4">
