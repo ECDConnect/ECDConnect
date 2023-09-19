@@ -5,9 +5,7 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
-  Card,
   Checkbox,
-  CheckboxGroup,
   Colours,
   Dialog,
   DialogPosition,
@@ -86,7 +84,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   ]);
 
   const visitSection = `Property details`;
-  console.log({ traineeVisitData });
+
   const programmeDetailsSections = traineeVisitData
     ?.filter((item) => item?.visitSection === 'Programme details')
     .filter(
@@ -96,8 +94,6 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         item?.question === 'Do you have the Title Deeds for the property?' ||
         item?.question === 'Do you live at the property?'
     );
-
-  console.log({ programmeDetailsSections });
 
   const propertyOwnAnswer = useMemo(() => {
     const ownTheProperty =
@@ -190,8 +186,6 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
     setAnswers(previousData);
   }, []);
 
-  console.log({ questions });
-
   useEffect(() => {
     if (
       (questions[0]?.answer === true && questions?.[1]?.answer === true) ||
@@ -263,7 +257,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           textInputType="input"
           label={questions?.[2]?.question}
           placeholder={'e.g. street a'}
-          value={answer}
+          value={newAddress}
           onChange={(e) => setAnswer(e.target.value)}
         />
       )}
@@ -330,7 +324,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           onClose={() => setShowMap(false)}
           onSubmit={(address) => {
             onOptionSelected(address, 2);
-            setNewAddress(address);
+            setNewAddress('ahahahahah');
           }}
         />
       </Dialog>
