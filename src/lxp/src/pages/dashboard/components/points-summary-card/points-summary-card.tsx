@@ -11,6 +11,7 @@ export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
   maxPoints,
   showIcon,
   useColourBackground,
+  hint,
   onClick,
 }) => {
   const percentageScore = (currentPoints / maxPoints) * 100;
@@ -54,7 +55,8 @@ export const PointsSummaryCard: React.FC<PointsSummaryCardProps> = ({
         <div className="h-16 w-full">
           <ProgressBar
             className="h-2"
-            label={`${currentPoints} points`}
+            label={`${currentPoints} ${!hint ? 'points' : ''}`}
+            hint={hint}
             subLabel=""
             value={percentageScore}
             primaryColour={progressColour}

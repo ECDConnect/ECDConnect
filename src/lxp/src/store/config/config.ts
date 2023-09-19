@@ -93,6 +93,7 @@ import { communityPersistConfig } from '../community/community';
 import { pqaPersistConfig, pqaReducer } from '../pqa/pqa';
 import { traineePersistConfig, traineerReducer } from '../trainee/trainee';
 import { pointsPersistConfig, pointsReducer } from '../points/points';
+import { clubPersistConfig, clubReducer } from '../club/club';
 
 const persistedReducers = {
   activityData: persistReducer(activityPersistConfig, activityReducer),
@@ -111,6 +112,7 @@ const persistedReducers = {
     classroomsForCoachPersistConfig,
     classroomsForCoachReducer
   ),
+  clubs: persistReducer(clubPersistConfig, clubReducer),
   coach: persistReducer(coachPersistConfig, coachReducer),
   contentConsentData: contentConsentReducer,
   contentReportData: persistReducer(

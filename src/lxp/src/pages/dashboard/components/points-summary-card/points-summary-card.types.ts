@@ -5,5 +5,6 @@ export interface PointsSummaryCardProps extends ComponentBaseProps {
   maxPoints: number;
   showIcon: boolean;
   useColourBackground: boolean;
+  hint?: string;
   onClick?: () => void;
 }
