@@ -61,6 +61,17 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
+
+  const timelineStepsArray = timelineSteps(
+    timeline!,
+    // @ts-ignore,
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined,
+    '',
+    isOnStipend
+  );
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -68,9 +79,13 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     isOnline,
     // @ts-ignore
     undefined
-  ).filter((item) => item?.type === 'completed');
+  ).filter(
+    (item) =>
+      item?.type === 'completed' ||
+      item?.title === 'Consolidation meeting attended'
+  );
   const onboardingNotCompleted = completedSteps?.length < 8;
-
+  console.log({ isOnStipend });
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
   const { theme } = useTheme();
@@ -216,9 +231,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     listItems?.splice(0, 1, {
       title: 'Trainee onboarding',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: isOnStipend
-        ? `${completedSteps?.length} of 9 steps completed`
-        : `${completedSteps?.length} of 8 steps completed`,
+      subTitle: `${completedSteps?.length} of ${timelineStepsArray?.length} steps completed`,
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'BadgeCheckIcon',
