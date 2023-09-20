@@ -333,14 +333,14 @@ namespace ECDLink.Core.Services
                 incomeExpenses.AllLines.Income = latestIncomeRowsAll;
                 incomeExpenses.AllLines.IncomeTotal = latestIncomeRowsAll.Select(x => x.Amount).Sum();
 
-                statementIdAll = latestIncomeRowsAll[0].IncomeStatementId;
+                statementIdAll = latestIncomeRowsAll[0].StatementsIncomeStatementId.ToString();
             }
             if (latestExpenseRowsAll.Any())
             {
                 incomeExpenses.AllLines.Expenses = latestExpenseRowsAll;
                 incomeExpenses.AllLines.ExpenseTotal = latestExpenseRowsAll.Select(x => x.Amount).Sum();
 
-                statementIdAll = latestExpenseRowsAll[0].IncomeStatementId;
+                statementIdAll = latestExpenseRowsAll[0].StatementsIncomeStatementId.ToString();
             }
             if (statementIdAll != null)
             {
@@ -363,13 +363,13 @@ namespace ECDLink.Core.Services
             {
                 incomeExpenses.AllSubmitted.Income = latestIncomeRowsSubmitted;
                 incomeExpenses.AllSubmitted.IncomeTotal = latestIncomeRowsSubmitted.Select(x => x.Amount).Sum();
-                statementIdSubmitted = latestIncomeRowsSubmitted[0].IncomeStatementId;
+                statementIdSubmitted = latestIncomeRowsSubmitted[0].StatementsIncomeStatementId.ToString();
             }
             if (latestExpenseRowsSubmitted.Any())
             {
                 incomeExpenses.AllSubmitted.Expenses = latestExpenseRowsSubmitted;
                 incomeExpenses.AllSubmitted.ExpenseTotal = latestExpenseRowsSubmitted.Select(x => x.Amount).Sum();
-                statementIdSubmitted = latestExpenseRowsSubmitted[0].IncomeStatementId;
+                statementIdSubmitted = latestExpenseRowsSubmitted[0].StatementsIncomeStatementId.ToString();
             }
             if (statementIdSubmitted != null)
             {
@@ -472,7 +472,7 @@ namespace ECDLink.Core.Services
             // Only return types linked to expenses for params
             var report = 
             (
-                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.IncomeStatementId.Equals(statementId))
+                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.StatementsIncomeStatementId.Equals(statementId))
                 join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
                 select new { statementExpenseType.Description, statementsExpenses.Amount }
             ).ToList();
@@ -490,7 +490,7 @@ namespace ECDLink.Core.Services
             // Only return types linked to income for params
             var report =
             (
-                from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.IncomeStatementId.Equals(statementId))
+                from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.StatementsIncomeStatementId.Equals(statementId))
                 join StatementsIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on StatementsIncome.IncomeTypeId equals StatementsIncomeType.Id.ToString()
                 select new { StatementsIncomeType.Description, StatementsIncome.Amount }
             ).ToList();
@@ -680,7 +680,7 @@ namespace ECDLink.Core.Services
                 {
 
                     model.Submitted = false;
-                    model.IncomeStatementId = null;
+                    model.StatementsIncomeStatementId = null;
                     incomeRepo.Insert(model);
                     return model;
                 }
@@ -711,7 +711,7 @@ namespace ECDLink.Core.Services
                 if (expenseCheck == null)
                 {
                     model.Submitted = false;
-                    model.IncomeStatementId = null;
+                    model.StatementsIncomeStatementId = null;
                     expenseRepo.Insert(model);
                     return model;
                 }
@@ -783,7 +783,9 @@ namespace ECDLink.Core.Services
                     Submitted = true,
                     SubmittedDate = DateTime.Now,
                     UserId = model.UserId,
-                    Id = Guid.NewGuid()
+                    Id = Guid.NewGuid(),
+                    IncomeItems = new List<StatementsIncome>(),
+                    ExpenseItems = new List<StatementsExpenses>()                    
                 };
 
                 // income
@@ -796,10 +798,9 @@ namespace ECDLink.Core.Services
                         allIncome += row.Amount;
                         //lock all entries
                         row.Submitted = true;
-                        row.IncomeStatementId = submittedStatement.Id.ToString();
-                        //row.AutoSubmitted = autoSubmitted;
+                        row.StatementsIncomeStatementId = submittedStatement.Id;
+                        submittedStatement.IncomeItems.Add(row);
 
-                        incomeRepo.Update(row);
                         rows++;
                     }
                     retVal = true;
@@ -815,9 +816,9 @@ namespace ECDLink.Core.Services
                         allExpenses += row.Amount;
                         //lock all entries
                         row.Submitted = true;
-                        row.IncomeStatementId = submittedStatement.Id.ToString();
+                        row.StatementsIncomeStatementId = submittedStatement.Id;
+                        submittedStatement.ExpenseItems.Add(row);
 
-                        expenseRepo.Update(row);
                         rows++;
                     }
                     retVal = true;
@@ -837,12 +838,13 @@ namespace ECDLink.Core.Services
                     if (pdfDoc != null)
                         submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
                 }
+
                 statementRepo.Insert(submittedStatement);
-            }
-            if (!autoSubmitted)
-            {
-                _pointsEngineService.CalculateIncomeStatements(model.UserId, DateTime.UtcNow);
-            }
+                if (!autoSubmitted)
+                {
+                    _pointsEngineService.CalculateIncomeStatements(model.UserId, DateTime.UtcNow);
+                }
+            }            
 
             return retVal;
         }
@@ -910,7 +912,6 @@ namespace ECDLink.Core.Services
 
         public Document CreateIncomeStatementPDFDocument(string userId, int year, int month)
         {
-            Console.WriteLine("Starting income statement pdf generation");
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(userId, year, month);
 
@@ -1134,7 +1135,6 @@ namespace ECDLink.Core.Services
             pdfDoc.UserId = userId;
             pdfDoc.CreatedUserId = uId;
 
-            Console.WriteLine("Returning income statement pdf");
             return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
         }
 

@@ -842,6 +842,8 @@ namespace EcdLink.Api.CoreApi
             public const string name_purple = "Purple";
             public const string club_purple = "Purple club";
             public const string club_not_in_league = "Club not in league";
+            public const string name_new_stars = "New Stars";
+            public const string name_rising_stars = "Rising Stars";
         }
 
     }

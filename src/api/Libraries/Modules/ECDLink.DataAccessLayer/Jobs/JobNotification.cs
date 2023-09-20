@@ -22,5 +22,8 @@ namespace ECDLink.DataAccessLayer.Jobs
         public TemplateTypeEnum TemplateType { get; set; }
 
         public string Protocol { get; set; }
+        public Guid? TenantId { get; set; }
+
+        public DateTime? InsertedDate { get; set; }
     }
 }

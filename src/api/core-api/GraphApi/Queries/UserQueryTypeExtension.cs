@@ -267,6 +267,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
             }
+            //TODO: ADD CHW object / indicator
+
+            //TODO: Add Teamlead object / indicator
+
             //Child
             if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
             {

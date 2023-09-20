@@ -282,6 +282,7 @@ class PQAService {
               comment
               actualVisitDate
               insertedDate
+              overallRatingColor
               visitType {
                 type
                 order
@@ -299,6 +300,7 @@ class PQAService {
               comment
               actualVisitDate
               insertedDate
+              overallRatingColor
               visitType {
                 type
                 order
@@ -364,6 +366,20 @@ class PQAService {
               }
               eventId
             }
+            coachCircles{
+              totalMeetings
+              totalPresent
+              percAttended
+              attendanceText
+              attendanceColor
+              meetingRegister {
+                  attended
+                  clubMeeting {
+                      meetingDate
+                      meetingNotes
+                  }
+              }
+          }
           }
         }
           `,

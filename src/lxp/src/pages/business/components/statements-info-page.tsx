@@ -22,6 +22,7 @@ interface StatementsShowInfoProps {
   setShowInfo: any;
   setIsFromAutomaticallyStart: (item: boolean) => void;
   isFromAutomaticallyStart: boolean;
+  updateWalkThroughStatus: (item: boolean) => void;
 }
 
 interface Dataprops {
@@ -33,6 +34,7 @@ interface Dataprops {
 export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
   setShowInfo,
   isFromAutomaticallyStart,
+  updateWalkThroughStatus,
 }) => {
   const dialog = useDialog();
   const history = useHistory();
@@ -128,6 +130,7 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
               onClick: () => {
                 onSubmit();
                 handleClickStart();
+                updateWalkThroughStatus(true);
               },
               leadingIcon: 'CheckCircleIcon',
             },
@@ -136,7 +139,10 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
-              onClick: () => onCancel(),
+              onClick: () => {
+                onCancel();
+                updateWalkThroughStatus(true);
+              },
               leadingIcon: 'ClockIcon',
             },
           ]}

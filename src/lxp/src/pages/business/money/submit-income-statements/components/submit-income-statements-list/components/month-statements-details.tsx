@@ -6,6 +6,7 @@ import {
   BannerWrapper,
   Dialog,
   DialogPosition,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -67,6 +68,7 @@ export const MonthStatementsDetails: React.FC = () => {
     history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST);
   };
 
+  const [isLoading, setIsLoading] = useState(false);
   const [showPreschoolDetails, setShowPreschoolDetails] = useState(false);
   const [showStartupSupportDetails, setShowStartupSupportDetails] =
     useState(false);
@@ -218,7 +220,6 @@ export const MonthStatementsDetails: React.FC = () => {
     const dbeSubsidyValue: IncomeStatementsDto[] = [];
     const otherValue: IncomeStatementsDto[] = [];
 
-    console.log('offlineFilteredIncome', offlineFilteredIncome);
     offlineFilteredIncome?.map((item: any) => {
       if (item?.incomeTypeId === preschoolIncome?.id) {
         preschoolValue.push(item);
@@ -332,6 +333,7 @@ export const MonthStatementsDetails: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    setIsLoading(true);
     const monthlyDetailsdata = async () => {
       const incomeData = await new IncomeStatementsService(
         userAuth?.auth_token!
@@ -351,6 +353,7 @@ export const MonthStatementsDetails: React.FC = () => {
       setPdfReportData(report);
       setIncome(incomeData);
       setExpenses(expensesData);
+      setIsLoading(false);
     };
 
     monthlyDetailsdata();
@@ -535,256 +538,271 @@ export const MonthStatementsDetails: React.FC = () => {
 
   return (
     <>
-      <BannerWrapper
-        showBackground={false}
-        size="medium"
-        renderBorder={true}
-        title={`View ${getMonthName(Number(statementMonth) - 1)} statement`}
-        color={'primary'}
-        onBack={goBack}
-        displayOffline={!isOnline}
-      >
-        <div className="flex flex-col justify-center p-4">
-          <Typography
-            className="truncate"
-            type="h2"
-            weight="bold"
-            color="textDark"
-            text={statementTitle}
-          />
-          <StackedList
-            className="mt-4 flex w-full flex-col"
-            type="MenuList"
-            listItems={incomeItems}
-          />
-          <Card
-            className="bg-successMain flex items-center justify-between p-4"
-            shadowSize={'md'}
-          >
-            <Typography
-              text={'Total income'}
-              type="body"
-              color={'white'}
-              className="w-8/12"
+      <>
+        <BannerWrapper
+          showBackground={false}
+          size="medium"
+          renderBorder={true}
+          title={`View ${getMonthName(Number(statementMonth) - 1)} statement`}
+          color={'primary'}
+          onBack={goBack}
+          displayOffline={!isOnline}
+        >
+          {isLoading ? (
+            <LoadingSpinner
+              size="big"
+              spinnerColor="white"
+              backgroundColor="secondary"
+              className="mt-7"
             />
-            <Typography
-              text={
-                isOnline
-                  ? `R ${String(numberWithSpaces(totalIncome?.toFixed(2)))}`
-                  : `R ${String(
-                      numberWithSpaces(offlineTotalIncome?.toFixed(2))
-                    )}`
-              }
-              color={'white'}
-              type="h4"
-              className="mr-12 w-4/12 text-right"
-            />
-          </Card>
-          <StackedList
-            className="mt-4 flex w-full flex-col"
-            type="MenuList"
-            listItems={expensesItems}
-          />
-          <Card
-            className="bg-tertiary flex items-center justify-between p-4"
-            shadowSize={'md'}
-          >
-            <Typography
-              text={'Total expenses'}
-              type="body"
-              color={'white'}
-              className="w-9/12"
-            />
-            <Typography
-              text={
-                isOnline
-                  ? `R ${String(numberWithSpaces(totalExpenses?.toFixed(2)))}`
-                  : `R ${String(
-                      numberWithSpaces(offlineTotalExpenses?.toFixed(2))
-                    )}`
-              }
-              color={'white'}
-              type="h4"
-              className="mr-12 w-4/12 text-right"
-            />
-          </Card>
-          <Card
-            className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
-            borderRaduis={'xl'}
-            shadowSize={'md'}
-          >
-            <Typography
-              text={'Balance'}
-              type="h4"
-              color={'white'}
-              className="w-6/12"
-            />
-            <Typography
-              text={
-                isOnline
-                  ? `R ${String(numberWithSpaces(String(totalBalance)))}`
-                  : `R ${String(numberWithSpaces(String(offLineTotalBalance)))}`
-              }
-              color={'white'}
-              type="h1"
-              className="w-8/12 text-right"
-            />
-          </Card>
-          <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-            {isIncomeSubmitted && (
-              <GeneratePdfReportButton
-                component="income-statements"
-                title="Download Statement"
-                outputName={`${getMonthName(
-                  Number(statementMonth) - 1
-                )}-income-statement-report.pdf`}
-                tableFooter={footer}
-                tableData={pdfReportData}
-                content={tableTopContent}
-                tableHeadStyles={tableHeadStyles}
-                tableFootStyles={tableFootStyles}
-                tableStyles={tableStyles}
-                pageOriantations={'portrait'}
-                signature={signature}
-                downloadDate={today.toDateString()}
+          ) : (
+            <div className="flex flex-col justify-center p-4">
+              <Typography
+                className="truncate"
+                type="h2"
+                weight="bold"
+                color="textDark"
+                text={statementTitle}
               />
-            )}
-          </div>
-        </div>
-      </BannerWrapper>
-      <Dialog
-        stretch={true}
-        visible={showPreschoolDetails}
-        position={DialogPosition.Full}
-      >
-        <IncomeDetailsList
-          hideDetails={() => setShowPreschoolDetails(false)}
-          incomeStatements={preschoolFees}
-          statementTitle="Preschool fees"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showStartupSupportDetails}
-        position={DialogPosition.Full}
-      >
-        <IncomeDetailsList
-          hideDetails={() => setShowStartupSupportDetails(false)}
-          incomeStatements={startupSupport}
-          statementTitle="Startup support"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showDonationsOrVouchersDetails}
-        position={DialogPosition.Full}
-      >
-        <IncomeDetailsList
-          hideDetails={() => setShowDonationsOrVouchersDetails(false)}
-          incomeStatements={donationsOrVouchers}
-          statementTitle="Donations or vouchers"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showDbeSubsidyDetails}
-        position={DialogPosition.Full}
-      >
-        <IncomeDetailsList
-          hideDetails={() => setShowDbeSubsidyDetails(false)}
-          incomeStatements={dbeSubsidy}
-          statementTitle="DBE Subsidy"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showOtherIncomeDetails}
-        position={DialogPosition.Full}
-      >
-        <IncomeDetailsList
-          hideDetails={() => setShowOtherIncomeDetails(false)}
-          incomeStatements={otherIncomeValues}
-          statementTitle="Other income"
-        />
-      </Dialog>
+              <StackedList
+                className="mt-4 flex w-full flex-col gap-1"
+                type="MenuList"
+                listItems={incomeItems}
+              />
+              <Card
+                className="bg-successMain mt-2 flex items-center justify-between p-4"
+                shadowSize={'md'}
+              >
+                <Typography
+                  text={'Total income'}
+                  type="body"
+                  color={'white'}
+                  className="w-8/12"
+                />
+                <Typography
+                  text={
+                    isOnline
+                      ? `R ${String(numberWithSpaces(totalIncome?.toFixed(2)))}`
+                      : `R ${String(
+                          numberWithSpaces(offlineTotalIncome?.toFixed(2))
+                        )}`
+                  }
+                  color={'white'}
+                  type="h4"
+                  className="mr-12 w-4/12 text-right"
+                />
+              </Card>
+              <StackedList
+                className="mt-4 flex w-full flex-col gap-1"
+                type="MenuList"
+                listItems={expensesItems}
+              />
+              <Card
+                className="bg-tertiary mt-2 flex items-center justify-between p-4"
+                shadowSize={'md'}
+              >
+                <Typography
+                  text={'Total expenses'}
+                  type="body"
+                  color={'white'}
+                  className="w-9/12"
+                />
+                <Typography
+                  text={
+                    isOnline
+                      ? `R ${String(
+                          numberWithSpaces(totalExpenses?.toFixed(2))
+                        )}`
+                      : `R ${String(
+                          numberWithSpaces(offlineTotalExpenses?.toFixed(2))
+                        )}`
+                  }
+                  color={'white'}
+                  type="h4"
+                  className="mr-12 w-4/12 text-right"
+                />
+              </Card>
+              <Card
+                className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
+                borderRaduis={'xl'}
+                shadowSize={'md'}
+              >
+                <Typography
+                  text={'Balance'}
+                  type="h4"
+                  color={'white'}
+                  className="w-6/12"
+                />
+                <Typography
+                  text={
+                    isOnline
+                      ? `R ${String(numberWithSpaces(String(totalBalance)))}`
+                      : `R ${String(
+                          numberWithSpaces(String(offLineTotalBalance))
+                        )}`
+                  }
+                  color={'white'}
+                  type="h1"
+                  className="w-8/12 text-right"
+                />
+              </Card>
+              <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+                {isIncomeSubmitted && (
+                  <GeneratePdfReportButton
+                    component="income-statements"
+                    title="Download Statement"
+                    outputName={`${getMonthName(
+                      Number(statementMonth) - 1
+                    )}-income-statement-report.pdf`}
+                    tableFooter={footer}
+                    tableData={pdfReportData}
+                    content={tableTopContent}
+                    tableHeadStyles={tableHeadStyles}
+                    tableFootStyles={tableFootStyles}
+                    tableStyles={tableStyles}
+                    pageOriantations={'portrait'}
+                    signature={signature}
+                    downloadDate={today.toDateString()}
+                  />
+                )}
+              </div>
+            </div>
+          )}
+        </BannerWrapper>
 
-      <Dialog
-        stretch={true}
-        visible={showRentDetails}
-        position={DialogPosition.Full}
-      >
-        <ExpenseDetailsList
-          hideDetails={() => setShowRentDetails(false)}
-          incomeStatements={rent}
-          statementTitle="Rent"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showFoodDetails}
-        position={DialogPosition.Full}
-      >
-        <ExpenseDetailsList
-          hideDetails={() => setShowFoodDetails(false)}
-          incomeStatements={food}
-          statementTitle="Food"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showLearningMaterialsDetails}
-        position={DialogPosition.Full}
-      >
-        <ExpenseDetailsList
-          hideDetails={() => setShowLearningMaterialsDetails(false)}
-          incomeStatements={learningMaterials}
-          statementTitle="Learning materials"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showMaintenanceDetails}
-        position={DialogPosition.Full}
-      >
-        <ExpenseDetailsList
-          hideDetails={() => setShowMaintenaceDetails(false)}
-          incomeStatements={maintenance}
-          statementTitle="Maintenance"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showOtherExpensesDetails}
-        position={DialogPosition.Full}
-      >
-        <ExpenseDetailsList
-          hideDetails={() => setShowOtherExpensesDetails(false)}
-          incomeStatements={otherExpenseValues}
-          statementTitle="Other Expenses"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showUtilitiesDetails}
-        position={DialogPosition.Full}
-      >
-        <ExpenseDetailsList
-          hideDetails={() => setShowUtilitiesDetails(false)}
-          incomeStatements={utilities}
-          statementTitle="Utilities"
-        />
-      </Dialog>
-      <Dialog
-        stretch={true}
-        visible={showSalaryDetails}
-        position={DialogPosition.Full}
-      >
-        <ExpenseDetailsList
-          hideDetails={() => setShowSalaryDetails(false)}
-          incomeStatements={salary}
-          statementTitle="Salary"
-        />
-      </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showPreschoolDetails}
+          position={DialogPosition.Full}
+        >
+          <IncomeDetailsList
+            hideDetails={() => setShowPreschoolDetails(false)}
+            incomeStatements={preschoolFees}
+            statementTitle="Preschool fees"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showStartupSupportDetails}
+          position={DialogPosition.Full}
+        >
+          <IncomeDetailsList
+            hideDetails={() => setShowStartupSupportDetails(false)}
+            incomeStatements={startupSupport}
+            statementTitle="Startup support"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showDonationsOrVouchersDetails}
+          position={DialogPosition.Full}
+        >
+          <IncomeDetailsList
+            hideDetails={() => setShowDonationsOrVouchersDetails(false)}
+            incomeStatements={donationsOrVouchers}
+            statementTitle="Donations or vouchers"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showDbeSubsidyDetails}
+          position={DialogPosition.Full}
+        >
+          <IncomeDetailsList
+            hideDetails={() => setShowDbeSubsidyDetails(false)}
+            incomeStatements={dbeSubsidy}
+            statementTitle="DBE Subsidy"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showOtherIncomeDetails}
+          position={DialogPosition.Full}
+        >
+          <IncomeDetailsList
+            hideDetails={() => setShowOtherIncomeDetails(false)}
+            incomeStatements={otherIncomeValues}
+            statementTitle="Other income"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showRentDetails}
+          position={DialogPosition.Full}
+        >
+          <ExpenseDetailsList
+            hideDetails={() => setShowRentDetails(false)}
+            incomeStatements={rent}
+            statementTitle="Rent"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showFoodDetails}
+          position={DialogPosition.Full}
+        >
+          <ExpenseDetailsList
+            hideDetails={() => setShowFoodDetails(false)}
+            incomeStatements={food}
+            statementTitle="Food"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showLearningMaterialsDetails}
+          position={DialogPosition.Full}
+        >
+          <ExpenseDetailsList
+            hideDetails={() => setShowLearningMaterialsDetails(false)}
+            incomeStatements={learningMaterials}
+            statementTitle="Learning materials"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showMaintenanceDetails}
+          position={DialogPosition.Full}
+        >
+          <ExpenseDetailsList
+            hideDetails={() => setShowMaintenaceDetails(false)}
+            incomeStatements={maintenance}
+            statementTitle="Maintenance"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showOtherExpensesDetails}
+          position={DialogPosition.Full}
+        >
+          <ExpenseDetailsList
+            hideDetails={() => setShowOtherExpensesDetails(false)}
+            incomeStatements={otherExpenseValues}
+            statementTitle="Other Expenses"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showUtilitiesDetails}
+          position={DialogPosition.Full}
+        >
+          <ExpenseDetailsList
+            hideDetails={() => setShowUtilitiesDetails(false)}
+            incomeStatements={utilities}
+            statementTitle="Utilities"
+          />
+        </Dialog>
+        <Dialog
+          stretch={true}
+          visible={showSalaryDetails}
+          position={DialogPosition.Full}
+        >
+          <ExpenseDetailsList
+            hideDetails={() => setShowSalaryDetails(false)}
+            incomeStatements={salary}
+            statementTitle="Salary"
+          />
+        </Dialog>
+      </>
     </>
   );
 };

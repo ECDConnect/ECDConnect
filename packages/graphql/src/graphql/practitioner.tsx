@@ -95,6 +95,7 @@ export const GetPractitionerById = gql`
       progress
       attendedChildProgress
       usePhotoInReport
+      isCompletedBusinessWalkThrough
     }
   }
 `;

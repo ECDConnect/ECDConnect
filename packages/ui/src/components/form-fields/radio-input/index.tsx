@@ -4,6 +4,7 @@ import { classNames } from '../../../utils';
 export interface RadioProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: ReactElement;
+  customIcon?: ReactElement;
   description: string;
   isActivity?: boolean;
   extraButtonIcon?: ReactElement;
@@ -15,6 +16,7 @@ export const Radio = ({
   id,
   checked,
   icon,
+  customIcon,
   description,
   isActivity,
   variant,
@@ -72,7 +74,10 @@ export const Radio = ({
   };
 
   return (
-    <label htmlFor={id} className={classNames('relative', getContainerStyle())}>
+    <label
+      htmlFor={id}
+      className={classNames('relative items-center', getContainerStyle())}
+    >
       <input
         {...rest}
         type="radio"
@@ -82,7 +87,8 @@ export const Radio = ({
         className={getInputStyle()}
       />
       <div className={getLabelStyle()}>
-        {icon && (
+        {customIcon}
+        {icon && !customIcon && (
           <span
             className={`flex h-9 w-9 items-center justify-center rounded-full ${
               checked ? 'bg-secondary' : 'bg-tertiary'

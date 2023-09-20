@@ -44,7 +44,7 @@ export const WalkthroughInfoPage = ({
 
   const renderContent = useMemo(() => {
     const moreInformation = moreInformationList?.find(
-      (item) => item.section === sectionName
+      (item) => item?.section === sectionName
     );
 
     if (isLoading) {

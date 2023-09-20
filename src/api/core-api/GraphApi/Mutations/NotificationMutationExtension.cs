@@ -51,6 +51,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return await notificationService.DisableNotification(notificationId);
         }
 
+        public async Task<bool> ExpireNotification([Service] INotificationService notificationService, string notificationId)
+        {
+            return await notificationService.ExpireNotification(notificationId);
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<BulkInvitationResult> SendNotificationToUser(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,

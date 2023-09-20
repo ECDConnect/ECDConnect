@@ -14,6 +14,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
@@ -186,7 +187,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.ClickedProgressTab = input.ClickedProgressTab == null ? false : input.ClickedProgressTab;
             infantToUpdate.ClickedReferralsTab = input.ClickedReferralsTab == null ? false : input.ClickedReferralsTab;
             infantToUpdate.ClickedContactTab = input.ClickedContactTab == null ? false : input.ClickedContactTab;
-
+            if (input.WeightAtBirth != null)
+            {
+                infantToUpdate.WeightAtBirth = input.WeightAtBirth;
+            }
+            if (input.LengthAtBirth != null)
+            {
+                infantToUpdate.LengthAtBirth = input.LengthAtBirth;
+            }
             return _infantRepo.Update(infantToUpdate);
         }
 
@@ -605,7 +613,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
                 if (visitTypes[i].Name == Constants.GGSettings.day_3)
                 {
-                    visitDaySet.PlannedVisitDate = BirthDate.AddDays(2);
+                    visitDaySet.PlannedVisitDate = BirthDate;
                 }
                 else if (visitTypes[i].Name == Constants.GGSettings.day_7)
                 {

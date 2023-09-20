@@ -9,15 +9,27 @@ import { ReAccreditationVisits } from './re-accreditation/step-accordion-content
 import { getReAccreditationStepData } from './re-accreditation/step';
 import {
   divideArrayByFollowUp,
+  getScheduleOrStartButtonIcon,
+  getScheduleOrStartButtonText,
   isDateWithinThreeMonths,
   sortVisits,
 } from './utils';
 import { visitTypes } from '../coach-practitioner-journey.types';
 
+export type ScheduleEventType =
+  | 'First PQA'
+  | 'PQA follow-up'
+  | 'Re-accreditation'
+  | 'Re-accreditation follow-up';
+
 export interface ScheduleProps {
   visit: Visit;
   visitEventId?: string;
-  eventType: 'First PQA' | 'ReAccreditation';
+  eventType: ScheduleEventType;
+}
+
+export interface ScheduleOrStartProps extends ScheduleProps {
+  scheduleStartText: string;
 }
 
 export interface StepType {
@@ -93,12 +105,20 @@ export const timelineSteps = ({
   timeline: PractitionerTimeline;
   onView: (visit: Visit) => void;
   onStart: (visitName: string) => void;
-  onScheduleOrStart: (schedule: ScheduleProps) => void;
+  onScheduleOrStart: (schedule: ScheduleOrStartProps) => void;
   isLoading: boolean;
   isOnline: boolean;
   visits?: Maybe<Visit>[];
   currentReAccreditationRating?: RatingData;
 }): StepItem[] => {
+  const onActionButtonClick = (options: ScheduleOrStartProps) => {
+    if (!options.visit?.eventId) {
+      onScheduleOrStart(options);
+    } else {
+      onStart(options.visit.visitType?.name as string);
+    }
+  };
+
   const isUserEnableToStartPqaVisit = timeline?.prePQASiteVisits?.every(
     (item) => item?.attended
   );
@@ -287,16 +307,17 @@ export const timelineSteps = ({
           pQASiteVisits.length === 1 &&
           !currentVisit?.attended &&
           isUserEnableToStartPqaVisit,
-        actionButtonText: 'Schedule',
+        actionButtonText: getScheduleOrStartButtonText(currentVisit),
         actionButtonType: 'outlined',
         actionButtonTextColor: 'primary',
-        actionButtonIcon: 'CalendarIcon',
+        actionButtonIcon: getScheduleOrStartButtonIcon(currentVisit),
         actionButtonIconStartPosition: 'start',
         actionButtonOnClick: () =>
-          onScheduleOrStart({
+          onActionButtonClick({
             visit: currentVisit!,
             visitEventId: currentVisit?.eventId,
-            eventType: 'First PQA',
+            eventType: visitTypes.pqa.firstPQA.eventType,
+            scheduleStartText: visitTypes.pqa.firstPQA.scheduleStartText,
           }),
         showAccordion: pQASiteVisits.length > 1,
         accordionContent: (
@@ -402,16 +423,18 @@ export const timelineSteps = ({
           !currentVisit?.attended &&
           isUserEnableToStartPqaVisit &&
           isDateWithinThreeMonths(currentVisit?.plannedVisitDate),
-        actionButtonText: 'Schedule',
+        actionButtonText: getScheduleOrStartButtonText(currentVisit),
         actionButtonType: 'outlined',
         actionButtonTextColor: 'primary',
-        actionButtonIcon: 'CalendarIcon',
+        actionButtonIcon: getScheduleOrStartButtonIcon(currentVisit),
         actionButtonIconStartPosition: 'start',
         actionButtonOnClick: () =>
-          onScheduleOrStart({
+          onActionButtonClick({
             visit: currentVisit!,
             visitEventId: currentVisit?.eventId,
-            eventType: 'ReAccreditation',
+            eventType: visitTypes.reaccreditation.first.eventType,
+            scheduleStartText:
+              visitTypes.reaccreditation.first.scheduleStartText,
           }),
         showAccordion: reAccreditationVisits.length > 1,
         accordionContent: (
@@ -420,6 +443,7 @@ export const timelineSteps = ({
             currentVisit={currentVisit!}
             reAccreditationVisits={reAccreditationVisits}
             practitionerId={practitionerId}
+            onStart={onStart}
             onScheduleOrStart={onScheduleOrStart}
             isOnline={isOnline}
           />

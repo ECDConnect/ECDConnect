@@ -77,3 +77,35 @@ export function divideArrayByFollowUp(
     return acc;
   }, []);
 }
+
+export const getScheduleOrStartButtonText = (
+  item: Maybe<Visit> | undefined
+) => {
+  if (!item?.eventId) {
+    return 'Schedule';
+  }
+  return 'Start';
+};
+
+export const getScheduleOrStartButtonIcon = (
+  item: Maybe<Visit> | undefined
+) => {
+  if (!item?.eventId) {
+    return 'CalendarIcon';
+  }
+  return 'ArrowCircleRightIcon';
+};
+
+export const getScheduleOrStartSubTitleText = (
+  item: Maybe<Visit> | undefined
+) => {
+  if (!!item?.eventId) {
+    return 'Scheduled ';
+  }
+
+  if (!item?.attended) {
+    return 'By ';
+  }
+
+  return '';
+};

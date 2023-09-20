@@ -2,7 +2,14 @@ import { useCallback, useLayoutEffect, useMemo } from 'react';
 import { useHistory } from 'react-router';
 import { useWindowSize } from '@reach/window-size';
 
-import { Button, Card, Divider, RoundIcon, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  Card,
+  Divider,
+  LoadingSpinner,
+  RoundIcon,
+  Typography,
+} from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 import Pregnant from '@/assets/pregnant.svg';
 import ROUTES from '@/routes/routes';
@@ -12,6 +19,9 @@ import { useAppDispatch } from '@/store';
 import { visitSelectors, visitThunkActions } from '@/store/visit';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { VisitActions } from '@/store/visit/visit.actions';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 const HEADER_HEIGHT = 122;
 
@@ -56,6 +66,13 @@ export const VisitList: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const visitStatus = useSelector(visitSelectors.getVisitStatus);
 
+  const { isLoading } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_VISIT_STATUS
+  );
+
+  const { isOnline } = useOnlineStatus();
+
   const startDate = `${getWeekDate('monday').getDate()} ${getWeekDate(
     'monday'
   ).toLocaleString('default', { month: 'long' })}`;
@@ -71,12 +88,12 @@ export const VisitList: React.FC = () => {
   );
 
   useLayoutEffect(() => {
-    if (user?.id) {
+    if (user?.id && isOnline) {
       appDispatch(
         visitThunkActions.getHealthCareWorkerVisitStatus({ userId: user?.id })
       ).unwrap();
     }
-  }, [appDispatch, user?.id]);
+  }, [appDispatch, isOnline, user?.id]);
 
   const renderContent = useMemo(
     () => (
@@ -167,6 +184,17 @@ export const VisitList: React.FC = () => {
     ),
     [navigate, visitStatus]
   );
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="primary"
+        backgroundColor="uiLight"
+        className="pt-4"
+      />
+    );
+  }
 
   return (
     <div

@@ -46,3 +46,5 @@ export * from './steps';
 export * from './progress-bar';
 export * from './google-map';
 export * from './note';
+export * from './empty-page';
+export * from './score-card/score-card';

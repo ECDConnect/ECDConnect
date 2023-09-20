@@ -22,7 +22,6 @@ import {
   CmsVisitSectionInput,
   InputMaybe,
   SsChecklistVisitModelInput,
-  VisitModelInput,
 } from '@ecdlink/graphql';
 import { TraineeService } from '@/services/TraineeService';
 import { authSelectors } from '@/store/auth';

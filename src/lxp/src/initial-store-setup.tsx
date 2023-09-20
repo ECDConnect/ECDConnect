@@ -1,4 +1,11 @@
-import { getYear, getMonth, getWeek, subMonths } from 'date-fns';
+import {
+  getYear,
+  getMonth,
+  getWeek,
+  subMonths,
+  startOfQuarter,
+  lastDayOfQuarter,
+} from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -44,14 +51,13 @@ import {
   practitionerForCoachThunkActions,
 } from './store/practitionerForCoach';
 import { analyticsActions } from './store/analytics';
-import localforage from 'localforage';
-import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
+import { pointsThunkActions } from './store/points';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -87,6 +93,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [otherLoading, setOtherLoading] = useState(false);
 
   const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
+  const quarterStartDate = startOfQuarter(new Date());
+  const quarterLastDay = lastDayOfQuarter(new Date());
 
   const { sync, analytics, settings, notifications, ...state } = useAppSelector(
     (state) => state
@@ -139,25 +147,47 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           await appDispatch(
             practitionerForCoachThunkActions.getPractitionersForCoach({})
           ).unwrap())();
+        (async () =>
+          await appDispatch(
+            coachThunkActions.getAllCoachingCircleClubsForCoach({
+              coachId: userData?.id!,
+              startDate: quarterStartDate,
+              endDate: quarterLastDay,
+            })
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            coachThunkActions.getAllClubsForCoach({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
+      }
+      if (!isCoach) {
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsLibrary({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
       }
     }
   }, [appDispatch, userData, isCoach, practitioner]);
 
   useEffect(() => {
     if (userData) {
-      if (practitioners && practitioners?.length > 0) {
-        const currentPractitioner = practitioners.find(
-          (item) => item?.userId === userData?.id!
-        );
-        if (currentPractitioner) {
-          (async () =>
-            await appDispatch(
-              practitionerThunkActions.getPractitionerById({
-                id: currentPractitioner?.id || '',
-              })
-            ).unwrap())();
-        }
-      }
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionerByUserId({
+            userId: userData?.id || '',
+          })
+        ).unwrap())();
     }
   }, [appDispatch, userData, practitioners]);
 
