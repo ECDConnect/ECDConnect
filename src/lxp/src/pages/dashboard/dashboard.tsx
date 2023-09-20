@@ -11,8 +11,9 @@ import {
   StackedListItemType,
   Typography,
   UserAvatar,
+  ScoreCard,
 } from '@ecdlink/ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -51,10 +52,13 @@ import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { calendarThunkActions } from '@/store/calendar';
 import { pointsSelectors, pointsThunkActions } from '@/store/points';
 import { pointsConstants } from '@/constants/points';
-import { PointsSummaryCard } from './components/points-summary-card/points-summary-card';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerInput } from '@ecdlink/graphql';
+import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
+import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
+import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
+import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -122,17 +126,61 @@ export const Dashboard: React.FC = () => {
   ).filter((item) => item?.type === 'completed');
 
   const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
-  const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
-  const pointsTotal = pointsSummaryData.reduce((total, current) => {
-    if (current.month == currentMonth) {
-      return (total += current.pointsTotal);
+  const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
+
+  useEffect(() => {
+    const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
+    const pointsTotal = pointsSummaryData.reduce((total, current) => {
+      if (current.month == currentMonth) {
+        return (total += current.pointsTotal);
+      }
+      return total;
+    }, 0);
+    const pointsMax =
+      isPrincipal || isFundaAppAdmin
+        ? pointsConstants.principalOrAdminMonthlyMax
+        : pointsConstants.practitionerMonthlyMax;
+
+    const percentageScore = (pointsTotal / pointsMax) * 100;
+
+    if (percentageScore < 60) {
+      setPointsScoreProps({
+        mainText: `${pointsTotal} points`,
+        barBgColour: 'uiBg',
+        barColour: 'errorMain',
+        bgColour: 'errorBg',
+        currentPoints: pointsTotal,
+        maxPoints: pointsMax,
+        textColour: 'errorMain',
+        onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
+        image: <EmojiOrangeSmile className="mr-2 h-16 w-16" />,
+      });
+    } else if (percentageScore < 80) {
+      setPointsScoreProps({
+        mainText: `${pointsTotal} points`,
+        barBgColour: 'uiBg',
+        barColour: 'secondary',
+        bgColour: 'infoBb',
+        currentPoints: pointsTotal,
+        maxPoints: pointsMax,
+        textColour: 'secondary',
+        onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
+        image: <EmojiBlueSmile className="mr-2 h-16 w-16" />,
+      });
+    } else {
+      setPointsScoreProps({
+        mainText: `${pointsTotal} points`,
+        barBgColour: 'uiBg',
+        barColour: 'successMain',
+        bgColour: 'successBg',
+        currentPoints: pointsTotal,
+        maxPoints: pointsMax,
+        textColour: 'successMain',
+        onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
+        image: <EmojiGreenSmile className="mr-2 h-16 w-16" />,
+      });
     }
-    return total;
-  }, 0);
-  const pointsMax =
-    isPrincipal || isFundaAppAdmin
-      ? pointsConstants.principalOrAdminMonthlyMax
-      : pointsConstants.practitionerMonthlyMax;
+  }, [pointsSummaryData]);
 
   const { userProfilePicture } = useDocuments();
 
@@ -296,16 +344,6 @@ export const Dashboard: React.FC = () => {
       }
     }
   }, [userData]);
-
-  useEffect(() => {
-    if (isOnline) {
-      (async () =>
-        await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
-        ).unwrap())();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }
-  }, []);
 
   useEffect(() => {
     if (isOnline) {
@@ -785,13 +823,19 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        <PointsSummaryCard
-          currentPoints={pointsTotal}
-          maxPoints={pointsMax}
-          showIcon={true}
-          useColourBackground={true}
-          onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY)}
-        />
+        {!!pointsScoreProps && (
+          <ScoreCard
+            mainText={pointsScoreProps.mainText}
+            currentPoints={pointsScoreProps.currentPoints}
+            maxPoints={pointsScoreProps.maxPoints}
+            onClick={pointsScoreProps.onClick}
+            barBgColour={pointsScoreProps.barBgColour}
+            barColour={pointsScoreProps.barColour}
+            bgColour={pointsScoreProps.bgColour}
+            image={pointsScoreProps.image}
+            textColour={pointsScoreProps.textColour}
+          />
+        )}
       </div>
     </BannerWrapper>
   );

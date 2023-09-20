@@ -84,6 +84,7 @@ const ROUTES = {
       SUMMARY: '/summary',
       YEAR: '/year',
     }),
+    CONTACT_COACH: '/contact-coach',
   }),
   TRAINEE: addPrefix('/trainee', {
     SETUP_TRAINEE: '/setup-trainee',

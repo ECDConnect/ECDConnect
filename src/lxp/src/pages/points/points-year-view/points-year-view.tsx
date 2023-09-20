@@ -1,17 +1,25 @@
 import { pointsConstants } from '@/constants/points';
 import { pointsSelectors } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
-import { BannerWrapper, Button, Card, Colours, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  Colours,
+  ScoreCard,
+  Typography,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { PointsSummaryCard } from '../../dashboard/components/points-summary-card/points-summary-card';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
+import { ReactComponent as Balloons } from '@ecdlink/ui/src/assets/emoji/balloons.svg';
 import { format } from 'date-fns';
 import { useCallback, useEffect, useState } from 'react';
 import { RootState } from '@/store/types';
 import { PointsMonthSummary } from './components/points-month-summary';
+import ROUTES from '@/routes/routes';
 
 // TODO - fetch club standings
 // TODO - add text that depends on relative club points
@@ -66,7 +74,15 @@ export const PointsYearView: React.FC = () => {
 
   //TODO - Update this to use club data to set messages when available
   useEffect(() => {
-    if (percentageScore < 60) {
+    if (pointsTotalForYear === 0) {
+      setCelebrationCardDetails({
+        image: <EmojiOrangeSmile className="mr-2 h-16 w-16" />,
+        primaryMessage: 'No points earned yet',
+        secondaryMessage: 'Keep going to earn points.',
+        textColour: 'alertMain',
+        backgroundColour: 'alertBg',
+      });
+    } else if (percentageScore < 60) {
       setCelebrationCardDetails({
         image: <EmojiOrangeSmile className="mr-2 h-16 w-16" />,
         primaryMessage: `Keep going ${practitioner?.user?.firstName}!`,
@@ -107,11 +123,26 @@ export const PointsYearView: React.FC = () => {
           color="black"
           text={format(new Date(), 'MMM yyyy')}
         />
-        <PointsSummaryCard
+        <ScoreCard
+          mainText={`${pointsTotalForYear}`}
+          secondaryText="points"
           currentPoints={pointsTotalForYear}
           maxPoints={pointsMax}
-          showIcon={false}
-          useColourBackground={false}
+          image={
+            percentageScore > 80 ? (
+              <Balloons className="mr-2 h-16 w-16" />
+            ) : undefined
+          }
+          barBgColour="uiLight"
+          barColour={
+            percentageScore < 60
+              ? 'errorMain'
+              : percentageScore < 80
+              ? 'infoMain'
+              : 'successMain'
+          }
+          bgColour="uiBg"
+          textColour="black"
         />
         {!!celebrationCardDetails && (
           <Card
@@ -137,39 +168,69 @@ export const PointsYearView: React.FC = () => {
             </div>
           </Card>
         )}
-        <Typography
-          className="mt-10"
-          type={'h1'}
-          color="black"
-          text={'What you earned points for:'}
-        />
-        {monthsLoaded.map((month) => {
-          return <PointsMonthSummary month={month} />;
-        })}
+        {pointsTotalForYear > 0 && (
+          <>
+            <Typography
+              className="mt-10"
+              type={'h1'}
+              color="black"
+              text={'What you earned points for:'}
+            />
+            {monthsLoaded.map((month) => {
+              return <PointsMonthSummary month={month} />;
+            })}
+          </>
+        )}
       </div>
-      <div className="flex-column mt-10 justify-end p-4">
-        <Button
-          size="normal"
-          className="mb-4 w-full"
-          type="outlined"
-          color="primary"
-          text="See more months"
-          textColor="primary"
-          icon="EyeIcon"
-          disabled={loadNextMonthDisabled}
-          onClick={loadNextMonth}
-        />
-        <Button
-          size="normal"
-          className="mb-4 w-full"
-          type="filled"
-          color="primary"
-          text="Share"
-          textColor="white"
-          icon="ShareIcon"
-          onClick={() => {}} // TODO
-        />
-      </div>
+      {pointsTotalForYear > 0 && (
+        <div className="flex-column mt-10 justify-end p-4">
+          <Button
+            size="normal"
+            className="mb-4 w-full"
+            type="outlined"
+            color="primary"
+            text="See more months"
+            textColor="primary"
+            icon="EyeIcon"
+            disabled={loadNextMonthDisabled}
+            onClick={loadNextMonth}
+          />
+          <Button
+            size="normal"
+            className="mb-4 w-full"
+            type="filled"
+            color="primary"
+            text="Share"
+            textColor="white"
+            icon="ShareIcon"
+            onClick={() => {}} // TODO
+          />
+        </div>
+      )}
+      {pointsTotalForYear === 0 && (
+        <div className="flex-column mt-10 justify-end p-4">
+          <Button
+            size="normal"
+            className="mb-4 w-full"
+            type="filled"
+            color="primary"
+            text="Find out how you can earn points"
+            textColor="white"
+            icon="LightBulbIcon"
+            onClick={() => {}} // TODO
+          />
+          <Button
+            size="normal"
+            className="mb-4 w-full"
+            type="outlined"
+            color="primary"
+            text="Ask your coach for help"
+            textColor="primary"
+            icon="ChatIcon"
+            onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)} // TODO
+          />
+        </div>
+      )}
     </BannerWrapper>
   );
 };

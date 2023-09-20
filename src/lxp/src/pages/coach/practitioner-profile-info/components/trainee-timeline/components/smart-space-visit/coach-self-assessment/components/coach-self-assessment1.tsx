@@ -6,9 +6,6 @@ import { useHistory } from 'react-router';
 interface CoachSelfAssessment1Props {
   practitioner: PractitionerDto;
   handleNextSection: () => void;
-  // programmeName: string | undefined | null;
-  // setSectionQuestions: (value?: SectionQuestions[]) => void;
-  // saveFranchisorAgreementData: () => void;
 }
 
 export const CoachSelfAssessment1: React.FC<CoachSelfAssessment1Props> = ({

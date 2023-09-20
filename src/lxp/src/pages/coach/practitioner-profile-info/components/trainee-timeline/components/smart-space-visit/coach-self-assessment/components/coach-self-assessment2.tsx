@@ -1,18 +1,26 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { Alert, Button, Typography, renderIcon } from '@ecdlink/ui';
+import { SelfAssessmentAlert } from './self-assessment-alert/self-assessment-alert';
+import { useSelector } from 'react-redux';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+import { format } from 'date-fns';
 
 interface CoachSelfAssessment1Props {
   practitioner: PractitionerDto;
   handleNextSection: () => void;
-  // programmeName: string | undefined | null;
-  // setSectionQuestions: (value?: SectionQuestions[]) => void;
-  // saveFranchisorAgreementData: () => void;
 }
 
 export const CoachSelfAssessment2: React.FC<CoachSelfAssessment1Props> = ({
   practitioner,
   handleNextSection,
 }) => {
+  const practitionerUserId = practitioner?.userId;
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerUserId!)
+  );
+  const [uncompletedSelfAssessment] = timeline?.selfAssessmentVisits ?? [];
+  const dueDate = new Date(uncompletedSelfAssessment?.plannedVisitDate);
+
   return (
     <div className="p-4">
       <Typography
@@ -23,17 +31,12 @@ export const CoachSelfAssessment2: React.FC<CoachSelfAssessment1Props> = ({
       />
       <Typography
         type={'body'}
-        text={`Due date:`}
+        text={`Due date: ${format(dueDate, 'dd MMM yyyy')}`}
         color={'textMid'}
         className={'mb-3'}
       />
 
-      <Alert
-        type={'warning'}
-        title={'You are viewing this form and cannot fill in responses.'}
-        list={['Discuss the self-assessment form with Nothando.']}
-        className="mt-4 mb-2"
-      />
+      <SelfAssessmentAlert practitioner={practitioner} />
 
       <Typography
         type={'h4'}
