@@ -1,10 +1,16 @@
 import { pointsActivitiesIds, pointsConstants } from '@/constants/points';
 import { pointsSelectors } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
-import { BannerWrapper, Button, Card, Colours, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  Colours,
+  ScoreCard,
+  Typography,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
-import { PointsSummaryCard } from '../../dashboard/components/points-summary-card/points-summary-card';
 import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
@@ -17,7 +23,7 @@ import ROUTES from '@/routes/routes';
 
 // TODO - fetch club standings
 // TODO - add text that depends on relative club points
-// TODO - Actions for share and detailed view
+// TODO - Actions for share
 
 type CardData = {
   image: JSX.Element;
@@ -128,11 +134,20 @@ export const PointsSummary: React.FC = () => {
           color="black"
           text={format(new Date(), 'MMM yyyy')}
         />
-        <PointsSummaryCard
+        <ScoreCard
+          mainText={`${pointsTotal} points`}
           currentPoints={pointsTotal}
           maxPoints={pointsMax}
-          showIcon={false}
-          useColourBackground={false}
+          barBgColour="uiLight"
+          barColour={
+            percentageScore < 60
+              ? 'errorMain'
+              : percentageScore < 80
+              ? 'infoMain'
+              : 'successMain'
+          }
+          bgColour="uiBg"
+          textColour="black"
         />
         {!!celebrationCardDetails && (
           <Card
