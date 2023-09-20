@@ -1,11 +1,19 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { coachSelectors } from '@/store/coach';
-import { Alert, BannerWrapper, Button, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  BannerWrapper,
+  Button,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerDto } from '@ecdlink/core';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
 
 interface OnboardingNotCompletedProps {
   practitioner?: PractitionerDto;
@@ -18,6 +26,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
   starterLicenseDate,
   setShowOnboardingNotCompleted,
 }) => {
+  const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const coach = useSelector(coachSelectors.getCoach);
 
@@ -140,6 +149,26 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
           className="mt-4"
           message="WhatsApps and phone calls will be charged at your standard carrier rates."
         />
+        <div className="flex w-full justify-center">
+          <Button
+            type="outlined"
+            color="primary"
+            className={'mt-6 mb-6 w-full'}
+            onClick={() =>
+              history.push(ROUTES.COACH.PRACTIONER_REMOVE, {
+                practitionerId: practitioner?.userId,
+              })
+            }
+          >
+            {renderIcon('UsersIcon', 'w-5 h-5 color-primary text-primary mr-2')}
+            <Typography
+              type="body"
+              className="mr-4"
+              color="primary"
+              text={'Remove practitioner'}
+            ></Typography>
+          </Button>
+        </div>
       </div>
     </BannerWrapper>
   );

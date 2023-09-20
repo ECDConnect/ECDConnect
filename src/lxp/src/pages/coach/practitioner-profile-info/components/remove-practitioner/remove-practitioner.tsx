@@ -40,12 +40,8 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { PractitionerProfileRouteState } from '../../practitioner-profile-info.types';
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
-import {
-  classroomsForCoachSelectors,
-  classroomsForCoachThunkActions,
-} from '@/store/classroomForCoach';
+import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
-import { userSelectors } from '@/store/user';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   onSuccess,
@@ -133,7 +129,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     const classroomDetails = await new PractitionerService(
       authUser?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
-    const filteredClasses = classroomDetails.filter((x) => x.name != 'Unsure');
+    const filteredClasses = classroomDetails.filter((x) => x.name !== 'Unsure');
     setPractitionerClassroomGroups(filteredClasses);
     var mappedClasses = filteredClasses.reduce((obj, val) => {
       return { ...obj, [val.id!]: undefined };
