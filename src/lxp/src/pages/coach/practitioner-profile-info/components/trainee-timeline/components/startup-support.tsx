@@ -2,10 +2,11 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import { BannerWrapper, Typography, renderIcon } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { add, format } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { dateOptions } from '../timeline-steps';
 import { staticDataSelectors } from '@/store/static-data';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 
 interface StartupSupportDetailsProps {
   practitioner: PractitionerDto | undefined;
@@ -21,6 +22,7 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
   const traineeTimeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline
   );
+
   const traineeVisitData = useSelector(traineeSelectors.getTraineeVisitData);
 
   const programmeTypeQuestionObject = traineeVisitData?.find(
@@ -31,6 +33,13 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
   const programme = programData?.find(
     (item) => item?.id === programmeTypeQuestionObject?.questionAnswer
   );
+  const startDate = new Date(
+    traineeTimeline?.signStartUpSupportAgreementDate
+  ).toLocaleDateString('en-ZA', dateOptions);
+  const endDate = add(
+    new Date(traineeTimeline?.signStartUpSupportAgreementDate),
+    { years: 1 }
+  ).toLocaleDateString('en-ZA', dateOptions);
 
   return (
     <BannerWrapper
@@ -100,9 +109,7 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
               className={'my-1'}
               color={'textMid'}
               type={'body'}
-              text={new Date(
-                traineeTimeline?.signStartUpSupportAgreementDate
-              ).toLocaleDateString('en-ZA', dateOptions)}
+              text={`---`}
             />
           </div>
         </div>
@@ -118,9 +125,7 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
               className={'my-1'}
               color={'textMid'}
               type={'body'}
-              text={new Date(
-                traineeTimeline?.signStartUpSupportAgreementDate
-              ).toLocaleDateString('en-ZA', dateOptions)}
+              text={`R 500.00`}
             />
           </div>
         </div>
@@ -136,9 +141,7 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
               className={'my-1'}
               color={'textMid'}
               type={'body'}
-              text={new Date(
-                traineeTimeline?.signStartUpSupportAgreementDate
-              ).toLocaleDateString('en-ZA', dateOptions)}
+              text={`${startDate} to ${endDate}`}
             />
           </div>
         </div>
