@@ -97,54 +97,6 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
             />
           </div>
         </div>
-        <div className="mb-3">
-          <Typography
-            className={'my-1'}
-            color={'textMid'}
-            type={'body'}
-            text={'Start-up support provider'}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              className={'my-1'}
-              color={'textMid'}
-              type={'body'}
-              text={`---`}
-            />
-          </div>
-        </div>
-        <div className="mb-3">
-          <Typography
-            className={'my-1'}
-            color={'textMid'}
-            type={'body'}
-            text={'Monthly start-up support amount'}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              className={'my-1'}
-              color={'textMid'}
-              type={'body'}
-              text={`R 500.00`}
-            />
-          </div>
-        </div>
-        <div>
-          <Typography
-            className={'my-1'}
-            color={'textMid'}
-            type={'body'}
-            text={'Payment start and end dates'}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              className={'my-1'}
-              color={'textMid'}
-              type={'body'}
-              text={`${startDate} to ${endDate}`}
-            />
-          </div>
-        </div>
       </div>
     </BannerWrapper>
   );
