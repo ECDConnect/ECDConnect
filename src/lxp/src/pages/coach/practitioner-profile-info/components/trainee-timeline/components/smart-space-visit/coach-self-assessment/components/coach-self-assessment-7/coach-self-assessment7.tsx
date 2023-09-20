@@ -1,9 +1,7 @@
 import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
 import { PractitionerDto } from '@ecdlink/core';
 import {
-  Alert,
   Button,
-  Card,
   Colours,
   Divider,
   FormInput,
@@ -11,13 +9,12 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { useState } from 'react';
-import { useSelector } from 'react-redux';
-import { traineeSelectors } from '@/store/trainee';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { SelfAssessmentAlert } from '../self-assessment-alert/self-assessment-alert';
 
 interface SmartSpaceCheck1Props {
-  practitioner?: PractitionerDto;
+  practitioner: PractitionerDto;
   programmeName?: string | undefined | null;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   handleNextSection?: any;
@@ -38,13 +35,7 @@ export const getGroupColor = (count: number): Colours => {
 
 export const CoachSelfAssessment7: React.FC<SmartSpaceCheck1Props> = ({
   practitioner,
-  programmeName,
-  setSectionQuestions,
-  handleNextSection,
-  saveSmartSpaceCheckData,
 }) => {
-  const [enableButton, setEnableButton] = useState(false);
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const history = useHistory();
 
   const [questions, setAnswers] = useState([
@@ -64,12 +55,8 @@ export const CoachSelfAssessment7: React.FC<SmartSpaceCheck1Props> = ({
         className={'my-3'}
       />
 
-      <Alert
-        type={'warning'}
-        title={'You are viewing this form and cannot fill in responses.'}
-        list={['Discuss the self-assessment form with Nothando.']}
-        className="mt-4 mb-2"
-      />
+      <SelfAssessmentAlert practitioner={practitioner} />
+
       <Divider dividerType="dashed" className={'my-4'} />
 
       <Typography

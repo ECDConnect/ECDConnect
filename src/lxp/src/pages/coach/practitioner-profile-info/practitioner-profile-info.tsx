@@ -35,6 +35,7 @@ import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
+import { addDays } from 'date-fns';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -61,6 +62,17 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
+
+  const timelineStepsArray = timelineSteps(
+    timeline!,
+    // @ts-ignore,
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined,
+    '',
+    isOnStipend
+  );
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -68,8 +80,18 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     isOnline,
     // @ts-ignore
     undefined
-  ).filter((item) => item?.type === 'completed');
+  ).filter(
+    (item) =>
+      item?.type === 'completed' ||
+      item?.title === 'Consolidation meeting attended'
+  );
   const onboardingNotCompleted = completedSteps?.length < 8;
+  const twoWeeksAgo = addDays(new Date(), -14);
+  const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
+    ? new Date(timeline?.smartSpaceLicenseDate)
+    : new Date();
+  const onboardingIncompleteAfter2Weeks =
+    onboardingNotCompleted && smartSpaceLicenseDate < twoWeeksAgo;
 
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
@@ -216,15 +238,19 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     listItems?.splice(0, 1, {
       title: 'Trainee onboarding',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: isOnStipend
-        ? `${completedSteps?.length} of 9 steps completed`
-        : `${completedSteps?.length} of 8 steps completed`,
+      subTitle: onboardingIncompleteAfter2Weeks
+        ? 'Incomplete after 2 weeks'
+        : `${completedSteps?.length} of ${timelineStepsArray?.length} steps completed`,
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'BadgeCheckIcon',
+      menuIcon: onboardingIncompleteAfter2Weeks
+        ? 'ExclamationIcon'
+        : 'BadgeCheckIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
-      iconBackgroundColor: 'tertiary',
+      iconBackgroundColor: onboardingIncompleteAfter2Weeks
+        ? 'alertMain'
+        : 'tertiary',
       chipConfig: {
         colorPalette: {
           backgroundColour: 'white',

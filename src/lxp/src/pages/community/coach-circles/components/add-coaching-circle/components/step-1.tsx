@@ -37,7 +37,7 @@ export const Step1: React.FC<Step1Props> = ({
   const coachCircleTopicsList = coachCircleTopics?.map((item) => {
     return {
       label: item?.title,
-      value: item?.id,
+      value: item?.id.toString(),
     };
   });
 
@@ -51,7 +51,7 @@ export const Step1: React.FC<Step1Props> = ({
       />
       <div>
         <label className="text-md text-textDark mb-1 block w-11/12 font-medium">
-          What date would you like to reassign the class?
+          What day did you hold the coaching circle?
         </label>
         <div className="bg-uiBg flex items-center">
           <span className="w-full">
@@ -108,7 +108,7 @@ export const Step1: React.FC<Step1Props> = ({
             className="w-full border-none"
             placeholder={'Tap to select topic...'}
             fillType="clear"
-            selectedValue={addCoachingCircleForm?.clubId}
+            selectedValue={addCoachingCircleForm?.meetingType}
             list={coachCircleTopicsList || []}
             onChange={(item) => {
               setAddCoachingCircleForm({

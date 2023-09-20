@@ -215,7 +215,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 foreach (var group in classroomGroups)
                 {
                     var learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
-                    
+
                     int childCount = learners.Count;
                     int month = fromDate.Month;
                     int year = fromDate.Year;
@@ -235,9 +235,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                 var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
                                 if (attendanceAttended > 0)
                                 {
-                                    attendancePercentage = 
-                                        (int)(childCount > 0 && attendanceAttended > 0 
-                                            ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) 
+                                    attendancePercentage =
+                                        (int)(childCount > 0 && attendanceAttended > 0
+                                            ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100)
                                             : 0);
                                 }
 
@@ -249,16 +249,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         }
                     }
                     metric.Add(
-                        new ClassroomMetricReport() 
+                        new ClassroomMetricReport()
                         {
-                            ChildCount = childCount, 
-                            AttendancePercentage = attendancePercentage, 
-                            ClassroomGroupId = group.Id.ToString(), 
-                            ClassroomId = group.ClassroomId.ToString(), 
-                            Month = month, 
-                            Year = year, 
-                            WeekOfYear = weekOfYear, 
-                            PractitionerId = userId 
+                            ChildCount = childCount,
+                            AttendancePercentage = attendancePercentage,
+                            ClassroomGroupId = group.Id.ToString(),
+                            ClassroomId = group.ClassroomId.ToString(),
+                            Month = month,
+                            Year = year,
+                            WeekOfYear = weekOfYear,
+                            PractitionerId = userId
                         });
                 }
             }
@@ -420,7 +420,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             // Notifications for child progress reports
             var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, uId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), DateTime.Now);
-            
+
             // If any reports were submitted in the overdue period (2nd month of the submission window
             if (reportCounts.overdueReportsSubmitted > 0)
             {
@@ -747,7 +747,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var isPeriod1 = previousMonthStart.Month <= 7;
             DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-            
+
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
 
@@ -873,13 +873,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     ch => {
                         Guid.TryParse(ch, out Guid id);
                         return id;
-                })
+                    })
                 .ToList();
             var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>();
             var reassignedClassroomGroups = await classroomGroupRepo.GetAll()
                 .Where(cg => reassignedClassroomGroupIds.Contains(cg.Id))
                 .ToListAsync();
-            
+
             // Build detail list of reassigned classes
             var reassignedClassList = new List<ClassReassignmentDisplay>();
 
@@ -1020,7 +1020,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (practitioner?.IsPrincipal == true)
             {
                 classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId.ToString()).Select(cg=>cg.Id).ToListAsync();
-                
+
             }
             else {
                 classroomGroupIds = await classroomGroupRepo.GetAll()
@@ -1031,7 +1031,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             // Remove weekends and holidays
             var availableDays = RemoveWeekendDays(RemoveHolidays(daysForPeriod, holidays)).ToList();
-            
+
             int missingRegisterDayCount = 0;
 
             foreach (var classroomGroupId in classroomGroupIds) {
@@ -1246,6 +1246,78 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     UserType = "practitioner"
                 };
 
+                #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
+                if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
+                {
+                    var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId);
+
+                    var warningCount = 0;
+                    var warningString = MetricsColorEnum.Warning.ToString();
+                    if (traineeTimeline.DayOneStartUpTrainingColor == null || traineeTimeline.DayOneStartUpTrainingColor == warningString) warningCount++;
+                    if (traineeTimeline.CommunitySupportColor == null || traineeTimeline.CommunitySupportColor == warningString) warningCount++;
+                    if (traineeTimeline.ConsolidationMeetingColor == null || traineeTimeline.ConsolidationMeetingColor == warningString) warningCount++;
+                    if (traineeTimeline.SignFranchiseeAgreementColor == null || traineeTimeline.SignFranchiseeAgreementColor == warningString) warningCount++;
+                    if (traineeTimeline.SignStartUpSupportAgreementColor == null || traineeTimeline.SignStartUpSupportAgreementColor == warningString) warningCount++;
+                    if (traineeTimeline.SmartSpaceChecklistColor == null ||  traineeTimeline.SmartSpaceChecklistColor == warningString) warningCount++;
+                    if (traineeTimeline.SmartSpaceLicenseColor == null || traineeTimeline.SmartSpaceLicenseColor == warningString) warningCount++;
+                    if (traineeTimeline.SSCoachVisitColor == null || traineeTimeline.SSCoachVisitColor == warningString) warningCount++;
+                    if (traineeTimeline.StarterLicenseColor == null || traineeTimeline.StarterLicenseColor == warningString) warningCount++;
+                    if (traineeTimeline.ThreeChildrenRegisteredColor == null || traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
+
+                    if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28))
+                    {
+                        if (warningCount > 0)
+                        {
+                            notification.Subject = "Remove Trainee";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Remove trainee";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    else if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-14))
+                    {
+                        if (warningCount > 0)
+                        {
+                            notification.Subject = "Trainee onboarding incomplete";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Trainee onboarding incomplete";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        var overdueCount = 0;
+                        if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
+
+                        if (overdueCount > 2)
+                        {
+                            notification.Subject = $"{overdueCount} trainee onboarding tasks overdue";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Trainee onboarding tasks overdue";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                }
+                #endregion
+
                 #region ON LEAVE
                 if (absenteeDays.Any(x => x.UserId == practitioner.UserId && x.AbsentDate.Date == DateTime.Now.Date))
                 {
@@ -1304,7 +1376,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #region NOT REGISTERED ON FUNDA APP
                 if (
                     // If they are a trainee, check if they have logged in
-                    (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value && practitioner.User.LastSeen == DateTime.MinValue) 
+                    (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value && practitioner.User.LastSeen == DateTime.MinValue)
                     // If they are a practitioner, check is registered
                     || ((!practitioner.IsTrainee.HasValue || !practitioner.IsTrainee.Value) && (!practitioner.IsRegistered.HasValue || !practitioner.IsRegistered.Value)))
                 {
@@ -1377,7 +1449,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     continue;
                 }
                 #endregion
-                                
+
                 #region SMARTSPACE VISIT OVERDUE
                 var smartSpaceVisit = visits.Where(x => x.PractitionerId == practitioner.Id && x.VisitType.Name == Constants.SSSettings.visitType_smart_space_checklist).FirstOrDefault();
                 if (smartSpaceVisit != null && !smartSpaceVisit.ActualVisitDate.HasValue && smartSpaceVisit.PlannedVisitDate < DateTime.Now)
@@ -1428,16 +1500,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 #region MISSING INCOME STATEMENT
                 var previousMonthBalanceSheet = incomeManager.GetAllStatementsBalanceSheet(practitioner.UserId, previousMonthEnd.Year, previousMonthEnd.Month).FirstOrDefault();
-                if (previousMonthBalanceSheet == null || previousMonthBalanceSheet.SubmittedDate == null || previousMonthBalanceSheet.AutoSubmitted)
+                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
                 {
-                    notification.Subject = $"Missing income statement";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "Missing income statement";
-                    yield return notification;
-                    continue;
+                    if (previousMonthBalanceSheet == null || previousMonthBalanceSheet.SubmittedDate == null || previousMonthBalanceSheet.AutoSubmitted)
+                    {
+                        notification.Subject = $"Missing income statement";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "Missing income statement";
+                        yield return notification;
+                        continue;
+                    }
                 }
                 #endregion
 
@@ -1528,78 +1603,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
                 #endregion
 
-                #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
-                if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
-                {
-                    var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId);
-
-                    var warningCount = 0;
-                    var warningString = MetricsColorEnum.Warning.ToString();
-                    if (traineeTimeline.DayOneStartUpTrainingColor == warningString) warningCount++;
-                    if (traineeTimeline.CommunitySupportColor == warningString) warningCount++;
-                    if (traineeTimeline.ConsolidationMeetingColor == warningString) warningCount++;
-                    if (traineeTimeline.SignFranchiseeAgreementColor == warningString) warningCount++;
-                    if (traineeTimeline.SignStartUpSupportAgreementColor == warningString) warningCount++;
-                    if (traineeTimeline.SmartSpaceChecklistColor == warningString) warningCount++;
-                    if (traineeTimeline.SmartSpaceLicenseColor == warningString) warningCount++;
-                    if (traineeTimeline.SSCoachVisitColor == warningString) warningCount++;
-                    if (traineeTimeline.StarterLicenseColor == warningString) warningCount++;
-                    if (traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
-
-                    if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28))
-                    {
-                        if (warningCount > 0)
-                        {
-                            notification.Subject = "Remove Trainee";
-                            notification.Icon = MetricsIconEnum.Error.ToString();
-                            notification.Color = MetricsColorEnum.Error.ToString();
-                            notification.Message = "";
-                            notification.Notes = "";
-                            notification.GroupingName = "Remove trainee";
-                            yield return notification;
-                            continue;
-                        }
-                    }
-                    else if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-14))
-                    {
-                        if (warningCount > 0)
-                        {
-                            notification.Subject = "Trainee onboarding incomplete";
-                            notification.Icon = MetricsIconEnum.Error.ToString();
-                            notification.Color = MetricsColorEnum.Error.ToString();
-                            notification.Message = "";
-                            notification.Notes = "";
-                            notification.GroupingName = "Trainee onboarding incomplete";
-                            yield return notification;
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        var overdueCount = 0;
-                        if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
-
-                        if (overdueCount > 2)
-                        {
-                            notification.Subject = $"{overdueCount} trainee onboarding tasks overdue";
-                            notification.Icon = MetricsIconEnum.Error.ToString();
-                            notification.Color = MetricsColorEnum.Error.ToString();
-                            notification.Message = "";
-                            notification.Notes = "";
-                            notification.GroupingName = "Trainee onboarding tasks overdue";
-                            yield return notification;
-                            continue;
-                        }
-                    }
-                }
-                #endregion
-
                 // STARTUP SUPPORT ENDING (1 month)
 
                 // Club features not implemented yet
@@ -1611,7 +1614,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var classroom = practitionerClassrooms.FirstOrDefault();
 
                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
-                {                    
+                {
                     var numberOfLearners = classroomGroupRepo.GetAll()
                         .Where(x => practitionerClassrooms.Select(x => x.Id).Contains(x.ClassroomId))
                         .SelectMany(x => x.Learners)
@@ -1853,7 +1856,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     continue;
                 }
                 #endregion
-                
+
                 #region CLASSROOM NAME
                 notification.Subject = classroom?.Name ?? "Unknown classroom";
                 notification.Icon = MetricsIconEnum.Success.ToString();

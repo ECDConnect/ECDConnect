@@ -132,7 +132,7 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
               className={'mx-4 my-4'}
               type={'info'}
               title={
-                'Disclaimer: OrgName is not liable for money being transferred to a cell phone number that was lost/misplaced without notification.'
+                'Disclaimer: the organisation providing the start-up support is not liable for money being transferred to a cell phone number that was lost/misplaced without notification.'
               }
             />
             <div

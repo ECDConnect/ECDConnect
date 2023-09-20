@@ -1,5 +1,4 @@
 import { Tag } from '@/components/tag';
-import { PointsSummaryCard } from '@/pages/dashboard/components/points-summary-card/points-summary-card';
 import ROUTES from '@/routes/routes';
 import {
   Alert,
@@ -7,6 +6,7 @@ import {
   Button,
   EmptyPage,
   MenuListDataItem,
+  ScoreCard,
   StackedList,
   StackedListType,
   Typography,
@@ -150,12 +150,15 @@ export const Club: React.FC = () => {
             type={'MenuList' as StackedListType}
             listItems={[leagueCard]}
           />
-          <PointsSummaryCard
-            currentPoints={club?.totalClubPoints || 0}
-            hint="Points"
-            maxPoints={club?.maxClubPoints || 0}
-            showIcon={false}
-            useColourBackground={false}
+          <ScoreCard
+            mainText={`${mockedClub.points}`}
+            secondaryText="points"
+            currentPoints={mockedClub.points}
+            maxPoints={mockedClub.maxPoints}
+            barBgColour="uiLight"
+            barColour="black"
+            bgColour="uiBg"
+            textColour="black"
             // TODO: add onClick
             onClick={() => {}}
           />
