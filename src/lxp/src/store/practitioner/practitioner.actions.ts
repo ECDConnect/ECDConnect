@@ -197,7 +197,7 @@ export const getPractitionerDisplayMetrics = createAsyncThunk<
       if (userAuth?.auth_token) {
         practitionersMessageData = await new PractitionerService(
           userAuth?.auth_token!
-        ).displayMetrics('practitioner');
+        ).displayMetrics('principal');
       } else {
         return rejectWithValue('no access token, profile check required');
       }

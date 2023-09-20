@@ -347,16 +347,6 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (isOnline) {
-      (async () =>
-        await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
-        ).unwrap())();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }
-  }, []);
-
-  useEffect(() => {
-    if (isOnline) {
       if (practitioner?.userId && !classroom) {
         (async () =>
           await appDispatch(
