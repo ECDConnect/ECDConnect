@@ -1,10 +1,19 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
-import { CoachingClub, NewClubMemberInput } from '@ecdlink/graphql';
+import {
+  Club,
+  ClubLeader,
+  CoachingClub,
+  NewClubInput,
+  NewClubMemberInput,
+} from '@ecdlink/graphql';
 import { ClubService } from '@/services/ClubService';
+import { NewClubLeaderInput } from '@/services/ClubService/types';
 
 export const ClubActions = {
   GET_ALL_CLUBS_FOR_COACH: 'getAllClubsForCoach',
+  ADD_NEW_CLUB: 'addNewClub',
+  ADD_NEW_CLUB_LEADER: 'addNewClubLeader',
   ADD_NEW_CLUB_MEMBERS: 'addNewClubMembers',
   MOVE_CLUB_MEMBERS: 'moveClubMembers',
 };
@@ -73,6 +82,54 @@ export const moveClubMembers = createAsyncThunk<
     try {
       if (userAuth?.auth_token) {
         return await new ClubService(userAuth?.auth_token).moveClubMembers(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addNewClub = createAsyncThunk<
+  Club,
+  { input: NewClubInput },
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_NEW_CLUB,
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).addNewClub(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addNewClubLeader = createAsyncThunk<
+  ClubLeader,
+  NewClubLeaderInput,
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_NEW_CLUB_LEADER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).addNewClubLeader(
           input
         );
       } else {

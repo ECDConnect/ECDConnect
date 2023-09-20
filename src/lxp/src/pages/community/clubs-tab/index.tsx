@@ -10,7 +10,6 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
-import { mockedClub } from './club/individual-club-view';
 import { useAppDispatch } from '@/store';
 import { useEffect } from 'react';
 import { ClubActions, getAllClubsForCoach } from '@/store/club/club.actions';
@@ -99,9 +98,7 @@ export const ClubsTab = () => {
         shape="round"
         className="absolute bottom-1 right-1 z-10 m-3 px-3.5 py-2.5"
         click={() =>
-          history.push(
-            ROUTES.COMMUNITY.CLUB.ADD.replace(':clubId', mockedClub.id)
-          )
+          history.push(ROUTES.COMMUNITY.CLUB.ADD.replace(':clubId', 'new'))
         }
       />
     </div>

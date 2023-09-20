@@ -1,16 +1,71 @@
-import { Avatar, CheckboxGroup, FormInput, Typography } from '@ecdlink/ui';
-import { mockedClub } from '../../individual-club-view';
-import { ClubAddProps } from '..';
-import { useEffect } from 'react';
+import {
+  Avatar,
+  CheckboxChange,
+  CheckboxGroup,
+  FormInput,
+  Typography,
+  UserAvatar,
+} from '@ecdlink/ui';
+import { ClubAddProps, Member } from '..';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
+import { practitionerSelectors } from '@/store/practitioner';
+import { clubSelectors } from '@/store/club';
+import { PractitionerDto } from '@ecdlink/core';
 
-export const Step1 = ({ setIsEnabledButton }: ClubAddProps) => {
-  // TODO: replace mockedClub with the real data
-  const isSmartStartersWithoutClub = mockedClub.members.length > 0;
+export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
+  const [clubName, setClubName] = useState('');
+  const [selectedPractitioners, setSelectedPractitioners] = useState<Member[]>(
+    []
+  );
+
+  const clubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
+
+  const practitionersForCoach = useSelector(
+    practitionerForCoachSelectors.getPractitionersForCoach
+  );
+  const allPractitioners = useSelector(practitionerSelectors.getPractitioners);
+  const filteredPractitioners = allPractitioners?.filter((practitioner) =>
+    practitionersForCoach?.find(
+      (practitionerForCoach) => practitioner.id === practitionerForCoach.id
+    )
+  );
+  const mergedMembers = clubs
+    ?.map((club) => club.clubMembers)
+    .flat()
+    .map((item) => item?.practitioner);
+  const practitionersNotInClub = filteredPractitioners?.filter(
+    (practitioner) =>
+      !mergedMembers?.find((member) => practitioner.id === member?.id)
+  );
+
+  const isSmartStartersWithoutClub = !!practitionersNotInClub?.length;
+
+  const onCheckboxChange = (event: CheckboxChange) => {
+    const value = event.value as PractitionerDto | undefined;
+    if (event.checked) {
+      const currentPractitioners = selectedPractitioners
+        ? [...selectedPractitioners, value]
+        : [value];
+
+      return setSelectedPractitioners(currentPractitioners);
+    }
+
+    const currentPractitioners = selectedPractitioners?.filter(
+      (item) => item?.id !== value?.id
+    );
+
+    return setSelectedPractitioners(currentPractitioners);
+  };
 
   useEffect(() => {
-    // TODO: put it in an onChange
-    setIsEnabledButton(true);
-  }, [setIsEnabledButton]);
+    if (clubName || selectedPractitioners?.length) {
+      setStep1?.({ clubName, members: selectedPractitioners });
+    }
+
+    setIsEnabledButton(!!clubName);
+  }, [clubName, selectedPractitioners, setIsEnabledButton, setStep1]);
 
   return (
     <>
@@ -20,29 +75,53 @@ export const Step1 = ({ setIsEnabledButton }: ClubAddProps) => {
         hint='Do not include the word "club" in the name.'
         placeholder="Add club name..."
         className="mb-5"
+        value={clubName}
+        onChange={(event) => setClubName(event.target.value)}
+        maxCharacters={35}
       />
-      <Typography type="h4" text="Add club members" />
-      <Typography
-        type="help"
-        text="These are all the SmartStarters who are not in a club yet."
-        color="textMid"
-        className="mb-5"
-      />
-      {isSmartStartersWithoutClub &&
-        mockedClub.members.map((member) => (
-          <CheckboxGroup
-            className="mb-2"
-            key={member.name}
-            title={member.name}
-            titleWeight="semibold"
-            icon={
-              <div className="ml-4 mr-2">
-                <Avatar dataUrl={mockedClub.iconUrl} />
-              </div>
-            }
-            isIconFullWidth
+      {isSmartStartersWithoutClub && (
+        <div className="mb-4">
+          <Typography type="h4" text="Add club members" />
+          <Typography
+            type="help"
+            text="These are all the SmartStarters who are not in a club yet."
+            color="textMid"
+            className="mb-5"
           />
-        ))}
+          {practitionersNotInClub?.map((practitioner) => (
+            <CheckboxGroup<PractitionerDto>
+              className="mb-2"
+              key={practitioner.id}
+              title={`${practitioner.user?.firstName} ${practitioner.user?.surname}`}
+              titleWeight="semibold"
+              checked={selectedPractitioners?.some(
+                (option) => practitioner.id === option?.id
+              )}
+              value={practitioner}
+              icon={
+                <div className="ml-4 mr-2">
+                  {practitioner.user?.profileImageUrl ? (
+                    <Avatar dataUrl={practitioner.user?.profileImageUrl} />
+                  ) : (
+                    <UserAvatar
+                      className="mr-4"
+                      size="md"
+                      avatarColor="var(--primaryAccent2)"
+                      text={`${practitioner?.user?.firstName?.charAt(
+                        0
+                      )}${practitioner?.user?.surname?.charAt(0)}`}
+                      displayBorder
+                    />
+                  )}
+                </div>
+              }
+              isIconFullWidth
+              onChange={onCheckboxChange}
+            />
+          ))}
+        </div>
+      )}
+      ;
     </>
   );
 };

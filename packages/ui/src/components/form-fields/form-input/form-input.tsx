@@ -1,5 +1,5 @@
 import { Colours, ComponentBaseProps } from '../../../models';
-import { renderIcon } from '../../../utils';
+import { classNames, renderIcon } from '../../../utils';
 import {
   FieldError,
   Path,
@@ -16,6 +16,7 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   subLabel?: string;
   nameProp?: Path<T>;
   type?: FormFieldType;
+  maxCharacters?: number;
   textInputType?: TextInputType;
   error?: FieldError;
   disabled?: boolean;
@@ -40,6 +41,7 @@ export const FormInput = <T extends FieldValues>({
   label,
   subLabel,
   nameProp,
+  maxCharacters,
   type = 'text',
   textInputType = 'input',
   error,
@@ -205,7 +207,12 @@ export const FormInput = <T extends FieldValues>({
             </label>
           )}
           {hint && <label className={styles.hintStyle}>{hint}</label>}
-          <div className={styles.inputWrapper}>
+          <div
+            className={classNames(
+              styles.getBorderClass(value, maxCharacters),
+              styles.inputWrapper
+            )}
+          >
             {getInputToRender()}
             <div className={styles.iconWrapperLeft} onClick={suffixIconAction}>
               {!!prefixIcon && (
@@ -225,6 +232,18 @@ export const FormInput = <T extends FieldValues>({
           </div>
 
           <span className="text-errorMain text-xs"> {error?.message} </span>
+          {!!maxCharacters && (
+            <p
+              className={classNames(
+                'text-xs',
+                value && value?.toString().length > maxCharacters
+                  ? 'text-errorMain'
+                  : 'text-infoDark'
+              )}
+            >
+              {value?.toString().length || 0}/{maxCharacters} characters used
+            </p>
+          )}
         </div>
       )}
     </>
