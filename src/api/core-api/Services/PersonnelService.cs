@@ -954,7 +954,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     dates.Add(timeline.CommunitySupportDate.Value);
                 }
 
-                if (sections.Count == 4 && timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() && dates.Count == 4)
+                if (/* sections.Count == 4  && */ timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() && dates.Count >= 3)
                 {
                     var latestDate = dates.OrderDescending().First();
                     latestDate = latestDate.AddDays(7);
