@@ -34,6 +34,7 @@ export const CoachPractitionerChildList: React.FC<ComponentBaseProps> = () => {
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
