@@ -42,6 +42,8 @@ import {
   getReAccreditationFormDataByIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import {
+  ScheduleEventType,
+  ScheduleOrStartProps,
   ScheduleProps,
   dateOptions,
   filterVisit,
@@ -221,10 +223,11 @@ export const CoachPractitionerJourney = () => {
   };
 
   const onScheduleOrStart = ({
+    scheduleStartText,
     eventType,
     visit,
     visitEventId,
-  }: ScheduleProps) => {
+  }: ScheduleOrStartProps) => {
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
@@ -233,10 +236,8 @@ export const CoachPractitionerJourney = () => {
           icon={'QuestionMarkCircleIcon'}
           iconColor="white"
           iconBorderColor="infoMain"
-          importantText={`Would you like to schedule or start the first PQA visit?`}
-          detailText={
-            'Tap schedule to go to the calendar or, if you are starting the first PQA visit now, tap start.'
-          }
+          importantText={`Would you like to schedule or start the ${scheduleStartText}?`}
+          detailText={`Tap schedule to go to the calendar or, if you are starting the ${scheduleStartText} now, tap start.`}
           actionButtons={[
             {
               text: 'Schedule in calendar',
@@ -297,28 +298,89 @@ export const CoachPractitionerJourney = () => {
       : []),
   ];
 
+  const getScheduleVisitTypeInfo = (
+    visit: Visit
+  ):
+    | { eventType: ScheduleEventType; scheduleStartText: string }
+    | undefined => {
+    if (visit.visitType?.name === visitTypes.pqa.firstPQA.name)
+      return {
+        eventType: visitTypes.pqa.firstPQA.eventType,
+        scheduleStartText: visitTypes.pqa.firstPQA.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.pqa.followUp.name)
+      return {
+        eventType: visitTypes.pqa.followUp.eventType,
+        scheduleStartText: visitTypes.pqa.followUp.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.reaccreditation.first.name)
+      return {
+        eventType: visitTypes.reaccreditation.first.eventType,
+        scheduleStartText: visitTypes.reaccreditation.first.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.reaccreditation.second.name)
+      return {
+        eventType: visitTypes.reaccreditation.second.eventType,
+        scheduleStartText: visitTypes.reaccreditation.second.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.reaccreditation.third.name)
+      return {
+        eventType: visitTypes.reaccreditation.third.eventType,
+        scheduleStartText: visitTypes.reaccreditation.third.scheduleStartText,
+      };
+    if (visit.visitType?.name === visitTypes.reaccreditation.followUp.name)
+      return {
+        eventType: visitTypes.reaccreditation.followUp.eventType,
+        scheduleStartText:
+          visitTypes.reaccreditation.followUp.scheduleStartText,
+      };
+  };
+
+  const getScheduleOrStartProps = (
+    visit: Visit
+  ): ScheduleOrStartProps | undefined => {
+    const values = getScheduleVisitTypeInfo(visit);
+    if (!values) return undefined;
+    return {
+      visit: visit,
+      visitEventId: visit.eventId,
+      ...values,
+    };
+  };
+
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
     ?.map((visit): MenuListDataItem<{ visitId?: string }> => {
       const isLate = new Date(visit?.plannedVisitDate || '') < new Date();
+      const plannedVisitDate = !!visit?.plannedVisitDate
+        ? new Date(visit?.plannedVisitDate).toLocaleDateString(
+            'en-ZA',
+            dateLongMonthOptions
+          )
+        : '';
+      const options = getScheduleOrStartProps(visit as Visit);
 
       return {
         showIcon: true,
         menuIcon: isLate ? 'ExclamationIcon' : 'ClipboardListIcon',
         iconColor: 'white',
         titleStyle: 'text-textDark',
-        title: visit?.visitType?.description || 'Visit',
-        subTitle: !!visit?.plannedVisitDate
-          ? new Date(visit?.plannedVisitDate).toLocaleDateString(
-              'en-ZA',
-              dateLongMonthOptions
-            )
-          : '',
+        title:
+          !!visit?.eventId && !!options
+            ? `Start ${options.scheduleStartText}`
+            : visit?.visitType?.description || 'Visit',
+        subTitle: `${!!visit?.eventId ? 'Scheduled ' : ''}${plannedVisitDate}`,
         subTitleStyle: 'text-textDark',
         iconBackgroundColor: isLate ? 'alertMain' : 'primary',
         backgroundColor: 'uiBg',
         extraData: { visitId: visit?.id },
-        onActionClick: () => onStart(String(visit?.visitType?.name)),
+        onActionClick: () => {
+          if (visit?.eventId || !options) {
+            onStart(String(visit?.visitType?.name));
+          } else {
+            onScheduleOrStart(options);
+          }
+        },
       };
     })
     .shift();

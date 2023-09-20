@@ -11,8 +11,9 @@ import {
   StackedListItemType,
   Typography,
   UserAvatar,
+  ScoreCard,
 } from '@ecdlink/ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -49,9 +50,15 @@ import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { calendarThunkActions } from '@/store/calendar';
-import { traineeSelectors } from '@/store/trainee';
+import { pointsSelectors, pointsThunkActions } from '@/store/points';
+import { pointsConstants } from '@/constants/points';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { traineeSelectors } from '@/store/trainee';
 import { PractitionerInput } from '@ecdlink/graphql';
+import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
+import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
+import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
+import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -80,7 +87,6 @@ export const Dashboard: React.FC = () => {
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
   const userData = useSelector(userSelectors.getUser);
-  const practitionerData = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const { isOnline } = useOnlineStatus();
@@ -101,10 +107,12 @@ export const Dashboard: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
+  // TODO: add integration
+  const isFirstTimeCommunitySection = true;
+
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
-
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -117,32 +125,68 @@ export const Dashboard: React.FC = () => {
     isOnStipend
   ).filter((item) => item?.type === 'completed');
 
+  const pointsSummaryData = useSelector(pointsSelectors.getPointsSummary);
+  const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
+
+  useEffect(() => {
+    const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
+    const pointsTotal = pointsSummaryData.reduce((total, current) => {
+      if (current.month == currentMonth) {
+        return (total += current.pointsTotal);
+      }
+      return total;
+    }, 0);
+    const pointsMax =
+      isPrincipal || isFundaAppAdmin
+        ? pointsConstants.principalOrAdminMonthlyMax
+        : pointsConstants.practitionerMonthlyMax;
+
+    const percentageScore = (pointsTotal / pointsMax) * 100;
+
+    if (percentageScore < 60) {
+      setPointsScoreProps({
+        mainText: `${pointsTotal} points`,
+        barBgColour: 'uiBg',
+        barColour: 'errorMain',
+        bgColour: 'errorBg',
+        currentPoints: pointsTotal,
+        maxPoints: pointsMax,
+        textColour: 'errorMain',
+        onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
+        image: <EmojiOrangeSmile className="mr-2 h-16 w-16" />,
+      });
+    } else if (percentageScore < 80) {
+      setPointsScoreProps({
+        mainText: `${pointsTotal} points`,
+        barBgColour: 'uiBg',
+        barColour: 'secondary',
+        bgColour: 'infoBb',
+        currentPoints: pointsTotal,
+        maxPoints: pointsMax,
+        textColour: 'secondary',
+        onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
+        image: <EmojiBlueSmile className="mr-2 h-16 w-16" />,
+      });
+    } else {
+      setPointsScoreProps({
+        mainText: `${pointsTotal} points`,
+        barBgColour: 'uiBg',
+        barColour: 'successMain',
+        bgColour: 'successBg',
+        currentPoints: pointsTotal,
+        maxPoints: pointsMax,
+        textColour: 'successMain',
+        onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
+        image: <EmojiGreenSmile className="mr-2 h-16 w-16" />,
+      });
+    }
+  }, [pointsSummaryData]);
+
   const { userProfilePicture } = useDocuments();
 
   useEffect(() => {
     convertImageToBase64(offlineStatments, setStorageItem);
   }, []);
-
-  useEffect(() => {
-    if (
-      (practitioner?.isTrainee &&
-        practitioner?.isOnStipend &&
-        completedSteps?.length === 7) ||
-      (practitioner?.isTrainee &&
-        practitioner?.isOnStipend !== true &&
-        completedSteps?.length === 6)
-    ) {
-      const copy = Object.assign({}, practitioner);
-      const input: PractitionerInput = {
-        Id: copy.id,
-        IsActive: true,
-        Progress: copy.progress,
-        IsTrainee: false,
-      };
-      appDispatch(practitionerActions.updatePractitioner(copy));
-      appDispatch(practitionerThunkActions.updatePractitioner(input));
-    }
-  }, [completedSteps?.length]);
 
   useEffect(() => {
     if (
@@ -256,7 +300,7 @@ export const Dashboard: React.FC = () => {
    * 2. Children of Practitioners
    */
   useEffect(() => {
-    if (isOnline) {
+    if (isOnline && !!userData) {
       if (isCoach) {
         (async () =>
           await appDispatch(
@@ -276,32 +320,30 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
       }
 
-      if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
-        const currentPrincipal = practitionerData?.filter(
-          (x) => x?.user?.id === userData.id
-        );
-        const _current = currentPrincipal?.at(0);
-        if (_current) {
-          (async () =>
-            await appDispatch(
-              practitionerThunkActions.getPractitionerById({
-                id: _current?.id || '',
-              })
-            ).unwrap())();
-        }
+      if (userData.roles?.some((role) => role.name === 'Practitioner')) {
+        (async () =>
+          await appDispatch(
+            practitionerThunkActions.getPractitionerByUserId({
+              userId: userData?.id || '',
+            })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsLibrary({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
       }
     }
   }, [userData]);
-
-  useEffect(() => {
-    if (isOnline) {
-      (async () =>
-        await appDispatch(
-          practitionerThunkActions.getAllPractitioners({})
-        ).unwrap())();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }
-  }, []);
 
   useEffect(() => {
     if (isOnline) {
@@ -415,7 +457,7 @@ export const Dashboard: React.FC = () => {
   if (!isTrainee) {
     navigation.splice(3, 0, {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
+      href: ROUTES.COMMUNITY.ROOT,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -497,7 +539,7 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
+      href: ROUTES.COMMUNITY.ROOT,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -518,22 +560,27 @@ export const Dashboard: React.FC = () => {
       {
         title: 'SmartStarters',
         titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.smartStarterIcon,
+        titleIconClassName: styles.icon,
         onActionClick: () => history.push(ROUTES.COACH.PRACTITIONERS),
         classNames: 'bg-uiBg',
       },
       {
-        title: 'Clubs',
-        titleIcon: 'BriefcaseIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
+        title: 'Community',
+        titleIcon: 'UserGroupIcon',
+        titleIconClassName: styles.icon,
+        onActionClick: () =>
+          history.push(
+            isFirstTimeCommunitySection
+              ? ROUTES.COMMUNITY.WELCOME
+              : ROUTES.COMMUNITY.ROOT
+          ),
         classNames: 'bg-uiBg',
       }
     );
     dashboardItems.push({
       title: 'Calendar',
       titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.calendarIcon,
+      titleIconClassName: styles.icon,
       classNames: 'bg-uiBg',
       onActionClick: () => {
         goToCalendar();
@@ -776,6 +823,19 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
+        {!!pointsScoreProps && (
+          <ScoreCard
+            mainText={pointsScoreProps.mainText}
+            currentPoints={pointsScoreProps.currentPoints}
+            maxPoints={pointsScoreProps.maxPoints}
+            onClick={pointsScoreProps.onClick}
+            barBgColour={pointsScoreProps.barBgColour}
+            barColour={pointsScoreProps.barColour}
+            bgColour={pointsScoreProps.bgColour}
+            image={pointsScoreProps.image}
+            textColour={pointsScoreProps.textColour}
+          />
+        )}
       </div>
     </BannerWrapper>
   );

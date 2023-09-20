@@ -33,50 +33,65 @@ namespace ECDLink.AutomatedJobs.Notifications
                 var twoOne = DateTime.UtcNow.AddDays(-21).Date;
                 var threeZero = DateTime.UtcNow.AddDays(-30).Date;
 
-                var practitioners = dbContext.Practitioners
-                                            .Include(x => x.User)
-                                            .Where(x => x.IsActive)
-                                            .Where(x => x.User.LastSeen.Date.Equals(twoOne) || x.User.LastSeen.Date.Equals(threeZero))
+                var users = dbContext.Users.Where(x => x.IsActive)
+                                            .Where(x => x.LastSeen.Date == twoOne || x.LastSeen.Date == threeZero)
                                             .ToList();
+
+                //var practitioners = dbContext.Practitioners
+                //                            .Include(x => x.User)
+                //                            .Where(x => x.IsActive)
+                //                            .Where(x => x.User.LastSeen.Date.Equals(twoOne) || x.User.LastSeen.Date.Equals(threeZero))
+                //                            .ToList();
 
                 var existingNotifications = dbContext.JobNotifications
                                                 .Where(x => x.TemplateType == TemplateTypeEnum.ThreeWeekNotLoggedOn
                                                 || x.TemplateType == TemplateTypeEnum.FourWeekNotLoggedOn)
                                                 .ToList();
 
-                foreach (var practitioner in practitioners)
+                foreach (var user in users)
                 {
                     // If an existing notification exists
-                    if (existingNotifications.Any(x => string.Equals(x.UserId, practitioner.UserId)))
+                    if (existingNotifications.Any(x => string.Equals(x.UserId, user.Id)))
                     {
                         continue;
                     }
 
-                    if (practitioner.User.LastSeen.Date == twoOne)
+                    //do larger age first so taht user does not get too many messages
+                    if (user.LastSeen.Date <= threeZero)
                     {
                         dbContext.JobNotifications.Add(new JobNotification
                         {
-                            UserId = practitioner.UserId,
-                            UserLastSeen = practitioner.User.LastSeen,
-                            Protocol = practitioner.User.ContactPreference,
-                            TemplateType = TemplateTypeEnum.ThreeWeekNotLoggedOn
+                            UserId = user.Id,
+                            UserLastSeen = user.LastSeen,
+                            Protocol = user.ContactPreference,
+                            TemplateType = TemplateTypeEnum.FourWeekNotLoggedOn,
+                            TenantId = user.TenantId,
+                            InsertedDate = DateTime.UtcNow
                         });
 
                         continue;
                     }
 
-                    if (practitioner.User.LastSeen.Date == threeZero)
+                    //make sure user doesnt get notification fopr 30 and 21
+                    if (existingNotifications.Any(x => string.Equals(x.UserId, user.Id)))
                     {
+                        continue;
+                    }
+
+                    if (user.LastSeen.Date <= twoOne) { 
                         dbContext.JobNotifications.Add(new JobNotification
                         {
-                            UserId = practitioner.UserId,
-                            UserLastSeen = practitioner.User.LastSeen,
-                            Protocol = practitioner.User.ContactPreference,
-                            TemplateType = TemplateTypeEnum.FourWeekNotLoggedOn
+                            UserId = user.Id,
+                            UserLastSeen = user.LastSeen,
+                            Protocol = user.ContactPreference,
+                            TemplateType = TemplateTypeEnum.ThreeWeekNotLoggedOn,
+                            TenantId = user.TenantId,
+                            InsertedDate = DateTime.UtcNow
                         });
 
                         continue;
                     }
+
                 }
 
                 dbContext.SaveChanges();

@@ -6,7 +6,7 @@ import {
   ComponentBaseProps,
   Camera,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import * as styles from './photo-prompt.styles';
 import { PhotoPromptActionType } from './photo-prompt.types';
 
@@ -33,12 +33,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
   >([]);
   const [isOpenCamera, setIsOpenCamera] = useState(false);
 
-  useEffect(() => {
-    getActions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const getActions = () => {
+  const getActions = useCallback(() => {
     const actionsList: ActionSelectItem<PhotoPromptActionType>[] = [];
 
     if (onDelete) {
@@ -63,7 +58,7 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
     });
 
     setActions(actionsList);
-  };
+  }, [onDelete]);
 
   const openCamera = async () => {
     setIsOpenCamera(true);
@@ -111,6 +106,10 @@ export const PhotoPrompt: React.FC<PhotoPromptProps> = ({
         break;
     }
   };
+
+  useEffect(() => {
+    getActions();
+  }, [getActions]);
 
   return (
     <>

@@ -5,19 +5,23 @@ import { Colours } from '../../models';
 export type ProgressBarProps = {
   subLabel: string;
   label: string;
+  hint?: string;
   isHiddenSubLabel?: boolean;
   value: number;
   className?: string;
   primaryColour?: Colours;
   secondaryColour?: Colours;
+  textColour?: Colours;
 };
 export const ProgressBar = ({
   className,
   value,
   label,
+  hint,
   subLabel,
   primaryColour = 'primary',
   secondaryColour = 'uiBg',
+  textColour,
   isHiddenSubLabel,
 }: ProgressBarProps) => {
   const progressBarOptions = useMemo(
@@ -41,9 +45,20 @@ export const ProgressBar = ({
       style={{ height: '100%', width: '100%' }}
     >
       <p
-        className={`mb-2 text-center text-4xl font-semibold text-${primaryColour}`}
+        className={`${
+          !hint && 'mb-2'
+        } text-center text-4xl font-semibold text-${
+          textColour || primaryColour
+        }`}
       >
         {label}
+      </p>
+      <p
+        className={`text-16 mb-2 text-center font-semibold text-${
+          textColour || primaryColour
+        }`}
+      >
+        {hint}
       </p>
       <div className={`rounded-10 h-full bg-${secondaryColour}`}>
         <div className={`bg-${primaryColour} h-full`} style={style}></div>

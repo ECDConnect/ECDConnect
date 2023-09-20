@@ -33,7 +33,24 @@ const ROUTES = {
   CALENDAR: '/calendar',
   CLASSROOM: '/classroom',
   TRAINING: '/training',
-  COMMUNITY: '/community',
+  COMMUNITY: addPrefix('/community', {
+    WELCOME: '/welcome',
+    CLUB: addPrefix('/club/:clubId', {
+      ADD: '/add',
+      EDIT: '/edit',
+      MEMBERS: addPrefix('/members', {
+        ADD: '/add',
+        EDIT: '/edit',
+      }),
+      LEADER: addPrefix('/leader', {
+        EDIT: '/edit',
+      }),
+      USER_PROFILE: {
+        LEADER: '/leader/:leaderId',
+        MEMBER: '/member/:practitionerId',
+      },
+    }),
+  }),
   CHILD: addPrefix('/child', {
     INFORMATION: addPrefix('/information', {
       EDIT: '/edit',
@@ -63,6 +80,11 @@ const ROUTES = {
       PLAYGROUPS: '/playgroups',
       EDIT: '/edit',
     }),
+    POINTS: addPrefix('/points', {
+      SUMMARY: '/summary',
+      YEAR: '/year',
+    }),
+    CONTACT_COACH: '/contact-coach',
   }),
   TRAINEE: addPrefix('/trainee', {
     SETUP_TRAINEE: '/setup-trainee',
@@ -89,6 +111,7 @@ const ROUTES = {
     '/download-child-progress-observation-reports',
   COACH_REGISTRATION: '/coach-registration',
   COACH_SMARTSPACE_CHECK: '/coach-smart-space-check',
+  COACH_TRAINEE_ONBOARDING: '/coach-trainee-onboarding',
   COACH_FRANCHISE_AGREEMENT: '/coach-franchisor-agreement',
   COACH_SELF_ASSESSMENT: '/coach-self-assessment',
   COACH: addPrefix('/coach', {
@@ -99,6 +122,15 @@ const ROUTES = {
     PRACTITIONERS: '/practitioners',
     PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
     PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
+    PRACTITIONER_BUSINESS: addPrefix('/practitioner-business', {
+      BUSINESS: '/:practitionerId',
+      LIST_STATEMENTS: '/:practitionerId/previous-statements-list',
+      STATEMENT_DETAILS: '/:practitionerId/statement-details',
+      NOT_SUBMITTED: '/:practitionerId/not-submitted',
+      STARTUP_SUPPORT_ENDING: '/:practitionerId/startup-support-ending',
+      PROFIT: '/:practitionerId/profit',
+      LOSS: '/:practitionerId/loss',
+    }),
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',
     PRACTIONER_REMOVE: '/practioner-remove',

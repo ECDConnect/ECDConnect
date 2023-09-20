@@ -25,7 +25,11 @@ namespace ECDLink.Abstractrions.Constants
         public const string ReassignedToNewClassFromOld = "reassigned-to-new-class-from-old";
         public const string ReassignedToNewClass = "reassigned-to-new-class";
         public const string TraineeOverdueTasks = "trainee-overdue-tasks";
+        public const string TraineeSetupVenue = "trainee-setup-venue";
         public const string TwoOnboardingStepsLeft = "two-more-steps-to-complete";
+        public const string RegisterThreeChildren = "trainee-register-children";
+        public const string TraineeSignAgreement = "trainee-sign-agreement";
+        public const string TraineeSignStartupSupportAgreement = "trainee-sign-startup-agreement";
         public const string UnassignedClasses = "unassigned-classes";
         public const string RejectedInvitation = "rejected-invitation";
         public const string RemovedFromProgramme = "removed-from-programme";
@@ -60,6 +64,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string ReportDeadlinePassed = "report-deadline-passed";
         public const string PrincipalMovedToNewProgramme = "report-deadline-passed";
         public const string FillInSelfAsessmentForm = "fillin-self-asessment-form";
+        public const string TraineeJourneyStartSelf = "start-trainee-journey";
 
 
         //coach notifications
@@ -77,7 +82,46 @@ namespace ECDLink.Abstractrions.Constants
         public const string GGWalkthroughNotification = "gg-walkthrough-notification";
         public const string GGUploadRTHNotification = "gg-upload-rth";
         public const string GGExpectedMomDeliveryDateApproaching = "gg-expected-moms-delivery-date-approaching";
+        public const string GGRedAlertMaternalDistress = "gg-redalert-maternal-distress";
+        public const string GGMaternalDistress = "gg-maternal-distress";
+
+        public const string GGVisitOverdue = "gg-visit-overdue";
+        public const string GGChildMUAC = "gg-child-muac";
+        public const string GGChildGrowthIssue = "gg-child-growth-issue"; 
+        public const string GGMultipleReferrals = "gg-multiple-referrals";
+        public const string GGReferralDangerSigns = "gg-referral-danger-signs";
+        public const string GGTwoVisitsMissed = "gg-two-visits-missed";
+        public const string GGChildOlderThanFive = "gg-child-older-than-five";
+        public const string GGReferDOHA = "gg-refer-home-affairs";
+        public const string GGReferSASSA = "gg-refer-sassa";
+        public const string GGClinicVisitsNotUpToDate = "gg-clinic-visits-not-uptodate";
+        public const string GGPregnantMomLowMUAC = "gg-pregnant-low-muac";
+        public const string GGChildMUACMalnutrition = "gg-child-muac-malnutrution";
+        public const string GGyoungerthan20 = "gg-younger-than-20";
+        public const string GGXVisitsMissed = "gg-x-visits-missed";
+        public const string GGLowBirthWeight = "gg-low-birth-weight";
+        public const string GGSubstanceAbuse = "gg-substance-abuse";
+        public const string GGAddBreastfeedingClub = "gg-breastfeeding-club";
+        public const string GGAddedABreastfeedingClub = "gg-added-breastfeeding-club";
+        public const string GGVisitsNotCompleted14days = "gg-visits-not-completed-14days";
+
+        //GG points and ranking
+        public const string GGEarningPoints = "gg-earning-points";
+        public const string GGPointsYearlySummary = "gg-points-yearly-summary";
+        public const string GGEarningXPoints = "gg-earning-x-points";
+        public const string GGTopPointsEarner = "gg-top-points-earner";
+        public const string GGTopPointsTeam = "gg-top-points-team";
+        public const string GGTop25PercPointsTeam = "gg-top-25-perc-points-team";
+        public const string GGBottom75PercPointsTeam = "gg-bottom-75-perc-points-team";
+        public const string GGGoldTierPointsTeam = "gg-points-gold-tier-team";
+        public const string GGSilverTierPointsTeam = "gg-points-silver-tier-team";
+        public const string GGBronzeTierPointsTeam = "gg-points-bronze-tier-team";
+        public const string GGPointsTeamPlacement = "gg-points-placement-team";
+        public const string GGPointsTeamPlacementNotTop3 = "gg-points-placement-team-top-25-perc-not-top-three";
+        public const string GGPointsTeamPlacementNotBottom75Perc = "gg-points-placement-team-bottom-75perc";
 
 
+        //Bulk messaging
+        public const string GenericMessage = "generic-message";
     }
 }

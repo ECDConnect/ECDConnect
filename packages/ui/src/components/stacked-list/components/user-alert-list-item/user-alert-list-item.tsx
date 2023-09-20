@@ -102,7 +102,7 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
                 ) : null}
                 <Typography
                   className={
-                    item?.childMatching
+                    item?.breaksSubtitleLine
                       ? 'w-11/12 break-words pl-1'
                       : 'truncate pl-1'
                   }

@@ -1,3 +1,4 @@
+import { ReactElement } from 'react';
 import { Colours } from '../../..';
 import { ListItem } from './ListItem';
 
@@ -10,6 +11,7 @@ export interface MenuListDataItem<T = {}> extends ListItem {
   iconBackgroundColor?: Colours;
   iconColor?: Colours;
   menuIconUrl?: string;
+  customIcon?: ReactElement;
   subItem?: string;
   childList?: boolean;
   backgroundColor?: Colours;

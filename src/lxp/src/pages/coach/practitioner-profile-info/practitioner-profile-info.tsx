@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
-import { PractitionerDto, useSnackbar, useTheme } from '@ecdlink/core';
+import { useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -33,7 +33,7 @@ import { CoachPractitionerNotRegistered } from './components/coach-practitioner-
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
-import { TraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
+import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
@@ -52,12 +52,26 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal === true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
+
   const isTrainee = practitioner?.isTrainee;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
+  const showBusinessItem =
+    practitioner?.isFundaAppAdmin || practitioner?.isPrincipal;
   const isOnStipend = practitioner?.isOnStipend;
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
+
+  const timelineStepsArray = timelineSteps(
+    timeline!,
+    // @ts-ignore,
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined,
+    '',
+    isOnStipend
+  );
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -65,7 +79,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     isOnline,
     // @ts-ignore
     undefined
-  ).filter((item) => item?.type === 'completed');
+  ).filter(
+    (item) =>
+      item?.type === 'completed' ||
+      item?.title === 'Consolidation meeting attended'
+  );
   const onboardingNotCompleted = completedSteps?.length < 8;
 
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
@@ -213,9 +231,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     listItems?.splice(0, 1, {
       title: 'Trainee onboarding',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: isOnStipend
-        ? `${completedSteps?.length} of 9 steps completed`
-        : `${completedSteps?.length} of 8 steps completed`,
+      subTitle: `${completedSteps?.length} of ${timelineStepsArray?.length} steps completed`,
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'BadgeCheckIcon',
@@ -239,6 +255,36 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 practitionerId
               )
             ),
+      classNames: 'bg-uiBg',
+    });
+  }
+
+  if (showBusinessItem && !isTrainee) {
+    listItems?.push({
+      title: 'Business',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: `Business, Income & expenses`,
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'BriefcaseIcon',
+      menuIconClassName: 'text-white',
+      showIcon: true,
+      iconBackgroundColor: 'tertiary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'white',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
+            ':practitionerId',
+            practitionerId
+          )
+        ),
       classNames: 'bg-uiBg',
     });
   }
@@ -598,7 +644,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             position={DialogPosition.Top}
           >
             <div className={styles.dialogContent}>
-              <TraineeOnboarding practitioner={practitioner} />
+              <CoachTraineeOnboarding practitioner={practitioner} />
             </div>
           </Dialog>
         </div>

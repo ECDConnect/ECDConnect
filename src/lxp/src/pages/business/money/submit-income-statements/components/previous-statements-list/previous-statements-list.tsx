@@ -73,7 +73,7 @@ export const PreviousStatementsList: React.FC = () => {
     if (yearBalance > 0) {
       return (
         <Card
-          className="bg-successMain flex items-center justify-between p-4"
+          className="bg-successMain mt-2 flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography
@@ -93,7 +93,7 @@ export const PreviousStatementsList: React.FC = () => {
     } else {
       return (
         <Card
-          className="bg-tertiary flex items-center justify-between p-4"
+          className="bg-tertiary mt-2 flex items-center justify-between p-4"
           shadowSize={'md'}
         >
           <Typography
@@ -132,7 +132,7 @@ export const PreviousStatementsList: React.FC = () => {
         />
         {prevStatementsItems && (
           <StackedList
-            className="mt-4 flex w-full flex-col"
+            className="mt-4 flex w-full flex-col gap-1"
             type="MenuList"
             listItems={
               isOnline ? prevStatementsItems : offlinePrevStatementsItems

@@ -255,7 +255,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             onClick={async () => {
               appDispatch(authActions.resetAuthState());
               resetAppStore && (await resetAppStore());
-              history && history.push(ROUTES.LOGIN);
+              history ? history.push(ROUTES.LOGIN) : window.location.reload();
             }}
           >
             <Typography

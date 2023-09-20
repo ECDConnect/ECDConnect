@@ -86,6 +86,26 @@ import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-inf
 import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
 import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
+import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-business/coach-practitioner-business';
+import { PractitionerPreviousStatementsList } from '@/pages/coach/coach-practitioner-business/components/statements/previous-statements-list';
+import { PractitionerMonthStatementsDetails } from '@/pages/coach/coach-practitioner-business/components/statements/month-statements-details';
+import { StatementNotSubmitted } from '@/pages/coach/coach-practitioner-business/components/statements/not-submitted';
+import { StartupSupportEnding } from '@/pages/coach/coach-practitioner-business/components/support/startup-support-ending';
+import { MonthsLoss } from '@/pages/coach/coach-practitioner-business/components/statements/loss';
+import { MonthsProfit } from '@/pages/coach/coach-practitioner-business/components/statements/profit';
+import { PointsSummary } from '@/pages/points/points-summary/points-summary';
+import { CommunityWelcome } from '@/pages/community/welcome';
+import { Club } from '@/pages/community/clubs-tab/club/individual-club-view';
+import { ClubMembers } from '@/pages/community/clubs-tab/club/club-members';
+import { ClubMembersEdit } from '@/pages/community/clubs-tab/club/club-members-edit';
+import { ClubEdit } from '@/pages/community/clubs-tab/club/club-edit';
+import { PointsYearView } from '@/pages/points/points-year-view/points-year-view';
+import { ClubLeaderEdit } from '@/pages/community/clubs-tab/club/club-leader-edit';
+import { ClubAdd } from '@/pages/community/clubs-tab/club/club-add';
+import { CoachContactDetails } from '@/pages/practitioner/coach-contact-details/coach-contact-details';
+import { ClubMembersAdd } from '@/pages/community/clubs-tab/club/club-members-add';
+import { UserProfile } from '@/pages/community/clubs-tab/club/user-profile';
+import { CoachTraineeOnboarding } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/trainee-onboarding';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -172,8 +192,44 @@ const AuthRoutes: React.FC = () => {
         component={MonthStatementsDetails}
         exact={true}
       />
-      <Route path={ROUTES.TRAINING} component={Training} exact={true} />
-      <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
+      <Route path={ROUTES.TRAINING} component={Training} exact />
+      <Route path={ROUTES.COMMUNITY.ROOT} component={Community} exact />
+      <Route
+        path={ROUTES.COMMUNITY.WELCOME}
+        component={CommunityWelcome}
+        exact
+      />
+      <Route path={ROUTES.COMMUNITY.CLUB.ROOT} component={Club} exact />
+      <Route path={ROUTES.COMMUNITY.CLUB.ADD} component={ClubAdd} exact />
+      <Route path={ROUTES.COMMUNITY.CLUB.EDIT} component={ClubEdit} exact />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT}
+        component={ClubMembers}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS.ADD}
+        component={ClubMembersAdd}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT}
+        component={ClubMembersEdit}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.LEADER.EDIT}
+        component={ClubLeaderEdit}
+        exact
+      />
+      <Route
+        path={[
+          ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER,
+          ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER,
+        ]}
+        component={UserProfile}
+        exact
+      />
       <Route
         path={ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH}
         component={WalkthroughTutorial}
@@ -217,6 +273,21 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.PRACTITIONER.PROFILE.EDIT}
         component={EditPractitionerProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.POINTS.SUMMARY}
+        component={PointsSummary}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.POINTS.YEAR}
+        component={PointsYearView}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER.CONTACT_COACH}
+        component={CoachContactDetails}
       />
       <Route
         exact
@@ -357,6 +428,11 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         exact
+        path={ROUTES.COACH_TRAINEE_ONBOARDING}
+        component={CoachTraineeOnboarding}
+      />
+      <Route
+        exact
         path={ROUTES.COACH_FRANCHISE_AGREEMENT}
         component={CoachTraineeFranchisorAgreement}
       />
@@ -429,6 +505,42 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.COACH.PRACTITIONER_JOURNEY}
         component={CoachPractitionerJourney}
       />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS}
+        component={CoachPractitionerBusiness}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS}
+        component={PractitionerPreviousStatementsList}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS}
+        component={PractitionerMonthStatementsDetails}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.NOT_SUBMITTED}
+        component={StatementNotSubmitted}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.STARTUP_SUPPORT_ENDING}
+        component={StartupSupportEnding}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.PROFIT}
+        component={MonthsProfit}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.LOSS}
+        component={MonthsLoss}
+      />
+
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>
   );

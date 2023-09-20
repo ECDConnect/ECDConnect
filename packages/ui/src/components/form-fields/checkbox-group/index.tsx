@@ -6,6 +6,7 @@ import { classNames } from '../../../utils';
 export interface CheckboxGroupProps<T extends FieldValues = {}>
   extends ComponentBaseProps {
   icon?: ReactElement;
+  isIconFullWidth?: boolean;
   title: string;
   titleColours?: Colours;
   titleWeight?: string;
@@ -27,6 +28,7 @@ export const CheckboxGroup = ({
   disabled,
   checked,
   icon,
+  isIconFullWidth,
   title,
   titleColours = 'textDark',
   titleWeight = 'bold',
@@ -86,9 +88,10 @@ export const CheckboxGroup = ({
           onChange={(e) => checkboxChange(e)}
         />
       )}
+      {isIconFullWidth && icon}
       <div className="ml-2 flex w-full flex-col items-start font-bold">
         <div className="flex items-center gap-2">
-          {icon && (
+          {icon && !isIconFullWidth && (
             <div
               className={`flex h-9 w-9 items-center justify-center rounded-full ${
                 checked ? 'bg-secondary' : 'bg-tertiary'
