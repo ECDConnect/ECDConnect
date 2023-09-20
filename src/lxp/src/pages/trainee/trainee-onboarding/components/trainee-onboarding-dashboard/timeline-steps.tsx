@@ -119,6 +119,8 @@ export const setStep = (
             status === 'Get community support') ||
           (consolidationMeetingAttended &&
             status === 'Fill in the SmartSpace checklist') ||
+          (consolidationMeetingAttended &&
+            status === 'Sign start-up support agreement') ||
           (consolidationMeetingAttended && status === 'Register 3 children')) &&
         status !== 'Consolidation meeting attended'
           ? true
