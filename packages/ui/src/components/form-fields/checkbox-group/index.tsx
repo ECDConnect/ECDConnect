@@ -18,12 +18,12 @@ export interface CheckboxGroupProps<T extends FieldValues = {}>
   register?: UseFormRegister<T>;
   disabled?: boolean;
   checked?: boolean;
-  value?: number | string;
+  value?: number | string | T;
   name?: string;
   checkboxColor?: Colours;
 }
 
-export const CheckboxGroup = ({
+export const CheckboxGroup = <T extends FieldValues = {}>({
   id,
   disabled,
   checked,
@@ -44,7 +44,7 @@ export const CheckboxGroup = ({
   checkboxColor,
   className,
   ...rest
-}: CheckboxGroupProps) => {
+}: CheckboxGroupProps<T>) => {
   const checkboxChange = (e: any) => {
     onChange?.({
       checked: e.target.checked,

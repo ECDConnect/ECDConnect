@@ -4,24 +4,24 @@ import ROUTES from '@/routes/routes';
 import { useState } from 'react';
 import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
-import { useSnackbar } from '@ecdlink/core';
+import { PractitionerDto, useSnackbar } from '@ecdlink/core';
 import { Step3 } from './steps/step-3';
 import { ClubsRouteState } from '../../index.types';
 
 interface MockedStep1 {}
-export interface MockedStep2 {}
+export type Member = PractitionerDto | undefined;
 interface MockedStep3 {}
 
 export interface ClubAddProps {
   setStep1?: (step1: MockedStep1) => void;
-  setStep2?: (step2: MockedStep2) => void;
+  setStep2?: (step2: Member[]) => void;
   setStep3?: (step3: MockedStep3) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
 }
 
 export const ClubAdd: React.FC = () => {
   const [step1, setStep1] = useState<MockedStep1>();
-  const [step2, setStep2] = useState<MockedStep2>();
+  const [step2, setStep2] = useState<Member[]>();
   const [step3, setStep3] = useState<MockedStep3>();
 
   const [step, setStep] = useState(0);
@@ -82,6 +82,7 @@ export const ClubAdd: React.FC = () => {
           title="Add a club"
           setIsEnabledButton={setIsEnabledButton}
           setStep2={setStep2}
+          hasSelectedPractitioners={false} // TODO: add real rule
         />
       )}
       {isLastStep && (
