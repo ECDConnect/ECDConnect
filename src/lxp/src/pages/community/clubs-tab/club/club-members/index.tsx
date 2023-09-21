@@ -10,17 +10,21 @@ import {
 } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { useLayoutEffect, useMemo } from 'react';
+import { useCallback, useLayoutEffect, useMemo } from 'react';
 import { ClubsRouteState } from '../../index.types';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { addDays, differenceInMonths, format } from 'date-fns';
 import { daysToAcceptBeingLeader } from '@/constants/club';
+import { useSnackbar } from '@ecdlink/core';
+import { userSelectors } from '@/store/user';
 
 export const ClubMembers: React.FC = () => {
   const history = useHistory();
   const { clubId } = useParams<ClubsRouteState>();
+  const { showMessage } = useSnackbar();
 
+  const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
     clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
@@ -62,8 +66,13 @@ export const ClubMembers: React.FC = () => {
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
-    // TODO: add onClick
-    onActionClick: () => {},
+    onActionClick: () =>
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH.replace(
+          ':clubId',
+          clubId
+        ).replace(':coachId', user?.id!)
+      ),
   };
 
   const leader: UserAlertListDataItem = {
@@ -110,6 +119,18 @@ export const ClubMembers: React.FC = () => {
           ).replace(':practitionerId', member?.practitioner?.id)
         ),
     })) ?? [];
+
+  const onCall = useCallback(() => {
+    const nextLeaderPhoneNumber = nextLeader?.practitioner?.user?.phoneNumber;
+    if (nextLeaderPhoneNumber) {
+      return window.open(`tel:${nextLeaderPhoneNumber}`);
+    }
+
+    return showMessage({
+      message: 'Phone number is not available',
+      type: 'error',
+    });
+  }, [nextLeader?.practitioner?.user?.phoneNumber, showMessage]);
 
   useLayoutEffect(() => {
     if (!club?.clubMembers?.length) {
@@ -175,8 +196,7 @@ export const ClubMembers: React.FC = () => {
               textColor="white"
               icon="ChatIcon"
               text={`Contact ${nextLeader?.practitioner?.user?.firstName}`}
-              // TODO: add onClick
-              onClick={() => {}}
+              onClick={onCall}
             />
           ) : (
             <></>
@@ -185,6 +205,7 @@ export const ClubMembers: React.FC = () => {
       />
     );
   }, [
+    onCall,
     hasLeader,
     isLeaderRequestSent,
     isLeaderAcceptedAgreement,
