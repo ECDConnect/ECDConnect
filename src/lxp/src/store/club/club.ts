@@ -1,6 +1,8 @@
 import { createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  addNewClub,
+  addNewClubLeader,
   addNewClubMembers,
   getAllClubsForCoach,
   moveClubMembers,
@@ -17,12 +19,20 @@ const clubSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getAllClubsForCoach);
+    setThunkActionStatus(builder, addNewClub);
+    setThunkActionStatus(builder, addNewClubLeader);
     setThunkActionStatus(builder, addNewClubMembers);
     setThunkActionStatus(builder, moveClubMembers);
     builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
       state.allClubsForCoach = action.payload;
+    });
+    builder.addCase(addNewClub.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addNewClubLeader.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addNewClubMembers.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
