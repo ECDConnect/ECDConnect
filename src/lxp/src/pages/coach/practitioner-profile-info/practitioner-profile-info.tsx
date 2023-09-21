@@ -240,7 +240,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: onboardingIncompleteAfter2Weeks
         ? 'Incomplete after 2 weeks'
-        : `${completedSteps?.length} of ${timelineStepsArray?.length} steps completed`,
+        : `${completedSteps?.length + 1} of ${
+            timelineStepsArray?.length + 1
+          } steps completed`,
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: onboardingIncompleteAfter2Weeks
