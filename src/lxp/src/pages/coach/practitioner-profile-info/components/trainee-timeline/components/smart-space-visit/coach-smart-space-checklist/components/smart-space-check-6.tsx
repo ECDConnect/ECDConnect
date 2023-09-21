@@ -322,8 +322,9 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         <Step6Map
           onClose={() => setShowMap(false)}
           onSubmit={(address) => {
+            console.log({ address });
             onOptionSelected(address, 2);
-            setNewAddress(newAddress);
+            setNewAddress(address);
           }}
         />
       </Dialog>
