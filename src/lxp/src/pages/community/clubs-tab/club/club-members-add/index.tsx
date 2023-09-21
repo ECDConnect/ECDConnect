@@ -18,6 +18,7 @@ import {
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
+import { clubSelectors } from '@/store/club';
 
 export type Member = PractitionerDto | undefined;
 
@@ -82,14 +83,19 @@ export const ClubMembersAdd: React.FC = () => {
 
   const history = useHistory();
   const { clubId } = useParams<ClubsRouteState>();
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const { showMessage } = useSnackbar();
 
   const appDispatch = useAppDispatch();
 
   const onClose = useCallback(() => {
-    history.push(ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', clubId));
-  }, [clubId, history]);
+    history.push(
+      !!club?.clubMembers?.length
+        ? ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', clubId)
+        : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+    );
+  }, [club?.clubMembers?.length, clubId, history]);
 
   const onSubmit = async () => {
     if (!!selectedMembers.length) {

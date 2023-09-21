@@ -218,7 +218,10 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
-        path={ROUTES.COMMUNITY.CLUB.LEADER.EDIT}
+        path={[
+          ROUTES.COMMUNITY.CLUB.LEADER.ADD,
+          ROUTES.COMMUNITY.CLUB.LEADER.EDIT,
+        ]}
         component={ClubLeaderEdit}
         exact
       />
