@@ -5,3 +5,5 @@ export const enum LeagueType {
 }
 
 export const daysToAcceptBeingLeader = 14;
+
+export const maxCharactersInClubName = 35;

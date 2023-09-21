@@ -176,7 +176,10 @@ export const FormInput = <T extends FieldValues>({
               type={type}
               value={value ?? ''}
               maxLength={maxLength}
-              className={getInputStyle()}
+              className={classNames(
+                styles.getBorderClass(value, maxCharacters),
+                getInputStyle()
+              )}
               // onKeyDown={}
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
@@ -207,12 +210,7 @@ export const FormInput = <T extends FieldValues>({
             </label>
           )}
           {hint && <label className={styles.hintStyle}>{hint}</label>}
-          <div
-            className={classNames(
-              styles.getBorderClass(value, maxCharacters),
-              styles.inputWrapper
-            )}
-          >
+          <div className={styles.inputWrapper}>
             {getInputToRender()}
             <div className={styles.iconWrapperLeft} onClick={suffixIconAction}>
               {!!prefixIcon && (
