@@ -108,6 +108,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
             className={'mr-4 rounded-xl'}
             size={'normal'}
             onClick={whatsapp}
+            disabled={!practitioner?.user?.phoneNumber}
           >
             <div className="flex items-center justify-center">
               <img
@@ -129,6 +130,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
             className={'mr-4 rounded-xl'}
             size={'small'}
             onClick={call}
+            disabled={!practitioner?.user?.phoneNumber}
           >
             <div className="flex items-center justify-center">
               <PhoneIcon
