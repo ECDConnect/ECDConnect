@@ -131,7 +131,9 @@ namespace ECDLink.SmartStart.Services
 
         public List<Child> GetChildrenForUser(string userId)
         {
-            return _childRepo.GetAll().ToList(); ; //Hierarchy based children
+            return _childRepo.GetAll()
+                .Where(x => x.IsActive)
+                .ToList(); ; //Hierarchy based children
         }
 
         public List<Practitioner> GetPractitionersByHierarchy()
