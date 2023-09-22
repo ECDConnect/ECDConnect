@@ -227,6 +227,7 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         path={[
+          ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH,
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER,
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER,
         ]}

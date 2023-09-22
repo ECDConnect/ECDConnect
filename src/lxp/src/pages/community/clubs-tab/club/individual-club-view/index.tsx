@@ -71,7 +71,7 @@ export const Club: React.FC = () => {
     clubSelectors.getNextClubLeaderByClubIdSelector(params.clubId)
   );
 
-  const totalMembers = club?.clubMembers?.length;
+  const totalMembers = club?.clubMembers?.length || 0;
 
   const isClubInALeague = !!club?.league?.id;
   const isTop25Percent =

@@ -47,6 +47,7 @@ const ROUTES = {
         EDIT: '/edit',
       }),
       USER_PROFILE: {
+        COACH: '/coach/:coachId',
         LEADER: '/leader/:leaderId',
         MEMBER: '/member/:practitionerId',
       },

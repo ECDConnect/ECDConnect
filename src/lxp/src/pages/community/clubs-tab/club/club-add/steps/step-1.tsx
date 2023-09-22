@@ -13,6 +13,7 @@ import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { practitionerSelectors } from '@/store/practitioner';
 import { clubSelectors } from '@/store/club';
 import { PractitionerDto } from '@ecdlink/core';
+import { maxCharactersInClubName } from '@/constants/club';
 
 export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
   const [clubName, setClubName] = useState('');
@@ -31,6 +32,7 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
       (practitionerForCoach) => practitioner.id === practitionerForCoach.id
     )
   );
+
   const mergedMembers = clubs
     ?.map((club) => club.clubMembers)
     .flat()
@@ -64,7 +66,9 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
       setStep1?.({ clubName, members: selectedPractitioners });
     }
 
-    setIsEnabledButton(!!clubName);
+    setIsEnabledButton(
+      !!clubName && clubName.length <= maxCharactersInClubName
+    );
   }, [clubName, selectedPractitioners, setIsEnabledButton, setStep1]);
 
   return (
@@ -77,7 +81,7 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
         className="mb-5"
         value={clubName}
         onChange={(event) => setClubName(event.target.value)}
-        maxCharacters={35}
+        maxCharacters={maxCharactersInClubName}
       />
       {isSmartStartersWithoutClub && (
         <div className="mb-4">
@@ -121,7 +125,6 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
           ))}
         </div>
       )}
-      ;
     </>
   );
 };

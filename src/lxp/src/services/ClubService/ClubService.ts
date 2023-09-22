@@ -3,6 +3,7 @@ import {
   Club,
   ClubLeader,
   CoachingClub,
+  MutationChangeClubNameArgs,
   NewClubInput,
   NewClubMemberInput,
 } from '@ecdlink/graphql';
@@ -151,6 +152,32 @@ class ClubService {
     }
 
     return response.data.data.addNewClubMembers;
+  }
+
+  async changeClubName(input: MutationChangeClubNameArgs): Promise<Club> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { changeClubName: Club };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation ChangeClubName($clubId: String, $clubName: String ) {
+          changeClubName(clubId: $clubId, clubName: $clubName) {
+              id
+              name
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Change club name failed - Server connection error');
+    }
+
+    return response.data.data.changeClubName;
   }
 
   async moveClubMembers(input: NewClubMemberInput): Promise<boolean> {
