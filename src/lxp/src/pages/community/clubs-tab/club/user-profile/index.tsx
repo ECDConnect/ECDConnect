@@ -15,9 +15,12 @@ import ROUTES from '@/routes/routes';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { userSelectors } from '@/store/user';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { AboutYourselfDialog } from './about-yourself-dialog';
 
 export const UserProfile: React.FC = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const history = useHistory();
 
   const { height } = useWindowSize();
@@ -88,6 +91,7 @@ export const UserProfile: React.FC = () => {
       type: 'error',
     });
   };
+
   return (
     <BannerWrapper
       showBackground
@@ -197,8 +201,7 @@ export const UserProfile: React.FC = () => {
               color="primary"
               text="Edit shot description"
               textColor="white"
-              // TODO: EC-1388
-              onClick={() => {}}
+              onClick={() => setIsDialogOpen(true)}
             />
             <Button
               icon="UserIcon"
@@ -211,6 +214,10 @@ export const UserProfile: React.FC = () => {
           </div>
         )}
       </div>
+      <AboutYourselfDialog
+        visible={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+      />
     </BannerWrapper>
   );
 };

@@ -7,10 +7,12 @@ import {
   changeClubName,
   getAllClubsForCoach,
   moveClubMembers,
+  updateCoachAboutInfo,
 } from './club.actions';
 import { ClubState } from './club.types';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
+import { CoachingClub } from '@ecdlink/graphql';
 
 const initialState: ClubState = {};
 
@@ -25,6 +27,7 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, addNewClubMembers);
     setThunkActionStatus(builder, moveClubMembers);
     setThunkActionStatus(builder, changeClubName);
+    setThunkActionStatus(builder, updateCoachAboutInfo);
     builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
@@ -51,6 +54,19 @@ const clubSlice = createSlice({
           };
         }
         return club;
+      });
+      setFulfilledThunkActionStatus(state, action);
+    });
+
+    builder.addCase(updateCoachAboutInfo.fulfilled, (state, action) => {
+      state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
+        return {
+          ...club,
+          coach: {
+            ...club.coach,
+            aboutInfo: action.payload.aboutInfo ?? '',
+          },
+        } as CoachingClub;
       });
       setFulfilledThunkActionStatus(state, action);
     });

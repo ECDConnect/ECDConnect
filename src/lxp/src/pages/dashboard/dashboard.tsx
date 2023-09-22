@@ -59,6 +59,7 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
+import { CommunityRouteState } from '../community/community.types';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -457,7 +458,10 @@ export const Dashboard: React.FC = () => {
   if (!isTrainee) {
     navigation.splice(3, 0, {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY.ROOT,
+      href: isFirstTimeCommunitySection
+        ? ROUTES.COMMUNITY.WELCOME
+        : ROUTES.COMMUNITY.ROOT,
+      params: { isFromDashboard: true } as CommunityRouteState,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -539,7 +543,10 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY.ROOT,
+      href: isFirstTimeCommunitySection
+        ? ROUTES.COMMUNITY.WELCOME
+        : ROUTES.COMMUNITY.ROOT,
+      params: { isFromDashboard: true } as CommunityRouteState,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -568,12 +575,14 @@ export const Dashboard: React.FC = () => {
         title: 'Community',
         titleIcon: 'UserGroupIcon',
         titleIconClassName: styles.icon,
-        onActionClick: () =>
+        onActionClick: () => {
           history.push(
             isFirstTimeCommunitySection
               ? ROUTES.COMMUNITY.WELCOME
-              : ROUTES.COMMUNITY.ROOT
-          ),
+              : ROUTES.COMMUNITY.ROOT,
+            { isFromDashboard: true } as CommunityRouteState
+          );
+        },
         classNames: 'bg-uiBg',
       }
     );
