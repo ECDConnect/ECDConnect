@@ -43,6 +43,7 @@ const ROUTES = {
         EDIT: '/edit',
       }),
       LEADER: addPrefix('/leader', {
+        ADD: '/add',
         EDIT: '/edit',
       }),
       USER_PROFILE: {

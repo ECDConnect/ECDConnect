@@ -10,7 +10,7 @@ import {
 } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { useMemo } from 'react';
+import { useLayoutEffect, useMemo } from 'react';
 import { ClubsRouteState } from '../../index.types';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
@@ -19,14 +19,14 @@ import { daysToAcceptBeingLeader } from '@/constants/club';
 
 export const ClubMembers: React.FC = () => {
   const history = useHistory();
-  const params = useParams<ClubsRouteState>();
+  const { clubId } = useParams<ClubsRouteState>();
 
-  const club = useSelector(clubSelectors.getClubByIdSelector(params.clubId));
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
-    clubSelectors.getCurrentClubLeaderByClubIdSelector(params.clubId)
+    clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
   );
   const nextLeader = useSelector(
-    clubSelectors.getNextClubLeaderByClubIdSelector(params.clubId)
+    clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
 
   const nextLeaderFirstName = nextLeader?.practitioner?.user?.firstName;
@@ -48,6 +48,7 @@ export const ClubMembers: React.FC = () => {
     club?.clubLeaders?.every((leader) => !!leader?.dateAccepted) &&
     club?.clubLeaders?.some((leader) => !!leader?.isActive);
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
+  const isToChangeLeader = hasLeader || isLeaderRequestSent;
 
   const coach: UserAlertListDataItem = {
     title: `${club?.coach?.user?.firstName || ''} ${
@@ -81,7 +82,7 @@ export const ClubMembers: React.FC = () => {
       history.push(
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
           ':clubId',
-          params.clubId
+          clubId
         ).replace(':leaderId', currentLeader?.practitioner?.id) // TODO: check if it's practitionerId or userId
       ),
   };
@@ -105,10 +106,16 @@ export const ClubMembers: React.FC = () => {
         history.push(
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
             ':clubId',
-            params.clubId
+            clubId
           ).replace(':practitionerId', member?.practitioner?.id)
         ),
     })) ?? [];
+
+  useLayoutEffect(() => {
+    if (!club?.clubMembers?.length) {
+      history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId));
+    }
+  }, [club?.clubMembers?.length, clubId, history]);
 
   const renderAlert = useMemo(() => {
     let title;
@@ -193,13 +200,11 @@ export const ClubMembers: React.FC = () => {
   return (
     <BannerWrapper
       showBackground={false}
-      className="flex flex-col p-4 pt-6 "
+      className="flex flex-col p-4 pt-6 pb-20"
       size="small"
       title={`${club?.name} club`}
       onBack={() =>
-        history.push(
-          ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', params.clubId)
-        )
+        history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
       }
     >
       <Typography type="h2" text={`${club?.name} club members`} />
@@ -217,14 +222,13 @@ export const ClubMembers: React.FC = () => {
           type="outlined"
           color="primary"
           textColor="primary"
-          text={hasLeader ? 'Change club leader' : 'Assign club leader'}
+          text={isToChangeLeader ? 'Change club leader' : 'Assign club leader'}
           icon="RefreshIcon"
           onClick={() =>
             history.push(
-              ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(
-                ':clubId',
-                params.clubId
-              )
+              ROUTES.COMMUNITY.CLUB.LEADER[
+                isToChangeLeader ? 'EDIT' : 'ADD'
+              ].replace(':clubId', clubId)
             )
           }
         />
@@ -249,10 +253,7 @@ export const ClubMembers: React.FC = () => {
           icon="ArrowsExpandIcon"
           onClick={() =>
             history.push(
-              ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(
-                ':clubId',
-                params.clubId
-              )
+              ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(':clubId', clubId)
             )
           }
         />
@@ -276,7 +277,7 @@ export const ClubMembers: React.FC = () => {
         className="absolute bottom-1 right-1 z-10 m-3 px-3.5 py-2.5"
         click={() =>
           history.push(
-            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', params.clubId)
+            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
           )
         }
       />
