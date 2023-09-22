@@ -35,17 +35,20 @@ export const ClubMembers: React.FC = () => {
 
   const nextLeaderFirstName = nextLeader?.practitioner?.user?.firstName;
   const today = new Date().setHours(0, 0, 0, 0);
-  const dueDateNextLeader = addDays(
-    new Date(nextLeader?.dateAssigned),
-    daysToAcceptBeingLeader
-  ).setHours(0, 0, 0, 0);
+  const dueDateNextLeader = nextLeader
+    ? addDays(
+        new Date(nextLeader?.dateAssigned),
+        daysToAcceptBeingLeader
+      ).setHours(0, 0, 0, 0)
+    : undefined;
   const monthsSinceCurrentLeaderAccepted = differenceInMonths(
     new Date(),
     new Date(currentLeader?.dateAccepted ?? '')
   );
 
   const hasLeader = !!currentLeader;
-  const isDueDateNextLeaderTodayOrFuture = dueDateNextLeader >= today;
+  const isDueDateNextLeaderTodayOrFuture =
+    dueDateNextLeader && dueDateNextLeader >= today;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isLeaderAcceptedAgreement =
     isDueDateNextLeaderTodayOrFuture &&
@@ -148,28 +151,28 @@ export const ClubMembers: React.FC = () => {
     }
 
     // Scenario: the assigned club leader has not accepted the club leader agreement yet AND there is no club leader currently assigned.
-    else if (!isLeaderAcceptedAgreement && !hasLeader) {
+    else if (nextLeader && !isLeaderAcceptedAgreement && !hasLeader) {
       title = `${nextLeaderFirstName} has not accepted the club leader role yet.`;
       list = [
         `You assigned ${nextLeaderFirstName} the club leader role on ${
           nextLeader &&
           format(new Date(nextLeader?.dateAssigned), 'dd MMMM yyyy')
         }.`,
-        `If ${nextLeaderFirstName} does not accept by ${format(
-          new Date(dueDateNextLeader),
-          'dd MMMM yyyy'
-        )}, you will need to choose a different club leader.`,
+        `If ${nextLeaderFirstName} does not accept by ${
+          dueDateNextLeader &&
+          format(new Date(dueDateNextLeader), 'dd MMMM yyyy')
+        }, you will need to choose a different club leader.`,
       ];
     }
 
     // Scenario: the assigned club leader has not accepted the club leader agreement yet AND there is currently a club leader assigned.
-    else if (!isLeaderAcceptedAgreement && hasLeader) {
+    else if (nextLeader && !isLeaderAcceptedAgreement && hasLeader) {
       title = `${nextLeaderFirstName} has not accepted the club leader role yet.`;
       list = [
-        `You assigned ${nextLeaderFirstName} the club leader role on ${format(
-          new Date(dueDateNextLeader),
-          'dd MMMM yyyy'
-        )}.`,
+        `You assigned ${nextLeaderFirstName} the club leader role on ${
+          dueDateNextLeader &&
+          format(new Date(dueDateNextLeader), 'dd MMMM yyyy')
+        }.`,
         `${currentLeader?.practitioner?.user?.firstName} will continue to be the club leader in the meantime.`,
       ];
     }

@@ -136,7 +136,7 @@ export const Step2 = ({
         <>
           <FormInput
             type="number"
-            label="How many SmartStarters would you like to move from a different club into the Winners club?"
+            label={`How many SmartStarters would you like to move from a different club into the ${step1?.clubName} club?`}
             placeholder="Add a number..."
             value={smartStartersCount}
             onChange={onChangeInput}
