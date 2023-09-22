@@ -306,20 +306,24 @@ public class SmartStartIntegrationService : IIntegrationService
     /// PQA visits if needed
     /// </summary>
     /// <returns></returns>
-    public async Task<bool> PullPQAData()
+    public async Task<bool> PullPQAData(string franchiseeId = null)
     {
         await _logManager.IntegrationLog($"PullPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PullPQAData > GetPQAByFranchisee");
         int totalVisitsAdded = 0;
         int totalFollowUpVisitsAdded = 0;
 
         var success = true;
-        var mappedPractitioners = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
+        var mappedPractitioners = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner, true);//await GetMappedEntitiesTestUsers(); //
         var mappedCoaches = await GetMappedEntities(Constants.SSIntegrationSettings.SSCoach);
         var coaches = _coachGenericRepo.GetAll().Where(x => mappedCoaches.Select(y => y.UserId).Contains(x.UserId)).ToList();
         var pqaVisit1TypeId = _visitTypeRepo.GetAll().First(x => x.Name == Constants.SSSettings.visitType_pqa_visit_1).Id;
 
         int maxScore = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
                                 Constants.SSSettings.step6_total + Constants.SSSettings.step7_total + Constants.SSSettings.step8_total;
+        if (franchiseeId != null)
+        {
+            mappedPractitioners = mappedPractitioners.Where(x => string.Equals(x.RemoteId, franchiseeId)).ToList();
+        }
 
         foreach (var practitioner in mappedPractitioners)
         {
@@ -515,8 +519,17 @@ public class SmartStartIntegrationService : IIntegrationService
                         string remoteDocId = "";
                         if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
                         {
+                            //if doc is still null here and its a valid statement, generate it and redo this
+                            if (statementDoc == null) {
+                                statementDoc = _incomeManager.CreateIncomeStatementPDFDocument(statement.UserId, statement.Year, statement.Month);                                                                        
+                            }
+
                             if (statementDoc != null)
                             {
+                                //save the doc id back to the balancesheet record for future ref
+                                statement.RelatedDocumentId = statementDoc.Id.ToString();
+                                _statementsRepo.Update(statement);
+
                                 docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
                                 remoteDocId = await PushNewDocument(statementDoc);
                             }
@@ -1017,7 +1030,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     if (remoteFranchisees != null)
                     {
                         //order all to load principals first
-                        remoteFranchisees = remoteFranchisees.OrderBy(x => x.IsPrincipal).ToList();
+                        //remoteFranchisees = remoteFranchisees.OrderBy(x => (x.IsPrincipal.HasValue ? x.IsPrincipal == true : null)).ToList();
                         try
                         {
                             foreach (var franchisee in remoteFranchisees)
@@ -1083,6 +1096,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                         }
                                     }
                                 }
+                                //pull pqa data for this franchisee
+                                await PullPQAData(franchisee.Guid);
+
                             }
                             //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
                             await MatchPrincipals();
@@ -1095,16 +1111,16 @@ public class SmartStartIntegrationService : IIntegrationService
                     }
 
                     //Pull Trainees
-                    //List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
-                    //if (remoteTrainees.Any())
-                    //{
-                    //    foreach (var trainee in remoteTrainees)
-                    //    {
-                    //        trainee.localParentEntityUserId = coach.UserId;
-                    //        trainee.localParentEntityId = coach.Id.ToString();
-                    //        await MapTrainee(trainee);
-                    //    }
-                    //}
+                    List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
+                    if (remoteTrainees.Any())
+                    {
+                        foreach (var trainee in remoteTrainees)
+                        {
+                            trainee.localParentEntityUserId = coach.UserId;
+                            trainee.localParentEntityId = coach.Id.ToString();
+                            await MapTrainee(trainee);
+                        }
+                    }
                 }
             }
 
@@ -1169,7 +1185,7 @@ public class SmartStartIntegrationService : IIntegrationService
         {
             List<IntegrationEntityMapping> list = new List<IntegrationEntityMapping>();
             List<SL_Ingestion_User_Update> ids = _dbContext.SL_Ingestion_Users_Update.ToList();
-            var alllist = _mapperRepo.GetAll().ToList();//.Where(x => string.Equals(x.UserId, "4a715da0-b50a-4246-9f0a-5a99fb7e13ab"))
+            var alllist = _mapperRepo.GetAll().ToList();//.Where(x => string.Equals(x.UserId, "bc9c910e-d7e5-4ee2-b07e-7d21a9b91a71"))
             foreach (var tester in ids)
             {
                 if (tester.Id != null)
@@ -1193,7 +1209,10 @@ public class SmartStartIntegrationService : IIntegrationService
         {
             if (getNew)
             {
-                return _mapperRepo.GetAll().ToList();
+                if (entityType != null)
+                {
+                    return _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId != null).ToList();
+                } else return _mapperRepo.GetAll().ToList();
             }
             if (entityType != null)
             {
@@ -1458,7 +1477,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
                             IsOnStipend = entity.StipendType != null ? true : false,
-                            SetupTraineeInitiated = true     ,                                                      
+                            SetupTraineeInitiated = true                                                    
                         };
 
                         var newTrainee = new Trainee
@@ -1475,7 +1494,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             PractitionerId = newId,
                             AttendedStartUpTraining = true,
                             StarterLicenceReceived = true,
-                            StarterLicenceDate = entity.StartDate
+                            StarterLicenceDate = entity.StarterLicenceDate.HasValue ? entity.StarterLicenceDate : entity.StartDate
                         };
 
                         //check phone number is valid
@@ -1716,9 +1735,6 @@ public class SmartStartIntegrationService : IIntegrationService
                                 };
                                 _classroomGroupGenericRepo.Insert(pracUnsureClass);
                             }
-
-
-
 
                             mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSPractitioner;
                             mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLPractitioner;
