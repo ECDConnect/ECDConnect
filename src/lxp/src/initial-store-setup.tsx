@@ -163,10 +163,15 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           ).unwrap())();
       }
       if (!isCoach) {
+        const currentDate = new Date();
+        const oneYearAgo = new Date();
+        oneYearAgo.setMonth(currentDate.getMonth() - 12);
         (async () =>
           await appDispatch(
             pointsThunkActions.getPointsSummaryForUser({
               userId: userData?.id!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
             })
           ).unwrap())();
 

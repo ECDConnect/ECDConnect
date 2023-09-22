@@ -1,0 +1,8 @@
+export const SmartStartPointsLibrary = {
+  REGISTER_CHILD: '13a6e446-d011-407a-aebb-2a398915d6ae',
+  SUBMIT_ATTENDANCE: 'aad9c9aa-f76f-466b-bffe-fd9119efac31',
+  SUBMIT_STATEMENTS: '8021a70d-3267-48aa-8acc-33a22736004d',
+  SUBMIT_STATEMENTS_CONSECUTIVE: '4d49baed-8fff-49ad-883f-d60d62a58d16',
+  SUBMIT_STATEMENTS_PRESCHOOL_FEES_ADDED:
+    '1aea269b-db0b-4cc6-b052-c4eaa5d89b05',
+};

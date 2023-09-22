@@ -105,10 +105,16 @@ namespace EcdLink.Api.CoreApi.Services
             return _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == pointsLibraryId && x.UserId == userId && x.Month == month && x.Year == year).ToList();
         }
 
-        public List<PointsUserSummary> GetSummaryUserPoints(string userId, int year)
+        public List<PointsUserSummary> GetSummaryUserPoints(string userId, DateTime startDate, DateTime? endDate = null)
         {
-            return _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == year).ToList();
+            return _pointsUserSummaryRepo.GetAll().Where(
+                x => x.UserId == userId &&
+                // After the start
+                (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)) &&
+                // Before the end or no end date
+                (!endDate.HasValue || x.Year < endDate.Value.Year || (x.Year == endDate.Value.Year && x.Month <= endDate.Value.Month))).ToList();
         }
+
         public PointsUser InsertIndividualUserPoints(PointsUser input)
         {
             return _pointsUserRepo.Insert(input);
