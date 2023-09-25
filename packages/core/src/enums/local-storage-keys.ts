@@ -13,4 +13,5 @@ export enum LocalStorageKeys {
   offlineStatments = 'offlineStatments',
   childProfileTutorialComplete = 'childProfileTutorialComplete',
   incomeStatementTutorialComplete = 'IncomeStatementTutorialComplete',
+  pointsSubmitStatementsMessageDismissed = 'PointsSubmitStatementsMessageDismissed',
 }

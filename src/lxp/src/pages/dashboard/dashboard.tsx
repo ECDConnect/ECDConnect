@@ -328,10 +328,15 @@ export const Dashboard: React.FC = () => {
             })
           ).unwrap())();
 
+        const currentDate = new Date();
+        const oneYearAgo = new Date();
+        oneYearAgo.setMonth(currentDate.getMonth() - 12);
         (async () =>
           await appDispatch(
             pointsThunkActions.getPointsSummaryForUser({
               userId: userData?.id!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
             })
           ).unwrap())();
 

@@ -71,7 +71,7 @@ export const Club: React.FC = () => {
     clubSelectors.getNextClubLeaderByClubIdSelector(params.clubId)
   );
 
-  const totalMembers = club?.clubMembers?.length;
+  const totalMembers = club?.clubMembers?.length || 0;
 
   const isClubInALeague = !!club?.league?.id;
   const isTop25Percent =
@@ -173,7 +173,7 @@ export const Club: React.FC = () => {
         title="This club is not in a league."
       />
     );
-  }, [isClubInALeague, leagueCard, club]);
+  }, [isClubInALeague, leagueCard]);
 
   const renderActivitiesContent = useMemo(() => {
     if (isClubInALeague) return <></>;
@@ -238,9 +238,11 @@ export const Club: React.FC = () => {
                   icon="UserAddIcon"
                   text="Assign a club leader!"
                   onClick={() =>
-                    ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(
-                      ':clubId',
-                      params.clubId
+                    history.push(
+                      ROUTES.COMMUNITY.CLUB.LEADER.ADD.replace(
+                        ':clubId',
+                        params.clubId
+                      )
                     )
                   }
                 />
@@ -271,14 +273,11 @@ export const Club: React.FC = () => {
           color="primary"
           text={!!totalMembers ? 'See all members' : 'Add club members'}
           onClick={() =>
-            !!totalMembers
-              ? history.push(
-                  ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(
-                    ':clubId',
-                    params.clubId
-                  )
-                )
-              : {}
+            history.push(
+              ROUTES.COMMUNITY.CLUB.MEMBERS[
+                !!totalMembers ? 'ROOT' : 'ADD'
+              ].replace(':clubId', params.clubId)
+            )
           }
         />
         <Button

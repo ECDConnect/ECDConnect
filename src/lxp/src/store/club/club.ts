@@ -4,6 +4,7 @@ import {
   addNewClub,
   addNewClubLeader,
   addNewClubMembers,
+  changeClubName,
   getAllClubsForCoach,
   moveClubMembers,
 } from './club.actions';
@@ -23,6 +24,7 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, addNewClubLeader);
     setThunkActionStatus(builder, addNewClubMembers);
     setThunkActionStatus(builder, moveClubMembers);
+    setThunkActionStatus(builder, changeClubName);
     builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
@@ -38,6 +40,18 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(moveClubMembers.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(changeClubName.fulfilled, (state, action) => {
+      state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
+        if (club.id === action.payload.id) {
+          return {
+            ...club,
+            name: action.payload.name,
+          };
+        }
+        return club;
+      });
       setFulfilledThunkActionStatus(state, action);
     });
   },

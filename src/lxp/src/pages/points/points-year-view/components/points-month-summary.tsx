@@ -11,11 +11,9 @@ export type PointsMonthSummary = {
 
 export const PointsMonthSummary: React.FC<PointsMonthSummary> = ({ month }) => {
   const date = new Date(new Date().getFullYear(), month, 1);
-  const pointsEarnedForMonth = useSelector((state: RootState) =>
-    pointsSelectors
-      .getPointsSummaryWithLibrary(state, date)
-      .filter((x) => x.pointsTotal > 0)
-  );
+  const pointsEarnedForMonth = useSelector(
+    pointsSelectors.getPointsSummaryWithLibrary(date)
+  ).filter((x) => x.pointsTotal > 0);
 
   const pointsTotal = pointsEarnedForMonth.reduce(
     (total, current) => (total += current.pointsTotal),

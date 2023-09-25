@@ -22,6 +22,7 @@ interface Step2Props extends ClubAddProps {
 export const Step2 = ({
   title,
   hasSelectedPractitioners,
+  step1,
   setIsEnabledButton,
   setStep2,
 }: Step2Props) => {
@@ -110,7 +111,7 @@ export const Step2 = ({
       <Typography
         className="mt-4 mb-2"
         type="h4"
-        text="Would you like to move any SmartStarters from a different club into the Winners club?"
+        text={`Would you like to move any SmartStarters from a different club into the ${step1?.clubName} club?`}
       />
       <ButtonGroup<boolean>
         color="secondary"

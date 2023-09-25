@@ -43,9 +43,11 @@ const ROUTES = {
         EDIT: '/edit',
       }),
       LEADER: addPrefix('/leader', {
+        ADD: '/add',
         EDIT: '/edit',
       }),
       USER_PROFILE: {
+        COACH: '/coach/:coachId',
         LEADER: '/leader/:leaderId',
         MEMBER: '/member/:practitionerId',
       },

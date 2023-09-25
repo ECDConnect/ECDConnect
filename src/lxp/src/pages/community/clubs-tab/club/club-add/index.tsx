@@ -165,6 +165,7 @@ export const ClubAdd: React.FC = () => {
       {step === 1 && (
         <Step2
           title="Add a club"
+          step1={step1}
           setIsEnabledButton={setIsEnabledButton}
           setStep2={setStep2}
           hasSelectedPractitioners={!!step1?.members?.length}
