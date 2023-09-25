@@ -13,3 +13,6 @@ export const MIN_RISING_STARS_POINTS = 1600;
 export const MAX_RISING_STARS_POINTS = 2000;
 export const MIN_PURPLE_CLUB_POINTS = 1760;
 export const MAX_PURPLE_CLUB_POINTS = 2200;
+
+export const MAX_MEMBERS_IN_CLUB = 17;
+export const MIN_MEMBERS_IN_CLUB = 4;
