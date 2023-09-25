@@ -31,40 +31,6 @@ import {
 } from '@/constants/club';
 import { addDays, differenceInMonths } from 'date-fns';
 
-// TODO: replace mockedClub with real data
-export const mockedClub = {
-  id: '01',
-  name: 'Lady Bugs',
-  members: [
-    {
-      name: 'Bulelwa Mahlangu',
-      description: 'Lorem ipsum 😊',
-    },
-    {
-      name: 'Hope Mokoena',
-      description: '',
-    },
-    {
-      name: 'Lerato Setsego',
-      description: 'Lorem ipsum',
-    },
-    {
-      name: 'Palesa Ndlovu',
-      description: 'Lorem ipsum dolor sit amet consectetur adipiscing',
-    },
-  ],
-  league: 'Lorem Ipsum league',
-  leagueColor: 'purple',
-  leagueRank: 1,
-  points: 200,
-  maxPoints: 1000,
-  coach: 'Nothando Bhuyeni',
-  leader: 'Cynthia Jacobs',
-  leaderDescription: 'Learning & living',
-  iconUrl:
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3087&q=80',
-};
-
 export const Club: React.FC = () => {
   const history = useHistory();
   const { clubId } = useParams<ClubsRouteState>();
