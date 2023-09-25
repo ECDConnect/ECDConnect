@@ -128,5 +128,15 @@ IGenericRepositoryFactory repoFactory, string templateId)
             return templates;
         }
 
+
+        public List<string> GetAllRegions(
+[Service] IHttpContextAccessor contextAccessor,
+IGenericRepositoryFactory repoFactory)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
+            return dbRepo.GetAll().Where(x => x.Ward != null).Select(x => x.Ward).Distinct().ToList();
+        }
+
     }
 }
