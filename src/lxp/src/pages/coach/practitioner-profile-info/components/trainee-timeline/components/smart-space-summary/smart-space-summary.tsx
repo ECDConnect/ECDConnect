@@ -35,9 +35,6 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   practitioner,
   setNotificationStep,
 }) => {
-  const smartSpaceVisitData = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisitData
-  );
   const { isOnline } = useOnlineStatus();
   const visitNotes = useSelector(traineeSelectors.getCoachVisitDataNextSteps);
   const assistantsNumber = useSelector(
@@ -65,8 +62,6 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
     visitProgrammeCovidStandards?.questions?.filter(
       (item) => item?.answer === false || item?.answer === 'false'
     );
-  console.log({ visitProgrammeCovidStandardsFalseAnswers });
-  console.log({ visitProgrammeCovidStandards });
 
   const visitProgrammeStandardsChecklist = useSelector(
     traineeSelectors.getCoachVisitDataStandardsChecklist
@@ -84,11 +79,8 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
       visitProgrammeStandardsChecklist?.questions.every(
         (item) => item.answer === false || item.answer === 'false'
       ),
-    []
+    [visitProgrammeStandardsChecklist?.questions]
   );
-  console.log({ visitProgrammeStandardsChecklist });
-  console.log({ smartSpaceVisitData });
-  console.log({ programmeNotRunning });
 
   const renderLicenceResponseCard = useMemo(() => {
     return (
@@ -110,7 +102,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   }, []);
 
   const renderStandardsChecklist = useMemo(() => {
-    if (!programmeNotRunning) {
+    if (programmeNotRunning) {
       return (
         <Typography
           type="body"
@@ -266,16 +258,15 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
         <Divider dividerType="dashed" className="my-4" />
         <div className="flex flex-col gap-2">
           <Typography type="h4" color="textDark" text={'Standards checklist'} />
-          <div className="mt-2 flex items-center gap-2">
-            <Typography type={'body'} text={'score'} color={'textDark'} />
-          </div>
           {renderStandardsChecklist}
         </div>
         <Button
           type="filled"
           color="primary"
           className="mt-8 mb-4 w-full rounded-2xl"
-          onClick={() => {}}
+          onClick={() => {
+            setNotificationStep('');
+          }}
         >
           {renderIcon('XIcon', 'mr-2 text-white w-5')}
           <Typography type={'body'} text={'Close'} color={'white'} />

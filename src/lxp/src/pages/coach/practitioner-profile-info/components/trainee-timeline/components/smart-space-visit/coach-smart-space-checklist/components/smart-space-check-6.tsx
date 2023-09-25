@@ -67,7 +67,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
   const [showMap, setShowMap] = useState(false);
-  console.log({ visitData });
+
   const [questions, setAnswers] = useState([
     {
       question: 'Is this address correct?',
@@ -322,7 +322,6 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         <Step6Map
           onClose={() => setShowMap(false)}
           onSubmit={(address) => {
-            console.log({ address });
             onOptionSelected(address, 2);
             setNewAddress(address);
           }}

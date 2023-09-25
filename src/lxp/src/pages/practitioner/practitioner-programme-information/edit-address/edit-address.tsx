@@ -111,7 +111,6 @@ export const EditAddress: React.FC<EditAdressProps> = ({
         <AddressMap
           onClose={handleCloseMap}
           onSubmit={(address) => {
-            console.log(address);
             setEditedAddress(address);
             changeSmartSpaceCheckAddress();
           }}
