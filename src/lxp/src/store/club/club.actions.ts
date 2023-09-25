@@ -3,8 +3,10 @@ import { RootState, ThunkApiType } from '../types';
 import {
   Club,
   ClubLeader,
+  Coach,
   CoachingClub,
   MutationChangeClubNameArgs,
+  MutationUpdateCoachAboutInfoArgs,
   NewClubInput,
   NewClubMemberInput,
 } from '@ecdlink/graphql';
@@ -18,6 +20,7 @@ export const ClubActions = {
   ADD_NEW_CLUB_MEMBERS: 'addNewClubMembers',
   MOVE_CLUB_MEMBERS: 'moveClubMembers',
   CHANGE_CLUB_NAME: 'changeClubName',
+  UPDATE_COACH_ABOUT_INFO: 'updateCoachAboutInfo',
 };
 
 export const getAllClubsForCoach = createAsyncThunk<
@@ -157,6 +160,31 @@ export const changeClubName = createAsyncThunk<
     try {
       if (userAuth?.auth_token) {
         return await new ClubService(userAuth?.auth_token).changeClubName(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateCoachAboutInfo = createAsyncThunk<
+  Coach,
+  MutationUpdateCoachAboutInfoArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.UPDATE_COACH_ABOUT_INFO,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).updateCoachAboutInfo(
           input
         );
       } else {

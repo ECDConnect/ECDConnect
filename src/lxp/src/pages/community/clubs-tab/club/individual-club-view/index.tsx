@@ -136,6 +136,15 @@ export const Club: React.FC = () => {
     showIcon: true,
   }));
 
+  function isCurrentPointsAtLeast80PercentOfTotal(
+    currentPoints: number,
+    totalPoints: number
+  ): boolean {
+    const targetPercentage = 0.8; // 80%
+    const targetPoints = totalPoints * targetPercentage;
+    return currentPoints >= targetPoints;
+  }
+
   const renderLeagueContent = useMemo(() => {
     if (isClubInALeague) {
       return (
@@ -151,12 +160,19 @@ export const Club: React.FC = () => {
             listItems={[leagueCard]}
           />
           <ScoreCard
-            mainText={`${mockedClub.points}`}
-            secondaryText="points"
-            currentPoints={mockedClub.points}
-            maxPoints={mockedClub.maxPoints}
+            mainText={String(club?.totalClubPoints || 0)}
+            hint="points"
+            currentPoints={club?.totalClubPoints}
+            maxPoints={club?.maxClubPoints}
             barBgColour="uiLight"
-            barColour="black"
+            barColour={
+              isCurrentPointsAtLeast80PercentOfTotal(
+                club?.totalClubPoints || 0,
+                club?.maxClubPoints || 0
+              )
+                ? 'successMain'
+                : 'secondary'
+            }
             bgColour="uiBg"
             textColour="black"
             // TODO: add onClick
@@ -173,7 +189,7 @@ export const Club: React.FC = () => {
         title="This club is not in a league."
       />
     );
-  }, [isClubInALeague, leagueCard]);
+  }, [club?.maxClubPoints, club?.totalClubPoints, isClubInALeague, leagueCard]);
 
   const renderActivitiesContent = useMemo(() => {
     if (isClubInALeague) return <></>;

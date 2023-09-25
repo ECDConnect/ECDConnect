@@ -2,8 +2,10 @@ import { Config } from '@ecdlink/core';
 import {
   Club,
   ClubLeader,
+  Coach,
   CoachingClub,
   MutationChangeClubNameArgs,
+  MutationUpdateCoachAboutInfoArgs,
   NewClubInput,
   NewClubMemberInput,
 } from '@ecdlink/graphql';
@@ -268,6 +270,37 @@ class ClubService {
     }
 
     return response.data.data.addNewClubLeader;
+  }
+
+  async updateCoachAboutInfo(
+    input: MutationUpdateCoachAboutInfoArgs
+  ): Promise<Coach> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateCoachAboutInfo: Coach };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation UpdateCoachAboutInfo($userId: String, $aboutInfo: String) {
+          updateCoachAboutInfo(userId: $userId, aboutInfo: $aboutInfo) {
+              id
+              aboutInfo
+              userId
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'update coach about info failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateCoachAboutInfo;
   }
 }
 
