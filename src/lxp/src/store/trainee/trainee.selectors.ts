@@ -100,6 +100,18 @@ export const getCoachVisitDataNextSteps = (
   return questions?.[0]?.answer;
 };
 
+export const getCoachVisitCapacity = (
+  state: RootState
+): string | null | undefined | any => {
+  const visitData = state.trainee.coachSmartSpaceCheckData;
+  const programmeDetailsSections = visitData?.find(
+    (item) => item?.visitSection === 'Calculate programme capacity'
+  );
+  const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
+  const questions = programmeDetailsSectionsWithoutTypo?.questions;
+  return questions;
+};
+
 export const getTraineeProgrammeType = (
   state: RootState
 ): string | null | undefined => {
