@@ -100,6 +100,32 @@ export const getCoachVisitDataNextSteps = (
   return questions?.[0]?.answer;
 };
 
+export const getCoachVisitDataCovidStandards = (
+  state: RootState
+): null | undefined | SectionQuestions => {
+  const visitData = state.trainee.coachSmartSpaceCheckData;
+  const programmeDetailsSections = visitData?.find(
+    (item) => item?.visitSection === 'COVID safety checklist (CC14)'
+  );
+  const programmeDetailsSectionsWithoutTypo =
+    programmeDetailsSections as unknown;
+
+  return programmeDetailsSectionsWithoutTypo as SectionQuestions;
+};
+
+export const getCoachVisitDataStandardsChecklist = (
+  state: RootState
+): null | undefined | SectionQuestions => {
+  const visitData = state.trainee.coachSmartSpaceCheckData;
+  const programmeDetailsSections = visitData?.find(
+    (item) => item?.visitSection === 'Standards checklist'
+  );
+  const programmeDetailsSectionsWithoutTypo =
+    programmeDetailsSections as unknown;
+
+  return programmeDetailsSectionsWithoutTypo as SectionQuestions;
+};
+
 export const getCoachVisitCapacity = (
   state: RootState
 ): string | null | undefined | any => {

@@ -2,14 +2,34 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { staticDataSelectors } from '@/store/static-data';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
-import { BannerWrapper, Card, Divider, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  Colours,
+  Divider,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
-
+import { ReactComponent as BalloonsImg } from '../../../../../../../assets/balloons.svg';
 interface SmartSpaceSummaryProps {
   practitioner: PractitionerDto;
   setNotificationStep: (item: string) => void;
 }
+
+export const getGroupColor = (count: number): Colours => {
+  if (count === 0) {
+    return 'errorMain';
+  }
+
+  if (count < 12) {
+    return 'alertMain';
+  }
+
+  return 'successMain';
+};
 
 export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   practitioner,
@@ -38,15 +58,44 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   const traineeProgrammeTypeObject = programData?.find(
     (item) => item?.id === traineeProgrammeType
   );
-  console.log({ totalMetresSquaredAvailable });
-  console.log({ totalMetresSquaredAvailable });
-  console.log({ visitNotes });
+  const visitProgrammeCovidStandards = useSelector(
+    traineeSelectors.getCoachVisitDataCovidStandards
+  );
+  const visitProgrammeCovidStandardsFalseAnswers =
+    visitProgrammeCovidStandards?.questions?.filter(
+      (item) => item?.answer === false || item?.answer === 'false'
+    );
+  console.log({ visitProgrammeCovidStandardsFalseAnswers });
+  console.log({ visitProgrammeCovidStandards });
+
+  const visitProgrammeStandardsChecklist = useSelector(
+    traineeSelectors.getCoachVisitDataStandardsChecklist
+  );
+  const visitProgrammeStandardsChecklistTrueAnswers =
+    visitProgrammeStandardsChecklist?.questions?.filter(
+      (item) => item?.answer === true || item?.answer === 'true'
+    );
+  const visitProgrammeStandardsChecklistFalseAnswers =
+    visitProgrammeStandardsChecklist?.questions?.filter(
+      (item) => item?.answer === false || item?.answer === 'false'
+    );
+  const programmeNotRunning = useMemo(
+    () =>
+      visitProgrammeStandardsChecklist?.questions.every(
+        (item) => item.answer === false || item.answer === 'false'
+      ),
+    []
+  );
+  console.log({ visitProgrammeStandardsChecklist });
   console.log({ smartSpaceVisitData });
+  console.log({ programmeNotRunning });
 
   const renderLicenceResponseCard = useMemo(() => {
     return (
-      <Card className="bg-successBg my-4 flex rounded-2xl p-4">
-        <div></div>
+      <Card className="bg-successBg my-4 flex items-center gap-4 rounded-2xl p-4">
+        <div>
+          <BalloonsImg className="h-16 w-12" />
+        </div>
         <div>
           <Typography
             type="h3"
@@ -59,6 +108,56 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
       </Card>
     );
   }, []);
+
+  const renderStandardsChecklist = useMemo(() => {
+    if (!programmeNotRunning) {
+      return (
+        <Typography
+          type="body"
+          color="textMid"
+          text={`${practitioner?.user?.firstName}'s programme was not running on the day of the SmartSpace visit.`}
+        />
+      );
+    }
+
+    return (
+      <div>
+        <div className="flex items-center gap-2">
+          <div
+            className={`text-14 flex h-5 w-12 rounded-full bg-${getGroupColor(
+              visitProgrammeStandardsChecklistTrueAnswers?.length as number
+            )} items-center justify-center font-bold text-white`}
+          >
+            {`${visitProgrammeStandardsChecklistTrueAnswers?.length} / ${visitProgrammeStandardsChecklist?.questions?.length}`}
+          </div>
+          <Typography type="body" color="textDark" text={`standards met`} />
+        </div>
+        <Typography
+          type="body"
+          color="textDark"
+          weight="bold"
+          text={`${practitioner?.user?.firstName} is still working on the following standards:`}
+          className="mt-4"
+        />
+        {visitProgrammeStandardsChecklistFalseAnswers?.map((item, index) => {
+          return (
+            <Typography
+              type="body"
+              color="textMid"
+              text={`• ${item?.question}`}
+              key={index}
+            />
+          );
+        })}
+      </div>
+    );
+  }, [
+    practitioner?.user?.firstName,
+    programmeNotRunning,
+    visitProgrammeStandardsChecklist?.questions?.length,
+    visitProgrammeStandardsChecklistFalseAnswers,
+    visitProgrammeStandardsChecklistTrueAnswers?.length,
+  ]);
 
   return (
     <BannerWrapper
@@ -137,13 +236,50 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
         <Divider dividerType="dashed" className="my-4" />
         <div className="flex flex-col gap-2">
           <Typography type="h4" color="textDark" text={'COVID standards'} />
-          <Typography type="body" color="textMid" text={`• ${visitNotes}`} />
+          {visitProgrammeCovidStandardsFalseAnswers?.length === 0 ? (
+            <Typography
+              type="body"
+              weight="bold"
+              color="textMid"
+              text={`${practitioner?.user?.firstName} checked all of the COVID checklist boxes.`}
+            />
+          ) : (
+            <div>
+              <Typography
+                type="h4"
+                color="textDark"
+                text={`${practitioner?.user?.firstName} still needs to meet the following standards:`}
+              />
+              {visitProgrammeCovidStandardsFalseAnswers?.map((item, index) => {
+                return (
+                  <Typography
+                    type="body"
+                    color="textMid"
+                    text={`• ${item?.question}`}
+                    key={index}
+                  />
+                );
+              })}
+            </div>
+          )}
         </div>
         <Divider dividerType="dashed" className="my-4" />
         <div className="flex flex-col gap-2">
           <Typography type="h4" color="textDark" text={'Standards checklist'} />
-          <Typography type="body" color="textMid" text={`• ${visitNotes}`} />
+          <div className="mt-2 flex items-center gap-2">
+            <Typography type={'body'} text={'score'} color={'textDark'} />
+          </div>
+          {renderStandardsChecklist}
         </div>
+        <Button
+          type="filled"
+          color="primary"
+          className="mt-8 mb-4 w-full rounded-2xl"
+          onClick={() => {}}
+        >
+          {renderIcon('XIcon', 'mr-2 text-white w-5')}
+          <Typography type={'body'} text={'Close'} color={'white'} />
+        </Button>
       </div>
     </BannerWrapper>
   );
