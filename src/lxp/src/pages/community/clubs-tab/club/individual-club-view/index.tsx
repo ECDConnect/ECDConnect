@@ -245,7 +245,10 @@ export const Club: React.FC = () => {
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'errorMain',
         backgroundColor: 'errorBg',
-        onActionClick: () => history.push(ROUTES.COMMUNITY.CLUB.MEMBERS.ADD),
+        onActionClick: () =>
+          history.push(
+            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
+          ),
       });
     }
 
