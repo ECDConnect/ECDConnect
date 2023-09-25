@@ -20,9 +20,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<PointsUserSummary> GetPointsSummaryForUser(
             [Service] IPointsEngineService pointsService,
-            string userId)
+            string userId,
+            DateTime startDate,
+            DateTime? endDate)
         {
-            var pointsSummary = pointsService.GetSummaryUserPoints(userId, DateTime.Now.Year);
+            var pointsSummary = pointsService.GetSummaryUserPoints(userId, startDate, endDate);
 
             return pointsSummary;
         }

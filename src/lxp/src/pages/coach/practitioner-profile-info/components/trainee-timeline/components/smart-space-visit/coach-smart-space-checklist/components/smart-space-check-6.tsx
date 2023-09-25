@@ -257,8 +257,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           textInputType="input"
           label={questions?.[2]?.question}
           placeholder={'e.g. street a'}
-          value={newAddress}
-          onChange={(e) => setAnswer(e.target.value)}
+          value={newAddress || (questions[2]?.answer as string)}
         />
       )}
       <Alert
@@ -323,8 +322,9 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         <Step6Map
           onClose={() => setShowMap(false)}
           onSubmit={(address) => {
+            console.log({ address });
             onOptionSelected(address, 2);
-            setNewAddress(newAddress);
+            setNewAddress(address);
           }}
         />
       </Dialog>
