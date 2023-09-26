@@ -71,8 +71,14 @@ namespace ECDLink.Tenancy.Middleware
                     var urlTenant = tenancyService.GetTenantByUrl(refererUrl);
                     if (urlTenant != null && urlTenant != default(TenantModel))
                     {
+                        Console.WriteLine("TenancyMiddleware:GetTenant: refererUrl={0} found {1}", refererUrl, urlTenant.Id);
                         tenant = urlTenant;
                         path = "URL:" + refererUrl;
+                    }
+                    else
+                    {
+                        Console.WriteLine("TenancyMiddleware:GetTenant: refererUrl={0} urlTenant not found", refererUrl);
+
                     }
                 }
                 else
