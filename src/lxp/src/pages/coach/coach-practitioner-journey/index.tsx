@@ -433,11 +433,11 @@ export const CoachPractitionerJourney = () => {
     getTimeline();
   }, [getTimeline]);
 
-  useEffect(() => {
-    if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
-      getTimeline();
-    }
-  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
+  // useEffect(() => {
+  //   if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
+  //     getTimeline();
+  //   }
+  // }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
 
   useEffect(() => {
     if (lastAttendedReAccreditationFollowUpVisit?.id) {
