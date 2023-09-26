@@ -1,12 +1,30 @@
 import { Alert, Checkbox, Dropdown, Typography } from '@ecdlink/ui';
 import { ClubMembersEditProps } from '..';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { clubSelectors } from '@/store/club';
+import { useParams } from 'react-router';
+import { ClubsRouteState } from '../../../index.types';
+import { CoachingClub } from '@ecdlink/graphql';
 
-export const Step2 = ({ setIsEnabledButton }: ClubMembersEditProps) => {
+export const Step2 = ({
+  setIsEnabledButton,
+  selectedMembers,
+  selectedClub,
+  setSelectedClub,
+}: ClubMembersEditProps) => {
+  const [checkboxValue, setCheckboxValue] = useState<boolean>(false);
+
+  const { clubId } = useParams<ClubsRouteState>();
+
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
+  const allClubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
+
+  const filteredClubs = allClubs?.filter((item) => item?.id !== club?.id);
+
   useEffect(() => {
-    // TODO: put it in an onChange
-    setIsEnabledButton(true);
-  }, [setIsEnabledButton]);
+    setIsEnabledButton(!!selectedClub && checkboxValue);
+  }, [checkboxValue, selectedClub, setIsEnabledButton]);
 
   return (
     <>
@@ -16,24 +34,33 @@ export const Step2 = ({ setIsEnabledButton }: ClubMembersEditProps) => {
         type="h4"
         text="You can only move SmartStarters to an existing club."
       />
-      {/* TODO: add integration */}
-      <Dropdown
+      <Dropdown<CoachingClub>
         label="Choose a club"
-        placeholder=".."
-        list={[]}
-        onChange={() => {}}
+        placeholder="Tap to choose a club"
+        list={
+          filteredClubs?.map((item) => ({
+            label: item?.name ?? '',
+            value: item,
+          })) ?? []
+        }
+        selectedValue={selectedClub}
+        onChange={(club) => setSelectedClub?.(club)}
         className="mb-4"
       />
-      {/* TODO: add integration */}
       <Checkbox
         descriptionColor="textDark"
         description="I confirm that all SmartStarters selected have agreed to move to a new club."
+        checked={checkboxValue}
+        onCheckboxChange={(event) => setCheckboxValue(event.checked)}
       />
-      {/* TODO: add integration */}
       <Alert
         className="mt-4"
         type="info"
-        title="The SmartStarters ({member1}, {member2}) will be moved to the new club immediately."
+        title={`The SmartStarter${
+          selectedMembers?.length > 1 ? 's' : ''
+        } (${selectedMembers
+          .map((item) => item?.practitioner?.user?.firstName)
+          .join(', ')}) will be moved to the new club immediately.`}
         list={['They will receive a notification about their new club.']}
       />
     </>

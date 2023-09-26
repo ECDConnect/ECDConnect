@@ -6,12 +6,12 @@ import { PointsService } from '@/services/PointsService';
 export const getPointsSummaryForUser = createAsyncThunk<
   PointsUserSummary[],
   // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  { userId: string; startDate: Date; endDate: Date },
   ThunkApiType<RootState>
 >(
   'getPointsSummaryForUser',
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async ({ userId, startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -22,7 +22,7 @@ export const getPointsSummaryForUser = createAsyncThunk<
       if (userAuth?.auth_token) {
         pointsSummary = await new PointsService(
           userAuth?.auth_token
-        ).getPointsSummaryForUser(userAuth?.id);
+        ).getPointsSummaryForUser(userId, startDate, endDate);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

@@ -1,18 +1,14 @@
 import {
   BannerWrapper,
   DialogPosition,
-  Divider,
   MenuListDataItem,
   StackedList,
   Steps,
-  Typography,
   Dialog,
-  Button,
-  renderIcon,
 } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useWindowSize } from '@reach/window-size';
-import { differenceInDays, format } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
 import { timelineSteps } from './timeline-steps';
@@ -20,6 +16,8 @@ import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import { OverdueSteps } from './components/overdue-steps/overdue-steps';
+import { OnboardingNotCompleted } from './components/onboarding-not-completed/onboarding-not-completed';
+import { addDays } from 'date-fns';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: (notificationStep: string, options?: any) => void;
@@ -32,7 +30,6 @@ export const OnboardingTraineeDashboard: React.FC<
 > = ({ setNotificationStep, setIsSmartChecklist, practitioner }) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
-  const today = format(new Date(), 'EEEE, d LLLL');
   const isOnStipend = practitioner?.isOnStipend;
 
   const { width } = useWindowSize();
@@ -40,6 +37,8 @@ export const OnboardingTraineeDashboard: React.FC<
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const [showSteps, setShowSteps] = useState(true);
   const [showOverdueSteps, setShowOverdueSteps] = useState(false);
+  const [showOnboardingNotCompleted, setShowOnboardingNotCompleted] =
+    useState(false);
 
   const onView = async (notificationStep: string, options: any) => {
     if (notificationStep === 'Fill in the SmartSpace checklist') {
@@ -95,6 +94,15 @@ export const OnboardingTraineeDashboard: React.FC<
     isOnStipend
   ).filter((item) => item?.type === 'completed');
 
+  const onboardingNotCompleted = completedSteps?.length < 8;
+  const twoWeeksAgo = addDays(new Date(), -14);
+  const fourWeeksAgo = addDays(new Date(), -28);
+  const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
+    ? new Date(timeline?.smartSpaceLicenseDate)
+    : new Date();
+  const onboardingIncompleted =
+    onboardingNotCompleted && smartSpaceLicenseDate <= twoWeeksAgo;
+
   const stepperCount = timelineSteps(
     timeline!,
     (a, b) => onView(a, b),
@@ -148,7 +156,9 @@ export const OnboardingTraineeDashboard: React.FC<
       menuIcon: 'ExclamationIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
-      title: `${overdueSteps?.length} onboarding steps overdue`,
+      title: onboardingIncompleted
+        ? 'Has not completed onboarding'
+        : `${overdueSteps?.length} onboarding steps overdue`,
       titleStyle: 'text-textDark semibold',
       subTitle:
         checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0
@@ -162,7 +172,10 @@ export const OnboardingTraineeDashboard: React.FC<
           ? 'alertMain'
           : 'primary',
       backgroundColor: 'uiBg',
-      onActionClick: () => setShowOverdueSteps(true),
+      onActionClick: () =>
+        onboardingIncompleted
+          ? setShowOnboardingNotCompleted(true)
+          : setShowOverdueSteps(true),
     },
   ];
 
@@ -195,7 +208,7 @@ export const OnboardingTraineeDashboard: React.FC<
         )}
         {showSteps && (
           <>
-            {nextStep && (
+            {nextStep && overdueSteps?.length <= 0 && (
               <StackedList
                 isFullHeight={false}
                 className={'flex flex-col gap-2'}
@@ -261,6 +274,18 @@ export const OnboardingTraineeDashboard: React.FC<
           overdueSteps={overdueSteps}
           practitioner={practitioner}
           setShowOverdueSteps={setShowOverdueSteps}
+        />
+      </Dialog>
+      <Dialog
+        fullScreen
+        visible={showOnboardingNotCompleted}
+        position={DialogPosition.Full}
+      >
+        <OnboardingNotCompleted
+          practitioner={practitioner}
+          starterLicenseDate={smartSpaceLicenseDate}
+          setShowOnboardingNotCompleted={setShowOnboardingNotCompleted}
+          isRemoveTrainee={smartSpaceLicenseDate < fourWeeksAgo}
         />
       </Dialog>
     </BannerWrapper>

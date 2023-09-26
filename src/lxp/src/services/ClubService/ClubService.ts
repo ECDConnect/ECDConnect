@@ -1,6 +1,16 @@
 import { Config } from '@ecdlink/core';
-import { CoachingClub } from '@ecdlink/graphql';
+import {
+  Club,
+  ClubLeader,
+  Coach,
+  CoachingClub,
+  MutationChangeClubNameArgs,
+  MutationUpdateCoachAboutInfoArgs,
+  NewClubInput,
+  NewClubMemberInput,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+import { NewClubLeaderInput } from './types';
 
 class ClubService {
   _accessToken: string;
@@ -119,6 +129,178 @@ class ClubService {
     }
 
     return response.data.data.allClubsForCoach;
+  }
+
+  async addNewClubMembers(input: NewClubMemberInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addNewClubMembers: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddNewClubMembers($input: NewClubMemberInput) {
+          addNewClubMembers(input: $input) {
+              
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add new club members failed - Server connection error');
+    }
+
+    return response.data.data.addNewClubMembers;
+  }
+
+  async changeClubName(input: MutationChangeClubNameArgs): Promise<Club> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { changeClubName: Club };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation ChangeClubName($clubId: String, $clubName: String ) {
+          changeClubName(clubId: $clubId, clubName: $clubName) {
+              id
+              name
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Change club name failed - Server connection error');
+    }
+
+    return response.data.data.changeClubName;
+  }
+
+  async moveClubMembers(input: NewClubMemberInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { moveClubMembers: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation MoveClubMembers($input: NewClubMemberInput) {
+          moveClubMembers(input: $input) {
+              
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Move club members failed - Server connection error');
+    }
+
+    return response.data.data.moveClubMembers;
+  }
+
+  async addNewClub(input: NewClubInput): Promise<Club> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addNewClub: Club };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddNewClub($input: NewClubInput) {
+          addNewClub(input: $input) {
+            id
+            name
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add new club failed - Server connection error');
+    }
+
+    return response.data.data.addNewClub;
+  }
+
+  async addNewClubLeader({
+    clubId,
+    practitionerId,
+  }: NewClubLeaderInput): Promise<ClubLeader> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addNewClubLeader: ClubLeader };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddNewClubLeader($clubId: String, $practitionerId: String) {
+          addNewClubLeader(clubId: $clubId, practitionerId: $practitionerId) {
+              isActive
+              dateAssigned
+              dateAccepted
+              practitioner {
+                  id
+                  user {
+                      id
+                      firstName
+                      surname
+                  }
+              }
+          }
+        }
+      `,
+      variables: {
+        clubId,
+        practitionerId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add new club leader failed - Server connection error');
+    }
+
+    return response.data.data.addNewClubLeader;
+  }
+
+  async updateCoachAboutInfo(
+    input: MutationUpdateCoachAboutInfoArgs
+  ): Promise<Coach> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateCoachAboutInfo: Coach };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation UpdateCoachAboutInfo($userId: String, $aboutInfo: String) {
+          updateCoachAboutInfo(userId: $userId, aboutInfo: $aboutInfo) {
+              id
+              aboutInfo
+              userId
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'update coach about info failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateCoachAboutInfo;
   }
 }
 

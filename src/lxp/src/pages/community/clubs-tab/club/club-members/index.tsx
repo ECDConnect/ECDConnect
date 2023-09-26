@@ -10,44 +10,52 @@ import {
 } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { useMemo } from 'react';
+import { useCallback, useLayoutEffect, useMemo } from 'react';
 import { ClubsRouteState } from '../../index.types';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { addDays, differenceInMonths, format } from 'date-fns';
 import { daysToAcceptBeingLeader } from '@/constants/club';
+import { useSnackbar } from '@ecdlink/core';
+import { userSelectors } from '@/store/user';
 
 export const ClubMembers: React.FC = () => {
   const history = useHistory();
-  const params = useParams<ClubsRouteState>();
+  const { clubId } = useParams<ClubsRouteState>();
+  const { showMessage } = useSnackbar();
 
-  const club = useSelector(clubSelectors.getClubByIdSelector(params.clubId));
+  const user = useSelector(userSelectors.getUser);
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
-    clubSelectors.getCurrentClubLeaderByClubIdSelector(params.clubId)
+    clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
   );
   const nextLeader = useSelector(
-    clubSelectors.getNextClubLeaderByClubIdSelector(params.clubId)
+    clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
 
   const nextLeaderFirstName = nextLeader?.practitioner?.user?.firstName;
   const today = new Date().setHours(0, 0, 0, 0);
-  const dueDateNextLeader = addDays(
-    new Date(nextLeader?.dateAssigned),
-    daysToAcceptBeingLeader
-  ).setHours(0, 0, 0, 0);
+  const dueDateNextLeader = nextLeader
+    ? addDays(
+        new Date(nextLeader?.dateAssigned),
+        daysToAcceptBeingLeader
+      ).setHours(0, 0, 0, 0)
+    : undefined;
   const monthsSinceCurrentLeaderAccepted = differenceInMonths(
     new Date(),
     new Date(currentLeader?.dateAccepted ?? '')
   );
 
   const hasLeader = !!currentLeader;
-  const isDueDateNextLeaderTodayOrFuture = dueDateNextLeader >= today;
+  const isDueDateNextLeaderTodayOrFuture =
+    dueDateNextLeader && dueDateNextLeader >= today;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isLeaderAcceptedAgreement =
     isDueDateNextLeaderTodayOrFuture &&
     club?.clubLeaders?.every((leader) => !!leader?.dateAccepted) &&
     club?.clubLeaders?.some((leader) => !!leader?.isActive);
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
+  const isToChangeLeader = hasLeader || isLeaderRequestSent;
 
   const coach: UserAlertListDataItem = {
     title: `${club?.coach?.user?.firstName || ''} ${
@@ -61,8 +69,13 @@ export const ClubMembers: React.FC = () => {
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
-    // TODO: add onClick
-    onActionClick: () => {},
+    onActionClick: () =>
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH.replace(
+          ':clubId',
+          clubId
+        ).replace(':coachId', user?.id!)
+      ),
   };
 
   const leader: UserAlertListDataItem = {
@@ -81,7 +94,7 @@ export const ClubMembers: React.FC = () => {
       history.push(
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
           ':clubId',
-          params.clubId
+          clubId
         ).replace(':leaderId', currentLeader?.practitioner?.id) // TODO: check if it's practitionerId or userId
       ),
   };
@@ -105,10 +118,28 @@ export const ClubMembers: React.FC = () => {
         history.push(
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
             ':clubId',
-            params.clubId
-          ).replace(':practitionerId', member?.practitioner?.id) // TODO: check if it's practitionerId or userId
+            clubId
+          ).replace(':practitionerId', member?.practitioner?.id)
         ),
     })) ?? [];
+
+  const onCall = useCallback(() => {
+    const nextLeaderPhoneNumber = nextLeader?.practitioner?.user?.phoneNumber;
+    if (nextLeaderPhoneNumber) {
+      return window.open(`tel:${nextLeaderPhoneNumber}`);
+    }
+
+    return showMessage({
+      message: 'Phone number is not available',
+      type: 'error',
+    });
+  }, [nextLeader?.practitioner?.user?.phoneNumber, showMessage]);
+
+  useLayoutEffect(() => {
+    if (!club?.clubMembers?.length) {
+      history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId));
+    }
+  }, [club?.clubMembers?.length, clubId, history]);
 
   const renderAlert = useMemo(() => {
     let title;
@@ -120,28 +151,28 @@ export const ClubMembers: React.FC = () => {
     }
 
     // Scenario: the assigned club leader has not accepted the club leader agreement yet AND there is no club leader currently assigned.
-    else if (!isLeaderAcceptedAgreement && !hasLeader) {
+    else if (nextLeader && !isLeaderAcceptedAgreement && !hasLeader) {
       title = `${nextLeaderFirstName} has not accepted the club leader role yet.`;
       list = [
         `You assigned ${nextLeaderFirstName} the club leader role on ${
           nextLeader &&
           format(new Date(nextLeader?.dateAssigned), 'dd MMMM yyyy')
         }.`,
-        `If ${nextLeaderFirstName} does not accept by ${format(
-          new Date(dueDateNextLeader),
-          'dd MMMM yyyy'
-        )}, you will need to choose a different club leader.`,
+        `If ${nextLeaderFirstName} does not accept by ${
+          dueDateNextLeader &&
+          format(new Date(dueDateNextLeader), 'dd MMMM yyyy')
+        }, you will need to choose a different club leader.`,
       ];
     }
 
     // Scenario: the assigned club leader has not accepted the club leader agreement yet AND there is currently a club leader assigned.
-    else if (!isLeaderAcceptedAgreement && hasLeader) {
+    else if (nextLeader && !isLeaderAcceptedAgreement && hasLeader) {
       title = `${nextLeaderFirstName} has not accepted the club leader role yet.`;
       list = [
-        `You assigned ${nextLeaderFirstName} the club leader role on ${format(
-          new Date(dueDateNextLeader),
-          'dd MMMM yyyy'
-        )}.`,
+        `You assigned ${nextLeaderFirstName} the club leader role on ${
+          dueDateNextLeader &&
+          format(new Date(dueDateNextLeader), 'dd MMMM yyyy')
+        }.`,
         `${currentLeader?.practitioner?.user?.firstName} will continue to be the club leader in the meantime.`,
       ];
     }
@@ -168,8 +199,7 @@ export const ClubMembers: React.FC = () => {
               textColor="white"
               icon="ChatIcon"
               text={`Contact ${nextLeader?.practitioner?.user?.firstName}`}
-              // TODO: add onClick
-              onClick={() => {}}
+              onClick={onCall}
             />
           ) : (
             <></>
@@ -178,6 +208,7 @@ export const ClubMembers: React.FC = () => {
       />
     );
   }, [
+    onCall,
     hasLeader,
     isLeaderRequestSent,
     isLeaderAcceptedAgreement,
@@ -193,13 +224,11 @@ export const ClubMembers: React.FC = () => {
   return (
     <BannerWrapper
       showBackground={false}
-      className="flex flex-col p-4 pt-6 "
+      className="flex flex-col p-4 pt-6 pb-20"
       size="small"
       title={`${club?.name} club`}
       onBack={() =>
-        history.push(
-          ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', params.clubId)
-        )
+        history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
       }
     >
       <Typography type="h2" text={`${club?.name} club members`} />
@@ -217,14 +246,13 @@ export const ClubMembers: React.FC = () => {
           type="outlined"
           color="primary"
           textColor="primary"
-          text={hasLeader ? 'Change club leader' : 'Assign club leader'}
+          text={isToChangeLeader ? 'Change club leader' : 'Assign club leader'}
           icon="RefreshIcon"
           onClick={() =>
             history.push(
-              ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(
-                ':clubId',
-                params.clubId
-              )
+              ROUTES.COMMUNITY.CLUB.LEADER[
+                isToChangeLeader ? 'EDIT' : 'ADD'
+              ].replace(':clubId', clubId)
             )
           }
         />
@@ -249,10 +277,7 @@ export const ClubMembers: React.FC = () => {
           icon="ArrowsExpandIcon"
           onClick={() =>
             history.push(
-              ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(
-                ':clubId',
-                params.clubId
-              )
+              ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(':clubId', clubId)
             )
           }
         />
@@ -276,7 +301,7 @@ export const ClubMembers: React.FC = () => {
         className="absolute bottom-1 right-1 z-10 m-3 px-3.5 py-2.5"
         click={() =>
           history.push(
-            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', params.clubId)
+            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
           )
         }
       />

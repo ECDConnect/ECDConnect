@@ -117,7 +117,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var pointsEngineData = new HCWPointsEngine();
             pointsEngineData.PointsLibrary = pointsEngineService.GetPointsLibraryForTenant();  // use this for showing points that can be earned
-            pointsEngineData.PointsUserSummary = pointsEngineService.GetSummaryUserPoints(healthCareWorker.Id.ToString(), today.Year); // this is a summary of points earned
+            pointsEngineData.PointsUserSummary = pointsEngineService.GetSummaryUserPoints(healthCareWorker.Id.ToString(), new DateTime(today.Year, 1, 1)); // this is a summary of points earned
 
             healthCareWorker.PointsEngineData = pointsEngineData;
             return healthCareWorker;
