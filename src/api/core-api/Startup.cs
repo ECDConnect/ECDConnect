@@ -49,6 +49,40 @@ using EcdLink.Api.CoreApi.Managers.Integration;
 
 namespace EcdLink.Api.CoreApi
 {
+    using Microsoft.AspNetCore.Builder;
+    using Microsoft.AspNetCore.Http;
+    using System;
+    using System.Threading.Tasks;
+
+    public static class MaintainCorsExtension
+    {
+        public static IApplicationBuilder MaintainCorsHeadersOnError(this IApplicationBuilder builder)
+        {
+            return builder.Use(async (httpContext, next) =>
+            {
+                var corsHeaders = new HeaderDictionary();
+                foreach (var pair in httpContext.Response.Headers)
+                {
+                    if (!pair.Key.StartsWith("access-control-", StringComparison.InvariantCultureIgnoreCase)) { continue; }
+                    corsHeaders[pair.Key] = pair.Value;
+                }
+
+                httpContext.Response.OnStarting(o => {
+                    var ctx = (HttpContext)o;
+                    var headers = ctx.Response.Headers;
+                    foreach (var pair in corsHeaders)
+                    {
+                        if (headers.ContainsKey(pair.Key)) { continue; }
+                        headers.Add(pair.Key, pair.Value);
+                    }
+                    return Task.CompletedTask;
+                }, httpContext);
+
+                await next();
+            });
+        }
+    }
+
     public partial class Startup
     {
         public Startup(IConfiguration configuration, IWebHostEnvironment env)
@@ -188,7 +222,7 @@ namespace EcdLink.Api.CoreApi
             }
 
             app.UseCors("CorsPolicy");
-
+            app.MaintainCorsHeadersOnError();
             app.UseCookiePolicy();
             app.UseRouting();
             app.UseAuthentication();
