@@ -25,6 +25,7 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Jobs;
+using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Security.JwtSecurity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -248,6 +249,11 @@ namespace ECDLink.DataAccessLayer.Context
             builder.Entity<ChildProgressReport>(x =>
             {
                 x.HasKey(e => new { e.Id });
+            });
+
+            builder.Entity<TenantEntity>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.SiteAddress });
             });
         }
     }
