@@ -71,25 +71,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
         public async Task<ApplicationUser> LogInWithUsernameAsync(string username, string password)
         {
-            Console.WriteLine("LogInWithUsernameAsync: Username={0}, Password={1}, TenantId={2}", username, password, TenantExecutionContext.Tenant.Id);
             // get the user to verify
             var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.UserName, username)
                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
             if (userToVerify == null)
             {
-                Console.WriteLine("LogInWithUsernameAsync: Username={0} not found", username);
                 userToVerify = _userManager.Users.FirstOrDefault(user => user.Email == username
                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
-                if (userToVerify == null)
-                {
-                    Console.WriteLine("LogInWithUsernameAsync: Username={0} not found (2)", username);
-                }
-            }
-
-            if (userToVerify != null)
-            {
-                Console.WriteLine("LogInWithUsernameAsync: Username={0} found with Id={1}", username, userToVerify.Id);
             }
 
             if (userToVerify == null)
@@ -99,13 +88,11 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
             {
-                Console.WriteLine("LogInWithUsernameAsync: Username={0} password not matched", username, userToVerify.Id);
                 return default(ApplicationUser);
             }
 
             if (userToVerify.TenantId != TenantExecutionContext.Tenant.Id && userToVerify.TenantId != null)
             {
-                Console.WriteLine("LogInWithUsernameAsync: Username={0} tenant different {1} {2}", username, userToVerify.TenantId, TenantExecutionContext.Tenant.Id);
                 return default(ApplicationUser);
             }
 

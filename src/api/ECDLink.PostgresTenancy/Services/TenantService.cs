@@ -35,11 +35,6 @@ namespace ECDLink.PostgresTenancy.Services
 
         public TenantModel GetTenantByUrl(string url)
         {
-            var ts = _repository.GetAll();
-            foreach(var t in ts)
-            {
-                Console.WriteLine("TenantService:GetTenantByUrl:AvailableTenant {0} {1}", t.Id, t.SiteAddress);
-            }
             var tenant = _repository.GetAll()
                             .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
                             .OrderBy(x => x.Id)

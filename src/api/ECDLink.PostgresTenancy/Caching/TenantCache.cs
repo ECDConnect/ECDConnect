@@ -69,24 +69,17 @@ namespace ECDLink.PostgresTenancy.Caching
 
         public TenantModel GetTenantByUrl(string url)
         {
-            Console.WriteLine("TenantCache:GetTenantByUrl: url={0}", url);
-            foreach (var t in Tenants)
-            {
-                Console.WriteLine("TenantCache:GetTenantByUrl:AvailableTenant {0} {1}", t.Id, t.SiteAddress);
-            }
             var tenants = Tenants.AsQueryable();
             var uri = new Uri((url.StartsWith("http:") || url.StartsWith("https:")) ? url : "http://" + url);
             if (!uri.IsDefaultPort)
             {
                 var check = uri.Host + ":" + uri.Port.ToString();
-                Console.WriteLine("TenantCache:GetTenantByUrl: url={0} check={1}", url, check);
                 var portTenant = tenants
                         .Where(x => x.SiteAddress.Contains(check) || x.AdminSiteAddress.Contains(check) || x.TestSiteAddress.Contains(check) || x.AdminTestSiteAddress.Contains(check))
                         .OrderBy(x => x.Id)
                         .FirstOrDefault();
                 if (portTenant != null)
                 {
-                    Console.WriteLine("TenantCache:GetTenantByUrl: url={0} check={1} found {2}", url, check, portTenant.Id);
                     return portTenant;
                 }
 
@@ -95,12 +88,6 @@ namespace ECDLink.PostgresTenancy.Caching
                     .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
                     .OrderBy(x => x.Id)
                     .FirstOrDefault();
-            if (tenant != null)
-            {
-                Console.WriteLine("TenantCache:GetTenantByUrl: url={0} found {1}", url, tenant.Id);
-                return tenant;
-            }
-            Console.WriteLine("TenantCache:GetTenantByUrl: url={0} not found", url);
             return tenant;
         }
 
