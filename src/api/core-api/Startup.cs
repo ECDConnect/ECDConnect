@@ -143,15 +143,15 @@ namespace EcdLink.Api.CoreApi
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
 
-            services.AddHttpLogging(logging =>
-            {
-                logging.LoggingFields = HttpLoggingFields.All;
-                logging.RequestHeaders.Add("Origin");
-                logging.ResponseHeaders.Add("Access-Control-Allow-Origin");
-                logging.MediaTypeOptions.AddText("application/javascript");
-                logging.RequestBodyLogLimit = 4096;
-                logging.ResponseBodyLogLimit = 4096;
-            });
+            //services.AddHttpLogging(logging =>
+            //{
+            //    logging.LoggingFields = HttpLoggingFields.All;
+            //    logging.RequestHeaders.Add("Origin");
+            //    logging.ResponseHeaders.Add("Access-Control-Allow-Origin");
+            //    logging.MediaTypeOptions.AddText("application/javascript");
+            //    logging.RequestBodyLogLimit = 4096;
+            //    logging.ResponseBodyLogLimit = 4096;
+            //});
 
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
@@ -245,8 +245,8 @@ namespace EcdLink.Api.CoreApi
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHttpLogging();
-            app.MaintainCorsHeadersOnError();
+            //app.UseHttpLogging();
+            //app.MaintainCorsHeadersOnError();
             app.UseCors("CorsPolicy");
             app.UseCookiePolicy();
             app.UseRouting();
