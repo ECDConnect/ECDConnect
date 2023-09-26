@@ -64,8 +64,7 @@ namespace EcdLink.Api.CoreApi
                 string timestamp = DateTime.Now.Ticks.ToString();
                 string path = httpContext.Request.Path;
                 string origin = httpContext.Request.Headers.Origin;
-                string accessControlAllowOrigin = httpContext.Response.Headers.AccessControlAllowOrigin;
-                Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, origin, accessControlAllowOrigin);
+                Console.WriteLine("{0}: {1} {2}", timestamp, path, origin);
                 //var corsHeaders = new HeaderDictionary();
                 //foreach (var pair in httpContext.Response.Headers)
                 //{
@@ -77,8 +76,8 @@ namespace EcdLink.Api.CoreApi
                     var ctx = (HttpContext)o;
                     var headers = ctx.Response.Headers;
                     Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
-                    ctx.Response.Headers.AccessControlAllowOrigin = origin;
-                    Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
+                    //ctx.Response.Headers.AccessControlAllowOrigin = origin;
+                    //Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
                     //foreach (var pair in corsHeaders)
                     //{
                     //    if (headers.ContainsKey(pair.Key))
