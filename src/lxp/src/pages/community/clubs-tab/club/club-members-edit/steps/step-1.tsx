@@ -5,7 +5,6 @@ import {
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
-import { mockedClub } from '../../individual-club-view';
 import { ClubMembersEditProps } from '..';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
@@ -48,7 +47,7 @@ export const Step1 = ({
       <Typography
         className="mb-5"
         type="h2"
-        text={`Which ${mockedClub.name} members would you like to move?`}
+        text={`Which ${club?.name} members would you like to move?`}
       />
       <div className="mb-4">
         {club?.clubMembers?.map((member) => (

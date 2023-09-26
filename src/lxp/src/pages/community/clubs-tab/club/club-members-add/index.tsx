@@ -1,5 +1,4 @@
 import { BannerWrapper, Button } from '@ecdlink/ui';
-import { mockedClub } from '../individual-club-view';
 import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useCallback, useEffect, useState } from 'react';
@@ -184,7 +183,7 @@ export const ClubMembersAdd: React.FC = () => {
         />
       ) : (
         <Step2
-          title={`Add SmartStarters to ${mockedClub.name} club`}
+          title={`Add SmartStarters to ${club?.name} club`}
           hasSelectedPractitioners={!!selectedMembers?.length}
           setIsEnabledButton={setIsEnabledButton}
           setStep2={setSelectedMembersFromDifferentClub}

@@ -5,7 +5,6 @@ import {
   Typography,
   UserAvatar,
 } from '@ecdlink/ui';
-import { mockedClub } from '../../individual-club-view';
 import { ClubMembersAddProps, Member } from '..';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -13,6 +12,8 @@ import { clubSelectors } from '@/store/club';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerDto } from '@ecdlink/core';
+import { useParams } from 'react-router';
+import { ClubsRouteState } from '../../../index.types';
 
 export const Step1 = ({
   setIsEnabledButton,
@@ -21,6 +22,8 @@ export const Step1 = ({
   const [selectedPractitioners, setSelectedPractitioners] =
     useState<Member[]>();
 
+  const { clubId } = useParams<ClubsRouteState>();
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const clubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
@@ -69,7 +72,7 @@ export const Step1 = ({
       <Typography
         className="mb-5"
         type="h2"
-        text={`Add SmartStarters to ${mockedClub.name} club`}
+        text={`Add SmartStarters to ${club?.name} club`}
       />
       <Typography className="mb-1" type="h4" text="Add club members" />
       <Typography

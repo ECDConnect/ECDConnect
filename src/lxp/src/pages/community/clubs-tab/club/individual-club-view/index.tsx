@@ -23,61 +23,47 @@ import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { ClubsRouteState } from '../../index.types';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
-import { LeagueType } from '@/constants/club';
-
-// TODO: replace mockedClub with real data
-export const mockedClub = {
-  id: '01',
-  name: 'Lady Bugs',
-  members: [
-    {
-      name: 'Bulelwa Mahlangu',
-      description: 'Lorem ipsum 😊',
-    },
-    {
-      name: 'Hope Mokoena',
-      description: '',
-    },
-    {
-      name: 'Lerato Setsego',
-      description: 'Lorem ipsum',
-    },
-    {
-      name: 'Palesa Ndlovu',
-      description: 'Lorem ipsum dolor sit amet consectetur adipiscing',
-    },
-  ],
-  league: 'Lorem Ipsum league',
-  leagueColor: 'purple',
-  leagueRank: 1,
-  points: 200,
-  maxPoints: 1000,
-  coach: 'Nothando Bhuyeni',
-  leader: 'Cynthia Jacobs',
-  leaderDescription: 'Learning & living',
-  iconUrl:
-    'https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=3087&q=80',
-};
+import {
+  LeagueType,
+  MAX_MEMBERS_IN_CLUB,
+  MIN_MEMBERS_IN_CLUB,
+  daysToAcceptBeingLeader,
+} from '@/constants/club';
+import { addDays, differenceInMonths } from 'date-fns';
 
 export const Club: React.FC = () => {
   const history = useHistory();
-  const params = useParams<ClubsRouteState>();
+  const { clubId } = useParams<ClubsRouteState>();
 
-  const club = useSelector(clubSelectors.getClubByIdSelector(params.clubId));
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
-    clubSelectors.getCurrentClubLeaderByClubIdSelector(params.clubId)
+    clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
   );
   const nextLeader = useSelector(
-    clubSelectors.getNextClubLeaderByClubIdSelector(params.clubId)
+    clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
 
   const totalMembers = club?.clubMembers?.length || 0;
+  const monthsSinceCurrentLeaderAccepted = differenceInMonths(
+    new Date(),
+    new Date(currentLeader?.dateAccepted ?? '')
+  );
+  const today = new Date().setHours(0, 0, 0, 0);
+  const dueDateNextLeader = nextLeader
+    ? addDays(
+        new Date(nextLeader?.dateAssigned),
+        daysToAcceptBeingLeader
+      ).setHours(0, 0, 0, 0)
+    : undefined;
 
+  const isDueDateNextLeaderTodayOrFuture =
+    dueDateNextLeader && dueDateNextLeader >= today;
+  const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isClubInALeague = !!club?.league?.id;
   const isTop25Percent =
     !!club?.leaguePosition && Number(club?.leaguePosition) <= 3;
   const hasLeader = !!currentLeader;
-  const isLeaderRequestSent = !!nextLeader;
+  const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
 
   const leader: UserAlertListDataItem = {
     title: `${currentLeader?.practitioner?.user?.firstName ?? ''} ${
@@ -95,7 +81,7 @@ export const Club: React.FC = () => {
       history.push(
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
           ':clubId',
-          params.clubId
+          clubId
         ).replace(':leaderId', currentLeader?.practitioner?.id) // TODO: check if it's practitionerId or userId
       ),
   };
@@ -206,6 +192,123 @@ export const Club: React.FC = () => {
     );
   }, [activities, isClubInALeague]);
 
+  const renderIssuesAndTasksContent = useMemo(() => {
+    const items: MenuListDataItem[] = [];
+
+    // if there is currently no club leader assigned (ie no club leader has been chosen.)
+    if (!currentLeader && !nextLeader) {
+      items.push({
+        showIcon: true,
+        menuIcon: 'ExclamationCircleIcon',
+        title: 'No club leader assigned',
+        subTitle: 'Assign club leader',
+        subTitleStyle: 'text-textDark',
+        titleStyle: 'text-textMid whitespace-normal',
+        iconBackgroundColor: 'errorMain',
+        backgroundColor: 'errorBg',
+        onActionClick: () =>
+          history.push(
+            ROUTES.COMMUNITY.CLUB.LEADER.ADD.replace(':clubId', clubId)
+          ),
+      });
+    }
+
+    // if a new club leader was assigned
+    if (!currentLeader && isLeaderRequestSent) {
+      items.push({
+        showIcon: true,
+        menuIcon: 'ExclamationCircleIcon',
+        title: 'Club leader has not accepted agreement',
+        subTitle: `Contact ${nextLeader.practitioner?.user?.firstName}`,
+        subTitleStyle: 'text-textDark',
+        titleStyle: 'text-textMid whitespace-normal',
+        iconBackgroundColor: 'errorMain',
+        backgroundColor: 'errorBg',
+        onActionClick: () =>
+          history.push(
+            ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+              ':clubId',
+              clubId
+            ).replace(':leaderId', nextLeader.practitioner?.id)
+          ),
+      });
+    }
+
+    // if there are less than 4 practitioners in the club
+    if (totalMembers < MIN_MEMBERS_IN_CLUB) {
+      items.push({
+        showIcon: true,
+        menuIcon: 'ExclamationCircleIcon',
+        title: 'Not enough club members',
+        subTitle: 'Add members',
+        subTitleStyle: 'text-textDark',
+        titleStyle: 'text-textMid whitespace-normal',
+        iconBackgroundColor: 'errorMain',
+        backgroundColor: 'errorBg',
+        onActionClick: () =>
+          history.push(
+            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
+          ),
+      });
+    }
+
+    // if there are more than 17 practitioners in the club
+    if (totalMembers > MAX_MEMBERS_IN_CLUB) {
+      items.push({
+        showIcon: true,
+        menuIcon: 'ExclamationCircleIcon',
+        title: 'Too many club members',
+        subTitle: 'Create an additional club',
+        subTitleStyle: 'text-textDark',
+        titleStyle: 'text-textMid whitespace-normal',
+        iconBackgroundColor: 'errorMain',
+        backgroundColor: 'errorBg',
+        onActionClick: () =>
+          history.push(ROUTES.COMMUNITY.CLUB.ADD.replace(':clubId', 'new')),
+      });
+    }
+
+    // if there the current club leader has been in the role for 6 months or more
+    if (isLeaderAcceptedOverSixMonths) {
+      items.push({
+        showIcon: true,
+        menuIcon: 'ExclamationIcon',
+        title: 'Choose a new club leader',
+        subTitle: `${currentLeader?.practitioner?.user?.firstName} has been a club leader for 6 or more months`,
+        subTitleStyle: 'text-textDark',
+        titleStyle: 'text-textMid whitespace-normal',
+        iconBackgroundColor: 'alertMain',
+        backgroundColor: 'alertBg',
+        onActionClick: () =>
+          history.push(
+            ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(':clubId', clubId)
+          ),
+      });
+    }
+
+    if (!items.length) return <></>;
+
+    return (
+      <div>
+        <Typography className="mb-2 mt-4" type="h3" text="Issues & tasks" />
+        <StackedList
+          className="flex flex-col gap-2"
+          isFullHeight={false}
+          type={'MenuList' as StackedListType}
+          listItems={items}
+        />
+      </div>
+    );
+  }, [
+    currentLeader,
+    nextLeader,
+    isLeaderRequestSent,
+    totalMembers,
+    isLeaderAcceptedOverSixMonths,
+    history,
+    clubId,
+  ]);
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -223,12 +326,15 @@ export const Club: React.FC = () => {
           title={String(totalMembers)}
           subTitle="members"
           color={
-            !!totalMembers && totalMembers >= 4 && totalMembers <= 17
+            !!totalMembers &&
+            totalMembers >= MIN_MEMBERS_IN_CLUB &&
+            totalMembers <= MAX_MEMBERS_IN_CLUB
               ? 'successMain'
               : 'errorMain'
           }
         />
       </div>
+      {renderIssuesAndTasksContent}
       {!!totalMembers ? (
         <>
           {renderLeagueContent}
@@ -257,7 +363,7 @@ export const Club: React.FC = () => {
                     history.push(
                       ROUTES.COMMUNITY.CLUB.LEADER.ADD.replace(
                         ':clubId',
-                        params.clubId
+                        clubId
                       )
                     )
                   }
@@ -292,7 +398,7 @@ export const Club: React.FC = () => {
             history.push(
               ROUTES.COMMUNITY.CLUB.MEMBERS[
                 !!totalMembers ? 'ROOT' : 'ADD'
-              ].replace(':clubId', params.clubId)
+              ].replace(':clubId', clubId)
             )
           }
         />
@@ -303,9 +409,7 @@ export const Club: React.FC = () => {
           color="primary"
           text="Change club name"
           onClick={() =>
-            history.push(
-              ROUTES.COMMUNITY.CLUB.EDIT.replace(':clubId', params.clubId)
-            )
+            history.push(ROUTES.COMMUNITY.CLUB.EDIT.replace(':clubId', clubId))
           }
         />
       </div>
