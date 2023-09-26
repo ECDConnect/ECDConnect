@@ -61,27 +61,35 @@ namespace EcdLink.Api.CoreApi
         {
             return builder.Use(async (httpContext, next) =>
             {
-                var corsHeaders = new HeaderDictionary();
-                foreach (var pair in httpContext.Response.Headers)
-                {
-                    if (!pair.Key.StartsWith("access-control-", StringComparison.InvariantCultureIgnoreCase)) { continue; }
-                    corsHeaders[pair.Key] = pair.Value;
-                }
+                string timestamp = DateTime.Now.Ticks.ToString();
+                string path = httpContext.Request.Path;
+                string origin = httpContext.Request.Headers.Origin;
+                string accessControlAllowOrigin = httpContext.Response.Headers.AccessControlAllowOrigin;
+                Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, origin, accessControlAllowOrigin);
+                //var corsHeaders = new HeaderDictionary();
+                //foreach (var pair in httpContext.Response.Headers)
+                //{
+                //    if (!pair.Key.StartsWith("access-control-", StringComparison.InvariantCultureIgnoreCase)) { continue; }
+                //    corsHeaders[pair.Key] = pair.Value;
+                //}
 
                 httpContext.Response.OnStarting(o => {
                     var ctx = (HttpContext)o;
                     var headers = ctx.Response.Headers;
-                    foreach (var pair in corsHeaders)
-                    {
-                        if (headers.ContainsKey(pair.Key))
-                        {
-                            headers[pair.Key] = pair.Value;
-                        }
-                        else
-                        {
-                            headers.Add(pair.Key, pair.Value);
-                        }
-                    }
+                    Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
+                    ctx.Response.Headers.AccessControlAllowOrigin = origin;
+                    Console.WriteLine("{0}: {1} {2} {3}", timestamp, path, ctx.Response.Headers.AccessControlAllowOrigin, origin);
+                    //foreach (var pair in corsHeaders)
+                    //{
+                    //    if (headers.ContainsKey(pair.Key))
+                    //    {
+                    //        headers[pair.Key] = pair.Value;
+                    //    }
+                    //    else
+                    //    {
+                    //        headers.Add(pair.Key, pair.Value);
+                    //    }
+                    //}
                     return Task.CompletedTask;
                 }, httpContext);
 
@@ -239,8 +247,8 @@ namespace EcdLink.Api.CoreApi
             }
 
             app.UseHttpLogging();
+            app.MaintainCorsHeadersOnError();
             app.UseCors("CorsPolicy");
-            // app.MaintainCorsHeadersOnError();
             app.UseCookiePolicy();
             app.UseRouting();
             app.UseAuthentication();
