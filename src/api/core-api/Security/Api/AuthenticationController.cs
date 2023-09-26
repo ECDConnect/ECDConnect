@@ -36,12 +36,11 @@ namespace ECDLink.Security.Api
             [FromServices] UserManager<ApplicationUser> _userManager,
             [FromBody] LoginRequestModel login)
         {
-            Console.WriteLine("Login: Referrer:{0}", HttpContext.Request.Headers.Referer);
-            Console.WriteLine("Login: Origin  :{0}", HttpContext.Request.Headers.Origin);
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+            Console.WriteLine("Login: Username={0}, Referrer={1}, Origin={2}", login.Username, HttpContext.Request.Headers.Referer, HttpContext.Request.Headers.Origin);
 
             //exclude funny script attempts
             if ((login?.Password?.StartsWith('<') ?? true)
