@@ -14,7 +14,7 @@
         public const string FourPmEveryFriday = "0 0 16 * * 5";
 
         public const string NinePmEveryFriday = "0 0 21 * * 5";
-        public const string NinePmEverySunday = "0 0 21 * * 5";
+        public const string NinePmEverySunday = "0 0 21 * * 7";
 
         public const string MidnightDaily = "0 0 0 * * *";
 

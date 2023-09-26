@@ -61,6 +61,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<Classroom, Guid> _classroomGenericRepo;
     private IGenericRepository<ClassroomGroup, Guid> _classroomGroupGenericRepo;
     private IGenericRepository<ProgrammeType, Guid> _programmeTypeGenericRepo;
+    private IGenericRepository<ClassProgramme, Guid> _programmeRepo;
     private IGenericRepository<Language, Guid> _staticLanguageRepo;
     private IGenericRepository<Gender, Guid> _staticGenderRepo;
     private IGenericRepository<Race, Guid> _staticRaceRepo;
@@ -165,7 +166,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
         _coachGenericRepo = repositoryFactory.CreateGenericRepository<Coach>(userContext: _uId);
         _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
-
+        _programmeRepo = repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
         _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
         _childGenericRepo = repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
         _caregiverRepo = repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
@@ -653,8 +654,42 @@ public class SmartStartIntegrationService : IIntegrationService
         return isComplete;
     }
 
+    public async Task<bool> IntegrationMonthlyAttendanceData()
+    {
+        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
+        int attendancesSent = 0;
+        bool isComplete = false;
+        DateTime startPeriod = DateTime.Now.GetStartOfMonth();
+        _mappedEntities = await GetMappedEntities();
+        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= startPeriod)).ToList();
 
-    public async Task<bool> IntegrationAttendanceData()
+        var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
+        var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("IncomeStatementPDF")).FirstOrDefault();
+
+
+
+        var allRequiredAttendance =
+            (
+                from classroomGroupData in _classroomGroupGenericRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
+                join entityData in entityRepo.GetAll().Where(p => p.IsActive.Equals(true) && p.LastAttendanceSubmittedDate <= startPeriod && p.LocalEntity.Equals("Practitioner")) on classroomGroupData.UserId.ToString() equals entityData.UserId
+                join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= startPeriod && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
+                select new { classroomGroupData, entityData }
+            ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
+        foreach (var requiredAttendance in allRequiredAttendance)
+        {
+            var doc = docRepo.GetAll().Where(d => d.UserId.Equals(requiredAttendance.entityData.UserId) && d.);
+
+
+
+        }
+
+
+        return isComplete;
+    }
+
+
+        public async Task<bool> IntegrationAttendanceData()
     {
         await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
         int attendancesSent = 0;
@@ -696,6 +731,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         string wednesdayPresent = unknown;
                         string thursdayPresent = unknown;
                         string fridayPresent = unknown;
+                        string defaultState = unknown;
                         //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
                         var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
                         if (mappedChild != null)
@@ -729,6 +765,13 @@ public class SmartStartIntegrationService : IIntegrationService
                             }                            
                             foreach (var attendance in childAttendances)
                             {
+                                var programmeDay = _programmeRepo.GetAll().Where(d => d.MeetingDay == (int)attendance.AttendanceDate.DayOfWeek).ToList();
+                                if (programmeDay.Any())
+                                {
+                                    defaultState = 
+                                }
+
+
                                 switch (attendance.AttendanceDate.ToString("dddd"))
                                 {
                                     case "Monday":
