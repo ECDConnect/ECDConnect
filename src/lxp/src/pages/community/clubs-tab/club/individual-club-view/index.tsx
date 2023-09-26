@@ -31,6 +31,15 @@ import {
 } from '@/constants/club';
 import { addDays, differenceInMonths } from 'date-fns';
 
+export function isCurrentPointsAtLeast80PercentOfTotal(
+  currentPoints: number,
+  totalPoints: number
+): boolean {
+  const targetPercentage = 0.8; // 80%
+  const targetPoints = totalPoints * targetPercentage;
+  return currentPoints >= targetPoints;
+}
+
 export const Club: React.FC = () => {
   const history = useHistory();
   const { clubId } = useParams<ClubsRouteState>();
@@ -64,6 +73,8 @@ export const Club: React.FC = () => {
     !!club?.leaguePosition && Number(club?.leaguePosition) <= 3;
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
+  // TODO: check this rule
+  const isPurpleLeague = club?.league?.leagueType?.name === LeagueType.Purple;
 
   const leader: UserAlertListDataItem = {
     title: `${currentLeader?.practitioner?.user?.firstName ?? ''} ${
@@ -110,26 +121,77 @@ export const Club: React.FC = () => {
   );
 
   const activities: MenuListDataItem[] = [
-    { title: 'Meet regularly', menuIconUrl: partnershipIcon },
-    { title: 'Be creative', menuIconUrl: paintPaletteIcon },
-    { title: 'Host family days', menuIconUrl: familyIcon },
-    { title: 'Leave no one behind', menuIconUrl: inclusiveIcon },
+    {
+      title: 'Meet regularly',
+      menuIconUrl: partnershipIcon,
+      route: ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
+        ':clubId',
+        clubId
+      ),
+    },
+    ...(!isPurpleLeague
+      ? [
+          {
+            title: 'Be creative',
+            menuIconUrl: paintPaletteIcon,
+            route: ROUTES.COMMUNITY.CLUB.POINTS.BE_CREATIVE.replace(
+              ':clubId',
+              clubId
+            ),
+          },
+        ]
+      : []),
+    ...(isPurpleLeague
+      ? [
+          {
+            title: 'Capture child attendance',
+            menuIcon: 'ClipboardCheckIcon',
+            route:
+              ROUTES.COMMUNITY.CLUB.POINTS.CAPTURE_CHILD_ATTENDANCE.replace(
+                ':clubId',
+                clubId
+              ),
+          },
+        ]
+      : []),
+    {
+      title: 'Host family days',
+      menuIconUrl: familyIcon,
+      route: ROUTES.COMMUNITY.CLUB.POINTS.HOST_FAMILY_EVENT.replace(
+        ':clubId',
+        clubId
+      ),
+    },
+    ...(isPurpleLeague
+      ? [
+          {
+            title: 'Complete child progress reports',
+            menuIcon: 'DocumentReportIcon',
+            route:
+              ROUTES.COMMUNITY.CLUB.POINTS.COMPLETE_CHILD_PROGRESS_REPORTS.replace(
+                ':clubId',
+                clubId
+              ),
+          },
+        ]
+      : []),
+    {
+      title: 'Leave no one behind',
+      menuIconUrl: inclusiveIcon,
+      route: ROUTES.COMMUNITY.CLUB.POINTS.LEAVE_NO_ONE_BEHIND.replace(
+        ':clubId',
+        clubId
+      ),
+    },
   ].map((item) => ({
     ...item,
-    titleStyle: 'text-textDark',
-    menuIconUrl: item.menuIconUrl,
+    ...(item.menuIconUrl && { menuIconUrl: item.menuIconUrl }),
+    ...(item.menuIcon && { menuIcon: item.menuIcon }),
+    titleStyle: 'text-textDark whitespace-normal',
     iconBackgroundColor: 'tertiary',
     showIcon: true,
+    onActionClick: () => history.push(item.route),
   }));
-
-  function isCurrentPointsAtLeast80PercentOfTotal(
-    currentPoints: number,
-    totalPoints: number
-  ): boolean {
-    const targetPercentage = 0.8; // 80%
-    const targetPoints = totalPoints * targetPercentage;
-    return currentPoints >= targetPoints;
-  }
 
   const renderLeagueContent = useMemo(() => {
     if (isClubInALeague) {
@@ -161,8 +223,11 @@ export const Club: React.FC = () => {
             }
             bgColour="uiBg"
             textColour="black"
-            // TODO: add onClick
-            onClick={() => {}}
+            onClick={() =>
+              history.push(
+                ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(':clubId', clubId)
+              )
+            }
           />
         </div>
       );
@@ -175,7 +240,14 @@ export const Club: React.FC = () => {
         title="This club is not in a league."
       />
     );
-  }, [club?.maxClubPoints, club?.totalClubPoints, isClubInALeague, leagueCard]);
+  }, [
+    club?.maxClubPoints,
+    club?.totalClubPoints,
+    clubId,
+    history,
+    isClubInALeague,
+    leagueCard,
+  ]);
 
   const renderActivitiesContent = useMemo(() => {
     if (isClubInALeague) return <></>;
