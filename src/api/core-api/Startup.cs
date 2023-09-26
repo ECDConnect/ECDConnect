@@ -51,6 +51,7 @@ namespace EcdLink.Api.CoreApi
 {
     using Microsoft.AspNetCore.Builder;
     using Microsoft.AspNetCore.Http;
+    using Microsoft.AspNetCore.HttpLogging;
     using System;
     using System.Threading.Tasks;
 
@@ -72,8 +73,14 @@ namespace EcdLink.Api.CoreApi
                     var headers = ctx.Response.Headers;
                     foreach (var pair in corsHeaders)
                     {
-                        if (headers.ContainsKey(pair.Key)) { continue; }
-                        headers.Add(pair.Key, pair.Value);
+                        if (headers.ContainsKey(pair.Key))
+                        {
+                            headers[pair.Key] = pair.Value;
+                        }
+                        else
+                        {
+                            headers.Add(pair.Key, pair.Value);
+                        }
                     }
                     return Task.CompletedTask;
                 }, httpContext);
@@ -128,7 +135,17 @@ namespace EcdLink.Api.CoreApi
                             .WithOrigins(corsAllowedDomains)
                             .WithExposedHeaders("WWW-Authenticate")
                         ));
-            
+
+            services.AddHttpLogging(logging =>
+            {
+                logging.LoggingFields = HttpLoggingFields.All;
+                logging.RequestHeaders.Add("Origin");
+                logging.ResponseHeaders.Add("Access-Control-Allow-Origin");
+                logging.MediaTypeOptions.AddText("application/javascript");
+                logging.RequestBodyLogLimit = 4096;
+                logging.ResponseBodyLogLimit = 4096;
+            });
+
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
             PostgresTenancyStartup.ConfigureDataAccessServices(services, Configuration);
@@ -221,8 +238,9 @@ namespace EcdLink.Api.CoreApi
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseHttpLogging();
             app.UseCors("CorsPolicy");
-            app.MaintainCorsHeadersOnError();
+            // app.MaintainCorsHeadersOnError();
             app.UseCookiePolicy();
             app.UseRouting();
             app.UseAuthentication();
