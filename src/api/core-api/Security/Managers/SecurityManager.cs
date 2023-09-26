@@ -92,6 +92,11 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 Console.WriteLine("LogInWithUsernameAsync: Username={0} found with Id={1}", username, userToVerify.Id);
             }
 
+            if (userToVerify == null)
+            {
+                return null;
+            }
+
             if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
             {
                 Console.WriteLine("LogInWithUsernameAsync: Username={0} password not matched", username, userToVerify.Id);
