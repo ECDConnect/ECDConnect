@@ -9,18 +9,13 @@ import {
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
-import { ContentTypeDto, DocumentTypeDto } from '@ecdlink/core';
+import { ContentTypeDto } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import {
-  ArrowLeftIcon,
-  ChartBarIcon,
-  PresentationChartBarIcon,
-  SearchIcon,
-} from '@heroicons/react/solid';
+import { ArrowLeftIcon, SearchIcon } from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 
 export function ContentManagement() {
@@ -134,7 +129,8 @@ export function ContentManagement() {
           id: 3,
         },
         {
-          name: 'Community',
+          name: 'Coaching Circle Topics',
+          href: 'CoachingCircleTopics',
           id: 4,
         },
       ];
@@ -177,7 +173,6 @@ export function ContentManagement() {
   };
 
   useEffect(() => {
-    console.log(searchValue);
     getContentTypes({
       variables: {
         search: searchValue,
@@ -199,8 +194,6 @@ export function ContentManagement() {
   }, 150);
 
   const listItems: StackedListItemType[] = [];
-
-  console.log(dataTypes?.contentTypes);
 
   if (specialType === 'Progress') {
     listItems.push(
