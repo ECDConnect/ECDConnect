@@ -333,6 +333,9 @@ namespace ECDLink.Core.Services
             var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: adminId);
             var entityRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: adminId);
             var docRepo = _repositoryFactory.CreateGenericRepository<Document>(userContext: adminId);
+            var docTypeRepo = _repositoryFactory.CreateGenericRepository<DocumentType>(userContext: adminId);
+
+            var attendancePDF = docTypeRepo.GetAll().Where(d => d.Name.Equals("AttendancePDF")).FirstOrDefault();
 
             DateTime startPeriod = DateTime.Now.GetStartOfMonth();
 
@@ -345,8 +348,8 @@ namespace ECDLink.Core.Services
                 ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
             foreach (var requiredAttendance in allRequiredAttendance)
             {
-                var doc = docRepo.GetAll().Where(d => d.UserId.Equals(requiredAttendance.entityData.UserId) && d.);
-
+                var docs = docRepo.GetAll().Where(d => d.UserId.Equals(requiredAttendance.entityData.UserId) && d.DocumentTypeId.Equals(attendancePDF.Id)).ToList();
+                //TODO: finish gathering docs and sending to SL
 
 
             }
