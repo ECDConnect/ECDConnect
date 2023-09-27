@@ -69,8 +69,6 @@ export const Community: React.FC = () => {
       subTitle={date}
       color={'primary'}
       onBack={() => history.push(ROUTES.DASHBOARD)}
-      displayHelp
-      onHelp={() => displayTutorial(currentTab?.title)}
       displayOffline={!isOnline}
     >
       <div className="h-screen">
