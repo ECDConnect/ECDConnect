@@ -111,7 +111,9 @@ export const Step2 = ({
       <Typography
         className="mt-4 mb-2"
         type="h4"
-        text={`Would you like to move any SmartStarters from a different club into the ${step1?.clubName} club?`}
+        text={`Would you like to move any SmartStarters from a different club into the ${
+          step1?.clubName || club?.name
+        } club?`}
       />
       <ButtonGroup<boolean>
         color="secondary"
