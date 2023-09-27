@@ -23,6 +23,11 @@ namespace ECDLink.PostgresTenancy.Context
         protected override void OnModelCreating(ModelBuilder builder)
         {
             base.OnModelCreating(builder);
+
+            builder.Entity<TenantEntity>(x =>
+            {
+                x.HasKey(e => new { e.Id, e.SiteAddress });
+            });
         }
     }
 }
