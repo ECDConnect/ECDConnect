@@ -1,9 +1,16 @@
 import {
   ApplicationUserInput,
+  ClubMeetingModelInput,
   CoachInput,
   SiteAddressInput,
 } from '@ecdlink/graphql';
-import { CoachDto, SiteAddressDto } from '@ecdlink/core';
+import {
+  ClubDto,
+  CoachCirclesDto,
+  CoachDto,
+  CoachingCircleTopicDto,
+  SiteAddressDto,
+} from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 
 import { SiteAddressService } from '@/services/SiteAddressService';
@@ -185,6 +192,140 @@ export const updateCoach = createAsyncThunk<
       if (err instanceof Error) {
         return rejectWithValue(err.message);
       }
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllCoachingCircleClubsForCoach = createAsyncThunk<
+  CoachCirclesDto,
+  { coachId: string; startDate: Date; endDate: Date },
+  ThunkApiType<RootState>
+>(
+  'getAllCoachingCircleClubsForCoach',
+  async ({ coachId, startDate, endDate }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      coach: { coachCircles: coachCirclesCache },
+    } = getState();
+
+    if (!coachCirclesCache) {
+      try {
+        let coach: CoachCirclesDto | undefined;
+
+        if (userAuth?.auth_token) {
+          coach = await new CoachService(
+            userAuth?.auth_token
+          ).GetAllCoachingCircleClubsForCoachserId(coachId, startDate, endDate);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+        if (!coach) {
+          return rejectWithValue(
+            'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
+          );
+        }
+        return coach;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return coachCirclesCache;
+    }
+  }
+);
+
+export const getAllClubsForCoach = createAsyncThunk<
+  ClubDto[],
+  { userId: string },
+  ThunkApiType<RootState>
+>('getAllClubsForCoach', async ({ userId }, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    coach: { coachClubs: coachClubsCache },
+  } = getState();
+
+  if (!coachClubsCache) {
+    try {
+      let coachClubs: ClubDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        coachClubs = await new CoachService(
+          userAuth?.auth_token
+        ).GetAllClubsForCoach(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+      if (!coachClubs) {
+        return rejectWithValue(
+          'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
+        );
+      }
+      return coachClubs;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  } else {
+    return coachClubsCache;
+  }
+});
+
+export const addCoachCircleMeeting = createAsyncThunk<
+  boolean[],
+  { input: ClubMeetingModelInput },
+  ThunkApiType<RootState>
+>('addCoachCircleMeeting', async ({ input }, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    coach: { coach },
+  } = getState();
+
+  try {
+    let clubMeetingInput: boolean | undefined;
+
+    if (userAuth?.auth_token && coach) {
+      clubMeetingInput = await new CoachService(
+        userAuth?.auth_token
+      ).addCoachCircleMeeting(input);
+    } else {
+      return rejectWithValue('no access token, profile check required');
+    }
+
+    if (!clubMeetingInput) {
+      return rejectWithValue('Error adding meeting circle');
+    }
+
+    return [clubMeetingInput];
+  } catch (err) {
+    if (err instanceof Error) {
+      return rejectWithValue(err.message);
+    }
+    return rejectWithValue(err);
+  }
+});
+
+export const getCoachingCircleTopics = createAsyncThunk<
+  CoachingCircleTopicDto[],
+  { locale: string },
+  ThunkApiType<RootState>
+>(
+  'getCoachingCircleTopics',
+  async ({ locale }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const content = await new CoachService(
+          userAuth?.auth_token ?? ''
+        ).getCoachingCircleTopics(locale);
+
+        return content;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
       return rejectWithValue(err);
     }
   }

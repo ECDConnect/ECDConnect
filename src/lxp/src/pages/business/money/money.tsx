@@ -17,18 +17,15 @@ import {
   StatementsIncomeInput,
 } from '@/../../../packages/graphql/lib';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
-import { useAppContext } from '@/walkthrougContext';
 
 interface MoneyProps {
   setHasIncomeStatements: (item: boolean) => void;
   hasIncomeStatements: boolean;
-  setHandleAutoStartWalkthrough: (item: boolean) => void;
 }
 
 export const Money: React.FC<MoneyProps> = ({
   hasIncomeStatements,
   setHasIncomeStatements,
-  setHandleAutoStartWalkthrough,
 }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -43,7 +40,7 @@ export const Money: React.FC<MoneyProps> = ({
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
       setIsLoading(true);
-      const statementResults = await appDispatch(
+      await appDispatch(
         statementsThunkActions.getAllStatementsBalanceSheet({
           // userId: userAuth?.id!,
           year: getYear(currentDate),
@@ -72,7 +69,6 @@ export const Money: React.FC<MoneyProps> = ({
       );
       setIsLoading(false);
     }
-    setHandleAutoStartWalkthrough(true);
   };
 
   useEffect(() => {
@@ -122,16 +118,13 @@ export const Money: React.FC<MoneyProps> = ({
     if (
       (income && income?.length > 0) ||
       (expense && expense?.length! > 0) ||
-      (balanceSheet &&
-        balanceSheet?.length! > 0 &&
-        balanceSheet?.[0]?.balance !== 0)
+      (balanceSheet && balanceSheet?.length! > 0) //&&
+      // balanceSheet?.[0]?.balance !== 0
     ) {
       setHasIncomeStatements(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [income, expense, balanceSheet]);
-
-  const { state } = useAppContext();
 
   return (
     <>
@@ -142,7 +135,7 @@ export const Money: React.FC<MoneyProps> = ({
           backgroundColor="secondary"
           className="mb-7"
         />
-      ) : hasIncomeStatements || state?.run ? (
+      ) : hasIncomeStatements ? (
         <SubmitIncomeStatements />
       ) : (
         <div className="h-full px-4 py-2 pt-7">

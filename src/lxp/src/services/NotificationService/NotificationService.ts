@@ -1,6 +1,5 @@
 import { differenceInMilliseconds } from 'date-fns';
 import { EnhancedStore } from '@reduxjs/toolkit';
-
 import { ChildDocumentsNotificationValidator } from './validators/child-documents/childDocumentsNotificationValidator';
 import { ChildProgressReportNotificationValidator } from './validators/child-progess-report/childProgressReportNotificationValidator';
 import { IncompleteChildRegistrationNotificationValidator } from './validators/child-registration/incompleteChildRegistrationNotificationValidator';
@@ -8,6 +7,7 @@ import { IncompletePractitionerInformationNotificationValidator } from './valida
 import { IncompleteCoachInformationNotificationValidator } from './validators/coach-profile/incompleteCoachInformationNotificationValidator';
 import { ProgrammePlanningNotificationValidator } from './validators/programme-planning/programmePlanningNotificationValidator';
 import { IncompleteTrackAttendanceNotificationValidator } from './validators/track-attendance/incompleteTrackAttendanceNotificationValidator';
+import { UserLastLoginNotificationValidator } from './validators/user/userLastLoginNotificationValidator';
 import { NotificationValidator } from './NotificationService.types';
 import { Message } from '@models/messages/messages';
 import { RootState } from '@store/types';
@@ -68,6 +68,7 @@ export class NotificationService {
       new ProgrammePlanningNotificationValidator(store, currentDate),
       new ChildProgressReportNotificationValidator(store, currentDate),
       new IncompleteCoachInformationNotificationValidator(store),
+      new UserLastLoginNotificationValidator(store, currentDate),
     ];
   };
 }

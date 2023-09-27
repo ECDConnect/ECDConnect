@@ -165,7 +165,8 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<League> League { get; set; }
 
         // PQA
-        public DbSet<PQA> PQAs { get; set; }
+        public DbSet<PQA> PQAs { get; set; } // TODO - I think we can remove this now, it was old integration stuff
+        public DbSet<PQARating> PQARatings { get; set; }
 
         // SmartSpaceVisit
         public DbSet<SmartSpaceVisit> SmartSpaceVisits { get; set; }

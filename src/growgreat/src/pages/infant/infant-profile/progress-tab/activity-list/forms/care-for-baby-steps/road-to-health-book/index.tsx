@@ -32,11 +32,13 @@ import { DocumentActions } from '@/store/document/document.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { infantRoadToHealthModelSchema } from './infant-road-to-health';
+import { InfantModelInput } from '@/../../../packages/graphql/lib';
 
 const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
 
 export const RoadToHeathBookStep = ({
   infant,
+  setInfantInput,
   setEnableButton,
   setSectionQuestions,
 }: DynamicFormProps) => {
@@ -99,6 +101,18 @@ export const RoadToHeathBookStep = ({
     { text: 'No', value: false },
   ];
 
+  //if the infant didn't have RTH book when created, the weightAtBirth and lengthAtBirth wouldn't be set, so set it now
+  const onUpdateInfant = useCallback(async () => {
+    if (infant?.user?.id) {
+      let input: InfantModelInput = {
+        weightAtBirth: Number(weightAtBirth),
+        lengthAtBirth: Number(lengthAtBirth),
+        dateOfBirth: infant?.user?.dateOfBirth,
+      };
+      setInfantInput?.(input);
+    }
+  }, [lengthAtBirth, weightAtBirth]);
+
   const onSubmitDocument = useCallback(async () => {
     if (infant?.user?.id) {
       const fileName = 'roadtohealthbook.png';
@@ -144,10 +158,6 @@ export const RoadToHeathBookStep = ({
     )
       return;
 
-    if (roadToHealthBook && previousRoadToHealthBook !== roadToHealthBook) {
-      onSubmitDocument();
-    }
-
     setSectionQuestions?.([
       {
         visitSection,
@@ -176,16 +186,25 @@ export const RoadToHeathBookStep = ({
       !!roadToHealthBook &&
       Number(lengthAtBirth) > 0 &&
       Number(weightAtBirth) > 0;
+
     const isAllCompleted =
       (hasMaternalCaseRecord && withDocument) ||
       (!hasMaternalCaseRecord && !!notRoadToHealthBook);
 
     setEnableButton?.(isAllCompleted);
+
+    if (hasMaternalCaseRecord && withDocument) {
+      onUpdateInfant();
+    }
+    if (roadToHealthBook && previousRoadToHealthBook !== roadToHealthBook) {
+      onSubmitDocument();
+    }
   }, [
     hasMaternalCaseRecord,
     lengthAtBirth,
     notRoadToHealthBook,
     onSubmitDocument,
+    onUpdateInfant,
     previousHasMaternalCaseRecord,
     previousLength,
     previousNotRoadToHealthBook,
@@ -262,6 +281,7 @@ export const RoadToHeathBookStep = ({
                 placeholder={'Tap to add'}
                 type={'number'}
                 className="mt-4"
+                id={'weight'}
                 error={
                   !!errors.weightAtBirth ? errors.weightAtBirth : undefined
                 }
@@ -281,6 +301,7 @@ export const RoadToHeathBookStep = ({
                 placeholder={'Tap to add'}
                 type={'number'}
                 className="mt-4"
+                id={'length'}
                 error={
                   !!errors.lengthAtBirth ? errors.lengthAtBirth : undefined
                 }

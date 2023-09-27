@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -29,6 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] UserManager<ApplicationUser> userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] RoleManager<IdentityRole> roleManager,
+            [Service] PersonnelService personnelService,
             string userId = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -54,7 +56,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
                 if (roles.Any(x => x.Name.Contains(Roles.PRINCIPAL) || x.Name.Contains(Roles.PRACTITIONER)))
                 {
-                    var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, userId);
+                    var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, personnelService, userId);
                     if (userData != null)
                     {
                         if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)

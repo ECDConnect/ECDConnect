@@ -2,7 +2,6 @@ import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-ev
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
-import { pqaThunkActions } from '@/store/pqa';
 import { traineeActions, traineeThunkActions } from '@/store/trainee';
 import { CalendarEventModel, PractitionerDto } from '@ecdlink/core';
 import { UpdateVisitPlannedVisitDateModelInput } from '@ecdlink/graphql';

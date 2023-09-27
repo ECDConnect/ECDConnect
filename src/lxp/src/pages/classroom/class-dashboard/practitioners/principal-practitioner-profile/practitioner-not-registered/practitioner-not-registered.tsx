@@ -9,7 +9,8 @@ import { useSelector } from 'react-redux';
 import { practitionerThunkActions } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import ROUTES from '@/routes/routes';
-import { useSnackbar } from '@ecdlink/core';
+import { ReasonsForPractitionerLeaving, useSnackbar } from '@ecdlink/core';
+import { deActivatePractitioner } from '@/store/practitioner/practitioner.actions';
 
 export const PractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
@@ -21,7 +22,7 @@ export const PractitionerNotRegistered: React.FC<
   const appDispatch = useAppDispatch();
 
   const removePractitioner = async () => {
-    if (!practitioner?.isLeaving) {
+    if (practitioner?.isLeaving) {
       await new PractitionerService(
         userAuth?.auth_token || ''
       ).UpdatePrincipalInvitation(
@@ -29,14 +30,18 @@ export const PractitionerNotRegistered: React.FC<
         practitioner?.principalHierarchy!,
         false
       );
+    } else {
+      appDispatch(
+        deActivatePractitioner({
+          userId: practitioner!.userId as string,
+          reasonForPractitionerLeavingId: ReasonsForPractitionerLeaving.OTHER,
+          leavingComment: practitioner?.isLeaving
+            ? 'Practitioner said they were not a practitioner at this classroom'
+            : 'Practitioner has not registered on Funda app',
+        })
+      );
     }
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
+
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();

@@ -1,0 +1,13 @@
+export interface PointsSummaryDto {
+  pointsLibraryId: string;
+  month: number;
+  pointsTotal: number;
+  pointsYTD: number;
+  year: number;
+  activity: string;
+  description: string;
+  maxMonthlyPoints: number;
+  maxYearlyPoints: number;
+  pointsPerAward: number;
+  subActivity?: string;
+}

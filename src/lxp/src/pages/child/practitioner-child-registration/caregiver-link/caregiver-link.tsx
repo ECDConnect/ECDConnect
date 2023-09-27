@@ -25,6 +25,9 @@ import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
 import { CaregiverMultipleChildrenModal } from '../../components/caregiver-multiple-children-modal';
 import ROUTES from '@/routes/routes';
+import { useSelector } from 'react-redux';
+import { getUser } from '@/store/user/user.selectors';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 
 export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;
@@ -45,6 +48,12 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const [loadingManualUpload, setLoadingManualUpload] = useState(false);
   const { getWorkflowStatusIdByEnum } = useStaticData();
   const { isOnline } = useOnlineStatus();
+
+  const user = useSelector(getUser);
+
+  const isCoachView = user?.roles?.some(
+    (role) => role.name === UserTypeEnum.Coach
+  );
 
   const practitionerId = location?.state?.practitionerId;
 
@@ -172,7 +181,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
       childDetails,
       childId: result.ChildId,
       step: ChildRegistrationSteps.registrationForm,
-      practitionerId,
+      practitionerId: isCoachView ? practitionerId : null,
     });
   };
 

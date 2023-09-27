@@ -4,7 +4,7 @@ export interface ExpensesStatementsDto {
   description?: string;
   expenseTypeId?: string;
   id?: string;
-  incomeStatementId?: string;
+  statementsIncomeStatementId?: string;
   insertedDate?: string;
   notes?: string;
   photoProof?: boolean;

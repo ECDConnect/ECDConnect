@@ -25,11 +25,18 @@ export const visitTypes = {
   },
   pqa: {
     includes: 'pqa_visit',
-    firstPQA: { name: 'pqa_visit_1', description: 'First PQA' },
+    firstPQA: {
+      name: 'pqa_visit_1',
+      description: 'First PQA',
+      eventType: 'First PQA' as 'First PQA',
+      scheduleStartText: 'first PQA visit',
+    },
     followUp: {
       name: 'pqa_visit_follow_up',
       description: 'Follow-up visit',
       timelineDescription: 'Start follow-up PQA visit ',
+      eventType: 'PQA follow-up' as 'PQA follow-up',
+      scheduleStartText: 'follow-up PQA visit',
     },
   },
   reaccreditation: {
@@ -37,19 +44,27 @@ export const visitTypes = {
     first: {
       name: 're_accreditation_1',
       description: 'Re-accreditation visit',
+      eventType: 'Re-accreditation' as 'Re-accreditation',
+      scheduleStartText: 're-accreditation visit',
     },
     second: {
       name: 're_accreditation_2',
       description: 'Re-accreditation visit',
+      eventType: 'Re-accreditation' as 'Re-accreditation',
+      scheduleStartText: 're-accreditation visit',
     },
     third: {
       name: 're_accreditation_3',
       description: 'Re-accreditation visit',
+      eventType: 'Re-accreditation' as 'Re-accreditation',
+      scheduleStartText: 're-accreditation visit',
     },
     followUp: {
       name: 're_accreditation_follow_up',
       description: 'Follow-up visit',
       timelineDescription: 'Start re-accreditation follow up visit',
+      eventType: 'Re-accreditation follow-up' as 'Re-accreditation follow-up',
+      scheduleStartText: 'follow-up re-accreditation visit',
     },
   },
 };

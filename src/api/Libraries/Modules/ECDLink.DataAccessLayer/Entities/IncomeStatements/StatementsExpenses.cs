@@ -14,7 +14,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
     {
 
     }
-    public class StatementsExpenses<TKey> : EntityBase<TKey>, ITrackableType
+    public class StatementsExpenses<TKey> : EntityBase<TKey>, ITrackableType, StatementsIncomeStatementJoin<Guid?>
          where TKey : IEquatable<TKey>
     { 
         public string Notes { get; set; }
@@ -24,11 +24,11 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string PhotoProof { get; set; }
         public bool Submitted { get; set; }
         public DateTime DatePaid { get; set; }
-        public string IncomeStatementId { get; set; }
         public string UserId { get; set; }
-
-        //[GraphQLIgnore]
-        //public bool AutoSubmitted { get; set; }
+        [GraphQLIgnore]
+        [ForeignKey(nameof(StatementsIncomeStatementId))]
+        public virtual StatementsIncomeStatement StatementsIncomeStatement { get; set; }
+        public Guid? StatementsIncomeStatementId { get; set; }
     }
 
     public interface StatementsExpensesJoin<TKey>
