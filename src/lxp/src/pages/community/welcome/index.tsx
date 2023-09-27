@@ -8,13 +8,14 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { AddPhotoDialog } from './add-photo-dialog';
 import { CoachAboutRouteState } from '@/pages/coach/coach-about/coach-about.types';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { useState } from 'react';
+import { CommunityRouteState } from '../community.types';
 
 export const CommunityWelcome: React.FC = () => {
   const [value, setValue] = useState<string>('');
@@ -25,6 +26,7 @@ export const CommunityWelcome: React.FC = () => {
   const { theme } = useTheme();
 
   const history = useHistory();
+  const location = useLocation<CommunityRouteState>();
 
   const dialog = useDialog();
 
@@ -52,7 +54,9 @@ export const CommunityWelcome: React.FC = () => {
         ),
       });
     } else {
-      history.push(ROUTES.COMMUNITY.ROOT);
+      history.push(ROUTES.COMMUNITY.ROOT, {
+        ...location.state,
+      } as CommunityRouteState);
     }
   };
 
