@@ -198,7 +198,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                     )}
                 </div>
               </div>
-              <div style={{ width: isOpen ? '70%' : '87%' }} className="">
+              <div style={{ width: isOpen ? '75%' : '87%' }} className="">
                 <Typography
                   type="body"
                   align="left"

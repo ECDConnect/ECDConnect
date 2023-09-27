@@ -20,4 +20,6 @@ export interface UserAlertListDataItem<T = {}> extends ListItem {
   breaksSubtitleLine?: boolean;
   rightIcon?: string;
   noClick?: boolean;
+  successColor?: boolean;
+  hideAvatar?: boolean;
 }

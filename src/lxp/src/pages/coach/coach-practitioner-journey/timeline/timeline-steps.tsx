@@ -15,6 +15,8 @@ import {
   sortVisits,
 } from './utils';
 import { visitTypes } from '../coach-practitioner-journey.types';
+import { CoachCirclesMeeting } from './coach-circles-meetings';
+import { useMemo } from 'react';
 
 export type ScheduleEventType =
   | 'First PQA'
@@ -204,6 +206,55 @@ export const timelineSteps = ({
           onView={onView}
           timeline={timeline}
           visits={visits}
+        />
+      ),
+    });
+  }
+
+  if (timeline?.coachCircles) {
+    const coachingCirclesAttendedMeetings =
+      timeline?.coachCircles?.totalPresent;
+    const coachingCirclesTotalMeetings = timeline?.coachCircles?.totalMeetings;
+    const attendanceDate = timeline?.coachCircles?.attendanceText;
+    const attendanceColor =
+      timeline?.coachCircles?.attendanceColor || 'Success';
+    const attendanceColorType =
+      timeline?.coachCircles?.attendanceColor === 'Success'
+        ? 'completed'
+        : 'inProgress';
+
+    const getIconBgColor = (attendanceColor: string) => {
+      switch (attendanceColor) {
+        case 'Success':
+          return 'successMain';
+        case 'Warning':
+          return 'alertMain';
+        case 'Error':
+          return 'errorMain';
+        default:
+          return '';
+      }
+    };
+
+    const date = new Date(
+      timeline.coachCircles?.attendanceText!
+    ).toLocaleDateString('en-ZA', dateOptions);
+    steps.push({
+      title: `${coachingCirclesAttendedMeetings}/${coachingCirclesTotalMeetings} coaching circles attended`,
+      subTitle: attendanceDate,
+      type: attendanceColorType,
+      extraData: {
+        date: new Date(date),
+      },
+      showAccordion: true,
+      inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',
+      color: getIconBgColor(attendanceColor),
+      accordionContent: (
+        <CoachCirclesMeeting
+          isLoading={isLoading}
+          isOnline={isOnline}
+          onView={onView}
+          timeline={timeline}
         />
       ),
     });
