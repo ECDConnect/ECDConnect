@@ -15,9 +15,11 @@ import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/e
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { ReactComponent as Balloons } from '@ecdlink/ui/src/assets/emoji/balloons.svg';
 import { format } from 'date-fns';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { PointsMonthSummary } from './components/points-month-summary';
 import ROUTES from '@/routes/routes';
+import { PointsShare } from '../points-share/points-share';
+import { captureAndDownloadComponent } from '@ecdlink/core';
 
 // TODO - fetch club standings
 // TODO - add text that depends on relative club points
@@ -107,6 +109,13 @@ export const PointsYearView: React.FC = () => {
     }
   }, [pointsTotalForYear, percentageScore, practitioner]);
 
+  // SHARE LOGIC
+  const shareRef = useRef<HTMLDivElement>(null);
+  const [showPrintData, setShowPrintData] = useState(false);
+  const filteredPointsSummaries = currentMonthPoints.filter(
+    (x) => x.pointsYTD > 0
+  );
+
   return (
     <BannerWrapper
       size="medium"
@@ -178,7 +187,18 @@ export const PointsYearView: React.FC = () => {
             text="Share"
             textColor="white"
             icon="ShareIcon"
-            onClick={() => {}} // TODO
+            onClick={() => {
+              setShowPrintData(true);
+              setTimeout(() => {
+                if (shareRef.current) {
+                  captureAndDownloadComponent(
+                    shareRef.current,
+                    'points-year-summary.jpg'
+                  );
+                  setShowPrintData(false);
+                }
+              }, 100);
+            }}
           />
         </div>
       )}
@@ -206,6 +226,14 @@ export const PointsYearView: React.FC = () => {
           />
         </div>
       )}
+      <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
+        <PointsShare
+          viewMode="Year"
+          pointsSummaries={filteredPointsSummaries}
+          userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
+          childCount={12} // TODO get correct count for practitioner
+        />
+      </div>
     </BannerWrapper>
   );
 };

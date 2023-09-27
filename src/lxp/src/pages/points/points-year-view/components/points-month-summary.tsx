@@ -2,7 +2,6 @@ import { pointsSelectors } from '@/store/points';
 import { Divider, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { format } from 'date-fns';
-import { RootState } from '@/store/types';
 import { PointsDetailsCard } from '@/pages/dashboard/components/points-details-card/points-details-card';
 
 export type PointsMonthSummary = {
