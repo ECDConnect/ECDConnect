@@ -408,6 +408,26 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<CoachingClub> GetAllClubsForCoach(string userId)
         {
+            List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+
+            List<CoachingClub> result = new List<CoachingClub>();
+            foreach (var club in clubs)
+            {
+                result.Add(
+                    new CoachingClub()
+                    {
+                        Id = club.Id,
+                        Name = club.Name,
+                        UserId = club.UserId
+                    }
+                );
+            }
+
+            return result;
+        }
+
+        public List<CoachingClub> GetAllClubsDetailsForCoach(string userId, string clubId = null)
+        {
             var secondaryText = "";
             var secondaryTextColor = "";
             int maxClubPoints = 2000;
@@ -417,6 +437,8 @@ namespace EcdLink.Api.CoreApi.Services
             DateTime prevMonth = today.AddMonths(-1);
 
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            if (clubId != null) //filter if we have a specific club to filter on
+                clubs = clubs.Where(c => string.Equals(c.Id, clubId)).ToList();
 
             List<CoachingClub> result = new List<CoachingClub>();
             foreach (var club in clubs)
