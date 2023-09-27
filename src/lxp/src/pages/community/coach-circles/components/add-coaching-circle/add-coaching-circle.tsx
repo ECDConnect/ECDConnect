@@ -9,6 +9,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { startOfQuarter, lastDayOfQuarter } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { coachSelectors } from '@/store/coach';
+import { userSelectors } from '@/store/user';
 
 export enum CoachingCircleSteps {
   AddCoachingCircleStepOne = 1,
@@ -31,6 +32,7 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
 }) => {
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const user = useSelector(userSelectors.getUser);
   const [language, setLanguage] = useState({ locale: 'en-za' });
   const [addCoachingCircleForm, setAddCoachingCircleForm] =
     useState<ClubMeetingModelInput>({
@@ -78,7 +80,7 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
     appDispatch(coachThunkActions?.addCoachCircleMeeting({ input }));
     appDispatch(
       coachThunkActions.getAllCoachingCircleClubsForCoach({
-        coachId: coach?.id!,
+        coachId: user?.id || '',
         startDate: quarterStartDate,
         endDate: quarterLastDay,
       })
@@ -90,10 +92,10 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
     addCoachingCircleForm?.meetingDate,
     addCoachingCircleForm?.meetingNotes,
     appDispatch,
-    coach?.id,
     coachingCircleAttendance,
     setShowAddCircles,
     setShowSuccessCircleMeetingAdded,
+    user?.id,
   ]);
 
   const getContent = useCallback(async () => {
