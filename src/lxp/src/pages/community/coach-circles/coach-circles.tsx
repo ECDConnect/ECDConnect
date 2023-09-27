@@ -67,7 +67,8 @@ export const CoachCircles = () => {
             (item?.cCMeetingStatusColor.toLowerCase() as AlertSeverityType) ||
             'error',
           avatarColor: getAvatarColor() || '',
-          onActionClick: () => {},
+          onActionClick: () => setShowAddCircles(true),
+          hideAvatar: true,
         });
       });
     }
@@ -90,6 +91,9 @@ export const CoachCircles = () => {
           avatarColor: getAvatarColor() || '',
           onActionClick: () => {},
           breaksSubtitleLine: true,
+          noClick: true,
+          successColor: true,
+          hideAvatar: true,
         });
       });
     }
@@ -146,7 +150,7 @@ export const CoachCircles = () => {
         text={`Coaching circles held this quarter:`}
         className="py-2"
       ></Typography>
-      <div className="flex w-full justify-center py-2">
+      <div className="flex w-full justify-center pt-2 pb-12">
         <StackedList
           listItems={clubsWithMeetingsList || []}
           type={'UserAlertList'}
