@@ -39,10 +39,7 @@ export const Step2: React.FC<Step2Props> = ({
       }),
     [coachingCiclesPractitionersList]
   );
-  const coachingCircleMeetingAttendes =
-    coachingCiclesPractitionersListFormatted?.filter(
-      (item) => item?.attended === true
-    )?.length;
+  const [attendesCount, setAttendesCount] = useState(0);
 
   const getAttendanceCircleMeeting = useCallback(
     (practitioners?: PractitionerDto[]) => {
@@ -82,6 +79,10 @@ export const Step2: React.FC<Step2Props> = ({
   const onAttendanceListUpdated = (
     updatedAttendanceList: AttendanceListDataItem[]
   ) => {
+    const attendes = updatedAttendanceList?.filter(
+      (item) => item?.status === 1
+    );
+    setAttendesCount(attendes.length);
     setCoachingCiclesPractitionersList(updatedAttendanceList);
   };
 
@@ -102,7 +103,7 @@ export const Step2: React.FC<Step2Props> = ({
       <Typography
         type="help"
         color="textMid"
-        text={'Take attendance for this meeting'}
+        text={'Tap a name to mark a practitioner absent'}
         className="mt-2"
       />
 
@@ -120,7 +121,7 @@ export const Step2: React.FC<Step2Props> = ({
       >
         <Checkbox checked={confirmAttendance} />
         <Typography
-          text={`Check to confirm that you have accurately captured practitioner attendance for the event (${coachingCircleMeetingAttendes} practitioners attended).`}
+          text={`Check to confirm that you have accurately captured practitioner attendance for the event (${attendesCount} practitioners attended).`}
           type="body"
           color={'textMid'}
         />

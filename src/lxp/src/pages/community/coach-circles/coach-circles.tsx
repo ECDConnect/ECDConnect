@@ -1,4 +1,4 @@
-import { coachSelectors } from '@/store/coach';
+import { coachSelectors, coachThunkActions } from '@/store/coach';
 import { getQuarterMonths } from '@/utils/common/date.utils';
 import { getAvatarColor } from '@ecdlink/core';
 import {
@@ -15,19 +15,31 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { format, getQuarter, getYear, lastDayOfQuarter } from 'date-fns';
+import {
+  format,
+  getQuarter,
+  getYear,
+  lastDayOfQuarter,
+  startOfQuarter,
+} from 'date-fns';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 import { AddCoachingCircle } from './components/add-coaching-circle/add-coaching-circle';
 import { CircleTopics } from './components/circle-topics/circle-topics';
 import { CheckCircleIcon, XIcon } from '@heroicons/react/solid';
+import { useAppDispatch } from '@/store';
+import { userSelectors } from '@/store/user';
 
 export const CoachCircles = () => {
+  const dispatch = useAppDispatch();
   const date = new Date();
   const quarter = getQuarter(date);
   const year = getYear(date);
   const quarterMonths = getQuarterMonths(date);
+  const quarterStartDate = startOfQuarter(new Date());
+  const user = useSelector(userSelectors.getUser);
+  const quarterLastDayDate = lastDayOfQuarter(new Date());
   const quarterLastDay = format(lastDayOfQuarter(date), 'd MMM');
   const coachCircleData = useSelector(coachSelectors.getCoachCircles);
   const clubsWithoutMeetings = coachCircleData?.clubsWithNoLinkedMeetings;
@@ -110,6 +122,24 @@ export const CoachCircles = () => {
       setShowSuccessCard(true);
     }
   }, [submittedAllClubs]);
+
+  useEffect(() => {
+    if (showSuccessCircleMeetingAdded) {
+      setTimeout(() => {
+        setShowSuccessCircleMeetingAdded(false);
+      }, 4000);
+    }
+  }, [showSuccessCircleMeetingAdded]);
+
+  useEffect(() => {
+    dispatch(
+      coachThunkActions.getAllCoachingCircleClubsForCoach({
+        coachId: user?.id || '',
+        startDate: quarterStartDate,
+        endDate: quarterLastDayDate,
+      })
+    ).unwrap();
+  }, []);
 
   return (
     <div className="mb-4 h-screen p-4">
