@@ -61,8 +61,6 @@ import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 const { version } = require('../../../package.json');
 
-const enableCalendar = true;
-
 export enum NavigationTypes {
   Home = 'Home',
   ClientFolders = 'Classroom',
@@ -375,12 +373,6 @@ export const Dashboard: React.FC = () => {
       current: false,
     },
   ];
-
-  useEffect(() => {
-    if (isFromTraineeFlow) {
-      window.location.reload();
-    }
-  }, []);
 
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
