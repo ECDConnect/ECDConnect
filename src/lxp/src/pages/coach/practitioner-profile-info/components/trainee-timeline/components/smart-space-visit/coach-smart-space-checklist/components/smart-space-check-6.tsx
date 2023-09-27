@@ -5,16 +5,16 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
-  Card,
   Checkbox,
-  CheckboxGroup,
   Colours,
+  Dialog,
+  DialogPosition,
   Divider,
   FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { traineeSelectors } from '@/store/trainee';
 import { useSelector } from 'react-redux';
@@ -22,6 +22,7 @@ import { authSelectors } from '@/store/auth';
 import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { TraineeService } from '@/services/TraineeService';
 import { TraineeAddressModelInput } from '@ecdlink/graphql';
+import { Step6Map } from './map/map';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -64,9 +65,8 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
     traineeSelectors.getTraineeSmartSpaceAddress
   );
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
-  const traineePropertyOwnAnswer = useSelector(
-    traineeSelectors.getTraineePropertyOwn
-  );
+  const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
+  const [showMap, setShowMap] = useState(false);
 
   const [questions, setAnswers] = useState([
     {
@@ -74,8 +74,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       answer: undefined,
     },
     {
-      question:
-        'I have checked that Nothando has the required forms proving ownership/lease agreement/permission to use premises.',
+      question: `I have checked that ${practitioner?.user?.firstName} has the required forms proving ownership/lease agreement/permission to use premises.`,
       answer: false,
     },
     {
@@ -85,6 +84,44 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   ]);
 
   const visitSection = `Property details`;
+
+  const programmeDetailsSections = traineeVisitData
+    ?.filter((item) => item?.visitSection === 'Programme details')
+    .filter(
+      (item) =>
+        item?.question ===
+          'Do you own the property where you will run your SmartStart programme?' ||
+        item?.question === 'Do you have the Title Deeds for the property?' ||
+        item?.question === 'Do you live at the property?'
+    );
+
+  const propertyOwnAnswer = useMemo(() => {
+    const ownTheProperty =
+      programmeDetailsSections?.find(
+        (item) =>
+          item?.question ===
+          'Do you own the property where you will run your SmartStart programme?'
+      )?.questionAnswer === 'true';
+    const hasTheTitleDeeds =
+      programmeDetailsSections?.find(
+        (item) =>
+          item?.question === 'Do you have the Title Deeds for the property?'
+      )?.questionAnswer === 'true';
+    const isUnproclaimedLand =
+      programmeDetailsSections?.find(
+        (item) => item?.question === 'Is the property on un-proclaimed land?'
+      )?.questionAnswer === 'true';
+
+    if (ownTheProperty && hasTheTitleDeeds) {
+      return `${practitioner?.user?.firstName} owns the property and has the title deeds.`;
+    }
+
+    if (ownTheProperty && isUnproclaimedLand) {
+      return `${practitioner?.user?.firstName} owns the property and the property is on un-proclaimed land.`;
+    }
+
+    return `${practitioner?.user?.firstName} does not own the property and lives at the property.`;
+  }, [practitioner?.user?.firstName, programmeDetailsSections]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -151,7 +188,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
 
   useEffect(() => {
     if (
-      questions.every((item) => item.answer !== false) ||
+      (questions[0]?.answer === true && questions?.[1]?.answer === true) ||
       (answer !== '' && questions?.[1]?.answer === true)
     ) {
       return setEnableButton?.(true);
@@ -215,11 +252,12 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       </div>
       {isOnline && questions[0].answer === false && (
         <FormInput
+          onClick={() => setShowMap(true)}
           className="mt-4"
           textInputType="input"
           label={questions?.[2]?.question}
           placeholder={'e.g. street a'}
-          value={answer}
+          value={newAddress}
           onChange={(e) => setAnswer(e.target.value)}
         />
       )}
@@ -233,18 +271,16 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       />
       <Typography
         type={'h4'}
-        text={
-          'Please confirm Nothando’s proof of ownership, lease or permission'
-        }
+        text={`Please confirm ${practitioner?.user?.firstName}’s proof of ownership, lease or permission`}
         color={'textDark'}
         className={'my-3'}
       />
       <Typography
         type={'body'}
         text={
-          traineePropertyOwnAnswer
-            ? (traineePropertyOwnAnswer as string)
-            : 'Nothando owns the property and has the title deeds.'
+          propertyOwnAnswer
+            ? (propertyOwnAnswer as string)
+            : `${practitioner?.user?.firstName} owns the property and has the title deeds.`
         }
         color={'textMid'}
         className={'my-3'}
@@ -283,6 +319,15 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           </div>
         </div>
       </div>
+      <Dialog stretch={true} visible={showMap} position={DialogPosition.Full}>
+        <Step6Map
+          onClose={() => setShowMap(false)}
+          onSubmit={(address) => {
+            onOptionSelected(address, 2);
+            setNewAddress(newAddress);
+          }}
+        />
+      </Dialog>
     </div>
   );
 };

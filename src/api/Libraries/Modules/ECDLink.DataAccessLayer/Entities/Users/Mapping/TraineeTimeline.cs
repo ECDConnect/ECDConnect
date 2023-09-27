@@ -60,6 +60,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string SignStartUpSupportAgreementColor { get; set; }
         public DateTime? SignStartUpSupportAgreementDate { get; set; }
         public DateTime? SignStartUpSupportAgreementDeadlineDate { get; set; }
+        public DateTime? StartUpSupportStartDate { get; set; }
+        public DateTime? StartUpSupportEndDate { get; set; }
+        public double? StartUpSupportAmount { get; set; }
         public virtual ICollection<Visit> TraineeVisits { get; set; }
     }
 }

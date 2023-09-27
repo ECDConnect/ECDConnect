@@ -1,14 +1,12 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { Alert, Button, Radio, Typography, renderIcon } from '@ecdlink/ui';
-import { Fragment, useState } from 'react';
+import { useState } from 'react';
 import { options } from './options';
+import { SelfAssessmentAlert } from '../self-assessment-alert/self-assessment-alert';
 
 interface CoachSelfAssessment1Props {
   practitioner: PractitionerDto;
   handleNextSection: () => void;
-  // programmeName: string | undefined | null;
-  // setSectionQuestions: (value?: SectionQuestions[]) => void;
-  // saveFranchisorAgreementData: () => void;
 }
 
 interface State {
@@ -68,12 +66,7 @@ export const CoachSelfAssessment5: React.FC<CoachSelfAssessment1Props> = ({
         className={'mt-3'}
       />
 
-      <Alert
-        type={'warning'}
-        title={'You are viewing this form and cannot fill in responses.'}
-        list={['Discuss the self-assessment form with Nothando.']}
-        className="mt-4 mb-2"
-      />
+      <SelfAssessmentAlert practitioner={practitioner} />
 
       <Alert
         type={'info'}

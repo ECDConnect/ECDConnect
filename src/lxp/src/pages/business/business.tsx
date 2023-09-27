@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import { LocalStorageKeys } from '@ecdlink/core';
 import {
   BannerWrapper,
   TabItem,
@@ -9,42 +7,31 @@ import {
   Dialog,
 } from '@ecdlink/ui';
 import format from 'date-fns/format';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@utils/common/local-storage.utils';
 import { ClassDashboardRouteState } from './business.types';
 import { Money } from './money/money';
 import { StatementsInfoPage } from './components/statements-info-page';
 import { useAppContext } from '@/walkthrougContext';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import { getPractitioner } from '@/store/practitioner/practitioner.selectors';
+import { practitionerThunkActions } from '@/store/practitioner';
 
 export const Business: React.FC = () => {
   const history = useHistory();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
-  const [incomeStatementTutorialComplete, setIncomeStatementTutorialComplete] =
-    useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
   const appDispatch = useAppDispatch();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
   const [showInfo, setShowInfo] = useState(false);
   const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
-  const income = useSelector(statementsSelectors.getIncome);
-  const expense = useSelector(statementsSelectors.getExpenses);
-  const [handleAutoStartWalkthrough, setHandleAutoStartWalkthrough] =
-    useState(false);
   const [isFromAutomaticallyStart, setIsFromAutomaticallyStart] =
     useState(false);
 
@@ -52,15 +39,28 @@ export const Business: React.FC = () => {
     history.push('/');
   };
 
+  const practitioner = useSelector(getPractitioner);
+
+  const updateWalkThroughStatus = useCallback(
+    (status: boolean) => {
+      if (status && !practitioner?.isCompletedBusinessWalkThrough) {
+        appDispatch(
+          practitionerThunkActions.updatePractitionerBusinessWalkThrough({
+            userId: practitioner?.userId!,
+          })
+        );
+      }
+    },
+    [appDispatch, practitioner?.userId]
+  );
+
   useEffect(() => {
-    const isTutorialComplete = getStorageItem<boolean>(
-      LocalStorageKeys.incomeStatementTutorialComplete
-    );
-    if (isTutorialComplete !== undefined) {
-      setIncomeStatementTutorialComplete(isTutorialComplete);
+    if (practitioner?.isCompletedBusinessWalkThrough) {
+      setShowInfo(false);
+    } else {
+      setShowInfo(true);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [practitioner?.isCompletedBusinessWalkThrough]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -89,7 +89,6 @@ export const Business: React.FC = () => {
         <Money
           hasIncomeStatements={hasIncomeStatements}
           setHasIncomeStatements={setHasIncomeStatements}
-          setHandleAutoStartWalkthrough={setHandleAutoStartWalkthrough}
         />
       ),
     },
@@ -104,8 +103,7 @@ export const Business: React.FC = () => {
     },
   ];
 
-  const setTabSelected = (tab: TabItem, tabIndex: number) => {
-    setPreviousTabIndex(selectedTabIndex);
+  const setTabSelected = (tabIndex: number) => {
     setSelectedTabIndex(tabIndex);
   };
 
@@ -116,42 +114,7 @@ export const Business: React.FC = () => {
   const displayHelp =
     currentTab?.title === 'Money' || currentTab?.title === 'Programme';
 
-  const { setState, state: walkThroughState } = useAppContext();
-
-  useEffect(() => {
-    if (
-      !hasIncomeStatements &&
-      income?.length === 0 &&
-      expense?.length === 0 &&
-      handleAutoStartWalkthrough &&
-      walkThroughState?.stepIndex !== 7 &&
-      walkThroughState?.stepIndex !== 8 &&
-      walkThroughState?.stepIndex !== 9 &&
-      !incomeStatementTutorialComplete
-    ) {
-      setShowInfo(true);
-      setIsFromAutomaticallyStart(true);
-    }
-  }, [
-    hasIncomeStatements,
-    income,
-    expense,
-    handleAutoStartWalkthrough,
-    walkThroughState?.stepIndex,
-    incomeStatementTutorialComplete,
-  ]);
-
-  useEffect(() => {
-    if (
-      walkThroughState?.stepIndex === 9 ||
-      walkThroughState?.stepIndex === 10
-    ) {
-      setStorageItem(true, LocalStorageKeys.incomeStatementTutorialComplete);
-      setIncomeStatementTutorialComplete(true);
-      setShowInfo(false);
-      setHandleAutoStartWalkthrough(false);
-    }
-  }, [walkThroughState?.stepIndex]);
+  const { setState } = useAppContext();
 
   return (
     <div key={String(hasIncomeStatements)} className="h-screen">
@@ -174,9 +137,7 @@ export const Business: React.FC = () => {
           className="bg-uiBg"
           tabItems={tabItemsForPrincipal}
           setSelectedIndex={selectedTabIndex}
-          tabSelected={(tab: TabItem, tabIndex: number) =>
-            setTabSelected(tab, tabIndex)
-          }
+          tabSelected={(_, tabIndex: number) => setTabSelected(tabIndex)}
         />
       </BannerWrapper>
       <Dialog
@@ -188,6 +149,7 @@ export const Business: React.FC = () => {
           setShowInfo={setShowInfo}
           isFromAutomaticallyStart={isFromAutomaticallyStart}
           setIsFromAutomaticallyStart={setIsFromAutomaticallyStart}
+          updateWalkThroughStatus={updateWalkThroughStatus}
         />
       </Dialog>
     </div>

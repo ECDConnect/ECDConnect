@@ -136,6 +136,9 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getHealthCareWorkerHighlights);
     setThunkActionStatus(builder, GetMotherSummaryByPriority);
     setThunkActionStatus(builder, GetInfantSummaryByPriority);
+    setThunkActionStatus(builder, getPreviousVisitInformationForMother);
+    setThunkActionStatus(builder, getMomCompletedVisitsForVisitId);
+    setThunkActionStatus(builder, getGrowthDataForInfant);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -173,8 +176,8 @@ const visitSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
       const updatedDataIndex = state.moreInformation?.findIndex(
         (item) =>
-          item.visit === action.payload.visit &&
-          item.type === action.payload.type
+          item?.visit === action.payload?.visit &&
+          item?.type === action.payload?.type
       );
 
       if (
@@ -226,6 +229,8 @@ const visitSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getVisitAnswersForInfant.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
       const mergedDate = !!state.visitAnswersForInfant?.length
         ? [...state.visitAnswersForInfant, ...action.payload]
         : [];

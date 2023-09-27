@@ -60,7 +60,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
-  const [showCoachVisit, setSHowCoachVisit] = useState(false);
+  const [showCoachVisit, setShowCoachVisit] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
 
@@ -146,7 +146,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
               type="filled"
               color="primary"
               className="mt-4 mb-2 w-full"
-              onClick={() => setSHowCoachVisit(true)}
+              onClick={() => setShowCoachVisit(true)}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography
@@ -621,7 +621,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         position={DialogPosition.Full}
         stretch={true}
       >
-        <CoachVisitInfo setSHowCoachVisit={setSHowCoachVisit} />
+        <CoachVisitInfo setShowCoachVisit={setShowCoachVisit} />
       </Dialog>
     </BannerWrapper>
   );

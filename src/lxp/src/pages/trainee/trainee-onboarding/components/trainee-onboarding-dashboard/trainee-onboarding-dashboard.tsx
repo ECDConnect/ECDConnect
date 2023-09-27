@@ -46,11 +46,15 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const [showSteps, setShowSteps] = useState(true);
-  const [showCoachVisit, setSHowCoachVisit] = useState(false);
+  const [showCoachVisit, setShowCoachVisit] = useState(false);
 
   const onView = async (notificationStep: string) => {
     if (notificationStep === 'Fill in the SmartSpace checklist') {
       setIsSmartChecklist(true);
+    }
+
+    if (notificationStep === 'SmartSpace visit from coach') {
+      setShowCoachVisit(true);
     }
 
     setNotificationStep(notificationStep);
@@ -71,7 +75,6 @@ export const OnboardingTraineeDashboard: React.FC<
     (item) =>
       item?.type !== 'completed' &&
       item?.type !== 'inProgress' &&
-      item?.title !== 'SmartSpace visit from coach' &&
       item?.title !== 'SmartSpace Licence'
   );
 
@@ -121,7 +124,6 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const filteredUncompletedSteps = uncompletedSteps.filter(
     (item) =>
-      item?.title !== 'SmartSpace visit from coach' &&
       item?.title !== 'SmartSpace Licence' &&
       item?.title !== 'Consolidation meeting scheduled'
   );
@@ -218,10 +220,8 @@ export const OnboardingTraineeDashboard: React.FC<
                 color="primary"
                 className="mt-4 mb-2 w-full"
                 onClick={() => {
-                  history.push(ROUTES.DASHBOARD, {
-                    isFromTraineeFlow: true,
-                  });
-                  window.location.reload();
+                  history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                  //  window.location.reload();
                 }}
               >
                 {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
@@ -330,7 +330,7 @@ export const OnboardingTraineeDashboard: React.FC<
         position={DialogPosition.Full}
         stretch={true}
       >
-        <CoachVisitInfo setSHowCoachVisit={setSHowCoachVisit} />
+        <CoachVisitInfo setShowCoachVisit={setShowCoachVisit} />
       </Dialog>
     </BannerWrapper>
   );

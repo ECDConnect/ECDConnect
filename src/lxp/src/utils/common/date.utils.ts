@@ -8,6 +8,7 @@ import {
   isSameDay,
   isWeekend,
   parseISO,
+  getQuarter,
 } from 'date-fns';
 
 const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
@@ -67,4 +68,19 @@ export const calculateFullAge = (dob: Date) => {
 
 export const formatDateLong = (date: Date) => {
   return new Date(date).toLocaleDateString('en-ZA', dateLongMonthOptions);
+};
+
+export const getQuarterMonths = (date: Date) => {
+  const quarter = getQuarter(date);
+  if (quarter === 1) {
+    return 'Jan to March';
+  }
+  if (quarter === 2) {
+    return 'April to June';
+  }
+  if (quarter === 3) {
+    return 'July to September';
+  } else {
+    return 'October to December';
+  }
 };

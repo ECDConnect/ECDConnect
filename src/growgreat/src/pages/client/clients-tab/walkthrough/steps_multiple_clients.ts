@@ -3,7 +3,7 @@ import { Step } from 'react-joyride';
 export const multipleClientsSteps: Step[] = [
   {
     target: '#walkthrough-dashboard-client-multi-step-1',
-    content: 'Tap here to find a type of client',
+    content: 'You can choose the type of client you want to see here',
     disableOverlayClose: true,
     disableCloseOnEsc: true,
     disableBeacon: true,

@@ -126,7 +126,7 @@ export const ClassDashboard: React.FC = () => {
 
   useEffect(() => {
     if (selectedTabIndex !== undefined && selectedTabIndex >= 0) {
-      if (isPrincipal && practitioners?.length! > 1) {
+      if (isPrincipal && practitioners?.length! > 0) {
         setCurrentTab(tabItemsForPrincipal[selectedTabIndex]);
       } else {
         setCurrentTab(tabItems[selectedTabIndex]);
@@ -424,7 +424,7 @@ export const ClassDashboard: React.FC = () => {
         <TabList
           className="bg-uiBg"
           tabItems={
-            isPrincipal && practitioners?.length! > 1
+            isPrincipal && practitioners?.length! > 0
               ? tabItemsForPrincipal
               : tabItems
           }

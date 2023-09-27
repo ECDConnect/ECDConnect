@@ -109,29 +109,34 @@ export default function ContentList({
 
   useEffect(() => {
     if (contentData && contentData[getAllCall]) {
-      const copyItems = contentData[getAllCall].map((item: any) => ({
+      const moreInforItems = contentData[getAllCall].map((item: any) => ({
         ...item,
       }));
 
       if (selectedTab === 1) {
-        let clientProfileData = copyItems.filter(
-          (item: { type: string }) => item.type === 'client profile'
+        let clientProfileData = moreInforItems.filter(
+          (item: { type: string }) =>
+            item.type === 'client profile' || item.type === 'Info Page'
         );
         setTableData(clientProfileData);
       } else if (selectedTab === 2) {
-        let postNatalData = copyItems.filter(
+        let postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'
         );
         console.log(postNatalData);
         setTableData(postNatalData);
       } else if (selectedTab === 3) {
-        let anteNatalData = copyItems.filter(
+        let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
         setTableData(anteNatalData);
+      } else {
+        const copyItems = contentData[getAllCall].map((item: any) => ({
+          ...item,
+        }));
+
+        setTableData(copyItems);
       }
-      console.log('>>>', copyItems);
-      setTableData(copyItems);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentData, selectedTab]);

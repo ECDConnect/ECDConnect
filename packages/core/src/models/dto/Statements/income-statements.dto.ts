@@ -16,6 +16,7 @@ export interface IncomeStatementsDto {
   photoProof?: string;
   insertedDate?: string;
   isOffline?: boolean;
+  statementsIncomeStatementId?: string;
 }
 export interface ReportTableDataDto {
   tableName: string;

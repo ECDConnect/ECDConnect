@@ -120,7 +120,7 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
           onClick={onShare}
         />
         <div>
-          <FollowUp mother={mother || {}} isPrint={isPrint} isVisit={true} />
+          <FollowUp mother={mother || {}} isPrint={isPrint} />
         </div>
       </div>
     </div>

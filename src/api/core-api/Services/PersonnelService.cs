@@ -1,5 +1,6 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
@@ -10,6 +11,7 @@ using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -23,7 +25,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using NPOI.Util;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -52,8 +53,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<Coach, Guid> _coachRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
 
-
         private IGenericRepository<CalendarEventParticipant, Guid> _calendarEventParticipantRepo;
+        private IGenericRepository<StatementsStartupSupport, Guid> _statementStartupSupportRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -96,6 +97,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
             _calendarEventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>(userContext: _applicationUserId);
+            _statementStartupSupportRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -109,6 +111,72 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
 
         #region Practitioners
+
+        public List<PractitionerModel> GetAllPractitioners()
+        {
+            ApplicationUser currentUser = (ApplicationUser)_contextAccessor.HttpContext.GetUser();
+            List<Practitioner> practitioners = new List<Practitioner>();
+            if (currentUser.coachObjectData != null)
+            {
+                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
+            } else if (currentUser.practitionerObjectData != null && currentUser.practitionerObjectData.IsPrincipal.HasValue && currentUser.practitionerObjectData.IsPrincipal.Value)
+            {
+                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
+            }
+
+            List<PractitionerModel> practitionerList = new List<PractitionerModel>();
+            foreach (var practitioner in practitioners)
+            {
+                practitionerList.Add(GetPractitionerDetails(practitioner));
+            }
+            return practitionerList;
+        }
+
+        public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
+        {
+            PractitionerModel practitionerRecord = new PractitionerModel();
+
+            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
+
+            practitionerRecord.Id = practitioner.Id;
+            practitionerRecord.UserId = practitioner.UserId;
+            practitionerRecord.User = practitioner.User;
+            practitionerRecord.SiteAddress = practitioner.SiteAddress;
+            practitionerRecord.IsPrincipal = practitioner.IsPrincipal;
+            practitionerRecord.IsRegistered = practitioner.IsRegistered;
+            practitionerRecord.PrincipalHierarchy = practitioner.PrincipalHierarchy;
+            practitionerRecord.AttendanceRegisterLink = practitioner.AttendanceRegisterLink;
+            practitionerRecord.MaxChildren = practitioner.MaxChildren;
+            practitionerRecord.ConsentForPhoto = practitioner.ConsentForPhoto;
+            practitionerRecord.ParentFees = practitioner.ParentFees;
+            practitionerRecord.LanguageUsedInGroups = practitioner.LanguageUsedInGroups;
+            practitionerRecord.SigningSignature = practitioner.SigningSignature;
+            practitionerRecord.StartDate = practitioner.StartDate;
+            practitionerRecord.MonthSinceFranchisee = practitioner.MonthSinceFranchisee;
+            practitionerRecord.ShareInfo = practitioner.ShareInfo;
+            practitionerRecord.DateLinked = practitioner.DateLinked;
+            practitionerRecord.DateAccepted = practitioner.DateAccepted;
+            practitionerRecord.DateToBeRemoved = practitioner.DateToBeRemoved;
+            practitionerRecord.IsLeaving = practitioner.IsLeaving;
+            practitionerRecord.Progress = practitioner.Progress;
+            practitionerRecord.IsCompletedBusinessWalkThrough = practitioner.IsCompletedBusinessWalkThrough;
+            practitionerRecord.ProgrammeType = practitioner.ProgrammeType;
+            practitionerRecord.IsTrainee = practitioner.IsTrainee;
+            practitionerRecord.CoachHierarchy = practitioner.CoachHierarchy;
+            practitionerRecord.AttendedChildProgress = practitioner.AttendedChildProgress;
+            practitionerRecord.UsePhotoInReport = practitioner.UsePhotoInReport;
+            practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
+            practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
+            practitionerRecord.StipendType = practitioner.StipendType;
+            practitionerRecord.ClubId = clubMember?.Club?.Id;
+            practitionerRecord.ClubName = clubMember?.Club?.Name;
+            practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
+            practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+
+            return practitionerRecord;
+        }
+
+
         public List<Practitioner> GetPractitionerPeers(string practitionerId)
         {
             List<Practitioner> peers = new List<Practitioner>();
@@ -347,7 +415,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
                 {
-                    FindValue = "principalOrFAA",
+                    FindValue = "PrincipalOrFAA",
                     ReplacementValue = "Principal"
                 });
                 var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
@@ -695,6 +763,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return false;
         }
 
+        public bool UpdatePractitionerBusinessWalkthrough(string userId)
+        {
+            Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
+            practitioner.IsCompletedBusinessWalkThrough = true;
+            practitioner.UpdatedBy = _applicationUserId;
+            practitioner.UpdatedDate = DateTime.UtcNow;
+            _practiGenericRepo.Update(practitioner);
+            return true;
+        }
+
+
         #endregion
 
         #region Trainees
@@ -925,6 +1004,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     timeline.SignStartUpSupportAgreementDate = supportVisit.InsertedDate;
                 }
             }
+
+            // Startup Support
+            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == trainee.UserId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
+            if (startupSupport != null)
+            {
+                timeline.StartUpSupportStartDate = startupSupport?.StartDate;
+                timeline.StartUpSupportEndDate = startupSupport?.EndDate;
+                timeline.StartUpSupportAmount = startupSupport?.Amount;
+            }
+
 
             return timeline;
         }

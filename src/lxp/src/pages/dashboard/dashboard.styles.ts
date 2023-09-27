@@ -6,3 +6,4 @@ export const classRoomIcon = 'bg-secondary text-white';
 export const businessIcon = 'bg-uiLight text-primary';
 export const smartStarterIcon = 'bg-secondary text-white';
 export const calendarIcon = 'bg-uiLight text-primary';
+export const icon = 'bg-tertiary text-white';

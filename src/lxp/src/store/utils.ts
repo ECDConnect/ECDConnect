@@ -25,6 +25,7 @@ export const setThunkActionStatus = (
       ];
 
       state.status = status;
+      state.error = undefined;
     })
     .addCase(action.rejected, (state, currentAction) => {
       const actionType = getActionName(currentAction.type);
@@ -44,6 +45,7 @@ export const setThunkActionStatus = (
       ];
 
       state.status = status;
+      state.error = currentAction?.payload?.message;
     });
 
 export const getActionName = (actionType: string) => {
@@ -77,4 +79,5 @@ export const setFulfilledThunkActionStatus = (state: any, action: any) => {
       ];
 
   state.status = status;
+  state.error = undefined;
 };

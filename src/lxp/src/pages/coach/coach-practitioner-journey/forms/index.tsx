@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ReasonsForPractitionerLeaving,
-  chunkArray,
   parseBool,
   useDialog,
   usePrevious,
@@ -14,7 +13,6 @@ import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
-  maxNumberOfVisits,
   visitTypes,
 } from '../coach-practitioner-journey.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
@@ -30,8 +28,6 @@ import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
   InputMaybe,
-  Maybe,
-  PqaRating,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -146,59 +142,20 @@ export const Form = ({
       (item) => item.question === step15ReAccreditationQuestions.question1
     )?.answer;
 
-  // All years
-  const filteredReAccreditationRatings =
-    timeline?.reAccreditationRatings?.filter(
-      (item) => item?.visitTypeName !== visitTypes.reaccreditation.followUp.name
-    ) ?? [];
-  const subdividedReAccreditationRatings = chunkArray<Maybe<PqaRating>>(
-    filteredReAccreditationRatings,
-    maxNumberOfVisits
-  );
-  const reAccreditationRatingsFromCurrentYear =
-    subdividedReAccreditationRatings?.[
-      subdividedReAccreditationRatings.length - 1
-    ];
-
-  const pqaRatings =
-    timeline?.pQARatings?.filter(
-      (item) => item?.visitTypeName !== visitTypes.pqa.followUp.name
-    ) ?? [];
-
-  const pqaRating1 = pqaRatings?.[0];
-  const pqaRating2 = pqaRatings?.[1];
-  const pqaRating3 = pqaRatings?.[2];
-
-  const reAccreditationRating1 = reAccreditationRatingsFromCurrentYear?.[0];
-  const reAccreditationRating2 = reAccreditationRatingsFromCurrentYear?.[1];
-  const reAccreditationRating3 = reAccreditationRatingsFromCurrentYear?.[2];
-
-  const pqaRatingColorList = [
-    pqaRating1?.overallRatingColor,
-    pqaRating2?.overallRatingColor,
-    pqaRating3?.overallRatingColor,
-    pqaRating?.color,
-  ];
-
-  const reAccreditationRatingColorList = [
-    reAccreditationRating1?.overallRatingColor,
-    reAccreditationRating2?.overallRatingColor,
-    reAccreditationRating3?.overallRatingColor,
-    reAccreditationRating?.color,
-  ];
-
-  const pqaRatingRedColorCount = pqaRatingColorList.filter(
-    (item) => item === 'Error'
-  ).length;
-
-  const reAccreditationRatingRedColorCount =
-    reAccreditationRatingColorList.filter((item) => item === 'Error').length;
+  const previousPqaRating =
+    timeline?.pQASiteVisits?.[timeline?.pQASiteVisits?.length - 1]
+      ?.overallRatingColor;
+  const previousReaccreditationRating =
+    timeline?.reAccreditationVisits?.[
+      timeline?.reAccreditationVisits?.length - 1
+    ]?.overallRatingColor;
 
   const isToRemoveSmartStarter =
     step16Question1Answer === true ||
     step15ReAccreditationQuestion1Answer === true ||
-    pqaRatingRedColorCount === 2 ||
-    reAccreditationRatingRedColorCount === 2;
+    (pqaRating?.color === 'Error' && previousPqaRating === 'Error') ||
+    (reAccreditationRating?.color === 'Error' &&
+      previousReaccreditationRating === 'Error');
 
   const { isLoading } = useThunkFetchCall(
     'pqa',

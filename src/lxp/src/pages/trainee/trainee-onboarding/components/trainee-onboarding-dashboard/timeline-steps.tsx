@@ -20,6 +20,8 @@ const nextStepButtontext = (step: string) => {
       return 'Sign';
     case 'Sign start-up support agreement':
       return 'Sign';
+    case 'SmartSpace visit from coach':
+      return 'Request visit';
     default:
       return '';
   }
@@ -117,6 +119,8 @@ export const setStep = (
             status === 'Get community support') ||
           (consolidationMeetingAttended &&
             status === 'Fill in the SmartSpace checklist') ||
+          (consolidationMeetingAttended &&
+            status === 'Sign start-up support agreement') ||
           (consolidationMeetingAttended && status === 'Register 3 children')) &&
         status !== 'Consolidation meeting attended'
           ? true
@@ -216,7 +220,7 @@ export const timelineSteps = (
       timeline?.sSCoachVisitColor,
       () => onView('SmartSpace visit from coach'),
       nextStep,
-      consolidationMeetingDataStatus
+      timeline?.sSCoachVisitStatus
     )
   );
   steps.push(

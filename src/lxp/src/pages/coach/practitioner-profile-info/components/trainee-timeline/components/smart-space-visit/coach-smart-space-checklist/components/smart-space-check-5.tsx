@@ -189,7 +189,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
     if (traineeProgrammeTypeObject?.description === 'Preschool') {
       if (
         (Number(questions[1].answer) * Number(questions[0].answer)) / 10000 <
-        10
+        20
       ) {
         return String(
           Math.floor(
@@ -197,7 +197,10 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
           )
         );
       }
-      return '10';
+      if (Number(numberOfAssistants) === 0) {
+        return '10';
+      }
+      return '20';
     }
 
     if (traineeProgrammeTypeObject?.description === 'Day Mother') {
@@ -225,9 +228,12 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
           )
         );
       }
+      if (Number(numberOfAssistants) === 0) {
+        return '10';
+      }
       return '12';
     }
-  }, [questions, traineeProgrammeTypeObject?.description]);
+  }, [numberOfAssistants, questions, traineeProgrammeTypeObject?.description]);
 
   return (
     <div className="p-4">

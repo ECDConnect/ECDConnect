@@ -83,7 +83,6 @@ export const IntroScreen = ({
           mother={mother || {}}
           walkthroughData={walkthroughData}
           isPrint={isPrint}
-          isVisit={false}
           isFromProgressTab={isFromProgressTab}
         />
         {!!onStartVisit && (

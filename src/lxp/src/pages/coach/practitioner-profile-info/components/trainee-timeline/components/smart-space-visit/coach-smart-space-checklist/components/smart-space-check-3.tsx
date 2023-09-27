@@ -1,10 +1,12 @@
 import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
-import { PractitionerDto } from '@ecdlink/core';
+import { PractitionerDto, useDialog } from '@ecdlink/core';
 import {
+  ActionModal,
   Alert,
   Button,
   Card,
   Colours,
+  DialogPosition,
   Divider,
   FormInput,
   Typography,
@@ -14,6 +16,8 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -42,6 +46,8 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
+  const dialog = useDialog();
+  const history = useHistory();
   const [enableButton, setEnableButton] = useState(false);
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const visitData1Completed = useSelector(
@@ -141,6 +147,100 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
     [setSectionQuestions, visitSection]
   );
 
+  const exitCoachSmartSpaceVisit = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Schedule a follow up visit with ${practitioner?.user?.firstName}`}
+          detailText={`Encourage ${practitioner?.user?.firstName} to work on the next steps and agree on a date & time for a follow-up visit now.`}
+          actionButtons={[
+            {
+              text: 'Go to calendar',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                onSubmit();
+              },
+              disabled: true,
+              leadingIcon: 'CalendarIcon',
+            },
+            {
+              text: 'Do this later',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                onCancel();
+                history.push(ROUTES.COACH_TRAINEE_ONBOARDING, {
+                  practitionerState: practitioner,
+                });
+              },
+              leadingIcon: 'ClockIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [dialog, history]);
+
+  const renderButton = useMemo(() => {
+    if (Number(visitData1Completed) === 17) {
+      return (
+        <div className="mt-2 space-y-4">
+          <div>
+            <div>
+              <Button
+                type="filled"
+                color="primary"
+                className="mt-1 mb-2 w-full"
+                onClick={() => {
+                  handleNextSection();
+                  saveSmartSpaceCheckData();
+                }}
+                disabled={!enableButton || Number(visitData1Completed) < 17}
+              >
+                {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+                <Typography type={'help'} text={'Next'} color={'white'} />
+              </Button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    return (
+      <div className="mt-2 space-y-4">
+        <div>
+          <div>
+            <Button
+              type="filled"
+              color="primary"
+              className="mt-1 mb-2 w-full"
+              onClick={() => {
+                saveSmartSpaceCheckData();
+                exitCoachSmartSpaceVisit();
+              }}
+              disabled={!enableButton}
+            >
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography type={'help'} text={'Save & next'} color={'white'} />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }, [
+    enableButton,
+    exitCoachSmartSpaceVisit,
+    handleNextSection,
+    saveSmartSpaceCheckData,
+    visitData1Completed,
+  ]);
+
   return (
     <div className="p-4">
       <Typography
@@ -155,13 +255,15 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         visitData1Completed === undefined) && (
         <Alert
           className={'mt-5 mb-3'}
-          title={`You cannot issue ${practitioner?.user?.firstName}'s SmartSpace Licence.`}
+          title={`${practitioner?.user?.firstName}'s venue does not meet the basic SmartSpace standards. She is still working on:`}
           list={coachSmartSpaceVisit1DataNotAttendedStandardsFormatted || []}
           type={'warning'}
         />
       )}
 
-      {(Number(visitData2Completed) < 5 || !visitData2Completed) && (
+      {((Number(visitData2Completed) < 5 &&
+        Number(visitData1Completed) === 17) ||
+        (!visitData2Completed && Number(visitData1Completed) === 17)) && (
         <Card className="bg-uiBg rounded-2xl p-4">
           <Typography
             type={'body'}
@@ -222,31 +324,12 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
           title={`You cannot issue ${practitioner?.user?.firstName}'s SmartSpace Licence.`}
           list={[
             `Discuss ways that ${practitioner?.user?.firstName} can prepare for the next SmartSpace visit.`,
-            `Schedule a follow-up visit with Nothando.`,
+            `Schedule a follow-up visit with ${practitioner?.user?.firstName}.`,
           ]}
           type={'error'}
         />
       )}
-
-      <div className="mt-2 space-y-4">
-        <div>
-          <div>
-            <Button
-              type="filled"
-              color="primary"
-              className="mt-1 mb-2 w-full"
-              onClick={() => {
-                handleNextSection();
-                saveSmartSpaceCheckData();
-              }}
-              disabled={!enableButton || Number(visitData1Completed) < 17}
-            >
-              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-              <Typography type={'help'} text={'Next'} color={'white'} />
-            </Button>
-          </div>
-        </div>
-      </div>
+      {renderButton}
     </div>
   );
 };
