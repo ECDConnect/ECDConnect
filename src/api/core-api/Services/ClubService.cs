@@ -438,7 +438,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
             if (clubId != null) //filter if we have a specific club to filter on
-                clubs = clubs.Where(c => string.Equals(c.Id, clubId)).ToList();
+                clubs = clubs.Where(c => c.Id.ToString() == clubId).ToList();
 
             List<CoachingClub> result = new List<CoachingClub>();
             foreach (var club in clubs)
