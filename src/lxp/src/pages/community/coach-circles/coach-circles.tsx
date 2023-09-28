@@ -162,18 +162,23 @@ export const CoachCircles = () => {
         color="textMid"
         text={`${quarterMonths} of ${year}`}
       ></Typography>
-      <Typography
-        type="body"
-        color="textMid"
-        text={`Schedule a coaching circle with these clubs before ${quarterLastDay}:`}
-        className="pt-4"
-      ></Typography>
-      <div className="w-fulljustify-center flex py-4">
-        <StackedList
-          listItems={clubsWithoutMeetingsList || []}
-          type={'UserAlertList'}
-        ></StackedList>
-      </div>
+      {clubsWithoutMeetingsList && clubsWithoutMeetingsList?.length > 0 && (
+        <div>
+          <Typography
+            type="body"
+            color="textMid"
+            text={`Schedule a coaching circle with these clubs before ${quarterLastDay}:`}
+            className="pt-4"
+          ></Typography>
+          <div className="w-fulljustify-center flex py-4">
+            <StackedList
+              listItems={clubsWithoutMeetingsList || []}
+              type={'UserAlertList'}
+              className="flex flex-col gap-1"
+            ></StackedList>
+          </div>
+        </div>
+      )}
       <Typography
         type="body"
         color="textMid"
@@ -184,6 +189,7 @@ export const CoachCircles = () => {
         <StackedList
           listItems={clubsWithMeetingsList || []}
           type={'UserAlertList'}
+          className="flex flex-col gap-1"
         ></StackedList>
       </div>
       {noSubmittedAnyClub && (
@@ -231,7 +237,7 @@ export const CoachCircles = () => {
             }
           >
             <div className="flex items-center gap-2 p-4">
-              <CheckCircleIcon className="h-4 w-4" />
+              <CheckCircleIcon className="h-4 w-4 text-white" />
               <Typography
                 type="h4"
                 className="ml-2"
