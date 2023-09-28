@@ -5481,6 +5481,7 @@ export type MutationAddReAccreditationVisitForPractitionerArgs = {
 
 export type MutationAddReassignmentForPractitionerServiceArgs = {
   classroomGroup?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
   fromUserId?: InputMaybe<Scalars['String']>;
   loggedByUser?: InputMaybe<Scalars['String']>;
   permanentAssign?: Scalars['Boolean'];
@@ -10110,6 +10111,7 @@ export type Query = {
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipals?: Maybe<Array<Maybe<Principal>>>;
+  allRegions?: Maybe<Array<Maybe<Scalars['String']>>>;
   allStatementsBalanceSheet?: Maybe<Array<Maybe<StatementsBalanceSheet>>>;
   allStatementsExpenses?: Maybe<Array<Maybe<StatementsExpenses>>>;
   allStatementsIncome?: Maybe<Array<Maybe<StatementsIncome>>>;
@@ -13235,13 +13237,6 @@ export type Setting_Reporting = {
   ChildProgressReportMonths: Scalars['String'];
 };
 
-export type Setting_SmsPortal = {
-  __typename?: 'Setting_SMSPortal';
-  ApiKey: Scalars['String'];
-  ApiSecret: Scalars['String'];
-  BaseUrl: Scalars['String'];
-};
-
 export type Setting_Security = {
   __typename?: 'Setting_Security';
   ForgotPassword: Scalars['String'];
@@ -13325,7 +13320,6 @@ export type SettingsType = {
   Jwts: Setting_Jwts;
   RapidApi: Setting_RapidApi;
   Reporting: Setting_Reporting;
-  SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
   SmartLinkApi: Setting_SmartLinkApi;
