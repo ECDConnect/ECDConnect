@@ -288,17 +288,25 @@ namespace EcdLink.Api.CoreApi.Services
             ClubLeader oldClubLeader = clubLeaders.Where(x => x.ClubId == clubId && x.IsActive == true && x.DateAccepted.HasValue).OrderBy(x => x.DateAccepted).FirstOrDefault();
 
             // Set new club leader
-            newClubLeader.DateAccepted = DateTime.UtcNow;
-            newClubLeader.UpdatedDate = DateTime.UtcNow;
-            newClubLeader.UpdatedBy = _applicationUserId;
-            _clubLeaderRepo.Update(newClubLeader);
+            if (newClubLeader != null)
+            {
+                newClubLeader.DateAccepted = DateTime.Now;
+                newClubLeader.UpdatedDate = DateTime.Now;
+                newClubLeader.UpdatedBy = _applicationUserId;
+                _clubLeaderRepo.Update(newClubLeader);
+
+            }
 
             // Archive other club leader
-            oldClubLeader.DateAccepted = DateTime.UtcNow;
-            oldClubLeader.UpdatedDate = DateTime.UtcNow;
-            oldClubLeader.UpdatedBy = _applicationUserId;
-            oldClubLeader.IsActive = false;
-            _clubLeaderRepo.Update(oldClubLeader);
+            // Set new club leader
+            if (oldClubLeader != null)
+            {
+                oldClubLeader.DateAccepted = DateTime.Now;
+                oldClubLeader.UpdatedDate = DateTime.Now;
+                oldClubLeader.UpdatedBy = _applicationUserId;
+                oldClubLeader.IsActive = false;
+                _clubLeaderRepo.Update(oldClubLeader);
+            }
 
             // TODO: Add notification
 
