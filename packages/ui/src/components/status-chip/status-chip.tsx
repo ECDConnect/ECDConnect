@@ -43,6 +43,7 @@ export const StatusChip: React.FC<StatusChipProps> = ({
         styles.getChipStyles(backgroundColour, borderColour, padding),
         className
       )}
+      style={{ height: 'fit-content' }}
     >
       {iconPosition === 'start' &&
         icon &&

@@ -51,6 +51,17 @@ const ROUTES = {
         LEADER: '/leader/:leaderId',
         MEMBER: '/member/:practitionerId',
       },
+      POINTS: addPrefix('/points', {
+        MEET_REGULARLY: addPrefix('/meet-regularly', {
+          MEETING_DETAILS: '/:meetingId/meeting-details',
+        }),
+        BE_CREATIVE: '/be-creative',
+        HOST_FAMILY_EVENT: '/host-family-event',
+        LEAVE_NO_ONE_BEHIND: '/leave-no-one-behind',
+        CAPTURE_CHILD_ATTENDANCE: '/capture-child-attendance',
+        COMPLETE_CHILD_PROGRESS_REPORTS: '/complete-child-progress-reports',
+        HELP: '/help/:activityId',
+      }),
     }),
   }),
   CHILD: addPrefix('/child', {
