@@ -23,7 +23,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public int TotalClubPoints { get; set; }
         public int MaxClubPoints { get; set; }
         public virtual ICollection<ClubActivity> ClubActivities { get; set; }
+    }
 
+    public class CoachingClubDetails
+    {
+        public virtual Coach Coach { get; set; }
+        public virtual List<CoachingClub> CoachingClubs { get; set; }
     }
 
     public class CoachingClubBase
@@ -31,7 +36,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public Guid Id { get; set; }
         public string UserId { get; set; }
         public string Name { get; set; }
-
     }
 
     public class ClubActivity

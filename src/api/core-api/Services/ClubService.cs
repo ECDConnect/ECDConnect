@@ -448,7 +448,7 @@ namespace EcdLink.Api.CoreApi.Services
                 bool hasAttendanceRegister = HasAttendanceRegisterForMonth(club.Id, prevMonth);
                 List <ClubLeader> clubLeaders = GetLeadersForClub(club.Id); // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
                 ClubSupport clubSupport = GetSupportForClub(club.Id);
-                Coach coach = GetCoachForClub(club.UserId);
+                Coach coach = GetCoachForClub(club.UserId); 
                 
                 ClubLeader activeClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
 
@@ -586,8 +586,7 @@ namespace EcdLink.Api.CoreApi.Services
                         TotalClubPoints = totalClubPoints,
                         LeaguePosition = leaguePosition,
                         ClubMeetings = clubMeetings,
-                        ClubActivities = clubActivities,
-                        ClickedClubTab = coach.ClickedClubTab.HasValue ? coach.ClickedClubTab : false                      
+                        ClubActivities = clubActivities                        
                     }
                 );
             }
