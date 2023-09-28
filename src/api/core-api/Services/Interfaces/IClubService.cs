@@ -1,6 +1,7 @@
 ﻿
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.DataAccessLayer.Entities.Clubs;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using System;
 using System.Collections.Generic;
