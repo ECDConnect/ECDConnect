@@ -298,7 +298,6 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Archive other club leader
-            // Set new club leader
             if (oldClubLeader != null)
             {
                 oldClubLeader.DateAccepted = DateTime.Now;
