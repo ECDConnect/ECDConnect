@@ -218,7 +218,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return coach;
         }
 
-        public Coach UpdateCoachClubClicked([Service] IHttpContextAccessor contextAccessor,
+        public bool UpdateCoachClubClicked([Service] IHttpContextAccessor contextAccessor,
     IGenericRepositoryFactory repoFactory,
     string userId)
         {
@@ -233,9 +233,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 coach.UpdatedBy = uId;
                 coachRepo.Update(coach);
 
-                return coach;
             }
-            return coach;
+            return true;
         }
 
 
