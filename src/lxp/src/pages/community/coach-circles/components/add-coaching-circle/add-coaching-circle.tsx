@@ -8,7 +8,6 @@ import { ClubMeetingModelInput } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { startOfQuarter, lastDayOfQuarter } from 'date-fns';
 import { useSelector } from 'react-redux';
-import { coachSelectors } from '@/store/coach';
 import { userSelectors } from '@/store/user';
 
 export enum CoachingCircleSteps {
@@ -42,7 +41,6 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
   const [activeStep, setActiveStep] = useState(1);
   const [coachingCircleAttendance, setCoachingCircleAttendance] =
     useState<CoachingCirclesAttendanceProps[]>();
-  const coach = useSelector(coachSelectors.getCoach);
 
   const AddCoachingCircleSteps = (step: CoachingCircleSteps) => {
     switch (step) {
@@ -51,6 +49,7 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
           <Step2
             setCoachingCircleAttendance={setCoachingCircleAttendance}
             addCoachingCircle={addCoachingCircle}
+            clubId={addCoachingCircleForm?.clubId}
           />
         );
       default:
@@ -65,7 +64,7 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
     }
   };
 
-  const addCoachingCircle = useCallback(() => {
+  const addCoachingCircle = useCallback(async () => {
     const input: ClubMeetingModelInput = {
       name: 'Test 1',
       clubId: addCoachingCircleForm?.clubId,
@@ -77,8 +76,8 @@ export const AddCoachingCircle: React.FC<AddCoachingCircleProps> = ({
     const quarterStartDate = startOfQuarter(new Date());
     const quarterLastDay = lastDayOfQuarter(new Date());
 
-    appDispatch(coachThunkActions?.addCoachCircleMeeting({ input }));
-    appDispatch(
+    await appDispatch(coachThunkActions?.addCoachCircleMeeting({ input }));
+    await appDispatch(
       coachThunkActions.getAllCoachingCircleClubsForCoach({
         coachId: user?.id || '',
         startDate: quarterStartDate,
