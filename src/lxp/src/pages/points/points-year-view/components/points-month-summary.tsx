@@ -4,11 +4,13 @@ import { useSelector } from 'react-redux';
 import { format } from 'date-fns';
 import { PointsDetailsCard } from '@/pages/dashboard/components/points-details-card/points-details-card';
 
-export type PointsMonthSummary = {
+export type PointsMonthSummaryProps = {
   month: number;
 };
 
-export const PointsMonthSummary: React.FC<PointsMonthSummary> = ({ month }) => {
+export const PointsMonthSummary: React.FC<PointsMonthSummaryProps> = ({
+  month,
+}) => {
   const date = new Date(new Date().getFullYear(), month, 1);
   const pointsEarnedForMonth = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(date)
@@ -29,7 +31,8 @@ export const PointsMonthSummary: React.FC<PointsMonthSummary> = ({ month }) => {
           <PointsDetailsCard
             pointsEarned={pointsLibraryScore.pointsTotal}
             activityCount={12} // TODO - replace with actual value once available
-            description={pointsLibraryScore.subActivity || 'Unknown'}
+            title={pointsLibraryScore.subActivity || 'Unknown'}
+            size="large"
           />
         );
       })}
