@@ -112,7 +112,7 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
         const dueDate = getDateWithoutTimeZone(visit.dueDate!);
 
         if (dueDate && today) {
-          return dueDate >= today;
+          return dueDate >= today && !visit.attended;
         }
 
         return false;
