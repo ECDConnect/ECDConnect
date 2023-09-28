@@ -6,10 +6,13 @@ import {
   getPractitionersForCoach,
 } from './practitionerForCoach.actions';
 import { PractitionerForCoachState } from './practitionerForCoach.types';
+import { getUserPointsSummaryForCoach } from '../points/points.actions';
+import { PointsUserSummary } from '@ecdlink/graphql';
 
 const initialState: PractitionerForCoachState = {
   practitionerForCoach: undefined,
   practitionersForCoach: undefined,
+  pointsForPractitionerUser: {},
 };
 
 const practitionerForCoachSlice = createSlice({
@@ -40,6 +43,16 @@ const practitionerForCoachSlice = createSlice({
 
         state.practitionersForCoach = practitionersForCoach;
       }
+    });
+
+    builder.addCase(getUserPointsSummaryForCoach.fulfilled, (state, action) => {
+      state.pointsForPractitionerUser = {
+        ...state.pointsForPractitionerUser,
+        [action.meta.arg.userId]: {
+          dateLoaded: new Date(),
+          pointsSummaries: action.payload,
+        },
+      };
     });
   },
 });

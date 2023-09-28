@@ -28,6 +28,7 @@ namespace ECDLink.AutomatedJobs.Notifications
             {
                 TenancyContext.SetTenantContext(scope);
 
+                
                 var dbContext = scope.ServiceProvider.GetRequiredService<AuthenticationDbContext>();
 
                 var twoOne = DateTime.UtcNow.AddDays(-21).Date;
@@ -36,12 +37,6 @@ namespace ECDLink.AutomatedJobs.Notifications
                 var users = dbContext.Users.Where(x => x.IsActive)
                                             .Where(x => x.LastSeen.Date == twoOne || x.LastSeen.Date == threeZero)
                                             .ToList();
-
-                //var practitioners = dbContext.Practitioners
-                //                            .Include(x => x.User)
-                //                            .Where(x => x.IsActive)
-                //                            .Where(x => x.User.LastSeen.Date.Equals(twoOne) || x.User.LastSeen.Date.Equals(threeZero))
-                //                            .ToList();
 
                 var existingNotifications = dbContext.JobNotifications
                                                 .Where(x => x.TemplateType == TemplateTypeEnum.ThreeWeekNotLoggedOn

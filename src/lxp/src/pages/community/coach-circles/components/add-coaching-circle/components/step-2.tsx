@@ -16,13 +16,18 @@ import { CoachingCirclesAttendanceProps } from '../add-coaching-circle';
 interface Step2Props {
   setCoachingCircleAttendance: (item: CoachingCirclesAttendanceProps[]) => void;
   addCoachingCircle: () => void;
+  clubId: string;
 }
 
 export const Step2: React.FC<Step2Props> = ({
   setCoachingCircleAttendance,
   addCoachingCircle,
+  clubId,
 }) => {
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const clubPractitioners = practitioners?.filter(
+    (item) => item?.clubId === clubId
+  );
   const [confirmAttendance, setConfirmAttendance] = useState(false);
   const [attendanceList, setAttendanceList] = useState<
     AttendanceListDataItem[]
@@ -39,16 +44,13 @@ export const Step2: React.FC<Step2Props> = ({
       }),
     [coachingCiclesPractitionersList]
   );
-  const coachingCircleMeetingAttendes =
-    coachingCiclesPractitionersListFormatted?.filter(
-      (item) => item?.attended === true
-    )?.length;
+  const [attendesCount, setAttendesCount] = useState(0);
 
   const getAttendanceCircleMeeting = useCallback(
-    (practitioners?: PractitionerDto[]) => {
-      if (!practitioners || practitioners.length === 0) return;
-      const attendanceStackList: AttendanceListDataItem[] = practitioners?.map(
-        (practitioner, index) => {
+    (clubPractitioners?: PractitionerDto[]) => {
+      if (!clubPractitioners || clubPractitioners.length === 0) return;
+      const attendanceStackList: AttendanceListDataItem[] =
+        clubPractitioners?.map((practitioner, index) => {
           const profileTextString =
             practitioner?.user?.firstName![0] ??
             '' + practitioner?.user?.surname![0] ??
@@ -61,8 +63,7 @@ export const Step2: React.FC<Step2Props> = ({
             avatarColor: getAvatarColor(),
             status: 1,
           };
-        }
-      );
+        });
       setAttendanceList(attendanceStackList);
       onAttendanceListUpdated(attendanceStackList);
     },
@@ -70,8 +71,8 @@ export const Step2: React.FC<Step2Props> = ({
   );
 
   useEffect(() => {
-    getAttendanceCircleMeeting(practitioners);
-  }, [getAttendanceCircleMeeting, practitioners]);
+    getAttendanceCircleMeeting(clubPractitioners);
+  }, [getAttendanceCircleMeeting]);
 
   useEffect(() => {
     if (coachingCiclesPractitionersListFormatted) {
@@ -82,6 +83,10 @@ export const Step2: React.FC<Step2Props> = ({
   const onAttendanceListUpdated = (
     updatedAttendanceList: AttendanceListDataItem[]
   ) => {
+    const attendes = updatedAttendanceList?.filter(
+      (item) => item?.status === 1
+    );
+    setAttendesCount(attendes.length);
     setCoachingCiclesPractitionersList(updatedAttendanceList);
   };
 
@@ -102,7 +107,7 @@ export const Step2: React.FC<Step2Props> = ({
       <Typography
         type="help"
         color="textMid"
-        text={'Take attendance for this meeting'}
+        text={'Tap a name to mark a practitioner absent'}
         className="mt-2"
       />
 
@@ -120,7 +125,7 @@ export const Step2: React.FC<Step2Props> = ({
       >
         <Checkbox checked={confirmAttendance} />
         <Typography
-          text={`Check to confirm that you have accurately captured practitioner attendance for the event (${coachingCircleMeetingAttendes} practitioners attended).`}
+          text={`Check to confirm that you have accurately captured practitioner attendance for the event (${attendesCount} practitioners attended).`}
           type="body"
           color={'textMid'}
         />

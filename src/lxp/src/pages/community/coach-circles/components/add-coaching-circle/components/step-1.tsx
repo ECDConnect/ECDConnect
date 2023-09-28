@@ -10,6 +10,8 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { CalendarIcon } from '@heroicons/react/solid';
+import { endOfQuarter, startOfQuarter } from 'date-fns';
+import { useMemo } from 'react';
 import ReactDatePicker from 'react-datepicker';
 import { useSelector } from 'react-redux';
 
@@ -40,6 +42,21 @@ export const Step1: React.FC<Step1Props> = ({
       value: item?.id.toString(),
     };
   });
+  const startQuarterDate = startOfQuarter(new Date());
+  const endQuarterDate = endOfQuarter(new Date());
+  const disable = useMemo(
+    () =>
+      !addCoachingCircleForm?.clubId ||
+      !addCoachingCircleForm?.meetingDate ||
+      !addCoachingCircleForm?.meetingType ||
+      !addCoachingCircleForm?.meetingNotes,
+    [
+      addCoachingCircleForm?.clubId,
+      addCoachingCircleForm?.meetingDate,
+      addCoachingCircleForm?.meetingNotes,
+      addCoachingCircleForm?.meetingType,
+    ]
+  );
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -72,6 +89,8 @@ export const Step1: React.FC<Step1Props> = ({
               }}
               dateFormat="EEE, dd MMM yyyy"
               showIcon
+              minDate={startQuarterDate}
+              maxDate={endQuarterDate}
             />
           </span>
           <span>
@@ -137,6 +156,7 @@ export const Step1: React.FC<Step1Props> = ({
           size="small"
           color="primary"
           type="filled"
+          disabled={disable}
         >
           {renderIcon('ArrowCircleRightIcon', classNames('h-5 w-5 text-white'))}
           <Typography type="help" className="ml-2" text="Next" color="white" />

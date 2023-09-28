@@ -406,7 +406,27 @@ namespace EcdLink.Api.CoreApi.Services
             return leagueClubs;
         }
 
-        public List<CoachingClub> GetAllClubsForCoach(string userId)
+        public List<CoachingClubBase> GetAllClubsForCoach(string userId)
+        {
+            List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+
+            List<CoachingClubBase> result = new List<CoachingClubBase>();
+            foreach (var club in clubs)
+            {
+                result.Add(
+                    new CoachingClubBase()
+                    {
+                        Id = club.Id,
+                        Name = club.Name,
+                        UserId = club.UserId
+                    }
+                );
+            }
+
+            return result;
+        }
+
+        public List<CoachingClub> GetAllClubsDetailsForCoach(string userId, string clubId = null)
         {
             var secondaryText = "";
             var secondaryTextColor = "";
@@ -417,6 +437,8 @@ namespace EcdLink.Api.CoreApi.Services
             DateTime prevMonth = today.AddMonths(-1);
 
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            if (clubId != null) //filter if we have a specific club to filter on
+                clubs = clubs.Where(c => c.Id.ToString() == clubId).ToList();
 
             List<CoachingClub> result = new List<CoachingClub>();
             foreach (var club in clubs)
@@ -426,7 +448,8 @@ namespace EcdLink.Api.CoreApi.Services
                 bool hasAttendanceRegister = HasAttendanceRegisterForMonth(club.Id, prevMonth);
                 List <ClubLeader> clubLeaders = GetLeadersForClub(club.Id); // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
                 ClubSupport clubSupport = GetSupportForClub(club.Id);
-                Coach coach = GetCoachForClub(club.UserId);
+                Coach coach = GetCoachForClub(club.UserId); 
+                
                 ClubLeader activeClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
 
                 // Secondary Text in Priority Desc Order
@@ -563,7 +586,7 @@ namespace EcdLink.Api.CoreApi.Services
                         TotalClubPoints = totalClubPoints,
                         LeaguePosition = leaguePosition,
                         ClubMeetings = clubMeetings,
-                        ClubActivities = clubActivities
+                        ClubActivities = clubActivities                        
                     }
                 );
             }

@@ -11,6 +11,7 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
   colour = 'uiBg',
   badgeColour = 'primary',
   className,
+  isShare,
 }) => {
   return (
     <div
@@ -20,13 +21,13 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
       )}
     >
       <p
-        className={`text-center ${
-          size === 'large' ? 'text-6xl' : 'text-4xl'
-        } font-semibold text-black`}
+        className={`text-center ${size === 'large' ? 'text-6xl' : 'text-4xl'}
+        ${isShare ? 'mb-11' : ''}
+        font-semibold text-black`}
       >
         {activityCount}
       </p>
-      <div className="ml-8">
+      <div className={`ml-8 ${isShare ? 'mb-5' : ''}`}>
         <Typography type={size === 'large' ? 'h1' : 'h4'} text={title} />
         <Typography type="help" color="textMid" text={description} />
       </div>
@@ -40,7 +41,7 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
           fill={`var(--${badgeColour})`}
         />
         <Typography
-          className="relative z-10"
+          className={`relative z-10 ${isShare ? 'mb-4' : ''}`}
           color="white"
           type="body"
           text={String(pointsEarned)}

@@ -248,9 +248,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return result;
         }
 
-        public List<CoachingClub> GetAllClubsForCoach([Service] IClubService clubService, string userId)
+        public List<CoachingClubBase> GetAllClubsForCoach([Service] IClubService clubService, string userId)
         {
             return clubService.GetAllClubsForCoach(userId);
+        }
+
+        public List<CoachingClub> GetAllClubsDetailsForCoach([Service] IClubService clubService, string userId, string clubId = null)
+        {
+            return clubService.GetAllClubsDetailsForCoach(userId, clubId);
         }
     }
 }

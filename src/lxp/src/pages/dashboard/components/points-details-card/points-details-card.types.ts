@@ -8,4 +8,5 @@ export interface PointsDetailsCardProps extends ComponentBaseProps {
   size?: 'large' | 'medium';
   colour?: Colours;
   badgeColour?: Colours;
+  isShare?: boolean;
 }

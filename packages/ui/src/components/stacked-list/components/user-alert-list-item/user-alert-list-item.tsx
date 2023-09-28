@@ -57,7 +57,9 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
   return (
     <div
       className={
-        hasClickHandler
+        item?.successColor
+          ? styles.menuItemIconContainerCoachCirclesNoAction
+          : hasClickHandler
           ? styles.menulistItemContainer
           : styles.menuItemIconContainerNoAction
       }
@@ -70,7 +72,7 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
-          {!item.hideAvatar && <div>{renderAvatar}</div>}
+          {!item?.hideAvatar && <div>{renderAvatar}</div>}
           <div className={stackedListStyles.paragraphWrapper}>
             <div>
               <Typography
