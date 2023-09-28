@@ -36,12 +36,12 @@ export const CelebrationCard: React.FC<CelebrationCardProps> = ({
             className="pt-2"
           />
           {!!scoreMessage && (
-            <div className={'mt-2 flex flex-row'}>
+            <div className={'mt-2 flex flex-1 flex-row'}>
               {!!scoreIcon && (
                 <div>
                   {renderIcon(
                     scoreIcon,
-                    `h-5 w-5 text-${secondaryTextColour} mr-1.5`
+                    `h-6 w-6 text-${secondaryTextColour} mr-1.5`
                   )}
                 </div>
               )}

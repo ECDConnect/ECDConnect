@@ -7,6 +7,7 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
   pointsEarned,
   activityCount,
   description,
+  isShare = false,
 }) => {
   return (
     <div className={styles.wrapper}>
@@ -31,7 +32,7 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
             style={{
               textAlign: 'center',
               position: 'absolute',
-              top: 0,
+              top: isShare ? -16 : 0,
               bottom: 0,
               left: 0,
               right: 0,

@@ -96,11 +96,12 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const onboardingNotCompleted = completedSteps?.length < 8;
   const twoWeeksAgo = addDays(new Date(), -14);
+  const fourWeeksAgo = addDays(new Date(), -28);
   const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
     ? new Date(timeline?.smartSpaceLicenseDate)
     : new Date();
-  const onboardingIncompleteAfter2Weeks =
-    onboardingNotCompleted && smartSpaceLicenseDate < twoWeeksAgo;
+  const onboardingIncompleted =
+    onboardingNotCompleted && smartSpaceLicenseDate <= twoWeeksAgo;
 
   const stepperCount = timelineSteps(
     timeline!,
@@ -155,7 +156,7 @@ export const OnboardingTraineeDashboard: React.FC<
       menuIcon: 'ExclamationIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
-      title: onboardingIncompleteAfter2Weeks
+      title: onboardingIncompleted
         ? 'Has not completed onboarding'
         : `${overdueSteps?.length} onboarding steps overdue`,
       titleStyle: 'text-textDark semibold',
@@ -172,7 +173,7 @@ export const OnboardingTraineeDashboard: React.FC<
           : 'primary',
       backgroundColor: 'uiBg',
       onActionClick: () =>
-        onboardingIncompleteAfter2Weeks
+        onboardingIncompleted
           ? setShowOnboardingNotCompleted(true)
           : setShowOverdueSteps(true),
     },
@@ -284,6 +285,7 @@ export const OnboardingTraineeDashboard: React.FC<
           practitioner={practitioner}
           starterLicenseDate={smartSpaceLicenseDate}
           setShowOnboardingNotCompleted={setShowOnboardingNotCompleted}
+          isRemoveTrainee={smartSpaceLicenseDate < fourWeeksAgo}
         />
       </Dialog>
     </BannerWrapper>

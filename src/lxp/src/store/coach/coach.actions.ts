@@ -206,31 +206,26 @@ export const getAllCoachingCircleClubsForCoach = createAsyncThunk<
   async ({ coachId, startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      coach: { coachCircles: coachCirclesCache },
     } = getState();
 
-    if (!coachCirclesCache) {
-      try {
-        let coach: CoachCirclesDto | undefined;
+    try {
+      let coachCircle: CoachCirclesDto | undefined;
 
-        if (userAuth?.auth_token) {
-          coach = await new CoachService(
-            userAuth?.auth_token
-          ).GetAllCoachingCircleClubsForCoachserId(coachId, startDate, endDate);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-        if (!coach) {
-          return rejectWithValue(
-            'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
-          );
-        }
-        return coach;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        coachCircle = await new CoachService(
+          userAuth?.auth_token
+        ).GetAllCoachingCircleClubsForCoachserId(coachId, startDate, endDate);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return coachCirclesCache;
+      if (!coachCircle) {
+        return rejectWithValue(
+          'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
+        );
+      }
+      return coachCircle;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
