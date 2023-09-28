@@ -60,6 +60,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     coach.StartDate = input.StartDate;
                 if (input.AreaOfOperation != null)
                     coach.AreaOfOperation = input.AreaOfOperation;
+                if (input.ClickedClubTab != null)
+                    coach.ClickedClubTab = input.ClickedClubTab;
+                else
+                    coach.ClickedClubTab = false;
 
                 if (input.SiteAddress != null)
                 {
@@ -205,6 +209,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (coach != null)
             {
                 coach.AboutInfo = aboutInfo;
+                coach.UpdatedDate = DateTime.UtcNow;
+                coach.UpdatedBy = uId;
+                coachRepo.Update(coach);
+
+                return coach;
+            }
+            return coach;
+        }
+
+        public Coach UpdateCoachClubClicked([Service] IHttpContextAccessor contextAccessor,
+    IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+            Coach coach = coachRepo.GetByUserId(userId);
+
+            if (coach != null)
+            {
+                coach.ClickedClubTab = true;
                 coach.UpdatedDate = DateTime.UtcNow;
                 coach.UpdatedBy = uId;
                 coachRepo.Update(coach);

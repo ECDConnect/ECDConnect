@@ -23,6 +23,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public int TotalClubPoints { get; set; }
         public int MaxClubPoints { get; set; }
         public virtual ICollection<ClubActivity> ClubActivities { get; set; }
+        public Boolean? ClickedClubTab { get; set; } = false;
+    }
+
+    public class CoachingClubBase
+    {
+        public Guid Id { get; set; }
+        public string UserId { get; set; }
+        public string Name { get; set; }
+
     }
 
     public class ClubActivity

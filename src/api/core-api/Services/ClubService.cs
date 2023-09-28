@@ -406,15 +406,15 @@ namespace EcdLink.Api.CoreApi.Services
             return leagueClubs;
         }
 
-        public List<CoachingClub> GetAllClubsForCoach(string userId)
+        public List<CoachingClubBase> GetAllClubsForCoach(string userId)
         {
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
 
-            List<CoachingClub> result = new List<CoachingClub>();
+            List<CoachingClubBase> result = new List<CoachingClubBase>();
             foreach (var club in clubs)
             {
                 result.Add(
-                    new CoachingClub()
+                    new CoachingClubBase()
                     {
                         Id = club.Id,
                         Name = club.Name,
@@ -449,6 +449,7 @@ namespace EcdLink.Api.CoreApi.Services
                 List <ClubLeader> clubLeaders = GetLeadersForClub(club.Id); // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
                 ClubSupport clubSupport = GetSupportForClub(club.Id);
                 Coach coach = GetCoachForClub(club.UserId);
+                
                 ClubLeader activeClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
 
                 // Secondary Text in Priority Desc Order
@@ -585,7 +586,8 @@ namespace EcdLink.Api.CoreApi.Services
                         TotalClubPoints = totalClubPoints,
                         LeaguePosition = leaguePosition,
                         ClubMeetings = clubMeetings,
-                        ClubActivities = clubActivities
+                        ClubActivities = clubActivities,
+                        ClickedClubTab = coach.ClickedClubTab.HasValue ? coach.ClickedClubTab : false                      
                     }
                 );
             }
