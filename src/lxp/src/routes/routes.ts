@@ -38,6 +38,9 @@ const ROUTES = {
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
       EDIT: '/edit',
+      MEMBER: addPrefix('/member/:practitionerId', {
+        ADD: '/add',
+      }),
       MEMBERS: addPrefix('/members', {
         ADD: '/add',
         EDIT: '/edit',
@@ -62,6 +65,9 @@ const ROUTES = {
         COMPLETE_CHILD_PROGRESS_REPORTS: '/complete-child-progress-reports',
         HELP: '/help/:activityId',
       }),
+    }),
+    LEAGUE: addPrefix('/league/:leagueId', {
+      HELP: '/help/:activityId',
     }),
   }),
   CHILD: addPrefix('/child', {

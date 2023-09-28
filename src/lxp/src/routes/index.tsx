@@ -114,7 +114,10 @@ import { HostFamilyDays } from '@/pages/community/clubs-tab/club/club-points/act
 import { LeaveNoOneBehind } from '@/pages/community/clubs-tab/club/club-points/activities/leave-no-one-behind';
 import { CaptureChildAttendance } from '@/pages/community/clubs-tab/club/club-points/activities/capture-child-attendance';
 import { CompleteChildProgressReports } from '@/pages/community/clubs-tab/club/club-points/activities/complete-child-progress';
-import { ActivityHelp } from '@/pages/community/clubs-tab/club/club-points/activities/0-components/help-screen';
+import { LeagueLeaderBoard } from '@/pages/community/leagues-tab/league-leaderboard';
+import { ActivityHelp } from '@/pages/community/clubs-tab/0-components/help-screen';
+import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add';
+import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -217,6 +220,16 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBER.ROOT}
+        component={ClubMemberView}
+        exact
+      />
+      <Route
+        path={ROUTES.COMMUNITY.CLUB.MEMBER.ADD}
+        component={ClubMemberAdd}
+        exact
+      />
+      <Route
         path={ROUTES.COMMUNITY.CLUB.MEMBERS.ADD}
         component={ClubMembersAdd}
         exact
@@ -284,7 +297,12 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
-        path={ROUTES.COMMUNITY.CLUB.POINTS.HELP}
+        path={ROUTES.COMMUNITY.LEAGUE.ROOT}
+        component={LeagueLeaderBoard}
+        exact
+      />
+      <Route
+        path={[ROUTES.COMMUNITY.CLUB.POINTS.HELP, ROUTES.COMMUNITY.LEAGUE.HELP]}
         component={ActivityHelp}
         exact
       />

@@ -8,6 +8,7 @@ import format from 'date-fns/format';
 import { CoachCircles } from './coach-circles/coach-circles';
 import ROUTES from '@/routes/routes';
 import { ClubsTab } from './clubs-tab';
+import { LeaguesTab } from './leagues-tab';
 
 export const COMMUNITY_TABS = {
   CONNECT: 0,
@@ -33,7 +34,7 @@ export const Community: React.FC = () => {
     {
       title: 'Leagues',
       initActive: false,
-      child: 'Coming Soon!',
+      child: <LeaguesTab />,
     },
     {
       title: 'Circles',
