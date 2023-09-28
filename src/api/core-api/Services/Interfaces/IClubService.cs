@@ -14,7 +14,8 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public double GetClubAttendanceForMonth(Guid clubId, DateTime date);
         public bool HasAttendanceRegisterForMonth(Guid clubId, DateTime date);
         public List<ClubMember> GetClubMembers(Guid clubId);
-        public List<CoachingClub> GetAllClubsForCoach(string userId);
+        public List<CoachingClubBase> GetAllClubsForCoach(string userId);
+        public List<CoachingClub> GetAllClubsDetailsForCoach(string userId, string clubId = null);
         public List<LeagueClub> GetAllLeagues(string userId);
         public List<ClubLeader> GetLeadersForClub(Guid clubId);
         public ClubSupport GetSupportForClub(Guid clubId);
