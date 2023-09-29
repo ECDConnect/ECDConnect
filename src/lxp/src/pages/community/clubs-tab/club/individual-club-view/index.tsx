@@ -5,6 +5,7 @@ import {
   BannerWrapper,
   Button,
   EmptyPage,
+  LoadingSpinner,
   MenuListDataItem,
   ScoreCard,
   StackedList,
@@ -30,6 +31,8 @@ import {
   daysToAcceptBeingLeader,
 } from '@/constants/club';
 import { addDays, differenceInMonths } from 'date-fns';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ClubActions } from '@/store/club/club.actions';
 
 export function isCurrentPointsAtLeast80PercentOfTotal(
   currentPoints: number,
@@ -42,6 +45,12 @@ export function isCurrentPointsAtLeast80PercentOfTotal(
 
 export const Club: React.FC = () => {
   const history = useHistory();
+
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH
+  );
+
   const { clubId } = useParams<ClubsRouteState>();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
@@ -268,7 +277,7 @@ export const Club: React.FC = () => {
     const items: MenuListDataItem[] = [];
 
     // if there is currently no club leader assigned (ie no club leader has been chosen.)
-    if (!currentLeader && !nextLeader) {
+    if (!currentLeader && !nextLeader && !!club?.clubMembers?.length) {
       items.push({
         showIcon: true,
         menuIcon: 'ExclamationCircleIcon',
@@ -374,6 +383,7 @@ export const Club: React.FC = () => {
   }, [
     currentLeader,
     nextLeader,
+    club?.clubMembers?.length,
     isLeaderRequestSent,
     totalMembers,
     isLeaderAcceptedOverSixMonths,
@@ -389,102 +399,115 @@ export const Club: React.FC = () => {
       title={`${club?.name} club`}
       onBack={() => history.push(ROUTES.COMMUNITY.ROOT)}
     >
-      <Typography type="h2" text={club?.name ?? ''} />
-      <div className="mt-3 flex gap-2">
-        {club?.league?.leagueType?.name === LeagueType.Purple && (
-          <Tag icon="StarIcon" title="Purple" color="primary" />
-        )}
-        <Tag
-          title={String(totalMembers)}
-          subTitle="members"
-          color={
-            !!totalMembers &&
-            totalMembers >= MIN_MEMBERS_IN_CLUB &&
-            totalMembers <= MAX_MEMBERS_IN_CLUB
-              ? 'successMain'
-              : 'errorMain'
-          }
+      {isLoading ? (
+        <LoadingSpinner
+          className="mt-6"
+          size="medium"
+          spinnerColor="primary"
+          backgroundColor="uiLight"
         />
-      </div>
-      {renderIssuesAndTasksContent}
-      {!!totalMembers ? (
+      ) : (
         <>
-          {renderLeagueContent}
-          <Typography className="mb-2" type="h3" text="Club leader" />
-          {hasLeader && (
-            <div>
-              <StackedList
-                isFullHeight={false}
-                type={'UserAlertList' as StackedListType}
-                listItems={[leader]}
-              />
-            </div>
-          )}
-          {!hasLeader && !isLeaderRequestSent && (
-            <Alert
-              title="No club leader!"
-              type="warning"
-              button={
-                <Button
-                  type="filled"
-                  color="primary"
-                  textColor="white"
-                  icon="UserAddIcon"
-                  text="Assign a club leader!"
-                  onClick={() =>
-                    history.push(
-                      ROUTES.COMMUNITY.CLUB.LEADER.ADD.replace(
-                        ':clubId',
-                        clubId
-                      )
-                    )
-                  }
-                />
+          <Typography type="h2" text={club?.name ?? ''} />
+          <div className="mt-3 flex gap-2">
+            {club?.league?.leagueType?.name === LeagueType.Purple && (
+              <Tag icon="StarIcon" title="Purple" color="primary" />
+            )}
+            <Tag
+              title={String(totalMembers)}
+              subTitle="members"
+              color={
+                !!totalMembers &&
+                totalMembers >= MIN_MEMBERS_IN_CLUB &&
+                totalMembers <= MAX_MEMBERS_IN_CLUB
+                  ? 'successMain'
+                  : 'errorMain'
               }
             />
-          )}
-          {!hasLeader && isLeaderRequestSent && (
-            <Alert
-              type="warning"
-              title="Waiting for new club leader to accept agreement."
+          </div>
+          {renderIssuesAndTasksContent}
+          {!!totalMembers ? (
+            <>
+              {renderLeagueContent}
+              <Typography className="mb-2" type="h3" text="Club leader" />
+              {hasLeader && (
+                <div>
+                  <StackedList
+                    isFullHeight={false}
+                    type={'UserAlertList' as StackedListType}
+                    listItems={[leader]}
+                  />
+                </div>
+              )}
+              {!hasLeader && !isLeaderRequestSent && (
+                <Alert
+                  title="No club leader!"
+                  type="warning"
+                  button={
+                    <Button
+                      type="filled"
+                      color="primary"
+                      textColor="white"
+                      icon="UserAddIcon"
+                      text="Assign a club leader!"
+                      onClick={() =>
+                        history.push(
+                          ROUTES.COMMUNITY.CLUB.LEADER.ADD.replace(
+                            ':clubId',
+                            clubId
+                          )
+                        )
+                      }
+                    />
+                  }
+                />
+              )}
+              {!hasLeader && isLeaderRequestSent && (
+                <Alert
+                  type="warning"
+                  title="Waiting for new club leader to accept agreement."
+                />
+              )}
+              {renderActivitiesContent}
+            </>
+          ) : (
+            <EmptyPage
+              image={AlienImage}
+              title="This club does not have any members yet!"
+              subTitle=""
             />
           )}
-          {renderActivitiesContent}
+          <div className="mt-auto flex flex-col">
+            <Button
+              icon={!!totalMembers ? 'UserGroupIcon' : 'PlusCircleIcon'}
+              className="mb-4 mt-8"
+              type="filled"
+              textColor="white"
+              color="primary"
+              text={!!totalMembers ? 'See all members' : 'Add club members'}
+              onClick={() =>
+                history.push(
+                  ROUTES.COMMUNITY.CLUB.MEMBERS[
+                    !!totalMembers ? 'ROOT' : 'ADD'
+                  ].replace(':clubId', clubId)
+                )
+              }
+            />
+            <Button
+              icon="PencilIcon"
+              type="outlined"
+              textColor="primary"
+              color="primary"
+              text="Change club name"
+              onClick={() =>
+                history.push(
+                  ROUTES.COMMUNITY.CLUB.EDIT.replace(':clubId', clubId)
+                )
+              }
+            />
+          </div>
         </>
-      ) : (
-        <EmptyPage
-          image={AlienImage}
-          title="This club does not have any members yet!"
-          subTitle=""
-        />
       )}
-      <div className="mt-auto flex flex-col">
-        <Button
-          icon={!!totalMembers ? 'UserGroupIcon' : 'PlusCircleIcon'}
-          className="mb-4 mt-8"
-          type="filled"
-          textColor="white"
-          color="primary"
-          text={!!totalMembers ? 'See all members' : 'Add club members'}
-          onClick={() =>
-            history.push(
-              ROUTES.COMMUNITY.CLUB.MEMBERS[
-                !!totalMembers ? 'ROOT' : 'ADD'
-              ].replace(':clubId', clubId)
-            )
-          }
-        />
-        <Button
-          icon="PencilIcon"
-          type="outlined"
-          textColor="primary"
-          color="primary"
-          text="Change club name"
-          onClick={() =>
-            history.push(ROUTES.COMMUNITY.CLUB.EDIT.replace(':clubId', clubId))
-          }
-        />
-      </div>
     </BannerWrapper>
   );
 };

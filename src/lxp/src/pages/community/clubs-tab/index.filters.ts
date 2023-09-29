@@ -5,7 +5,7 @@ import {
   MIN_PURPLE_CLUB_POINTS,
   MIN_RISING_STARS_POINTS,
 } from '@/constants/club';
-import { CoachingClub } from '@ecdlink/graphql';
+import { MergedCoachingClub } from '@/store/club/club.types';
 import { SearchDropDownOption } from '@ecdlink/ui';
 
 enum SortBy {
@@ -35,9 +35,9 @@ export const sortByOptions: SearchDropDownOption<string>[] = [
 }));
 
 export function filterClubsByLeagueType(
-  clubs: CoachingClub[],
+  clubs: MergedCoachingClub[],
   leagueType?: string
-): CoachingClub[] {
+): MergedCoachingClub[] {
   if (!leagueType) {
     return clubs;
   }
@@ -103,7 +103,7 @@ const assignRank = (points: number, leagueType: string): number => {
   }
 };
 
-function sortByPointsEarnedThisYear(clubs: CoachingClub[]) {
+function sortByPointsEarnedThisYear(clubs: MergedCoachingClub[]) {
   return clubs.sort((a, b) => {
     // Ensure that a.league and a.league.leagueType are not null or undefined
     const leagueTypeA = a.league?.leagueType?.name ?? LeagueType.Other;
@@ -126,7 +126,7 @@ function sortByPointsEarnedThisYear(clubs: CoachingClub[]) {
   });
 }
 
-export function sortClubBy(clubs: CoachingClub[], sortBy: string) {
+export function sortClubBy(clubs: MergedCoachingClub[], sortBy: string) {
   const clubsCopy = [...clubs];
 
   if (!sortBy) return clubs;
@@ -148,7 +148,7 @@ export function sortClubBy(clubs: CoachingClub[], sortBy: string) {
       return clubs;
   }
 }
-export const searchList = (list: CoachingClub[], searchTerm: string) => {
+export const searchList = (list: MergedCoachingClub[], searchTerm: string) => {
   const lowerSearch = searchTerm.toLowerCase();
   return list.filter((item) => item?.name?.toLowerCase().includes(lowerSearch));
 };

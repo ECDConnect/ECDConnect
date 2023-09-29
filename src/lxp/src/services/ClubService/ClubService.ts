@@ -8,6 +8,7 @@ import {
   MutationUpdateCoachAboutInfoArgs,
   NewClubInput,
   NewClubMemberInput,
+  CoachingClubBase,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
@@ -19,15 +20,44 @@ class ClubService {
     this._accessToken = accessToken;
   }
 
-  async getAllClubsForCoach(userId: string): Promise<CoachingClub[]> {
+  async getAllClubsForCoach(userId: string): Promise<CoachingClubBase[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { allClubsForCoach: CoachingClub[] };
+      data: { allClubsForCoach: CoachingClubBase[] };
       errors?: {};
     }>(``, {
       query: `
-        query GetAllClubsForCoach($userId: String) {
+        query allClubsForCoach($userId: String) {
           allClubsForCoach(userId: $userId) {
+            id
+            name
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get all clubs failed - Server connection error');
+    }
+
+    return response.data.data.allClubsForCoach;
+  }
+
+  async getAllClubsDetailsForCoach(
+    userId: string,
+    clubId?: string
+  ): Promise<CoachingClub[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { allClubsDetailsForCoach: CoachingClub[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query allClubsDetailsForCoach($userId: String, $clubId: String!) {
+          allClubsDetailsForCoach(userId: $userId, clubId: $clubId) {
               id
               name
               userId
@@ -121,6 +151,7 @@ class ClubService {
       `,
       variables: {
         userId,
+        clubId,
       },
     });
 
@@ -128,7 +159,7 @@ class ClubService {
       throw new Error('Get all clubs failed - Server connection error');
     }
 
-    return response.data.data.allClubsForCoach;
+    return response.data.data.allClubsDetailsForCoach;
   }
 
   async addNewClubMembers(input: NewClubMemberInput): Promise<boolean> {
