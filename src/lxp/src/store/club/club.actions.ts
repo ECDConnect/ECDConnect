@@ -16,6 +16,7 @@ import { NewClubLeaderInput } from '@/services/ClubService/types';
 
 export const ClubActions = {
   GET_ALL_CLUBS_FOR_COACH: 'getAllClubsForCoach',
+  GET_ALL_CLUB_MEMBERS_FOR_COACH: 'getAllClubMembersForCoach',
   GET_ALL_CLUBS_DETAILS_FOR_COACH: 'getAllClubsDetailsForCoach',
   ADD_NEW_CLUB: 'addNewClub',
   ADD_NEW_CLUB_LEADER: 'addNewClubLeader',
@@ -52,7 +53,7 @@ export const getAllClubsForCoach = createAsyncThunk<
 
 export const getAllClubsDetailsForCoach = createAsyncThunk<
   CoachingClub[],
-  { userId: string; clubId?: string },
+  { userId: string; clubId: string },
   ThunkApiType<RootState>
 >(
   ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH,
@@ -66,6 +67,31 @@ export const getAllClubsDetailsForCoach = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).getAllClubsDetailsForCoach(userId, clubId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllClubMembersForCoach = createAsyncThunk<
+  (CoachingClub['id'] & CoachingClub['clubMembers'])[],
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ALL_CLUB_MEMBERS_FOR_COACH,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getAllClubsMembersForCoach(userId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

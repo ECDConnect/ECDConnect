@@ -162,6 +162,51 @@ class ClubService {
     return response.data.data.allClubsDetailsForCoach;
   }
 
+  async getAllClubsMembersForCoach(userId: string): Promise<CoachingClub[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: {
+        allClubsDetailsForCoach: (CoachingClub['id'] &
+          CoachingClub['clubMembers'])[];
+      };
+      errors?: {};
+    }>(``, {
+      query: `
+        query allClubsDetailsForCoach($userId: String) {
+          allClubsDetailsForCoach(userId: $userId) {
+              id
+              clubMembers {
+                  welcomeMessage
+                  isActive
+                  dateClubJoined
+                  isNewInClub
+                  practitioner {
+                      id
+                      user {
+                          id
+                          firstName
+                          surname
+                          phoneNumber
+                          whatsAppNumber
+                          profileImageUrl
+                      }
+                  }
+              }
+          }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get all members failed - Server connection error');
+    }
+
+    return response.data.data.allClubsDetailsForCoach;
+  }
+
   async addNewClubMembers(input: NewClubMemberInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
