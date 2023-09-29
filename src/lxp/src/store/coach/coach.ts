@@ -10,7 +10,9 @@ import {
   getCoachByCoachId,
   getCoachByUserId,
   getCoachingCircleTopics,
+  updateCoachClubClicked,
 } from './coach.actions';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: CoachState = {
   coach: undefined,
@@ -33,8 +35,14 @@ const coachSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, updateCoachClubClicked);
+    setThunkActionStatus(builder, getCoachByCoachId);
+    builder.addCase(updateCoachClubClicked.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(getCoachByCoachId.fulfilled, (state, action) => {
       state.coach = action.payload;
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(coachNameByUserId.fulfilled, (state, action) => {
       state.coach = action.payload;
