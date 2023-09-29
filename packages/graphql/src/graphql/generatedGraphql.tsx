@@ -2144,6 +2144,8 @@ export type CoachingClubBase = {
   __typename?: 'CoachingClubBase';
   id: Scalars['UUID'];
   name?: Maybe<Scalars['String']>;
+  secondaryText?: Maybe<Scalars['String']>;
+  secondaryTextColor?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;
 };
 
@@ -4813,6 +4815,7 @@ export type MotherSortInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  acceptNewClubLeaderRole: Scalars['Boolean'];
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
@@ -5380,6 +5383,11 @@ export type Mutation = {
   updateWorkflowStatusType?: Maybe<WorkflowStatusType>;
   uploadChildProgressReport: Scalars['Boolean'];
   validateDefaultVisitsForPractitioner: Scalars['Boolean'];
+};
+
+export type MutationAcceptNewClubLeaderRoleArgs = {
+  clubId?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddAbsenteeForPractitionerArgs = {
@@ -13259,6 +13267,13 @@ export type Setting_Reporting = {
   ChildProgressReportMonths: Scalars['String'];
 };
 
+export type Setting_SmsPortal = {
+  __typename?: 'Setting_SMSPortal';
+  ApiKey: Scalars['String'];
+  ApiSecret: Scalars['String'];
+  BaseUrl: Scalars['String'];
+};
+
 export type Setting_Security = {
   __typename?: 'Setting_Security';
   ForgotPassword: Scalars['String'];
@@ -13342,6 +13357,7 @@ export type SettingsType = {
   Jwts: Setting_Jwts;
   RapidApi: Setting_RapidApi;
   Reporting: Setting_Reporting;
+  SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
   SmartLinkApi: Setting_SmartLinkApi;
