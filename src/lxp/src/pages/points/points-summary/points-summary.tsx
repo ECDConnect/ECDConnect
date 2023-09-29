@@ -5,6 +5,8 @@ import {
   BannerWrapper,
   Button,
   CelebrationCard,
+  Dialog,
+  DialogPosition,
   ScoreCard,
   Typography,
 } from '@ecdlink/ui';
@@ -19,6 +21,7 @@ import { PointsSummaryDto, captureAndDownloadComponent } from '@ecdlink/core';
 import { PointsProgressCard } from '@/pages/dashboard/components/points-progress-card/points-progress-card';
 import ROUTES from '@/routes/routes';
 import { PointsShare } from '../points-share/points-share';
+import { PointsInfoPage } from '../info/points-info-page';
 
 // TODO - fetch club standings
 // TODO - add text that depends on relative club points
@@ -30,6 +33,8 @@ export const PointsSummary: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
+
+  const [showInfo, setShowInfo] = useState(false);
 
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
@@ -129,6 +134,8 @@ export const PointsSummary: React.FC = () => {
         onBack={() => history.goBack()}
         title="Points"
         backgroundColour="white"
+        displayHelp={true}
+        onHelp={() => setShowInfo(true)}
       >
         <div className="mt-5 flex-col justify-center p-4">
           <Typography
@@ -212,6 +219,13 @@ export const PointsSummary: React.FC = () => {
           />
         </div>
       </BannerWrapper>
+      <Dialog
+        fullScreen={true}
+        visible={showInfo}
+        position={DialogPosition.Full}
+      >
+        <PointsInfoPage onClose={() => setShowInfo(false)} />
+      </Dialog>
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Month"

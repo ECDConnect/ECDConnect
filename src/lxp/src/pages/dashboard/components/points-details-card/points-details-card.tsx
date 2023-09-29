@@ -1,48 +1,51 @@
-import { Typography } from '@ecdlink/ui';
-import * as styles from './points-details-card.styles';
+import { Typography, classNames } from '@ecdlink/ui';
 import { PointsDetailsCardProps } from './points-details-card.types';
-import { ReactComponent as BadgePurple } from '@ecdlink/ui/src/assets/badge/badge_purple.svg';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 
 export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
   pointsEarned,
   activityCount,
+  title,
   description,
-  isShare = false,
+  size = 'medium',
+  colour = 'uiBg',
+  badgeColour = 'primary',
+  className,
+  isShare,
 }) => {
   return (
-    <div className={styles.wrapper}>
-      <div className={styles.content}>
-        <p className={`mb-2 text-center text-4xl font-semibold text-black`}>
-          {activityCount}
-        </p>
-        <Typography type="h2" text={description} className="ml-5 pt-2" />
-        <div
-          className="h-16 w-16 p-2"
-          style={{
-            position: 'relative',
-            overflow: 'hidden',
-            marginLeft: 'auto',
-          }}
-        >
-          <BadgePurple
-            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-          />
-          <h1
-            className="text-2x1 font-semibold text-white"
-            style={{
-              textAlign: 'center',
-              position: 'absolute',
-              top: isShare ? -16 : 0,
-              bottom: 0,
-              left: 0,
-              right: 0,
-              height: 'fit-content',
-              margin: 'auto',
-            }}
-          >
-            {pointsEarned}
-          </h1>
-        </div>
+    <div
+      className={classNames(
+        className,
+        `bg-${colour} rounded-10 flex w-full flex-row items-center p-5 pl-8`
+      )}
+    >
+      <p
+        className={`text-center ${size === 'large' ? 'text-6xl' : 'text-4xl'}
+        ${isShare ? 'mb-11' : ''}
+        font-semibold text-black`}
+      >
+        {activityCount}
+      </p>
+      <div className={`ml-8 ${isShare ? 'mb-5' : ''}`}>
+        <Typography type={size === 'large' ? 'h1' : 'h4'} text={title} />
+        <Typography type="help" color="textMid" text={description} />
+      </div>
+      <div
+        className={`relative ml-auto flex ${
+          size === 'large' ? 'h-16 w-16' : 'h-11 w-11'
+        } items-center justify-center`}
+      >
+        <Badge
+          className="absolute z-0 h-full w-full"
+          fill={`var(--${badgeColour})`}
+        />
+        <Typography
+          className={`relative z-10 ${isShare ? 'mb-4' : ''}`}
+          color="white"
+          type="body"
+          text={String(pointsEarned)}
+        />
       </div>
     </div>
   );

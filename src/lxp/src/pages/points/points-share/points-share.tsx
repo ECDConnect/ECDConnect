@@ -1,11 +1,6 @@
 import { PointsDetailsCard } from '@/pages/dashboard/components/points-details-card/points-details-card';
 import { PointsSummaryDto } from '@ecdlink/core';
-import {
-  BannerWrapper,
-  CelebrationCard,
-  Typography,
-  renderIcon,
-} from '@ecdlink/ui';
+import { Typography, renderIcon } from '@ecdlink/ui';
 import { format } from 'date-fns';
 
 import { ReactComponent as EmojiYellowSmile } from '@ecdlink/ui/src/assets/emoji/emoji_yellow_smileEyes.svg';
@@ -96,8 +91,9 @@ export const PointsShare: React.FC<PointsShareProps> = ({
             <PointsDetailsCard
               pointsEarned={pointsLibraryScore.pointsTotal}
               activityCount={12} // TODO - replace with actual value once available
-              description={pointsLibraryScore.subActivity || 'Unknown'}
-              isShare={true}
+              title={pointsLibraryScore.subActivity || 'Unknown'}
+              isShare
+              size="large"
             />
           );
         })}

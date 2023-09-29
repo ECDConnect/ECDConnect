@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class MoreInformationQueryExtension
@@ -16,18 +16,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public IEnumerable<object> GetMoreInformation(
            [Service] ContentManagementRepository contentRepo,
            [Service] ILocaleService<Language> localeService,
-           string section, 
+           string section,
            string locale)
         {
             Guid languageId;
             if (Guid.TryParse(locale, out languageId))
             {
                 languageId = localeService.GetLocaleById(languageId)?.Id ?? Guid.Empty;
-            } else
+            }
+            else
             {
                 languageId = localeService.GetLocale(locale)?.Id ?? Guid.Empty;
             }
-            
+
             return contentRepo.GetByValueKey("MoreInformation", "section", section, languageId);
         }
     }

@@ -117,7 +117,16 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
             </div>
           </div>
         </div>
-        <div>
+        <div className="flex items-center">
+          {item?.subItem && (
+            <p
+              className={
+                'bg-primary mr-6 truncate rounded-3xl px-2 py-1 text-base font-medium text-white'
+              }
+            >
+              {item?.subItem}
+            </p>
+          )}
           {hasClickHandler &&
             renderIcon(
               !!item.rightIcon ? item.rightIcon : 'ChevronRightIcon',
