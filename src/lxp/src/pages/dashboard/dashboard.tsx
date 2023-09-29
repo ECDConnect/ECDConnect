@@ -60,6 +60,7 @@ import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/e
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community/community.types';
+import { coachSelectors } from '@/store/coach';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -90,6 +91,7 @@ export const Dashboard: React.FC = () => {
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
+  const coach = useSelector(coachSelectors.getCoach);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -108,8 +110,7 @@ export const Dashboard: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
-  // TODO: add integration
-  const isFirstTimeCommunitySection = true;
+  const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
