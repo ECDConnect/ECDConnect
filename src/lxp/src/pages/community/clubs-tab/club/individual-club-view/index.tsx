@@ -51,6 +51,11 @@ export const Club: React.FC = () => {
     ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH
   );
 
+  const { isLoading: isLoadingClubMembers } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ALL_CLUB_MEMBERS_FOR_COACH
+  );
+
   const { clubId } = useParams<ClubsRouteState>();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
@@ -399,9 +404,9 @@ export const Club: React.FC = () => {
       title={`${club?.name} club`}
       onBack={() => history.push(ROUTES.COMMUNITY.ROOT)}
     >
-      {isLoading ? (
+      {isLoading || isLoadingClubMembers ? (
         <LoadingSpinner
-          className="mt-6"
+          className="mt-4"
           size="medium"
           spinnerColor="primary"
           backgroundColor="uiLight"
