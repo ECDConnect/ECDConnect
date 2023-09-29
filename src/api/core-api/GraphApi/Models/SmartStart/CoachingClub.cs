@@ -36,6 +36,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public Guid Id { get; set; }
         public string UserId { get; set; }
         public string Name { get; set; }
+        public string SecondaryText { get; set; }
+        public string SecondaryTextColor { get; set; }
     }
 
     public class ClubActivity
