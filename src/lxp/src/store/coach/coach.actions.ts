@@ -73,7 +73,6 @@ export const getCoachByCoachId = createAsyncThunk<
     } = getState();
 
     if (!coachCache || forceUpdate) {
-      console.log({ coachId });
       try {
         let coach: CoachDto | undefined;
 
