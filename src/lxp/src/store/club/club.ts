@@ -32,23 +32,32 @@ const clubSlice = createSlice({
     builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
-      // Assuming that state.allClubsForCoach and action.payload are arrays of clubs
-      const newState = state.allClubsForCoach?.map((clubInState) => {
-        // Find the corresponding club in action.payload by ID
-        const correspondingClub = action.payload.find(
-          (club) => club.id === clubInState.id
+      if (!state.allClubsForCoach) {
+        state.allClubsForCoach = [];
+      }
+
+      const newState = [...state.allClubsForCoach]; // Create a new array to avoid mutating the original state
+
+      const payloadAsMergedClubs = action.payload as MergedCoachingClub[];
+
+      payloadAsMergedClubs.forEach((newClub) => {
+        const existingClubIndex = newState.findIndex(
+          (club) => club.id === newClub.id
         );
 
-        // Merge the state club's data with the corresponding club if it exists
-        if (correspondingClub) {
-          return { ...clubInState, ...correspondingClub };
+        if (existingClubIndex !== -1) {
+          // If the club already exists in the state, merge the data
+          newState[existingClubIndex] = {
+            ...newState[existingClubIndex],
+            ...newClub,
+          };
+        } else {
+          // If the club doesn't exist in the state, add the new club
+          newState.push(newClub);
         }
-
-        // If there's no match, return the club from the state unchanged
-        return clubInState;
       });
 
-      state.allClubsForCoach = newState as MergedCoachingClub[];
+      state.allClubsForCoach = newState;
     });
     builder.addCase(addNewClub.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
