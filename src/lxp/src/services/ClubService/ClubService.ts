@@ -31,6 +31,8 @@ class ClubService {
           allClubsForCoach(userId: $userId) {
             id
             name
+            secondaryText
+            secondaryTextColor
           }
         }
       `,
