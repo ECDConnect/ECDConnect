@@ -185,7 +185,7 @@ export const CoachCircles = () => {
         text={`Coaching circles held this quarter:`}
         className="py-2"
       ></Typography>
-      <div className="flex w-full justify-center pt-2 pb-12">
+      <div className="flex w-full justify-center pt-2 pb-48">
         <StackedList
           listItems={clubsWithMeetingsList || []}
           type={'UserAlertList'}
