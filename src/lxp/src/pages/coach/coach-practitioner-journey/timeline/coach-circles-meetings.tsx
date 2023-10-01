@@ -14,7 +14,7 @@ interface SupportVisitsProps {
   isLoading: boolean;
   timeline: PractitionerTimeline;
   isOnline: boolean;
-  onView: (visit: Visit) => void;
+  onView?: (visit: Visit) => void;
 }
 
 export const CoachCirclesMeeting = ({
