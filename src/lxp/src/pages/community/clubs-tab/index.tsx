@@ -14,7 +14,11 @@ import {
 import { useHistory, useLocation } from 'react-router';
 import { useAppDispatch } from '@/store';
 import { useEffect, useMemo, useState } from 'react';
-import { ClubActions, getAllClubsForCoach } from '@/store/club/club.actions';
+import {
+  ClubActions,
+  getAllClubsDetailsForCoach,
+  getAllClubsForCoach,
+} from '@/store/club/club.actions';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { clubSelectors } from '@/store/club';
@@ -74,6 +78,12 @@ export const ClubsTab = () => {
       profileText: club?.name ?? '',
       subTitle: club?.secondaryText ?? '',
       onActionClick() {
+        appDispatch(
+          getAllClubsDetailsForCoach({
+            userId: user?.id ?? '',
+            clubId: club?.id,
+          })
+        ).unwrap();
         history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', club?.id));
       },
     })) ?? [];

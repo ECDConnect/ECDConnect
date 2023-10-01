@@ -31,6 +31,7 @@ import {
   useSnackbar,
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
+import { pointsThunkActions } from '@/store/points';
 
 export const SubmitIncomeStatementsList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -223,6 +224,15 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           showMessage({
             message: `Statement submitted`,
           });
+          const oneYearAgo = new Date();
+          oneYearAgo.setMonth(currentDate.getMonth() - 12);
+          appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: userAuth?.id!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
+            })
+          );
         }
       });
     }

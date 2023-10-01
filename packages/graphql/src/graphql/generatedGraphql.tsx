@@ -2012,6 +2012,7 @@ export type Coach = {
   __typename?: 'Coach';
   aboutInfo?: Maybe<Scalars['String']>;
   areaOfOperation?: Maybe<Scalars['String']>;
+  clickedClubTab?: Maybe<Scalars['Boolean']>;
   franchisor?: Maybe<Franchisor>;
   franchisorId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
@@ -2034,6 +2035,7 @@ export type CoachFilterInput = {
   aboutInfo?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<CoachFilterInput>>;
   areaOfOperation?: InputMaybe<StringOperationFilterInput>;
+  clickedClubTab?: InputMaybe<BooleanOperationFilterInput>;
   franchisor?: InputMaybe<FranchisorFilterInput>;
   franchisorId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -2056,6 +2058,7 @@ export type CoachFilterInput = {
 export type CoachInput = {
   AboutInfo?: InputMaybe<Scalars['String']>;
   AreaOfOperation?: InputMaybe<Scalars['String']>;
+  ClickedClubTab?: InputMaybe<Scalars['Boolean']>;
   Franchisor?: InputMaybe<FranchisorInput>;
   FranchisorId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -2083,6 +2086,7 @@ export type CoachPractitioner = {
 export type CoachSortInput = {
   aboutInfo?: InputMaybe<SortEnumType>;
   areaOfOperation?: InputMaybe<SortEnumType>;
+  clickedClubTab?: InputMaybe<SortEnumType>;
   franchisor?: InputMaybe<FranchisorSortInput>;
   franchisorId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -2133,6 +2137,15 @@ export type CoachingClub = {
   secondaryText?: Maybe<Scalars['String']>;
   secondaryTextColor?: Maybe<Scalars['String']>;
   totalClubPoints: Scalars['Int'];
+  userId?: Maybe<Scalars['String']>;
+};
+
+export type CoachingClubBase = {
+  __typename?: 'CoachingClubBase';
+  id: Scalars['UUID'];
+  name?: Maybe<Scalars['String']>;
+  secondaryText?: Maybe<Scalars['String']>;
+  secondaryTextColor?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;
 };
 
@@ -4802,6 +4815,7 @@ export type MotherSortInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  acceptNewClubLeaderRole: Scalars['Boolean'];
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
@@ -5240,6 +5254,7 @@ export type Mutation = {
   updateClubSupport?: Maybe<ClubSupport>;
   updateCoach?: Maybe<Coach>;
   updateCoachAboutInfo?: Maybe<Coach>;
+  updateCoachClubClicked: Scalars['Boolean'];
   updateCoachingCircleTopics?: Maybe<CoachingCircleTopics>;
   updateCommunitySectionGG?: Maybe<CommunitySectionGg>;
   updateCommunitySectionItemGG?: Maybe<CommunitySectionItemGg>;
@@ -5370,6 +5385,11 @@ export type Mutation = {
   validateDefaultVisitsForPractitioner: Scalars['Boolean'];
 };
 
+export type MutationAcceptNewClubLeaderRoleArgs = {
+  clubId?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationAddAbsenteeForPractitionerArgs = {
   absentDate: Scalars['DateTime'];
   classProgram?: InputMaybe<Scalars['String']>;
@@ -5481,6 +5501,7 @@ export type MutationAddReAccreditationVisitForPractitionerArgs = {
 
 export type MutationAddReassignmentForPractitionerServiceArgs = {
   classroomGroup?: InputMaybe<Scalars['String']>;
+  endDate?: InputMaybe<Scalars['DateTime']>;
   fromUserId?: InputMaybe<Scalars['String']>;
   loggedByUser?: InputMaybe<Scalars['String']>;
   permanentAssign?: Scalars['Boolean'];
@@ -7365,6 +7386,10 @@ export type MutationUpdateCoachArgs = {
 
 export type MutationUpdateCoachAboutInfoArgs = {
   aboutInfo?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateCoachClubClickedArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -10090,7 +10115,8 @@ export type Query = {
   allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
-  allClubsForCoach?: Maybe<Array<Maybe<CoachingClub>>>;
+  allClubsDetailsForCoach?: Maybe<Array<Maybe<CoachingClub>>>;
+  allClubsForCoach?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allCoachingCircleClubsForCoach?: Maybe<CircleTabClubs>;
   allContentLanguages?: Maybe<Array<Maybe<Language>>>;
@@ -10110,6 +10136,7 @@ export type Query = {
   allPractitionersForPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipals?: Maybe<Array<Maybe<Principal>>>;
+  allRegions?: Maybe<Array<Maybe<Scalars['String']>>>;
   allStatementsBalanceSheet?: Maybe<Array<Maybe<StatementsBalanceSheet>>>;
   allStatementsExpenses?: Maybe<Array<Maybe<StatementsExpenses>>>;
   allStatementsIncome?: Maybe<Array<Maybe<StatementsIncome>>>;
@@ -11747,6 +11774,11 @@ export type QueryAllClassroomsForPractitionerArgs = {
 };
 
 export type QueryAllClassroomsForPrincipalArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllClubsDetailsForCoachArgs = {
+  clubId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 

@@ -40,6 +40,7 @@ namespace ECDLink.Security.Api
             {
                 return BadRequest(ModelState);
             }
+            Console.WriteLine("Login: Username={0}, Referrer={1}, Origin={2}, TenantId={3}", login.Username, HttpContext.Request.Headers.Referer, HttpContext.Request.Headers.Origin, TenantExecutionContext.Tenant.Id);
 
             //exclude funny script attempts
             if ((login?.Password?.StartsWith('<') ?? true)

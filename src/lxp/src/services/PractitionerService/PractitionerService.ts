@@ -434,6 +434,7 @@ class PractitionerService {
             isCompletedBusinessWalkThrough
             isClubLeader
             isClubSupport
+            clubId
           }
         }
       `,

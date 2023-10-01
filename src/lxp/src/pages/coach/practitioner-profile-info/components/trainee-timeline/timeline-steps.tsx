@@ -7,40 +7,6 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 };
 
-const nextStepButtontext = (step: string) => {
-  switch (step) {
-    case 'Fill in the SmartSpace checklist':
-      return 'See checklist';
-    case 'Get community support':
-      return 'Learn more';
-    case 'Register 3 children':
-      return 'Add child';
-    case 'Sign franchisee agreement':
-      return 'Sign';
-    case 'Sign start-up support agreement':
-      return 'Sign';
-    default:
-      return '';
-  }
-};
-
-const nextStepButtonIcon = (step: string) => {
-  switch (step) {
-    case 'Fill in the SmartSpace checklist':
-      return 'ClipboardListIcon';
-    case 'Get community support':
-      return 'InformationCircleIcon';
-    case 'Register 3 children':
-      return 'UserAddIcon';
-    case 'Sign franchisee agreement':
-      return 'PencilAltIcon';
-    case 'Sign start-up support agreement':
-      return 'PencilAltIcon';
-    default:
-      return '';
-  }
-};
-
 export const filterVisit = (visit: Maybe<Visit>) =>
   !visit?.attended && typeof visit?.visitType?.order !== 'undefined';
 
