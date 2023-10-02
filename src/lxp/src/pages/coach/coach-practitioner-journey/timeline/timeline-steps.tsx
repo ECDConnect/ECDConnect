@@ -16,7 +16,6 @@ import {
 } from './utils';
 import { visitTypes } from '../coach-practitioner-journey.types';
 import { CoachCirclesMeeting } from './coach-circles-meetings';
-import { useMemo } from 'react';
 
 export type ScheduleEventType =
   | 'First PQA'
