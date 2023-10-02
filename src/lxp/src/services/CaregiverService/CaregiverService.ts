@@ -51,6 +51,7 @@ class CaregiverService {
               description
             }
             isActive
+            isAllowedCustody
           }
         }        
       `,
@@ -107,6 +108,7 @@ class CaregiverService {
               description
             }
             isActive
+            isAllowedCustody
           }
         }
       `,
