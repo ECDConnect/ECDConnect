@@ -49,11 +49,11 @@ const ROUTES = {
         ADD: '/add',
         EDIT: '/edit',
       }),
-      USER_PROFILE: {
+      USER_PROFILE: addPrefix('/user-profile', {
         COACH: '/coach/:coachId',
         LEADER: '/leader/:leaderId',
         MEMBER: '/member/:practitionerId',
-      },
+      }),
       POINTS: addPrefix('/points', {
         MEET_REGULARLY: addPrefix('/meet-regularly', {
           MEETING_DETAILS: '/:meetingId/meeting-details',

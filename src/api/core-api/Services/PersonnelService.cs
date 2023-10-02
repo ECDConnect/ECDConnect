@@ -834,8 +834,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
             else
             {
-                timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
-                timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                if (smartSpaceLicense.DeclinedDate != null)
+                {
+                    timeline.SmartSpaceLicenseNotAwardedDate = smartSpaceLicense?.DeclinedDate;
+                    timeline.SmartSpaceLicenseNotAwardedSteps = smartSpaceLicense?.DeclinedCommentsSteps;
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                }
+                else
+                {
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                }
             }
 
             // DayOneStartUpTraining

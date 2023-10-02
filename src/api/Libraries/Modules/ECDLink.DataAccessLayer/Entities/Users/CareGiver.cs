@@ -48,6 +48,8 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
 
         public string WhatsAppNumber { get; set; }
 
+        public bool IsAllowedCustody { get; set; }
+
         public virtual ICollection<Grant> Grants { get; set; }
 
         [ForeignKey(nameof(SiteAddressId))]
@@ -71,7 +73,7 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
         [ForeignKey(nameof(LanguageId))]
         public virtual Language Language { get; set; }
         public Guid? LanguageId { get; set; }
-        public Boolean isMother { get; set; }
+        public bool isMother { get; set; }
 
         [NotMapped]
         public virtual ICollection<Infant> Infants { get; set; }

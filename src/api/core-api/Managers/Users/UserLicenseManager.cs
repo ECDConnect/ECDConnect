@@ -84,11 +84,38 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     IsActive = true,
                     CollectedSSHandbook = false,
                     CollectedSSPlaykit = false,
+                    DeclinedDate = null, //if previously declined, clear this detail
+                    DeclinedCommentsSteps = null,
                 };
 
                 return _licenseRepo.Insert(input);
             }
             
+            return null;
+        }
+
+        public License DeclineSmartSpaceLicense(string userId, DateTime dateDeclined, string NextStepsComments)
+        {           
+            License userLicense = GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            if (userLicense == null)
+            {
+                LicenseType licenseType = _licenseTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
+                License input = new License()
+                {
+                    UserId = userId,
+                    LicenseType = licenseType,
+                    InsertedDate = DateTime.UtcNow,
+                    IsActive = true,
+                    CollectedSSHandbook = false,
+                    CollectedSSPlaykit = false,
+                    DeclinedDate = dateDeclined,
+                    DeclinedCommentsSteps = NextStepsComments, 
+                    LicenseDate = dateDeclined
+                };
+
+                return _licenseRepo.Insert(input);
+            }
+
             return null;
         }
 

@@ -5,6 +5,7 @@ import {
   addNewClubLeader,
   addNewClubMembers,
   changeClubName,
+  getAllClubMembersForCoach,
   getAllClubsDetailsForCoach,
   getAllClubsForCoach,
   moveClubMembers,
@@ -81,6 +82,28 @@ const clubSlice = createSlice({
         }
         return club;
       });
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getAllClubMembersForCoach.fulfilled, (state, action) => {
+      const updatedClubs = state.allClubsForCoach?.map((club) => {
+        const matchingPayload = action.payload.find(
+          (payloadItem) => payloadItem.id === club.id
+        );
+
+        if (matchingPayload) {
+          return {
+            ...club,
+            ...matchingPayload,
+          };
+        }
+
+        return club;
+      });
+
+      if (updatedClubs) {
+        state.allClubsForCoach = updatedClubs;
+      }
+
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getAllClubsDetailsForCoach.fulfilled, (state, action) => {

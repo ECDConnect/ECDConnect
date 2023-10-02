@@ -11,7 +11,7 @@ import { useAppDispatch } from '@/store';
 import {
   ClubActions,
   addNewClubMembers,
-  getAllClubsForCoach,
+  getAllClubsDetailsForCoach,
   moveClubMembers,
 } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -56,17 +56,17 @@ export const ClubMembersAdd: React.FC = () => {
     error: errorMoveMembers,
   } = useThunkFetchCall('clubs', ClubActions.MOVE_CLUB_MEMBERS);
   const {
-    isLoading: isLoadingClubs,
-    wasLoading: wasLoadingAllClubs,
-    isRejected: isRejectedGetAllClubs,
-    error: errorGetAllClubs,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_FOR_COACH);
+    isLoading: isLoadingClub,
+    wasLoading: wasLoadingClub,
+    isRejected: isRejectedGetClub,
+    error: errorGetClub,
+  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH);
 
   const isLoading =
-    isLoadingAddMembers || isLoadingMoveMembers || isLoadingClubs;
+    isLoadingAddMembers || isLoadingMoveMembers || isLoadingClub;
   const isRejected =
-    isRejectedAddMembers || isRejectedMoveMembers || isRejectedGetAllClubs;
-  const error = errorAddMembers || errorMoveMembers || errorGetAllClubs;
+    isRejectedAddMembers || isRejectedMoveMembers || isRejectedGetClub;
+  const error = errorAddMembers || errorMoveMembers || errorGetClub;
 
   const isSuccess =
     (selectedMembers.length &&
@@ -119,8 +119,9 @@ export const ClubMembersAdd: React.FC = () => {
       await appDispatch(moveClubMembers({ input: payload }));
     }
 
-    // TODO: change to another endpoint to get only the specific club
-    await appDispatch(getAllClubsForCoach({ userId: user?.id! }));
+    await appDispatch(
+      getAllClubsDetailsForCoach({ userId: user?.id!, clubId })
+    );
   };
 
   const onSuccess = useCallback(async () => {
@@ -148,7 +149,7 @@ export const ClubMembersAdd: React.FC = () => {
   };
 
   useEffect(() => {
-    if (wasLoadingAllClubs && !isLoadingClubs) {
+    if (wasLoadingClub && !isLoadingClub) {
       if (isRejected) {
         showMessage({ message: error, type: 'error' });
       }
@@ -159,12 +160,12 @@ export const ClubMembersAdd: React.FC = () => {
     }
   }, [
     error,
-    isLoadingClubs,
+    isLoadingClub,
     isRejected,
     isSuccess,
     onSuccess,
     showMessage,
-    wasLoadingAllClubs,
+    wasLoadingClub,
   ]);
 
   return (
@@ -196,8 +197,8 @@ export const ClubMembersAdd: React.FC = () => {
         color="primary"
         textColor="white"
         text={isFirstStep ? 'Next' : 'Save'}
-        isLoading={isLoading || isLoadingClubs}
-        disabled={!isEnabledButton || isLoading || isLoadingClubs}
+        isLoading={isLoading || isLoadingClub}
+        disabled={!isEnabledButton || isLoading || isLoadingClub}
         onClick={handleOnClick}
       />
     </BannerWrapper>

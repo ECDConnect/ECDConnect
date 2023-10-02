@@ -20,7 +20,7 @@ import { NewClubLeaderInput } from '@/services/ClubService/types';
 import {
   ClubActions,
   addNewClubLeader,
-  getAllClubsForCoach,
+  getAllClubsDetailsForCoach,
 } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { userSelectors } from '@/store/user';
@@ -57,15 +57,15 @@ export const ClubLeaderEdit: React.FC = () => {
     error: errorAddLeader,
   } = useThunkFetchCall('clubs', ClubActions.ADD_NEW_CLUB_LEADER);
   const {
-    isLoading: isLoadingClubs,
-    wasLoading: wasLoadingAllClubs,
-    isRejected: isRejectedGetAllClubs,
-    error: errorGetAllClubs,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_FOR_COACH);
+    isLoading: isLoadingClub,
+    wasLoading: wasLoadingClub,
+    isRejected: isRejectedGetClub,
+    error: errorGetClub,
+  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH);
 
-  const isLoading = isLoadingAddLeader || isLoadingClubs;
-  const isRejected = isRejectedAddLeader || isRejectedGetAllClubs;
-  const error = errorAddLeader || errorGetAllClubs;
+  const isLoading = isLoadingAddLeader || isLoadingClub;
+  const isRejected = isRejectedAddLeader || isRejectedGetClub;
+  const error = errorAddLeader || errorGetClub;
 
   const history = useHistory();
 
@@ -78,13 +78,13 @@ export const ClubLeaderEdit: React.FC = () => {
     };
 
     await appDispatch(addNewClubLeader(payload));
-
-    // TODO: change to another endpoint to get only the specific club
-    await appDispatch(getAllClubsForCoach({ userId: user?.id! }));
+    await appDispatch(
+      getAllClubsDetailsForCoach({ userId: user?.id!, clubId })
+    );
   };
 
   useEffect(() => {
-    if (wasLoadingAllClubs && !isLoadingClubs) {
+    if (wasLoadingClub && !isLoadingClub) {
       if (isRejected) {
         showMessage({ message: error, type: 'error' });
       }
@@ -100,11 +100,11 @@ export const ClubLeaderEdit: React.FC = () => {
     clubId,
     error,
     history,
-    isLoadingClubs,
+    isLoadingClub,
     isRejected,
     isRejectedAddLeader,
     showMessage,
-    wasLoadingAllClubs,
+    wasLoadingClub,
   ]);
 
   return (

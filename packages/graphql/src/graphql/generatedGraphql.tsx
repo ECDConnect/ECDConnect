@@ -731,6 +731,7 @@ export type Caregiver = {
   infants?: Maybe<Array<Maybe<Infant>>>;
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isAllowedCustody: Scalars['Boolean'];
   isMother: Scalars['Boolean'];
   joinReferencePanel: Scalars['Boolean'];
   language?: Maybe<Language>;
@@ -775,6 +776,7 @@ export type CaregiverFilterInput = {
   infants?: InputMaybe<ListFilterInputTypeOfInfantFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isAllowedCustody?: InputMaybe<BooleanOperationFilterInput>;
   isMother?: InputMaybe<BooleanOperationFilterInput>;
   joinReferencePanel?: InputMaybe<BooleanOperationFilterInput>;
   language?: InputMaybe<LanguageFilterInput>;
@@ -812,6 +814,7 @@ export type CaregiverInput = {
   IdNumber?: InputMaybe<Scalars['String']>;
   Infants?: InputMaybe<Array<InputMaybe<InfantInput>>>;
   IsActive: Scalars['Boolean'];
+  IsAllowedCustody: Scalars['Boolean'];
   JoinReferencePanel: Scalars['Boolean'];
   Language?: InputMaybe<LanguageInput>;
   LanguageId?: InputMaybe<Scalars['UUID']>;
@@ -858,6 +861,7 @@ export type CaregiverSortInput = {
   idNumber?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isAllowedCustody?: InputMaybe<SortEnumType>;
   isMother?: InputMaybe<SortEnumType>;
   joinReferencePanel?: InputMaybe<SortEnumType>;
   language?: InputMaybe<LanguageSortInput>;

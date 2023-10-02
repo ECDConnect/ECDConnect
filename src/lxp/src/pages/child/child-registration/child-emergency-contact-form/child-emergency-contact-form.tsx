@@ -31,26 +31,9 @@ export const ChildEmergencyContactForm: React.FC<
   canEdit = false,
 }) => {
   const [contactAllowedCustody, setContactAllowedCustody] = useState<boolean>();
-  const [displayAllowedCustodian, setDisplayAllowedCustodian] =
-    useState<boolean>(false);
-  const [childDisplayName, setChildDisplayName] = useState<string>('Child');
 
   useEffect(() => {
-    if (childName) {
-      setChildDisplayName(childName);
-    }
-  }, [childName]);
-
-  useEffect(() => {
-    if (contactAllowedCustody !== undefined) {
-      setDisplayAllowedCustodian(!contactAllowedCustody ? true : false);
-    }
-  }, [contactAllowedCustody]);
-
-  useEffect(() => {
-    if (childEmergencyContactForm) {
-      setContactAllowedCustody(childEmergencyContactForm?.isAllowedCustody);
-    }
+    setContactAllowedCustody(!!childEmergencyContactForm?.isAllowedCustody);
   }, [childEmergencyContactForm]);
 
   const {
@@ -115,7 +98,9 @@ export const ChildEmergencyContactForm: React.FC<
         disabled={canEdit}
       />
       <label className={classNames(styles.label, styles.spacer)}>
-        {`Is the emergency contact allowed to pick ${childDisplayName} up in ${
+        {`Is the emergency contact allowed to pick ${
+          childName ?? 'Child'
+        } up in ${
           variation === 'caregiver' ? 'your' : 'the caregiver’s'
         } place?`}
       </label>
@@ -137,7 +122,7 @@ export const ChildEmergencyContactForm: React.FC<
           multiple={false}
         />
       </div>
-      {displayAllowedCustodian && (
+      {!contactAllowedCustody && (
         <div className={'mt-4'}>
           <Typography
             type={'h1'}
