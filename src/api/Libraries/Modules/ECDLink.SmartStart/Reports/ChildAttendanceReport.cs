@@ -70,8 +70,12 @@ namespace ECDLink.SmartStart.Reports
                             var attendance = new List<Tuple<int, int>>();
                             foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                             {
-                                var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
-                               
+                                //var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
+                                var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, learner.UserId)
+                                             && x.ClassroomProgrammeId == programme.Id
+                                             && x.MonthOfYear == dt.Month
+                                             && x.Year == dt.Year);
+
                                 if (daysOfClass.Count() > 0)
                                 {
                                     var attendedClasses = attendanceForPeriod
