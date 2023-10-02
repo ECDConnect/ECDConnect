@@ -41,7 +41,6 @@ export const ClubAdd: React.FC = () => {
   const [step1, setStep1] = useState<Step1Data>();
   const [step2, setStep2] = useState<Member[]>();
   const [step3, setStep3] = useState<Step3Data>();
-  const [newClubId, setNewClubId] = useState('');
 
   const [step, setStep] = useState(0);
   const [isEnabledButton, setIsEnabledButton] = useState(false);
@@ -95,8 +94,6 @@ export const ClubAdd: React.FC = () => {
     const clubId = (response.payload as ClubLeader | undefined)?.id;
 
     if (clubId) {
-      setNewClubId(clubId);
-
       const payloadAddClubLeader: NewClubLeaderInput = {
         clubId,
         practitionerId: step3?.leaderId!,
@@ -104,7 +101,6 @@ export const ClubAdd: React.FC = () => {
 
       await appDispatch(addNewClubLeader(payloadAddClubLeader));
 
-      // TODO: change to another endpoint to get only the specific club
       await appDispatch(getAllClubsForCoach({ userId: user?.id! }));
     }
   };
@@ -127,8 +123,8 @@ export const ClubAdd: React.FC = () => {
 
   const onSuccess = useCallback(() => {
     showMessage({ message: `${step1?.clubName} club added`, type: 'success' });
-    history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', newClubId));
-  }, [history, newClubId, showMessage, step1?.clubName]);
+    history.push(ROUTES.COMMUNITY.ROOT);
+  }, [history, showMessage, step1?.clubName]);
 
   useEffect(() => {
     if (wasLoadingAllClubs && !isLoadingClubs) {

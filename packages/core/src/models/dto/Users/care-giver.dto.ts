@@ -1,6 +1,6 @@
 import { EntityBase } from '../entity-base';
 import { SiteAddressDto } from '../SiteAddress/site-address.dto';
-import { RelationDto, EducationLevelDto, GrantDto } from '../StaticData';
+import { RelationDto, EducationLevelDto } from '../StaticData';
 
 export interface CaregiverDto extends EntityBase {
   phoneNumber: string;
@@ -28,4 +28,5 @@ export interface CaregiverDto extends EntityBase {
   healthCareWorkerId?: string;
   isMother?: boolean;
   isOnline?: boolean;
+  isAllowedCustody?: boolean;
 }

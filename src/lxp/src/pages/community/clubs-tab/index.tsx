@@ -16,6 +16,7 @@ import { useAppDispatch } from '@/store';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ClubActions,
+  getAllClubMembersForCoach,
   getAllClubsDetailsForCoach,
   getAllClubsForCoach,
 } from '@/store/club/club.actions';
@@ -47,10 +48,24 @@ export const ClubsTab = () => {
   const user = useSelector(userSelectors.getUser);
   const clubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
 
-  const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
-    'clubs',
-    ClubActions.GET_ALL_CLUBS_FOR_COACH
-  );
+  const {
+    isLoading: isLoadingGetClubs,
+    wasLoading: wasLoadingGetClubs,
+    isRejected: isRejectedGetClubs,
+    error: errorGetClubs,
+  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_FOR_COACH);
+  const {
+    isLoading: isLoadingClubMembers,
+    wasLoading: wasLoadingClubMembers,
+    isRejected: isRejectedClubMembers,
+    error: errorClubMembers,
+  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUB_MEMBERS_FOR_COACH);
+
+  const isLoading = isLoadingGetClubs || isLoadingClubMembers;
+  const wasLoading = wasLoadingGetClubs || wasLoadingClubMembers;
+  const isRejected = isRejectedGetClubs || isRejectedClubMembers;
+  const error = errorGetClubs || errorClubMembers;
+
   const { showMessage } = useSnackbar();
 
   const filteredList = useMemo(() => {
@@ -93,6 +108,7 @@ export const ClubsTab = () => {
   useEffect(() => {
     if (user?.id && location?.state?.isFromDashboard) {
       appDispatch(getAllClubsForCoach({ userId: user?.id }));
+      appDispatch(getAllClubMembersForCoach({ userId: user?.id }));
     }
   }, [appDispatch, location?.state?.isFromDashboard, user?.id]);
 
