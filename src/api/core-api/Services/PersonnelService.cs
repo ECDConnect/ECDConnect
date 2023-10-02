@@ -838,6 +838,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 {
                     timeline.SmartSpaceLicenseNotAwardedDate = smartSpaceLicense?.DeclinedDate;
                     timeline.SmartSpaceLicenseNotAwardedSteps = smartSpaceLicense?.DeclinedCommentsSteps;
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
                 }
                 else
                 {
