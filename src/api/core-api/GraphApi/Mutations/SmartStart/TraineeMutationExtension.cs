@@ -133,9 +133,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public License DeclineSmartSpaceLicenseForTrainee(
     [Service] UserLicenseManager licenseManager,
     string userId,
-    DateTime dateDeclined, string NextStepsComments)
+    DateTime dateDeclined, string nextStepsComments)
         {
-            return licenseManager.DeclineSmartSpaceLicense(userId, dateDeclined, NextStepsComments);
+            return licenseManager.DeclineSmartSpaceLicense(userId, dateDeclined, nextStepsComments);
         }
 
     }

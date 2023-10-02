@@ -109,7 +109,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                     CollectedSSHandbook = false,
                     CollectedSSPlaykit = false,
                     DeclinedDate = dateDeclined,
-                    DeclinedCommentsSteps = NextStepsComments
+                    DeclinedCommentsSteps = NextStepsComments, 
+                    LicenseDate = dateDeclined
                 };
 
                 return _licenseRepo.Insert(input);
