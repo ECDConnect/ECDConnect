@@ -1,13 +1,6 @@
-import {
-  Visit,
-  Maybe,
-  PractitionerTimeline,
-  ClubMeetingModelInput,
-} from '@ecdlink/graphql';
-import { dateOptions, getStepType, sortVisit } from './timeline-steps';
-import { generalSupportVisitTypes } from '../coach-practitioner-journey.types';
-import { ClipboardCheckIcon, PhoneIcon } from '@heroicons/react/solid';
-import { Button, Typography } from '@ecdlink/ui';
+import { Visit, PractitionerTimeline } from '@ecdlink/graphql';
+import { dateOptions, getStepType } from './timeline-steps';
+import { Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
 
 interface SupportVisitsProps {
