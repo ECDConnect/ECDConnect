@@ -17,10 +17,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Task<bool> AddNewClubMembers([Service] IClubService clubService, NewClubMember input)
+        public bool AddNewClubMembers([Service] IClubService clubService, NewClubMember input)
         {
             return clubService.AddNewClubMembers(input);
-
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]

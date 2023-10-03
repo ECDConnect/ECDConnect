@@ -24,8 +24,8 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public bool IsClubLeader(Guid practitionerId);
         public bool IsClubSupport(Guid practitionerId);
         public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input);
-        Task<ClubLeader> AddNewClubLeader(Guid clubId, Guid practitionerId);
-        public Task<bool> AddNewClubMembers(NewClubMember input);
+        public ClubLeader AddNewClubLeader(Guid clubId, Guid practitionerId);
+        public bool AddNewClubMembers(NewClubMember input);
         public bool MoveClubMembers(NewClubMember input);
         public ClubLeader AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId);
         public Club AddNewClub(NewClubInput input);

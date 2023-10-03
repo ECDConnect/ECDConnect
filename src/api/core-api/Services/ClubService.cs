@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -202,8 +201,23 @@ namespace EcdLink.Api.CoreApi.Services
             return _clubRepo.Update(club);
         }
 
-        public async Task<ClubLeader> AddNewClubLeader(Guid clubId, Guid practitionerId)
+        public ClubLeader AddNewClubLeader(Guid clubId, Guid practitionerId)
         {
+            // The coach can change the next leader before they accept it. 
+
+            // Remove pending leader if available
+            ClubLeader pendingClubLeader = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && 
+                                                                          x.IsActive == true && 
+                                                                          x.DateAssigned.HasValue && 
+                                                                          !x.DateAccepted.HasValue).FirstOrDefault();
+            if (pendingClubLeader != null)
+            {
+                _clubLeaderRepo.Delete(pendingClubLeader.Id);
+            }
+
+            // TODO: Disable pending notification for pending leader
+
+            // Add new leader
             ClubLeader clubLeader = _clubLeaderRepo.Insert(
                 new ClubLeader()
                 {
@@ -217,7 +231,7 @@ namespace EcdLink.Api.CoreApi.Services
                     IsActive = true
                 });
 
-            // Add notification for new club leader assignment
+            // Add new notification for new club leader assignment
             Practitioner practitioner = _practitionerRepo.GetById(practitionerId);
             Club club = _clubRepo.GetById(clubId);
 
@@ -230,8 +244,8 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             };
 
-            var userToSend = await _userManager.FindByIdAsync(practitioner.UserId);
-            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
+            var userToSend = _userManager.FindByIdAsync(practitioner.UserId).Result;
+            _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
 
             // TODO: notifications to members
 
@@ -239,7 +253,7 @@ namespace EcdLink.Api.CoreApi.Services
             return clubLeader;
         }
 
-        public async Task<bool> AddNewClubMembers(NewClubMember input)
+        public bool AddNewClubMembers(NewClubMember input)
         {
             Guid clubId = new Guid(input.ClubId);
 
@@ -260,7 +274,7 @@ namespace EcdLink.Api.CoreApi.Services
                
             }
             _clubMemberRepo.InsertMany(members);
-            await SendNewClubMemberNotifications(clubId, members);
+            SendNewClubMemberNotifications(clubId, members);
 
             return true;
         }
@@ -283,7 +297,7 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        private async Task<bool> SendNewClubMemberNotifications(Guid clubId, List<ClubMember> clubMembers)
+        private bool SendNewClubMemberNotifications(Guid clubId, List<ClubMember> clubMembers)
         {
             // Notifications
             Club club = _clubRepo.GetById(clubId);
@@ -300,8 +314,8 @@ namespace EcdLink.Api.CoreApi.Services
             foreach(ClubMember clubMember in clubMembers)
             {
                 // Add notification to show user is new to club
-                user = await _userManager.FindByIdAsync(clubMember.Practitioner.UserId);
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
+                user = _userManager.FindByIdAsync(clubMember.Practitioner.UserId).Result;
+                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
             }
 
             return true;
