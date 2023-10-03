@@ -21,6 +21,8 @@ export const getStepType = (
 ): { type: StepItem['type']; color?: Colours } => {
   if (!color) return { type: 'todo' };
 
+  console.log({ color });
+
   switch (color.toLowerCase()) {
     case 'success':
       return { type: 'completed' };
@@ -63,13 +65,14 @@ export const setStep = (
   const smartSpaceVisitFromCoach = 'SmartSpace visit from coach';
   const consolidationMeetingScheduled = 'Consolidation meeting scheduled';
   const consolidationMeetingAttended = 'Consolidation meeting attended';
-
+  const licenceNotAwarded = 'SmartSpace Licence not awarded';
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
     status !== smartSpaceLincenceReceveid;
   const notShowButtonRules =
     status === smartSpaceVisitFromCoach ||
+    status === licenceNotAwarded ||
     (stepCompleted &&
       status !== register3Children &&
       status !== register3Children2 &&
@@ -82,6 +85,7 @@ export const setStep = (
       title: status,
       subTitle: getStepDate(date, visitEventId),
       inProgressStepIcon:
+        (status === licenceNotAwarded && 'XIcon') ||
         (status === consolidationMeetingScheduled && 'CalendarIcon') ||
         (status === smartSpaceVisitFromCoach &&
           !!visitEventId &&
@@ -102,24 +106,33 @@ export const setStep = (
         status !== register3Children
           ? true
           : false,
-      actionButtonText: stepCompleted
-        ? 'View'
-        : !!visitEventId
-        ? 'Start'
-        : 'Schedule',
-      actionButtonTextColor: stepCompleted
-        ? 'secondary'
-        : !!visitEventId
-        ? 'white'
-        : 'primary',
-      actionButtonColor: stepCompleted ? 'secondaryAccent2' : 'primary',
-      actionButtonIcon: stepCompleted
-        ? ''
-        : !!visitEventId
-        ? 'ArrowCircleRightIcon'
-        : 'CalendarIcon',
+      actionButtonText:
+        stepCompleted || status === licenceNotAwarded
+          ? 'View'
+          : !!visitEventId
+          ? 'Start'
+          : 'Schedule',
+      actionButtonTextColor:
+        stepCompleted || status === licenceNotAwarded
+          ? 'secondary'
+          : !!visitEventId
+          ? 'white'
+          : 'primary',
+      actionButtonColor:
+        stepCompleted || status === licenceNotAwarded
+          ? 'secondaryAccent2'
+          : 'primary',
+      actionButtonIcon:
+        stepCompleted || status === licenceNotAwarded
+          ? ''
+          : !!visitEventId
+          ? 'ArrowCircleRightIcon'
+          : 'CalendarIcon',
       actionButtonOnClick: onView,
-      actionButtonType: stepCompleted || !!visitEventId ? 'filled' : 'outlined',
+      actionButtonType:
+        stepCompleted || status === licenceNotAwarded || !!visitEventId
+          ? 'filled'
+          : 'outlined',
       actionButtonIconStartPosition:
         stepCompleted || !!visitEventId ? false : true,
       actionButtonClassName: stepCompleted
@@ -200,6 +213,19 @@ export const timelineSteps = (
       nextStep
     )
   );
+
+  if (timeline?.smartSpaceLicenseNotAwardedDate) {
+    steps.push(
+      setStep(
+        'SmartSpace Licence not awarded',
+        timeline?.smartSpaceLicenseNotAwardedDate,
+        'error',
+        () => onView('SmartSpace Licence not awarded'),
+        nextStep
+      )
+    );
+  }
+
   steps.push(
     setStep(
       timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',

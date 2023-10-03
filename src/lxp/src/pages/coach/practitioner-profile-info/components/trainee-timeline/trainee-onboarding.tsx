@@ -65,6 +65,10 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
             options={stepOptions}
           />
         );
+      // case 'SmartSpace Licence not awarded':
+      //   return (
+      //     <Licence
+      //   );
       default:
         return (
           <OnboardingTraineeDashboard
