@@ -14,6 +14,7 @@ import {
 import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as BalloonsImg } from '../../../../../../../assets/balloons.svg';
+import { format } from 'date-fns';
 interface SmartSpaceSummaryProps {
   practitioner: PractitionerDto;
   setNotificationStep: (item: string) => void;
@@ -36,6 +37,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   setNotificationStep,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const visitNotes = useSelector(traineeSelectors.getCoachVisitDataNextSteps);
   const assistantsNumber = useSelector(
     traineeSelectors.getTraineeVisitDataAssitantsNumber
@@ -83,6 +85,31 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   );
 
   const renderLicenceResponseCard = useMemo(() => {
+    const notAwardedDate = new Date(timeline?.smartSpaceLicenseNotAwardedDate);
+    const awardedDate = new Date(timeline?.smartSpaceLicenseDate);
+    if (timeline?.smartSpaceLicenseNotAwardedDate) {
+      return (
+        <Card className="bg-errorBg my-4 flex items-center gap-4 rounded-2xl p-4">
+          <div>
+            <BalloonsImg className="h-16 w-12" />
+          </div>
+          <div>
+            <Typography
+              type="h3"
+              weight="bold"
+              color="errorDark"
+              text={'SmartSpace Licence not awarded'}
+            />
+            <Typography
+              type="body"
+              color="textMid"
+              text={format(notAwardedDate, 'd LLLL yyyy')}
+            />
+          </div>
+        </Card>
+      );
+    }
+
     return (
       <Card className="bg-successBg my-4 flex items-center gap-4 rounded-2xl p-4">
         <div>
@@ -95,11 +122,18 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
             color="successDark"
             text={'SmartSpace Licence awarded'}
           />
-          <Typography type="body" color="textMid" text={'13 Demember 2023'} />
+          <Typography
+            type="body"
+            color="textMid"
+            text={format(awardedDate, 'd LLLL yyyy')}
+          />
         </div>
       </Card>
     );
-  }, []);
+  }, [
+    timeline?.smartSpaceLicenseDate,
+    timeline?.smartSpaceLicenseNotAwardedDate,
+  ]);
 
   const renderStandardsChecklist = useMemo(() => {
     if (programmeNotRunning) {
@@ -109,6 +143,39 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
           color="textMid"
           text={`${practitioner?.user?.firstName}'s programme was not running on the day of the SmartSpace visit.`}
         />
+      );
+    }
+
+    if (visitProgrammeStandardsChecklistTrueAnswers?.length === 14) {
+      return (
+        <div>
+          <div className="flex items-center gap-2">
+            <div
+              className={`text-14 flex h-5 w-12 rounded-full bg-${getGroupColor(
+                visitProgrammeStandardsChecklistTrueAnswers?.length as number
+              )} items-center justify-center font-bold text-white`}
+            >
+              {`${visitProgrammeStandardsChecklistTrueAnswers?.length} / ${visitProgrammeStandardsChecklist?.questions?.length}`}
+            </div>
+            <Typography type="body" color="textDark" text={`standards met`} />
+          </div>
+          <Typography
+            type="body"
+            color="textDark"
+            text={`${practitioner?.user?.firstName}'s programme met all of the SmartStart standards!`}
+            className="mt-4"
+          />
+          {visitProgrammeStandardsChecklistFalseAnswers?.map((item, index) => {
+            return (
+              <Typography
+                type="body"
+                color="textMid"
+                text={`• ${item?.question}`}
+                key={index}
+              />
+            );
+          })}
+        </div>
       );
     }
 
@@ -162,7 +229,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
         `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`
       }
       color={'primary'}
-      onBack={() => () => setNotificationStep('')}
+      onBack={() => setNotificationStep('')}
       displayOffline={!isOnline}
       renderOverflow={true}
       className="h-screen"

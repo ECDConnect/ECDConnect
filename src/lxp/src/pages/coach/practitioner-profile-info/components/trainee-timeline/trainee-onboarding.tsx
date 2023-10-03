@@ -60,20 +60,26 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
         return null;
       case 'SmartSpace visit from coach':
         return (
-          // <SmartSpaceVisit
-          //   onDone={onDone}
-          //   practitioner={practitioner || practitionerState}
-          //   options={stepOptions}
-          // />
+          <SmartSpaceVisit
+            onDone={onDone}
+            practitioner={practitioner || practitionerState}
+            options={stepOptions}
+          />
+        );
+      case 'SmartSpace Licence not awarded':
+        return (
           <SmartSpaceSummary
             practitioner={practitioner || practitionerState}
             setNotificationStep={setNotificationStep}
           />
         );
-      // case 'SmartSpace Licence not awarded':
-      //   return (
-      //     <Licence
-      //   );
+      case 'SmartSpace Licence received':
+        return (
+          <SmartSpaceSummary
+            practitioner={practitioner || practitionerState}
+            setNotificationStep={setNotificationStep}
+          />
+        );
       default:
         return (
           <OnboardingTraineeDashboard
