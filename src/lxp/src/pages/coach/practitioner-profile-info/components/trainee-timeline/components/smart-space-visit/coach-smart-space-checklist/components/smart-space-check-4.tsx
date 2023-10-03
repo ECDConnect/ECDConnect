@@ -4,14 +4,13 @@ import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import {
   Button,
-  Card,
   Colours,
   Divider,
   FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 
 interface SmartSpaceCheck1Props {
