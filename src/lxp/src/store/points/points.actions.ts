@@ -46,9 +46,7 @@ export const getUserPointsSummaryForCoach = createAsyncThunk<
   async ({ userId, startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      practitionerForCoach: {
-        pointsForPractitionerUser: pointsForPractitionerUser,
-      },
+      practitionerForCoach: { pointsForPractitionerUser },
     } = getState();
 
     try {
@@ -58,7 +56,7 @@ export const getUserPointsSummaryForCoach = createAsyncThunk<
       if (!!pointsForPractitionerUser[userId]) {
         const daysSinceLoad = differenceInDays(
           new Date(),
-          pointsForPractitionerUser[userId].dateLoaded
+          new Date(pointsForPractitionerUser[userId].dateLoaded)
         );
 
         if (daysSinceLoad < 1) {
