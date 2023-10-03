@@ -5,7 +5,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using System;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -17,7 +17,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool AddNewClubMembers([Service] IClubService clubService, NewClubMember input)
+        public Task<bool> AddNewClubMembers([Service] IClubService clubService, NewClubMember input)
         {
             return clubService.AddNewClubMembers(input);
 

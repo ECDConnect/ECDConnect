@@ -42,7 +42,6 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly string _applicationUserId;
 
-
         INotificationService _notificationService;
         UserManager<ApplicationUser> _userManager;
 
@@ -82,7 +81,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 Id = Guid.NewGuid(),
                 IsActive = true,
-                InsertedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
                 UpdatedBy = _applicationUserId,
                 MeetingDate = input.MeetingDate,
                 Name = input.Name,
@@ -98,7 +97,7 @@ namespace EcdLink.Api.CoreApi.Services
                 participants.Add(new ClubMeetingRegister {
                     Id = Guid.NewGuid(),
                     IsActive = true,
-                    InsertedDate = DateTime.UtcNow,
+                    InsertedDate = DateTime.Now,
                     UpdatedBy = _applicationUserId,
                     PractitionerId = participant.PractitionerId,
                     Attended = participant.Attended,
@@ -193,8 +192,6 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 x.MeetingDate.Value.Month == date.Month &&
                                                                 x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting &&
                                                                 x.ClubMeetingRegister.Count > 0).Count();
-
-
             return totalRegister > 0;
         }
 
@@ -213,10 +210,10 @@ namespace EcdLink.Api.CoreApi.Services
                     Id = Guid.NewGuid(),
                     ClubId = clubId,
                     PractitionerId = practitionerId,
-                    InsertedDate = DateTime.UtcNow,
-                    UpdatedDate = DateTime.UtcNow,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
                     UpdatedBy = _applicationUserId,
-                    DateAssigned = DateTime.UtcNow,
+                    DateAssigned = DateTime.Now,
                     IsActive = true
                 });
 
@@ -234,14 +231,18 @@ namespace EcdLink.Api.CoreApi.Services
             };
 
             var userToSend = await _userManager.FindByIdAsync(practitioner.UserId);
-            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(31));
+            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
 
             // TODO: notifications to members
+
+
             return clubLeader;
         }
 
-        public bool AddNewClubMembers(NewClubMember input)
+        public async Task<bool> AddNewClubMembers(NewClubMember input)
         {
+            Guid clubId = new Guid(input.ClubId);
+
             List<ClubMember> members = new List<ClubMember>();
             foreach (var Id in input.PractitionerIds)
             {
@@ -249,17 +250,18 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     Id = Guid.NewGuid(),
                     IsActive = true,
-                    InsertedDate = DateTime.UtcNow,
-                    DateClubJoined = DateTime.UtcNow,
+                    InsertedDate = DateTime.Now,
+                    DateClubJoined = DateTime.Now,
                     UpdatedBy = _applicationUserId,
                     PractitionerId = new Guid(Id),
-                    ClubId = new Guid(input.ClubId),
+                    ClubId = clubId,
                     IsNewInClub = true
                 });
+               
             }
             _clubMemberRepo.InsertMany(members);
+            await SendNewClubMemberNotifications(clubId, members);
 
-            // TODO: Add notification
             return true;
         }
 
@@ -272,12 +274,36 @@ namespace EcdLink.Api.CoreApi.Services
                 clubMember.IsNewInClub = true;
                 clubMember.ClubId = new Guid(input.ClubId);
                 clubMember.UpdatedBy = _applicationUserId;
-                clubMember.UpdatedDate = DateTime.UtcNow;
-                clubMember.DateClubJoined = DateTime.UtcNow;
+                clubMember.UpdatedDate = DateTime.Now;
+                clubMember.DateClubJoined = DateTime.Now;
                 _clubMemberRepo.Update(clubMember);
             }
 
             // TODO: Add notification
+            return true;
+        }
+
+        private async Task<bool> SendNewClubMemberNotifications(Guid clubId, List<ClubMember> clubMembers)
+        {
+            // Notifications
+            Club club = _clubRepo.GetById(clubId);
+            ApplicationUser user = null;
+            List<TagsReplacements> replacements = new List<TagsReplacements>
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "ClubName",
+                    ReplacementValue = club.Name
+                }
+            };
+
+            foreach(ClubMember clubMember in clubMembers)
+            {
+                // Add notification to show user is new to club
+                user = await _userManager.FindByIdAsync(clubMember.Practitioner.UserId);
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
+            }
+
             return true;
         }
 
@@ -294,7 +320,6 @@ namespace EcdLink.Api.CoreApi.Services
                 newClubLeader.UpdatedDate = DateTime.Now;
                 newClubLeader.UpdatedBy = _applicationUserId;
                 _clubLeaderRepo.Update(newClubLeader);
-
             }
 
             // Archive other club leader
@@ -319,8 +344,8 @@ namespace EcdLink.Api.CoreApi.Services
                 Id = Guid.NewGuid(),
                 Name = input.Name,
                 UserId = input.UserId,
-                InsertedDate = DateTime.UtcNow,
-                UpdatedDate = DateTime.UtcNow,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
                 UpdatedBy = _applicationUserId,
                 IsActive = true
             };
@@ -335,13 +360,13 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         Id = Guid.NewGuid(),
                         IsActive = true,
-                        InsertedDate = DateTime.UtcNow,
-                        UpdatedDate = DateTime.UtcNow,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
                         UpdatedBy = _applicationUserId,
                         ClubId = club.Id,
                         PractitionerId = new Guid(Id),
                         IsNewInClub = true,
-                        DateClubJoined = DateTime.UtcNow
+                        DateClubJoined = DateTime.Now
                     });
                 }
                 _clubMemberRepo.InsertMany(newMembers);
@@ -356,8 +381,8 @@ namespace EcdLink.Api.CoreApi.Services
 
                     clubMember.IsNewInClub = true;
                     clubMember.ClubId = club.Id;
-                    clubMember.DateClubJoined = DateTime.UtcNow;
-                    clubMember.UpdatedDate = DateTime.UtcNow;
+                    clubMember.DateClubJoined = DateTime.Now;
+                    clubMember.UpdatedDate = DateTime.Now;
                     clubMember.UpdatedBy = _applicationUserId;
                     _clubMemberRepo.Update(clubMember);
                 }
@@ -417,7 +442,9 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var secondaryText = "";
             var secondaryTextColor = "";
-            DateTime today = DateTime.UtcNow;
+            var secondaryTextPriority = 0;
+            var secondaryTextInformation = "";
+            DateTime today = DateTime.Now;
             DateTime prevMonth = today.AddMonths(-1);
 
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
@@ -439,6 +466,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.club_not_in_league;
                     secondaryTextColor = MetricsColorEnum.None.ToString();
+                    secondaryTextPriority = 16;
                 }
 
                 // Priority 15 - Purple club->show if the club is a ""purple club""(acc.to SmartLink)
@@ -446,10 +474,12 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.club_purple;
                     secondaryTextColor = MetricsColorEnum.None.ToString();
+                    secondaryTextPriority = 15;
                 }
 
                 // Priority 14 - Top of the league! ->show this if the club has position #1 in the league they are in.
                 // TODO: C1 next phase development for points engine
+                // secondaryTextPriority = 14;
 
                 // Priority 13 - X % club attendance in Nov(green)->show if the club's meeting attendance was 80% or more in the previous month;
                 // X = the attendance % for the previous month; Nov = the previous month
@@ -457,11 +487,14 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = clubAttendance + Constants.ClubSettings.club_attendance + prevMonth.Month;
                     secondaryTextColor = MetricsColorEnum.Success.ToString();
+                    secondaryTextPriority = 13;
+                    secondaryTextInformation = clubAttendance.ToString();
                 }
 
                 // Priority 12 - X points earned in Nov(green)->show if the club earned 80 % or more of the monthly max points for the club (see club points tab for detail) ;
                 // X = the number of points earned in the previous month; and Nov = the previous month(ONLY show for clubs that are currently in a league)
                 // TODO: C1 next phase development for points engine
+                // secondaryTextPriority = 12;
 
                 // Priority 11 - New club -> show if the club was created within the past 3 months
                 DateTime clubAge = club.InsertedDate.AddMonths(3);
@@ -469,6 +502,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.new_club;
                     secondaryTextColor = MetricsColorEnum.Success.ToString();
+                    secondaryTextPriority = 11;
                 }
 
                 // Priority 10 - X % club attendance in Nov(amber)->show if the club's meeting attendance was 60 to 79%, inclusive in the previous month;
@@ -477,20 +511,25 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = clubAttendance + Constants.ClubSettings.club_attendance + prevMonth.Month;
                     secondaryTextColor = MetricsColorEnum.Warning.ToString();
+                    secondaryTextPriority = 10;
+                    secondaryTextInformation = clubAttendance.ToString();
                 }
 
                 // Priority 9 - X points earned in Nov(amber)->show if the club earned less than 80 % of the max points for the club (see club points tab for detail) ;
                 // X = the number of points earned in the previous month; and Nov = the previous month(ONLY show for clubs that are currently in a league)
                 // TODO: C1 next phase development for points engine
+                // secondaryTextPriority = 9;
 
                 // Priority 8 - 2 Jan, Attend club meeting->show if the coach has not attended a club meeting for the club in 3 months(we can pull attendance information from the calendar if/ when available)
                 // (using information from Funda App only; NOT SmartLink)
                 // TODO: After C3 development
+                // secondaryTextPriority = 8;
 
                 // Priority 7 - 30 Jan, Attend first club meeting -> show if there is an upcoming first club meeting is scheduled in Funda App for sometime within the next 30 day;
                 // show if there has never previously been a club meeting hosted by this club; 30 Jan = the date the first meeting is scheduled for (is this possible ?
                 // we can restrict this only to clubs that were created within Funda App; if the club was created and a meeting was scheduled for a future date; then this secondary text becomes relevant)
                 // TODO: After C3 development
+                // secondaryTextPriority = 7;
 
                 // Priority 6 - X % club attendance in Nov(red)->show if the club's meeting attendance was less than 60% in the previous month
                 // where X = if the previous month's the percentage of practitioners in the club who attended the meeting in the month; Nov = the previous month
@@ -498,6 +537,8 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = clubAttendance + Constants.ClubSettings.club_attendance + prevMonth.Month;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 6;
+                    secondaryTextInformation = clubAttendance.ToString();
                 }
 
                 // Priority 5 - Missing club meeting register->attendance register was not submitted for the previous month
@@ -505,6 +546,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.missing_register;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 5;
                 }
 
                 // Priority 4 - Choose a new club leader->If a practitioner has been a club leader of the club for more than 6 months
@@ -515,6 +557,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         secondaryText = Constants.ClubSettings.choose_club_leader;
                         secondaryTextColor = MetricsColorEnum.Error.ToString();
+                        secondaryTextPriority = 4;
                     }
                 }
                 // Priority 3 - Too many club members -> show if there are more than 17 practitioners in the club(counting all practitioners in the club; NOT counting the coach)
@@ -522,18 +565,24 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.too_many_club_members;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 3;
+                    secondaryTextInformation = members.Count.ToString();
                 }
                 // Priority 2 - Not enough club members->show if there are less than 4 practitioners in the club(counting all practitioners in the club; NOT counting the coach)
                 if (members.Count <= 4)
                 {
                     secondaryText = Constants.ClubSettings.not_enough_club_members;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 2;
+                    secondaryTextInformation = members.Count.ToString();
                 }
                 // Priority 1 - No club leader->IF the club does not have a club leader assigned
                 if (activeClubLeader == null)
                 {
                     secondaryText = Constants.ClubSettings.no_club_leader;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 1;
+                    secondaryTextInformation = members.Count.ToString();
                 }
 
                 result.Add(
@@ -543,7 +592,9 @@ namespace EcdLink.Api.CoreApi.Services
                         Name = club.Name,
                         UserId = club.UserId,
                         SecondaryText = secondaryText,
-                        SecondaryTextColor = secondaryTextColor
+                        SecondaryTextColor = secondaryTextColor,
+                        SecondaryTextPriority = secondaryTextPriority,
+                        SecondaryTextInformation = secondaryTextInformation
                     }
                 );
             }
@@ -555,10 +606,12 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var secondaryText = "";
             var secondaryTextColor = "";
+            var secondaryTextPriority = 0;
+            var secondaryTextInformation = "";
             int maxClubPoints = 2000;
             int totalClubPoints = 0;
             string leaguePosition = ""; // this is coming from SL integration - column missing on club at the moment
-            DateTime today = DateTime.UtcNow;
+            DateTime today = DateTime.Now;
             DateTime prevMonth = today.AddMonths(-1);
 
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
@@ -571,10 +624,10 @@ namespace EcdLink.Api.CoreApi.Services
                 List<ClubMember> members = GetClubMembers(club.Id);
                 double clubAttendance = GetClubAttendanceForMonth(club.Id, prevMonth);
                 bool hasAttendanceRegister = HasAttendanceRegisterForMonth(club.Id, prevMonth);
-                List <ClubLeader> clubLeaders = GetLeadersForClub(club.Id); // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
+                List<ClubLeader> clubLeaders = GetLeadersForClub(club.Id); // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
                 ClubSupport clubSupport = GetSupportForClub(club.Id);
-                Coach coach = GetCoachForClub(club.UserId); 
-                
+                Coach coach = GetCoachForClub(club.UserId);
+
                 ClubLeader activeClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
 
                 // Secondary Text in Priority Desc Order
@@ -586,6 +639,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.club_not_in_league;
                     secondaryTextColor = MetricsColorEnum.None.ToString();
+                    secondaryTextPriority = 16;
                 }
 
                 // Priority 15 - Purple club->show if the club is a ""purple club""(acc.to SmartLink)
@@ -594,10 +648,12 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.club_purple;
                     secondaryTextColor = MetricsColorEnum.None.ToString();
                     maxClubPoints = 2200;
+                    secondaryTextPriority = 15;
                 }
 
                 // Priority 14 - Top of the league! ->show this if the club has position #1 in the league they are in.
                 // TODO: C1 next phase development for points engine
+                // secondaryTextPriority = 14;
 
                 // Priority 13 - X % club attendance in Nov(green)->show if the club's meeting attendance was 80% or more in the previous month;
                 // X = the attendance % for the previous month; Nov = the previous month
@@ -605,11 +661,14 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = clubAttendance + Constants.ClubSettings.club_attendance + prevMonth.Month;
                     secondaryTextColor = MetricsColorEnum.Success.ToString();
+                    secondaryTextPriority = 13;
+                    secondaryTextInformation = clubAttendance.ToString();
                 }
 
                 // Priority 12 - X points earned in Nov(green)->show if the club earned 80 % or more of the monthly max points for the club (see club points tab for detail) ;
                 // X = the number of points earned in the previous month; and Nov = the previous month(ONLY show for clubs that are currently in a league)
                 // TODO: C1 next phase development for points engine
+                // secondaryTextPriority = 12;
 
                 // Priority 11 - New club -> show if the club was created within the past 3 months
                 DateTime clubAge = club.InsertedDate.AddMonths(3);
@@ -617,6 +676,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.new_club;
                     secondaryTextColor = MetricsColorEnum.Success.ToString();
+                    secondaryTextPriority = 11;
                 }
 
                 // Priority 10 - X % club attendance in Nov(amber)->show if the club's meeting attendance was 60 to 79%, inclusive in the previous month;
@@ -625,20 +685,25 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = clubAttendance + Constants.ClubSettings.club_attendance + prevMonth.Month;
                     secondaryTextColor = MetricsColorEnum.Warning.ToString();
+                    secondaryTextPriority = 10;
+                    secondaryTextInformation = clubAttendance.ToString();
                 }
 
                 // Priority 9 - X points earned in Nov(amber)->show if the club earned less than 80 % of the max points for the club (see club points tab for detail) ;
                 // X = the number of points earned in the previous month; and Nov = the previous month(ONLY show for clubs that are currently in a league)
                 // TODO: C1 next phase development for points engine
+                // secondaryTextPriority = 9;
 
                 // Priority 8 - 2 Jan, Attend club meeting->show if the coach has not attended a club meeting for the club in 3 months(we can pull attendance information from the calendar if/ when available)
                 // (using information from Funda App only; NOT SmartLink)
                 // TODO: After C3 development
+                // secondaryTextPriority = 8;
 
                 // Priority 7 - 30 Jan, Attend first club meeting -> show if there is an upcoming first club meeting is scheduled in Funda App for sometime within the next 30 day;
                 // show if there has never previously been a club meeting hosted by this club; 30 Jan = the date the first meeting is scheduled for (is this possible ?
                 // we can restrict this only to clubs that were created within Funda App; if the club was created and a meeting was scheduled for a future date; then this secondary text becomes relevant)
                 // TODO: After C3 development
+                // secondaryTextPriority = 7;
 
                 // Priority 6 - X % club attendance in Nov(red)->show if the club's meeting attendance was less than 60% in the previous month
                 // where X = if the previous month's the percentage of practitioners in the club who attended the meeting in the month; Nov = the previous month
@@ -646,6 +711,8 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = clubAttendance + Constants.ClubSettings.club_attendance + prevMonth.Month;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 6;
+                    secondaryTextInformation = clubAttendance.ToString();
                 }
 
                 // Priority 5 - Missing club meeting register->attendance register was not submitted for the previous month
@@ -653,6 +720,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.missing_register;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 5;
                 }
 
                 // Priority 4 - Choose a new club leader->If a practitioner has been a club leader of the club for more than 6 months
@@ -663,6 +731,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         secondaryText = Constants.ClubSettings.choose_club_leader;
                         secondaryTextColor = MetricsColorEnum.Error.ToString();
+                        secondaryTextPriority = 4;
                     }
                 }
                 // Priority 3 - Too many club members -> show if there are more than 17 practitioners in the club(counting all practitioners in the club; NOT counting the coach)
@@ -670,18 +739,23 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.too_many_club_members;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 3;
+                    secondaryTextInformation = members.Count.ToString();
                 }
                 // Priority 2 - Not enough club members->show if there are less than 4 practitioners in the club(counting all practitioners in the club; NOT counting the coach)
                 if (members.Count <= 4)
                 {
                     secondaryText = Constants.ClubSettings.not_enough_club_members;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 2;
+                    secondaryTextInformation = members.Count.ToString();
                 }
                 // Priority 1 - No club leader->IF the club does not have a club leader assigned
                 if (activeClubLeader == null)
                 {
                     secondaryText = Constants.ClubSettings.no_club_leader;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryTextPriority = 1;
                 }
 
                 List<ClubMeeting> clubMeetings = new List<ClubMeeting>();
@@ -702,7 +776,10 @@ namespace EcdLink.Api.CoreApi.Services
                         UserId = club.UserId,
                         SecondaryText = secondaryText,
                         SecondaryTextColor = secondaryTextColor,
-                        ClubLeaders = clubLeaders,
+                        SecondaryTextPriority = secondaryTextPriority,
+                        SecondaryTextInformation = secondaryTextInformation,
+                        CurrentClubLeader = clubLeaders.Where(x => x.IsActive == true).FirstOrDefault(),
+                        NewClubLeader = clubLeaders.Where(x => x.IsActive == false).FirstOrDefault(),
                         ClubSupport = clubSupport,
                         ClubMembers = members,
                         Coach = coach,
@@ -711,7 +788,7 @@ namespace EcdLink.Api.CoreApi.Services
                         TotalClubPoints = totalClubPoints,
                         LeaguePosition = leaguePosition,
                         ClubMeetings = clubMeetings,
-                        ClubActivities = clubActivities                        
+                        ClubActivities = clubActivities
                     }
                 );
             }
@@ -719,6 +796,19 @@ namespace EcdLink.Api.CoreApi.Services
             return result;
         }
 
+        public bool RemoveClubLeader(Guid clubId, Guid practitionerId)
+        {
+            ClubLeader clubLeader = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.PractitionerId == practitionerId).FirstOrDefault();
+            if (clubLeader != null)
+            {
+                clubLeader.IsActive = false;
+                clubLeader.DateAccepted = null;
+                clubLeader.DateAssigned = null;
+                _clubLeaderRepo.Update( clubLeader );
+                return true;
+            }
+            return false;
+        }
 
     }
 }
