@@ -214,7 +214,9 @@ export const timelineSteps = ({
     const coachingCirclesAttendedMeetings =
       timeline?.coachCircles?.totalPresent;
     const coachingCirclesTotalMeetings = timeline?.coachCircles?.totalMeetings;
-    const attendanceDate = timeline?.coachCircles?.attendanceText;
+    const lastMeetingattendanceDate = timeline?.coachCircles?.attendanceText
+      ? new Date(timeline?.coachCircles?.attendanceText)
+      : new Date();
     const attendanceColor =
       timeline?.coachCircles?.attendanceColor || 'Success';
     const attendanceColorType =
@@ -240,7 +242,10 @@ export const timelineSteps = ({
     ).toLocaleDateString('en-ZA', dateOptions);
     steps.push({
       title: `${coachingCirclesAttendedMeetings}/${coachingCirclesTotalMeetings} coaching circles attended`,
-      subTitle: attendanceDate,
+      subTitle: `${new Date(lastMeetingattendanceDate).toLocaleDateString(
+        'en-ZA',
+        dateOptions
+      )}`,
       type: attendanceColorType,
       extraData: {
         date: new Date(date),
