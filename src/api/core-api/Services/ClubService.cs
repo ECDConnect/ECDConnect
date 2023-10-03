@@ -467,6 +467,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.club_not_in_league;
                     secondaryTextColor = MetricsColorEnum.None.ToString();
                     secondaryTextPriority = 16;
+                    secondaryTextInformation = "";
                 }
 
                 // Priority 15 - Purple club->show if the club is a ""purple club""(acc.to SmartLink)
@@ -475,6 +476,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.club_purple;
                     secondaryTextColor = MetricsColorEnum.None.ToString();
                     secondaryTextPriority = 15;
+                    secondaryTextInformation = "";
                 }
 
                 // Priority 14 - Top of the league! ->show this if the club has position #1 in the league they are in.
@@ -503,6 +505,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.new_club;
                     secondaryTextColor = MetricsColorEnum.Success.ToString();
                     secondaryTextPriority = 11;
+                    secondaryTextInformation = "";
                 }
 
                 // Priority 10 - X % club attendance in Nov(amber)->show if the club's meeting attendance was 60 to 79%, inclusive in the previous month;
@@ -547,6 +550,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.missing_register;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
                     secondaryTextPriority = 5;
+                    secondaryTextInformation = "";
                 }
 
                 // Priority 4 - Choose a new club leader->If a practitioner has been a club leader of the club for more than 6 months
@@ -558,6 +562,7 @@ namespace EcdLink.Api.CoreApi.Services
                         secondaryText = Constants.ClubSettings.choose_club_leader;
                         secondaryTextColor = MetricsColorEnum.Error.ToString();
                         secondaryTextPriority = 4;
+                        secondaryTextInformation = "";
                     }
                 }
                 // Priority 3 - Too many club members -> show if there are more than 17 practitioners in the club(counting all practitioners in the club; NOT counting the coach)
@@ -582,7 +587,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.no_club_leader;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
                     secondaryTextPriority = 1;
-                    secondaryTextInformation = members.Count.ToString();
+                    secondaryTextInformation = "";
                 }
 
                 result.Add(
@@ -640,6 +645,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.club_not_in_league;
                     secondaryTextColor = MetricsColorEnum.None.ToString();
                     secondaryTextPriority = 16;
+                    secondaryTextInformation = "";
                 }
 
                 // Priority 15 - Purple club->show if the club is a ""purple club""(acc.to SmartLink)
@@ -649,6 +655,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryTextColor = MetricsColorEnum.None.ToString();
                     maxClubPoints = 2200;
                     secondaryTextPriority = 15;
+                    secondaryTextInformation = "";
                 }
 
                 // Priority 14 - Top of the league! ->show this if the club has position #1 in the league they are in.
@@ -677,6 +684,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.new_club;
                     secondaryTextColor = MetricsColorEnum.Success.ToString();
                     secondaryTextPriority = 11;
+                    secondaryTextInformation = "";
                 }
 
                 // Priority 10 - X % club attendance in Nov(amber)->show if the club's meeting attendance was 60 to 79%, inclusive in the previous month;
@@ -721,6 +729,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.missing_register;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
                     secondaryTextPriority = 5;
+                    secondaryTextInformation = "";
                 }
 
                 // Priority 4 - Choose a new club leader->If a practitioner has been a club leader of the club for more than 6 months
@@ -732,6 +741,7 @@ namespace EcdLink.Api.CoreApi.Services
                         secondaryText = Constants.ClubSettings.choose_club_leader;
                         secondaryTextColor = MetricsColorEnum.Error.ToString();
                         secondaryTextPriority = 4;
+                        secondaryTextInformation = "";
                     }
                 }
                 // Priority 3 - Too many club members -> show if there are more than 17 practitioners in the club(counting all practitioners in the club; NOT counting the coach)
@@ -756,6 +766,7 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryText = Constants.ClubSettings.no_club_leader;
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
                     secondaryTextPriority = 1;
+                    secondaryTextInformation = "";
                 }
 
                 List<ClubMeeting> clubMeetings = new List<ClubMeeting>();
