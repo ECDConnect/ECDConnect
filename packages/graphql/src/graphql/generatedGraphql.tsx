@@ -4151,6 +4151,8 @@ export type License = {
   __typename?: 'License';
   collectedSSHandbook?: Maybe<Scalars['Boolean']>;
   collectedSSPlaykit?: Maybe<Scalars['Boolean']>;
+  declinedCommentsSteps?: Maybe<Scalars['String']>;
+  declinedDate?: Maybe<Scalars['DateTime']>;
   delicensedComment?: Maybe<Scalars['String']>;
   delicensedDate?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
@@ -4169,6 +4171,8 @@ export type LicenseFilterInput = {
   and?: InputMaybe<Array<LicenseFilterInput>>;
   collectedSSHandbook?: InputMaybe<BooleanOperationFilterInput>;
   collectedSSPlaykit?: InputMaybe<BooleanOperationFilterInput>;
+  declinedCommentsSteps?: InputMaybe<StringOperationFilterInput>;
+  declinedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   delicensedComment?: InputMaybe<StringOperationFilterInput>;
   delicensedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -4187,6 +4191,8 @@ export type LicenseFilterInput = {
 export type LicenseInput = {
   CollectedSSHandbook?: InputMaybe<Scalars['Boolean']>;
   CollectedSSPlaykit?: InputMaybe<Scalars['Boolean']>;
+  DeclinedCommentsSteps?: InputMaybe<Scalars['String']>;
+  DeclinedDate?: InputMaybe<Scalars['DateTime']>;
   DelicensedComment?: InputMaybe<Scalars['String']>;
   DelicensedDate?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -4210,6 +4216,8 @@ export type LicenseModelInput = {
 export type LicenseSortInput = {
   collectedSSHandbook?: InputMaybe<SortEnumType>;
   collectedSSPlaykit?: InputMaybe<SortEnumType>;
+  declinedCommentsSteps?: InputMaybe<SortEnumType>;
+  declinedDate?: InputMaybe<SortEnumType>;
   delicensedComment?: InputMaybe<SortEnumType>;
   delicensedDate?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -4984,6 +4992,7 @@ export type Mutation = {
   createWorkflowStatus?: Maybe<WorkflowStatus>;
   createWorkflowStatusType?: Maybe<WorkflowStatusType>;
   deActivatePractitioner: Scalars['Boolean'];
+  declineSmartSpaceLicenseForTrainee?: Maybe<License>;
   deleteAbsentees?: Maybe<Scalars['Boolean']>;
   deleteActivity?: Maybe<Scalars['Boolean']>;
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
@@ -6113,6 +6122,12 @@ export type MutationDeActivatePractitionerArgs = {
   leavingComment?: InputMaybe<Scalars['String']>;
   reasonDetails?: InputMaybe<Scalars['String']>;
   reasonForPractitionerLeavingId?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationDeclineSmartSpaceLicenseForTraineeArgs = {
+  dateDeclined: Scalars['DateTime'];
+  nextStepsComments?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -14687,6 +14702,8 @@ export type TraineeOnBoardTimeline = {
   smartSpaceChecklistStatus?: Maybe<Scalars['String']>;
   smartSpaceLicenseColor?: Maybe<Scalars['String']>;
   smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
+  smartSpaceLicenseNotAwardedDate?: Maybe<Scalars['DateTime']>;
+  smartSpaceLicenseNotAwardedSteps?: Maybe<Scalars['String']>;
   smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
   startUpSupportAmount?: Maybe<Scalars['Float']>;
   startUpSupportEndDate?: Maybe<Scalars['DateTime']>;

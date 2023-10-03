@@ -6,7 +6,7 @@ export interface PractitionerForCoachState {
   practitionersForCoach?: PractitionerDto[];
   pointsForPractitionerUser: {
     [userId: string]: {
-      dateLoaded: Date;
+      dateLoaded: string;
       pointsSummaries: PointsUserSummary[];
     };
   };

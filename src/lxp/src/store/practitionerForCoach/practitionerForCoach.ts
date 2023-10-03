@@ -22,6 +22,7 @@ const practitionerForCoachSlice = createSlice({
     resetPractitionerState: (state) => {
       state.practitionerForCoach = initialState.practitionerForCoach;
       state.practitionersForCoach = initialState.practitionersForCoach;
+      state.pointsForPractitionerUser = initialState.pointsForPractitionerUser;
     },
     updatePractitioner: (state, action: PayloadAction<PractitionerDto>) => {
       if (state.practitionerForCoach) {
@@ -49,7 +50,7 @@ const practitionerForCoachSlice = createSlice({
       state.pointsForPractitionerUser = {
         ...state.pointsForPractitionerUser,
         [action.meta.arg.userId]: {
-          dateLoaded: new Date(),
+          dateLoaded: new Date().toISOString(),
           pointsSummaries: action.payload,
         },
       };
