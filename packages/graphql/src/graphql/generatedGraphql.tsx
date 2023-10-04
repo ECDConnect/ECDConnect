@@ -2149,6 +2149,7 @@ export type CoachingClub = {
   newClubLeader?: Maybe<ClubLeader>;
   secondaryText?: Maybe<Scalars['String']>;
   secondaryTextColor?: Maybe<Scalars['String']>;
+  secondaryTextInformation?: Maybe<Scalars['String']>;
   secondaryTextPriority: Scalars['Int'];
   totalClubPoints: Scalars['Int'];
   userId?: Maybe<Scalars['String']>;
@@ -2157,12 +2158,10 @@ export type CoachingClub = {
 export type CoachingClubBase = {
   __typename?: 'CoachingClubBase';
   id: Scalars['UUID'];
-  meetingAttendance: Scalars['Float'];
-  meetingAttendanceColor?: Maybe<Scalars['String']>;
-  meetingAttendanceText?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   secondaryText?: Maybe<Scalars['String']>;
   secondaryTextColor?: Maybe<Scalars['String']>;
+  secondaryTextInformation?: Maybe<Scalars['String']>;
   secondaryTextPriority: Scalars['Int'];
   userId?: Maybe<Scalars['String']>;
 };
@@ -5350,6 +5349,7 @@ export type Mutation = {
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<ClassroomGroup>;
   updatePractitionerUsePhotoInReport?: Maybe<Scalars['String']>;
+  updatePreschoolFeeForClassroom: Scalars['Boolean'];
   updatePrincipal?: Maybe<Principal>;
   updatePrincipalInvitation?: Maybe<PrincipalInvitationStatus>;
   updateProgramme?: Maybe<Programme>;
@@ -7790,6 +7790,11 @@ export type MutationUpdatePractitionerUsePhotoInReportArgs = {
   usePhotoInReport?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationUpdatePreschoolFeeForClassroomArgs = {
+  amount?: InputMaybe<Scalars['Float']>;
+  classroomId: Scalars['UUID'];
+};
+
 export type MutationUpdatePrincipalArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PrincipalInput>;
@@ -8185,7 +8190,7 @@ export type NewClubInput = {
 };
 
 export type NewClubMemberInput = {
-  clubId: Scalars['UUID'];
+  clubId?: InputMaybe<Scalars['String']>;
   practitionerIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
