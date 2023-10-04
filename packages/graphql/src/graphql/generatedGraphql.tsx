@@ -5129,6 +5129,7 @@ export type Mutation = {
   disableNotification: Scalars['Boolean'];
   editVisitData: Scalars['Boolean'];
   expireNotification: Scalars['Boolean'];
+  expireNotificationsTypesForUser: Scalars['Boolean'];
   expireRelationshipLinksService: Scalars['Boolean'];
   fileUpload?: Maybe<DocumentModel>;
   gGBottom75PercPointsTeam: Scalars['Boolean'];
@@ -6710,6 +6711,11 @@ export type MutationExpireNotificationArgs = {
   notificationId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationExpireNotificationsTypesForUserArgs = {
+  templateType?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationFileUploadArgs = {
   file?: InputMaybe<Scalars['String']>;
   fileName?: InputMaybe<Scalars['String']>;
@@ -8171,7 +8177,7 @@ export type NewClubInput = {
 };
 
 export type NewClubMemberInput = {
-  clubId?: InputMaybe<Scalars['String']>;
+  clubId: Scalars['UUID'];
   practitionerIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 

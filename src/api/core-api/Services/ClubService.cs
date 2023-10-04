@@ -263,8 +263,6 @@ namespace EcdLink.Api.CoreApi.Services
                 _clubMemberRepo.Update(clubMember);
             }
 
-            // TODO: notifications to members
-
             return clubLeader;
         }
 
