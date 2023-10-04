@@ -20,7 +20,6 @@ export const getStepType = (
   color?: Maybe<string>
 ): { type: StepItem['type']; color?: Colours } => {
   if (!color) return { type: 'todo' };
-
   switch (color.toLowerCase()) {
     case 'success':
       return { type: 'completed' };
@@ -83,6 +82,7 @@ export const setStep = (
   if (!!status) {
     return {
       title: status,
+      color: status === licenceNotAwarded && 'errorDark',
       subTitle: getStepDate(date, visitEventId),
       inProgressStepIcon:
         (status === licenceNotAwarded && 'XIcon') ||
@@ -92,9 +92,10 @@ export const setStep = (
           'CalendarIcon') ||
         ((color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon'),
       subTitleColor:
-        new Date(date!) < new Date() && color?.toLowerCase() !== 'success'
+        (status === licenceNotAwarded && 'errorMain') ||
+        (new Date(date!) < new Date() && color?.toLowerCase() !== 'success'
           ? 'alertMain'
-          : getStepType(color)?.color || '',
+          : getStepType(color)?.color || ''),
       completedStepIcon: status === communitySupport2 && 'ThumbUpIcon',
       type:
         status === consolidationMeetingAttended

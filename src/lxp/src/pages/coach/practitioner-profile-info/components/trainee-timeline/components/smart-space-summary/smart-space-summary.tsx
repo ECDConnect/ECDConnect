@@ -15,6 +15,7 @@ import { useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as BalloonsImg } from '../../../../../../../assets/balloons.svg';
 import { format } from 'date-fns';
+import { Question } from '../smart-space-checklist/components/programme-details/programme-details.types';
 interface SmartSpaceSummaryProps {
   practitioner: PractitionerDto;
   setNotificationStep: (item: string) => void;
@@ -76,6 +77,10 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
     visitProgrammeStandardsChecklist?.questions?.filter(
       (item) => item?.answer === false || item?.answer === 'false'
     );
+  const visitProgrammeAdditionalStandardsChecklist = useSelector(
+    traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
+  ) as Question[];
+
   const programmeNotRunning = useMemo(
     () =>
       visitProgrammeStandardsChecklist?.questions.every(
@@ -244,6 +249,26 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
         />
         {renderLicenceResponseCard}
         <Divider dividerType="dashed" className="my-4" />
+        <div>
+          <Typography
+            type="body"
+            color="textDark"
+            weight="bold"
+            text={`${practitioner?.user?.firstName}  is still working on the following additional standards:`}
+            className="mt-4"
+          />
+          {visitProgrammeAdditionalStandardsChecklist?.map((item, index) => {
+            return (
+              <Typography
+                type="body"
+                color="textMid"
+                text={`• ${item?.question}`}
+                key={index}
+              />
+            );
+          })}
+          <Divider dividerType="dashed" className="my-4" />
+        </div>
         <div className="flex flex-col gap-2">
           <Typography
             type="h4"
@@ -253,80 +278,98 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
           <Typography type="body" color="textMid" text={`• ${visitNotes}`} />
         </div>
         <Divider dividerType="dashed" className="my-4" />
-        <div className="flex flex-col gap-2">
-          <Typography type="h4" color="textDark" text={'Programme capacity'} />
-          <div className="flex items-center gap-2">
-            <Typography type="h4" color="textMid" text={`Programme type:`} />
-            <Typography
-              type="h4"
-              color="primary"
-              text={traineeProgrammeTypeObject?.description || ''}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type="h4"
-              color="textMid"
-              text={`Total metres squared available:`}
-            />
-            <Typography
-              type="h4"
-              color="primary"
-              text={String(totalMetresSquaredAvailable)}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography type="h4" color="textMid" text={`Assistants:`} />
-            <Typography
-              type="h4"
-              color="primary"
-              text={String(assistantsNumber)}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography type="h4" color="textMid" text={`Capacity:`} />
-            <Typography
-              type="h4"
-              color="primary"
-              text={String(smartSpaceCapacity)}
-            />
-          </div>
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className="flex flex-col gap-2">
-          <Typography type="h4" color="textDark" text={'COVID standards'} />
-          {visitProgrammeCovidStandardsFalseAnswers?.length === 0 ? (
-            <Typography
-              type="body"
-              weight="bold"
-              color="textMid"
-              text={`${practitioner?.user?.firstName} checked all of the COVID checklist boxes.`}
-            />
-          ) : (
-            <div>
+        {!timeline?.smartSpaceLicenseNotAwardedDate && (
+          <>
+            <div className="flex flex-col gap-2">
               <Typography
                 type="h4"
                 color="textDark"
-                text={`${practitioner?.user?.firstName} still needs to meet the following standards:`}
+                text={'Programme capacity'}
               />
-              {visitProgrammeCovidStandardsFalseAnswers?.map((item, index) => {
-                return (
-                  <Typography
-                    type="body"
-                    color="textMid"
-                    text={`• ${item?.question}`}
-                    key={index}
-                  />
-                );
-              })}
+              <div className="flex items-center gap-2">
+                <Typography
+                  type="h4"
+                  color="textMid"
+                  text={`Programme type:`}
+                />
+                <Typography
+                  type="h4"
+                  color="primary"
+                  text={traineeProgrammeTypeObject?.description || ''}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Typography
+                  type="h4"
+                  color="textMid"
+                  text={`Total metres squared available:`}
+                />
+                <Typography
+                  type="h4"
+                  color="primary"
+                  text={String(totalMetresSquaredAvailable)}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Typography type="h4" color="textMid" text={`Assistants:`} />
+                <Typography
+                  type="h4"
+                  color="primary"
+                  text={String(assistantsNumber)}
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <Typography type="h4" color="textMid" text={`Capacity:`} />
+                <Typography
+                  type="h4"
+                  color="primary"
+                  text={String(smartSpaceCapacity)}
+                />
+              </div>
             </div>
-          )}
-        </div>
-        <Divider dividerType="dashed" className="my-4" />
-        <div className="flex flex-col gap-2">
-          <Typography type="h4" color="textDark" text={'Standards checklist'} />
-          {renderStandardsChecklist}
-        </div>
+            <Divider dividerType="dashed" className="my-4" />
+            <div className="flex flex-col gap-2">
+              <Typography type="h4" color="textDark" text={'COVID standards'} />
+              {visitProgrammeCovidStandardsFalseAnswers?.length === 0 ? (
+                <Typography
+                  type="body"
+                  weight="bold"
+                  color="textMid"
+                  text={`${practitioner?.user?.firstName} checked all of the COVID checklist boxes.`}
+                />
+              ) : (
+                <div>
+                  <Typography
+                    type="h4"
+                    color="textDark"
+                    text={`${practitioner?.user?.firstName} still needs to meet the following standards:`}
+                  />
+                  {visitProgrammeCovidStandardsFalseAnswers?.map(
+                    (item, index) => {
+                      return (
+                        <Typography
+                          type="body"
+                          color="textMid"
+                          text={`• ${item?.question}`}
+                          key={index}
+                        />
+                      );
+                    }
+                  )}
+                </div>
+              )}
+            </div>
+            <Divider dividerType="dashed" className="my-4" />
+            <div className="flex flex-col gap-2">
+              <Typography
+                type="h4"
+                color="textDark"
+                text={'Standards checklist'}
+              />
+              {renderStandardsChecklist}
+            </div>
+          </>
+        )}
         <Button
           type="filled"
           color="primary"
