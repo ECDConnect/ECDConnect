@@ -39,9 +39,8 @@ export const ClubLeaderEdit: React.FC = () => {
 
   const isToChange = lastPathSegment?.includes('edit');
 
-  const previousClubLeader = club?.clubLeaders?.find(
-    (leader) => leader?.isActive
-  );
+  const previousClubLeader = club?.currentClubLeader;
+
   const newLeader = club?.clubMembers?.find(
     (member) => member?.practitioner?.id === newLeaderId
   );
