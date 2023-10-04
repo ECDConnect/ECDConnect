@@ -1,7 +1,10 @@
 import { TraineeDto } from '@ecdlink/core';
 import { RootState } from '../types';
 import { TraineeOnBoardTimeline, VisitData } from '@ecdlink/graphql';
-import { SectionQuestions } from '@/pages/trainee/trainee-onboarding/components/startup-support-agreement/startup-accept-agreement.types';
+import {
+  Question,
+  SectionQuestions,
+} from '@/pages/trainee/trainee-onboarding/components/startup-support-agreement/startup-accept-agreement.types';
 
 export const getTrainee = (state: RootState): TraineeDto | undefined =>
   state.trainee.trainee;
@@ -55,9 +58,10 @@ export const getCoachSmartSpaceSection2VisitDataCount = (
 export const getCoachSmartSpaceVisit1DataNotAttendedStandards = (
   state: RootState
 ): SectionQuestions[] | undefined | [] => {
-  const step1Count = state.trainee.coachSmartSpaceCheckData?.[0] as any;
-  const step1CountFormatted = step1Count?.questions?.filter(
-    (item: any) => item?.answer === false || item?.answer === 'false'
+  const step1Count = state.trainee.coachSmartSpaceCheckData?.[0] as unknown;
+  const formattedStep1Count = step1Count as SectionQuestions;
+  const step1CountFormatted = formattedStep1Count?.questions?.filter(
+    (item) => item?.answer === false || item?.answer === 'false'
   );
   return (step1CountFormatted as []) || undefined;
 };
@@ -65,9 +69,10 @@ export const getCoachSmartSpaceVisit1DataNotAttendedStandards = (
 export const getCoachSmartSpaceVisit2DataNotAttendedStandards = (
   state: RootState
 ): SectionQuestions[] | undefined | [] => {
-  const step2Count = state.trainee.coachSmartSpaceCheckData?.[1] as any;
-  const step2CountFormatted = step2Count?.questions?.filter(
-    (item: any) => item?.answer === false || item?.answer === 'false'
+  const step2Count = state.trainee.coachSmartSpaceCheckData?.[1] as unknown;
+  const formateedStep2Count = step2Count as SectionQuestions;
+  const step2CountFormatted = formateedStep2Count?.questions?.filter(
+    (item) => item?.answer === false || item?.answer === 'false'
   );
   return (step2CountFormatted as []) || undefined;
 };
@@ -78,26 +83,28 @@ export const getCoachFranchisorAgreementData = (
 
 export const getTraineeVisitDataAssitantsNumber = (
   state: RootState
-): string | null | undefined => {
+): string | boolean | undefined => {
   const visitData = state.trainee.coachSmartSpaceCheckData;
-  const programmeDetailsSections = visitData?.find(
+  const programmeDetailsSections: unknown = visitData?.find(
     (item) => item?.visitSection === 'Programme details'
   );
-  const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
+  const programmeDetailsSectionsWithoutTypo =
+    programmeDetailsSections! as SectionQuestions;
   const questions = programmeDetailsSectionsWithoutTypo?.questions;
-  return questions?.[0]?.answer;
+  return questions?.[0]?.answer as string;
 };
 
 export const getCoachVisitDataNextSteps = (
   state: RootState
 ): string | null | undefined => {
   const visitData = state.trainee.coachSmartSpaceCheckData;
-  const programmeDetailsSections = visitData?.find(
+  const programmeDetailsSections: unknown = visitData?.find(
     (item) => item?.visitSection === 'Discuss next steps'
   );
-  const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
+  const programmeDetailsSectionsWithoutTypo =
+    programmeDetailsSections as SectionQuestions;
   const questions = programmeDetailsSectionsWithoutTypo?.questions;
-  return questions?.[0]?.answer;
+  return questions?.[0]?.answer as string;
 };
 
 export const getCoachVisitDataCovidStandards = (
@@ -126,14 +133,13 @@ export const getCoachVisitDataStandardsChecklist = (
   return programmeDetailsSectionsWithoutTypo as SectionQuestions;
 };
 
-export const getCoachVisitCapacity = (
-  state: RootState
-): string | null | undefined | any => {
+export const getCoachVisitCapacity = (state: RootState): Question[] => {
   const visitData = state.trainee.coachSmartSpaceCheckData;
-  const programmeDetailsSections = visitData?.find(
+  const programmeDetailsSections: unknown = visitData?.find(
     (item) => item?.visitSection === 'Calculate programme capacity'
   );
-  const programmeDetailsSectionsWithoutTypo = programmeDetailsSections as any;
+  const programmeDetailsSectionsWithoutTypo =
+    programmeDetailsSections as SectionQuestions;
   const questions = programmeDetailsSectionsWithoutTypo?.questions;
   return questions;
 };

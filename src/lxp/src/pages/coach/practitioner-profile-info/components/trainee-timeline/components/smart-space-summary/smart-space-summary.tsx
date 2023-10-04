@@ -46,6 +46,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   const visitProgrammeCapacityData = useSelector(
     traineeSelectors.getCoachVisitCapacity
   );
+
   const smartSpaceCapacity = visitProgrammeCapacityData?.[2]?.answer;
   const totalMetresSquaredAvailable =
     ((Number(visitProgrammeCapacityData?.[0].answer) / 100) *
@@ -278,7 +279,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
           <Typography type="body" color="textMid" text={`• ${visitNotes}`} />
         </div>
         <Divider dividerType="dashed" className="my-4" />
-        {!timeline?.smartSpaceLicenseNotAwardedDate && (
+        {timeline?.smartSpaceLicenseNotAwardedDate && (
           <>
             <div className="flex flex-col gap-2">
               <Typography
