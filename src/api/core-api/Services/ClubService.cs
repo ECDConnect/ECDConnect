@@ -206,7 +206,21 @@ namespace EcdLink.Api.CoreApi.Services
         {
             // The coach can change the next leader before they accept it. 
 
-            // Set pending leader in active if available
+            // Notification information
+            Practitioner practitioner = _practitionerRepo.GetById(practitionerId);
+            var userToSend = _userManager.FindByIdAsync(practitioner.UserId).Result;
+            Club club = _clubRepo.GetById(clubId);
+
+            List<TagsReplacements> replacements = new List<TagsReplacements>
+            {
+                new TagsReplacements()
+                {
+                    FindValue = "ClubName",
+                    ReplacementValue = club.Name
+                }
+            };
+
+            // Set pending leader in-active if available
             ClubLeader pendingClubLeader = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && 
                                                                           x.IsActive == true && 
                                                                           x.DateAssigned.HasValue && 
@@ -218,9 +232,9 @@ namespace EcdLink.Api.CoreApi.Services
                 pendingClubLeader.DateAssigned = null;
 
                 _clubLeaderRepo.Update(pendingClubLeader);
+                // Expire notification for pending club leader
+                _notificationService.ExpireNotificationsTypesForUser(pendingClubLeader.Practitioner.UserId.ToString(), TemplateTypeConstants.ClubLeaderRoleAssigned);
             }
-
-            // TODO: Disable pending notification for pending leader
 
             // Add new leader
             ClubLeader clubLeader = _clubLeaderRepo.Insert(
@@ -237,31 +251,25 @@ namespace EcdLink.Api.CoreApi.Services
                 });
 
             // Add new notification for new club leader assignment
-            Practitioner practitioner = _practitionerRepo.GetById(practitionerId);
-            Club club = _clubRepo.GetById(clubId);
-
-            List<TagsReplacements> replacements = new List<TagsReplacements>
-            {
-                new TagsReplacements()
-                {
-                    FindValue = "ClubName",
-                    ReplacementValue = club.Name
-                }
-            };
-
-            var userToSend = _userManager.FindByIdAsync(practitioner.UserId).Result;
             _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
 
-            // TODO: notifications to members
+            // Archive leader in member table
+            ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId).FirstOrDefault();
+            if (clubMember == null)
+            {
+                clubMember.IsActive = false;
+                clubMember.UpdatedDate = DateTime.Now;
+                clubMember.UpdatedBy = _applicationUserId;
+                _clubMemberRepo.Update(clubMember);
+            }
 
+            // TODO: notifications to members
 
             return clubLeader;
         }
 
         public bool AddNewClubMembers(NewClubMember input)
         {
-            Guid clubId = new Guid(input.ClubId);
-
             List<ClubMember> members = new List<ClubMember>();
             foreach (var Id in input.PractitionerIds)
             {
@@ -273,13 +281,13 @@ namespace EcdLink.Api.CoreApi.Services
                     DateClubJoined = DateTime.Now,
                     UpdatedBy = _applicationUserId,
                     PractitionerId = new Guid(Id),
-                    ClubId = clubId,
+                    ClubId = input.ClubId,
                     IsNewInClub = true
                 });
                
             }
             _clubMemberRepo.InsertMany(members);
-            SendNewClubMemberNotifications(clubId, members);
+            SendNewClubMemberNotifications(input.ClubId, members);
 
             return true;
         }
@@ -287,19 +295,22 @@ namespace EcdLink.Api.CoreApi.Services
         public bool MoveClubMembers(NewClubMember input)
         {
             ClubMember clubMember = new ClubMember();
+            List<ClubMember> clubMembers = new List<ClubMember>();
             foreach (var Id in input.PractitionerIds)
             {
                 clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId.ToString() == Id).FirstOrDefault();
                 clubMember.IsNewInClub = true;
-                clubMember.ClubId = new Guid(input.ClubId);
+                clubMember.ClubId = input.ClubId;
                 clubMember.UpdatedBy = _applicationUserId;
                 clubMember.UpdatedDate = DateTime.Now;
                 clubMember.DateClubJoined = DateTime.Now;
+
+                clubMembers.Add(clubMember);
                 _clubMemberRepo.Update(clubMember);
             }
 
-            // TODO: Add notification
-            return true;
+            // Notify club members that they are in a new club
+            return SendNewClubMemberNotifications(input.ClubId, clubMembers) ;
         }
 
         private bool SendNewClubMemberNotifications(Guid clubId, List<ClubMember> clubMembers)
@@ -350,8 +361,6 @@ namespace EcdLink.Api.CoreApi.Services
                 oldClubLeader.IsActive = false;
                 _clubLeaderRepo.Update(oldClubLeader);
             }
-
-            // TODO: Add notification
 
             return newClubLeader;
         }
@@ -825,20 +834,6 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             return result;
-        }
-
-        public bool RemoveClubLeader(Guid clubId, Guid practitionerId)
-        {
-            ClubLeader clubLeader = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.PractitionerId == practitionerId).FirstOrDefault();
-            if (clubLeader != null)
-            {
-                clubLeader.IsActive = false;
-                clubLeader.DateAccepted = null;
-                clubLeader.DateAssigned = null;
-                _clubLeaderRepo.Update( clubLeader );
-                return true;
-            }
-            return false;
         }
 
     }

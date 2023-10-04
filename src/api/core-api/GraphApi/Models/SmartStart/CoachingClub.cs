@@ -64,7 +64,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
 
     public class NewClubMember
     {
-        public string ClubId { get; set; }
+        public Guid ClubId { get; set; }
         public virtual List<string> PractitionerIds { get; set; }
     }
     
