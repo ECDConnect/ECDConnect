@@ -414,9 +414,11 @@ export const ChildRegistration: React.FC = () => {
                   leadingIcon: 'XCircleIcon',
                   onClick: () => {
                     if (isTrainee) {
-                      history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
+                      history.push(ROUTES.CLASSROOM.ROOT, {
+                        activeTabIndex: 0,
+                      });
                     } else {
-                      history.push(ROUTES.CLASSROOM);
+                      history.push(ROUTES.CLASSROOM.ROOT);
                     }
                     onClose();
                   },

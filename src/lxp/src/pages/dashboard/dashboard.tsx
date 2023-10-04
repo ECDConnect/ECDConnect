@@ -131,6 +131,11 @@ export const Dashboard: React.FC = () => {
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
 
   useEffect(() => {
+    //This will prevent points card showing up for coaches
+    if (isCoach) {
+      return;
+    }
+
     const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
       if (current.month == currentMonth) {
@@ -369,13 +374,13 @@ export const Dashboard: React.FC = () => {
   const traineeNavigation = [
     {
       name: NavigationTypes.Children,
-      href: ROUTES.CLASSROOM,
+      href: ROUTES.CLASSROOM.ROOT,
       params: { activeTabIndex: 1 },
       current: false,
     },
     {
       name: NavigationTypes.Programme,
-      href: ROUTES.CLASSROOM,
+      href: ROUTES.CLASSROOM.ROOT,
       params: { activeTabIndex: 2 },
       current: false,
     },
@@ -397,25 +402,25 @@ export const Dashboard: React.FC = () => {
           ? [
               {
                 name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 0 },
                 current: false,
               },
               {
                 name: NavigationTypes.Practitioners,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 1 },
                 current: false,
               },
               {
                 name: NavigationTypes.Children,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 2 },
                 current: false,
               },
               {
                 name: NavigationTypes.Programme,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 3 },
                 current: false,
               },
@@ -425,19 +430,19 @@ export const Dashboard: React.FC = () => {
           : [
               {
                 name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 0 },
                 current: false,
               },
               {
                 name: NavigationTypes.Children,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 1 },
                 current: false,
               },
               {
                 name: NavigationTypes.Programme,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 2 },
                 current: false,
               },
@@ -694,7 +699,7 @@ export const Dashboard: React.FC = () => {
         hasConsent) ||
       isTrainee
     ) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+      history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
     } else {
       showCompleteProfileBlockingDialog();
     }

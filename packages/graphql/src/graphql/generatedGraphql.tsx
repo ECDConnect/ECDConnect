@@ -1374,6 +1374,8 @@ export type Classroom = {
   numberOfAssistants?: Maybe<Scalars['Int']>;
   numberOfOtherAssistants?: Maybe<Scalars['Int']>;
   numberPractitioners?: Maybe<Scalars['Int']>;
+  preschoolFeeAmount?: Maybe<Scalars['Float']>;
+  preschoolFeeAmountLastUpdateDate?: Maybe<Scalars['DateTime']>;
   programmes?: Maybe<Array<Maybe<Programme>>>;
   siteAddress?: Maybe<SiteAddress>;
   siteAddressId?: Maybe<Scalars['UUID']>;
@@ -1397,6 +1399,8 @@ export type ClassroomFilterInput = {
   numberOfOtherAssistants?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   numberPractitioners?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   or?: InputMaybe<Array<ClassroomFilterInput>>;
+  preschoolFeeAmount?: InputMaybe<ComparableNullableOfDoubleOperationFilterInput>;
+  preschoolFeeAmountLastUpdateDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   programmes?: InputMaybe<ListFilterInputTypeOfProgrammeFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
   siteAddressId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -1509,6 +1513,8 @@ export type ClassroomInput = {
   NumberOfAssistants?: InputMaybe<Scalars['Int']>;
   NumberOfOtherAssistants?: InputMaybe<Scalars['Int']>;
   NumberPractitioners?: InputMaybe<Scalars['Int']>;
+  PreschoolFeeAmount?: InputMaybe<Scalars['Float']>;
+  PreschoolFeeAmountLastUpdateDate?: InputMaybe<Scalars['DateTime']>;
   Programmes?: InputMaybe<Array<InputMaybe<ProgrammeInput>>>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
   SiteAddressId?: InputMaybe<Scalars['UUID']>;
@@ -1540,6 +1546,8 @@ export type ClassroomSortInput = {
   numberOfAssistants?: InputMaybe<SortEnumType>;
   numberOfOtherAssistants?: InputMaybe<SortEnumType>;
   numberPractitioners?: InputMaybe<SortEnumType>;
+  preschoolFeeAmount?: InputMaybe<SortEnumType>;
+  preschoolFeeAmountLastUpdateDate?: InputMaybe<SortEnumType>;
   siteAddress?: InputMaybe<SiteAddressSortInput>;
   siteAddressId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;

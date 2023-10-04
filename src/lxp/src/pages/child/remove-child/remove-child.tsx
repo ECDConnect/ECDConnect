@@ -100,7 +100,7 @@ export const RemoveChild: React.FC = () => {
       history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId });
       return;
     }
-    history.replace(ROUTES.CLASSROOM);
+    history.replace(ROUTES.CLASSROOM.ROOT);
   };
 
   return (

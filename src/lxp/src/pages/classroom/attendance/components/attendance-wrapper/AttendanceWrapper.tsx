@@ -153,7 +153,7 @@ export default function MultiRouteWrapper() {
       if (practitioner?.progress! < 3) {
         await updatePractitionerProgress();
       }
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
+      history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 });
     }
   };
 

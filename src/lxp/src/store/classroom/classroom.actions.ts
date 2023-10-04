@@ -672,6 +672,33 @@ export const createLearner = createAsyncThunk<
   }
 });
 
+export const updatePreschoolFee = createAsyncThunk<
+  boolean,
+  { classroomId: string; amount: number | undefined },
+  ThunkApiType<RootState>
+>(
+  'createLearner',
+  async ({ classroomId, amount }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        await new ClassroomService(userAuth?.auth_token).updatePreschoolFee(
+          classroomId,
+          amount
+        );
+
+        return true;
+      }
+      return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 const mapClassroomGroupInput = (
   x: Partial<ClassroomGroupDto>
 ): ClassroomGroupInput => ({

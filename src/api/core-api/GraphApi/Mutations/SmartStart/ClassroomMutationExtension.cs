@@ -22,9 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ClassroomMutationExtension
     {
-
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-
         public ClassroomGroup UpdatePractitionerToTeachClassroom(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -335,6 +333,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
             }
             return childrenReassigned;
+        }
+
+        public bool UpdatePreschoolFeeForClassroom(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid classroomId,
+            double? amount)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var classroom = classroomRepo.GetById(classroomId);
+
+            classroom.PreschoolFeeAmount = amount;
+            classroom.PreschoolFeeAmountLastUpdateDate = DateTime.Now;
+
+            classroomRepo.Update(classroom);
+
+            return true;
         }
     }
 }
