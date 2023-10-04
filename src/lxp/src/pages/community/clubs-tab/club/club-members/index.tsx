@@ -52,8 +52,8 @@ export const ClubMembers: React.FC = () => {
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isLeaderAcceptedAgreement =
     isDueDateNextLeaderTodayOrFuture &&
-    club?.clubLeaders?.every((leader) => !!leader?.dateAccepted) &&
-    club?.clubLeaders?.some((leader) => !!leader?.isActive);
+    club?.newClubLeader?.dateAccepted &&
+    club?.newClubLeader?.isActive;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isToChangeLeader = hasLeader || isLeaderRequestSent;
 
@@ -192,7 +192,7 @@ export const ClubMembers: React.FC = () => {
         title={title}
         list={list}
         button={
-          club?.clubLeaders?.length && !isLeaderAcceptedAgreement ? (
+          club?.newClubLeader && !isLeaderAcceptedAgreement ? (
             <Button
               type="filled"
               color="primary"
@@ -213,7 +213,7 @@ export const ClubMembers: React.FC = () => {
     isLeaderRequestSent,
     isLeaderAcceptedAgreement,
     isLeaderAcceptedOverSixMonths,
-    club?.clubLeaders?.length,
+    club?.newClubLeader,
     nextLeader,
     nextLeaderFirstName,
     dueDateNextLeader,
