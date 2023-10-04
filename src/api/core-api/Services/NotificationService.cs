@@ -238,6 +238,22 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType)
+        {
+            if (userId != null && templateType != null)
+            {
+                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType).ToList();
+                if (notifications.Any())
+                {
+                    foreach (var notification in notifications)
+                    {
+                        await DisableNotification(notification.Id.ToString());
+                    }
+                }
+            }
+            return true;
+        }
+
         public async Task<bool> MarkAsReadNotification(string notificationId)
         {
             if (notificationId != null)

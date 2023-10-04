@@ -95,11 +95,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users
         }
 
         public License DeclineSmartSpaceLicense(string userId, DateTime dateDeclined, string NextStepsComments)
-        {           
+        {
+            LicenseType licenseType = _licenseTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
             License userLicense = GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
             if (userLicense == null)
             {
-                LicenseType licenseType = _licenseTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
+                
                 License input = new License()
                 {
                     UserId = userId,
@@ -114,9 +115,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 };
 
                 return _licenseRepo.Insert(input);
-            }
+            } else
+            {
+                userLicense.DeclinedDate = dateDeclined;
+                userLicense.DeclinedCommentsSteps = NextStepsComments;
+                userLicense.LicenseDate = dateDeclined;
+                _licenseRepo.Update(userLicense);
 
-            return null;
+                return userLicense;
+            }            
         }
 
     }

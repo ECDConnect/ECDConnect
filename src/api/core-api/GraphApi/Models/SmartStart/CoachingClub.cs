@@ -13,9 +13,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string Name { get; set; }
         public string SecondaryText { get; set; }
         public string SecondaryTextColor { get; set; }
+        public int SecondaryTextPriority { get; set; }
+        public string SecondaryTextInformation { get; set; }
         public virtual ICollection<ClubMeeting> ClubMeetings { get; set; }
         public virtual ICollection<ClubMember> ClubMembers { get; set; }
-        public virtual ICollection<ClubLeader> ClubLeaders { get; set; } // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
+        // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
+        public ClubLeader CurrentClubLeader { get; set; }
+        public ClubLeader NewClubLeader { get; set; }
         public virtual ClubSupport ClubSupport { get; set; }
         public virtual League League { get; set; }
         public virtual Coach Coach { get; set; }
@@ -38,6 +42,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string Name { get; set; }
         public string SecondaryText { get; set; }
         public string SecondaryTextColor { get; set; }
+        public int SecondaryTextPriority { get; set; }
+        public string SecondaryTextInformation { get; set; }
     }
 
     public class ClubActivity

@@ -56,6 +56,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return await notificationService.ExpireNotification(notificationId);
         }
 
+        public async Task<bool> ExpireNotificationsTypesForUser([Service] INotificationService notificationService, string userId, string templateType)
+        {
+            return await notificationService.ExpireNotificationsTypesForUser(userId, templateType);
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<BulkInvitationResult> SendNotificationToUser(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,

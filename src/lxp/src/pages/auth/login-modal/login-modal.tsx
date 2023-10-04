@@ -55,11 +55,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     JSON.parse(localStorage?.getItem('userHash')!)
   );
 
-  const userHashDecrypted = CryptoJS.AES.decrypt(
-    userHashUpdated,
-    'secret key 123'
-  );
-  const userHashToString = userHashDecrypted.toString(CryptoJS.enc.Utf8);
+  const userHashDecrypted =
+    userHashUpdated && CryptoJS.AES.decrypt(userHashUpdated, 'secret key 123');
+  const userHashToString =
+    userHashDecrypted && userHashDecrypted.toString(CryptoJS.enc.Utf8);
 
   const {
     register: loginRegister,
@@ -95,7 +94,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           ) {
             loginSuccessful();
             // updateTime()
-            const userLocalxpiration = Date.now() + 60000;
+            const userLocalxpiration = Date.now() + 3600000000;
             localStorage.setItem(
               'userLocalxpiration',
               JSON.stringify(userLocalxpiration)

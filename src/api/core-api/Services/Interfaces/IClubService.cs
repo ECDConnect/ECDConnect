@@ -1,7 +1,6 @@
 ﻿
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.DataAccessLayer.Entities.Clubs;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using System;
 using System.Collections.Generic;
@@ -25,10 +24,11 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public bool IsClubLeader(Guid practitionerId);
         public bool IsClubSupport(Guid practitionerId);
         public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input);
-        Task<ClubLeader> AddNewClubLeader(Guid clubId, Guid practitionerId);
+        public ClubLeader AddNewClubLeader(Guid clubId, Guid practitionerId);
         public bool AddNewClubMembers(NewClubMember input);
         public bool MoveClubMembers(NewClubMember input);
         public ClubLeader AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId);
         public Club AddNewClub(NewClubInput input);
+        public bool RemoveClubLeader(Guid clubId, Guid practitionerId);
     }
 }
