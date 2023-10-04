@@ -826,7 +826,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SmartSpace license received
             License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-            if (smartSpaceLicense?.LicenseDate != null)
+            if (smartSpaceLicense?.LicenseDate != null && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;

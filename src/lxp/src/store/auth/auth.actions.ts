@@ -11,7 +11,7 @@ export const login = createAsyncThunk<
   try {
     return await new AuthService().login(Config.authApi, body);
   } catch (err) {
-    return rejectWithValue(err);
+    return rejectWithValue((err as Error).message);
   }
 });
 
