@@ -49,6 +49,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
+
   const isTrainee = practitioner?.isTrainee;
 
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -177,10 +178,11 @@ export const CoachPractitionerClassroom: React.FC = () => {
         },
       },
       text: '1',
-      onActionClick: () =>
+      onActionClick: () => {
         history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
           practitionerId: practitionerUserId,
-        }),
+        });
+      },
       classNames: 'bg-uiBg',
     },
     {
@@ -268,11 +270,11 @@ export const CoachPractitionerClassroom: React.FC = () => {
                   color="primary"
                   type="filled"
                   size="small"
-                  onClick={() =>
+                  onClick={() => {
                     history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, {
-                      practitionerUserId,
-                    })
-                  }
+                      practitionerId: practitionerUserId,
+                    });
+                  }}
                 >
                   {renderIcon('EyeIcon', 'w-5 h-5 text-white mr-1')}
                   <Typography color="white" text={'View all'} type="small" />

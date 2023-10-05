@@ -187,6 +187,7 @@ const mapCaregiver = (x: Partial<CaregiverDto>): CaregiverInput => ({
   Contribution: x.contribution || false,
   IsActive: x.isActive === false ? false : true,
   isMother: x.isMother === false ? false : true,
+  IsAllowedCustody: x.isAllowedCustody ?? false,
 });
 
 const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({

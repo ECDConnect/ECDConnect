@@ -7,40 +7,6 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
   day: 'numeric',
 };
 
-const nextStepButtontext = (step: string) => {
-  switch (step) {
-    case 'Fill in the SmartSpace checklist':
-      return 'See checklist';
-    case 'Get community support':
-      return 'Learn more';
-    case 'Register 3 children':
-      return 'Add child';
-    case 'Sign franchisee agreement':
-      return 'Sign';
-    case 'Sign start-up support agreement':
-      return 'Sign';
-    default:
-      return '';
-  }
-};
-
-const nextStepButtonIcon = (step: string) => {
-  switch (step) {
-    case 'Fill in the SmartSpace checklist':
-      return 'ClipboardListIcon';
-    case 'Get community support':
-      return 'InformationCircleIcon';
-    case 'Register 3 children':
-      return 'UserAddIcon';
-    case 'Sign franchisee agreement':
-      return 'PencilAltIcon';
-    case 'Sign start-up support agreement':
-      return 'PencilAltIcon';
-    default:
-      return '';
-  }
-};
-
 export const filterVisit = (visit: Maybe<Visit>) =>
   !visit?.attended && typeof visit?.visitType?.order !== 'undefined';
 
@@ -91,10 +57,12 @@ export const setStep = (
   const register3Children = 'Register 3 children';
   const register3Children2 = '3 or more children registered';
   const communitySupport = 'Get community support';
-  const coomunitySupport2 = 'Community support gained';
+  const communitySupport2 = 'Community support gained';
   const franchisorAgreement = 'Sign franchisee agreement';
   const franchisorAgreement2 = 'Franchisee agreement signed';
   const smartSpaceVisitFromCoach = 'SmartSpace visit from coach';
+  const consolidationMeetingScheduled = 'Consolidation meeting scheduled';
+  const consolidationMeetingAttended = 'Consolidation meeting attended';
 
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
@@ -106,7 +74,7 @@ export const setStep = (
       status !== register3Children &&
       status !== register3Children2 &&
       status !== communitySupport &&
-      status !== coomunitySupport2 &&
+      status !== communitySupport2 &&
       status !== franchisorAgreement &&
       status !== franchisorAgreement2);
   if (!!status) {
@@ -114,8 +82,8 @@ export const setStep = (
       title: status,
       subTitle: getStepDate(date, visitEventId),
       inProgressStepIcon:
-        (status === 'Consolidation meeting scheduled' && 'CalendarIcon') ||
-        (status === 'Smartspace visit from coach' &&
+        (status === consolidationMeetingScheduled && 'CalendarIcon') ||
+        (status === smartSpaceVisitFromCoach &&
           !!visitEventId &&
           'CalendarIcon') ||
         ((color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon'),
@@ -123,9 +91,9 @@ export const setStep = (
         new Date(date!) < new Date() && color?.toLowerCase() !== 'success'
           ? 'alertMain'
           : getStepType(color)?.color || '',
-      completedStepIcon: status === 'Community support gained' && 'ThumbUpIcon',
+      completedStepIcon: status === communitySupport2 && 'ThumbUpIcon',
       type:
-        status === 'Consolidation meeting attended'
+        status === consolidationMeetingAttended
           ? 'inProgress'
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
@@ -166,7 +134,7 @@ export const setStep = (
     inProgressStepIcon:
       (color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon',
     subTitleColor: getStepType(color)?.color || '',
-    completedStepIcon: status === 'Community support gained' && 'ThumbUpIcon',
+    completedStepIcon: status === communitySupport2 && 'ThumbUpIcon',
     type: getStepType(color).type,
     extraData: { date: date ? new Date(date) : null },
   } as StepItem<{ date?: Date | null }>;

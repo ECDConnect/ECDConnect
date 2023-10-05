@@ -14,6 +14,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<MessageLog> CommitNotification(Notification notification, MessageTemplate template);
         Task<bool> DisableNotification(string notificationId);
         Task<bool> ExpireNotification(string notificationId);
+        Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType);
         Task<bool> MarkAsReadNotification(string notificationId);
         MessageTemplateText RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements);
     }

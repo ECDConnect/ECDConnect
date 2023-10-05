@@ -14,6 +14,7 @@ import {
   getClassroomGroups,
   getClassroomProgrammes,
   getClassroomDetailsForPractitioner,
+  updatePreschoolFee,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 
@@ -228,13 +229,22 @@ const classroomsSlice = createSlice({
     );
     builder.addCase(
       getClassroomDetailsForPractitioner.fulfilled,
-      (state, action: any) => {
+      (state, action) => {
         if (action.payload) {
           const classroomProgramme = action?.payload;
           state.classroom = classroomProgramme;
         }
       }
     );
+    builder.addCase(updatePreschoolFee.fulfilled, (state, action) => {
+      if (action.payload && !!state.classroom) {
+        state.classroom = {
+          ...state.classroom,
+          preschoolFeeAmount: action.meta.arg.amount,
+          preschoolFeeAmountLastUpdateDate: new Date(),
+        };
+      }
+    });
   },
 });
 

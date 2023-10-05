@@ -1,6 +1,6 @@
 export const formatPhonenumberInternational = (phoneNumber: string) => {
   // sanitize
-  let newNumber = phoneNumber.replaceAll(/[^0-9]/, '');
+  let newNumber = phoneNumber.replaceAll(/[^0-9]/g, '');
 
   // too short for a phone number
   if (phoneNumber.length < 9) return false;

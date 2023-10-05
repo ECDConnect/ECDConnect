@@ -14,7 +14,8 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public double GetClubAttendanceForMonth(Guid clubId, DateTime date);
         public bool HasAttendanceRegisterForMonth(Guid clubId, DateTime date);
         public List<ClubMember> GetClubMembers(Guid clubId);
-        public List<CoachingClub> GetAllClubsForCoach(string userId);
+        public List<CoachingClubBase> GetAllClubsForCoach(string userId);
+        public List<CoachingClub> GetAllClubsDetailsForCoach(string userId, string clubId = null);
         public List<LeagueClub> GetAllLeagues(string userId);
         public List<ClubLeader> GetLeadersForClub(Guid clubId);
         public ClubSupport GetSupportForClub(Guid clubId);
@@ -23,7 +24,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public bool IsClubLeader(Guid practitionerId);
         public bool IsClubSupport(Guid practitionerId);
         public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input);
-        Task<ClubLeader> AddNewClubLeader(Guid clubId, Guid practitionerId);
+        public ClubLeader AddNewClubLeader(Guid clubId, Guid practitionerId);
         public bool AddNewClubMembers(NewClubMember input);
         public bool MoveClubMembers(NewClubMember input);
         public ClubLeader AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId);

@@ -1246,6 +1246,78 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     UserType = "practitioner"
                 };
 
+                #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
+                if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
+                {
+                    var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId);
+
+                    var warningCount = 0;
+                    var warningString = MetricsColorEnum.Warning.ToString();
+                    if (traineeTimeline.DayOneStartUpTrainingColor == null || traineeTimeline.DayOneStartUpTrainingColor == warningString) warningCount++;
+                    if (traineeTimeline.CommunitySupportColor == null || traineeTimeline.CommunitySupportColor == warningString) warningCount++;
+                    if (traineeTimeline.ConsolidationMeetingColor == null || traineeTimeline.ConsolidationMeetingColor == warningString) warningCount++;
+                    if (traineeTimeline.SignFranchiseeAgreementColor == null || traineeTimeline.SignFranchiseeAgreementColor == warningString) warningCount++;
+                    if (traineeTimeline.SignStartUpSupportAgreementColor == null || traineeTimeline.SignStartUpSupportAgreementColor == warningString) warningCount++;
+                    if (traineeTimeline.SmartSpaceChecklistColor == null ||  traineeTimeline.SmartSpaceChecklistColor == warningString) warningCount++;
+                    if (traineeTimeline.SmartSpaceLicenseColor == null || traineeTimeline.SmartSpaceLicenseColor == warningString) warningCount++;
+                    if (traineeTimeline.SSCoachVisitColor == null || traineeTimeline.SSCoachVisitColor == warningString) warningCount++;
+                    if (traineeTimeline.StarterLicenseColor == null || traineeTimeline.StarterLicenseColor == warningString) warningCount++;
+                    if (traineeTimeline.ThreeChildrenRegisteredColor == null || traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
+
+                    if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28))
+                    {
+                        if (warningCount > 0)
+                        {
+                            notification.Subject = "Remove Trainee";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Remove trainee";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    else if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-14))
+                    {
+                        if (warningCount > 0)
+                        {
+                            notification.Subject = "Trainee onboarding incomplete";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Trainee onboarding incomplete";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        var overdueCount = 0;
+                        if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
+                        if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
+
+                        if (overdueCount > 2)
+                        {
+                            notification.Subject = $"{overdueCount} trainee onboarding tasks overdue";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Trainee onboarding tasks overdue";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                }
+                #endregion
+
                 #region ON LEAVE
                 if (absenteeDays.Any(x => x.UserId == practitioner.UserId && x.AbsentDate.Date == DateTime.Now.Date))
                 {
@@ -1528,78 +1600,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     notification.GroupingName = "50% child attendance last month";
                     yield return notification;
                     continue;
-                }
-                #endregion
-
-                #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
-                if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
-                {
-                    var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId);
-
-                    var warningCount = 0;
-                    var warningString = MetricsColorEnum.Warning.ToString();
-                    if (traineeTimeline.DayOneStartUpTrainingColor == warningString) warningCount++;
-                    if (traineeTimeline.CommunitySupportColor == warningString) warningCount++;
-                    if (traineeTimeline.ConsolidationMeetingColor == warningString) warningCount++;
-                    if (traineeTimeline.SignFranchiseeAgreementColor == warningString) warningCount++;
-                    if (traineeTimeline.SignStartUpSupportAgreementColor == warningString) warningCount++;
-                    if (traineeTimeline.SmartSpaceChecklistColor == warningString) warningCount++;
-                    if (traineeTimeline.SmartSpaceLicenseColor == warningString) warningCount++;
-                    if (traineeTimeline.SSCoachVisitColor == warningString) warningCount++;
-                    if (traineeTimeline.StarterLicenseColor == warningString) warningCount++;
-                    if (traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
-
-                    if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28))
-                    {
-                        if (warningCount > 0)
-                        {
-                            notification.Subject = "Remove Trainee";
-                            notification.Icon = MetricsIconEnum.Error.ToString();
-                            notification.Color = MetricsColorEnum.Error.ToString();
-                            notification.Message = "";
-                            notification.Notes = "";
-                            notification.GroupingName = "Remove trainee";
-                            yield return notification;
-                            continue;
-                        }
-                    }
-                    else if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-14))
-                    {
-                        if (warningCount > 0)
-                        {
-                            notification.Subject = "Trainee onboarding incomplete";
-                            notification.Icon = MetricsIconEnum.Error.ToString();
-                            notification.Color = MetricsColorEnum.Error.ToString();
-                            notification.Message = "";
-                            notification.Notes = "";
-                            notification.GroupingName = "Trainee onboarding incomplete";
-                            yield return notification;
-                            continue;
-                        }
-                    }
-                    else
-                    {
-                        var overdueCount = 0;
-                        if (traineeTimeline.CommunitySupportDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.ConsolidationDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.SignFranchiseeAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.SignStartUpSupportAgreementDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.SmartSpaceChecklistDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.SSCoachVisitDeadlineDate < DateTime.Now) overdueCount++;
-                        if (traineeTimeline.ThreeChildrenRegisteredDeadlineDate < DateTime.Now) overdueCount++;
-
-                        if (overdueCount > 2)
-                        {
-                            notification.Subject = $"{overdueCount} trainee onboarding tasks overdue";
-                            notification.Icon = MetricsIconEnum.Error.ToString();
-                            notification.Color = MetricsColorEnum.Error.ToString();
-                            notification.Message = "";
-                            notification.Notes = "";
-                            notification.GroupingName = "Trainee onboarding tasks overdue";
-                            yield return notification;
-                            continue;
-                        }
-                    }
                 }
                 #endregion
 

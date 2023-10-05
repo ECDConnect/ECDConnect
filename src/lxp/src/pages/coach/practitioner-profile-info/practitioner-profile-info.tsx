@@ -35,6 +35,7 @@ import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
+import { addDays } from 'date-fns';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -62,6 +63,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
 
+  // TODO: change this when we have the real data
+  const isAssignedToAClub = false;
+
   const timelineStepsArray = timelineSteps(
     timeline!,
     // @ts-ignore,
@@ -85,6 +89,12 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       item?.title === 'Consolidation meeting attended'
   );
   const onboardingNotCompleted = completedSteps?.length < 8;
+  const twoWeeksAgo = addDays(new Date(), -14);
+  const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
+    ? new Date(timeline?.smartSpaceLicenseDate)
+    : new Date();
+  const onboardingIncompleteAfter2Weeks =
+    onboardingNotCompleted && smartSpaceLicenseDate < twoWeeksAgo;
 
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
@@ -129,7 +139,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
     getTraineeTimeline();
     getTraineeVisitDate();
-  }, []);
+  }, [appDispatch, practitioner?.userId, traineeCurrentVisit?.id]);
 
   const classroomsDetailsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
@@ -231,13 +241,21 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     listItems?.splice(0, 1, {
       title: 'Trainee onboarding',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: `${completedSteps?.length} of ${timelineStepsArray?.length} steps completed`,
+      subTitle: onboardingIncompleteAfter2Weeks
+        ? 'Incomplete after 2 weeks'
+        : `${completedSteps?.length + 1} of ${
+            timelineStepsArray?.length + 1
+          } steps completed`,
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
-      menuIcon: 'BadgeCheckIcon',
+      menuIcon: onboardingIncompleteAfter2Weeks
+        ? 'ExclamationIcon'
+        : 'BadgeCheckIcon',
       menuIconClassName: 'text-white',
       showIcon: true,
-      iconBackgroundColor: 'tertiary',
+      iconBackgroundColor: onboardingIncompleteAfter2Weeks
+        ? 'alertMain'
+        : 'tertiary',
       chipConfig: {
         colorPalette: {
           backgroundColour: 'white',
@@ -343,6 +361,33 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     },
   ];
 
+  listItems?.push({
+    title: 'Club',
+    titleStyle: 'text-textDark font-semibold text-base leading-snug',
+    subTitle: isAssignedToAClub ? '{clubName}' : 'Not assigned to a club',
+    subTitleStyle:
+      'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+    menuIcon: 'UserGroupIcon',
+    menuIconClassName: 'text-white',
+    showIcon: true,
+    iconBackgroundColor: 'tertiary',
+    chipConfig: {
+      colorPalette: {
+        backgroundColour: 'alertMain',
+        borderColour: 'alertMain',
+        textColour: 'white',
+      },
+    },
+    text: '',
+    onActionClick: () =>
+      history.push(
+        ROUTES.COMMUNITY.CLUB.MEMBER[
+          isAssignedToAClub ? 'ROOT' : 'ADD'
+        ].replace(':practitionerId', practitionerId)
+      ),
+    classNames: 'bg-uiBg',
+  });
+
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
@@ -379,7 +424,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 canChangeImage={false}
                 dataUrl={practitioner?.user?.profileImageUrl || ''}
                 size={'header'}
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 onPressed={() => {}}
               />
             </div>
@@ -522,23 +566,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   />
                   {renderIcon('DocumentDuplicateIcon', styles.actionIcon)}
                 </Button>
-              </div>
-            </div>
-            <Divider dividerType="dashed" className="my-4" />
-            <div className={styles.infoWrapper}>
-              <div>
-                <Typography
-                  text={'Smartstart club'}
-                  type="h5"
-                  color="textMid"
-                  className={'mt-1'}
-                />
-                <Typography
-                  text={'N/A'}
-                  type="h4"
-                  color="textDark"
-                  className={'mt-1'}
-                />
               </div>
             </div>
             <Divider dividerType="dashed" className="my-4" />

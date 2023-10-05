@@ -1,54 +1,136 @@
 import { BannerWrapper, Button } from '@ecdlink/ui';
-import { mockedClub } from '../individual-club-view';
 import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Step1 } from './steps/step-1';
-import { useSnackbar } from '@ecdlink/core';
+import { PractitionerDto, useSnackbar } from '@ecdlink/core';
 import { Step2 } from '../club-add/steps/step-2';
-import { MockedStep2 } from '../club-add';
 import { ClubsRouteState } from '../../index.types';
+import { NewClubMemberInput } from '@ecdlink/graphql';
+import { useAppDispatch } from '@/store';
+import {
+  ClubActions,
+  addNewClubMembers,
+  getAllClubsDetailsForCoach,
+  moveClubMembers,
+} from '@/store/club/club.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
+import { clubSelectors } from '@/store/club';
 
-interface MockedMember {}
+export type Member = PractitionerDto | undefined;
 
-export interface ClubMembersEditProps {
-  setSelectedMembers?: (selectedMembers: MockedMember[]) => void;
-  setSelectedMembersFromDifferentClub?: (
-    selectedMembers: MockedMember[]
-  ) => void;
+export interface ClubMembersAddProps {
+  setSelectedMembers?: (selectedMembers: Member[]) => void;
+  setSelectedMembersFromDifferentClub?: (selectedMembers: Member[]) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
 }
 
 export const ClubMembersAdd: React.FC = () => {
-  const [selectedMembers, setSelectedMembers] = useState<MockedMember>([]);
+  const [selectedMembers, setSelectedMembers] = useState<Member[]>([]);
   const [
     selectedMembersFromDifferentClub,
     setSelectedMembersFromDifferentClub,
-  ] = useState<MockedStep2>();
+  ] = useState<Member[]>([]);
 
   const [step, setStep] = useState(0);
   const [isEnabledButton, setIsEnabledButton] = useState(false);
 
+  const user = useSelector(userSelectors.getUser);
+
   const isFirstStep = step === 0;
+  const mergedMembers = [
+    ...selectedMembers,
+    ...selectedMembersFromDifferentClub,
+  ];
+
+  const {
+    isLoading: isLoadingAddMembers,
+    isRejected: isRejectedAddMembers,
+    error: errorAddMembers,
+  } = useThunkFetchCall('clubs', ClubActions.ADD_NEW_CLUB_MEMBERS);
+  const {
+    isLoading: isLoadingMoveMembers,
+    isRejected: isRejectedMoveMembers,
+    error: errorMoveMembers,
+  } = useThunkFetchCall('clubs', ClubActions.MOVE_CLUB_MEMBERS);
+  const {
+    isLoading: isLoadingClub,
+    wasLoading: wasLoadingClub,
+    isRejected: isRejectedGetClub,
+    error: errorGetClub,
+  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH);
+
+  const isLoading =
+    isLoadingAddMembers || isLoadingMoveMembers || isLoadingClub;
+  const isRejected =
+    isRejectedAddMembers || isRejectedMoveMembers || isRejectedGetClub;
+  const error = errorAddMembers || errorMoveMembers || errorGetClub;
+
+  const isSuccess =
+    (selectedMembers.length &&
+      !selectedMembersFromDifferentClub.length &&
+      !isRejectedAddMembers) ||
+    (selectedMembersFromDifferentClub &&
+      !selectedMembers.length &&
+      !isRejectedMoveMembers) ||
+    (selectedMembers.length &&
+      selectedMembersFromDifferentClub.length &&
+      !isRejectedAddMembers &&
+      !isRejectedMoveMembers);
 
   const history = useHistory();
-  const params = useParams<ClubsRouteState>();
+  const { clubId } = useParams<ClubsRouteState>();
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const { showMessage } = useSnackbar();
 
-  const onClose = () => {
+  const appDispatch = useAppDispatch();
+
+  const onClose = useCallback(() => {
     history.push(
-      ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', params.clubId)
+      !!club?.clubMembers?.length
+        ? ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', clubId)
+        : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+    );
+  }, [club?.clubMembers?.length, clubId, history]);
+
+  const onSubmit = async () => {
+    if (!!selectedMembers.length) {
+      const payload: NewClubMemberInput = {
+        clubId,
+        practitionerIds: selectedMembers?.map(
+          (member) => member?.id
+        ) as string[],
+      };
+
+      await appDispatch(addNewClubMembers({ input: payload }));
+    }
+
+    if (!!selectedMembersFromDifferentClub.length) {
+      const payload: NewClubMemberInput = {
+        clubId,
+        practitionerIds: selectedMembersFromDifferentClub?.map(
+          (member) => member?.id
+        ) as string[],
+      };
+
+      await appDispatch(moveClubMembers({ input: payload }));
+    }
+
+    await appDispatch(
+      getAllClubsDetailsForCoach({ userId: user?.id!, clubId })
     );
   };
-  const onSubmit = () => {
-    // TODO: call API
-    console.log({ selectedMembersFromDifferentClub, selectedMembers });
 
-    // TODO: move it to a success callback (useEffect)
-    showMessage({ message: '{value} club members added!.', type: 'success' });
+  const onSuccess = useCallback(async () => {
+    showMessage({
+      message: `${mergedMembers.length} club members added!.`,
+      type: 'success',
+    });
     onClose();
-  };
+  }, [mergedMembers.length, onClose, showMessage]);
 
   const handleOnClick = () => {
     if (step === 0) {
@@ -66,6 +148,26 @@ export const ClubMembersAdd: React.FC = () => {
     setStep(0);
   };
 
+  useEffect(() => {
+    if (wasLoadingClub && !isLoadingClub) {
+      if (isRejected) {
+        showMessage({ message: error, type: 'error' });
+      }
+
+      if (isSuccess) {
+        onSuccess();
+      }
+    }
+  }, [
+    error,
+    isLoadingClub,
+    isRejected,
+    isSuccess,
+    onSuccess,
+    showMessage,
+    wasLoadingClub,
+  ]);
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -82,7 +184,8 @@ export const ClubMembersAdd: React.FC = () => {
         />
       ) : (
         <Step2
-          title={`Add SmartStarters to ${mockedClub.name} club`}
+          title={`Add SmartStarters to ${club?.name} club`}
+          hasSelectedPractitioners={!!selectedMembers?.length}
           setIsEnabledButton={setIsEnabledButton}
           setStep2={setSelectedMembersFromDifferentClub}
         />
@@ -94,7 +197,8 @@ export const ClubMembersAdd: React.FC = () => {
         color="primary"
         textColor="white"
         text={isFirstStep ? 'Next' : 'Save'}
-        disabled={!isEnabledButton}
+        isLoading={isLoading || isLoadingClub}
+        disabled={!isEnabledButton || isLoading || isLoadingClub}
         onClick={handleOnClick}
       />
     </BannerWrapper>

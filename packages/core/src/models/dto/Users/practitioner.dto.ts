@@ -37,4 +37,5 @@ export interface PractitionerDto extends EntityBase {
   isOnStipend?: boolean;
   stipendType?: string;
   isCompletedBusinessWalkThrough?: boolean;
+  clubId?: string;
 }

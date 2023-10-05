@@ -45,7 +45,7 @@ export const PractitionerNotRegistered: React.FC<
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
-    history.push(ROUTES.CLASSROOM);
+    history.push(ROUTES.CLASSROOM.ROOT);
     showMessage({
       message: `${practitioner?.user?.firstName} removed`,
     });
