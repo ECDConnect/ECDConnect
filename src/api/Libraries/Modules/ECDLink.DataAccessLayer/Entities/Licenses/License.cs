@@ -26,6 +26,9 @@ namespace ECDLink.DataAccessLayer.Entities.Licenses
 
         public bool? CollectedSSPlaykit { get; set; }
         public bool? CollectedSSHandbook { get; set; }
+
+        public DateTime? DeclinedDate { get; set; }
+        public string? DeclinedCommentsSteps { get; set; }
     }
 
     public interface LicenseJoin<TKey>

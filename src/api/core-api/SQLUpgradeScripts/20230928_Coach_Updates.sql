@@ -1,0 +1,1 @@
+ALTER TABLE public."Coach" ADD "ClickedClubTab" bool NULL DEFAULT False;

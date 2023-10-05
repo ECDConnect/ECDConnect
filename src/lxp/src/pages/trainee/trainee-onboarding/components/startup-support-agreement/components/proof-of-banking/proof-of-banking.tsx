@@ -98,17 +98,6 @@ export const ProofOfBanking: React.FC<ReadAndAcceptAgreementProps> = ({
 
   return (
     <>
-      {/* <BannerWrapper
-        showBackground={false}
-        size="medium"
-        renderBorder={true}
-        title={'Start-up support agreement'}
-        subTitle={'Step 4 of 4'}
-        color={'primary'}
-        onBack={() => setShowProofOfBanking(false)}
-        displayOffline={!isOnline}
-        renderOverflow={true}
-      > */}
       <div className="flex flex-col justify-around p-4">
         <div>
           <Typography
@@ -172,7 +161,6 @@ export const ProofOfBanking: React.FC<ReadAndAcceptAgreementProps> = ({
           ></PhotoPrompt>
         </div>
       </Dialog>
-      {/* </BannerWrapper> */}
     </>
   );
 };

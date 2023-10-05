@@ -187,11 +187,12 @@ export const isPractitionerAttendanceMissingForLearner = (
   const learnerGroups = classRoomGroup.filter(
     (x) => x.id === learner.classroomGroupId
   );
-  const missedAttendanceClassProgramme = getMissedClassAttendance(
+  const missedAttendanceClassProgramme = getMissedClassAttendanceForLearner(
     learnerGroups,
     classProgrammes,
     attendance,
-    date
+    date,
+    learner
   );
 
   return missedAttendanceClassProgramme &&
@@ -212,6 +213,51 @@ export const mapTrackAttendance = (
     attendees,
     programmeOwnerId,
   } as TrackAttendanceModelInput;
+};
+
+export const getMissedClassAttendanceForLearner = (
+  classRoomGroups: ClassroomGroupDto[],
+  classProgrammes: ClassProgrammeDto[],
+  attendance: AttendanceDto[],
+  date: Date,
+  learner: LearnerDto
+) => {
+  const dayOfWeek = getDay(date);
+  const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
+  const returnProgrammes: ClassProgrammeDto[] = [];
+
+  const groupProgrammes = classProgrammes;
+
+  // all the class programs for up until today but does not check the start date
+  const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
+    const programStartDate =
+      typeof x.programmeStartDate !== 'undefined'
+        ? new Date(x.programmeStartDate)
+        : new Date();
+    const programStartDateDay = getDayOfYear(programStartDate);
+    const dateDay = getDayOfYear(date);
+
+    return programStartDateDay === dateDay
+      ? (x.meetingDay || -1) === currentDayFilter
+      : (x.meetingDay || -1) <= currentDayFilter &&
+          isBefore(programStartDateDay, dateDay);
+  });
+
+  const learnerAttendance = attendance.filter((x) => {
+    return x.userId === learner.userId;
+  });
+
+  if (classProgrammesUpToCurrentDay)
+    for (const programme of classProgrammesUpToCurrentDay) {
+      if (
+        !learnerAttendance.some(
+          (att) => att.classroomProgrammeId === programme.id
+        )
+      ) {
+        returnProgrammes.push(programme);
+      }
+    }
+  return returnProgrammes;
 };
 
 export const getMonthName = (monthOfYear: number) => {

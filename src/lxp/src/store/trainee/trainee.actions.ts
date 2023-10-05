@@ -89,7 +89,7 @@ export const getTraineeVisitData = createAsyncThunk<
     }
 
     if (!content) {
-      return rejectWithValue('Error getting visit answers for mother');
+      return rejectWithValue('Error getting visit answers for trainee');
     }
     return content;
   } catch (err) {

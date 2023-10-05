@@ -31,24 +31,45 @@ const ROUTES = {
   BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
   CALENDAR: '/calendar',
-  CLASSROOM: '/classroom',
+  CLASSROOM: addPrefix('/classroom', {
+    UPDATE_FEE: '/preschool-fee',
+  }),
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
     WELCOME: '/welcome',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
       EDIT: '/edit',
+      MEMBER: addPrefix('/member/:practitionerId', {
+        ADD: '/add',
+      }),
       MEMBERS: addPrefix('/members', {
         ADD: '/add',
         EDIT: '/edit',
       }),
       LEADER: addPrefix('/leader', {
+        ADD: '/add',
         EDIT: '/edit',
       }),
-      USER_PROFILE: {
+      USER_PROFILE: addPrefix('/user-profile', {
+        COACH: '/coach/:coachId',
         LEADER: '/leader/:leaderId',
         MEMBER: '/member/:practitionerId',
-      },
+      }),
+      POINTS: addPrefix('/points', {
+        MEET_REGULARLY: addPrefix('/meet-regularly', {
+          MEETING_DETAILS: '/:meetingId/meeting-details',
+        }),
+        BE_CREATIVE: '/be-creative',
+        HOST_FAMILY_EVENT: '/host-family-event',
+        LEAVE_NO_ONE_BEHIND: '/leave-no-one-behind',
+        CAPTURE_CHILD_ATTENDANCE: '/capture-child-attendance',
+        COMPLETE_CHILD_PROGRESS_REPORTS: '/complete-child-progress-reports',
+        HELP: '/help/:activityId',
+      }),
+    }),
+    LEAGUE: addPrefix('/league/:leagueId', {
+      HELP: '/help/:activityId',
     }),
   }),
   CHILD: addPrefix('/child', {

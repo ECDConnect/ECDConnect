@@ -1,7 +1,12 @@
-import { ComponentBaseProps } from '@ecdlink/ui';
+import { Colours, ComponentBaseProps } from '@ecdlink/ui';
 
 export interface PointsDetailsCardProps extends ComponentBaseProps {
   pointsEarned: number;
   activityCount: number;
-  description: string;
+  title: string;
+  description?: string;
+  size?: 'large' | 'medium';
+  colour?: Colours;
+  badgeColour?: Colours;
+  isShare?: boolean;
 }

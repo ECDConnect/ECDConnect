@@ -17,6 +17,11 @@ import { SiteAddressService } from '@/services/SiteAddressService';
 import { CoachService } from '@/services/CoachService';
 import { RootState, ThunkApiType } from '../types';
 
+export const CoachActions = {
+  UPDATE_COACH_CLUB_CLICKED: 'updateCoachClubClicked',
+  GET_COACH_BY_COACH_ID: 'getCoachByCoachId',
+};
+
 export const getCoachByUserId = createAsyncThunk<
   CoachDto,
   {},
@@ -57,18 +62,17 @@ export const getCoachByUserId = createAsyncThunk<
 
 export const getCoachByCoachId = createAsyncThunk<
   CoachDto,
-  { coachId: string },
+  { coachId: string; forceUpdate?: boolean },
   ThunkApiType<RootState>
 >(
-  'getCoachByCoachId',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ coachId }, { getState, rejectWithValue }) => {
+  CoachActions.GET_COACH_BY_COACH_ID,
+  async ({ coachId, forceUpdate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       coach: { coach: coachCache },
     } = getState();
 
-    if (!coachCache) {
+    if (!coachCache || forceUpdate) {
       try {
         let coach: CoachDto | undefined;
 
@@ -206,31 +210,26 @@ export const getAllCoachingCircleClubsForCoach = createAsyncThunk<
   async ({ coachId, startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      coach: { coachCircles: coachCirclesCache },
     } = getState();
 
-    if (!coachCirclesCache) {
-      try {
-        let coach: CoachCirclesDto | undefined;
+    try {
+      let coachCircle: CoachCirclesDto | undefined;
 
-        if (userAuth?.auth_token) {
-          coach = await new CoachService(
-            userAuth?.auth_token
-          ).GetAllCoachingCircleClubsForCoachserId(coachId, startDate, endDate);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-        if (!coach) {
-          return rejectWithValue(
-            'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
-          );
-        }
-        return coach;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        coachCircle = await new CoachService(
+          userAuth?.auth_token
+        ).GetAllCoachingCircleClubsForCoachserId(coachId, startDate, endDate);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return coachCirclesCache;
+      if (!coachCircle) {
+        return rejectWithValue(
+          'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
+        );
+      }
+      return coachCircle;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );
@@ -322,6 +321,31 @@ export const getCoachingCircleTopics = createAsyncThunk<
         ).getCoachingCircleTopics(locale);
 
         return content;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateCoachClubClicked = createAsyncThunk<
+  boolean,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  CoachActions.UPDATE_COACH_CLUB_CLICKED,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new CoachService(
+          userAuth?.auth_token
+        ).updateCoachClubClicked(userId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

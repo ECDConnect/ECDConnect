@@ -207,7 +207,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       color={'primary'}
       size="medium"
       renderBorder={true}
-      onBack={() => history.push(ROUTES.CLASSROOM)}
+      onBack={() => history.push(ROUTES.CLASSROOM.ROOT)}
       // displayOffline={!isOnline}
     >
       <div className="mb-3 flex w-full flex-wrap justify-center">

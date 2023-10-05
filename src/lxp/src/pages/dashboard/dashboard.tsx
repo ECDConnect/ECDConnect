@@ -59,6 +59,8 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
+import { CommunityRouteState } from '../community/community.types';
+import { coachSelectors } from '@/store/coach';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -89,6 +91,7 @@ export const Dashboard: React.FC = () => {
   const userData = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
+  const coach = useSelector(coachSelectors.getCoach);
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -107,8 +110,7 @@ export const Dashboard: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
-  // TODO: add integration
-  const isFirstTimeCommunitySection = true;
+  const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -129,6 +131,11 @@ export const Dashboard: React.FC = () => {
   const [pointsScoreProps, setPointsScoreProps] = useState<ScoreCardProps>();
 
   useEffect(() => {
+    //This will prevent points card showing up for coaches
+    if (isCoach) {
+      return;
+    }
+
     const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
       if (current.month == currentMonth) {
@@ -328,10 +335,15 @@ export const Dashboard: React.FC = () => {
             })
           ).unwrap())();
 
+        const currentDate = new Date();
+        const oneYearAgo = new Date();
+        oneYearAgo.setMonth(currentDate.getMonth() - 12);
         (async () =>
           await appDispatch(
             pointsThunkActions.getPointsSummaryForUser({
               userId: userData?.id!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
             })
           ).unwrap())();
 
@@ -362,13 +374,13 @@ export const Dashboard: React.FC = () => {
   const traineeNavigation = [
     {
       name: NavigationTypes.Children,
-      href: ROUTES.CLASSROOM,
+      href: ROUTES.CLASSROOM.ROOT,
       params: { activeTabIndex: 1 },
       current: false,
     },
     {
       name: NavigationTypes.Programme,
-      href: ROUTES.CLASSROOM,
+      href: ROUTES.CLASSROOM.ROOT,
       params: { activeTabIndex: 2 },
       current: false,
     },
@@ -390,25 +402,25 @@ export const Dashboard: React.FC = () => {
           ? [
               {
                 name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 0 },
                 current: false,
               },
               {
                 name: NavigationTypes.Practitioners,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 1 },
                 current: false,
               },
               {
                 name: NavigationTypes.Children,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 2 },
                 current: false,
               },
               {
                 name: NavigationTypes.Programme,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 3 },
                 current: false,
               },
@@ -418,19 +430,19 @@ export const Dashboard: React.FC = () => {
           : [
               {
                 name: NavigationTypes.Attendance,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 0 },
                 current: false,
               },
               {
                 name: NavigationTypes.Children,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 1 },
                 current: false,
               },
               {
                 name: NavigationTypes.Programme,
-                href: ROUTES.CLASSROOM,
+                href: ROUTES.CLASSROOM.ROOT,
                 params: { activeTabIndex: 2 },
                 current: false,
               },
@@ -457,7 +469,10 @@ export const Dashboard: React.FC = () => {
   if (!isTrainee) {
     navigation.splice(3, 0, {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY.ROOT,
+      href: isFirstTimeCommunitySection
+        ? ROUTES.COMMUNITY.WELCOME
+        : ROUTES.COMMUNITY.ROOT,
+      params: { isFromDashboard: true } as CommunityRouteState,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -539,7 +554,10 @@ export const Dashboard: React.FC = () => {
     },
     {
       name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY.ROOT,
+      href: isFirstTimeCommunitySection
+        ? ROUTES.COMMUNITY.WELCOME
+        : ROUTES.COMMUNITY.ROOT,
+      params: { isFromDashboard: true } as CommunityRouteState,
       icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
@@ -568,12 +586,14 @@ export const Dashboard: React.FC = () => {
         title: 'Community',
         titleIcon: 'UserGroupIcon',
         titleIconClassName: styles.icon,
-        onActionClick: () =>
+        onActionClick: () => {
           history.push(
             isFirstTimeCommunitySection
               ? ROUTES.COMMUNITY.WELCOME
-              : ROUTES.COMMUNITY.ROOT
-          ),
+              : ROUTES.COMMUNITY.ROOT,
+            { isFromDashboard: true } as CommunityRouteState
+          );
+        },
         classNames: 'bg-uiBg',
       }
     );
@@ -679,7 +699,7 @@ export const Dashboard: React.FC = () => {
         hasConsent) ||
       isTrainee
     ) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+      history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
     } else {
       showCompleteProfileBlockingDialog();
     }

@@ -1,14 +1,33 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
-import { CoachingClub } from '@ecdlink/graphql';
+import {
+  Club,
+  ClubLeader,
+  Coach,
+  CoachingClub,
+  CoachingClubBase,
+  MutationChangeClubNameArgs,
+  MutationUpdateCoachAboutInfoArgs,
+  NewClubInput,
+  NewClubMemberInput,
+} from '@ecdlink/graphql';
 import { ClubService } from '@/services/ClubService';
+import { NewClubLeaderInput } from '@/services/ClubService/types';
 
 export const ClubActions = {
   GET_ALL_CLUBS_FOR_COACH: 'getAllClubsForCoach',
+  GET_ALL_CLUB_MEMBERS_FOR_COACH: 'getAllClubMembersForCoach',
+  GET_ALL_CLUBS_DETAILS_FOR_COACH: 'getAllClubsDetailsForCoach',
+  ADD_NEW_CLUB: 'addNewClub',
+  ADD_NEW_CLUB_LEADER: 'addNewClubLeader',
+  ADD_NEW_CLUB_MEMBERS: 'addNewClubMembers',
+  MOVE_CLUB_MEMBERS: 'moveClubMembers',
+  CHANGE_CLUB_NAME: 'changeClubName',
+  UPDATE_COACH_ABOUT_INFO: 'updateCoachAboutInfo',
 };
 
 export const getAllClubsForCoach = createAsyncThunk<
-  CoachingClub[],
+  CoachingClubBase[],
   { userId: string },
   ThunkApiType<RootState>
 >(
@@ -22,6 +41,204 @@ export const getAllClubsForCoach = createAsyncThunk<
       if (userAuth?.auth_token) {
         return await new ClubService(userAuth?.auth_token).getAllClubsForCoach(
           userId
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllClubsDetailsForCoach = createAsyncThunk<
+  CoachingClub[],
+  { userId: string; clubId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH,
+  async ({ userId, clubId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getAllClubsDetailsForCoach(userId, clubId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllClubMembersForCoach = createAsyncThunk<
+  (CoachingClub['id'] & CoachingClub['clubMembers'])[],
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ALL_CLUB_MEMBERS_FOR_COACH,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getAllClubsMembersForCoach(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addNewClubMembers = createAsyncThunk<
+  boolean,
+  { input: NewClubMemberInput },
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_NEW_CLUB_MEMBERS,
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).addNewClubMembers(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const moveClubMembers = createAsyncThunk<
+  boolean,
+  { input: NewClubMemberInput },
+  ThunkApiType<RootState>
+>(
+  ClubActions.MOVE_CLUB_MEMBERS,
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).moveClubMembers(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addNewClub = createAsyncThunk<
+  Club,
+  { input: NewClubInput },
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_NEW_CLUB,
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).addNewClub(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addNewClubLeader = createAsyncThunk<
+  ClubLeader,
+  NewClubLeaderInput,
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_NEW_CLUB_LEADER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).addNewClubLeader(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const changeClubName = createAsyncThunk<
+  Club,
+  MutationChangeClubNameArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.CHANGE_CLUB_NAME,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).changeClubName(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateCoachAboutInfo = createAsyncThunk<
+  Coach,
+  MutationUpdateCoachAboutInfoArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.UPDATE_COACH_ABOUT_INFO,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).updateCoachAboutInfo(
+          input
         );
       } else {
         return rejectWithValue('no access token, profile check required');

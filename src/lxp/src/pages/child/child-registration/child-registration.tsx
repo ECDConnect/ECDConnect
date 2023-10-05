@@ -2,6 +2,7 @@ import {
   CaregiverDto,
   ChildDto,
   ContentConsentTypeEnum,
+  SmartStartPointsLibrary,
   useDialog,
   useStepNavigation,
 } from '@ecdlink/core';
@@ -63,6 +64,8 @@ import { authSelectors } from '@store/auth';
 import { childrenForPractitionerThunkActions } from '@/store/childrenForPractitioner';
 import { practitionerSelectors } from '@/store/practitioner';
 import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple-children-modal';
+import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
+import { pointsSelectors } from '@/store/points';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -87,6 +90,9 @@ export const ChildRegistration: React.FC = () => {
 
   const dialog = useDialog();
 
+  const pointsLibraryRegisterChild = useSelector(
+    pointsSelectors.getPointsLibraryById(SmartStartPointsLibrary.REGISTER_CHILD)
+  );
   const existingLearner = useSelector(
     classroomsSelectors.getChildLearner(existingChild)
   );
@@ -389,14 +395,40 @@ export const ChildRegistration: React.FC = () => {
           );
         },
       });
+    } else {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <ActionModal
+              customIcon={<Emoji3 className="mb-2" />}
+              title={`${childDetails?.firstName}'s registration is complete, great job!`}
+              detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
+              actionButtons={[
+                {
+                  colour: 'primary',
+                  text: 'Close',
+                  textColour: 'primary',
+                  type: 'outlined',
+                  leadingIcon: 'XCircleIcon',
+                  onClick: () => {
+                    if (isTrainee) {
+                      history.push(ROUTES.CLASSROOM.ROOT, {
+                        activeTabIndex: 0,
+                      });
+                    } else {
+                      history.push(ROUTES.CLASSROOM.ROOT);
+                    }
+                    onClose();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
     }
-
-    if (isTrainee) {
-      history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 });
-      return;
-    }
-
-    history.push(ROUTES.CLASSROOM);
   };
 
   useEffect(() => {

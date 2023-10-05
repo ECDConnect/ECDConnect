@@ -826,7 +826,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SmartSpace license received
             License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-            if (smartSpaceLicense?.LicenseDate != null)
+            if (smartSpaceLicense?.LicenseDate != null && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
@@ -834,8 +834,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
             else
             {
-                timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
-                timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                if (smartSpaceLicense.DeclinedDate != null)
+                {
+                    timeline.SmartSpaceLicenseNotAwardedDate = smartSpaceLicense?.DeclinedDate;
+                    timeline.SmartSpaceLicenseNotAwardedSteps = smartSpaceLicense?.DeclinedCommentsSteps;
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                }
+                else
+                {
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                }
             }
 
             // DayOneStartUpTraining
@@ -954,7 +964,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     dates.Add(timeline.CommunitySupportDate.Value);
                 }
 
-                if (sections.Count == 4 && timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() && dates.Count == 4)
+                if (/* sections.Count == 4  && */ timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() && dates.Count >= 3)
                 {
                     var latestDate = dates.OrderDescending().First();
                     latestDate = latestDate.AddDays(7);

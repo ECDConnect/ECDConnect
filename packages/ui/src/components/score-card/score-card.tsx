@@ -7,6 +7,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
   image,
   mainText,
   secondaryText,
+  hint,
   currentPoints,
   maxPoints,
   bgColour,
@@ -31,6 +32,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
             className="h-2"
             label={mainText}
             subLabel={secondaryText || ''}
+            hint={hint}
             value={percentageScore}
             primaryColour={barColour}
             secondaryColour={barBgColour}
