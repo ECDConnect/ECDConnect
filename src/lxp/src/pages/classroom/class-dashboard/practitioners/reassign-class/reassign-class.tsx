@@ -6,10 +6,12 @@ import {
   Dropdown,
   renderIcon,
   Button,
+  ButtonGroup,
+  ButtonGroupTypes,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import { useHistory, useLocation } from 'react-router';
-import { ReassignClassPageState } from './reassign-class.types';
+import { ReassignClassPageState, yesNoOptions } from './reassign-class.types';
 import ROUTES from '@routes/routes';
 import { format } from 'date-fns';
 import { useStoreSetup } from '@hooks/useStoreSetup';
@@ -70,7 +72,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const formattedDate = reportingDate
     ? format(reportingDate, 'EEEE, d LLLL')
     : '';
-
+  const [isOneDayLeave, setIsOneDayLeave] = useState<boolean | boolean[]>();
+  console.log({ isOneDayLeave });
   const {
     control,
     // register: reassignClassRegister,
@@ -96,6 +99,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     { label: string; value: any }[]
   >([]);
 
+  console.log({ classroomGroups });
+
   const {
     date: selectedDate,
     practitioner,
@@ -105,7 +110,12 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   } = useWatch({
     control: control,
   });
-
+  console.log({ practitioner });
+  const practitionerClassroomGroups = useMemo(
+    () => classroomGroups?.filter((item) => item?.userId === practitioner),
+    [classroomGroups, practitioner]
+  );
+  console.log({ practitionerClassroomGroups });
   const practitionerAbsentName = useMemo(() => {
     return practitioners?.find((item) => {
       if (item?.userId === practitioner) {
@@ -159,7 +169,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   useEffect(() => {
-    const _list = classroomGroups
+    const _list = practitionerClassroomGroups
       ?.map((p) => {
         if (p?.name) {
           return {
@@ -200,7 +210,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
   return (
     <BannerWrapper
-      title={`Progress summary`}
+      title={`Record absence/leave`}
       subTitle={`${
         formattedDate ? formattedDate : format(new Date(), 'EEEE, d LLLL')
       }`}
@@ -210,53 +220,34 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       onBack={() => history.push(ROUTES.CLASSROOM.ROOT)}
       // displayOffline={!isOnline}
     >
-      <div className="mb-3 flex w-full flex-wrap justify-center">
+      <div className="mb-3 flex w-full flex-wrap p-4">
         <Typography
           type="h2"
           color="textMid"
-          text={'Reassign a class'}
+          text={'Record absence/leave'}
           className="mt-6"
         />
-        <Typography
-          type="body"
-          color="textMid"
-          text={
-            'If a practitioner is absent, you can assign their class to a different practitioner.'
-          }
-          className="w-11/12"
-        />
-        <label className="text-md mt-2 mb-1 block w-11/12 font-medium text-gray-700">
-          What date would you like to reassign the class?
-        </label>
-        <DatePicker
-          placeholderText={`Please select a date`}
-          wrapperClassName="text-center"
-          className="border-uiLight text-textMid mx-auto w-11/12 rounded-md"
-          selected={selectedDate ? new Date(selectedDate) : undefined}
-          onChange={(date: Date) => {
-            setReassignClassValue('date', date ? date.toString() : '');
-          }}
-          dateFormat="EEE, dd MMM yyyy"
-        />
-        <Dropdown
+        {/* <Dropdown
           placeholder={'Select the class'}
           list={classroomGroupsList || []}
           fillType="clear"
           label={'Which class needs the assignment?'}
           fullWidth
-          className={'mt-3 w-11/12'}
+          className={'mt-3 w-full'}
           selectedValue={reassignedClass}
           onChange={(item: any) => {
             setReassignClassValue('reassignedClass', item);
           }}
-        />
+        /> */}
         <Dropdown
           placeholder={'Select practitioner'}
           list={practitionersList || []}
           fillType="clear"
-          label={'Which practitioner is absent on this date?'}
+          label={
+            'Which practitioner would you like to record a leave/absence for?'
+          }
           fullWidth
-          className={'mt-3 w-11/12'}
+          className={'mt-3 w-full'}
           selectedValue={practitioner}
           onChange={(item: any) => {
             setReassignClassValue('practitioner', item);
@@ -265,30 +256,61 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             );
           }}
         />
-        <Dropdown
-          placeholder={'Select practitioner'}
-          list={practitionersTeachList || []}
-          fillType="clear"
-          label={'Which practitioner will teach this class instead?'}
-          fullWidth
-          className={'mt-3 w-11/12'}
-          onChange={(item: any) => {
-            setReassignClassValue('practitioner2', item);
-          }}
+        <label className={styles.label}>
+          Will the practitioner be absent for one day or longer?
+        </label>
+        <ButtonGroup<boolean>
+          options={yesNoOptions}
+          onOptionSelected={(value) => setIsOneDayLeave(value)}
+          selectedOptions={isOneDayLeave}
+          color="secondary"
+          type={ButtonGroupTypes.Button}
+          className={'w-full'}
         />
-        <Dropdown
-          placeholder={'Select reason'}
-          list={absentInfoList}
-          fillType="clear"
-          label={'Why is the practitioner absent?'}
-          fullWidth
-          className={'mt-3 w-11/12'}
-          onChange={(item: any) => {
-            setReassignClassValue('reason', item);
-          }}
-        />
+        {isOneDayLeave && (
+          <>
+            <label className="text-md mt-2 mb-1 block w-full font-medium text-gray-700">
+              What day will the practitioner be absent?
+            </label>
+            <DatePicker
+              placeholderText={`Please select a date`}
+              wrapperClassName="text-center w-full"
+              className="border-uiLight text-textMid mx-auto w-full rounded-md"
+              selected={selectedDate ? new Date(selectedDate) : undefined}
+              onChange={(date: Date) => {
+                setReassignClassValue('date', date ? date.toString() : '');
+              }}
+              dateFormat="EEE, dd MMM yyyy"
+            />
+            <Dropdown
+              placeholder={'Select reason'}
+              list={absentInfoList}
+              fillType="clear"
+              label={'Reason for absence'}
+              fullWidth
+              className={'mt-3 w-full'}
+              onChange={(item: any) => {
+                setReassignClassValue('reason', item);
+              }}
+            />
+            {practitionerClassroomGroups?.map((item) => (
+              <Dropdown
+                placeholder={'Select practitioner'}
+                list={practitionersTeachList || []}
+                fillType="clear"
+                label={`Who will teach the ${item?.name} class instead?`}
+                fullWidth
+                className={'mt-3 w-full'}
+                onChange={(item: any) => {
+                  setReassignClassValue('practitioner2', item);
+                }}
+              />
+            ))}
+          </>
+        )}
+
         {practitioner && selectedDate && reason && (
-          <div className="bg-infoBb mt-3 flex w-11/12 rounded-lg py-2">
+          <div className="bg-infoBb mt-3 flex w-full rounded-lg py-2">
             <InformationCircleIcon className="text-infoDark mr-1 h-14 w-14 p-2" />
             <Typography
               type="body"
@@ -305,7 +327,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         <Button
           type="filled"
           color="primary"
-          className={'mx-auto mt-4 w-11/12 rounded-xl'}
+          className={'mx-auto mt-4 w-full rounded-xl'}
           onClick={submitReassignClass}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
