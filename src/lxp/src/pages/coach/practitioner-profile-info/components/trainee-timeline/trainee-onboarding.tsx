@@ -10,6 +10,7 @@ import { StartupSupportDetails } from './components/startup-support';
 import { PractitionerDto } from '@ecdlink/core';
 import { SmartSpaceChecklist } from './components/smart-space-checklist/smart-space-checklist';
 import { SmartSpaceVisit } from './components/smart-space-visit/smart-space-visit';
+import { SmartSpaceSummary } from './components/smart-space-summary/smart-space-summary';
 
 interface TraineeOnboardingProps {
   practitioner: PractitionerDto | undefined;
@@ -63,6 +64,20 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
             onDone={onDone}
             practitioner={practitioner || practitionerState}
             options={stepOptions}
+          />
+        );
+      case 'SmartSpace Licence not awarded':
+        return (
+          <SmartSpaceSummary
+            practitioner={practitioner || practitionerState}
+            setNotificationStep={setNotificationStep}
+          />
+        );
+      case 'SmartSpace Licence received':
+        return (
+          <SmartSpaceSummary
+            practitioner={practitioner || practitionerState}
+            setNotificationStep={setNotificationStep}
           />
         );
       default:
