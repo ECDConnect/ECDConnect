@@ -1137,6 +1137,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationUpdates()
     {
+        await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
         int historyDays = 2;
         bool returnOK = false;
         _mappedEntities = await GetMappedEntities();
@@ -1203,7 +1204,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 returnOK = true;
             }
         }
-
+        await _logManager.IntegrationLog($"IntegrationUpdates Completed at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
         return returnOK;
     }
 
@@ -1260,6 +1261,7 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null)
     {
         bool returnOK = false;
+        await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
         DateTime startTime = DateTime.Now;
         int totalAddedToSS = 0;
         int totalFranchiseesAddedToSS = 0;
@@ -1283,7 +1285,7 @@ public class SmartStartIntegrationService : IIntegrationService
             */
 
             //Only allow data pulling when api mode has been set
-
+            await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
 
             if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
             {
@@ -1317,69 +1319,77 @@ public class SmartStartIntegrationService : IIntegrationService
                         {
                             foreach (var franchisee in remoteFranchisees)
                             {
-                                if (franchisee != null)
+                                try
                                 {
-                                    Practitioner newPractitioner = null;
-                                    if (_mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).Count() == 0)
-                                    {
-                                        //Create franchisee and map in SS system
-                                        franchisee.localParentEntityId = coach.LocalId;
-                                        newPractitioner = await MapFranchisee(franchisee);
 
-                                        //send notification to coach
-                                        var userToSend = await _userManager.FindByIdAsync(coach.UserId);
-                                        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
-                                    }
-                                    else
+                                    if (franchisee != null)
                                     {
-                                        var localPractitioner = _mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
-                                        newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
-                                    }
-
-                                    if (newPractitioner != null)
-                                    {
-                                        totalFranchiseesAddedToSS++;
-                                        //get all elements underneath and map those too
-
-                                        //1. Children
-                                        List<MappedChild> remoteChildren = await _apiManager.GetChildren(franchisee.Guid);
-                                        if (remoteChildren != null)
+                                        Practitioner newPractitioner = null;
+                                        if (_mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).Count() == 0)
                                         {
-                                            //List of allocated children to new practitioner
-                                            List<Child> newChildren = new List<Child>();
+                                            //Create franchisee and map in SS system
+                                            franchisee.localParentEntityId = coach.LocalId;
+                                            newPractitioner = await MapFranchisee(franchisee);
 
-                                            foreach (var remoteChild in remoteChildren)
+                                            //send notification to coach
+                                            var userToSend = await _userManager.FindByIdAsync(coach.UserId);
+                                            await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
+                                        }
+                                        else
+                                        {
+                                            var localPractitioner = _mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                                            newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
+                                        }
+
+                                        if (newPractitioner != null)
+                                        {
+                                            totalFranchiseesAddedToSS++;
+                                            //get all elements underneath and map those too
+
+                                            //1. Children
+                                            List<MappedChild> remoteChildren = await _apiManager.GetChildren(franchisee.Guid);
+                                            if (remoteChildren != null)
                                             {
-                                                if (remoteChild != null)
-                                                {
-                                                    var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
-                                                    if (newChild != null)
-                                                    {
-                                                        newChildren.Add(newChild);
-                                                        totalChildrenAddedToSS++;
+                                                //List of allocated children to new practitioner
+                                                List<Child> newChildren = new List<Child>();
 
-                                                        remoteChild.localId = newChild.Id.ToString();
-                                                        remoteChild.localUserId = newChild.UserId;
-                                                        remoteChild.localParentEntityId = newPractitioner.Id.ToString();
-                                                        remoteChild.localParentEntityUserId = newPractitioner.UserId;
+                                                foreach (var remoteChild in remoteChildren)
+                                                {
+                                                    if (remoteChild != null)
+                                                    {
+                                                        var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
+                                                        if (newChild != null)
+                                                        {
+                                                            newChildren.Add(newChild);
+                                                            totalChildrenAddedToSS++;
+
+                                                            remoteChild.localId = newChild.Id.ToString();
+                                                            remoteChild.localUserId = newChild.UserId;
+                                                            remoteChild.localParentEntityId = newPractitioner.Id.ToString();
+                                                            remoteChild.localParentEntityUserId = newPractitioner.UserId;
+                                                        }
                                                     }
                                                 }
-                                            }
 
-                                            //realign hirarchy and learners to Unsure classgroups
-                                            await AlignChildHierarchy(newPractitioner, newChildren);
-                                            await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
-                                        }
-                                        //2. Franchisee Documents
-                                        List<MappedDocument> newDocuments = await _apiManager.GetFranchiseeDocuments(franchisee.Guid);
-                                        if (newDocuments.Any())
-                                        {
-                                            List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, remoteChildren, newPractitioner);
+                                                //realign hirarchy and learners to Unsure classgroups
+                                                await AlignChildHierarchy(newPractitioner, newChildren);
+                                                await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
+                                            }
+                                            //2. Franchisee Documents
+                                            List<MappedDocument> newDocuments = await _apiManager.GetFranchiseeDocuments(franchisee.Guid);
+                                            if (newDocuments.Any())
+                                            {
+                                                List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, remoteChildren, newPractitioner);
+                                            }
                                         }
                                     }
+                                    //pull pqa data for this franchisee
+                                    await PullPQAData(franchisee.Guid);
                                 }
-                                //pull pqa data for this franchisee
-                                await PullPQAData(franchisee.Guid);
+                                catch (Exception e)
+                                {
+                                    await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationByMappedCoach > " + Newtonsoft.Json.JsonConvert.SerializeObject(remoteFranchisees));
+                                }
 
                             }
                             //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
@@ -1422,13 +1432,14 @@ public class SmartStartIntegrationService : IIntegrationService
             scheduledRun.UpdatedBy = _uId;
             schedulerRepo.Update(scheduledRun);
 
-            await _logManager.IntegrationLog(runResults, null, null, LogRelatedType.TaskRun, "IntegrationByMappedCoach");
+            await _logManager.IntegrationLog($"IntegrationByMappedCoach completed at {DateTime.Now}", runResults, null, LogRelatedType.TaskRun, "IntegrationByMappedCoach");            
 
         }
         catch (Exception e)
         {
             await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationByMappedCoach > " + franchiseeId);
         }
+        await _logManager.IntegrationLog($"IntegrationByMappedCoach Completed at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
         return returnOK;
     }
 
@@ -1474,7 +1485,6 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
                     list.Add(alllist.Where(x => x.UserId == tester.Id.ToString()).FirstOrDefault());
                 }
-
             }
 
             return list;
@@ -1485,6 +1495,7 @@ public class SmartStartIntegrationService : IIntegrationService
             throw new HttpRequestException("GetMappedEntitiesTestUsers Error retrieving mapped " + entityType + ": " + e.Message);
         }
     }
+
     public async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null, bool getNew = false)
     {
         try
@@ -3027,25 +3038,25 @@ public class SmartStartIntegrationService : IIntegrationService
                             {
                                 if (prop.Name == localColumnChange.LocalColumn)
                                 {
+                                    string newData = model.NewData;
                                     //if (model.LastUpdatedDateTime >= entityUser.UpdatedDate)
                                     //{
                                     string currentValue = prop.GetValue(entityUser, null) != null ? prop.GetValue(entityUser, null).ToString() : "";
-                                    if (currentValue != model.NewData)
+
+                                    if (localColumnChange.RemapToString) 
+                                        newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+
+                                    if (currentValue != newData)
                                     {
-                                        if (!localColumnChange.RemapToString)
-                                            //if the name is changed, remember to update the fullname as well
-                                            if (prop.Name == "FirstName" || prop.Name == "SurName")
-                                            {
-                                                prop.SetValue(entityUser, model.NewData);
-                                                entityUser.FullName = await UpdateFullName(currentValue, model.NewData, entityUser.FullName);
-                                            }
-                                            else
-                                            {
-                                                prop.SetValue(entityUser, model.NewData);
-                                            }
+                                        //if the name is changed, remember to update the fullname as well
+                                        if (prop.Name == "FirstName" || prop.Name == "SurName")
+                                        {
+                                            prop.SetValue(entityUser, newData);
+                                            entityUser.FullName = await UpdateFullName(currentValue, model.NewData, entityUser.FullName);
+                                        }
                                         else
                                         {
-                                            string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                            prop.SetValue(entityUser, model.NewData);
                                         }
 
                                         updatedEntity = true;
@@ -3070,15 +3081,17 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     if (model.LastUpdatedDateTime >= coach.UpdatedDate)
                                     {
-                                        if (!localColumnChange.RemapToString)
-                                            prop.SetValue(coach, model.EntityColumn);
-                                        else
-                                        {
-                                            //TODO
-                                            string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                        string newData = model.NewData;
+                                        string currentValue = prop.GetValue(coach, null) != null ? prop.GetValue(coach, null).ToString() : "";
+                                        if (localColumnChange.RemapToString)
+                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
 
+                                        prop.SetValue(coach, model.EntityColumn);
+                                        if (currentValue != newData)
+                                        {
+                                            prop.SetValue(coach, newData);
+                                            updatedEntity = true;
                                         }
-                                        updatedEntity = true;
                                     }
                                 }
                             }
@@ -3101,15 +3114,13 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     if (model.LastUpdatedDateTime >= prac.UpdatedDate)
                                     {
+                                        string newData = model.NewData;
                                         string currentValue = prop.GetValue(prac, null) != null ? prop.GetValue(prac, null).ToString() : "";
-                                        if (currentValue != model.NewData)
+                                        if (localColumnChange.RemapToString)
+                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+                                        if (currentValue != newData)
                                         {
-                                            if (!localColumnChange.RemapToString)
-                                                prop.SetValue(prac, model.NewData);
-                                            else
-                                            {
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
-                                            }
+                                            prop.SetValue(prac, newData);
                                             updatedEntity = true;
                                         }
                                     }
@@ -3134,15 +3145,15 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     if (model.LastUpdatedDateTime >= child.UpdatedDate)
                                     {
+                                        string newData = model.NewData;
                                         string currentValue = prop.GetValue(child, null) != null ? prop.GetValue(child, null).ToString() : "";
-                                        if (currentValue != model.NewData)
+
+                                        if (localColumnChange.RemapToString)
+                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+
+                                        if (currentValue != newData)
                                         {
-                                            if (!localColumnChange.RemapToString)
-                                                prop.SetValue(child, model.NewData);
-                                            else
-                                            {
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
-                                            }
+                                            prop.SetValue(child, newData);
                                             updatedEntity = true;
                                         }
                                     }
@@ -3177,26 +3188,22 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     if (model.LastUpdatedDateTime >= caregiver.UpdatedDate)
                                     {
+                                        string newData = model.NewData;
                                         string currentValue = prop.GetValue(caregiver, null) != null ? prop.GetValue(caregiver, null).ToString() : "";
-                                        if (currentValue != model.NewData)
-                                        {
-                                            if (!localColumnChange.RemapToString)
-                                            {
-                                                if (prop.Name == "FirstName" || prop.Name == "SurName")
-                                                {
-                                                    prop.SetValue(caregiver, model.NewData);
-                                                    caregiver.FullName = await UpdateFullName(currentValue, model.NewData, caregiver.FullName);
-                                                }
-                                                else
-                                                {
 
-                                                    prop.SetValue(caregiver, model.NewData);
-                                                }
+                                        if (localColumnChange.RemapToString)
+                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+
+                                        if (currentValue != newData)
+                                        {
+                                            if (prop.Name == "FirstName" || prop.Name == "SurName")
+                                            {
+                                                prop.SetValue(caregiver, newData);
+                                                caregiver.FullName = await UpdateFullName(currentValue, model.NewData, caregiver.FullName);
                                             }
                                             else
                                             {
-                                                //TODO
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                                prop.SetValue(caregiver, newData);
                                             }
                                             updatedEntity = true;
                                         }
@@ -3223,15 +3230,16 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     if (model.LastUpdatedDateTime >= address.UpdatedDate)
                                     {
+                                        string newData = model.NewData;
+
                                         string currentValue = prop.GetValue(address, null) != null ? prop.GetValue(address, null).ToString() : "";
-                                        if (currentValue != model.NewData)
+
+                                        if (localColumnChange.RemapToString)
+                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+
+                                        if (currentValue != newData)
                                         {
-                                            if (!localColumnChange.RemapToString)
-                                                prop.SetValue(address, model.NewData);
-                                            else
-                                            {
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
-                                            }
+                                            prop.SetValue(address, model.NewData);
                                             updatedEntity = true;
                                         }
                                     }
@@ -3256,16 +3264,15 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     if (model.LastUpdatedDateTime >= doc.UpdatedDate)
                                     {
+                                        string newData = model.NewData;
                                         string currentValue = prop.GetValue(doc, null) != null ? prop.GetValue(doc, null).ToString() : "";
-                                        if (currentValue != model.NewData)
+
+                                        if (localColumnChange.RemapToString)
+                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+
+                                        if (currentValue != newData)
                                         {
-                                            if (!localColumnChange.RemapToString)
-                                                prop.SetValue(doc, model.NewData);
-                                            else
-                                            {
-                                                //TODO
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
-                                            }
+                                            prop.SetValue(doc, newData);
                                             updatedEntity = true;
                                         }
                                     }
