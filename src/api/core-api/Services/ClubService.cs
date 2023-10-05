@@ -269,7 +269,7 @@ namespace EcdLink.Api.CoreApi.Services
         public bool AddNewClubMembers(NewClubMember input)
         {
             List<ClubMember> members = new List<ClubMember>();
-            foreach (var Id in input.PractitionerIds)
+            foreach (Guid Id in input.PractitionerIds)
             {
                 members.Add(new ClubMember
                 {
@@ -278,7 +278,8 @@ namespace EcdLink.Api.CoreApi.Services
                     InsertedDate = DateTime.Now,
                     DateClubJoined = DateTime.Now,
                     UpdatedBy = _applicationUserId,
-                    PractitionerId = new Guid(Id),
+                    Practitioner = _practitionerRepo.GetById(Id),
+                    PractitionerId = Id,
                     ClubId = input.ClubId,
                     IsNewInClub = true
                 });
@@ -296,7 +297,7 @@ namespace EcdLink.Api.CoreApi.Services
             List<ClubMember> clubMembers = new List<ClubMember>();
             foreach (var Id in input.PractitionerIds)
             {
-                clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId.ToString() == Id).FirstOrDefault();
+                clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == Id).FirstOrDefault();
                 clubMember.IsNewInClub = true;
                 clubMember.ClubId = input.ClubId;
                 clubMember.UpdatedBy = _applicationUserId;
@@ -816,8 +817,8 @@ namespace EcdLink.Api.CoreApi.Services
                         SecondaryText = secondaryText,
                         SecondaryTextColor = secondaryTextColor,
                         SecondaryTextPriority = secondaryTextPriority,
-                        CurrentClubLeader = clubLeaders.Where(x => x.IsActive == true).FirstOrDefault(),
-                        NewClubLeader = clubLeaders.Where(x => x.IsActive == false).FirstOrDefault(),
+                        CurrentClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAssigned.HasValue && x.DateAccepted.HasValue).FirstOrDefault(),
+                        NewClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAssigned.HasValue && !x.DateAccepted.HasValue).FirstOrDefault(),
                         ClubSupport = clubSupport,
                         ClubMembers = members,
                         Coach = coach,
