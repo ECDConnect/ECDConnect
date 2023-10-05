@@ -118,6 +118,7 @@ import { LeagueLeaderBoard } from '@/pages/community/leagues-tab/league-leaderbo
 import { ActivityHelp } from '@/pages/community/clubs-tab/0-components/help-screen';
 import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add';
 import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
+import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-preschool-fee';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -422,7 +423,12 @@ const AuthRoutes: React.FC = () => {
         component={TraineeOnboarding}
       />
       <Route exact path={ROUTES.CALENDAR} component={Calendar} />
-      <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
+      <Route exact path={ROUTES.CLASSROOM.ROOT} component={ClassDashboard} />
+      <Route
+        exact
+        path={ROUTES.CLASSROOM.UPDATE_FEE}
+        component={UpdatePreschoolFee}
+      />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />
       <Route
         exact

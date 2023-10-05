@@ -29,6 +29,5 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public bool MoveClubMembers(NewClubMember input);
         public ClubLeader AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId);
         public Club AddNewClub(NewClubInput input);
-        public bool RemoveClubLeader(Guid clubId, Guid practitionerId);
     }
 }

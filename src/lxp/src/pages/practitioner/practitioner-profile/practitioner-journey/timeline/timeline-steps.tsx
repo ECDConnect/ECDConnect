@@ -158,7 +158,6 @@ export const timelineSteps = ({
   }
 
   if (timeline?.coachCircles) {
-    console.log(timeline?.coachCircles?.attendanceText);
     const lastMeetingattendanceDate = timeline?.coachCircles?.attendanceText
       ? new Date(timeline?.coachCircles?.attendanceText)
       : new Date();

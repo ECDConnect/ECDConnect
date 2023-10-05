@@ -31,7 +31,9 @@ const ROUTES = {
   BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
   CALENDAR: '/calendar',
-  CLASSROOM: '/classroom',
+  CLASSROOM: addPrefix('/classroom', {
+    UPDATE_FEE: '/preschool-fee',
+  }),
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
     WELCOME: '/welcome',

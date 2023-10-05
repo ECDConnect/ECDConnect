@@ -27,7 +27,7 @@ export const PointsInfoPage: React.FC<PointsInfoPageProps> = ({ onClose }) => {
       languages={languages.map((x) => {
         return { value: x.locale, label: x.description };
       })}
-      moreInformation={!!data ? data[0] : {}} // TODO!!!
+      moreInformation={!!data ? data[0] : {}}
       title="Points Info"
       subTitle="How to earn points"
       name="Do I need this???"
