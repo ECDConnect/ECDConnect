@@ -11,10 +11,15 @@ export const getClubByIdSelector = (clubId: string) =>
   );
 
 export const getCurrentClubLeaderByClubIdSelector = (clubId: string) =>
-  createSelector(
-    getClubByIdSelector(clubId),
-    (club) => club?.currentClubLeader
+  createSelector(getClubByIdSelector(clubId), (club) =>
+    !!club?.currentClubLeader?.dateAccepted
+      ? club?.currentClubLeader
+      : undefined
   );
 
 export const getNextClubLeaderByClubIdSelector = (clubId: string) =>
-  createSelector(getClubByIdSelector(clubId), (club) => club?.newClubLeader);
+  createSelector(getClubByIdSelector(clubId), (club) =>
+    !!club?.currentClubLeader && !club?.currentClubLeader?.dateAccepted
+      ? club?.currentClubLeader
+      : club?.newClubLeader
+  );

@@ -284,6 +284,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
+    console.log('loggin in initAdditionalStoreSetup');
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();
