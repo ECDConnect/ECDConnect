@@ -18,6 +18,8 @@ import { traineeSelectors } from '@/store/trainee';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { useAppDispatch } from '@/store';
+import { coachThunkActions } from '@/store/coach';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -46,6 +48,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
+  const dispatch = useAppDispatch();
   const dialog = useDialog();
   const history = useHistory();
   const [enableButton, setEnableButton] = useState(false);
@@ -147,6 +150,16 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
     [setSectionQuestions, visitSection]
   );
 
+  const declineSmartSpaceLicence = useCallback(async () => {
+    await dispatch(
+      coachThunkActions.declineSmartSpaceLicenseForTrainee({
+        userId: practitioner?.userId!,
+        dateDeclined: new Date(),
+        nextStepsComments: questions[0].answer,
+      })
+    );
+  }, [dispatch, practitioner?.userId, questions]);
+
   const exitCoachSmartSpaceVisit = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
@@ -174,8 +187,9 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
-              onClick: () => {
-                onCancel();
+              onClick: async () => {
+                await declineSmartSpaceLicence();
+                await onCancel();
                 history.push(ROUTES.COACH_TRAINEE_ONBOARDING, {
                   practitionerState: practitioner,
                 });
