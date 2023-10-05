@@ -445,7 +445,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else if (type == Constants.SSSettings.client_trainee)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_coach)
             {

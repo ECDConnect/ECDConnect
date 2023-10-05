@@ -190,8 +190,8 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
               onClick: async () => {
                 await declineSmartSpaceLicence();
                 await onCancel();
-                history.push(ROUTES.COACH_TRAINEE_ONBOARDING, {
-                  practitionerState: practitioner,
+                history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+                  practitionerId: practitioner?.userId,
                 });
               },
               leadingIcon: 'ClockIcon',
