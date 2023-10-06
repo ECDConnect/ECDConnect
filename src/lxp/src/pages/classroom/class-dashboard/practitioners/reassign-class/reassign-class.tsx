@@ -8,6 +8,8 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
+  FormInput,
+  Alert,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import { useHistory, useLocation } from 'react-router';
@@ -45,14 +47,18 @@ const absentInfo = [
   },
   {
     id: 4,
+    name: 'Funeral at home',
+  },
+  {
+    id: 5,
     name: 'Family commitments',
   },
   {
-    id: 4,
+    id: 6,
     name: 'No reason given',
   },
   {
-    id: 4,
+    id: 7,
     name: 'Other',
   },
 ];
@@ -139,6 +145,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       } else return null;
     });
   }, [classroomGroups, reassignedClass]);
+  console.log({ reassignedClassName, reassignedClass });
 
   useEffect(() => {
     const _list = practitioners
@@ -293,37 +300,59 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 setReassignClassValue('reason', item);
               }}
             />
-            {practitionerClassroomGroups?.map((item) => (
-              <Dropdown
-                placeholder={'Select practitioner'}
-                list={practitionersTeachList || []}
-                fillType="clear"
-                label={`Who will teach the ${item?.name} class instead?`}
-                fullWidth
-                className={'mt-3 w-full'}
-                onChange={(item: any) => {
-                  setReassignClassValue('practitioner2', item);
-                }}
+            {reason === 'Other' && (
+              <FormInput
+                className="my-4 w-full"
+                label={'Type the reason'}
+                // value={}
+                onChange={(e) => {}}
+                textInputType="input"
+                placeholder={'e.g. personal appointment'}
               />
-            ))}
+            )}
+            {practitionerClassroomGroups.length > 0 ? (
+              practitionerClassroomGroups?.map((item) => (
+                <>
+                  <Dropdown
+                    placeholder={'Select practitioner'}
+                    list={practitionersTeachList || []}
+                    fillType="clear"
+                    label={`Who will teach the ${item?.name} class instead?`}
+                    fullWidth
+                    className={'mt-3 w-full'}
+                    onChange={(item: any) => {
+                      setReassignClassValue('practitioner2', item);
+                    }}
+                  />
+                  {practitionerPresentName?.user?.fullName && (
+                    <Alert
+                      className={'mt-5 mb-3'}
+                      title={`You are reassigning ${
+                        practitionerAbsentName?.user?.fullName || ''
+                      } class ${item?.name} to ${
+                        practitionerPresentName?.user?.fullName || ''
+                      } for ${format(
+                        new Date(selectedDate!),
+                        'EEEE, d LLLL'
+                      )}.`}
+                      type={'info'}
+                    />
+                  )}
+                </>
+              ))
+            ) : (
+              <Alert
+                className={'mt-5 mb-3'}
+                title="No class reassignment needed."
+                list={[
+                  `${practitionerAbsentName?.user?.firstName} is not currently assigned to a class.`,
+                ]}
+                type={'success'}
+              />
+            )}
           </>
         )}
 
-        {practitioner && selectedDate && reason && (
-          <div className="bg-infoBb mt-3 flex w-full rounded-lg py-2">
-            <InformationCircleIcon className="text-infoDark mr-1 h-14 w-14 p-2" />
-            <Typography
-              type="body"
-              color="textMid"
-              text={`You are reassigning ${
-                practitionerAbsentName?.user?.fullName
-              } class ${reassignedClassName?.name} to ${
-                practitionerPresentName?.user?.fullName
-              } for ${format(new Date(selectedDate), 'EEEE, d LLLL')}.`}
-              className="mr-1"
-            />
-          </div>
-        )}
         <Button
           type="filled"
           color="primary"
