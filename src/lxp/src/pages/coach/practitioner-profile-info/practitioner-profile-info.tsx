@@ -90,11 +90,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   );
   const onboardingNotCompleted = completedSteps?.length < 8;
   const twoWeeksAgo = addDays(new Date(), -14);
+  const fourWeeksAgo = addDays(new Date(), -28);
   const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
     ? new Date(timeline?.smartSpaceLicenseDate)
     : new Date();
   const onboardingIncompleteAfter2Weeks =
     onboardingNotCompleted && smartSpaceLicenseDate < twoWeeksAgo;
+  const onboardingIncompleteAfter4Weeks =
+    onboardingNotCompleted && smartSpaceLicenseDate < fourWeeksAgo;
 
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
@@ -243,6 +246,8 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: onboardingIncompleteAfter2Weeks
         ? 'Incomplete after 2 weeks'
+        : onboardingIncompleteAfter4Weeks
+        ? 'Remove trainee'
         : `${completedSteps?.length + 1} of ${
             timelineStepsArray?.length + 1
           } steps completed`,
