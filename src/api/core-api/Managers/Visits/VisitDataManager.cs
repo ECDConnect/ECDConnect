@@ -281,7 +281,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return null;
         }
-
         public Boolean AddCoachData(CMSVisitDataInputModel input)
         {
 
@@ -354,6 +353,50 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
                 }
             }
+
+            return true;
+        }
+
+        public bool AddSupportVisitData(CMSVisitDataInputModel input)
+        {
+            if (input.VisitData.Sections == null)
+            {
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                _section.Questions = new List<CMSQuestion>();
+
+                var _question = new CMSQuestion();
+                _question.Question = "";
+                _question.Answer = "";
+                _section.Questions.Add(_question);
+                input.VisitData.Sections = new CMSVisitSection[] { _section };
+            }
+
+            foreach (CMSVisitSection section in input.VisitData.Sections)
+            {
+                foreach (CMSQuestion question in section.Questions)
+                {
+                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    VisitData existingRecord = ValidateInsertRecordWithoutAnswer(visitData);
+                    if (existingRecord != null)
+                    {
+                        var entityToUpdate = _visitDataRepo.GetById(existingRecord.Id);
+                        entityToUpdate.QuestionAnswer = visitData.QuestionAnswer;
+                        _visitDataRepo.Update(entityToUpdate);
+                    }
+                    else
+                    {
+                        _visitDataRepo.Insert(visitData);
+                    }
+                }
+            }
+
+            Visit visit = _visitRepo.GetById(new Guid(input.VisitId));
+            visit.Attended = true;
+            visit.ActualVisitDate = DateTime.Now;
+            visit.UpdatedDate = DateTime.Now;
+            visit.UpdatedBy = _applicationUserId;
+            _visitRepo.Update(visit);
 
             return true;
         }
