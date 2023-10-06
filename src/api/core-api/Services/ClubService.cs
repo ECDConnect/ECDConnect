@@ -250,6 +250,9 @@ namespace EcdLink.Api.CoreApi.Services
                     IsActive = true
                 });
 
+            // Expire notification for user if exist
+            _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.ClubLeaderRoleAssigned);
+
             // Add new notification for new club leader assignment
             _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
 
