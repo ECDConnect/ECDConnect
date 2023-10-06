@@ -331,6 +331,9 @@ namespace EcdLink.Api.CoreApi.Services
 
             foreach(ClubMember clubMember in clubMembers)
             {
+                // Expire notification for user if exist
+                _notificationService.ExpireNotificationsTypesForUser(clubMember.Practitioner.UserId, TemplateTypeConstants.UserAddedToClub);
+
                 // Add notification to show user is new to club
                 user = _userManager.FindByIdAsync(clubMember.Practitioner.UserId).Result;
                 _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
