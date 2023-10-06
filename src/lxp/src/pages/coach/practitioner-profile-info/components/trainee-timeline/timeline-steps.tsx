@@ -78,7 +78,8 @@ export const setStep = (
       status !== communitySupport &&
       status !== communitySupport2 &&
       status !== franchisorAgreement &&
-      status !== franchisorAgreement2);
+      status !== franchisorAgreement2 &&
+      status !== 'Consolidation meeting attended');
   if (!!status) {
     return {
       title: status,
