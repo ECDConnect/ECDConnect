@@ -2729,7 +2729,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 var userCreatedResult = await _userManager.CreateAsync(newUser);
                                 if (userCreatedResult.Succeeded)
                                 {
-                                    await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                                    await _userManager.AddToRoleAsync(newUser, Roles.);
                                 }
                                 else
                                 {
@@ -2825,7 +2825,27 @@ public class SmartStartIntegrationService : IIntegrationService
                             try
                             {
                                 _traineeRepo.Insert(newTrainee);
-                                if (existingPractitioner == null)
+                                if (pracCreated)
+                                {
+                                    //map licenses
+                                    List<License> licenses = new List<License>();
+                                    var licenseTypes = _licenseTypeRepo.GetAll();
+                                    licenses.Add(
+                                       new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                                    );
+                                    //licenses.Add(
+                                    //   new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Practice Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                                    //);
+                                    //licenses.Add(
+                                    //   new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("SmartSpace Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                                    //);
+                                    _licenseRepo.InsertMany(licenses);
+                                }
+
+
+                                    //licenses
+
+                                    if (existingPractitioner == null)
                                 {
                                     _practitionerRepo.Insert(newPractitioner);
                                 }
