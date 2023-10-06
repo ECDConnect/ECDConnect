@@ -671,7 +671,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             position={DialogPosition.Top}
           >
             <div className={styles.dialogContent}>
-              <CoachTraineeOnboarding practitioner={practitioner} />
+              <CoachTraineeOnboarding
+                practitioner={practitioner}
+                setShowTraineeDashboard={setShowTraineeDashboard}
+              />
             </div>
           </Dialog>
         </div>

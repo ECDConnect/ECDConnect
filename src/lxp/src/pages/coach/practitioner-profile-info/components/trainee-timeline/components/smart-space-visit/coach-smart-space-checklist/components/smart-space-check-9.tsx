@@ -5,17 +5,13 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
-  Card,
-  Checkbox,
   CheckboxGroup,
   Colours,
   Divider,
-  FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { traineeSelectors } from '@/store/trainee';
 import { useSelector } from 'react-redux';
 
@@ -51,13 +47,9 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
-  const { isOnline } = useOnlineStatus();
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const [answer, setAnswer] = useState<boolean | undefined>(undefined);
   const [enableButton, setEnableButton] = useState(false);
-  const traineeProgrammeType = useSelector(
-    traineeSelectors.getTraineeSmartSpaceAddress
-  );
   const [questions, setAnswers] = useState([
     {
       question: `Is the daily routine displayed and at the right height for children to reach it? Is

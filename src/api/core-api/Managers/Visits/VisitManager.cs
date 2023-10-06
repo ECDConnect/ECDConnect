@@ -419,8 +419,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             else if (type == Constants.GGSettings.client_child)
             {
                 // returning visits only applicable after infant was registered
-                var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && 
-                                                      x.VisitType.Type == Constants.GGSettings.client_child && 
+                var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                                                      x.VisitType.Type == Constants.GGSettings.client_child &&
                                                       x.VisitType.Name != Constants.GGSettings.additional_visits &&
                                                      (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                                                      OrderBy(y => y.PlannedVisitDate).ToList();
@@ -445,7 +445,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else if (type == Constants.SSSettings.client_trainee)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_coach)
             {
@@ -491,6 +491,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return allVisits.OrderBy(x => x.OrderDate).ToList();
         }
+
+        public List<Visit> GetCoachVisits(Guid coachId, Guid practitionerId) {
+
+            return _visitRepo.GetAll().Where(x => x.CoachId == coachId && x.PractitionerId == practitionerId).OrderBy(y => y.PlannedVisitDate).ToList();
+        }
+
         public int GetTotalVisitsForWeek(string id, string type, bool currentWeek)
         {
             DateTime today = DateTime.Today;

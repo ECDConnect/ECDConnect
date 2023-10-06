@@ -10,7 +10,6 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useWindowSize } from '@reach/window-size';
 import { differenceInDays } from 'date-fns';
 import { useState } from 'react';
-import { useHistory } from 'react-router';
 import { timelineSteps } from './timeline-steps';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
@@ -23,13 +22,18 @@ interface OnboardingTraineeDashboardProps {
   setNotificationStep: (notificationStep: string, options?: any) => void;
   setIsSmartChecklist?: any;
   practitioner?: PractitionerDto;
+  setShowTraineeDashboard: any;
 }
 
 export const OnboardingTraineeDashboard: React.FC<
   OnboardingTraineeDashboardProps
-> = ({ setNotificationStep, setIsSmartChecklist, practitioner }) => {
+> = ({
+  setNotificationStep,
+  setIsSmartChecklist,
+  practitioner,
+  setShowTraineeDashboard,
+}) => {
   const { isOnline } = useOnlineStatus();
-  const history = useHistory();
   const isOnStipend = practitioner?.isOnStipend;
 
   const { width } = useWindowSize();
@@ -190,7 +194,7 @@ export const OnboardingTraineeDashboard: React.FC<
         `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`
       }
       color={'primary'}
-      onBack={() => history.goBack()}
+      onBack={() => setShowTraineeDashboard(false)}
       displayOffline={!isOnline}
       renderOverflow={true}
       className="h-screen"
