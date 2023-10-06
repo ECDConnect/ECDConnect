@@ -69,7 +69,6 @@ export const setStep = (
     status !== lincenceReceveid &&
     status !== smartSpaceLincenceReceveid;
   const notShowButtonRules =
-    status === smartSpaceVisitFromCoach ||
     status === licenceNotAwarded ||
     status === licenceAwarded ||
     (stepCompleted &&
