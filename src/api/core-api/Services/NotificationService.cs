@@ -78,8 +78,6 @@ namespace EcdLink.Api.CoreApi.Services
         {
             try
             {
-
-                bool bNeedsMapping = false;
                 var templates = await RetrieveTemplate(templatetype);
 
                 if (templates != null)
