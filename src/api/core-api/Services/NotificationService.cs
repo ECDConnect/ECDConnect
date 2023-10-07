@@ -278,6 +278,7 @@ namespace EcdLink.Api.CoreApi.Services
             if (user != null)
             {
                 string firstName = user.FirstName;
+                replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.FirstName, ReplacementValue = firstName });
             }
 
             if (replacements == null)
@@ -285,7 +286,6 @@ namespace EcdLink.Api.CoreApi.Services
                 replacements = new List<TagsReplacements>();
             }
 
-            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.FirstName, ReplacementValue = firstName });
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.ApplicationName, ReplacementValue = applicationName });
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.OrganisationName, ReplacementValue = organisationName });
             //add all basic tags here
