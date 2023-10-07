@@ -118,6 +118,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     await SendEmailAsync(notification, user, item);
                                     break;
                                 case MessageTypeConstants.HUB:
+                                case MessageTypeConstants.PORTAL:
                                 case MessageTypeConstants.PUSH:
                                     await SendHubMessageAsync(notification, user, item);
                                     break;
@@ -274,7 +275,10 @@ namespace EcdLink.Api.CoreApi.Services
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
-            string firstName = user.FirstName;
+            if (user != null)
+            {
+                string firstName = user.FirstName;
+            }
 
             if (replacements == null)
             {
