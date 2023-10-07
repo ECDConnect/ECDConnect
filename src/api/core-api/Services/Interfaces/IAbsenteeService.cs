@@ -13,6 +13,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             DateTime absentDate,
             string loggedByUser,
             string classroomGroupId = null, // WHY IS THIS NULLABLE???
+            DateTime? absentDateEnd = null,
             Guid? practitionerRemovalHistory = null);
 
     }
