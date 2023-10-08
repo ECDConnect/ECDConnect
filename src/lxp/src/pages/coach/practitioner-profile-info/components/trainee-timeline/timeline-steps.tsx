@@ -69,7 +69,6 @@ export const setStep = (
     status !== lincenceReceveid &&
     status !== smartSpaceLincenceReceveid;
   const notShowButtonRules =
-    status === smartSpaceVisitFromCoach ||
     status === licenceNotAwarded ||
     status === licenceAwarded ||
     (stepCompleted &&
@@ -78,7 +77,8 @@ export const setStep = (
       status !== communitySupport &&
       status !== communitySupport2 &&
       status !== franchisorAgreement &&
-      status !== franchisorAgreement2);
+      status !== franchisorAgreement2 &&
+      status === 'Consolidation meeting attended');
   if (!!status) {
     return {
       title: status,
