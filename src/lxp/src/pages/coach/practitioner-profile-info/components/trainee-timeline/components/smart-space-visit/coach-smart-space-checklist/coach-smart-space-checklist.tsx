@@ -6,7 +6,7 @@ import { SmartSpaceCheck2 } from './components/smart-space-check-2';
 import { useSelector } from 'react-redux';
 import { traineeActions, traineeSelectors } from '@/store/trainee';
 import { SectionQuestions } from '../../smart-space-checklist/components/programme-details/programme-details.types';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { CoachSmartSpaceChecklistSteps } from './coach-smart-space-checklist.types';
 import { SmartSpaceCheck1 } from './components/smart-space-check-1';
 import { SmartSpaceCheck3 } from './components/smart-space-check-3';
@@ -21,7 +21,7 @@ import { SmartSpaceCheck10 } from './components/smart-space-check-10';
 import {
   CmsVisitSectionInput,
   InputMaybe,
-  SsChecklistVisitModelInput,
+  CmsVisitDataInputModelInput,
 } from '@ecdlink/graphql';
 import { TraineeService } from '@/services/TraineeService';
 import { authSelectors } from '@/store/auth';
@@ -53,10 +53,52 @@ export const CoachSmartSpaceChecklist: React.FC<
   const programmeName = useSelector(
     traineeSelectors.getTraineeVisitDataProgrammeName
   );
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [activeStep, setActiveStep] = useState(
     CoachSmartSpaceChecklistSteps.SMART_SPACE_CHECK
+  );
+
+  const handleSetQuestions = useCallback(
+    (value: SectionQuestions[] | undefined) => {
+      setSectionQuestions((prevSections) => {
+        const updatedQuestions = value?.flatMap((newObj) => {
+          const { visitSection: newVisitSection, questions: newQuestions } =
+            newObj;
+          const oldSection = prevSections?.find(
+            (oldObj) => oldObj.visitSection === newVisitSection
+          );
+          const questionsFromOldSection = oldSection?.questions || [];
+
+          const filteredQuestions = newQuestions.filter(
+            (newQuestion) =>
+              !questionsFromOldSection.some(
+                (oldQuestion) => oldQuestion.question === newQuestion.question
+              )
+          );
+
+          const otherSections = prevSections?.filter(
+            (item) => item.visitSection !== newVisitSection
+          );
+
+          const mergedQuestions = filteredQuestions.length
+            ? [...questionsFromOldSection, ...newQuestions]
+            : [...newQuestions];
+
+          return [
+            ...(otherSections?.length ? otherSections : []),
+            {
+              visitSection: newVisitSection,
+              questions: mergedQuestions,
+            },
+          ];
+        }, []);
+
+        return updatedQuestions;
+      });
+    },
+    []
   );
 
   const handleNextSection = () => {
@@ -73,6 +115,7 @@ export const CoachSmartSpaceChecklist: React.FC<
   };
 
   const onSubmit = async () => {
+    const coachVisitId = timeline?.sSCoachVisitId;
     const sections = sectionQuestions?.map((item) => ({
       ...item,
       questions: item.questions.map((question) => ({
@@ -81,24 +124,19 @@ export const CoachSmartSpaceChecklist: React.FC<
       })),
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-    const visitDateInput: SsChecklistVisitModelInput = {
+    const visitDateInput: CmsVisitDataInputModelInput = {
       traineeId: practitioner?.userId,
+      visitId: coachVisitId,
       coachId: user?.id!,
-      plannedVisitDate: new Date(),
-      attended: true,
-      checklistData: {
-        traineeId: practitioner?.userId,
-        coachId: user?.id!,
-        visitData: {
-          visitName: 'SmartSpace Checklist',
-          sections,
-        },
+      visitData: {
+        visitName: 'Coach smartspace check',
+        sections,
       },
     };
 
-    await new TraineeService(
-      userAuth?.auth_token!
-    ).addCoachVisitInviteForTrainee(visitDateInput);
+    await new TraineeService(userAuth?.auth_token!).addCoachVisitData(
+      visitDateInput
+    );
 
     return;
   };
@@ -119,7 +157,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck2
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
@@ -129,7 +167,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck3
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
@@ -139,7 +177,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck4
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
@@ -149,7 +187,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck5
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
@@ -159,7 +197,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck6
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
@@ -169,7 +207,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck7
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
@@ -179,7 +217,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck8
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
@@ -189,7 +227,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck9
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
@@ -199,7 +237,7 @@ export const CoachSmartSpaceChecklist: React.FC<
           <SmartSpaceCheck10
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             onSubmit={onSubmit}
@@ -211,7 +249,7 @@ export const CoachSmartSpaceChecklist: React.FC<
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             practitioner={practitioner}
             programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
           />
         );

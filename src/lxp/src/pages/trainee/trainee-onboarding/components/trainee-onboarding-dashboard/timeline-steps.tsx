@@ -39,6 +39,8 @@ const nextStepButtonIcon = (step: string) => {
       return 'PencilAltIcon';
     case 'Sign start-up support agreement':
       return 'PencilAltIcon';
+    case 'Consolidation meeting overdue':
+      return 'ExclamationCircleIcon';
     default:
       return '';
   }
@@ -106,6 +108,8 @@ export const setStep = (
       subTitle: getStepDate(date),
       inProgressStepIcon:
         (status === 'Consolidation meeting scheduled' && 'CalendarIcon') ||
+        (status === 'Consolidation meeting overdue' &&
+          'ExclamationCircleIcon') ||
         ((color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon'),
       subTitleColor: getStepType(color)?.color || '',
       completedStepIcon: status === 'Community support gained' && 'ThumbUpIcon',
@@ -125,7 +129,8 @@ export const setStep = (
             consolidationMeetingAttended &&
             status === 'Sign start-up support agreement') ||
           (consolidationMeetingAttended && status === 'Register 3 children')) &&
-        status !== 'Consolidation meeting attended'
+        status !== 'Consolidation meeting attended' &&
+        status !== 'Consolidation meeting overdue'
           ? true
           : false,
       actionButtonText: stepCompleted ? 'View' : nextStepButtontext(status),
@@ -174,16 +179,34 @@ export const timelineSteps = (
       consolidationMeetingDataStatus
     )
   );
-  steps.push(
-    setStep(
-      timeline?.consolidationMeetingStatus || 'Consolidation meeting scheduled',
-      timeline?.consolidationMeetingDate || timeline?.consolidationDeadlineDate,
-      timeline?.consolidationMeetingColor,
-      () => onView('Consolidation meeting scheduled'),
-      nextStep,
-      consolidationMeetingDataStatus
-    )
-  );
+  if (
+    new Date(timeline?.consolidationDeadlineDate) < new Date() &&
+    timeline?.consolidationMeetingDate === null
+  ) {
+    steps.push(
+      setStep(
+        'Consolidation meeting overdue',
+        timeline?.consolidationDeadlineDate,
+        timeline?.consolidationMeetingColor,
+        () => onView('Consolidation meeting overdue'),
+        nextStep,
+        consolidationMeetingDataStatus
+      )
+    );
+  } else {
+    steps.push(
+      setStep(
+        timeline?.consolidationMeetingStatus ||
+          'Consolidation meeting scheduled',
+        timeline?.consolidationMeetingDate ||
+          timeline?.consolidationDeadlineDate,
+        timeline?.consolidationMeetingColor,
+        () => onView('Consolidation meeting scheduled'),
+        nextStep,
+        consolidationMeetingDataStatus
+      )
+    );
+  }
   steps.push(
     setStep(
       timeline?.smartSpaceChecklistStatus || 'Fill in the SmartSpace checklist',
