@@ -293,12 +293,12 @@ class CoachService {
   async GetAllClubsForCoach(userId: string): Promise<ClubDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { allClubsForCoach: ClubDto[] };
+      data: { allClubsForCoachSimple: ClubDto[] };
       errors?: {};
     }>(``, {
       query: `
       query GetAllClubsForCoach($userId: String) {
-        allClubsForCoach(userId: $userId) {
+        allClubsForCoachSimple(userId: $userId) {
           id
           name
         }
@@ -313,7 +313,7 @@ class CoachService {
       throw new Error('Get Coach clubs Failed - Server connection error');
     }
 
-    return response.data.data.allClubsForCoach;
+    return response.data.data.allClubsForCoachSimple;
   }
 
   async addCoachCircleMeeting(input: ClubMeetingModelInput): Promise<boolean> {
