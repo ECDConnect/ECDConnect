@@ -97,7 +97,9 @@ export const setStep = (
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
-    status !== smartSpaceLincenceReceveid;
+    status !== smartSpaceLincenceReceveid &&
+    status !== 'Consolidation meeting attended';
+
   if (!!status) {
     return {
       title: status,

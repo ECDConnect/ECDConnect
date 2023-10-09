@@ -115,7 +115,7 @@
     "react-helmet": "^6.1.0",
     "react-hook-form": "7.17.3",
     "react-i18next": "^11.11.4",
-    "react-joyride": "^2.5.3",
+    "react-joyride": "2.5.5",
     "react-native-web": "^0.18.10",
     "react-redux": "^8.0.2",
     "react-responsive-carousel": "^3.2.23",

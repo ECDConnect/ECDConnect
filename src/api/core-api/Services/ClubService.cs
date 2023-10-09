@@ -169,6 +169,11 @@ namespace EcdLink.Api.CoreApi.Services
             return _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true).ToList();
         }
 
+        public List<ClubMember> GetClubsMembers(Guid[] clubIds)
+        {
+            return _clubMemberRepo.GetAll().Where(x => clubIds.Contains(x.ClubId) && x.IsActive == true).ToList();
+        }
+
         public double GetClubAttendanceForMonth(Guid clubId, DateTime date)
         {
             double attendance = 0.0;
@@ -250,6 +255,9 @@ namespace EcdLink.Api.CoreApi.Services
                     IsActive = true
                 });
 
+            // Expire notification for user if exist
+            _notificationService.ExpireNotificationsTypesForUser(userToSend.Id, TemplateTypeConstants.ClubLeaderRoleAssigned);
+
             // Add new notification for new club leader assignment
             _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ClubLeaderRoleAssigned, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
 
@@ -328,6 +336,9 @@ namespace EcdLink.Api.CoreApi.Services
 
             foreach(ClubMember clubMember in clubMembers)
             {
+                // Expire notification for user if exist
+                _notificationService.ExpireNotificationsTypesForUser(clubMember.Practitioner.UserId, TemplateTypeConstants.UserAddedToClub);
+
                 // Add notification to show user is new to club
                 user = _userManager.FindByIdAsync(clubMember.Practitioner.UserId).Result;
                 _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
@@ -463,6 +474,21 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             return leagueClubs;
+        }
+
+        public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId)
+        {
+            return _clubRepo
+                .GetAll()
+                .Where(x => x.UserId == userId && x.IsActive == true)
+                .OrderBy(x => x.Name)
+                .Select(club => new CoachingClubBase
+                {
+                    Id = club.Id,
+                    Name = club.Name,
+                    UserId = club.UserId,
+                })
+                .ToList();
         }
 
         public List<CoachingClubBase> GetAllClubsForCoach(string userId)
@@ -834,6 +860,5 @@ namespace EcdLink.Api.CoreApi.Services
 
             return result;
         }
-
     }
 }
