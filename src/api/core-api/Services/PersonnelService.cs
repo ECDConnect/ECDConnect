@@ -834,7 +834,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
             else
             {
-                if (smartSpaceLicense?.DeclinedDate != null)
+                if (smartSpaceLicense?.LicenseDate != null && smartSpaceLicense?.DeclinedDate != null)
                 {
                     timeline.SmartSpaceLicenseNotAwardedDate = smartSpaceLicense?.DeclinedDate;
                     timeline.SmartSpaceLicenseNotAwardedSteps = smartSpaceLicense?.DeclinedCommentsSteps;
