@@ -697,12 +697,12 @@ public class SmartStartIntegrationService : IIntegrationService
         bool isComplete = false;
 
         _mappedEntities = await GetMappedEntities();
-        int trackingDays = 7;
+        int trackingDays = 2;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
         var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315")).ToList();
 
         DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
-        DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
+        DateTime followingWeekDate = DateTime.Now.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
 
         string absent = "Absent";
         string nosession = "No Session";
@@ -782,23 +782,14 @@ public class SmartStartIntegrationService : IIntegrationService
                 //start buiulding up AttendanceList objects for each practitioner, and each class and learner, even if theres no attendance for a child, we will still have a list at the ready to send
                 foreach (var learner in allLearners)
                 {
-
-                    AttendanceList learnerAttendance = new AttendanceList()
+                    attendances.Add(new AttendanceList()
                     {
                         //ClassroomGroupId = classroomGroup.Id.ToString(),
                         PractitionerUserId = parent.UserId,
                         PractitionerRemoterId = parent.RemoteId,
                         LearnerUserId = learner.UserId,
                         WeeklyAttendance = weeklyAttendanceList //set the basic list back to object                        
-                    };
-
-                    //check if child is mapped, unmapped children attendance must not be synced
-                    var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, learner.UserId) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
-                    if (mappedChild != null)
-                    {
-                        learnerAttendance.LearnerRemoteId = mappedChild.RemoteId;
-                        attendances.Add(learnerAttendance);
-                    }
+                    });
                 }
             }
 
@@ -2729,7 +2720,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 var userCreatedResult = await _userManager.CreateAsync(newUser);
                                 if (userCreatedResult.Succeeded)
                                 {
-                                    await _userManager.AddToRoleAsync(newUser, Roles.);
+                                    await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                                 }
                                 else
                                 {
