@@ -13,6 +13,23 @@ interface AddState {
   visitId?: InputMaybe<string>;
 }
 
+export const handleAddRequestedSupportVisit = ({
+  payload,
+  state,
+  userId,
+}: AddState) => {
+  if (state?.requestedSupportVisitFormData?.length) {
+    state.requestedSupportVisitFormData = [
+      ...state.requestedSupportVisitFormData,
+      { practitionerId: userId, formData: payload },
+    ];
+  } else {
+    state.requestedSupportVisitFormData = [
+      { practitionerId: userId, formData: payload },
+    ];
+  }
+};
+
 export const handleAddSupportVisit = ({ payload, state, userId }: AddState) => {
   if (state?.supportVisitFormData?.length) {
     state.supportVisitFormData = [
