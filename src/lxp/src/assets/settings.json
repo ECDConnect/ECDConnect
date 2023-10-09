@@ -1,5 +1,5 @@
 {
-  "graphQlApi": "https://localhost:5001/graphql/",
-  "authApi": "https://localhost:5001",
-  "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/smartstart.json"
+  "graphQlApi": "https://api.smartstart.ecdconnect.co.za/graphql/",
+  "authApi": "https://api.smartstart.ecdconnect.co.za",
+  "themeUrl": "https://ecdconnectstoragesa.blob.core.windows.net/theme/smartstart.json"
 }
