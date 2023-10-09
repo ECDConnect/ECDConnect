@@ -32,8 +32,13 @@ class ClubService {
           allClubsForCoach(userId: $userId) {
             id
             name
+            userId
             secondaryText
             secondaryTextColor
+            secondaryTextPriority
+            meetingAttendance
+            meetingAttendanceColor
+            meetingAttendanceText 
           }
         }
       `,
@@ -69,6 +74,7 @@ class ClubService {
               maxClubPoints
               totalClubPoints
               leaguePosition
+              secondaryTextPriority
               clubMeetings {
                 id
                 name
@@ -77,7 +83,7 @@ class ClubService {
                 meetingNotes
                 coachAttended
               }
-              clubLeaders {
+              currentClubLeader {
                   isActive
                   dateAssigned
                   dateAccepted
@@ -92,6 +98,22 @@ class ClubService {
                           profileImageUrl
                       }
                   }
+              }
+              newClubLeader {
+                isActive
+                dateAssigned
+                dateAccepted
+                practitioner {
+                    id
+                    user {
+                        id
+                        firstName
+                        surname
+                        phoneNumber
+                        whatsAppNumber
+                        profileImageUrl
+                    }
+                }
               }
               clubSupport {
                   isActive
