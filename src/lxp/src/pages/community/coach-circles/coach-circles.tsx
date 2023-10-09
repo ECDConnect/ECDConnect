@@ -30,8 +30,11 @@ import { CircleTopics } from './components/circle-topics/circle-topics';
 import { CheckCircleIcon, XIcon } from '@heroicons/react/solid';
 import { useAppDispatch } from '@/store';
 import { userSelectors } from '@/store/user';
+import { useLocation } from 'react-router';
+import { CoachCircleRouteState } from './coach-circles.types';
 
 export const CoachCircles = () => {
+  const { state } = useLocation<CoachCircleRouteState>();
   const dispatch = useAppDispatch();
   const date = new Date();
   const quarter = getQuarter(date);
@@ -139,6 +142,9 @@ export const CoachCircles = () => {
         endDate: quarterLastDayDate,
       })
     ).unwrap();
+    if (state.addCoachCircle === true) {
+      setShowAddCircles(true);
+    }
   }, []);
 
   return (

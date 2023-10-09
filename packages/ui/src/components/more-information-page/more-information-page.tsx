@@ -59,8 +59,6 @@ export const MoreInformationPage = ({
               </div>
             </div>
           )}
-          <Typography type="h4" text="Share these activities:" />
-          <Divider dividerType="dashed" className="my-2" />
           {/* ------- A ------- */}
           {!!moreInformation.headerA && (
             <Typography
