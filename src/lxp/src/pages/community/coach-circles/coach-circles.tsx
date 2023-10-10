@@ -142,7 +142,7 @@ export const CoachCircles = () => {
         endDate: quarterLastDayDate,
       })
     ).unwrap();
-    if (state.addCoachCircle === true) {
+    if (state?.addCoachCircle === true) {
       setShowAddCircles(true);
     }
   }, []);
