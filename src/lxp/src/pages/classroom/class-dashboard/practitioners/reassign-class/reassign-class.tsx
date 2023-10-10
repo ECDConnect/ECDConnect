@@ -272,9 +272,15 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         />
         {isOneDayLeave !== undefined && (
           <>
-            <label className="text-md mt-2 mb-1 block w-full font-medium text-gray-700">
-              First day of leave
-            </label>
+            {isOneDayLeave ? (
+              <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
+                What day will the practitioner be absent?
+              </label>
+            ) : (
+              <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
+                First day of leave
+              </label>
+            )}
             <DatePicker
               placeholderText={`Please select a date`}
               wrapperClassName="text-center w-full"
@@ -287,7 +293,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             />
             {!isOneDayLeave && (
               <>
-                <label className="text-md mt-2 mb-1 block w-full font-medium text-gray-700">
+                <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
                   Last day of leave
                 </label>
                 <DatePicker
