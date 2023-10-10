@@ -10,7 +10,11 @@ import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
 
-import { DialogServiceProvider, useDialog } from '@ecdlink/core';
+import {
+  DialogServiceProvider,
+  SnackbarProvider,
+  useDialog,
+} from '@ecdlink/core';
 import { DialogPosition } from '@ecdlink/ui';
 
 import { AuthRoutes, PublicRoutes } from '@/routes';
@@ -40,11 +44,13 @@ function App() {
     if (user && user.isTempUser !== true) {
       return (
         <InitialStoreSetup>
-          <DialogServiceProvider>
-            <InitialNotificationSetup>
-              <AuthRoutes />
-            </InitialNotificationSetup>
-          </DialogServiceProvider>
+          <SnackbarProvider>
+            <DialogServiceProvider>
+              <InitialNotificationSetup>
+                <AuthRoutes />
+              </InitialNotificationSetup>
+            </DialogServiceProvider>
+          </SnackbarProvider>
         </InitialStoreSetup>
       );
     }
