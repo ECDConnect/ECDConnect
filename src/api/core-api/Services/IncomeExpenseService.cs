@@ -831,15 +831,19 @@ namespace ECDLink.Core.Services
                 submittedStatement.UpdatedDate = DateTime.Now;
                 submittedStatement.UpdatedBy = _applicationUserId;
 
+                statementRepo.Insert(submittedStatement);
+
                 //try generating autosubmit doc
                 if (rows > 0) //dont create or send empty docs
                 {
                     var pdfDoc = CreateIncomeStatementPDFDocument(model.UserId, model.Year, model.Month);
                     if (pdfDoc != null)
+                    {
                         submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
+                        statementRepo.Update(submittedStatement);
+                    }
+                
                 }
-
-                statementRepo.Insert(submittedStatement);
                 if (!autoSubmitted)
                 {
                     _pointsEngineService.CalculateIncomeStatements(model.UserId, DateTime.UtcNow);
