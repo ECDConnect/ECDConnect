@@ -838,6 +838,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 daysAbsent++;
                                                 learnerAttendance.WeeklyAttendance[attendedKey] = absent;
                                             }
+                                            continue;
                                         }
 
                                     }
@@ -2827,9 +2828,9 @@ public class SmartStartIntegrationService : IIntegrationService
                                     //licenses.Add(
                                     //   new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Practice Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
                                     //);
-                                    //licenses.Add(
-                                    //   new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("SmartSpace Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
-                                    //);
+                                    licenses.Add(
+                                       new License() { LicenseDate = (entity.SmartSpaceLicenceDate != null ? entity.SmartSpaceLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("SmartSpace Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                                    );
                                     _licenseRepo.InsertMany(licenses);
                                 }
 
