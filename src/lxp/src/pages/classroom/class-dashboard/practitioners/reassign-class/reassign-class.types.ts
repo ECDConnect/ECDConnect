@@ -3,3 +3,8 @@ export interface ReassignClassPageState {
   childId: string;
   reportingDate?: string | any;
 }
+
+export const yesNoOptions = [
+  { text: 'Yes', value: true },
+  { text: 'No', value: false },
+];
