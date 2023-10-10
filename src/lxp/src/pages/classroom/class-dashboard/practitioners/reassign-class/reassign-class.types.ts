@@ -5,6 +5,6 @@ export interface ReassignClassPageState {
 }
 
 export const yesNoOptions = [
-  { text: 'Yes', value: true },
-  { text: 'No', value: false },
+  { text: '1 day', value: true },
+  { text: 'More than 1 day', value: false },
 ];
