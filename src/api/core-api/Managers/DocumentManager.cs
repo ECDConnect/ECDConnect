@@ -158,6 +158,7 @@ namespace EcdLink.Api.CoreApi.Managers
                         // Save new document to the database
                         doc = new Document
                         {
+                            Id = Guid.NewGuid(),
                             CreatedUserId = input.CreatedUserId,
                             Name = input.FileName,
                             UpdatedBy = input.CreatedUserId,
