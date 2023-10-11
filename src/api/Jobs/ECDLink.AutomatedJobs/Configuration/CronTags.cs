@@ -19,8 +19,8 @@
         public const string MidnightDaily = "0 0 0 * * *";
 
         public const string EveryTwoHours = "0 * */2 * * *";
-        public const string EighthOfEveryMonth = "0 0 0 8 * *";
-        public const string FirstOfEveryMonth = "0 0 0 1 * *";
+        public const string EighthOfEveryMonth = "0 0 0 */8 * *";
+        public const string FirstOfEveryMonth = "0 0 0 */1 * *";
         public const string FirstDayofEveryYear = "0 0 0 1 1 *";
     }
 }
