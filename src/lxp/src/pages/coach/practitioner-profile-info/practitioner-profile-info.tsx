@@ -652,23 +652,47 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             <Divider dividerType="dashed" className="my-4" />
             <div className="flex w-full justify-center">
               <Button
-                type="outlined"
+                type="filled"
                 color="primary"
-                className={'mt-6 mb-6 w-11/12'}
+                className={`mt-6 w-11/12 ${
+                  !practitioner?.isPrincipal &&
+                  !practitioner?.isFundaAppAdmin &&
+                  'mb-6'
+                }`}
                 onClick={() => setRemovePractionerReasonsVisible(true)}
               >
-                {renderIcon(
-                  'TrashIcon',
-                  'w-5 h-5 color-primary text-primary mr-2'
-                )}
+                {renderIcon('TrashIcon', 'w-5 h-5 color-white text-white mr-2')}
                 <Typography
                   type="body"
                   className="mr-4"
-                  color="primary"
+                  color="white"
                   text={`Remove ${practitioner?.user?.firstName}`}
                 ></Typography>
               </Button>
             </div>
+            {(practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) && (
+              <div className="flex w-full justify-center">
+                <Button
+                  type="outlined"
+                  color="primary"
+                  className={'mt-4 mb-6 w-11/12'}
+                  onClick={() =>
+                    history.push('/principal/practitioner-reassign-class')
+                  }
+                >
+                  {renderIcon(
+                    'PencilAltIcon',
+                    'w-5 h-5 color-primary text-primary mr-2'
+                  )}
+                  <Typography
+                    type="body"
+                    className="mr-4"
+                    color="primary"
+                    text={`Record leave`}
+                  ></Typography>
+                </Button>
+              </div>
+            )}
           </>
           <Dialog
             fullScreen
