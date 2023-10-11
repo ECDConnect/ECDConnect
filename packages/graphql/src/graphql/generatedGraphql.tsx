@@ -2950,6 +2950,17 @@ export type EventRecordTypeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type ExpenseItemModel = {
+  __typename?: 'ExpenseItemModel';
+  amount: Scalars['Float'];
+  datePaid: Scalars['DateTime'];
+  description?: Maybe<Scalars['String']>;
+  expenseTypeId?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  notes?: Maybe<Scalars['String']>;
+  photoProof?: Maybe<Scalars['String']>;
+};
+
 export type FieldDefinitionModel = {
   __typename?: 'FieldDefinitionModel';
   assemblyDataTypeName?: Maybe<Scalars['String']>;
@@ -3468,6 +3479,35 @@ export type IncomeExpensePdfTableModel = {
   tableName?: Maybe<Scalars['String']>;
   total: Scalars['Float'];
   type?: Maybe<Scalars['String']>;
+};
+
+export type IncomeItemModel = {
+  __typename?: 'IncomeItemModel';
+  amount: Scalars['Float'];
+  amountExpected: Scalars['Float'];
+  childCoverAmount: Scalars['Float'];
+  childUserId?: Maybe<Scalars['String']>;
+  contributionTypeId?: Maybe<Scalars['String']>;
+  dateReceived: Scalars['DateTime'];
+  description?: Maybe<Scalars['String']>;
+  feeTypeId?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  incomeTypeId?: Maybe<Scalars['String']>;
+  notes?: Maybe<Scalars['String']>;
+  payTypeId?: Maybe<Scalars['String']>;
+  photoProof?: Maybe<Scalars['String']>;
+};
+
+export type IncomeStatementModel = {
+  __typename?: 'IncomeStatementModel';
+  balance: Scalars['Float'];
+  expenseItems?: Maybe<Array<Maybe<ExpenseItemModel>>>;
+  expenseTotal: Scalars['Float'];
+  id: Scalars['UUID'];
+  incomeItems?: Maybe<Array<Maybe<IncomeItemModel>>>;
+  incomeTotal: Scalars['Float'];
+  month: Scalars['Int'];
+  year: Scalars['Int'];
 };
 
 export type IncomeStatements = {
@@ -5149,6 +5189,7 @@ export type Mutation = {
   generateCaregiverChildToken?: Maybe<Scalars['String']>;
   importHealthCareWorkers?: Maybe<UserImportModel>;
   importTeamLeads?: Maybe<UserImportModel>;
+  integrationAttendanceByDueData: Scalars['Boolean'];
   integrationAttendanceData: Scalars['Boolean'];
   integrationByFranchisees: Scalars['Boolean'];
   integrationByMappedCoach: Scalars['Boolean'];
@@ -5171,7 +5212,6 @@ export type Mutation = {
   removePractitioner: Scalars['Boolean'];
   removeUserFromRoles: Scalars['Boolean'];
   resetUserPassword: Scalars['Boolean'];
-  saveIncomeStatementPDF?: Maybe<Document>;
   scheduleConsolidationMeetingDate?: Maybe<Trainee>;
   sendAllProgressReportsCompletedForClassNotification: Scalars['Boolean'];
   sendAnyGGNotification: Scalars['Boolean'];
@@ -5259,7 +5299,7 @@ export type Mutation = {
   sendUserAddedToClubNotification: Scalars['Boolean'];
   sendUserAssignedToClassFromOldClassNotification: Scalars['Boolean'];
   sendUserAssignedToClassNotification: Scalars['Boolean'];
-  submitStatement?: Maybe<ResultReturnObject>;
+  submitMonthlyStatement?: Maybe<IncomeStatementModel>;
   switchPrincipal: Scalars['Boolean'];
   testPointEngine: Scalars['Boolean'];
   trackAttendance: Scalars['Boolean'];
@@ -5301,7 +5341,7 @@ export type Mutation = {
   updateEducation?: Maybe<Education>;
   updateEventRecord?: Maybe<EventRecord>;
   updateEventRecordType?: Maybe<EventRecordType>;
-  updateExpense?: Maybe<ResultReturnObject>;
+  updateExpense?: Maybe<ExpenseItemModel>;
   updateFranchisor?: Maybe<Franchisor>;
   updateGender?: Maybe<Gender>;
   updateGrant?: Maybe<Grant>;
@@ -5309,7 +5349,7 @@ export type Mutation = {
   updateHealthCareWorkerTabs?: Maybe<HealthCareWorker>;
   updateHealthPromotion?: Maybe<HealthPromotion>;
   updateHierarchyEntity?: Maybe<HierarchyEntity>;
-  updateIncome?: Maybe<ResultReturnObject>;
+  updateIncome?: Maybe<IncomeItemModel>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
   updateInfantCaregiver?: Maybe<Infant>;
@@ -6835,10 +6875,6 @@ export type MutationResetUserPasswordArgs = {
   newPassword?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSaveIncomeStatementPdfArgs = {
-  input?: InputMaybe<PdfDocumentModelInput>;
-};
-
 export type MutationScheduleConsolidationMeetingDateArgs = {
   scheduledDate?: InputMaybe<Scalars['DateTime']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -7296,8 +7332,8 @@ export type MutationSendUserAssignedToClassNotificationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationSubmitStatementArgs = {
-  input?: InputMaybe<StatementsSubmitInput>;
+export type MutationSubmitMonthlyStatementArgs = {
+  input?: InputMaybe<SubmitStatementModelInput>;
 };
 
 export type MutationSwitchPrincipalArgs = {
@@ -7521,7 +7557,6 @@ export type MutationUpdateEventRecordTypeArgs = {
 };
 
 export type MutationUpdateExpenseArgs = {
-  id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<StatementsExpensesInput>;
 };
 
@@ -7564,7 +7599,6 @@ export type MutationUpdateHierarchyEntityArgs = {
 };
 
 export type MutationUpdateIncomeArgs = {
-  id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<StatementsIncomeInput>;
 };
 
@@ -7952,7 +7986,6 @@ export type MutationUpdateSmartSpaceVisitArgs = {
 };
 
 export type MutationUpdateStartupSupportArgs = {
-  id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<StatementsStartupSupportInput>;
 };
 
@@ -8607,13 +8640,6 @@ export type PagedQueryInput = {
   filterBy?: InputMaybe<Array<InputMaybe<FilterByFieldInput>>>;
   pageNumber?: InputMaybe<Scalars['Int']>;
   pageSize?: InputMaybe<Scalars['Int']>;
-};
-
-export type PdfDocumentModelInput = {
-  createdUserId?: InputMaybe<Scalars['String']>;
-  fileName?: InputMaybe<Scalars['String']>;
-  reference?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type Permission = {
@@ -10193,10 +10219,6 @@ export type Query = {
   allPrincipal?: Maybe<Array<Maybe<Practitioner>>>;
   allPrincipals?: Maybe<Array<Maybe<Principal>>>;
   allRegions?: Maybe<Array<Maybe<Scalars['String']>>>;
-  allStatementsBalanceSheet?: Maybe<Array<Maybe<StatementsBalanceSheet>>>;
-  allStatementsExpenses?: Maybe<Array<Maybe<StatementsExpenses>>>;
-  allStatementsIncome?: Maybe<Array<Maybe<StatementsIncome>>>;
-  allStatementsIncomeStatement?: Maybe<Array<Maybe<StatementsIncomeStatement>>>;
   allTeamLeads?: Maybe<Array<Maybe<TeamLead>>>;
   allTemplates?: Maybe<Array<Maybe<MessageTemplate>>>;
   attendance?: Maybe<Array<Maybe<Attendance>>>;
@@ -10356,6 +10378,7 @@ export type Query = {
   healthPromotion: Array<Maybe<HealthPromotion>>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
   holidaysByYear?: Maybe<Array<Maybe<Holiday>>>;
+  incomeStatements?: Maybe<Array<Maybe<IncomeStatementModel>>>;
   infantCountForHealthCareWorkerForMonth: Scalars['Int'];
   infantSummaryByGroup?: Maybe<Array<Maybe<ClientSummary>>>;
   infantSummaryByPriority?: Maybe<Array<Maybe<ClientSummaryByPriority>>>;
@@ -10409,11 +10432,12 @@ export type Query = {
   statementsIncomeExpensesPDFData?: Maybe<
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
-  statementsIncomeExpensesPDFFile?: Maybe<Document>;
   teamLeadTemplateGenerator?: Maybe<FileModel>;
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   traineeByUserId?: Maybe<Trainee>;
+  unsubmittedExpenseItems?: Maybe<Array<Maybe<ExpenseItemModel>>>;
+  unsubmittedIncomeItems?: Maybe<Array<Maybe<IncomeItemModel>>>;
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
   userCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
@@ -11916,30 +11940,6 @@ export type QueryAllPractitionersForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryAllStatementsBalanceSheetArgs = {
-  month?: InputMaybe<Scalars['Int']>;
-  userId?: InputMaybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
-export type QueryAllStatementsExpensesArgs = {
-  month: Scalars['Int'];
-  userId?: InputMaybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
-export type QueryAllStatementsIncomeArgs = {
-  month: Scalars['Int'];
-  userId?: InputMaybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
-export type QueryAllStatementsIncomeStatementArgs = {
-  month: Scalars['Int'];
-  userId?: InputMaybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
 export type QueryAllTeamLeadsArgs = {
   clinicSearch?: InputMaybe<Scalars['String']>;
   order?: InputMaybe<Array<TeamLeadSortInput>>;
@@ -12697,6 +12697,12 @@ export type QueryHolidaysByYearArgs = {
   year: Scalars['Int'];
 };
 
+export type QueryIncomeStatementsArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  startDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryInfantCountForHealthCareWorkerForMonthArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -12878,17 +12884,19 @@ export type QueryStatementsIncomeExpensesPdfDataArgs = {
   year: Scalars['Int'];
 };
 
-export type QueryStatementsIncomeExpensesPdfFileArgs = {
-  month: Scalars['Int'];
-  userId?: InputMaybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
 export type QueryTotalDaysAbsentArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryTraineeByUserIdArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryUnsubmittedExpenseItemsArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryUnsubmittedIncomeItemsArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -13734,19 +13742,6 @@ export enum SortEnumType {
   Desc = 'DESC',
 }
 
-export type StatementsBalanceSheet = {
-  __typename?: 'StatementsBalanceSheet';
-  autoSubmitted: Scalars['Boolean'];
-  balance: Scalars['Float'];
-  expenseTotal: Scalars['Float'];
-  incomeTotal: Scalars['Float'];
-  month?: Maybe<Scalars['Int']>;
-  submitted: Scalars['Boolean'];
-  submittedDate?: Maybe<Scalars['DateTime']>;
-  userId?: Maybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
 export type StatementsContributionType = {
   __typename?: 'StatementsContributionType';
   description?: Maybe<Scalars['String']>;
@@ -14270,13 +14265,6 @@ export type StatementsStartupSupportSortInput = {
   userId?: InputMaybe<SortEnumType>;
 };
 
-export type StatementsSubmitInput = {
-  month: Scalars['Int'];
-  period?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
 export type StoryBook = {
   __typename?: 'StoryBook';
   author?: Maybe<Scalars['String']>;
@@ -14342,6 +14330,14 @@ export type StringOperationFilterInput = {
   nstartsWith?: InputMaybe<Scalars['String']>;
   or?: InputMaybe<Array<StringOperationFilterInput>>;
   startsWith?: InputMaybe<Scalars['String']>;
+};
+
+export type SubmitStatementModelInput = {
+  expenseItemIds?: InputMaybe<Array<Scalars['UUID']>>;
+  incomeItemIds?: InputMaybe<Array<Scalars['UUID']>>;
+  month: Scalars['Int'];
+  userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type SupportVisitModelInput = {

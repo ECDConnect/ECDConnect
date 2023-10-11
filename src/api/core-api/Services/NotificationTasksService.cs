@@ -28,7 +28,7 @@ namespace ECDLink.Core.Services
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INotificationService _notificationService;
-        private readonly IncomeExpenseService _incomeService;
+        private readonly IIncomeExpenseService _incomeService;
         private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
         IHolidayService<Holiday> _holidayService;
 
@@ -36,8 +36,10 @@ namespace ECDLink.Core.Services
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IncomeExpenseService incomeService,
-            HierarchyEngine hierarchyEngine, [Service] AttendanceTrackingRepository attendanceTrackingRepository, IHolidayService<Holiday> holidayService)
+            [Service] IIncomeExpenseService incomeService,
+            HierarchyEngine hierarchyEngine, 
+            [Service] AttendanceTrackingRepository attendanceTrackingRepository, 
+            IHolidayService<Holiday> holidayService)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;

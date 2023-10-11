@@ -93,7 +93,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private IntegrationLogManager _logManager;
     private IntegrationAPIManager _apiManager;
     private IFileService _fileService;
-    private IncomeExpenseService _incomeManager;
+    private IIncomeExpenseService _incomeManager;
     private AttendanceService _attendanceService;
     private IntegrationHelperManager _integrationHelperManager;
     private AttendanceTrackingRepository _attendanceTrackingRepository;
@@ -127,7 +127,7 @@ public class SmartStartIntegrationService : IIntegrationService
          IntegrationAPIManager apiManager,
          IntegrationHelperManager integrationHelperManager,
          [Service] IFileService fileService,
-         [Service] IncomeExpenseService incomeManager,
+         [Service] IIncomeExpenseService incomeManager,
          [Service] AttendanceTrackingRepository attendanceTrackingRepository,
          IHolidayService<Holiday> holidayService,
          [Service] INotificationService notificationService,

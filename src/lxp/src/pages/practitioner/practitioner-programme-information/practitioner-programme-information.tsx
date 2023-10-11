@@ -291,7 +291,6 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       });
     }
 
-    // TODO - make this show based on the date parameters if they haven't updated yet this year
     if (!!classroom && (isPrincipal || practitioner?.isFundaAppAdmin)) {
       const feeUpdatedThisYear =
         !!classroom?.preschoolFeeAmountLastUpdateDate &&

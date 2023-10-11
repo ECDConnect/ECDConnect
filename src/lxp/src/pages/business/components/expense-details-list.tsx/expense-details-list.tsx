@@ -1,35 +1,28 @@
 import { Typography, Card, StackedList, BannerWrapper } from '@ecdlink/ui';
 import React from 'react';
-import { useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useSelector } from 'react-redux';
 import {
-  getChildName,
-  incomesValueFunc,
+  formatCurrency,
   numberWithSpaces,
+  sumIncomeOrExpenseItems,
 } from '@/utils/statements/statements-utils';
-import { MonthStatementsDetailsState } from '../month-statements-details.types';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
-import { childrenSelectors } from '@/store/children';
-import { IncomeDetailsListProps } from './income-details-list.types';
 import { format } from 'date-fns';
+import { ExpenseDetailsListProps } from './expense-details-list.types';
 
-export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
+export const ExpenseDetailsList: React.FC<ExpenseDetailsListProps> = ({
   hideDetails,
   statementTitle,
-  incomeStatements,
+  expenseItems,
+  statementMonth,
 }) => {
-  const location = useLocation<MonthStatementsDetailsState>();
-  const children = useSelector(childrenSelectors.getChildren);
-  const statementMonth = Number(location?.state?.month) - 1 || 0;
   const { isOnline } = useOnlineStatus();
 
-  // TODO better mapping, or pass in mapped items
-  const incomeListDetailsItems = incomeStatements?.map((item) => {
+  const incomeListDetailsItems = expenseItems?.map((item) => {
     return {
-      title: item?.childUserId
-        ? getChildName(item?.childUserId!, children!) || 'Child not found' // Child may have been removed so we won't have the name
-        : format(Date.parse(item.dateReceived || ''), 'dd/MM/yyyy'),
+      title: !!item.description
+        ? item.description
+        : format(Date.parse(item.datePaid || ''), 'dd/MM/yyyy'),
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
@@ -65,7 +58,7 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
           type="body"
           weight="bold"
           color="textMid"
-          text={`${getMonthName(Number(statementMonth))} income`}
+          text={`${getMonthName(Number(statementMonth))} expenses`}
         />
         {incomeListDetailsItems && (
           <StackedList
@@ -85,7 +78,7 @@ export const IncomeDetailsList: React.FC<IncomeDetailsListProps> = ({
             className="w-8/12"
           />
           <Typography
-            text={`R ${String(incomesValueFunc(incomeStatements))}`}
+            text={`R ${formatCurrency(sumIncomeOrExpenseItems(expenseItems))}`}
             color={'white'}
             type="h4"
             className="mr-12 w-4/12 text-right"

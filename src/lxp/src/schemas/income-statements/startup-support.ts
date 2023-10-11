@@ -1,11 +1,11 @@
 import * as Yup from 'yup';
 
 export interface StartupSupportModel {
-  date: Date | string;
+  date: string;
   startupValue: string;
 }
 
 export const StartupSupportSchema = Yup.object().shape({
-  date: Yup.date().required(),
-  startupValue: Yup.string().required(),
+  date: Yup.string().required(),
+  startupValue: Yup.number().required(),
 });
