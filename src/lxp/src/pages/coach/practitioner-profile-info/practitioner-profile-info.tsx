@@ -677,7 +677,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   color="primary"
                   className={'mt-4 mb-6 w-11/12'}
                   onClick={() =>
-                    history.push('/principal/practitioner-reassign-class')
+                    history.push(ROUTES.COACH.PRACTITIONER_REASSIGN_CLASS)
                   }
                 >
                   {renderIcon(

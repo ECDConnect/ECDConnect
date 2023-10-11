@@ -119,6 +119,7 @@ import { ActivityHelp } from '@/pages/community/clubs-tab/0-components/help-scre
 import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add';
 import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
 import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-preschool-fee';
+import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -538,6 +539,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONERS}
         component={Practitioners}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_REASSIGN_CLASS}
+        component={CoachReassignClass}
       />
       <Route
         exact

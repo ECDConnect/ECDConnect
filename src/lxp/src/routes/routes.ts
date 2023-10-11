@@ -142,6 +142,7 @@ const ROUTES = {
     }),
     PRACTITIONERS: '/practitioners',
     PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
+    PRACTITIONER_REASSIGN_CLASS: '/practitioner-reassign-class',
     PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
     PRACTITIONER_BUSINESS: addPrefix('/practitioner-business', {
       BUSINESS: '/:practitionerId',
