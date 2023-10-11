@@ -80,17 +80,15 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
   const { state: routeState } = useLocation<ReassignClassPageState>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  console.log({ practitioners });
   const absenteePractitioner = useSelector(
     getPractitionerByUserId(String(routeState?.practitionerId) || '')
   );
+  const principalPractitioners = practitioners?.filter(
+    (item) => item?.principalHierarchy === absenteePractitioner?.userId
+  );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const reportingDate = routeState?.reportingDate
-    ? new Date(routeState?.reportingDate)
-    : new Date();
   const practitionerId = routeState?.practitionerId;
-  const formattedDate = reportingDate
-    ? format(reportingDate, 'EEEE, d LLLL')
-    : '';
   const [isOneDayLeave, setIsOneDayLeave] = useState<boolean | boolean[]>();
 
   const {
@@ -142,9 +140,14 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     control: control,
   });
 
+  const disableButton = !reason || !selectedDate;
+
   const practitionerClassroomGroups = useMemo(
-    () => classroomGroups?.filter((item) => item?.userId === practitioner),
-    [classroomGroups, practitioner]
+    () =>
+      classroomGroups?.filter(
+        (item) => item?.userId === absenteePractitioner?.userId
+      ),
+    [absenteePractitioner, classroomGroups]
   );
 
   const practitionerAbsentName = useMemo(() => {
@@ -156,15 +159,15 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   }, [practitioner, practitioners]);
 
   const practitionerPresentName = useMemo(() => {
-    return practitioners?.find((item) => {
+    return principalPractitioners?.find((item) => {
       if (item?.userId === practitioner2) {
         return item?.user?.fullName;
       } else return null;
     });
-  }, [practitioner2, practitioners]);
+  }, [practitioner2, principalPractitioners]);
 
   useEffect(() => {
-    const _list = practitioners
+    const _list = principalPractitioners
       ?.map((p) => {
         if (p?.user?.firstName && p?.user?.surname) {
           return {
@@ -230,6 +233,70 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     history.push(ROUTES.DASHBOARD);
   };
 
+  const renderClassroomGroupsDropdown = useMemo(() => {
+    if (principalPractitioners && principalPractitioners?.length > 5) {
+      if (practitionerClassroomGroups.length > 0) {
+        practitionerClassroomGroups?.map((item, index) => {
+          const classroomId = item?.id!;
+          return (
+            <>
+              <Dropdown
+                key={index}
+                placeholder={'Select practitioner'}
+                list={practitionersTeachList || []}
+                fillType="clear"
+                label={`Who will teach the ${item?.name} class instead?`}
+                fullWidth
+                className={'mt-3 w-full'}
+                onChange={(practitioner: any) => {
+                  const reassignedData = {
+                    practitioner,
+                    classroomId,
+                  };
+                  setReassignClassValue('practitioner2', practitioner);
+                  handleReassignClassroomGroupPractitioner(reassignedData);
+                }}
+              />
+              {practitionerPresentName?.user?.fullName && (
+                <Alert
+                  className={'mt-5 mb-3'}
+                  title={`You are reassigning ${
+                    practitionerAbsentName?.user?.fullName || ''
+                  } class ${item?.name} to ${
+                    practitionerPresentName?.user?.fullName || ''
+                  } for ${format(new Date(selectedDate!), 'EEEE, d LLLL')}.`}
+                  type={'info'}
+                />
+              )}
+            </>
+          );
+        });
+      }
+      return (
+        <Alert
+          className={'mt-5 mb-3'}
+          title="No class reassignment needed."
+          list={[
+            `${practitionerAbsentName?.user?.firstName} is not currently assigned to a class.`,
+          ]}
+          type={'success'}
+        />
+      );
+    }
+  }, [
+    handleReassignClassroomGroupPractitioner,
+    practitionerAbsentName?.user?.firstName,
+    practitionerAbsentName?.user?.fullName,
+    practitionerClassroomGroups,
+    practitionerPresentName?.user?.fullName,
+    practitionersTeachList,
+    principalPractitioners,
+    selectedDate,
+    setReassignClassValue,
+  ]);
+
+  console.log({ practitionerClassroomGroups });
+
   return (
     <BannerWrapper
       title={`Record leave`}
@@ -250,151 +317,84 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           text={`Record leave for ${absenteePractitioner?.user?.firstName}`}
           className="mt-6"
         />
-        <Dropdown
-          placeholder={'Select practitioner'}
-          list={practitionersList || []}
-          fillType="clear"
-          label={`Which practitioner will be the Funda App Admin during this time?`}
-          subLabel={`Every programme must have one practitioner responsible for submitting income statements and managing the programme.`}
-          fullWidth
-          className={'mt-3 w-full'}
-          selectedValue={practitioner}
-          onChange={(item: any) => {
-            setReassignClassValue('practitioner', item);
-            setPractitionersTeachList(
-              practitionersList.filter((prac) => prac.value !== item)
-            );
-          }}
-        />
-        <label className={styles.label}>
-          Will the practitioner be absent for one day or longer?
-        </label>
-        <ButtonGroup<boolean>
-          options={yesNoOptions}
-          onOptionSelected={(value) => setIsOneDayLeave(value)}
-          selectedOptions={isOneDayLeave}
-          color="secondary"
-          type={ButtonGroupTypes.Button}
-          className={'w-full'}
-        />
-        {isOneDayLeave !== undefined && (
+        {principalPractitioners && principalPractitioners?.length > 0 && (
+          <Dropdown
+            placeholder={'Select practitioner'}
+            list={practitionersList || []}
+            fillType="clear"
+            label={`Which practitioner will be the Funda App Admin during this time?`}
+            subLabel={`Every programme must have one practitioner responsible for submitting income statements and managing the programme.`}
+            fullWidth
+            className={'mt-3 w-full'}
+            selectedValue={practitioner}
+            onChange={(item: any) => {
+              setReassignClassValue('practitioner', item);
+              setPractitionersTeachList(
+                practitionersList.filter((prac) => prac.value !== item)
+              );
+            }}
+          />
+        )}
+        <>
+          <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
+            First day of leave
+          </label>
+          <DatePicker
+            placeholderText={`Please select a date`}
+            wrapperClassName="text-center w-full"
+            className="border-uiLight text-textMid mx-auto w-full rounded-md"
+            selected={selectedDate ? new Date(selectedDate) : undefined}
+            onChange={(date: Date) => {
+              setReassignClassValue('date', date ? date.toString() : '');
+            }}
+            dateFormat="EEE, dd MMM yyyy"
+          />
           <>
-            {isOneDayLeave ? (
-              <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
-                What day will the practitioner be absent?
-              </label>
-            ) : (
-              <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
-                First day of leave
-              </label>
-            )}
+            <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
+              Last day of leave
+            </label>
             <DatePicker
               placeholderText={`Please select a date`}
               wrapperClassName="text-center w-full"
               className="border-uiLight text-textMid mx-auto w-full rounded-md"
               selected={selectedDate ? new Date(selectedDate) : undefined}
               onChange={(date: Date) => {
-                setReassignClassValue('date', date ? date.toString() : '');
+                setEndDate(date);
               }}
               dateFormat="EEE, dd MMM yyyy"
             />
-            {!isOneDayLeave && (
-              <>
-                <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
-                  Last day of leave
-                </label>
-                <DatePicker
-                  placeholderText={`Please select a date`}
-                  wrapperClassName="text-center w-full"
-                  className="border-uiLight text-textMid mx-auto w-full rounded-md"
-                  selected={selectedDate ? new Date(selectedDate) : undefined}
-                  onChange={(date: Date) => {
-                    setEndDate(date);
-                  }}
-                  dateFormat="EEE, dd MMM yyyy"
-                />
-              </>
-            )}
-            <Dropdown
-              placeholder={'Select reason'}
-              list={absentInfoList}
-              fillType="clear"
-              label={'Reason for absence'}
-              fullWidth
-              className={'mt-3 w-full'}
-              onChange={(item: any) => {
-                setReassignClassValue('reason', item);
-              }}
-            />
-            {reason === 'Other' && (
-              <FormInput
-                className="my-4 w-full"
-                label={'Type the reason'}
-                // value={}
-                onChange={(e) => {}}
-                textInputType="input"
-                placeholder={'e.g. personal appointment'}
-              />
-            )}
-            {practitionerClassroomGroups.length > 0 ? (
-              practitionerClassroomGroups?.map((item, index) => {
-                const classroomId = item?.id!;
-                return (
-                  <>
-                    <Dropdown
-                      key={index}
-                      placeholder={'Select practitioner'}
-                      list={practitionersTeachList || []}
-                      fillType="clear"
-                      label={`Who will teach the ${item?.name} class instead?`}
-                      fullWidth
-                      className={'mt-3 w-full'}
-                      onChange={(practitioner: any) => {
-                        const reassignedData = {
-                          practitioner,
-                          classroomId,
-                        };
-                        setReassignClassValue('practitioner2', practitioner);
-                        handleReassignClassroomGroupPractitioner(
-                          reassignedData
-                        );
-                      }}
-                    />
-                    {practitionerPresentName?.user?.fullName && (
-                      <Alert
-                        className={'mt-5 mb-3'}
-                        title={`You are reassigning ${
-                          practitionerAbsentName?.user?.fullName || ''
-                        } class ${item?.name} to ${
-                          practitionerPresentName?.user?.fullName || ''
-                        } for ${format(
-                          new Date(selectedDate!),
-                          'EEEE, d LLLL'
-                        )}.`}
-                        type={'info'}
-                      />
-                    )}
-                  </>
-                );
-              })
-            ) : (
-              <Alert
-                className={'mt-5 mb-3'}
-                title="No class reassignment needed."
-                list={[
-                  `${practitionerAbsentName?.user?.firstName} is not currently assigned to a class.`,
-                ]}
-                type={'success'}
-              />
-            )}
           </>
-        )}
+          <Dropdown
+            placeholder={'Select reason'}
+            list={absentInfoList}
+            fillType="clear"
+            label={'Reason for absence'}
+            fullWidth
+            className={'mt-3 w-full'}
+            onChange={(item: any) => {
+              setReassignClassValue('reason', item);
+            }}
+          />
+          {reason === 'Other' && (
+            <FormInput
+              className="my-4 w-full"
+              label={'Type the reason'}
+              // value={}
+              onChange={(e) => {}}
+              textInputType="input"
+              placeholder={'e.g. personal appointment'}
+            />
+          )}
+
+          {renderClassroomGroupsDropdown}
+        </>
 
         <Button
           type="filled"
           color="primary"
           className={'mx-auto mt-4 w-full rounded-xl'}
           onClick={submitReassignClass}
+          disabled={disableButton}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography
