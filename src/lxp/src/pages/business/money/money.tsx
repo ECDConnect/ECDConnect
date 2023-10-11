@@ -9,12 +9,7 @@ import {
 } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
-import React, {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useState,
-} from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { SubmitIncomeStatements } from './submit-income-statements/submit-income-statements';
@@ -22,14 +17,7 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@/store';
 import { statementsSelectors, statementsThunkActions } from '@store/statements';
-import { getMonth, getYear } from 'date-fns';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
-import {
-  StatementsExpensesInput,
-  StatementsIncomeInput,
-} from '@/../../../packages/graphql/lib';
-import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import {
   getStorageItem,
   setStorageItem,
@@ -39,113 +27,85 @@ import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.
 import { pointsSelectors } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
 
-interface MoneyProps {
-  setHasIncomeStatements: (item: boolean) => void;
-  hasIncomeStatements: boolean;
-}
-
-export const Money: React.FC<MoneyProps> = ({
-  hasIncomeStatements,
-  setHasIncomeStatements,
-}) => {
+export const Money: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [isLoading, setIsLoading] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
-  const income = useSelector(statementsSelectors.getIncome);
-  const expense = useSelector(statementsSelectors.getExpenses);
-  const currentDate = new Date();
 
-  const updateStatements = async () => {
-    if (userAuth?.auth_token) {
-      setIsLoading(true);
-      await appDispatch(
-        statementsThunkActions.getAllStatementsBalanceSheet({
-          // userId: userAuth?.id!,
-          year: getYear(currentDate),
-          month: undefined,
-        })
-      ).unwrap();
+  const statements = useSelector(statementsSelectors.getIncomeStatements);
+  const incomeItems = useSelector(
+    statementsSelectors.getUnsubmittedIncomeItems
+  );
+  const expenseItems = useSelector(
+    statementsSelectors.getUnsubmittedExpenseItems
+  );
 
-      const month =
-        balanceSheet?.[balanceSheet?.length - 1]?.submitted === false &&
-        balanceSheet?.[balanceSheet?.length - 1]?.month! ===
-          new Date().getMonth()
-          ? getMonth(currentDate)
-          : getMonth(currentDate) + 1;
+  const unsyncedIncome = useSelector(
+    statementsSelectors.getUnsyncedIncomeItems
+  );
+  const unsyncedExpenses = useSelector(
+    statementsSelectors.getUnsyncedExpenseItems
+  );
 
-      await appDispatch(
-        statementsThunkActions.getAllExpenses({
-          month: month,
-          year: getYear(currentDate),
-        })
-      );
-      await appDispatch(
-        statementsThunkActions.getAllIncome({
-          month: month,
-          year: getYear(currentDate),
-        })
-      );
-      setIsLoading(false);
-    }
-  };
+  const hasIncomeStatements =
+    incomeItems.length > 0 || expenseItems.length > 0 || statements.length > 0;
 
   useEffect(() => {
     if (isOnline) {
-      income
-        ?.filter((item) => item?.isOffline === true)
-        .map(async (item) => {
-          let { id, isOffline, ...input } = item;
-          await new IncomeStatementsService(
-            userAuth?.auth_token!
-          ).UpdateStatementsIncome(item?.id!, input! as StatementsIncomeInput);
-        });
-
-      if (income?.filter((e) => e?.isOffline === true).length! > 0) {
-        updateStatements();
-      }
+      unsyncedIncome.forEach(async (item) => {
+        appDispatch(
+          statementsThunkActions.addIncomeItem({
+            input: item,
+            firstAttempt: false,
+          })
+        );
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline, userAuth?.auth_token]);
-
-  useEffect(() => {
-    if (isOnline) {
-      expense
-        ?.filter((item) => item?.isOffline === true)
-        .map(async (item) => {
-          let { id, isOffline, ...input } = item;
-          await new ExpensesStatementsService(
-            userAuth?.auth_token!
-          ).UpdateStatementsExpense(
-            item?.id!,
-            input! as StatementsExpensesInput
-          );
-        });
-      if (expense?.filter((e) => e?.isOffline === true).length! > 0) {
-        updateStatements();
-      }
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline, userAuth?.auth_token]);
-
-  useLayoutEffect(() => {
-    updateStatements();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (
-      (income && income?.length > 0) ||
-      (expense && expense?.length! > 0) ||
-      (balanceSheet && balanceSheet?.length! > 0) //&&
-      // balanceSheet?.[0]?.balance !== 0
-    ) {
-      setHasIncomeStatements(true);
+    if (isOnline) {
+      unsyncedExpenses.forEach(async (item) => {
+        appDispatch(
+          statementsThunkActions.addExpenseItem({
+            input: item,
+            firstAttempt: false,
+          })
+        );
+      });
     }
+  }, []);
+
+  const fetchStatements = useCallback(async () => {
+    if (userAuth?.auth_token && isOnline) {
+      setIsLoading(true);
+      const startDate = new Date();
+      startDate.setFullYear(startDate.getFullYear() - 1);
+      await appDispatch(
+        statementsThunkActions.getIncomeStatements({
+          startDate: startDate,
+          endDate: undefined,
+        })
+      ).unwrap();
+
+      await appDispatch(
+        statementsThunkActions.getUnsubmittedIncomeItems({})
+      ).unwrap();
+
+      await appDispatch(
+        statementsThunkActions.getUnsubmittedExpenseItems({})
+      ).unwrap();
+
+      setIsLoading(false);
+    }
+  }, [appDispatch, setIsLoading, userAuth, isOnline]);
+
+  useEffect(() => {
+    fetchStatements();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [income, expense, balanceSheet]);
+  }, [fetchStatements]);
 
   // Display update fees logic
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -165,7 +125,7 @@ export const Money: React.FC<MoneyProps> = ({
       LocalStorageKeys.pointsSubmitStatementsMessageDismissed
     );
 
-    if (!storageItem || currentDate.getFullYear() > storageItem) {
+    if (!storageItem || new Date().getFullYear() > storageItem) {
       setShowUpdatePreschoolFeeReminder(true);
     } else {
       setShowUpdatePreschoolFeeReminder(false);
@@ -178,9 +138,9 @@ export const Money: React.FC<MoneyProps> = ({
       LocalStorageKeys.pointsSubmitStatementsMessageDismissed
     );
     setShowUpdatePreschoolFeeReminder(false);
-  }, []);
+  }, [setShowUpdatePreschoolFeeReminder]);
 
-  const pointsLibraries = useSelector(
+  const updateFeesPointsLibrary = useSelector(
     pointsSelectors.getPointsLibraryById(
       SmartStartPointsLibrary.UPDATE_PRESCHOOL_FEE_FOR_YEAR
     )
@@ -253,7 +213,7 @@ export const Money: React.FC<MoneyProps> = ({
                 className="mt-2 text-center"
                 color="textMid"
                 text={`Update the caregiver fee as soon as possible to reflect the ${new Date().getFullYear()} amount. You'll earn ${
-                  pointsLibraries?.points
+                  updateFeesPointsLibrary?.points
                 } points!`}
                 type={'body'}
               />

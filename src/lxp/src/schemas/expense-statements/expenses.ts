@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
 export interface ExpensesModel {
-  date?: Date | string;
+  date?: string;
   amount: string;
   expenseInvoice?: string;
   note?: string;

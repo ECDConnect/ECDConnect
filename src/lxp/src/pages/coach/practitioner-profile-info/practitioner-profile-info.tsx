@@ -304,7 +304,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       onActionClick: () =>
         history.push(
           ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
-            ':practitionerId',
+            ':userId',
             practitionerId
           )
         ),
