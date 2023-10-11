@@ -34,6 +34,7 @@ import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@store/user';
 import { classroomsSelectors } from '@/store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 
 const absentInfo = [
   {
@@ -79,6 +80,9 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
   const { state: routeState } = useLocation<ReassignClassPageState>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const absenteePractitioner = useSelector(
+    getPractitionerByUserId(String(routeState?.practitionerId) || '')
+  );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const reportingDate = routeState?.reportingDate
     ? new Date(routeState?.reportingDate)
@@ -137,6 +141,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   } = useWatch({
     control: control,
   });
+
   const practitionerClassroomGroups = useMemo(
     () => classroomGroups?.filter((item) => item?.userId === practitioner),
     [classroomGroups, practitioner]
@@ -227,9 +232,10 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
 
   return (
     <BannerWrapper
-      title={`Record absence/leave`}
+      title={`Record leave`}
       subTitle={`${
-        formattedDate ? formattedDate : format(new Date(), 'EEEE, d LLLL')
+        absenteePractitioner?.user?.fullName ||
+        absenteePractitioner?.user?.firstName
       }`}
       color={'primary'}
       size="medium"
@@ -241,16 +247,15 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
         <Typography
           type="h2"
           color="textMid"
-          text={'Record absence/leave'}
+          text={`Record leave for ${absenteePractitioner?.user?.firstName}`}
           className="mt-6"
         />
         <Dropdown
           placeholder={'Select practitioner'}
           list={practitionersList || []}
           fillType="clear"
-          label={
-            'Which practitioner would you like to record a leave/absence for?'
-          }
+          label={`Which practitioner will be the Funda App Admin during this time?`}
+          subLabel={`Every programme must have one practitioner responsible for submitting income statements and managing the programme.`}
           fullWidth
           className={'mt-3 w-full'}
           selectedValue={practitioner}
