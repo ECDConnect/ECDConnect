@@ -1,12 +1,12 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useDialog } from '@ecdlink/core';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDialog, usePrevious } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getInfantById } from '@/store/infant/infant.selectors';
 import { RootState } from '@/store/types';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router';
-import { currentActivityKey } from '..';
+import { useLocation, useParams } from 'react-router';
+import { MotherProfileParams, currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
 import { DynamicForm } from './dynamic-form';
 import {
@@ -36,6 +36,8 @@ import { dangerSignsSectionName } from './danger-signs-steps/danger-signs';
 import { maternalDistressVisitSection } from './pregnancy-care-steps/maternal-distress/result';
 import { muacQuestion } from './nutrition-steps/mother-growth-muac';
 import { HIVQuestion } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/hiv-care';
+import { visitThunkActions } from '@/store/visit';
+import { useAppDispatch } from '@/store';
 
 interface FormProps {
   onBack: () => void;
@@ -55,10 +57,13 @@ export const Form = ({ onBack }: FormProps) => {
 
   const dialog = useDialog();
 
+  const appDispatch = useAppDispatch();
+
   const location = useLocation();
 
   const [, , , infantId] = location.pathname.split('/');
-  const [, , , motherId] = location.pathname.split('/');
+
+  const { id: motherId, visitId } = useParams<MotherProfileParams>();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -159,6 +164,7 @@ export const Form = ({ onBack }: FormProps) => {
   const isMUACStep = isFirstVisit || Number(previousMUAC!) < 22;
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+  const activityNamePrevious = usePrevious(activityName);
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -260,6 +266,21 @@ export const Form = ({ onBack }: FormProps) => {
     isDangerSignsFollowUpStep,
     referralsForMother?.length,
   ]);
+
+  useEffect(() => {
+    if (!activityNamePrevious && activityName === activitiesTypes.followUp) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForInfant({
+          visitId,
+        })
+      ).unwrap();
+      appDispatch(
+        visitThunkActions.GetInfantSummaryByPriority({
+          visitId,
+        })
+      );
+    }
+  }, [activityName, activityNamePrevious, appDispatch, visitId]);
 
   return (
     <BannerWrapper

@@ -1,5 +1,9 @@
-import { useCallback, useMemo, useState } from 'react';
-import { getAgeInYearsMonthsAndDays, useDialog } from '@ecdlink/core';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  getAgeInYearsMonthsAndDays,
+  useDialog,
+  usePrevious,
+} from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   getInfantById,
@@ -34,6 +38,8 @@ import { useParams } from 'react-router';
 import { dangerSignsQuestion } from './pillar-4-steps/danger-signs';
 import { riskOption2 } from './pillar-4-steps/danger-signs/options';
 import { sicknessStepQuestion } from './pillar-4-steps/sickness';
+import { useAppDispatch } from '@/store';
+import { visitThunkActions } from '@/store/visit';
 
 interface FormProps {
   onBack: () => void;
@@ -76,7 +82,9 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
 
   const dialog = useDialog();
 
-  const { id: infantId } = useParams<InfantProfileParams>();
+  const appDispatch = useAppDispatch();
+
+  const { id: infantId, visitId } = useParams<InfantProfileParams>();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -163,6 +171,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     sicknessStepAnswer === true && !stepsRules.isChildBefore49Days;
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+  const activityNamePrevious = usePrevious(activityName);
 
   const isPillar4FollowUp = getIsFollowUp(
     dangerSignsVisitSection,
@@ -294,12 +303,10 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
         return followUpSteps(!!referralsForInfant?.length);
     }
   }, [
-    isToShowPillar4DangerSigns,
-    isSicknessAlertStep,
     activityName,
-    nutritionAnswer,
-    isToSkipBreastfeedingIssuesRelevantItemsStep,
+    ageDays,
     isChild6Months,
+    isChildOlderthan6Months,
     isFormulaMilkHowBreastfeedingWorks,
     isFormulaMilkUnsafeFeedingPractices,
     isMixedFeedingBenefitsOfBreastfeeding,
@@ -308,11 +315,29 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     isMixedFeedingFistFoods,
     isMixedFeedingFoodsForm,
     isMixedFeedingUnsafeFeedingPractices,
-    ageDays,
-    stepsRules,
     isPillar4FollowUp,
+    isSicknessAlertStep,
+    isToShowPillar4DangerSigns,
+    isToSkipBreastfeedingIssuesRelevantItemsStep,
+    nutritionAnswer,
     referralsForInfant?.length,
+    stepsRules,
   ]);
+
+  useEffect(() => {
+    if (!activityNamePrevious && activityName === activitiesTypes.followUp) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForInfant({
+          visitId,
+        })
+      ).unwrap();
+      appDispatch(
+        visitThunkActions.GetInfantSummaryByPriority({
+          visitId,
+        })
+      );
+    }
+  }, [activityName, activityNamePrevious, appDispatch, visitId]);
 
   return (
     <BannerWrapper
