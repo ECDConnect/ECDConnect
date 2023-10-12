@@ -36,6 +36,7 @@ export interface CalendarAddEventParticipantFormModel {
   userId: string;
   firstName: string;
   surname: string;
+  isClub: boolean;
 }
 
 export interface CalendarAddEventFormModel {

@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
 export interface PreschoolFeesModel {
-  date: Date | string;
+  date: string;
   child: any;
   contributionType: any;
   feeType: string | string[];
@@ -10,10 +10,10 @@ export interface PreschoolFeesModel {
 }
 
 export const preschoolFeesSchema = Yup.object().shape({
-  date: Yup.date().required(),
+  date: Yup.string().required(),
   practitioner: Yup.string().required(),
   contributionType: Yup.string(),
   feeType: Yup.string(),
-  amount: Yup.string(),
+  amount: Yup.number(),
   note: Yup.string(),
 });

@@ -256,9 +256,7 @@ export const getAllClubsForCoach = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
       if (!coachClubs) {
-        return rejectWithValue(
-          'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
-        );
+        return rejectWithValue('getAllClubsForCoach: Error getting coachClubs');
       }
       return coachClubs;
     } catch (err) {
@@ -350,6 +348,50 @@ export const updateCoachClubClicked = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
     } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const declineSmartSpaceLicenseForTrainee = createAsyncThunk<
+  boolean[],
+  { userId: string; dateDeclined: Date; nextStepsComments: string },
+  ThunkApiType<RootState>
+>(
+  'declineSmartSpaceLicenseForTrainee',
+  async (
+    { userId, dateDeclined, nextStepsComments },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+      coach: { coach },
+    } = getState();
+
+    try {
+      let declineLicence: boolean | undefined;
+
+      if (userAuth?.auth_token && coach) {
+        declineLicence = await new CoachService(
+          userAuth?.auth_token
+        ).declineSmartSpaceLicenseForTrainee(
+          userId,
+          dateDeclined,
+          nextStepsComments
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!declineLicence) {
+        return rejectWithValue('Error adding meeting circle');
+      }
+
+      return [declineLicence];
+    } catch (err) {
+      if (err instanceof Error) {
+        return rejectWithValue(err.message);
+      }
       return rejectWithValue(err);
     }
   }

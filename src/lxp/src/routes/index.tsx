@@ -74,8 +74,8 @@ import { AddIncome } from '@/pages/business/add-amount/add-income/add-income';
 import { AddExpense } from '@/pages/business/add-amount/add-expense/add-expense';
 import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/attendance-tutorial/walkthrough-tutorial/walkthrough-tutorial';
 import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
-import { PreviousStatementsList } from '@/pages/business/money/submit-income-statements/components/previous-statements-list/previous-statements-list';
-import { MonthStatementsDetails } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-details';
+import { PreviousStatements } from '@/pages/business/money/previous-statements/previous-statements';
+import { MonthStatements } from '@/pages/business/money/monthly-statements/month-statements';
 import { Community } from '@/pages/community/community';
 import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journey';
 import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
@@ -87,12 +87,10 @@ import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-prof
 import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-information/practitioner-list/switch-principal/switch-principal';
 import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-business/coach-practitioner-business';
-import { PractitionerPreviousStatementsList } from '@/pages/coach/coach-practitioner-business/components/statements/previous-statements-list';
-import { PractitionerMonthStatementsDetails } from '@/pages/coach/coach-practitioner-business/components/statements/month-statements-details';
+import { PractitionerPreviousStatements } from '@/pages/coach/coach-practitioner-business/components/statements/previous-statements';
+import { PractitionerMonthStatements } from '@/pages/coach/coach-practitioner-business/components/statements/month-statements';
 import { StatementNotSubmitted } from '@/pages/coach/coach-practitioner-business/components/statements/not-submitted';
 import { StartupSupportEnding } from '@/pages/coach/coach-practitioner-business/components/support/startup-support-ending';
-import { MonthsLoss } from '@/pages/coach/coach-practitioner-business/components/statements/loss';
-import { MonthsProfit } from '@/pages/coach/coach-practitioner-business/components/statements/profit';
 import { PointsSummary } from '@/pages/points/points-summary/points-summary';
 import { CommunityWelcome } from '@/pages/community/welcome';
 import { Club } from '@/pages/community/clubs-tab/club/individual-club-view';
@@ -119,6 +117,8 @@ import { ActivityHelp } from '@/pages/community/clubs-tab/0-components/help-scre
 import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add';
 import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
 import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-preschool-fee';
+import { CurrentMonthSummary } from '@/pages/business/money/monthly-statements/current-month-summary';
+import { PractitionerCurrentMonthSummary } from '@/pages/coach/coach-practitioner-business/components/statements/current-month-summary';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -197,12 +197,17 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         path={ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST}
-        component={PreviousStatementsList}
+        component={PreviousStatements}
         exact={true}
       />
       <Route
         path={ROUTES.BUSINESS_MONTH_STATEMENTS_DETAILS}
-        component={MonthStatementsDetails}
+        component={MonthStatements}
+        exact={true}
+      />
+      <Route
+        path={ROUTES.BUSINESS_CURRENT_MONTH_STATEMENTS_DETAILS}
+        component={CurrentMonthSummary}
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact />
@@ -595,34 +600,18 @@ const AuthRoutes: React.FC = () => {
       <Route
         exact
         path={ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS}
-        component={PractitionerPreviousStatementsList}
+        component={PractitionerPreviousStatements}
       />
       <Route
         exact
         path={ROUTES.COACH.PRACTITIONER_BUSINESS.STATEMENT_DETAILS}
-        component={PractitionerMonthStatementsDetails}
+        component={PractitionerMonthStatements}
       />
       <Route
         exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS.NOT_SUBMITTED}
-        component={StatementNotSubmitted}
+        path={ROUTES.COACH.PRACTITIONER_BUSINESS.CURRENT_MONTH_SUMMARY}
+        component={PractitionerCurrentMonthSummary}
       />
-      <Route
-        exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS.STARTUP_SUPPORT_ENDING}
-        component={StartupSupportEnding}
-      />
-      <Route
-        exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS.PROFIT}
-        component={MonthsProfit}
-      />
-      <Route
-        exact
-        path={ROUTES.COACH.PRACTITIONER_BUSINESS.LOSS}
-        component={MonthsLoss}
-      />
-
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>
   );

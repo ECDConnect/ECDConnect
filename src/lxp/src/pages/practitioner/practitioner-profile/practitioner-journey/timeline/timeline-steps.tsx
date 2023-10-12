@@ -80,16 +80,23 @@ export const timelineSteps = ({
   }
 
   if (!!attendedSupportVisits?.length) {
+    const mergedVisits = [
+      ...(timeline?.supportVisits ?? []),
+      ...(timeline?.requestedCoachVisits ?? []),
+    ];
+
+    const lastVisit = mergedVisits[mergedVisits.length - 1];
     const date = new Date(
-      attendedSupportVisits[attendedSupportVisits.length - 1]?.actualVisitDate
+      lastVisit?.actualVisitDate || lastVisit?.plannedVisitDate
     ).toLocaleDateString('en-ZA', dateOptions);
+    const type = mergedVisits?.every((item) => !!item?.attended)
+      ? 'completed'
+      : 'todo';
 
     steps.push({
       title: 'General support visits',
-      subTitle: date,
-      type: timeline.supportVisits?.every((item) => !!item?.attended)
-        ? 'completed'
-        : 'todo',
+      subTitle: `${type === 'todo' ? 'By ' : ''}${date}`,
+      type,
       extraData: {
         date: new Date(date),
       },
@@ -158,7 +165,6 @@ export const timelineSteps = ({
   }
 
   if (timeline?.coachCircles) {
-    console.log(timeline?.coachCircles?.attendanceText);
     const lastMeetingattendanceDate = timeline?.coachCircles?.attendanceText
       ? new Date(timeline?.coachCircles?.attendanceText)
       : new Date();

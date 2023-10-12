@@ -109,6 +109,10 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
       question: 'How many cm is the long side of the room?',
       answer: '',
     },
+    {
+      question: 'Capacity',
+      answer: '',
+    },
   ]);
 
   const visitSection = `Calculate programme capacity`;
@@ -235,6 +239,12 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
     }
   }, [numberOfAssistants, questions, traineeProgrammeTypeObject?.description]);
 
+  useEffect(() => {
+    if (maximumCapacity) {
+      onOptionSelected(maximumCapacity, 2);
+    }
+  }, [maximumCapacity]);
+
   return (
     <div className="p-4">
       <Typography
@@ -256,22 +266,26 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
         color={'textMid'}
         className={'my-3'}
       />
-      {questions.map((item, index) => (
-        <FormInput
-          className="mt-4"
-          label={item?.question}
-          placeholder={'e.g. 410'}
-          value={item.answer}
-          onChange={(e) => onOptionSelected(e.target.value, index)}
-          {...(!!item.answer &&
-            Number(item.answer) < 50 && {
-              error: {
-                type: 'max',
-                message: 'Please enter a number that is more 49.',
-              },
-            })}
-        />
-      ))}
+      {questions.map((item, index) => {
+        if (item?.question !== 'Capacity') {
+          return (
+            <FormInput
+              className="mt-4"
+              label={item?.question}
+              placeholder={'e.g. 410'}
+              value={item.answer}
+              onChange={(e) => onOptionSelected(e.target.value, index)}
+              {...(!!item.answer &&
+                Number(item.answer) < 50 && {
+                  error: {
+                    type: 'max',
+                    message: 'Please enter a number that is more 49.',
+                  },
+                })}
+            />
+          );
+        } else return null;
+      })}
 
       {twoMeasuresFilled && (
         <div className="mt-2 flex flex-col gap-2">

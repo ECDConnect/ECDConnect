@@ -11,6 +11,7 @@ export const maxNumberOfVisits = 3;
 
 export const visitTypes = {
   supportVisit: 'General support visit',
+  requestedVisit: 'Requested visit',
   delicensing: 'Delicensing',
   prePqa: {
     includes: 'pre_pqa_visit',
@@ -72,4 +73,6 @@ export const visitTypes = {
 export const generalSupportVisitTypes = {
   visit: 'support_visit',
   call: 'support_call',
+  practitioner_visit: 'practitioner_visit',
+  practitioner_call: 'practitioner_call',
 };

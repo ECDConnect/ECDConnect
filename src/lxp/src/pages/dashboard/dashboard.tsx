@@ -843,7 +843,7 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!pointsScoreProps && (
+        {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
             mainText={pointsScoreProps.mainText}
             currentPoints={pointsScoreProps.currentPoints}

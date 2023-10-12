@@ -20,7 +20,6 @@ export const getStepType = (
   color?: Maybe<string>
 ): { type: StepItem['type']; color?: Colours } => {
   if (!color) return { type: 'todo' };
-
   switch (color.toLowerCase()) {
     case 'success':
       return { type: 'completed' };
@@ -63,34 +62,40 @@ export const setStep = (
   const smartSpaceVisitFromCoach = 'SmartSpace visit from coach';
   const consolidationMeetingScheduled = 'Consolidation meeting scheduled';
   const consolidationMeetingAttended = 'Consolidation meeting attended';
-
+  const licenceNotAwarded = 'SmartSpace Licence not awarded';
+  const licenceAwarded = 'SmartSpace Licence received';
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
     status !== smartSpaceLincenceReceveid;
   const notShowButtonRules =
-    status === smartSpaceVisitFromCoach ||
+    status === licenceNotAwarded ||
+    status === licenceAwarded ||
     (stepCompleted &&
       status !== register3Children &&
       status !== register3Children2 &&
       status !== communitySupport &&
       status !== communitySupport2 &&
       status !== franchisorAgreement &&
-      status !== franchisorAgreement2);
+      status !== franchisorAgreement2 &&
+      status === 'Consolidation meeting attended');
   if (!!status) {
     return {
       title: status,
+      color: status === licenceNotAwarded && 'errorDark',
       subTitle: getStepDate(date, visitEventId),
       inProgressStepIcon:
+        (status === licenceNotAwarded && 'XIcon') ||
         (status === consolidationMeetingScheduled && 'CalendarIcon') ||
         (status === smartSpaceVisitFromCoach &&
           !!visitEventId &&
           'CalendarIcon') ||
         ((color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon'),
       subTitleColor:
-        new Date(date!) < new Date() && color?.toLowerCase() !== 'success'
+        (status === licenceNotAwarded && 'errorMain') ||
+        (new Date(date!) < new Date() && color?.toLowerCase() !== 'success'
           ? 'alertMain'
-          : getStepType(color)?.color || '',
+          : getStepType(color)?.color || ''),
       completedStepIcon: status === communitySupport2 && 'ThumbUpIcon',
       type:
         status === consolidationMeetingAttended
@@ -102,24 +107,44 @@ export const setStep = (
         status !== register3Children
           ? true
           : false,
-      actionButtonText: stepCompleted
-        ? 'View'
-        : !!visitEventId
-        ? 'Start'
-        : 'Schedule',
-      actionButtonTextColor: stepCompleted
-        ? 'secondary'
-        : !!visitEventId
-        ? 'white'
-        : 'primary',
-      actionButtonColor: stepCompleted ? 'secondaryAccent2' : 'primary',
-      actionButtonIcon: stepCompleted
-        ? ''
-        : !!visitEventId
-        ? 'ArrowCircleRightIcon'
-        : 'CalendarIcon',
+      actionButtonText:
+        stepCompleted ||
+        status === licenceNotAwarded ||
+        status === licenceAwarded
+          ? 'View'
+          : !!visitEventId
+          ? 'Start'
+          : 'Schedule',
+      actionButtonTextColor:
+        stepCompleted ||
+        status === licenceNotAwarded ||
+        status === licenceAwarded
+          ? 'secondary'
+          : !!visitEventId
+          ? 'white'
+          : 'primary',
+      actionButtonColor:
+        stepCompleted ||
+        status === licenceNotAwarded ||
+        status === licenceAwarded
+          ? 'secondaryAccent2'
+          : 'primary',
+      actionButtonIcon:
+        stepCompleted ||
+        status === licenceNotAwarded ||
+        status === licenceAwarded
+          ? ''
+          : !!visitEventId
+          ? 'ArrowCircleRightIcon'
+          : 'CalendarIcon',
       actionButtonOnClick: onView,
-      actionButtonType: stepCompleted || !!visitEventId ? 'filled' : 'outlined',
+      actionButtonType:
+        stepCompleted ||
+        status === licenceNotAwarded ||
+        status === licenceAwarded ||
+        !!visitEventId
+          ? 'filled'
+          : 'outlined',
       actionButtonIconStartPosition:
         stepCompleted || !!visitEventId ? false : true,
       actionButtonClassName: stepCompleted
@@ -200,6 +225,31 @@ export const timelineSteps = (
       nextStep
     )
   );
+
+  if (timeline?.smartSpaceLicenseNotAwardedDate) {
+    steps.push(
+      setStep(
+        'SmartSpace Licence not awarded',
+        timeline?.smartSpaceLicenseNotAwardedDate,
+        'error',
+        () => onView('SmartSpace Licence not awarded'),
+        nextStep
+      )
+    );
+  }
+
+  if (timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received') {
+    steps.push(
+      setStep(
+        'SmartSpace Licence received',
+        timeline?.smartSpaceLicenseDate,
+        'success',
+        () => onView('SmartSpace Licence received'),
+        nextStep
+      )
+    );
+  }
+
   steps.push(
     setStep(
       timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',

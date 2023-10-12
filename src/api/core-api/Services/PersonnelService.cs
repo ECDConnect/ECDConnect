@@ -558,7 +558,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SmartSpace license received
             License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-            if (smartSpaceLicense?.LicenseDate != null)
+            if (smartSpaceLicense?.LicenseDate != null  && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
@@ -622,7 +622,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var pqaVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
             var reaccreditationVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
             var supportVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
-            var requestedCoachVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
+            var requestedCoachVisits = _visitManager.GetCoachVisits(coach.Id, practitioner.Id); 
             var selfAssessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
             List<Visit> selfVisits = new List<Visit>();
 
