@@ -30,6 +30,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
+  setNotificationStep?: (item: string) => void;
 }
 
 export interface CoachSmartSpaceChecklistRouteState {
@@ -39,17 +40,18 @@ export interface CoachSmartSpaceChecklistRouteState {
 
 export const CoachSmartSpaceChecklist: React.FC<
   CoachSmartSpaceChecklistProps
-> = () => {
+> = ({ practitioner: practitionerUser }) => {
   const history = useHistory();
   const dialog = useDialog();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
-  const practitionerUserId = location.state.practitionerUserId;
-  const practitioner = (useSelector(
-    practitionerSelectors.getPractitionerByUserId(practitionerUserId || '')
-  ) || location.state.practitioner) as PractitionerDto;
+  const practitionerUserId = location?.state?.practitionerUserId;
+  const practitioner =
+    ((useSelector(
+      practitionerSelectors.getPractitionerByUserId(practitionerUserId || '')
+    ) || location?.state?.practitioner) as PractitionerDto) || practitionerUser;
   const programmeName = useSelector(
     traineeSelectors.getTraineeVisitDataProgrammeName
   );
@@ -111,6 +113,9 @@ export const CoachSmartSpaceChecklist: React.FC<
   };
 
   const saveSmartSpaceCheckData = () => {
+    if (practitioner?.isTrainee) {
+      return;
+    }
     appDispatch(traineeActions.saveCoachSmartSpaceCheckData(sectionQuestions));
   };
 

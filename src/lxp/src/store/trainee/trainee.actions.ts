@@ -123,3 +123,37 @@ export const updateTraineeOnboardTimelineSSVisitEvent = createAsyncThunk<
     }
   }
 );
+
+export const getCoachSmartSpaceVisitData = createAsyncThunk<
+  VisitData[],
+  { visitId: string },
+  ThunkApiType<RootState>
+>(
+  'getCoachSmartSpaceVisitData',
+  async ({ visitId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let content: VisitData[] | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        content = await new TraineeService(
+          userAuth?.auth_token ?? ''
+        ).getVisitDataForVisitId(visitId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!content) {
+        return rejectWithValue(
+          'Error getting visit answers for coach smartspace visit'
+        );
+      }
+      return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);

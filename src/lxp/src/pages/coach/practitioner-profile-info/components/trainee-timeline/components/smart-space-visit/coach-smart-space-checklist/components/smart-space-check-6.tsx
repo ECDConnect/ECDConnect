@@ -87,7 +87,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
 
   const programmeDetailsSections = traineeVisitData
     ?.filter((item) => item?.visitSection === 'Programme details')
-    .filter(
+    ?.filter(
       (item) =>
         item?.question ===
           'Do you own the property where you will run your SmartStart programme?' ||
@@ -156,7 +156,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 

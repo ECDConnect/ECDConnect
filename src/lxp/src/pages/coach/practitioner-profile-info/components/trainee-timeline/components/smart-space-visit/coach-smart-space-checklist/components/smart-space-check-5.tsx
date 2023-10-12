@@ -5,15 +5,15 @@ import { PractitionerDto } from '@ecdlink/core';
 import {
   Alert,
   Button,
-  Card,
   Colours,
   Divider,
   FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { QuestionAnswersProps } from './smart-space-check-3';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -45,6 +45,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   const numberOfAssistants = useSelector(
     traineeSelectors.getTraineeVisitDataAssitantsNumber
   );
+  const isTrainee = practitioner?.isTrainee;
   const [enableButton, setEnableButton] = useState(false);
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
@@ -120,6 +121,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
     () => questions[0].answer !== '' && questions[1].answer !== '',
     [questions]
   );
+  console.log({ visitData });
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -147,6 +149,35 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
+    if (isTrainee) {
+      const previousData = questions.map((item) => {
+        const previousAnswer = visitData?.find((item: any) => {
+          const sectionData = item?.visitSection === visitSection;
+          return sectionData;
+        });
+
+        console.log({ previousAnswer });
+
+        if (previousAnswer) {
+          return {
+            ...item,
+            answer: previousAnswer?.questionAnswer!,
+          };
+        }
+
+        return item;
+      });
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: previousData,
+        },
+      ]);
+
+      setAnswers(previousData as QuestionAnswersProps[]);
+      return;
+    }
+
     const previousData = questions.map((item) => {
       const visitDataWithoutTypo = visitData as any;
       const previousAnswer = visitDataWithoutTypo
@@ -154,7 +185,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
@@ -336,7 +367,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton}
+              disabled={!enableButton && !isTrainee}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

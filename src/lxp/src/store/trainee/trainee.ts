@@ -2,6 +2,7 @@ import { PractitionerDto, TraineeDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  getCoachSmartSpaceVisitData,
   getTraineeById,
   getTraineeTimeline,
   getTraineeVisitData,
@@ -63,6 +64,11 @@ const traineeSlice = createSlice({
     });
     builder.addCase(getTraineeVisitData.fulfilled, (state, action) => {
       state.traineeVisitData = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getCoachSmartSpaceVisitData.fulfilled, (state, action) => {
+      console.log(action.payload);
+      state.coachSmartSpaceCheckData = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(
