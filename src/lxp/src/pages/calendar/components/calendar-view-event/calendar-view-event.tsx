@@ -18,6 +18,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { userSelectors } from '@/store/user';
 import { useHistory } from 'react-router-dom';
 import { useCalendarEditEvent } from '../calendar-add-event/calendar-add-event';
+import { getEventAction } from '../calendar.utils';
 
 export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const { isOnline } = useOnlineStatus();
@@ -30,6 +31,8 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
     )
   );
   const event = !!eventById ? eventById : (props.event as CalendarEventModel);
+  const eventAction = getEventAction(event);
+  console.log('eventAction', eventAction);
   const startDate = new Date(event.start);
   const endDate = new Date(event.end);
   const user = useSelector(userSelectors.getUser);
@@ -45,8 +48,8 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
 
   const onAction = () => {
     props.onClose();
-    if (!!event.action) {
-      history.push(event.action.url, event.action.state);
+    if (!!eventAction) {
+      history.push(eventAction.url, eventAction.state);
     }
   };
 
@@ -198,7 +201,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
             />
           </div>
         </div>
-        {canAction && !!event.action && !!event.action.url && (
+        {canAction && !!eventAction && !!eventAction.url && (
           <div className="px-4 pb-4">
             <Button
               onClick={() => onAction()}
@@ -208,13 +211,13 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
               type="filled"
             >
               {renderIcon(
-                event.action.buttonIcon || 'ArrowCircleRightIcon',
+                eventAction.buttonIcon || 'ArrowCircleRightIcon',
                 classNames('h-5 w-5 text-white')
               )}
               <Typography
                 type="h6"
                 className="ml-2"
-                text={event.action.buttonName || 'Go'}
+                text={eventAction.buttonName || 'Go'}
                 color="white"
               />
             </Button>

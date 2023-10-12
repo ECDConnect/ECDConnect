@@ -220,6 +220,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         action: pqaThunkActions.addSupportVisitFormData,
       },
       {
+        title: 'PQAs Requested Support Visits',
+        action: pqaThunkActions.addRequestedSupportVisitFormData,
+      },
+      {
         title: 'PQAs Follow up Visits',
         action: pqaThunkActions.addFollowUpVisitForPractitioner,
       },

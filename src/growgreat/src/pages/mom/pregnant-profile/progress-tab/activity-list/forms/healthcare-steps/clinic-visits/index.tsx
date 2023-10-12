@@ -18,6 +18,7 @@ import { replaceBraces } from '@ecdlink/core';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
 
 export const antenatalClinicQuestion = `Has {client} gone to the clinic for her first antenatal visit?`;
+export const clinicVisitsSectionName = 'Clinic visits';
 
 export const ClinicVisitsStep = ({
   infant,
@@ -28,8 +29,6 @@ export const ClinicVisitsStep = ({
   setEnableButton,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState<boolean | boolean[]>();
-
-  const sectionName = 'Clinic visits';
 
   const motherName = useMemo(
     () => mother?.user?.firstName || '',
@@ -49,7 +48,7 @@ export const ClinicVisitsStep = ({
       setQuestions &&
         setQuestions([
           {
-            visitSection: sectionName,
+            visitSection: clinicVisitsSectionName,
             questions: [
               {
                 question,
@@ -73,7 +72,7 @@ export const ClinicVisitsStep = ({
         <HealthPromotion
           title={`Discuss with ${motherName}`}
           subTitle="Clinic check-ups"
-          section={sectionName}
+          section={clinicVisitsSectionName}
           onClose={() => setIsTip && setIsTip(false)}
         />
       </Dialog>
@@ -85,7 +84,7 @@ export const ClinicVisitsStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={AntenatalCareSvg}
-        title={sectionName}
+        title={clinicVisitsSectionName}
       />
       <div className="flex flex-col gap-4 p-4">
         <TipCard

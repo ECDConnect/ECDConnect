@@ -332,7 +332,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     return false;
                 }
-                absenteeService.AddAbsenteeForPractitioner(uId, practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, removalHistory.Id);
+                absenteeService.AddAbsenteeForPractitioner(uId, practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId,null, removalHistory.Id);
             }
 
             return true;
@@ -364,7 +364,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 if(reassignment.Id == null)
                 {
-                    absenteeService.AddAbsenteeForPractitioner(uId, removal.UserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, removal.Id);
+                    absenteeService.AddAbsenteeForPractitioner(uId, removal.UserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, removal.Id);
                 }
                 else
                 {

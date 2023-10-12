@@ -25,6 +25,7 @@ import {
   handleAddFollowUpVisit,
   handleAddReAccreditationFollowUpVisit,
   handleAddReAccreditationVisit,
+  handleAddRequestedSupportVisit,
   handleAddSelfAssessment,
   handleAddSupportVisit,
 } from './pqa.utils';
@@ -120,6 +121,13 @@ const pqaSlice = createSlice({
                 { practitionerId: userId, formData: action.payload },
               ];
             }
+            break;
+          case 'requested-support-visit':
+            handleAddRequestedSupportVisit({
+              payload: action.payload,
+              state,
+              userId,
+            });
             break;
           case 'support-visit':
             handleAddSupportVisit({

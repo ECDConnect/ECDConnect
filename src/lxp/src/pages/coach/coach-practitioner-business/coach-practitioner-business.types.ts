@@ -1,5 +1,5 @@
 export interface PractitionerBusinessParams {
-  practitionerId: string;
+  userId: string;
   incomeStatementMonth: string;
   lossProfitMonths: string;
 }

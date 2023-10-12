@@ -293,12 +293,12 @@ class CoachService {
   async GetAllClubsForCoach(userId: string): Promise<ClubDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { allClubsForCoach: ClubDto[] };
+      data: { allClubsForCoachSimple: ClubDto[] };
       errors?: {};
     }>(``, {
       query: `
       query GetAllClubsForCoach($userId: String) {
-        allClubsForCoach(userId: $userId) {
+        allClubsForCoachSimple(userId: $userId) {
           id
           name
         }
@@ -313,7 +313,7 @@ class CoachService {
       throw new Error('Get Coach clubs Failed - Server connection error');
     }
 
-    return response.data.data.allClubsForCoach;
+    return response.data.data.allClubsForCoachSimple;
   }
 
   async addCoachCircleMeeting(input: ClubMeetingModelInput): Promise<boolean> {
@@ -365,6 +365,36 @@ class CoachService {
       throw new Error('Get Coaching topics failed - Server connection error');
     }
     return response.data.data.GetAllCoachingCircleTopics;
+  }
+
+  async declineSmartSpaceLicenseForTrainee(
+    userId: string,
+    dateDeclined: Date,
+    nextStepsComments: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation declineSmartSpaceLicenseForTrainee( $userId: String!, $dateDeclined: DateTime!, $nextStepsComments: String!) { 
+        declineSmartSpaceLicenseForTrainee(userId: $userId, dateDeclined: $dateDeclined, nextStepsComments: $nextStepsComments) { 
+            userId       
+          }    
+        }
+      `,
+      variables: {
+        userId,
+        dateDeclined,
+        nextStepsComments,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Updating Coach failed - Server connection error');
+    }
+
+    return true;
   }
 }
 

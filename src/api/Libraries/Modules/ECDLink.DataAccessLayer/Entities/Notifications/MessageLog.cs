@@ -13,7 +13,6 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
 
     public class MessageLog<TKey> : EntityBase<TKey>, IMessageLog<TKey> where TKey : IEquatable<TKey>
     {
-        public Guid Id { get; set; }
         public string MessageTemplateType { get; set; }
         public string MessageProtocol { get; set; }
         public string From { get; set; }

@@ -1,4 +1,11 @@
-import { PractitionerDto, UserDto, getAvatarColor } from '@ecdlink/core';
+import {
+  CalendarEventActionModel,
+  CalendarEventModel,
+  ClubDto,
+  PractitionerDto,
+  UserDto,
+  getAvatarColor,
+} from '@ecdlink/core';
 import { ListDataItem } from './calendar.types';
 
 export const mapPractitionerToListDataItem = (
@@ -18,6 +25,7 @@ export const mapPractitionerToListDataItem = (
     extraData: {
       firstName: practitioner.user?.firstName || '',
       surname: practitioner.user?.surname || '',
+      isClub: false,
     },
     rightIcon: '',
   };
@@ -38,15 +46,62 @@ export const mapUserToListDataItem = (user: UserDto): ListDataItem => {
     extraData: {
       firstName: user.firstName || '',
       surname: user.surname || '',
+      isClub: false,
     },
     rightIcon: '',
     noClick: true,
   };
 };
 
+export const mapClubToListDataItem = (club: ClubDto): ListDataItem => {
+  return {
+    id: club.id,
+    title: club.name,
+    subTitle: 'Club',
+    profileText: club.name,
+    hideAlertSeverity: true,
+    alertSeverity: 'none',
+    avatarColor: getAvatarColor() || '',
+    extraData: {
+      firstName: club.name,
+      surname: '',
+      isClub: true,
+    },
+    rightIcon: '',
+  };
+};
+
 export const sortListDataItems = (items: ListDataItem[]) => {
   items.sort((a, b) => {
-    if (a.title.toLowerCase() < b.title.toLowerCase()) return -1;
+    if (a.extraData?.isClub === true && b.extraData?.isClub === false)
+      return -1;
+    if (a.extraData?.isClub === b.extraData?.isClub) {
+      if (a.title.toLowerCase() < b.title.toLowerCase()) return -1;
+    }
     return 1;
   });
+};
+
+export const getEventAction = (
+  event: CalendarEventModel
+): CalendarEventActionModel | null => {
+  if (!!event.action) return event.action;
+
+  if (
+    !!event.eventType &&
+    event.eventType.toLowerCase() === 'coaching circle'
+  ) {
+    return {
+      buttonName: `Start ${event.eventType.toLowerCase()}`,
+      url: '/community',
+      state: {
+        activeTabIndex: 2,
+        isFromDashboard: false,
+        addCoachCircle: true,
+        eventDate: event.start,
+      },
+    } as CalendarEventActionModel;
+  }
+
+  return null;
 };

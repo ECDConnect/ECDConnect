@@ -70,6 +70,7 @@ interface SubmitProps {
 
 interface ExtraVisitProps extends SubmitProps {
   type:
+    | 'requested-support-visit'
     | 'support-visit'
     | 'pqa-follow-up-visit'
     | 're-accreditation-follow-up-visit';
@@ -322,6 +323,7 @@ export const Form = ({
   const onSubmitSupportVisit = useCallback(
     async (
       payload: CmsVisitDataInputModelInput,
+      type: 'support-visit' | 'requested-support-visit',
       visitType?: InputMaybe<string>
     ) => {
       appDispatch(
@@ -330,7 +332,15 @@ export const Form = ({
           formType: 'support-visit',
         })
       );
-      await appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
+
+      if (type === 'support-visit') {
+        await appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
+      } else {
+        await appDispatch(
+          pqaThunkActions.addRequestedSupportVisitFormData(payload)
+        );
+      }
+
       onBack?.();
       showMessage({
         message: `${
@@ -408,16 +418,24 @@ export const Form = ({
         supportData: payload,
       };
 
-      if (type === 'support-visit') {
-        return onSubmitSupportVisit(supportPayload, visitOrCallAnswer);
-      }
-
-      if (type === 'pqa-follow-up-visit') {
-        return onSubmitFollowUpVisit(payload, 'pqa');
-      }
-
-      if (type === 're-accreditation-follow-up-visit') {
-        return onSubmitFollowUpVisit(payload, 're-accreditation');
+      switch (type) {
+        case 'support-visit':
+          return onSubmitSupportVisit(
+            supportPayload,
+            'support-visit',
+            visitOrCallAnswer
+          );
+        case 'requested-support-visit':
+          return onSubmitSupportVisit(
+            payload,
+            'requested-support-visit',
+            visitOrCallAnswer
+          );
+        case 'pqa-follow-up-visit':
+          return onSubmitFollowUpVisit(payload, 'pqa');
+        case 're-accreditation-follow-up-visit':
+        default:
+          return onSubmitFollowUpVisit(payload, 're-accreditation');
       }
     },
     [practitionerId, onSubmitSupportVisit, onSubmitFollowUpVisit]
@@ -525,13 +543,25 @@ export const Form = ({
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
     const payload: CmsVisitDataInputModelInput = {
-      visitId,
-      practitionerId,
+      visitId: visitId || window.sessionStorage.getItem(visitIdKey),
+      ...(activityName === visitTypes.requestedVisit
+        ? {}
+        : {
+            practitionerId,
+          }),
       visitData: {
         visitName: activityName,
         sections,
       },
     };
+
+    if (activityName === visitTypes.requestedVisit) {
+      return handleSubmitExtraVisit({
+        payload,
+        sections,
+        type: 'requested-support-visit',
+      });
+    }
 
     if (activityName === visitTypes.supportVisit) {
       return handleSubmitExtraVisit({
@@ -640,11 +670,15 @@ export const Form = ({
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
     if (
+      visitName === visitTypes.requestedVisit ||
       visitName === visitTypes.supportVisit ||
       visitName.includes(visitTypes.pqa.followUp.name) ||
       visitName.includes(visitTypes.reaccreditation.followUp.name)
     ) {
-      if (activityName === visitTypes.supportVisit) {
+      if (
+        activityName === visitTypes.supportVisit ||
+        activityName === visitTypes.requestedVisit
+      ) {
         setTitle(visitTypes.supportVisit);
       } else if (activityName === visitTypes.reaccreditation.followUp.name) {
         setTitle(visitTypes.reaccreditation.followUp.description);

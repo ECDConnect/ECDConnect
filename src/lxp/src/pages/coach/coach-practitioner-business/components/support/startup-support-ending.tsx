@@ -1,6 +1,6 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
-import { useHistory, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
@@ -8,11 +8,16 @@ import { traineeSelectors } from '@/store/trainee';
 import { differenceInMonths, format } from 'date-fns';
 import { WhatsappCall } from '../contact/whatsapp-call';
 
-export const StartupSupportEnding = () => {
+export type StartupSupportEndingProps = {
+  onBack: () => void;
+};
+
+export const StartupSupportEnding: React.FC<StartupSupportEndingProps> = ({
+  onBack,
+}) => {
   const { isOnline } = useOnlineStatus();
-  const history = useHistory();
-  const { practitionerId } = useParams<PractitionerBusinessParams>();
-  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
+  const { userId } = useParams<PractitionerBusinessParams>();
+  const practitioner = useSelector(getPractitionerByUserId(userId));
   const practitionerFirstName = practitioner?.user?.firstName;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
@@ -30,7 +35,7 @@ export const StartupSupportEnding = () => {
         renderOverflow
         displayOffline={!isOnline}
         title="Start-up support"
-        onBack={() => history.goBack()}
+        onBack={onBack}
         className="p-4"
       >
         <div className="mt-4 flex justify-center">
@@ -43,11 +48,7 @@ export const StartupSupportEnding = () => {
               </span>
               <Typography
                 type="h3"
-                text={
-                  ' Months until ' +
-                  practitionerFirstName +
-                  '’s start-up support ends.'
-                }
+                text={` Months until ${practitionerFirstName} 's start-up support ends.`}
               />
             </div>
 
@@ -55,18 +56,15 @@ export const StartupSupportEnding = () => {
               <Typography
                 className="mt-2 text-left"
                 color="textDark"
-                text={
-                  practitionerFirstName +
-                  '’s monthly start-up support of R ' +
-                  timeline?.startUpSupportAmount?.toFixed(2) +
-                  ' will be coming to an end on '
-                }
+                text={`${practitionerFirstName} 's monthly start-up support of R ${timeline?.startUpSupportAmount?.toFixed(
+                  2
+                )} will be coming to an end on `}
                 type={'h3'}
               />
               <Typography
                 className="mt-2 text-left"
                 color="textDark"
-                text={format(startUpSupportEndDate, 'dd LLLL yyyy') + '.'}
+                text={`${format(startUpSupportEndDate, 'dd LLLL yyyy')}.`}
                 type={'body'}
               />
             </div>
@@ -79,9 +77,7 @@ export const StartupSupportEnding = () => {
                 color="primary"
                 type="filled"
                 icon="CheckCircleIcon"
-                onClick={() => {
-                  history.goBack();
-                }}
+                onClick={onBack}
                 className="mt-6 rounded-2xl"
               >
                 <Typography

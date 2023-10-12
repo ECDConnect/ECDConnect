@@ -47,6 +47,7 @@ import {
   mapUserToListDataItem,
   sortListDataItems,
 } from '../calendar.utils';
+import { clubThunkActions } from '@/store/club';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
@@ -147,6 +148,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       userId: p.participantUserId,
       firstName: p.participantUser.firstName,
       surname: p.participantUser.surname,
+      isClub: false,
     })),
   };
   const {
@@ -248,7 +250,36 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   }, []);
 
   const onSearchParticipantDone = useCallback(
-    (participantUsers: CalendarAddEventParticipantFormModel[]) => {
+    async (participantUsers: CalendarAddEventParticipantFormModel[]) => {
+      const clubIds: string[] = participantUsers
+        .filter((x) => x.isClub)
+        .map((x) => x.userId);
+
+      if (clubIds.length > 0) {
+        const clubMembers = await appDispatch(
+          clubThunkActions.getClubsMembers({ clubIds })
+        ).unwrap();
+        if (!!clubMembers && clubMembers.length > 0) {
+          const clubUsers = clubMembers
+            .filter(
+              (x) =>
+                !!x.practitioner &&
+                !!x.practitioner.user &&
+                x.practitioner.user.isActive
+            )
+            .map((x) => {
+              return {
+                userId: x.practitioner?.user?.id || '',
+                firstName: x.practitioner?.user?.firstName || '',
+                surname: x.practitioner?.user?.surname || '',
+                isClub: false,
+              };
+            });
+          if (clubUsers.length > 0) participantUsers.push(...clubUsers);
+        }
+      }
+      participantUsers = participantUsers.filter((p) => !p.isClub);
+
       setSearchParticipantsVisible(false);
       setEventFormValue('participants', participantUsers);
     },

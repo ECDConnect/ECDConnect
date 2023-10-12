@@ -100,28 +100,34 @@ export const ClubMembers: React.FC = () => {
   };
 
   const members: UserAlertListDataItem[] =
-    club?.clubMembers?.map((member) => ({
-      title: `${member?.practitioner?.user?.firstName || ''} ${
-        member?.practitioner?.user?.surname || ''
-      }`,
-      profileText: `${member?.practitioner?.user?.firstName || ''} ${
-        member?.practitioner?.user?.surname || ''
-      }`,
-      titleStyle: 'text-textDark',
-      avatarColor: 'var(--primaryAccent2)',
-      subTitle: member?.welcomeMessage || '',
-      subTitleStyle: 'text-infoDark',
-      profileDataUrl: member?.practitioner?.user?.profileImageUrl || '',
-      alertSeverity: 'none',
-      hideAlertSeverity: true,
-      onActionClick: () =>
-        history.push(
-          ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
-            ':clubId',
-            clubId
-          ).replace(':practitionerId', member?.practitioner?.id)
-        ),
-    })) ?? [];
+    club?.clubMembers
+      ?.filter(
+        (item) =>
+          item?.practitioner?.id !== currentLeader?.practitioner?.id &&
+          item?.practitioner?.id !== nextLeader?.practitioner?.id
+      )
+      ?.map((member) => ({
+        title: `${member?.practitioner?.user?.firstName || ''} ${
+          member?.practitioner?.user?.surname || ''
+        }`,
+        profileText: `${member?.practitioner?.user?.firstName || ''} ${
+          member?.practitioner?.user?.surname || ''
+        }`,
+        titleStyle: 'text-textDark',
+        avatarColor: 'var(--primaryAccent2)',
+        subTitle: member?.welcomeMessage || '',
+        subTitleStyle: 'text-infoDark',
+        profileDataUrl: member?.practitioner?.user?.profileImageUrl || '',
+        alertSeverity: 'none',
+        hideAlertSeverity: true,
+        onActionClick: () =>
+          history.push(
+            ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
+              ':clubId',
+              clubId
+            ).replace(':practitionerId', member?.practitioner?.id)
+          ),
+      })) ?? [];
 
   const onCall = useCallback(() => {
     const nextLeaderPhoneNumber = nextLeader?.practitioner?.user?.phoneNumber;
