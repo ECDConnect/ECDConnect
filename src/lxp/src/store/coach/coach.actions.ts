@@ -256,9 +256,7 @@ export const getAllClubsForCoach = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
       if (!coachClubs) {
-        return rejectWithValue(
-          'getAllCoachingCircleClubsForCoach: Error getting coachCircles'
-        );
+        return rejectWithValue('getAllClubsForCoach: Error getting coachClubs');
       }
       return coachClubs;
     } catch (err) {

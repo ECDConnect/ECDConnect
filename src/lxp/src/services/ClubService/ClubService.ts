@@ -9,6 +9,7 @@ import {
   NewClubInput,
   NewClubMemberInput,
   CoachingClubBase,
+  ClubMember,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
@@ -31,8 +32,13 @@ class ClubService {
           allClubsForCoach(userId: $userId) {
             id
             name
+            userId
             secondaryText
             secondaryTextColor
+            secondaryTextPriority
+            meetingAttendance
+            meetingAttendanceColor
+            meetingAttendanceText 
           }
         }
       `,
@@ -68,6 +74,7 @@ class ClubService {
               maxClubPoints
               totalClubPoints
               leaguePosition
+              secondaryTextPriority
               clubMeetings {
                 id
                 name
@@ -107,7 +114,7 @@ class ClubService {
                         profileImageUrl
                     }
                 }
-            }
+              }
               clubSupport {
                   isActive
                   dateAssigned
@@ -223,6 +230,41 @@ class ClubService {
     }
 
     return response.data.data.allClubsDetailsForCoach;
+  }
+
+  async getClubsMembers(clubIds: string[]): Promise<ClubMember[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: {
+        clubsMembers: ClubMember[];
+      };
+      errors?: {};
+    }>(``, {
+      query: `
+        query clubsMembers($clubIds: [UUID!]) {
+          clubsMembers(clubIds: $clubIds) {
+            practitioner {
+                id
+                user {
+                    id
+                    firstName
+                    surname
+                    isActive
+                }
+            }
+          }
+      }
+      `,
+      variables: {
+        clubIds,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get all members failed - Server connection error');
+    }
+
+    return response.data.data.clubsMembers;
   }
 
   async addNewClubMembers(input: NewClubMemberInput): Promise<boolean> {

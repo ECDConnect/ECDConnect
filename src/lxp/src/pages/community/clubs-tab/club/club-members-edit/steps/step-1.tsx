@@ -21,6 +21,12 @@ export const Step1 = ({
   const { clubId } = useParams<ClubsRouteState>();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
+  const currentLeader = useSelector(
+    clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
+  );
+  const nextLeader = useSelector(
+    clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
+  );
 
   const onChange = (event: CheckboxChange) => {
     const value = event.value as ClubMember | undefined;
@@ -50,39 +56,46 @@ export const Step1 = ({
         text={`Which ${club?.name} members would you like to move?`}
       />
       <div className="mb-4">
-        {club?.clubMembers?.map((member) => (
-          <CheckboxGroup<ClubMember>
-            className="mb-2"
-            key={member?.practitioner?.id}
-            title={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
-            titleWeight="semibold"
-            icon={
-              <div className="ml-4 mr-2">
-                {member?.practitioner?.user?.profileImageUrl ? (
-                  <Avatar
-                    dataUrl={member?.practitioner?.user?.profileImageUrl}
-                  />
-                ) : (
-                  <UserAvatar
-                    className="mr-4"
-                    size="md"
-                    avatarColor="var(--primaryAccent2)"
-                    text={`${member?.practitioner?.user?.firstName?.charAt(
-                      0
-                    )}${member?.practitioner?.user?.surname?.charAt(0)}`}
-                    displayBorder
-                  />
-                )}
-              </div>
-            }
-            isIconFullWidth
-            value={member as ClubMember}
-            checked={selectedMembers?.some(
-              (option) => member?.practitioner?.id === option?.practitioner?.id
-            )}
-            onChange={onChange}
-          />
-        ))}
+        {club?.clubMembers
+          ?.filter(
+            (item) =>
+              item?.practitioner?.id !== currentLeader?.practitioner?.id &&
+              item?.practitioner?.id !== nextLeader?.practitioner?.id
+          )
+          ?.map((member) => (
+            <CheckboxGroup<ClubMember>
+              className="mb-2"
+              key={member?.practitioner?.id}
+              title={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+              titleWeight="semibold"
+              icon={
+                <div className="ml-4 mr-2">
+                  {member?.practitioner?.user?.profileImageUrl ? (
+                    <Avatar
+                      dataUrl={member?.practitioner?.user?.profileImageUrl}
+                    />
+                  ) : (
+                    <UserAvatar
+                      className="mr-4"
+                      size="md"
+                      avatarColor="var(--primaryAccent2)"
+                      text={`${member?.practitioner?.user?.firstName?.charAt(
+                        0
+                      )}${member?.practitioner?.user?.surname?.charAt(0)}`}
+                      displayBorder
+                    />
+                  )}
+                </div>
+              }
+              isIconFullWidth
+              value={member as ClubMember}
+              checked={selectedMembers?.some(
+                (option) =>
+                  member?.practitioner?.id === option?.practitioner?.id
+              )}
+              onChange={onChange}
+            />
+          ))}
       </div>
     </>
   );

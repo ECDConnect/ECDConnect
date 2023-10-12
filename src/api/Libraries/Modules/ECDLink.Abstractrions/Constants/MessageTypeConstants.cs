@@ -7,6 +7,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string EMAIL = "email";
         public const string HUB = "hub";
         public const string PUSH = "push";
+        public const string PORTAL = "portal";
 
     }
 

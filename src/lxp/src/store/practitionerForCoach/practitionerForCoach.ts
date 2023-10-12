@@ -4,15 +4,18 @@ import localForage from 'localforage';
 import {
   getPractitionerById,
   getPractitionersForCoach,
+  getUserExpensesForCoach,
+  getUserIncomeForCoach,
+  getUserStatementsForCoach,
 } from './practitionerForCoach.actions';
 import { PractitionerForCoachState } from './practitionerForCoach.types';
 import { getUserPointsSummaryForCoach } from '../points/points.actions';
-import { PointsUserSummary } from '@ecdlink/graphql';
 
 const initialState: PractitionerForCoachState = {
   practitionerForCoach: undefined,
   practitionersForCoach: undefined,
   pointsForPractitionerUser: {},
+  statementsForPractitionerUser: {},
 };
 
 const practitionerForCoachSlice = createSlice({
@@ -52,6 +55,39 @@ const practitionerForCoachSlice = createSlice({
         [action.meta.arg.userId]: {
           dateLoaded: new Date().toISOString(),
           pointsSummaries: action.payload,
+        },
+      };
+    });
+
+    builder.addCase(getUserStatementsForCoach.fulfilled, (state, action) => {
+      state.statementsForPractitionerUser = {
+        ...state.statementsForPractitionerUser,
+        [action.meta.arg.userId]: {
+          ...state.statementsForPractitionerUser[action.meta.arg.userId],
+          statementsDateLoaded: new Date().toISOString(),
+          statements: action.payload,
+        },
+      };
+    });
+
+    builder.addCase(getUserIncomeForCoach.fulfilled, (state, action) => {
+      state.statementsForPractitionerUser = {
+        ...state.statementsForPractitionerUser,
+        [action.meta.arg.userId]: {
+          ...state.statementsForPractitionerUser[action.meta.arg.userId],
+          incomeDateLoaded: new Date().toISOString(),
+          unsubmittedIncomeItems: action.payload,
+        },
+      };
+    });
+
+    builder.addCase(getUserExpensesForCoach.fulfilled, (state, action) => {
+      state.statementsForPractitionerUser = {
+        ...state.statementsForPractitionerUser,
+        [action.meta.arg.userId]: {
+          ...state.statementsForPractitionerUser[action.meta.arg.userId],
+          expensesDateLoaded: new Date().toISOString(),
+          unsubmittedExpenseItems: action.payload,
         },
       };
     });

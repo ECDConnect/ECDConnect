@@ -9,6 +9,7 @@ using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.Core.Services;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
@@ -1082,7 +1083,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] VisitDataManager visitDataManager,
-            [Service] IncomeExpenseService incomeManager,
+            [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
             IGenericRepositoryFactory repoFactory,
@@ -1100,7 +1101,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 case "coach":
                     var practitionerResults = GetPractitionerNotifications(
                         attendanceRepo,
-                        visitDataManager,
                         incomeManager,
                         holidayService,
                         personnelService,
@@ -1191,8 +1191,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         private IEnumerable<NotificationDisplay> GetPractitionerNotifications(
             [Service] AttendanceTrackingRepository attendanceRepo,
-            [Service] VisitDataManager visitDataManager,
-            [Service] IncomeExpenseService incomeManager,
+            [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
             IGenericRepositoryFactory repoFactory,
@@ -1499,10 +1498,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region MISSING INCOME STATEMENT
-                var previousMonthBalanceSheet = incomeManager.GetAllStatementsBalanceSheet(practitioner.UserId, previousMonthEnd.Year, previousMonthEnd.Month).FirstOrDefault();
-                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
+                var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId, previousMonthStart, previousMonthEnd).FirstOrDefault();
+                if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
                 {
-                    if (previousMonthBalanceSheet == null || previousMonthBalanceSheet.SubmittedDate == null || previousMonthBalanceSheet.AutoSubmitted)
+                    if (lastMonthStatement == null || lastMonthStatement.AutoSubmitted)
                     {
                         notification.Subject = $"Missing income statement";
                         notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1568,12 +1567,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region PROGRAMME LOST R300 IN LAST 2 MONTHS
-                var lastMonthBalance = incomeManager.GetAllStatementsBalanceSheet(practitioner.UserId, previousMonthStart.Year, previousMonthStart.Month).FirstOrDefault();
                 var secondLastMonth = previousMonthStart.AddMonths(-1);
-                var secondLastMonthBalance = incomeManager.GetAllStatementsBalanceSheet(practitioner.UserId, secondLastMonth.Year, secondLastMonth.Month).FirstOrDefault();
-                if (lastMonthBalance != null && secondLastMonthBalance != null)
+                var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId, secondLastMonth, secondLastMonth).FirstOrDefault();
+                if (lastMonthStatement != null && secondLastMonthStatement != null)
                 {
-                    var balance = lastMonthBalance.Balance + secondLastMonthBalance.Balance;
+                    var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
                     if (balance < 0)
                     {
                         notification.Subject = $"Programme lost R{balance} in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
@@ -1826,9 +1824,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region MADE R300 PROFIT  - WHAT IS THIS PERIOD? Last 3 moneths? Is it tied to another alert I can look up?
-                if (lastMonthBalance != null && secondLastMonthBalance != null)
+                if (lastMonthStatement != null && secondLastMonthStatement != null)
                 {
-                    var balance = lastMonthBalance.Balance + secondLastMonthBalance.Balance;
+                    var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
                     if (balance > 0)
                     {
                         notification.Subject = $"Made R{balance} profit in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";

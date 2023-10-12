@@ -172,6 +172,11 @@ namespace EcdLink.Api.CoreApi.Services
             return _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true).ToList();
         }
 
+        public List<ClubMember> GetClubsMembers(Guid[] clubIds)
+        {
+            return _clubMemberRepo.GetAll().Where(x => clubIds.Contains(x.ClubId) && x.IsActive == true).ToList();
+        }
+
         public double GetClubAttendanceForMonth(Guid clubId, DateTime date)
         {
             double attendance = 0.0;
@@ -472,6 +477,21 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             return leagueClubs;
+        }
+
+        public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId)
+        {
+            return _clubRepo
+                .GetAll()
+                .Where(x => x.UserId == userId && x.IsActive == true)
+                .OrderBy(x => x.Name)
+                .Select(club => new CoachingClubBase
+                {
+                    Id = club.Id,
+                    Name = club.Name,
+                    UserId = club.UserId,
+                })
+                .ToList();
         }
 
         public List<CoachingClubBase> GetAllClubsForCoach(string userId)

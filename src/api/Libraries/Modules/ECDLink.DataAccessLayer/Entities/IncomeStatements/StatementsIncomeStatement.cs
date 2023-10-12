@@ -14,7 +14,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
     {
 
     }
-    public class StatementsIncomeStatement<TKey> : EntityBase<TKey>, ITrackableType
+    public class StatementsIncomeStatement<TKey> : EntityBase<TKey>
          where TKey : IEquatable<TKey>
     {
         public string Notes { get; set; }

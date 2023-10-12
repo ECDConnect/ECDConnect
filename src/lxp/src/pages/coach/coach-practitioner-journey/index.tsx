@@ -398,8 +398,14 @@ export const CoachPractitionerJourney = () => {
     })
     .shift();
 
-  const onSupportVisit = () => {
-    window.sessionStorage.setItem(currentActivityKey, visitTypes.supportVisit);
+  const onSupportVisit = (visitId?: string) => {
+    window.sessionStorage.setItem(
+      currentActivityKey,
+      visitId ? visitTypes.requestedVisit : visitTypes.supportVisit
+    );
+    if (visitId) {
+      window.sessionStorage.setItem(visitIdKey, visitId);
+    }
     setShowForm(true);
   };
 
@@ -416,6 +422,8 @@ export const CoachPractitionerJourney = () => {
     );
 
     if (
+      visit.visitType?.name === generalSupportVisitTypes.practitioner_visit ||
+      visit.visitType?.name === generalSupportVisitTypes.practitioner_call ||
       visit.visitType?.name === generalSupportVisitTypes.visit ||
       visit.visitType?.name === generalSupportVisitTypes.call
     ) {
@@ -650,7 +658,7 @@ export const CoachPractitionerJourney = () => {
     ).then((userPoints) => {
       setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
     });
-  }, [practitionerId]);
+  }, [appDispatch, practitionerId]);
 
   const userPointsTotalForYear = useMemo(
     () =>
@@ -759,6 +767,9 @@ export const CoachPractitionerJourney = () => {
                 onView,
                 onStart,
                 onScheduleOrStart,
+                onStartRequestedSupportVisit(visitId) {
+                  onSupportVisit(visitId);
+                },
                 isLoading,
                 isOnline,
                 visits: uncompletedVisits,

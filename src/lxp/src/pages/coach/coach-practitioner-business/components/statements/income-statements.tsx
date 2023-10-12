@@ -9,162 +9,79 @@ import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils
 import { useAppContext } from '@/walkthrougContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
+  ExpenseItemDto,
+  IncomeItemDto,
+  IncomeStatementDto,
   LocalStorageKeys,
   getNextMonth,
   getPreviousMonth,
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
-import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
+import {
+  practitionerForCoachActions,
+  practitionerForCoachSelectors,
+} from '@/store/practitionerForCoach';
 
 interface IncomeStatementProps {
-  setIncomeStatementMonth: (item: string) => void;
-  setIsLoss: (item: boolean) => void;
-  setIsProfit: (item: boolean) => void;
-  setLossProfitMonths: (item: string) => void;
-  setIsIncomeStatementSubmitted: (item: boolean) => void;
+  statements: IncomeStatementDto[];
+  unsubmittedIncome: IncomeItemDto[];
+  unsubmittedExpenses: ExpenseItemDto[];
+  isSubmitWindowOpen: boolean;
+  isThisMonthSubmitted: boolean;
 }
 
 export const IncomeStatements: React.FC<IncomeStatementProps> = ({
-  setIncomeStatementMonth,
-  setIsLoss,
-  setIsProfit,
-  setLossProfitMonths,
-  setIsIncomeStatementSubmitted,
+  statements,
+  unsubmittedIncome,
+  unsubmittedExpenses,
+  isSubmitWindowOpen,
+  isThisMonthSubmitted,
 }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const balanceSheet = useSelector(
-    practitionerSelectors.getPractitionerBalanceSheet
-  );
   const offlineImg = window.localStorage.getItem(
     LocalStorageKeys.offlineStatments
   );
+  const { userId } = useParams<PractitionerBusinessParams>();
 
-  const monthNames = balanceSheet?.map((item) => {
-    return getMonthName(item?.month! - 1).substring(0, 3);
-  });
+  const lastMonthStatement = statements[statements.length - 1];
 
-  const { practitionerId } = useParams<PractitionerBusinessParams>();
+  const previousMonthRecord = !!lastMonthStatement
+    ? `${getMonthName(lastMonthStatement.month! - 1).substring(0, 3)} ${
+        lastMonthStatement.year
+      }`
+    : `-`;
 
-  const [submitMonthAndYear, setSubmitMonthAndYear] = useState<Date>(
-    new Date()
+  const previousMonthTotalIncome = !!lastMonthStatement
+    ? lastMonthStatement.incomeTotal
+    : 0;
+
+  const previousMonthTotalExpenses = !!lastMonthStatement
+    ? lastMonthStatement.expenseTotal
+    : 0;
+
+  const previousMonthTotalBalance = !!lastMonthStatement
+    ? lastMonthStatement.balance
+    : 0;
+
+  const currentMonthRecord = isThisMonthSubmitted
+    ? format(getNextMonth(new Date()), 'MMM yyyy')
+    : format(new Date(), 'MMM yyyy');
+
+  const currentMonthTotalIncome = unsubmittedIncome.reduce((total, item) => {
+    return total + item.amount;
+  }, 0);
+
+  const currentMonthTotalExpenses = unsubmittedExpenses.reduce(
+    (total, item) => {
+      return total + item.amount;
+    },
+    0
   );
-  const [isThisMonthSubmitted, setIsThisMonthSubmitted] =
-    useState<boolean>(false);
-  const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
-    useState<number>(0);
-
-  const currentDate = new Date();
-  const isSubmitWindowOpen =
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
-    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
-
-  useEffect(() => {
-    // Outside submit
-    if (!isSubmitWindowOpen) {
-      setSubmitMonthAndYear(currentDate);
-
-      setIsThisMonthSubmitted(
-        balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
-          ?.submitted || false
-      );
-      setIsIncomeStatementSubmitted(isThisMonthSubmitted);
-
-      const nextMonth = getNextMonth(currentDate);
-      const nextSubmit = new Date(
-        nextMonth.getFullYear(),
-        nextMonth.getMonth(),
-        7
-      );
-      setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
-    } else {
-      // In window and current month
-      if (currentDate.getDate() >= IncomeStatementDates.SubmitStartDay) {
-        setSubmitMonthAndYear(currentDate);
-
-        setIsThisMonthSubmitted(
-          balanceSheet?.find((x) => x.month === currentDate.getMonth() + 1)
-            ?.submitted || false
-        );
-        setIsIncomeStatementSubmitted(isThisMonthSubmitted);
-
-        const nextMonth = getNextMonth(currentDate);
-        const nextSubmit = new Date(
-          nextMonth.getFullYear(),
-          nextMonth.getMonth(),
-          7
-        );
-        setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
-      } else {
-        // In window but next month
-        setSubmitMonthAndYear(getPreviousMonth(currentDate));
-
-        setIsThisMonthSubmitted(
-          balanceSheet?.find((x) => x.month === currentDate.getMonth())
-            ?.submitted || false
-        );
-        setIsIncomeStatementSubmitted(isThisMonthSubmitted);
-
-        const nextSubmit = new Date(
-          currentDate.getFullYear(),
-          currentDate.getMonth(),
-          7
-        );
-        setDaysUntilFinalSubmission(differenceInDays(nextSubmit, currentDate));
-      }
-    }
-  }, []);
-
-  const previousMonthRecord =
-    monthNames?.length! > 1 && balanceSheet?.length! > 1
-      ? `${monthNames?.[balanceSheet?.length! - 2]} ${
-          balanceSheet?.[balanceSheet?.length! - 2]?.year
-        }`
-      : `-`;
-
-  const currentMonthRecord =
-    monthNames && balanceSheet?.length! > 0
-      ? `${monthNames?.[balanceSheet?.length! - 1]} ${
-          balanceSheet?.[balanceSheet?.length! - 1]?.year
-        }`
-      : `-`;
-
-  const currentMonthTotalIncome =
-    balanceSheet?.length! > 0
-      ? `+ R ${balanceSheet?.[balanceSheet?.length! - 1]?.incomeTotal?.toFixed(
-          2
-        )}`
-      : '-';
-  const currentMonthTotalExpenses =
-    balanceSheet?.length! > 0
-      ? `- R ${balanceSheet?.[balanceSheet?.length! - 1]?.expenseTotal?.toFixed(
-          2
-        )}`
-      : '-';
-
-  const previousMonthTotalIncome =
-    balanceSheet?.length! > 1
-      ? `+ R ${balanceSheet?.[balanceSheet?.length! - 2].incomeTotal?.toFixed(
-          2
-        )}`
-      : '-';
-  const previousMonthTotalExpenses =
-    balanceSheet?.length! > 1
-      ? `- R ${balanceSheet?.[balanceSheet?.length! - 2].expenseTotal?.toFixed(
-          2
-        )}`
-      : '-';
 
   const currentMonthTotalBalance =
-    balanceSheet?.length! > 0
-      ? balanceSheet?.[balanceSheet?.length! - 1].balance?.toFixed(2)
-      : 0;
-
-  const previousMonthTotalBalance =
-    balanceSheet?.length! > 1
-      ? balanceSheet?.[balanceSheet?.length! - 2].balance?.toFixed(2)
-      : 0;
+    currentMonthTotalIncome - currentMonthTotalExpenses;
 
   const formatCurrentValue = (value: number) => {
     if (value === 0) return `R ${numberWithSpaces(String(value.toFixed(2)))}`;
@@ -179,10 +96,6 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
     setState,
     state: { stepIndex },
   } = useAppContext();
-
-  const nextStep = () => {
-    setState({ stepIndex: 1 });
-  };
 
   useEffect(() => {
     if (stepIndex === 7) {
@@ -200,32 +113,6 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
     }
   }, [stepIndex]);
 
-  useEffect(() => {
-    // Loss check
-    if (
-      balanceSheet?.[balanceSheet?.length! - 2]?.balance! < 0 &&
-      balanceSheet?.[balanceSheet?.length! - 3]?.balance! < 0
-    ) {
-      setIsLoss(true);
-      setIsProfit(false);
-    }
-
-    // Profit check
-    if (
-      balanceSheet?.[balanceSheet?.length! - 2]?.balance! > 0 &&
-      balanceSheet?.[balanceSheet?.length! - 3]?.balance! > 0
-    ) {
-      setIsProfit(true);
-      setIsLoss(false);
-    }
-    // set months for parent
-    setLossProfitMonths(previousMonthRecord + ' to ' + currentMonthRecord);
-    // set month for parent
-    setIncomeStatementMonth(previousMonthRecord);
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [balanceSheet, previousMonthRecord, currentMonthRecord]);
-
   const renderData = useMemo(() => {
     return (
       <>
@@ -237,7 +124,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
               shadowSize={'md'}
             >
               <Typography
-                text={`${format(currentDate, 'LLLL')} balance`}
+                text={`${format(new Date(), 'LLLL')} balance`}
                 type="h4"
                 color={'white'}
                 className="w-6/12"
@@ -279,7 +166,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={previousMonthTotalIncome}
+                      text={formatCurrentValue(previousMonthTotalIncome)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -287,7 +174,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={currentMonthTotalIncome}
+                      text={formatCurrentValue(currentMonthTotalIncome)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -305,7 +192,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={previousMonthTotalExpenses}
+                      text={formatCurrentValue(previousMonthTotalExpenses)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -313,7 +200,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={currentMonthTotalExpenses}
+                      text={formatCurrentValue(currentMonthTotalExpenses)}
                       type="body"
                       color={'textDark'}
                       align={'center'}
@@ -391,8 +278,8 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
           onClick={() =>
             history.push(
               ROUTES.COACH.PRACTITIONER_BUSINESS.LIST_STATEMENTS.replace(
-                ':practitionerId',
-                practitionerId
+                ':userId',
+                userId
               )
             )
           }

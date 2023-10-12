@@ -17,11 +17,13 @@ import { UserDto } from '@ecdlink/core';
 import * as styles from './calendar-search-participant.styles';
 import { ListDataItem } from '../calendar.types';
 import {
+  mapClubToListDataItem,
   mapPractitionerToListDataItem,
   mapUserToListDataItem,
   sortListDataItems,
 } from '../calendar.utils';
 import { CalendarAddEventParticipantFormModel } from '../calendar-add-event/calendar-add-event.types';
+import { coachSelectors } from '@/store/coach';
 
 export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
@@ -31,11 +33,13 @@ export const CalendarSearchParticipant: React.FC<
   const [unselectedData, setUnselectedData] = useState<ListDataItem[]>([]);
   const [, setAddChildButtonExpanded] = useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState<boolean>(false);
+  const [busySaving, setBusySaving] = useState<boolean>(false);
 
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  // const currentUserIsCoach = currentUser?.roles?.some((role) => role.name === 'Coach');
+  const isCoach = currentUser?.roles?.some((role) => role.name === 'Coach');
   // const currentUserIsPrincipal = currentUser?.roles?.some((role) => role.name === 'Principal');
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const clubs = useSelector(coachSelectors.getCoachClubs);
 
   const handleListScroll = useCallback((scrollTop: number) => {
     if (scrollTop < 30) {
@@ -108,29 +112,43 @@ export const CalendarSearchParticipant: React.FC<
   );
 
   const onClickDone = useCallback(() => {
+    setBusySaving(true);
     const participantUsers: CalendarAddEventParticipantFormModel[] =
       selectedData.slice(1).map((x) => ({
         userId: x.id || '',
         firstName: x.extraData?.firstName || '',
         surname: x.extraData?.surname || '',
+        isClub: x.extraData?.isClub || false,
       }));
     onDone(participantUsers);
   }, [selectedData, onDone]);
 
   useEffect(() => {
-    if (!!practitioners && practitioners.length > 0) {
+    if (
+      !!practitioners &&
+      practitioners.length > 0 &&
+      (!isCoach || (isCoach && !!clubs))
+    ) {
       const list = practitioners.map((p) => mapPractitionerToListDataItem(p));
+      const clubList =
+        isCoach && !!clubs ? clubs.map((c) => mapClubToListDataItem(c)) : [];
 
-      const unselected = list.filter(
-        (p) =>
-          currentParticipantUsers.findIndex((c) => c.userId === p.id) < 0 &&
-          p.id !== currentUser.id
+      const unselected: ListDataItem[] = clubList;
+
+      unselected.push(
+        ...list.filter(
+          (p) =>
+            currentParticipantUsers.findIndex((c) => c.userId === p.id) < 0 &&
+            p.id !== currentUser.id
+        )
       );
+
       unselected.forEach((p) => {
         p.rightIcon = 'PlusCircleIcon';
       });
       sortListDataItems(unselected);
       setUnselectedData(unselected);
+      setFilteredData(unselected);
 
       const selected = [mapUserToListDataItem(currentUser)];
       selected.push(
@@ -144,11 +162,10 @@ export const CalendarSearchParticipant: React.FC<
         p.rightIcon = 'XIcon';
       });
       setSelectedData(selected);
-
-      setFilteredData(unselected);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitioners]);
+  }, [practitioners, clubs]);
 
   return (
     <BannerWrapper
@@ -184,6 +201,8 @@ export const CalendarSearchParticipant: React.FC<
               size="normal"
               color="primary"
               type="filled"
+              isLoading={busySaving}
+              disabled={busySaving}
             >
               {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
               <Typography

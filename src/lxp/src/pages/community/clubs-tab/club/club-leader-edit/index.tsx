@@ -47,7 +47,8 @@ export const ClubLeaderEdit: React.FC = () => {
   const newLeaderFirstName = newLeader?.practitioner?.user?.firstName;
   const availableMembers = club?.clubMembers?.filter(
     (member) =>
-      member?.practitioner?.id !== previousClubLeader?.practitioner?.id
+      member?.practitioner?.id !== previousClubLeader?.practitioner?.id &&
+      member?.practitioner?.id !== club.newClubLeader?.practitioner?.id
   );
 
   const {

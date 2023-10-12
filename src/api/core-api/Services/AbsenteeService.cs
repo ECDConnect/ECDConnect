@@ -43,6 +43,7 @@ namespace ECDLink.Api.CoreApi.Services
             DateTime absentDate,
             string loggedByUser,
             string classroomGroupId = null,
+            DateTime? absentDateEnd = null,
             Guid? practitionerRemovalHistory = null)
         {
             var absenteeRepo = _repositoryFactory.CreateRepository<Absentees>(userContext: uId);
@@ -55,6 +56,7 @@ namespace ECDLink.Api.CoreApi.Services
                     UserId = practitionerId,
                     Reason = reason,
                     AbsentDate = absentDate,
+                    AbsentDateEnd = absentDateEnd,
                     LoggedBy = loggedByUser,
                     ReassignedClass = classroomGroupId,
                     ReassignedToPractitioner = reassignedToPractitioner,
@@ -65,7 +67,7 @@ namespace ECDLink.Api.CoreApi.Services
                 updated = absenteeRepo.Insert(absent);
 
                 //Log to the history table for reassignment back to owner user
-                _reassignmentService.AddReassignmentForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false);
+                _reassignmentService.AddReassignmentForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd);
 
                 //send notifications a) Absentee, b) long leave
                 var userToSend = _userManager.FindByIdAsync(practitionerId).Result;

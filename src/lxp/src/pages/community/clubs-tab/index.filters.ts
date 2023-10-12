@@ -126,6 +126,45 @@ function sortByPointsEarnedThisYear(clubs: MergedCoachingClub[]) {
   });
 }
 
+function sortByMeetingAttendance(clubs: MergedCoachingClub[]) {
+  return clubs.sort((a, b) => {
+    // @ts-ignore: update graphql types
+    const startsWithMissingA = a.meetingAttendanceText?.startsWith('Missing');
+    // @ts-ignore: update graphql types
+    const startsWithMissingB = b.meetingAttendanceText?.startsWith('Missing');
+    // @ts-ignore: update graphql types
+    const endsWithClubMeetingA = a.meetingAttendanceText?.endsWith(
+      'club meeting register'
+    );
+    // @ts-ignore: update graphql types
+    const endsWithClubMeetingB = b.meetingAttendanceText?.endsWith(
+      'club meeting register'
+    );
+
+    if (startsWithMissingA && !startsWithMissingB) {
+      return -1;
+    }
+    if (!startsWithMissingA && startsWithMissingB) {
+      return 1;
+    }
+
+    if (startsWithMissingA === startsWithMissingB) {
+      if (endsWithClubMeetingA && !endsWithClubMeetingB) {
+        return -1;
+      }
+      if (!endsWithClubMeetingA && endsWithClubMeetingB) {
+        return 1;
+      }
+    }
+    // @ts-ignore: update graphql types
+    const attendanceA = a.meetingAttendance || 0;
+    // @ts-ignore: update graphql types
+    const attendanceB = b.meetingAttendance || 0;
+
+    return attendanceA - attendanceB;
+  });
+}
+
 export function sortClubBy(clubs: MergedCoachingClub[], sortBy: string) {
   const clubsCopy = [...clubs];
 
@@ -139,11 +178,12 @@ export function sortClubBy(clubs: MergedCoachingClub[], sortBy: string) {
     case SortBy.POINTS_EARNED_THIS_YEAR:
       return sortByPointsEarnedThisYear(clubsCopy);
     case SortBy.PRIORITY:
-      // TODO: Implement this (EC-1371)
-      return clubs;
+      return clubsCopy?.sort(
+        (a, b) =>
+          (a.secondaryTextPriority ?? 0) - (b.secondaryTextPriority ?? 0)
+      );
     case SortBy.MEETING_ATTENDANCE:
-      // TODO: Implement this (EC-1371)
-      return clubs;
+      return sortByMeetingAttendance(clubs);
     default:
       return clubs;
   }

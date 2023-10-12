@@ -4,7 +4,6 @@ namespace ECDLink.Abstractrions.Notifications.Message
 {
     public interface IMessageLog<TKey> where TKey : IEquatable<TKey>
     {
-        public Guid Id { get; set; }
         string MessageTemplateType { get; set; }
         string MessageProtocol { get; set; }
         string From { get; set; }
