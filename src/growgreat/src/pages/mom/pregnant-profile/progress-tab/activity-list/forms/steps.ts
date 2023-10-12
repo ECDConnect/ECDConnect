@@ -35,16 +35,16 @@ import { InfantCareStep } from './pregnancy-care-steps/nutrition/complementary-f
 export const getHealhcareteps = ({
   isAntenatalClinicStep,
   isDangerSignsFollowUp,
-  isFirstVisit,
+  isAntenatalClinicUpToDateStep,
 }: {
   isDangerSignsFollowUp: boolean;
-  isFirstVisit: boolean;
+  isAntenatalClinicUpToDateStep: boolean;
   isAntenatalClinicStep: boolean;
 }) => [
   AntenatalCare,
   ...(isAntenatalClinicStep ? [ClinicVisitsStep] : []),
   ...(isDangerSignsFollowUp ? [HealthcareDangerSignsFollowUpStep] : []),
-  ...(isFirstVisit ? [] : [ClinicVisitsUpToDateStep]),
+  ...(isAntenatalClinicUpToDateStep ? [ClinicVisitsUpToDateStep] : []),
   AntenatalClinicVideoStep,
 ];
 
