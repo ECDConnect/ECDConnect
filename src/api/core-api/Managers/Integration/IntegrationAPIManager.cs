@@ -212,6 +212,48 @@ public class IntegrationAPIManager
         }
     }
 
+    public async Task<List<MappedCoach>> GetCoachesAll(string remoteCoachId = null)
+    {
+        try
+        {
+            string[] columns = null;
+            List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
+            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+
+            var responseString = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLCoach + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
+            return JsonConvert.DeserializeObject<List<MappedCoach>>(responseString);
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetCoachesAll > " + remoteCoachId);
+            return null;
+        }
+    }
+
+    public async Task<List<MappedFranchisor>> GetFranchisorById(string remoteId)
+    {
+        try
+        {
+            string[] columns = null; 
+            List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+            //relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "SiteAddress", AllColumns = "True", Columns = "", JoinType = "Outer" });
+
+            var responseString = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLFranchisor.Replace("{{Guid}}", remoteId), columns, null, relatedConditions);
+
+            var franchisor = JsonConvert.DeserializeObject<MappedFranchisor>(responseString);
+
+
+
+            return new List<MappedFranchisor> { franchisor };
+
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetFranchiseesById > " + remoteId);
+            return null; //throw new HttpRequestException("SmartLink API Error: " + e.Message);
+        }
+    }
+
     public async Task<List<MappedFranchisee>> GetFranchiseesByCoach(string remoteCoachId)
     {
         try
