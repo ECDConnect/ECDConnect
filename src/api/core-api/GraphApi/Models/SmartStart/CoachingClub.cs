@@ -49,7 +49,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
 
     public class ClubActivity
     {
-        public Guid Id { get; set; }
         public string Name { get; set; }
         public double Points { get; set; }
     }

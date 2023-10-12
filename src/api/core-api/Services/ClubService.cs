@@ -20,7 +20,6 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -39,6 +38,8 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<Coach, Guid> _coachRepo;
         private readonly IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private readonly IGenericRepository<League, Guid> _leagueRepo;
+        private readonly IGenericRepository<ClubPointsLibrary, Guid> _clubPointsLibraryRepo;
+        private readonly IGenericRepository<ClubPoints, Guid> _clubPointsRepo;
 
         private readonly string _applicationUserId;
 
@@ -66,6 +67,8 @@ namespace EcdLink.Api.CoreApi.Services
             _coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
             _leagueRepo = _repositoryFactory.CreateGenericRepository<League>(userContext: _applicationUserId);
             _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+            _clubPointsLibraryRepo = _repositoryFactory.CreateGenericRepository<ClubPointsLibrary>(userContext: _applicationUserId);
+            _clubPointsRepo = _repositoryFactory.CreateGenericRepository<ClubPoints>(userContext: _applicationUserId);
 
             _notificationService = notificationService;
             _userManager = userManager;
@@ -804,15 +807,14 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryTextPriority = 1;
                 }
 
+                // TODO: C3 development pending
                 List<ClubMeeting> clubMeetings = new List<ClubMeeting>();
-                List<ClubActivity> clubActivities = new List<ClubActivity>
+                List<ClubActivity> clubActivities = new List<ClubActivity>();
+
+                if (club.LeagueId != null)
                 {
-                    // tmp implementation until we get to the development of activities
-                    new ClubActivity() { Name = "Meet regularly", Points = 100 },
-                    new ClubActivity() { Name = "Be creative", Points = 80 },
-                    new ClubActivity() { Name = "Host family days", Points = 120 },
-                    new ClubActivity() { Name = "Leave no one behind", Points = 60 }
-                };
+                    clubActivities = GetClubActivities(club.Id, club.League.LeagueType.Name);
+                }
 
                 result.Add(
                     new CoachingClub()
@@ -839,6 +841,32 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             return result;
+        }
+
+        private List<ClubActivity> GetClubActivities(Guid clubId, string leagueTypeName)
+        {
+            List<ClubActivity> clubActivities = new List<ClubActivity>();
+            List<ClubPointsLibrary> activities = _clubPointsLibraryRepo.GetAll().OrderBy(x => x.Activity).ToList();
+            ClubActivity activity = new ClubActivity();
+
+            if (leagueTypeName == Constants.ClubSettings.club_purple)
+            {
+                activities = activities.Where(x => x.Type == Constants.ClubSettings.name_purple).OrderBy(x => x.Activity).ToList();
+                foreach (ClubPointsLibrary pl in activities)
+                {
+                    clubActivities.Add(new ClubActivity() { Name = pl.Activity, Points = 0 });
+                }
+                                
+            } else
+            {
+                activities = activities.Where(x => x.Type != Constants.ClubSettings.name_purple).OrderBy(x => x.Activity).ToList();
+                foreach (ClubPointsLibrary pl in activities)
+                {
+                    clubActivities.Add(new ClubActivity() { Name = pl.Activity, Points = 0 });
+                }
+            }
+
+            return clubActivities;
         }
 
     }

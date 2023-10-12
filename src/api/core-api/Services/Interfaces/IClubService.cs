@@ -4,7 +4,6 @@ using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ECDLink.Api.CoreApi.Services.Interfaces
 {

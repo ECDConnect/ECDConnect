@@ -76,7 +76,7 @@ class ClubService {
                 meetingNotes
                 coachAttended
               }
-              clubLeaders {
+              currentClubLeader {
                   isActive
                   dateAssigned
                   dateAccepted
@@ -92,6 +92,22 @@ class ClubService {
                       }
                   }
               }
+              newClubLeader {
+                isActive
+                dateAssigned
+                dateAccepted
+                practitioner {
+                    id
+                    user {
+                        id
+                        firstName
+                        surname
+                        phoneNumber
+                        whatsAppNumber
+                        profileImageUrl
+                    }
+                }
+            }
               clubSupport {
                   isActive
                   dateAssigned
