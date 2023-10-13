@@ -1,5 +1,4 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
