@@ -228,6 +228,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     {
                         circleClub.CCMeetingStatus = Constants.CoachingCircleSettings.circle_meetings_held + latest_meeting_inside_quarter.MeetingDate;
                         circleClub.CCMeetingStatusColor = MetricsColorEnum.Success.ToString();
+                        haveMeetings.Add(circleClub);
                     }
                     else
                     {
@@ -235,9 +236,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         {
                             circleClub.CCMeetingStatus = Constants.CoachingCircleSettings.no_circle_meetings_held + latest_meeting_outside_quarter.MeetingDate;
                             circleClub.CCMeetingStatusColor = MetricsColorEnum.Error.ToString();
+                            noMeetings.Add(circleClub);
                         }
                     }
-                    haveMeetings.Add(circleClub);
+                   
                 }
             }
 
