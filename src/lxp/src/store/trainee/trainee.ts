@@ -67,7 +67,6 @@ const traineeSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getCoachSmartSpaceVisitData.fulfilled, (state, action) => {
-      console.log(action.payload);
       state.coachSmartSpaceCheckData = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });

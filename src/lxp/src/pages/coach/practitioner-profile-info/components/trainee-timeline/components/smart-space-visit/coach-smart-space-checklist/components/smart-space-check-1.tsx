@@ -43,7 +43,7 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const isTrainee = practitioner?.isTrainee;
-  console.log({ visitData });
+
   const [questions, setAnswers] = useState([
     {
       question: 'The venue has enough clean, safe water for children to drink.',
@@ -164,7 +164,6 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         });
-        console.log({ previousAnswer });
 
         const previousHasTrueAnswer =
           Boolean(previousAnswer?.questionAnswer) === true ||

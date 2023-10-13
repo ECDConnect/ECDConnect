@@ -110,7 +110,6 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         });
-        console.log({ previousAnswer });
 
         if (previousAnswer) {
           return {

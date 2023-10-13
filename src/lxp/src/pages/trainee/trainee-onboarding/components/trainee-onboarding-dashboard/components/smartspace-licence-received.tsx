@@ -31,19 +31,15 @@ export const SmartSpaceLicenceReceived: React.FC<
 > = ({ setShowCoachVisit, setNotificationStep }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const coach = useSelector(coachSelectors.getCoach);
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const smartSpaceVisitId = timeline?.sSCoachVisitId;
   const coachSmartSpaceAnwers = useSelector(
     traineeSelectors?.getCoachSmartSpaceVisitData
   );
-  console.log({ coachSmartSpaceAnwers });
+
   const discussNextStepsItem = coachSmartSpaceAnwers?.find(
     (item) => item?.visitSection === 'Discuss next steps'
   );
-  console.log({ discussNextStepsItem });
-  // export const getStepDate = (date?: string) =>
-  //   !!date ? `By ${new Date(date).toLocaleDateString('en-ZA', dateOptions)}` : '';
 
   const fetchSmartSpaceVisitData = useCallback(async () => {
     await appDispatch(

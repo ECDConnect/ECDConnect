@@ -121,7 +121,6 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
     () => questions[0].answer !== '' && questions[1].answer !== '',
     [questions]
   );
-  console.log({ visitData });
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -155,8 +154,6 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         });
-
-        console.log({ previousAnswer });
 
         if (previousAnswer) {
           return {

@@ -30,7 +30,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
-  setNotificationStep?: (item: string) => void;
+  setNotificationStep: (item: string) => void;
 }
 
 export interface CoachSmartSpaceChecklistRouteState {
@@ -40,7 +40,7 @@ export interface CoachSmartSpaceChecklistRouteState {
 
 export const CoachSmartSpaceChecklist: React.FC<
   CoachSmartSpaceChecklistProps
-> = ({ practitioner: practitionerUser }) => {
+> = ({ practitioner: practitionerUser, setNotificationStep }) => {
   const history = useHistory();
   const dialog = useDialog();
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -246,6 +246,7 @@ export const CoachSmartSpaceChecklist: React.FC<
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             onSubmit={onSubmit}
+            setNotificationStep={setNotificationStep}
           />
         );
       default:
