@@ -18,28 +18,27 @@ import {
   StartupSupportSchema,
 } from '@/schemas/income-statements/startup-support';
 import { useMemo, useState } from 'react';
-import { AddIncomeState } from './startup-support.types';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
-import { statementsActions, statementsSelectors } from '@/store/statements';
-import { newGuid } from '@/utils/common/uuid.utils';
 import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
-import { useAppDispatch } from '@/store';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
 import { practitionerSelectors } from '@/store/practitioner';
+import { AddIncomeState } from '../../../add-amount.types';
+import { StatementsIncomeInput } from '@ecdlink/graphql';
+import { statementsSelectors } from '@/store/statements';
+import { newGuid } from '@/utils/common/uuid.utils';
 
-export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
+export const StartupSupport: React.FC<AddIncomeState> = ({
+  setType,
+  onSubmit,
+}) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const appDispatch = useAppDispatch();
-  const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
@@ -65,7 +64,6 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const isNum = isNumber(startupValue!);
   const disabled = useMemo(() => {
     return !date || !startupValue;
   }, [date, startupValue]);
@@ -81,9 +79,8 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const lastDateOfMonth = lastDayOfMonth(today);
 
   const sendIncomeUpdate = async () => {
-    const incomeId = newGuid();
-
-    const incomeInput = {
+    const incomeInput: StatementsIncomeInput = {
+      Id: newGuid(),
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
@@ -94,15 +91,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
       IncomeTypeId: incomeTypeValue?.id,
     };
 
-    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
-
-    appDispatch(
-      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
-    );
-
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, incomeInput);
+    onSubmit(incomeInput);
 
     await history.push(ROUTES.BUSINESS);
   };
@@ -188,7 +177,7 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={() => setConfirmStartupValue(true)}
-          disabled={disabled || !isNum}
+          disabled={disabled}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

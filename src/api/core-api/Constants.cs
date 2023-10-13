@@ -823,7 +823,7 @@ namespace EcdLink.Api.CoreApi
 
         public static class CoachingCircleSettings
         {
-            public const string no_circle_meetings_held = "No coaching circles held yet";
+            public const string no_circle_meetings_held = "No coaching circles held yet ";
             public const string circle_meetings_held = "Last coaching circle held: ";
 
             public const string meeting_type_coach_circle = "coaching_circle";
@@ -845,6 +845,16 @@ namespace EcdLink.Api.CoreApi
             public const string club_not_in_league = "Club not in league";
             public const string name_new_stars = "New Stars";
             public const string name_rising_stars = "Rising Stars";
+            public const string top_of_the_league = "Top of the league";
+            public const string points_earned = " points earned in ";
+
+            public const string leave_no_one_behind = "Leave no one behind";
+            public const string host_family_days = "Host family days";
+            public const string child_progress_reports = "Complete child progress reports";
+            public const string capture_child_attendance = "Capture child attendance";
+            public const string meet_regularly = "Meet regularly";
+            public const string be_creative = "Be creative";
+
         }
 
     }

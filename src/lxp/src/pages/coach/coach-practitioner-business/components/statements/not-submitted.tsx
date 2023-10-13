@@ -7,13 +7,19 @@ import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selec
 import { traineeSelectors } from '@/store/trainee';
 import { WhatsappCall } from '../contact/whatsapp-call';
 
-export const StatementNotSubmitted = () => {
+export type StatementNotSubmittedProps = {
+  month: string;
+  onBack: () => void;
+};
+
+export const StatementNotSubmitted: React.FC<StatementNotSubmittedProps> = ({
+  month,
+  onBack,
+}) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
-  const { practitionerId } = useParams<PractitionerBusinessParams>();
-  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
-  const location = useLocation<PractitionerBusinessParams>();
-  const incomeStatementMonth = location.state.incomeStatementMonth;
+  const { userId } = useParams<PractitionerBusinessParams>();
+  const practitioner = useSelector(getPractitionerByUserId(userId));
   const practitionerFirstName = practitioner?.user?.firstName;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const hasStartUpSupport =
@@ -27,7 +33,7 @@ export const StatementNotSubmitted = () => {
         renderOverflow
         displayOffline={!isOnline}
         title="Not submitted"
-        onBack={() => history.goBack()}
+        onBack={onBack}
         className="p-4"
       >
         <div className="mt-4 flex justify-center">
@@ -36,12 +42,7 @@ export const StatementNotSubmitted = () => {
               <Typography
                 className="mt-4 text-left"
                 color="textDark"
-                text={
-                  practitionerFirstName +
-                  ' has not submitted their ' +
-                  incomeStatementMonth +
-                  ' income statement yet.'
-                }
+                text={`${practitionerFirstName} has not submitted their ${month} income statement yet.`}
                 type={'h3'}
               />
             </div>
@@ -50,11 +51,7 @@ export const StatementNotSubmitted = () => {
               <Typography
                 className="mt-2 text-left"
                 color="textMid"
-                text={
-                  'Remind ' +
-                  practitionerFirstName +
-                  ' to submit income statements by the 7th of every month.'
-                }
+                text={`Remind ${practitionerFirstName} to submit income statements by the 7th of every month.`}
                 type={'body'}
               />
             </div>
@@ -65,11 +62,7 @@ export const StatementNotSubmitted = () => {
                   <Typography
                     className="mt-2 text-left"
                     color="textMid"
-                    text={
-                      'To receive monthly start-up support,  ' +
-                      practitionerFirstName +
-                      ' needs to submit statements on a monthly basis.'
-                    }
+                    text={`To receive monthly start-up support, ${practitionerFirstName} needs to submit statements on a monthly basis.`}
                     type={'body'}
                   />
                 </div>
@@ -77,11 +70,7 @@ export const StatementNotSubmitted = () => {
                   <Typography
                     className="mt-2 text-left"
                     color="textMid"
-                    text={
-                      'By submitting statements on time, ' +
-                      practitionerFirstName +
-                      ' will earn 25 points!'
-                    }
+                    text={`By submitting statements on time, ${practitionerFirstName} will earn 25 points!`}
                     type={'body'}
                   />
                 </div>
@@ -107,9 +96,7 @@ export const StatementNotSubmitted = () => {
                 color="primary"
                 type="filled"
                 icon="CheckCircleIcon"
-                onClick={() => {
-                  history.goBack();
-                }}
+                onClick={onBack}
                 className="mt-6 rounded-2xl"
               >
                 <Typography

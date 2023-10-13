@@ -1,51 +1,20 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
-import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import {
-  BalanceSheetDto,
-  ExpensesStatementsDto,
   ExpensesStatementsTypes,
-  IncomeStatementsDto,
   IncomeStatementsTypes,
-  IncomeStatementPDFDocInput,
   ReportTableDataDto,
   StatementsContributionTypes,
+  IncomeStatementDto,
+  StatementsPayTypes,
+  ExpenseItemDto,
+  IncomeItemDto,
 } from '@/../../../packages/core/lib';
-
-export const getAllExpenses = createAsyncThunk<
-  any[],
-  { month: Number; year: Number },
-  ThunkApiType<RootState>
->(
-  'getAllExpenses',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ month, year }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      let expenses: ExpensesStatementsDto[] | undefined;
-
-      if (userAuth?.auth_token) {
-        expenses = await new ExpensesStatementsService(
-          userAuth?.auth_token
-        ).allStatementsExpenses(userAuth?.id, month, year);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!expenses) {
-        return rejectWithValue('Error getting expenses');
-      }
-
-      return expenses;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
+import {
+  StatementsExpensesInput,
+  StatementsIncomeInput,
+} from '@ecdlink/graphql';
 
 export const getAllExpensesTypes = createAsyncThunk<
   any[],
@@ -65,7 +34,7 @@ export const getAllExpensesTypes = createAsyncThunk<
         let expensesTypes: ExpensesStatementsTypes[] | undefined;
 
         if (userAuth?.auth_token) {
-          expensesTypes = await new ExpensesStatementsService(
+          expensesTypes = await new IncomeStatementsService(
             userAuth?.auth_token
           ).GetAllStatementsExpensesType();
         } else {
@@ -81,74 +50,6 @@ export const getAllExpensesTypes = createAsyncThunk<
       }
     } else {
       return expensesTypesCached;
-    }
-  }
-);
-
-export const getAllIncome = createAsyncThunk<
-  any[],
-  { month: Number; year: Number },
-  ThunkApiType<RootState>
->(
-  'getAllIncome',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ month, year }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      let income: IncomeStatementsDto[] | undefined;
-
-      if (userAuth?.auth_token) {
-        income = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).allStatementsIncome(userAuth?.id, month, year);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!income) {
-        return rejectWithValue('Error getting income');
-      }
-
-      return income;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const getAllStatementsBalanceSheet = createAsyncThunk<
-  BalanceSheetDto[],
-  { year: Number; month: Number | undefined },
-  ThunkApiType<RootState>
->(
-  'getAllStatementsBalanceSheet',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ year, month }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      let statementsBalanceSheet: BalanceSheetDto[] | undefined;
-
-      if (userAuth?.auth_token) {
-        statementsBalanceSheet = await new IncomeStatementsService(
-          userAuth?.auth_token
-        ).getAllStatementsBalanceSheet(userAuth?.id, year, month);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!statementsBalanceSheet) {
-        return rejectWithValue('Error getting income balance sheets');
-      }
-
-      return statementsBalanceSheet;
-    } catch (err) {
-      return rejectWithValue(err);
     }
   }
 );
@@ -283,7 +184,7 @@ export const getAllPayType = createAsyncThunk<
     } = getState();
 
     try {
-      let payTypes: ReportTableDataDto[] | undefined;
+      let payTypes: StatementsPayTypes[] | undefined;
 
       if (userAuth?.auth_token) {
         payTypes = await new IncomeStatementsService(
@@ -305,33 +206,38 @@ export const getAllPayType = createAsyncThunk<
 );
 
 export const submitIncomeStatement = createAsyncThunk<
-  any[],
+  IncomeStatementDto,
   {
-    period: string;
     userId: string;
     month: number;
     year: number;
+    incomeItemIds: string[];
+    expenseItemIds: string[];
   },
   ThunkApiType<RootState>
 >(
   'submitIncomeStatement',
   // eslint-disable-next-line no-empty-pattern
-  async ({ year, month, period, userId }, { getState, rejectWithValue }) => {
+  async (
+    { year, month, userId, incomeItemIds, expenseItemIds },
+    { getState, rejectWithValue }
+  ) => {
     const {
       auth: { userAuth },
     } = getState();
 
     try {
-      let result: any | undefined;
+      let result: IncomeStatementDto | undefined;
 
       if (userAuth?.auth_token) {
         result = await new IncomeStatementsService(
           userAuth?.auth_token
         ).submitStatement({
-          period,
           userId,
           month,
           year,
+          incomeItemIds,
+          expenseItemIds,
         });
       } else {
         return rejectWithValue('no access token, profile check required');
@@ -347,65 +253,170 @@ export const submitIncomeStatement = createAsyncThunk<
   }
 );
 
-export const getIncomeExpensesPDFreport = createAsyncThunk<
-  any[],
-  { year: Number; month: Number },
+export const getIncomeStatements = createAsyncThunk<
+  IncomeStatementDto[],
+  { startDate: Date; endDate: Date | undefined },
   ThunkApiType<RootState>
 >(
-  'getIncomeExpensesPDFreport',
+  'getIncomeStatements',
   // eslint-disable-next-line no-empty-pattern
-  async ({ year, month }, { getState, rejectWithValue }) => {
+  async ({ startDate, endDate }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
 
     try {
-      let report: ReportTableDataDto[] | undefined;
+      let incomeStatements: IncomeStatementDto[] | undefined;
 
       if (userAuth?.auth_token) {
-        report = await new IncomeStatementsService(
+        incomeStatements = await new IncomeStatementsService(
           userAuth?.auth_token
-        ).getMonthsIncomeExpensesReport(userAuth?.id!, month, year);
+        ).getIncomeStatements(userAuth?.id, startDate, endDate);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
 
-      if (!report) {
-        return rejectWithValue('Error getting pdf Report Data');
+      if (!incomeStatements) {
+        return rejectWithValue('Error getting income balance sheets');
       }
-      return report;
+
+      return incomeStatements;
     } catch (err) {
       return rejectWithValue(err);
     }
   }
 );
 
-export const saveIncomeStatementPDF = createAsyncThunk<
-  boolean,
-  IncomeStatementPDFDocInput,
+export const getUnsubmittedIncomeItems = createAsyncThunk<
+  IncomeItemDto[],
+  {},
   ThunkApiType<RootState>
 >(
-  'saveIncomeStatementPDF',
-
-  async (input, { getState, rejectWithValue }) => {
+  'getUnsubmittedIncomeItems',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
+
     try {
-      let report: boolean | undefined;
+      let incomeItems: IncomeItemDto[] | undefined;
 
       if (userAuth?.auth_token) {
-        report = await new IncomeStatementsService(
+        incomeItems = await new IncomeStatementsService(
           userAuth?.auth_token
-        ).saveIncomeStatementPDF(input);
+        ).getUnsubmittedIncomeItems(userAuth?.id);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
 
-      if (!report) {
-        return rejectWithValue('Error getting pdf Report Data');
+      if (!incomeItems) {
+        return rejectWithValue('Error getting income balance sheets');
       }
-      return report;
+
+      return incomeItems;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getUnsubmittedExpenseItems = createAsyncThunk<
+  ExpenseItemDto[],
+  {},
+  ThunkApiType<RootState>
+>(
+  'getUnsubmittedExpenseItems',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let expenseItems: ExpenseItemDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        expenseItems = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).getUnsubmittedExpenseItems(userAuth?.id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!expenseItems) {
+        return rejectWithValue('Error getting income balance sheets');
+      }
+
+      return expenseItems;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addIncomeItem = createAsyncThunk<
+  IncomeItemDto,
+  { input: StatementsIncomeInput; firstAttempt: boolean },
+  ThunkApiType<RootState>
+>(
+  'addIncomeItem',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let incomeItem: IncomeItemDto | undefined;
+
+      if (userAuth?.auth_token) {
+        incomeItem = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).UpdateStatementsIncome(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!incomeItem) {
+        return rejectWithValue('Error uploading income item');
+      }
+
+      return incomeItem;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addExpenseItem = createAsyncThunk<
+  ExpenseItemDto,
+  { input: StatementsExpensesInput; firstAttempt: boolean },
+  ThunkApiType<RootState>
+>(
+  'addExpenseItem',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let expenseItem: ExpenseItemDto | undefined;
+
+      if (userAuth?.auth_token) {
+        expenseItem = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).updateStatementsExpense(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!expenseItem) {
+        return rejectWithValue('Error uploading expense item');
+      }
+
+      return expenseItem;
     } catch (err) {
       return rejectWithValue(err);
     }

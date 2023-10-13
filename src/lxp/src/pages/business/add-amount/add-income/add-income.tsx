@@ -6,7 +6,7 @@ import {
   Typography,
   Alert,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
@@ -20,8 +20,16 @@ import DsdSubsidy from './components/dsd-subsidy/dsd-subsidy';
 import OtherIncome from './components/other-income/other-income';
 import StatementsWrapper from '../../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
+import { IncomeStatementsDto } from '@ecdlink/core';
+import { StatementsIncomeInput } from '@ecdlink/graphql';
+import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { statementsActions, statementsThunkActions } from '@/store/statements';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 export const AddIncome: React.FC = () => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -40,18 +48,30 @@ export const AddIncome: React.FC = () => {
   // const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [type, setType] = useState('');
 
+  const onSubmit = useCallback(
+    (incomeItem: StatementsIncomeInput) => {
+      appDispatch(
+        statementsThunkActions.addIncomeItem({
+          input: incomeItem,
+          firstAttempt: true,
+        })
+      );
+    },
+    [userAuth]
+  );
+
   const incomeType = (type?: string) => {
     switch (type) {
       case 'PreschoolFees':
-        return <PreschoolFees setType={setType} />;
+        return <PreschoolFees setType={setType} onSubmit={onSubmit} />;
       case 'StartupSupport':
-        return <StartupSupport setType={setType} />;
+        return <StartupSupport setType={setType} onSubmit={onSubmit} />;
       case 'DonationsOrvouchers':
-        return <DonationsOrVouchers setType={setType} />;
+        return <DonationsOrVouchers setType={setType} onSubmit={onSubmit} />;
       case 'DsdSubsidy':
-        return <DsdSubsidy setType={setType} />;
+        return <DsdSubsidy setType={setType} onSubmit={onSubmit} />;
       case 'OtherIncome':
-        return <OtherIncome setType={setType} />;
+        return <OtherIncome setType={setType} onSubmit={onSubmit} />;
       default:
         break;
     }

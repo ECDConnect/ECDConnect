@@ -151,7 +151,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<ChildManager>();
-            services.AddTransient<IncomeExpenseService>();
+            services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
             services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();

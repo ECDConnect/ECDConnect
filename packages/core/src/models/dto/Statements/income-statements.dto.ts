@@ -11,12 +11,13 @@ export interface IncomeStatementsDto {
   childCoverAmount?: number;
   payTypeId?: string;
   contributionTypeId?: string;
-  IncomeTypeId?: string;
+  incomeTypeId?: string;
   id?: string;
   photoProof?: string;
   insertedDate?: string;
   isOffline?: boolean;
   statementsIncomeStatementId?: string;
+  feeTypeId?: string;
 }
 export interface ReportTableDataDto {
   tableName: string;
