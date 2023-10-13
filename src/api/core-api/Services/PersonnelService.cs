@@ -64,6 +64,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
         private IClubService _clubService;
+        private IAbsenteeService _absenteeService;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -75,6 +76,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
+            [Service] IAbsenteeService absenteeService,
             UserManager<ApplicationUser> userManager,
             [Service] HierarchyEngine hierarchyEngine)
         {
@@ -107,6 +109,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _clubService = clubService;
+            _absenteeService = absenteeService;
         }
 
 
@@ -172,6 +175,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.ClubName = clubMember?.Club?.Name;
             practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
             practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+
+            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
+            if (absentees.Any())
+            {
+                practitionerRecord.Absentees = absentees;
+            }
 
             return practitionerRecord;
         }
