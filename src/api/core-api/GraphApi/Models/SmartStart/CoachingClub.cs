@@ -24,6 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public virtual Coach Coach { get; set; }
         public string LeaguePosition { get; set; } // not sure what data type this is at the moment - integration prop
         public int TotalClubPoints { get; set; }
+        public string TotalClubPointsColor { get; set; }
         public int MaxClubPoints { get; set; }
         public virtual ICollection<ClubActivity> ClubActivities { get; set; }
     }
