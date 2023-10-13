@@ -4893,6 +4893,7 @@ export type Mutation = {
   addCoachCircleMeeting?: Maybe<ClubMeeting>;
   addCoachFranchiseeAgreementForTrainee?: Maybe<Visit>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addCoachVisitData: Scalars['Boolean'];
   addCoachVisitInviteForPractitioner?: Maybe<Visit>;
   addCoachVisitInviteForTrainee?: Maybe<Visit>;
   addEventRecord?: Maybe<EventRecord>;
@@ -5497,6 +5498,10 @@ export type MutationAddCoachFranchiseeAgreementForTraineeArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddCoachVisitDataArgs = {
+  input?: InputMaybe<CmsVisitDataInputModelInput>;
 };
 
 export type MutationAddCoachVisitInviteForPractitionerArgs = {
