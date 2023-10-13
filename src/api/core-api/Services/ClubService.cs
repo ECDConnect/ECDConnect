@@ -17,7 +17,6 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -144,7 +143,7 @@ namespace EcdLink.Api.CoreApi.Services
             return _coachRepo.GetByUserId(userId);
         }
 
-        private int GetClubPositionInLeague(Club club, DateTime date)
+        private bool ValidateClubFirstPositionInLeague(Club club, DateTime date)
         {
             // sum all points for all library items for year
             int clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == date.Year).Select(x => x.Points).Sum();
@@ -160,22 +159,22 @@ namespace EcdLink.Api.CoreApi.Services
                 int otherClubPoints = otherPoints.Where(x => x.ClubId == item && x.IsActive).Select(x => x.Points).Sum();
                 if (otherClubPoints > clubPoints)
                 {
-                    return 0;
+                    return false;
                 }
             }
             if (clubPoints == 0)
             {
-                return 0;
+                return false;
             }
-            return 1;
+            return true;
         }
 
         private double GetClubEarningsForMonth(Club club, DateTime date)
         {
-            int maxPoints = 2000;
+            int maxPoints = Constants.ClubSettings.non_purple_club_max_points;
             if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
             {
-                maxPoints = 2200;
+                maxPoints = Constants.ClubSettings.purple_club_max_points;
             }
 
             int clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == date.Year && x.Month == date.Month).Select(x => x.Points).Sum();
@@ -549,7 +548,7 @@ namespace EcdLink.Api.CoreApi.Services
             DateTime today = DateTime.Now;
             DateTime prevMonth = today.AddMonths(-1);
             var monthName = prevMonth.ToString("MMM");
-            int leaguePosition = 0;
+            bool firstInLeague = false;
             double pointsEarned = 0;
 
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
@@ -564,7 +563,7 @@ namespace EcdLink.Api.CoreApi.Services
                 ClubLeader activeClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
                 if (club.LeagueId != null)
                 {
-                    leaguePosition = GetClubPositionInLeague(club, today);
+                    firstInLeague = ValidateClubFirstPositionInLeague(club, today);
                     pointsEarned = GetClubEarningsForMonth(club, prevMonth);
                 }
 
@@ -609,7 +608,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
 
                 // Priority 14 - Top of the league! ->show this if the club has position #1 in the league they are in.
-                if (leaguePosition == 1)
+                if (firstInLeague)
                 {
                     secondaryText = Constants.ClubSettings.top_of_the_league;
                     secondaryTextColor = MetricsColorEnum.Success.ToString();
@@ -746,14 +745,14 @@ namespace EcdLink.Api.CoreApi.Services
             var secondaryText = "";
             var secondaryTextColor = "";
             var secondaryTextPriority = 0;
-            int maxClubPoints = 2000;
+            int maxClubPoints = 0;
             int totalClubPoints = 0;
             DateTime today = DateTime.Now;
             DateTime prevMonth = today.AddMonths(-1);
             var monthName = prevMonth.ToString("MMM");
-            int leaguePosition = 0;
+            bool firstInLeague = false;
             double pointsEarned = 0;
-            string totalClubPointsColor = "";
+            string totalClubPointsColor = MetricsColorEnum.Error.ToString();
 
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
             if (clubId != null) //filter if we have a specific club to filter on
@@ -770,38 +769,33 @@ namespace EcdLink.Api.CoreApi.Services
                 Coach coach = GetCoachForClub(club.UserId);
                 totalClubPoints = GetClubEarningsForYear(club.Id, today);
 
-
-                if (totalClubPoints == 0)
+                if (club.LeagueId != null && club.League.LeagueType.Name == Constants.ClubSettings.name_purple)
                 {
-                    totalClubPointsColor = MetricsColorEnum.Error.ToString();
-                } else
-                {
-                    if (club.LeagueId != null && club.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+                    maxClubPoints = Constants.ClubSettings.purple_club_max_points;
+                    if (totalClubPoints > 0 && totalClubPoints <= 1760)
                     {
-                        if (totalClubPoints > 0 && totalClubPoints <= 1760)
-                        {
-                            totalClubPointsColor = MetricsColorEnum.Warning.ToString();
-                        }
-                        else
-                        {
-                            totalClubPointsColor = MetricsColorEnum.Success.ToString();
-                        }
+                        totalClubPointsColor = MetricsColorEnum.Warning.ToString();
                     }
                     else
                     {
-                        if (totalClubPoints > 0 && totalClubPoints <= 1500)
-                        {
-                            totalClubPointsColor = MetricsColorEnum.Warning.ToString();
-                        } else
-                        {
-                            totalClubPointsColor = MetricsColorEnum.Success.ToString();
-                        }
+                        totalClubPointsColor = MetricsColorEnum.Success.ToString();
+                    }
+                }
+                else
+                {
+                    maxClubPoints = Constants.ClubSettings.non_purple_club_max_points;
+                    if (totalClubPoints > 0 && totalClubPoints <= 1500)
+                    {
+                        totalClubPointsColor = MetricsColorEnum.Warning.ToString();
+                    } else
+                    {
+                        totalClubPointsColor = MetricsColorEnum.Success.ToString();
                     }
                 }
 
                 if (club.LeagueId != null)
                 {
-                    leaguePosition = GetClubPositionInLeague(club, today);
+                    firstInLeague = ValidateClubFirstPositionInLeague(club, today);
                     pointsEarned = GetClubEarningsForMonth(club, prevMonth);
                 }
 
@@ -824,12 +818,12 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     secondaryText = Constants.ClubSettings.club_purple;
                     secondaryTextColor = MetricsColorEnum.None.ToString();
-                    maxClubPoints = 2200;
+                    maxClubPoints = Constants.ClubSettings.purple_club_max_points;
                     secondaryTextPriority = 15;
                 }
 
                 // Priority 14 - Top of the league! ->show this if the club has position #1 in the league they are in.
-                if (leaguePosition == 1)
+                if (firstInLeague)
                 {
                     secondaryText = Constants.ClubSettings.top_of_the_league;
                     secondaryTextColor = MetricsColorEnum.Success.ToString();
@@ -969,7 +963,8 @@ namespace EcdLink.Api.CoreApi.Services
                         MaxClubPoints = maxClubPoints,
                         TotalClubPoints = totalClubPoints,
                         TotalClubPointsColor = totalClubPointsColor,
-                        LeaguePosition = leaguePosition.ToString(),
+                        FirstInLeague = firstInLeague,
+                        LeaguePositionPerc = 0.0,
                         ClubMeetings = clubMeetings,
                         ClubActivities = clubActivities
                     }
