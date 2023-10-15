@@ -187,15 +187,32 @@ export const timelineSteps = (
       nextStep
     )
   );
-  steps.push(
-    setStep(
-      timeline?.consolidationMeetingStatus || 'Consolidation meeting scheduled',
-      timeline?.consolidationMeetingDate || timeline?.consolidationDeadlineDate,
-      timeline?.consolidationMeetingColor,
-      () => onView('Consolidation meeting scheduled'),
-      nextStep
-    )
-  );
+  if (
+    timeline?.consolidationDeadlineDate < new Date() &&
+    timeline?.consolidationMeetingDate == null
+  ) {
+    steps.push(
+      setStep(
+        'Consolidation meeting overdue',
+        timeline?.consolidationDeadlineDate,
+        'error',
+        () => onView('Consolidation meeting overdue'),
+        nextStep
+      )
+    );
+  } else {
+    steps.push(
+      setStep(
+        timeline?.consolidationMeetingStatus ||
+          'Consolidation meeting scheduled',
+        timeline?.consolidationMeetingDate ||
+          timeline?.consolidationDeadlineDate,
+        timeline?.consolidationMeetingColor,
+        () => onView('Consolidation meeting scheduled'),
+        nextStep
+      )
+    );
+  }
   steps.push(
     setStep(
       timeline?.smartSpaceChecklistStatus || 'Fill in the SmartSpace checklist',

@@ -42,12 +42,12 @@ const options = [
 
 export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
   practitioner,
-  programmeName,
   setSectionQuestions,
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const isTrainee = practitioner?.isTrainee;
   const [answer, setAnswer] = useState<boolean | undefined>(undefined);
   const [enableButton, setEnableButton] = useState(false);
   const [questions, setAnswers] = useState([
@@ -156,6 +156,37 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
+    if (isTrainee) {
+      const previousData = questions.map((item) => {
+        const previousAnswer = visitData?.find((item: any) => {
+          const sectionData = item?.visitSection === visitSection;
+          return sectionData;
+        });
+
+        const previousHasTrueAnswer =
+          Boolean(previousAnswer?.questionAnswer) === true ||
+          previousAnswer?.questionAnswer === 'true';
+
+        if (previousAnswer) {
+          return {
+            ...item,
+            answer: previousHasTrueAnswer!,
+          };
+        }
+
+        return item;
+      });
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: previousData,
+        },
+      ]);
+
+      setAnswers(previousData);
+      return;
+    }
+
     const previousData = questions.map((item) => {
       const visitDataWithoutTypo = visitData as any;
       const previousAnswer = visitDataWithoutTypo
@@ -163,7 +194,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
@@ -198,6 +229,12 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
     setEnableButton(false);
   }, [answer]);
 
+  useEffect(() => {
+    if (isTrainee) {
+      setAnswer(true);
+    }
+  }, [isTrainee]);
+
   return (
     <div className="p-4">
       <Typography
@@ -214,27 +251,38 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
           color="textDark"
           className="mb-2"
         />
-        <ButtonGroup<boolean>
-          color="secondary"
-          type={ButtonGroupTypes.Button}
-          options={options}
-          onOptionSelected={(e) => setAnswer(e as boolean)}
-        />
+        <div className={`${isTrainee && 'pointer-events-none opacity-50'}`}>
+          <ButtonGroup<boolean>
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            options={options}
+            onOptionSelected={(e) => setAnswer(e as boolean)}
+          />
+        </div>
       </div>
       {answer && (
         <div>
-          <Alert
-            type={'info'}
-            title={
-              'Use the questions below to observe the SmartStart programme. .'
-            }
-            list={[
-              'Remind the SmartStarter of their training.',
-              'Help them improve their programme and get ready for the first PQA observation visit!',
-            ]}
-            className="mt-4"
-          />
+          {!isTrainee && (
+            <Alert
+              type={'info'}
+              title={
+                'Use the questions below to observe the SmartStart programme. .'
+              }
+              list={[
+                'Remind the SmartStarter of their training.',
+                'Help them improve their programme and get ready for the first PQA observation visit!',
+              ]}
+              className="mt-4"
+            />
+          )}
           <Divider dividerType="dashed" className={'my-4'} />
+          {isTrainee && (
+            <Alert
+              className="my-4"
+              type="warning"
+              title="You are viewing this form and cannot fill in responses."
+            />
+          )}
           {questions.map((item, index) => (
             <CheckboxGroup
               id={item.question}
@@ -248,6 +296,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
               value={item.question}
               onChange={() => onOptionSelected(!item.answer, index)}
               className="mb-1"
+              disabled={isTrainee}
             />
           ))}
           <div className="mt-2 flex items-center gap-2">
@@ -273,7 +322,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton}
+              disabled={!enableButton && !isTrainee}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

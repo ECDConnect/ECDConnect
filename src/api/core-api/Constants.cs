@@ -354,6 +354,7 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_visit = "PQA Visit 1";
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
+            public const string coach_smartspace_check = "Coach smartspace check";
             public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
             public const string pqa_follow_up = "Is {client} ready for a follow-up PQA observation visit?";
             public const string step12 = "Step 12";
@@ -847,6 +848,8 @@ namespace EcdLink.Api.CoreApi
             public const string name_rising_stars = "Rising Stars";
             public const string top_of_the_league = "Top of the league";
             public const string points_earned = " points earned in ";
+            public const int purple_club_max_points = 2200;
+            public const int non_purple_club_max_points = 2000;
 
             public const string leave_no_one_behind = "Leave no one behind";
             public const string host_family_days = "Host family days";

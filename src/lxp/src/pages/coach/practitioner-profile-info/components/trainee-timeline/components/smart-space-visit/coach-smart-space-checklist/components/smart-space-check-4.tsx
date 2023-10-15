@@ -12,6 +12,7 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { QuestionAnswersProps } from './smart-space-check-3';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -41,6 +42,7 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const isTrainee = practitioner?.isTrainee;
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
     traineeSelectors.getTraineeProgrammeType
@@ -89,6 +91,33 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
+    if (isTrainee) {
+      const previousData = questions.map((item) => {
+        const previousAnswer = visitData?.find((item: any) => {
+          const sectionData = item?.visitSection === visitSection;
+          return sectionData;
+        });
+
+        if (previousAnswer) {
+          return {
+            ...item,
+            answer: previousAnswer?.questionAnswer!,
+          };
+        }
+
+        return item;
+      });
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: previousData,
+        },
+      ]);
+
+      setAnswers(previousData as QuestionAnswersProps[]);
+      return;
+    }
+
     const previousData = questions.map((item) => {
       const visitDataWithoutTypo = visitData as any;
       const previousAnswer = visitDataWithoutTypo
@@ -96,7 +125,7 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
@@ -151,6 +180,8 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
           subLabel="Any programme with more than 10 children must have an assistant."
           onChange={(e) => onOptionSelected(e.target.value, index)}
           onKeyDown={(e) => e.code !== '69'}
+          disabled={isTrainee}
+          key={index}
         />
       ))}
 

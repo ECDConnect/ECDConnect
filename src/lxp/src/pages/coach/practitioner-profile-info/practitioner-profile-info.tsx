@@ -244,10 +244,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     listItems?.splice(0, 1, {
       title: 'Trainee onboarding',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: onboardingIncompleteAfter2Weeks
-        ? 'Incomplete after 2 weeks'
-        : onboardingIncompleteAfter4Weeks
+      subTitle: onboardingIncompleteAfter4Weeks
         ? 'Remove trainee'
+        : onboardingIncompleteAfter2Weeks
+        ? 'Incomplete after 2 weeks'
         : `${completedSteps?.length + 1} of ${
             timelineStepsArray?.length + 1
           } steps completed`,
