@@ -17,9 +17,11 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -113,29 +115,29 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool IsClubLeader(Guid practitionerId)
         {
-            ClubLeader clubLeader = _clubLeaderRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
+            ClubLeader clubLeader = _clubLeaderRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive && x.DateAccepted.HasValue).FirstOrDefault();
             return clubLeader == null? false: true;
         }
 
         public bool IsClubSupport(Guid practitionerId)
         {
-            ClubSupport clubSupport = _clubSupportRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
+            ClubSupport clubSupport = _clubSupportRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive && x.DateAccepted.HasValue).FirstOrDefault();
             return clubSupport == null ? false : true;
         }
 
         public List<ClubLeader> GetLeadersForClub(Guid clubId)
         {
-            return _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true).OrderBy(x => x.DateAssigned).ToList();
+            return _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).OrderBy(x => x.DateAssigned).ToList();
         }
 
         public ClubSupport GetSupportForClub(Guid clubId)
         {
-            return _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
+            return _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive && x.DateAccepted.HasValue).FirstOrDefault();
         }
 
         public ClubMember GetClubForPractitioner(Guid practitionerId)
         {
-            return _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive == true).FirstOrDefault();
+            return _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive).FirstOrDefault();
         }
 
         private Coach GetCoachForClub(string userId)
@@ -143,20 +145,30 @@ namespace EcdLink.Api.CoreApi.Services
             return _coachRepo.GetByUserId(userId);
         }
 
+        private int GetLeagueMaxPoints(string name)
+        {
+            int maxPoints = Constants.ClubSettings.non_purple_club_max_points;
+            if (name == Constants.ClubSettings.name_purple)
+            {
+                maxPoints = Constants.ClubSettings.purple_club_max_points;
+            }
+            return maxPoints;
+        }
+
         private bool ValidateClubFirstPositionInLeague(Club club, DateTime date)
         {
             // sum all points for all library items for year
-            int clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == date.Year).Select(x => x.Points).Sum();
+            int clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == date.Year && x.IsActive).Select(x => x.Points).Sum();
 
             // get all clubs in same league
-            List<Guid> clubIds = _clubRepo.GetAll().Where(x => x.LeagueId == club.LeagueId).Select(x => x.Id).ToList();
+            List<Guid> clubIds = _clubRepo.GetAll().Where(x => x.LeagueId == club.LeagueId && x.IsActive && x.Id != club.Id).Select(x => x.Id).ToList();
 
             // get all points for these club ids
-            List<ClubPoints> otherPoints = _clubPointsRepo.GetAll().Where(x => clubIds.Contains(x.ClubId) && x.Year == date.Year).ToList();
+            List<ClubPoints> otherPoints = _clubPointsRepo.GetAll().Where(x => clubIds.Contains(x.ClubId) && x.Year == date.Year && x.IsActive).ToList();
             
             foreach (var item in clubIds)
             {
-                int otherClubPoints = otherPoints.Where(x => x.ClubId == item && x.IsActive).Select(x => x.Points).Sum();
+                int otherClubPoints = otherPoints.Where(x => x.ClubId == item).Select(x => x.Points).Sum();
                 if (otherClubPoints > clubPoints)
                 {
                     return false;
@@ -169,14 +181,9 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        private double GetClubEarningsForMonth(Club club, DateTime date)
+        private double GetClubEarningsPercForMonth(Club club, DateTime date)
         {
-            int maxPoints = Constants.ClubSettings.non_purple_club_max_points;
-            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
-            {
-                maxPoints = Constants.ClubSettings.purple_club_max_points;
-            }
-
+            int maxPoints = GetLeagueMaxPoints(club?.League?.LeagueType?.Name);
             int clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == club.Id && x.Year == date.Year && x.Month == date.Month).Select(x => x.Points).Sum();
             return Math.Round( (double)clubPoints / (double)maxPoints * 100, 0);
         }
@@ -185,6 +192,43 @@ namespace EcdLink.Api.CoreApi.Services
         {
             return _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == date.Year).Select(x => x.Points).Sum();
             
+        }
+
+        private int GetClubLeagueRankPosition(Club club, DateTime date)
+        {
+            int rank = 0;
+            int maxPoints = GetLeagueMaxPoints(club?.League?.LeagueType?.Name);
+
+            // get all clubs in same league
+            List<Guid> clubIds = _clubRepo.GetAll().Where(x => x.LeagueId == club.LeagueId && x.IsActive).Select(x => x.Id).ToList();
+            // get all points for these club ids
+            List<ClubPoints> allClubsPoints = _clubPointsRepo.GetAll().Where(x => clubIds.Contains(x.ClubId) && x.Year == date.Year && x.IsActive).ToList();
+
+            List<ClubRank> clubRanks = new List<ClubRank>();
+            ClubRank clubRank = new ClubRank();
+            double clubPoint = 0.0;
+            foreach (var clubId in clubIds)
+            {
+                clubPoint = allClubsPoints.Where(x => x.ClubId == clubId).Select(x => x.Points).Sum();
+                if (clubPoint != 0)
+                {
+                    clubRank = new ClubRank();
+                    clubRank.Id = clubId;
+                    clubRank.Score = Math.Round((double)clubPoint / (double)maxPoints * 100, 0);
+                    clubRanks.Add(clubRank);
+                }
+            }
+            // order the list of objects from low to high and set the index according to score
+            clubRanks = clubRanks.OrderBy(x => x.Score).ToList();
+            var i = 1;
+            foreach (var item in clubRanks)
+            {
+                item.RankNr = i;
+                i++;
+            }
+
+            rank = clubRanks.Where(x => x.Id == club.Id).Select(x => x.RankNr).FirstOrDefault();
+            return rank;
         }
 
         public PractitionerAttendance GetPractitionerAttendance(Guid practitionerId, DateTime date, string meetingType)
@@ -221,7 +265,7 @@ namespace EcdLink.Api.CoreApi.Services
             return _clubMemberRepo.GetAll().Where(x => clubIds.Contains(x.ClubId) && x.IsActive == true).ToList();
         }
 
-        public double GetClubAttendanceForMonth(Guid clubId, DateTime date)
+        public double GetClubAttendancePercForMonth(Guid clubId, DateTime date)
         {
             double attendance = 0.0;
             int totalMembers = _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true).Count();
@@ -557,14 +601,14 @@ namespace EcdLink.Api.CoreApi.Services
             foreach (var club in clubs)
             {
                 List<ClubMember> members = GetClubMembers(club.Id);
-                double clubAttendance = GetClubAttendanceForMonth(club.Id, prevMonth);
+                double clubAttendance = GetClubAttendancePercForMonth(club.Id, prevMonth);
                 bool hasAttendanceRegister = HasAttendanceRegisterForMonth(club.Id, prevMonth);
                 List<ClubLeader> clubLeaders = GetLeadersForClub(club.Id); // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
                 ClubLeader activeClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
                 if (club.LeagueId != null)
                 {
                     firstInLeague = ValidateClubFirstPositionInLeague(club, today);
-                    pointsEarned = GetClubEarningsForMonth(club, prevMonth);
+                    pointsEarned = GetClubEarningsPercForMonth(club, prevMonth);
                 }
 
                 // Club Attendance - for sorting on club list view
@@ -753,6 +797,7 @@ namespace EcdLink.Api.CoreApi.Services
             bool firstInLeague = false;
             double pointsEarned = 0;
             string totalClubPointsColor = MetricsColorEnum.Error.ToString();
+            int leagueRankNr = 0;
 
             List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
             if (clubId != null) //filter if we have a specific club to filter on
@@ -762,7 +807,7 @@ namespace EcdLink.Api.CoreApi.Services
             foreach (var club in clubs)
             {
                 List<ClubMember> members = GetClubMembers(club.Id);
-                double clubAttendance = GetClubAttendanceForMonth(club.Id, prevMonth);
+                double clubAttendance = GetClubAttendancePercForMonth(club.Id, prevMonth);
                 bool hasAttendanceRegister = HasAttendanceRegisterForMonth(club.Id, prevMonth);
                 List<ClubLeader> clubLeaders = GetLeadersForClub(club.Id); // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
                 ClubSupport clubSupport = GetSupportForClub(club.Id);
@@ -796,7 +841,8 @@ namespace EcdLink.Api.CoreApi.Services
                 if (club.LeagueId != null)
                 {
                     firstInLeague = ValidateClubFirstPositionInLeague(club, today);
-                    pointsEarned = GetClubEarningsForMonth(club, prevMonth);
+                    pointsEarned = GetClubEarningsPercForMonth(club, prevMonth);
+                    leagueRankNr = GetClubLeagueRankPosition(club, today);
                 }
 
                 ClubLeader activeClubLeader = clubLeaders.Where(x => x.IsActive == true && x.DateAccepted.HasValue).FirstOrDefault();
@@ -964,7 +1010,7 @@ namespace EcdLink.Api.CoreApi.Services
                         TotalClubPoints = totalClubPoints,
                         TotalClubPointsColor = totalClubPointsColor,
                         FirstInLeague = firstInLeague,
-                        LeaguePositionPerc = 0.0,
+                        LeagueRankNr = leagueRankNr,
                         ClubMeetings = clubMeetings,
                         ClubActivities = clubActivities
                     }
