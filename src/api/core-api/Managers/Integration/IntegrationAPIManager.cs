@@ -219,6 +219,10 @@ public class IntegrationAPIManager
             string[] columns = null;
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+            if (remoteCoachId != null)
+            {
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Guid", Operator = "Equals", Value = remoteCoachId });
+            }
 
             var responseString = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLCoach + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
             return JsonConvert.DeserializeObject<List<MappedCoach>>(responseString);
@@ -230,7 +234,7 @@ public class IntegrationAPIManager
         }
     }
 
-    public async Task<List<MappedFranchisor>> GetFranchisorById(string remoteId)
+    public async Task<MappedFranchisor> GetFranchisorById(string remoteId)
     {
         try
         {
@@ -240,11 +244,7 @@ public class IntegrationAPIManager
 
             var responseString = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLFranchisor.Replace("{{Guid}}", remoteId), columns, null, relatedConditions);
 
-            var franchisor = JsonConvert.DeserializeObject<MappedFranchisor>(responseString);
-
-
-
-            return new List<MappedFranchisor> { franchisor };
+            return JsonConvert.DeserializeObject<MappedFranchisor>(responseString);
 
         }
         catch (Exception e)

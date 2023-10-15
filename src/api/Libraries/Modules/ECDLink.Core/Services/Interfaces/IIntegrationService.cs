@@ -4,7 +4,7 @@ namespace ECDLink.Core.Services.Interfaces
 {
     public interface IIntegrationService
     {
-        Task<bool> IntegrationByMappedCoach(string franchiseeId = null);
+        Task<bool> IntegrationByMappedCoach(string franchiseeId = null, string coachId = null);
         Task<bool> IntegrationByFranchisees();
         Task<bool> IntegrationClubsData();
         Task<bool> PullPQAData(string franchiseeId = null);
@@ -15,5 +15,6 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> IntegrationUpdates();
         Task<bool> IntegrationByTrainees();
         Task<bool> AutoSubmitStatements();
+        Task<bool> IntegrationByNewCoach(string remoteCoachId);
     }
 }

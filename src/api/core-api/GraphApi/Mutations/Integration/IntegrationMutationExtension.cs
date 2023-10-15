@@ -55,6 +55,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
             return await integrationService.AutoSubmitStatements();
         }
 
+        public async Task<bool> IntegrationByNewCoach([Service] IIntegrationService integrationService, string remoteCoachId)
+        {
+            return await integrationService.IntegrationByNewCoach(remoteCoachId);
+        }
+
         #endregion
     }
 }
