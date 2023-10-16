@@ -1,5 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
 using System;
+using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
 {
@@ -41,6 +43,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public int? MonthSinceFranchisee { get; set; }
         public bool? SetupTraineeInitiated { get; set; }
         public string StipendType { get; set; }
+
+        public List<AbsenteeDetail> Absentees { get; set; }
     }
 
 }

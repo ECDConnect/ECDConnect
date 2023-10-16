@@ -48,4 +48,18 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public Absentees Absentees { get; set; }
         public TKey AbsenteesId { get; set; }
     }
+
+    public class AbsenteeDetail
+    {
+        public string Reason { get; set; }
+        public DateTime AbsentDate { get; set; }
+        public DateTime? AbsentDateEnd { get; set; }
+
+        public string ClassName { get; set; }
+        public string ClassroomGroupId { get; set; }
+
+        public string ReassignedToPerson { get; set; }
+        public string ReassignedToUserId { get; set; }
+
+    }
 }
