@@ -133,7 +133,7 @@ namespace ECDLink.Api.CoreApi.Services
                     string reassignedToPerson = "";
                     if (item.ReassignedClass!= null)
                     {
-                        var classRoom = classRoomRepo.GetAll().Where(c => string.Equals(c.Id, item.ReassignedClass) && c.Name != "Unsure").FirstOrDefault(); //dont count unsure classes
+                        var classRoom = classRoomRepo.GetAll().Where(c => c.Id.ToString() == item.ReassignedClass && c.Name != "Unsure").FirstOrDefault();
                         if (classRoom != null)
                         {
                             classRoomName = classRoom.Name;
