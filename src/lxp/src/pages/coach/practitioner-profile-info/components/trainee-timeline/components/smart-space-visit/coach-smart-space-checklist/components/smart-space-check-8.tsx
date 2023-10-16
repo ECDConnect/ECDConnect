@@ -41,6 +41,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const isTrainee = practitioner?.isTrainee;
   const [questions, setAnswers] = useState([
     {
       question: `I gave ${practitioner?.user?.firstName} a playkit and admin file and explained the contents of the file.`,
@@ -89,6 +90,37 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
+    if (isTrainee) {
+      const previousData = questions.map((item) => {
+        const previousAnswer = visitData?.find((item: any) => {
+          const sectionData = item?.visitSection === visitSection;
+          return sectionData;
+        });
+
+        const previousHasTrueAnswer =
+          Boolean(previousAnswer?.questionAnswer) === true ||
+          previousAnswer?.questionAnswer === 'true';
+
+        if (previousAnswer) {
+          return {
+            ...item,
+            answer: previousHasTrueAnswer!,
+          };
+        }
+
+        return item;
+      });
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: previousData,
+        },
+      ]);
+
+      setAnswers(previousData);
+      return;
+    }
+
     const previousData = questions.map((item) => {
       const visitDataWithoutTypo = visitData as any;
       const previousAnswer = visitDataWithoutTypo
@@ -96,7 +128,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
@@ -133,6 +165,13 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
         className={'my-3'}
       />
       <Divider dividerType="dashed" className={'my-4'} />
+      {isTrainee && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
 
       <Typography
         type={'h4'}
@@ -153,6 +192,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
           value={item.question}
           onChange={() => onOptionSelected(!item.answer, index)}
           className="mb-1"
+          disabled={isTrainee}
         />
       ))}
 

@@ -354,6 +354,7 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_visit = "PQA Visit 1";
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
+            public const string coach_smartspace_check = "Coach smartspace check";
             public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
             public const string pqa_follow_up = "Is {client} ready for a follow-up PQA observation visit?";
             public const string step12 = "Step 12";
@@ -833,9 +834,17 @@ namespace EcdLink.Api.CoreApi
             public const string meeting_type_club_meeting = "club_meeting";
 
             public const string no_club_leader = "No club leader";
-            public const string not_enough_club_members = "Not enough club members";
-            public const string too_many_club_members = "Too many club members";
+            public const string contact_club_leader = "Contact club leader";
+            public const string contact_club_leader_name = "Contact ";
             public const string choose_club_leader = "Choose a new club leader";
+            public const string assign_club_leader = "Assign club leader";
+            public const string not_accepted_club_leader = "Club leader has not accepted agreement";
+            public const string not_enough_club_members = "Not enough club members";
+            public const string contact_club_members = "Contact club members";
+            public const string add_members = "Add members";
+            public const string too_many_club_members = "Too many club members";
+            public const string create_club = "Create an additional club";
+            public const string club_leader_months = " has been a club leader for 6 or more months";
             public const string missing_register = "Missing club meeting register";
             public const string missing_register_for_month = " club meeting register";
             public const string club_attendance = "% club attendance in ";
