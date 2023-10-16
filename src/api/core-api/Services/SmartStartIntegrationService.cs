@@ -71,6 +71,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<Child, Guid> _childRepo;
     private IGenericRepository<Child, Guid> _childGenericRepo;
     private IGenericRepository<Coach, Guid> _coachGenericRepo;
+    private IGenericRepository<Franchisor, Guid> _franchisorGenericRepo;
     private IGenericRepository<Caregiver, Guid> _caregiverRepo;
     private IGenericRepository<Relation, Guid> _staticRelationRepo;
     private IGenericRepository<Education, Guid> _staticEducationRepo;
@@ -103,9 +104,9 @@ public class SmartStartIntegrationService : IIntegrationService
     private readonly HierarchyEngine _hierarchyEngine;
     List<string> _errorsList = new List<string>();
 
-    public static string password = "AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==";//ECDConnect123!
-    public static string securityStamp = "7MLVEAR2UK2APFPOBGP4BPN7XJ4IJGQ6";
-    public static string concurrencystamp = "a7ce158a-30c5-4cfb-aee2-027c000b8df6";
+    public static string password = "AQAAAAIAAYagAAAAEJNUUgR72EwSVzawlEHhBWYlj5UYqIh5efaxzQR8fcUSm7+3tRxBUuOpjkiiuVRPNw==";//"AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==";//ECDConnect123!
+    public static string securityStamp = "BVLO5YGYXJX4ATJR7BSNWSONCFE6KVFE";//"7MLVEAR2UK2APFPOBGP4BPN7XJ4IJGQ6";
+    public static string concurrencystamp = "aa105e23-cbc8-43d3-9d5a-30694524fe91";//"a7ce158a-30c5-4cfb-aee2-027c000b8df6";
     public Guid _tenantId = TenantExecutionContext.Tenant.Id;
     public List<IntegrationEntityMapping> _mappedEntities;
     public List<IntegrationColumnMapping> _mappedColumns;
@@ -167,7 +168,8 @@ public class SmartStartIntegrationService : IIntegrationService
         _staticRaceRepo = repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
         _practitionerRepo = repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
         _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
-        _coachGenericRepo = repositoryFactory.CreateGenericRepository<Coach>(userContext: _uId);
+        _coachGenericRepo = repositoryFactory.CreateRepository<Coach>(userContext: _uId);
+        _franchisorGenericRepo = repositoryFactory.CreateRepository<Franchisor>(userContext: _uId);
         _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
         _programmeRepo = repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
         _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
@@ -1250,7 +1252,9 @@ public class SmartStartIntegrationService : IIntegrationService
         return true;
     }
 
-    public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null)
+
+
+    public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null, string coachId = null)
     {
         bool returnOK = false;
         await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
@@ -1281,15 +1285,20 @@ public class SmartStartIntegrationService : IIntegrationService
 
             if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
             {
-                _mappedEntities = await this.GetMappedEntities();
+                _mappedEntities = await this.GetMappedEntities(null, true);
+
                 _mappedColumns = await this.GetMappedColumns();
 
                 //await IntegrationUpdates();
                 //-------------------
                 //3. Iterate through all known coaches to get information below hierarchy
                 //-------------------
-
-                foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
+                var mappedCoaches = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList();
+                if (coachId!=null)
+                {
+                    mappedCoaches = mappedCoaches.Where(c => string.Equals(c.UserId, coachId)).ToList();
+                }
+                foreach (var coach in mappedCoaches)
                 {
                     //-------------------
                     //4. - check all changes on known entities that is not marked complete
@@ -1435,6 +1444,58 @@ public class SmartStartIntegrationService : IIntegrationService
         return returnOK;
     }
 
+
+    public async Task<bool> IntegrationByNewCoach(string remoteCoachId)
+    {
+        _mappedEntities = await GetMappedEntities();
+        var mappedCoach = _mappedEntities.Where(c => string.Equals(c.RemoteId, remoteCoachId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).FirstOrDefault();
+        if (mappedCoach == null)
+        {
+            List<MappedCoach> remoteCoaches = await _apiManager.GetCoachesAll(remoteCoachId);
+            if (remoteCoaches != null && remoteCoaches.Any())
+            {
+                foreach (var coach in remoteCoaches)
+                {
+
+                    //check if teh franchisor is mapped already, otehrwise start there first
+                    var franchisor = _mappedEntities.Where(x => x.RemoteId.Equals(coach.Franchisor.Guid) && x.LocalEntity == Constants.SSIntegrationSettings.SSFranchisor).FirstOrDefault();
+
+
+                    if (franchisor != null)
+                    {
+                        coach.localParentEntityUserId = franchisor.UserId;
+                        coach.localParentEntityId = franchisor.LocalId;
+                    }
+                    else
+                    {
+                        var mappedFranchisor = await _apiManager.GetFranchisorById(coach.Franchisor.Guid);
+                        if (mappedFranchisor != null)
+                        {
+                            var newFranchisor = await MapFranchisor(mappedFranchisor);
+                            coach.localParentEntityUserId = newFranchisor.UserId;
+                            coach.localParentEntityId = newFranchisor.UserId;
+                        }
+                    }
+
+                    if (mappedCoach == null)
+                    {
+                        Coach newCoach = await MapCoach(coach);
+                        await IntegrationByMappedCoach(null, newCoach.UserId);
+                    }
+                    else
+                    {
+                        //run all its practitioners and trainees
+                        await IntegrationByMappedCoach(null, mappedCoach.UserId);
+                    }
+                }
+            }
+        } else
+        {
+            await IntegrationByMappedCoach(null, mappedCoach.UserId);
+        }
+
+        return true;
+    }
     #endregion
 
     #region Utilities
@@ -2722,6 +2783,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 if (userCreatedResult.Succeeded)
                                 {
                                     await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                                    pracCreated = true;
                                 }
                                 else
                                 {
@@ -2732,86 +2794,6 @@ public class SmartStartIntegrationService : IIntegrationService
                             {
                                 newUser = existingPractitioner.User;
                             }
-
-                            //    //Create siteaddress
-                            //bool insertedAddress = false;
-                            //if (entity.SiteAddress != null)
-                            //{
-                            //    SiteAddress newEntityAddress = new SiteAddress();
-
-                            //        newEntityAddress.Ward = entity.SiteAddress.Ward;
-                            //        newEntityAddress.Name = entity.SiteAddress.Name;
-                            //        siteName = entity.SiteAddress.Name;
-                            //        newEntityAddress.PostalCode = entity.SiteAddress.PostalCode;
-                            //        newEntityAddress.Municipality = entity.SiteAddress.Municipality;
-                            //        newEntityAddress.Area = entity.SiteAddress.Area;
-                            //        newEntityAddress.AddressLine1 = entity.SiteAddress.StreetAddress;
-                            //        newEntityAddress.AddressLine2 = entity.SiteAddress.SharedFullAddress;
-                            //        newEntityAddress.AddressLine3 = entity.SiteAddress.Area;
-                            //        newEntityAddress.Longitude = entity.SiteAddress.Longitude;
-                            //        newEntityAddress.Latitude = entity.SiteAddress.Latitude;
-
-                            //        //check province
-                            //        if (entity.SiteAddress.Province != null)
-                            //        {
-                            //            var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
-                            //            var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.SiteAddress.Province).FirstOrDefault();
-                            //            if (prov != null)
-                            //            {
-                            //                newEntityAddress.ProvinceId = prov.Id;
-                            //            }
-                            //        }
-                            //        newEntityAddress.Id = siteAddressId;
-                            //        newEntityAddress.UpdatedBy = _uId;
-                            //        newEntityAddress.UpdatedDate = DateTime.Now;
-                            //        _siteAddressRepo.Insert(newEntityAddress);
-
-                            //        newPractitioner.SiteAddressId = siteAddressId;
-                            //        insertedAddress = true;
-                            //    }
-
-                            //    //Mark Principal/FAA/Linked Practitioner
-                            //    if (!(bool)entity.IsPrincipal && entity.Principal == null)
-                            //    {
-                            //        newPractitioner.IsFundaAppAdmin = true;
-                            //        newPractitioner.IsPrincipal = false;
-
-                            //        await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
-                            //    }
-                            //    else if (!(bool)entity.IsPrincipal && entity.Principal != null)
-                            //    {
-                            //        string principalRemoteId = entity.Principal.Guid.ToString();
-                            //        //find the principal if they have been mapped already, else flag to add principals at the end
-                            //        List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
-                            //        if (mappedEntities.Count > 0)
-                            //        {
-                            //            var principalExistsCheck = mappedEntities.Where(x => x.RemoteId.Equals(principalRemoteId)).FirstOrDefault();
-                            //            if (principalExistsCheck != null)
-                            //            {
-                            //                newPractitioner.PrincipalHierarchy = Guid.Parse(principalExistsCheck.UserId);
-                            //                newPractitioner.DateLinked = DateTime.Now;
-                            //            }
-                            //            else
-                            //            {
-                            //                //add note in mappingline to return and resolve
-                            //                mapperLine.Notes = "REMAP_PRINCIPAL_REMOTE_ID_" + principalRemoteId;
-                            //            }
-                            //        }
-                            //        newPractitioner.IsFundaAppAdmin = false;
-                            //        newPractitioner.IsPrincipal = false;
-                            //        //newPractitioner.DateLinked = DateTime.Now;
-                            //        //newPractitioner.DateAccepted = DateTime.Now; -- do not accept the link until business clears this - Practitioners need to approve the process
-
-                            //        await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
-                            //    }
-                            //    else if ((bool)entity.IsPrincipal)
-                            //    {
-                            //        newPractitioner.IsPrincipal = true;
-                            //        newPractitioner.IsFundaAppAdmin = false;
-
-                            //        await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
-                            //    }
-
 
                             //    //insert the new Practitioner
                             try
@@ -2825,19 +2807,16 @@ public class SmartStartIntegrationService : IIntegrationService
                                     licenses.Add(
                                        new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
                                     );
-                                    //licenses.Add(
-                                    //   new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Practice Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
-                                    //);
-                                    licenses.Add(
-                                       new License() { LicenseDate = (entity.SmartSpaceLicenceDate != null ? entity.SmartSpaceLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("SmartSpace Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
-                                    );
+                                    if (entity.SmartSpaceLicenceDate != null)
+                                    {
+                                        licenses.Add(
+                                           new License() { LicenseDate = (entity.SmartSpaceLicenceDate != null ? entity.SmartSpaceLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("SmartSpace Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newTrainee.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
+                                        );
+                                    }
                                     _licenseRepo.InsertMany(licenses);
                                 }
 
-
-                                    //licenses
-
-                                    if (existingPractitioner == null)
+                                if (existingPractitioner == null)
                                 {
                                     _practitionerRepo.Insert(newPractitioner);
                                 }
@@ -2931,6 +2910,188 @@ public class SmartStartIntegrationService : IIntegrationService
         }
 
         return null;
+    }
+
+    private async Task<Franchisor> MapFranchisor(MappedFranchisor entity)
+    {
+        Franchisor franchisor = new Franchisor();
+        try
+        {
+            if (entity.Name != null)
+            {
+                Guid userId = Guid.Parse(entity.Guid); //Guid.NewGuid();
+
+                string whatsappNumberToImport = null;
+                try
+                {
+                    var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(entity.ContactNumber);
+                    if (!string.Equals(normalizePhoneNumber, entity.ContactNumber))
+                    {
+                        whatsappNumberToImport = normalizePhoneNumber;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //if phone number cant be used, ignore it
+                }
+
+
+                ApplicationUser newUser = await _userManager.FindByNameAsync(userId.ToString());
+                if (newUser == null)
+                {
+
+                    newUser = new ApplicationUser
+                    {
+                        Id = userId.ToString(),
+                        PhoneNumber = whatsappNumberToImport,
+                        UserName = userId.ToString(),
+                        //IdNumber = entity.IdNumber,
+                        Email = entity.EmailAddress,
+                        FirstName = entity.Name,
+                        Surname = entity.ContactPerson,
+                        FullName = entity.Name,
+                        ContactPreference = MessageTypeConstants.SMS,
+                        IsActive = true,
+                        EmergencyContactFullName = entity.ContactPerson,
+                        EmergencyContactPhoneNumber = entity.ContactNumber,
+                        TenantId = _tenantId,
+                        IsImported = true,
+                        WhatsAppNumber = whatsappNumberToImport,
+                    };
+                    var userCreatedResult = await _userManager.CreateAsync(newUser);
+                    if (userCreatedResult.Succeeded)
+                    {
+                        await _userManager.AddToRoleAsync(newUser, Roles.FRANCHISOR);
+                    }
+
+                    franchisor = new Franchisor
+                    {
+                        Id = userId,
+                        AreaOfOperation = entity.Name,
+                        StartDate = entity.CreatedOn,
+                        IsActive = true,
+                        ContactPerson = entity.ContactPerson,
+                        ContactPersonNumber = entity.ContactNumber,
+                    };
+                    _franchisorGenericRepo.Insert(franchisor);
+
+                    IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
+                    mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSFranchisor;
+                    mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLFranchisor;
+                    mapperLine.LocalId = franchisor.Id.ToString();
+                    mapperLine.RemoteId = entity.Guid;
+                    mapperLine.UserId = userId.ToString();
+                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedDate = DateTime.Now;
+                    mapperLine.IsComplete = true;
+                    mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                    mapperLine.IsComplete = true;
+                    //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                    _mapperRepo.Insert(mapperLine);
+                }
+
+            }
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapTrainee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
+        }
+
+        return franchisor;
+    }
+
+    private async Task<Coach> MapCoach(MappedCoach entity)
+    {
+        Coach coach = new Coach();
+        try
+        {
+            if (entity.FirstName != null)
+            {
+                Guid userId = Guid.Parse(entity.Guid); //Guid.NewGuid();
+
+                string whatsappNumberToImport = null;
+                try
+                {
+                    var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(entity.ContactNumber);
+                    if (!string.Equals(normalizePhoneNumber, entity.ContactNumber))
+                    {
+                        whatsappNumberToImport = normalizePhoneNumber;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //if phone number cant be used, ignore it
+                }
+
+                ApplicationUser newUser = await _userManager.FindByNameAsync(entity.IdNumber);
+                if (newUser == null)
+                {
+
+                    newUser = new ApplicationUser
+                    {
+                        Id = userId.ToString(),
+                        PhoneNumber = whatsappNumberToImport,
+                        UserName = entity.IdNumber != null ? entity.IdNumber : userId.ToString(),
+                        IdNumber = entity.IdNumber,
+                        Email = entity.Email,
+                        FirstName = entity.FirstName,
+                        Surname = entity.Surname,
+                        FullName = entity.FirstName + " " + entity.Surname,
+                        ContactPreference = MessageTypeConstants.SMS,
+                        IsActive = true,
+                        EmergencyContactFirstName = entity.EmergencyContactFirstName,
+                        EmergencyContactSurname = entity.EmergencyContactSurname,
+                        EmergencyContactFullName = entity.EmergencyContactFirstName,
+                        EmergencyContactPhoneNumber = entity.ContactNumber,
+                        TenantId = _tenantId,
+                        IsImported = true,
+                        WhatsAppNumber = whatsappNumberToImport,
+                    };
+                    var userCreatedResult = await _userManager.CreateAsync(newUser);
+                    if (userCreatedResult.Succeeded)
+                    {
+                        await _userManager.AddToRoleAsync(newUser, Roles.COACH);
+                    }
+
+                    //check address
+
+                    coach = new Coach
+                    {
+                        Id = userId,
+                        AreaOfOperation = entity.AreaOfOperation,
+                        StartDate = entity.CreatedOn,
+                        IsActive = true,
+                        UserId = userId.ToString(),
+                        SecondaryAreaOfOperation = entity.SecondaryAreaOfOperation,
+                    };
+                    _coachGenericRepo.Insert(coach);
+
+                    IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
+                    mapperLine.LocalEntity = Constants.SSIntegrationSettings.SSCoach;
+                    mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLCoach;
+                    mapperLine.LocalId = coach.Id.ToString();
+                    mapperLine.RemoteId = entity.Guid;
+                    mapperLine.UserId = userId.ToString();
+                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedDate = DateTime.Now;
+                    mapperLine.IsComplete = true;
+                    mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                    mapperLine.IsComplete = true;
+                    //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                    _mapperRepo.Insert(mapperLine);
+                } else
+                {
+                    coach = _coachGenericRepo.GetById(userId);
+                }
+
+            }
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapTrainee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
+        }
+
+        return coach;
     }
     #endregion
 

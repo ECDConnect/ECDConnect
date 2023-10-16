@@ -4,14 +4,13 @@ using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ECDLink.Api.CoreApi.Services.Interfaces
 {
     public interface IClubService
     {
         public PractitionerAttendance GetPractitionerAttendance(Guid practitionerId, DateTime date, string meetingType);
-        public double GetClubAttendanceForMonth(Guid clubId, DateTime date);
+        public double GetClubAttendancePercForMonth(Guid clubId, DateTime date);
         public bool HasAttendanceRegisterForMonth(Guid clubId, DateTime date);
         public List<ClubMember> GetClubMembers(Guid clubId);
         public List<ClubMember> GetClubsMembers(Guid[] clubId);

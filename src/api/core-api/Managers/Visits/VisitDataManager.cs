@@ -309,6 +309,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
             }
+
+
+            var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.coach_smartspace_check).Select(y => y.VisitSection).Distinct().ToList();
+            if (completedSections.Count == 10)
+            {
+                // update the visit record to show attended/completed 
+                var entityToUpdate = _visitRepo.GetById(new Guid(input.VisitId));
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.Attended = true;
+                entityToUpdate.ActualVisitDate = DateTime.Now;
+                _visitRepo.Update(entityToUpdate);
+            }
             return true;
         }
 

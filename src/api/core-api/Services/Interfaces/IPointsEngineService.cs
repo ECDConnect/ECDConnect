@@ -38,5 +38,13 @@ namespace ECDLink.Core.Services.Interfaces
 
         // SS TODO: Pre-school fees on profile - development pending
 
+        // Clubs
+        bool CalculateLeaveNoOneBehind(Guid clubId, string userId, DateTime today);
+        bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
+        bool CalculateCompleteChildProgressReports(Guid clubId, string userId, DateTime today);
+        bool CalculateCaptureChildAttendance(Guid clubId, string userId, DateTime today);
+        bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today);
+        bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
+
     }
 }

@@ -57,6 +57,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             return visitDataManager.AddSupportVisitData(input);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public bool AddCoachVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
+        {
+            return visitDataManager.AddCoachData(input);
+        }
             
     }
 }

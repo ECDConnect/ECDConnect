@@ -67,6 +67,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
   const [showMap, setShowMap] = useState(false);
+  const isTrainee = practitioner?.isTrainee;
 
   const [questions, setAnswers] = useState([
     {
@@ -87,7 +88,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
 
   const programmeDetailsSections = traineeVisitData
     ?.filter((item) => item?.visitSection === 'Programme details')
-    .filter(
+    ?.filter(
       (item) =>
         item?.question ===
           'Do you own the property where you will run your SmartStart programme?' ||
@@ -156,7 +157,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
@@ -216,7 +217,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   };
 
   return (
-    <div className="p-4">
+    <div className={`p-4`}>
       <Typography
         type={'h2'}
         text={visitSection}
@@ -235,69 +236,78 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         color={'textDark'}
       />
       <Divider dividerType="dashed" className={'my-4'} />
-      <div>
-        {' '}
-        <Typography
-          type="h4"
-          text={questions[0].question}
-          color="textDark"
-          className="mb-2"
-        />
-        <ButtonGroup<boolean>
-          color="secondary"
-          type={ButtonGroupTypes.Button}
-          options={options}
-          onOptionSelected={(value) => onOptionSelected(value, 0)}
-          selectedOptions={questions[0]?.answer as boolean}
-        />
-      </div>
-      {isOnline && questions[0].answer === false && (
-        <FormInput
-          onClick={() => setShowMap(true)}
-          className="mt-4"
-          textInputType="input"
-          label={questions?.[2]?.question}
-          placeholder={'e.g. street a'}
-          value={newAddress || (questions[2]?.answer as string)}
+      {isTrainee && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
         />
       )}
-      <Alert
-        type={'info'}
-        title={'You must be online to update the address.'}
-        list={[
-          'If you are offline, please select “Yes” above & explain how the trainee can update their address through Funda App.',
-        ]}
-        className="mt-4"
-      />
-      <Typography
-        type={'h4'}
-        text={`Please confirm ${practitioner?.user?.firstName}’s proof of ownership, lease or permission`}
-        color={'textDark'}
-        className={'my-3'}
-      />
-      <Typography
-        type={'body'}
-        text={
-          propertyOwnAnswer
-            ? (propertyOwnAnswer as string)
-            : `${practitioner?.user?.firstName} owns the property and has the title deeds.`
-        }
-        color={'textMid'}
-        className={'my-3'}
-      />
-      <div
-        className="flex items-start gap-2"
-        onClick={() => onOptionSelected(!questions?.[1].answer, 1)}
-      >
-        <Checkbox
-          onCheckboxChange={(e) => onOptionSelected(e.checked, 1)}
-          checked={questions?.[1].answer === true}
+      <div className={`${isTrainee && 'pointer-events-none opacity-50'}`}>
+        <div>
+          {' '}
+          <Typography
+            type="h4"
+            text={questions[0].question}
+            color="textDark"
+            className="mb-2"
+          />
+          <ButtonGroup<boolean>
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            options={options}
+            onOptionSelected={(value) => onOptionSelected(value, 0)}
+            selectedOptions={questions[0]?.answer as boolean}
+          />
+        </div>
+        {isOnline && questions[0].answer === false && (
+          <FormInput
+            onClick={() => setShowMap(true)}
+            className="mt-4"
+            textInputType="input"
+            label={questions?.[2]?.question}
+            placeholder={'e.g. street a'}
+            value={newAddress || (questions[2]?.answer as string)}
+          />
+        )}
+        <Alert
+          type={'info'}
+          title={'You must be online to update the address.'}
+          list={[
+            'If you are offline, please select “Yes” above & explain how the trainee can update their address through Funda App.',
+          ]}
+          className="mt-4"
         />
         <Typography
-          text={questions?.[1]?.question}
-          type="body"
-          color="textMid"
+          type={'h4'}
+          text={`Please confirm ${practitioner?.user?.firstName}’s proof of ownership, lease or permission`}
+          color={'textDark'}
+          className={'my-3'}
         />
+        <Typography
+          type={'body'}
+          text={
+            propertyOwnAnswer
+              ? (propertyOwnAnswer as string)
+              : `${practitioner?.user?.firstName} owns the property and has the title deeds.`
+          }
+          color={'textMid'}
+          className={'my-3'}
+        />
+        <div
+          className="flex items-start gap-2"
+          onClick={() => onOptionSelected(!questions?.[1].answer, 1)}
+        >
+          <Checkbox
+            onCheckboxChange={(e) => onOptionSelected(e.checked, 1)}
+            checked={questions?.[1].answer === true}
+          />
+          <Typography
+            text={questions?.[1]?.question}
+            type="body"
+            color="textMid"
+          />
+        </div>
       </div>
       <div className="mt-2 space-y-4">
         <div>
@@ -311,7 +321,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
                 saveSmartSpaceCheckData();
                 changeSmartSpaceCheckAddress();
               }}
-              disabled={!enableButton}
+              disabled={!enableButton && !isTrainee}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />
