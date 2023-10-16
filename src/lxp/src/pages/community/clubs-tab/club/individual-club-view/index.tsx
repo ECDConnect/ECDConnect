@@ -26,6 +26,7 @@ import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import {
   ClubActivities,
+  IssuesTasks,
   LeagueType,
   MAX_MEMBERS_IN_CLUB,
   MIN_MEMBERS_IN_CLUB,
@@ -294,6 +295,17 @@ export const Club: React.FC = () => {
   const renderIssuesAndTasksContent = useMemo(() => {
     const items: MenuListDataItem[] = [];
 
+    // TODO: integrate these items -> EC-1390, EC-1395, EC-1397 and EC-1398
+    const itemsFromBackend = club?.issuesTasks?.filter(
+      (item) =>
+        !item?.secondaryText?.includes(IssuesTasks.noClubLeader) &&
+        !item?.secondaryText?.includes(IssuesTasks.notAcceptedClubLeader) &&
+        !item?.secondaryText?.includes(IssuesTasks.notEnoughClubMembers) &&
+        !item?.secondaryText?.includes(IssuesTasks.tooManyClubMembers) &&
+        !item?.secondaryText?.includes(IssuesTasks.clubLeaderMonths) &&
+        !item?.secondaryText?.includes(IssuesTasks.assignClubLeader)
+    );
+
     // if there is currently no club leader assigned (ie no club leader has been chosen.)
     if (!currentLeader && !nextLeader && !!club?.clubMembers?.length) {
       items.push({
@@ -400,9 +412,10 @@ export const Club: React.FC = () => {
       </div>
     );
   }, [
+    club?.issuesTasks,
+    club?.clubMembers?.length,
     currentLeader,
     nextLeader,
-    club?.clubMembers?.length,
     isLeaderRequestSent,
     totalMembers,
     isLeaderAcceptedOverSixMonths,

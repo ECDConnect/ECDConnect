@@ -173,6 +173,11 @@ class ClubService {
                   name
                   points
               }
+              issuesTasks {
+                secondaryText
+                secondaryTextColor
+                secondaryDescription
+              }
           }
       }
       `,
