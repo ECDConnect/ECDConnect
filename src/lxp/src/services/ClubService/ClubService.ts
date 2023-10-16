@@ -72,8 +72,10 @@ class ClubService {
               secondaryText
               secondaryTextColor
               maxClubPoints
+              leagueRankNr
               totalClubPoints
-              leaguePosition
+              totalClubPointsColor
+              firstInLeague
               secondaryTextPriority
               clubMeetings {
                 id

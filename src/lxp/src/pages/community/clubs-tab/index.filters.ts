@@ -6,7 +6,7 @@ import {
   MIN_RISING_STARS_POINTS,
 } from '@/constants/club';
 import { MergedCoachingClub } from '@/store/club/club.types';
-import { SearchDropDownOption } from '@ecdlink/ui';
+import { Colours, SearchDropDownOption } from '@ecdlink/ui';
 
 enum SortBy {
   PRIORITY = 'Priority',
@@ -192,3 +192,14 @@ export const searchList = (list: MergedCoachingClub[], searchTerm: string) => {
   const lowerSearch = searchTerm.toLowerCase();
   return list.filter((item) => item?.name?.toLowerCase().includes(lowerSearch));
 };
+
+export function getScoreBarColor(totalClubPoints: number) {
+  let barColor: Colours = 'errorMain';
+
+  if (totalClubPoints >= 1500) {
+    barColor = 'successMain'; // 1500+
+  } else if (totalClubPoints >= 1 && totalClubPoints <= 1499) {
+    barColor = 'alertMain'; // 1-1499
+  }
+  return barColor;
+}

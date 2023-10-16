@@ -16,3 +16,12 @@ export const MAX_PURPLE_CLUB_POINTS = 2200;
 
 export const MAX_MEMBERS_IN_CLUB = 17;
 export const MIN_MEMBERS_IN_CLUB = 4;
+
+export const enum ClubActivities {
+  BeCreative = 'Be creative',
+  CaptureChildAttendance = 'Capture child attendance',
+  CompleteChildProgressReports = 'Complete child progress reports',
+  HostFamilyDays = 'Host family days',
+  LeaveNoOneBehind = 'Leave no one behind',
+  MeetRegularly = 'Meet regularly',
+}
