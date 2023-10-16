@@ -38,6 +38,7 @@ export type PQAState = {
   pqaFormData?: FormData[];
   reAccreditationFormData?: FormData[];
   supportVisitFormData?: FormData[];
+  requestedSupportVisitFormData?: FormData[];
   followUpVisitFormData?: FormData[];
   reAccreditationFollowUpVisitFormData?: FormData[];
   selfAssessmentFormData?: FormData[];
@@ -58,6 +59,7 @@ export type PQAStateKeys =
   | 'selfAssessmentPreviousFormData';
 
 export type PQAFormType =
+  | 'requested-support-visit'
   | 'pre-pqa'
   | 'pqa'
   | 'support-visit'

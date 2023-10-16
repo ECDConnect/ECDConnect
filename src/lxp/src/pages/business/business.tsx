@@ -31,7 +31,6 @@ export const Business: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
   const [showInfo, setShowInfo] = useState(false);
-  const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const [isFromAutomaticallyStart, setIsFromAutomaticallyStart] =
     useState(false);
 
@@ -85,12 +84,7 @@ export const Business: React.FC = () => {
     {
       title: 'Money',
       initActive: true,
-      child: (
-        <Money
-          hasIncomeStatements={hasIncomeStatements}
-          setHasIncomeStatements={setHasIncomeStatements}
-        />
-      ),
+      child: <Money />,
     },
     {
       title: 'Resources',
@@ -117,7 +111,7 @@ export const Business: React.FC = () => {
   const { setState } = useAppContext();
 
   return (
-    <div key={String(hasIncomeStatements)} className="h-screen">
+    <div className="h-screen">
       <BannerWrapper
         showBackground={false}
         size="medium"

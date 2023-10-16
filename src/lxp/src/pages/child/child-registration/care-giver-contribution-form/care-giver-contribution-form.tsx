@@ -18,10 +18,14 @@ import {
 } from '@schemas/child/child-registration/care-giver-contribution-form';
 import * as styles from './care-giver-contribution-form.styles';
 import { CareGiverContributionFormProps } from './care-giver-contribution-form.types';
+import { useSelector } from 'react-redux';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const CareGiverContributionForm: React.FC<
   CareGiverContributionFormProps
 > = ({ careGiverContributionForm, onSubmit, variation, childDetails }) => {
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+
   const [commitedToContributing, setCommitedToContributing] =
     useState<boolean>();
 
@@ -65,7 +69,7 @@ export const CareGiverContributionForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg pt-2 pb-4 px-4'}>
+    <div className={'bg-uiBg px-4 pt-2 pb-4'}>
       <Typography type={'h1'} text={'Primary caregiver'} color={'primary'} />
       <Typography
         type={'h2'}
@@ -73,11 +77,13 @@ export const CareGiverContributionForm: React.FC<
         color={'textMid'}
       />
       <div>
-        {variation === 'practitioner' && <PractitionerForm />}
+        {variation === 'practitioner' && (
+          <PractitionerForm amount={classroom?.preschoolFeeAmount || 0} />
+        )}
         {variation === 'caregiver' && (
           <CaregiverForm
-            playgroupName={childDetails?.child?.groupName}
-            practitionerName={childDetails?.practitoner?.firstname}
+            amount={classroom?.preschoolFeeAmount || 0}
+            playgroupName={childDetails?.child?.groupName || ''}
           />
         )}
         <div className={'mt-2'}>
@@ -123,19 +129,20 @@ export const CareGiverContributionForm: React.FC<
   );
 };
 
-const PractitionerForm: React.FC<any> = () => {
+const PractitionerForm: React.FC<{ amount: number }> = ({ amount }) => {
   return (
     <>
       <label className={classNames(styles.label, 'mt-4')}>
-        {
-          'Did the caregiver commit to contributing a monthly amount to the programme?'
-        }
+        {`Did the caregiver commit to contributing R${amount} to the programme each month?`}
       </label>
     </>
   );
 };
 
-const CaregiverForm: React.FC<any> = ({ playgroupName, practitionerName }) => {
+const CaregiverForm: React.FC<{ playgroupName: string; amount: number }> = ({
+  playgroupName,
+  amount,
+}) => {
   return (
     <>
       <Typography
@@ -145,7 +152,7 @@ const CaregiverForm: React.FC<any> = ({ playgroupName, practitionerName }) => {
       />
       <Typography
         className="mt-4"
-        text={`Do you commit to contributing a monthly amount towards ${playgroupName}? Discuss the amount with ${practitionerName}.`}
+        text={`Do you commit to contributing a monthly amount of R${amount} towards ${playgroupName}?`}
         type="unspecified"
         fontSize="14"
       />

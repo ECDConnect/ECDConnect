@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -25,30 +26,59 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiver(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] PersonnelService personnelManager,
             IGenericRepositoryFactory repoFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(uId)).ToList();
-            if (practitioners.Count > 0)
+            Practitioner practitioner = practitionerRepo.GetByUserId(uId);
+
+            //return all caregivers for all the children if its a principal
+            if (practitioner?.IsPrincipal == true)
             {
-                List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioners.FirstOrDefault().Hierarchy)).ToList();
                 List<Caregiver> caregivers = new List<Caregiver>();
-                foreach (var child in children)
+                var practitioners = personnelManager.GetPractitionerPeers(practitioner.UserId);
+                if (practitioners != null)
                 {
-                    if (child.CaregiverId != null)
+                    foreach (var practi in practitioners)
                     {
-                        Caregiver cg = careGiverRepo.GetById((Guid)child.CaregiverId);
-                        caregivers.Add(cg);
+                        List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practi.Hierarchy)).ToList();
+                        foreach (var child in children)
+                        {
+                            if (child.CaregiverId != null)
+                            {
+                                Caregiver cg = careGiverRepo.GetById((Guid)child.CaregiverId);
+                                caregivers.Add(cg);
+                            }
+                        }
                     }
                 }
                 return caregivers;
             }
             else
             {
-                return careGiverRepo.GetAll().ToList();
+                //return all caregivers for the practitioner's children
+                if (practitioner != null && practitioner.Hierarchy != null)
+                {
+                    List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioner.Hierarchy)).ToList();
+                    List<Caregiver> caregivers = new List<Caregiver>();
+                    foreach (var child in children)
+                    {
+                        if (child.CaregiverId != null)
+                        {
+                            Caregiver cg = careGiverRepo.GetById((Guid)child.CaregiverId);
+                            caregivers.Add(cg);
+                        }
+                    }
+                    return caregivers;
+                }
+                else
+                {
+                    //return all caregivers
+                    return careGiverRepo.GetAll().ToList();
+                }
             }
         }
 

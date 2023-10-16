@@ -4,8 +4,9 @@ import { practitionerSelectors } from '@/store/practitioner';
 import {
   BannerWrapper,
   Button,
-  Card,
-  Colours,
+  CelebrationCard,
+  Dialog,
+  DialogPosition,
   ScoreCard,
   Typography,
 } from '@ecdlink/ui';
@@ -15,23 +16,16 @@ import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/
 import { ReactComponent as EmojiBlueSmile } from '@ecdlink/ui/src/assets/emoji/emoji_blue_smileEyes.svg';
 import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji/emoji_orange_smile.svg';
 import { format } from 'date-fns';
-import { useEffect, useMemo, useState } from 'react';
-import { RootState } from '@/store/types';
-import { PointsSummaryDto } from '@ecdlink/core';
+import { useMemo, useRef, useState } from 'react';
+import { PointsSummaryDto, captureAndDownloadComponent } from '@ecdlink/core';
 import { PointsProgressCard } from '@/pages/dashboard/components/points-progress-card/points-progress-card';
 import ROUTES from '@/routes/routes';
+import { PointsShare } from '../points-share/points-share';
+import { PointsInfoPage } from '../info/points-info-page';
 
 // TODO - fetch club standings
 // TODO - add text that depends on relative club points
 // TODO - Actions for share
-
-type CardData = {
-  image: JSX.Element;
-  primaryMessage: string;
-  secondaryMessage: string;
-  textColour: Colours;
-  backgroundColour: Colours;
-};
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
@@ -40,8 +34,13 @@ export const PointsSummary: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
 
-  const pointsSummaryDataWithLibrary = useSelector((state: RootState) =>
-    pointsSelectors.getPointsSummaryWithLibrary(state, new Date())
+  const [showInfo, setShowInfo] = useState(false);
+
+  const pointsSummaryDataWithLibrary = useSelector(
+    pointsSelectors.getPointsSummaryWithLibrary(new Date())
+  );
+  const filteredPointsSummaries = pointsSummaryDataWithLibrary.filter(
+    (x) => x.pointsTotal > 0
   );
 
   const pointsTodoList = useMemo(() => {
@@ -85,142 +84,156 @@ export const PointsSummary: React.FC = () => {
 
   const percentageScore = (pointsTotal / pointsMax) * 100;
 
-  const [celebrationCardDetails, setCelebrationCardDetails] = useState<
-    CardData | undefined
-  >(undefined);
-
   //TODO - Update this to use club data to set messages when available
-  useEffect(() => {
+  const celebrationCard = useMemo(() => {
     if (percentageScore < 60) {
-      setCelebrationCardDetails({
-        image: <EmojiOrangeSmile className="mr-2 h-16 w-16" />,
-        primaryMessage: `Keep going ${practitioner?.user?.firstName}!`,
-        secondaryMessage:
-          'Check out the tips below to earn more points this month.',
-        textColour: 'alertMain',
-        backgroundColour: 'alertBg',
-      });
+      return (
+        <CelebrationCard
+          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+          primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
+          primaryTextColour="errorMain"
+          backgroundColour="errorBg"
+          secondaryMessage="Check out the tips below to earn more points this month."
+          secondaryTextColour="errorMain"
+        />
+      );
     } else if (percentageScore < 80) {
-      setCelebrationCardDetails({
-        image: <EmojiBlueSmile className="mr-2 h-16 w-16" />,
-        primaryMessage: `Wow, great job ${practitioner?.user?.firstName}!`,
-        secondaryMessage:
-          "You're doing well, keep it up! You can still earn more points this month.",
-        textColour: 'secondary',
-        backgroundColour: 'infoBb',
-      });
+      return (
+        <CelebrationCard
+          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+          primaryMessage={`Wow, great job ${practitioner?.user?.firstName}!`}
+          secondaryMessage="You're doing well, keep it up! You can still earn more points this month."
+          primaryTextColour="secondary"
+          secondaryTextColour="secondary"
+          backgroundColour="infoBb"
+        />
+      );
     } else {
-      setCelebrationCardDetails({
-        image: <EmojiGreenSmile className="mr-2 h-16 w-16" />,
-        primaryMessage: `Well done ${practitioner?.user?.firstName}!`,
-        secondaryMessage: "You're doing well, keep it up!",
-        textColour: 'successMain',
-        backgroundColour: 'successBg',
-      });
+      return (
+        <CelebrationCard
+          image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+          primaryMessage={`Well done ${practitioner?.user?.firstName}!`}
+          secondaryMessage="You're doing well, keep it up!"
+          primaryTextColour="successMain"
+          secondaryTextColour="successMain"
+          backgroundColour="successBg"
+        />
+      );
     }
   }, [percentageScore]);
 
+  // SHARE LOGIC
+  const shareRef = useRef<HTMLDivElement>(null);
+  const [showPrintData, setShowPrintData] = useState(false);
+
   return (
-    <BannerWrapper
-      size="medium"
-      renderBorder={true}
-      onBack={() => history.goBack()}
-      title="Points"
-      backgroundColour="white"
-    >
-      <div className="mt-5 flex-col justify-center p-4">
-        <Typography
-          type={'h1'}
-          color="black"
-          text={format(new Date(), 'MMM yyyy')}
-        />
-        <ScoreCard
-          mainText={`${pointsTotal} points`}
-          currentPoints={pointsTotal}
-          maxPoints={pointsMax}
-          barBgColour="uiLight"
-          barColour={
-            percentageScore < 60
-              ? 'errorMain'
-              : percentageScore < 80
-              ? 'infoMain'
-              : 'successMain'
-          }
-          bgColour="uiBg"
-          textColour="black"
-        />
-        {!!celebrationCardDetails && (
-          <Card
-            className={`mt-2 px-4 py-4 sm:px-6 bg-${celebrationCardDetails.backgroundColour}`}
-            borderRaduis="lg"
-          >
-            <div className="flex gap-3">
-              {celebrationCardDetails.image}
-              <div className="flex-column gap-3">
-                <Typography
-                  type="h4"
-                  color={celebrationCardDetails.textColour}
-                  text={celebrationCardDetails.primaryMessage}
-                  className="pt-2"
-                />
-                <Typography
-                  type="h4"
-                  color={'black'}
-                  text={celebrationCardDetails.secondaryMessage}
-                  className="pt-2"
-                />
-              </div>
-            </div>
-          </Card>
-        )}
-        {!!pointsTodoList && !!pointsTodoList.length && (
+    <>
+      <BannerWrapper
+        size="medium"
+        renderBorder={true}
+        onBack={() => history.goBack()}
+        title="Points"
+        backgroundColour="white"
+        displayHelp={true}
+        onHelp={() => setShowInfo(true)}
+      >
+        <div className="mt-5 flex-col justify-center p-4">
           <Typography
-            className="mt-10"
             type={'h1'}
             color="black"
-            text={`How you can earn more points in ${format(
-              new Date(),
-              'MMMM'
-            )}:`}
+            text={format(new Date(), 'MMM yyyy')}
           />
-        )}
-        {!!pointsTodoList &&
-          pointsTodoList.map((pointsLibraryScore) => {
-            return (
-              <PointsProgressCard
-                currentPoints={pointsLibraryScore.pointsTotal}
-                maxPoints={
-                  pointsLibraryScore.maxMonthlyPoints !== 0
-                    ? pointsLibraryScore.maxMonthlyPoints
-                    : pointsLibraryScore.maxYearlyPoints
+          <ScoreCard
+            mainText={`${pointsTotal} points`}
+            currentPoints={pointsTotal}
+            maxPoints={pointsMax}
+            barBgColour="uiLight"
+            barColour={
+              percentageScore < 60
+                ? 'errorMain'
+                : percentageScore < 80
+                ? 'infoMain'
+                : 'successMain'
+            }
+            bgColour="uiBg"
+            textColour="black"
+          />
+          {celebrationCard}
+          {!!pointsTodoList && !!pointsTodoList.length && (
+            <Typography
+              className="mt-10"
+              type={'h1'}
+              color="black"
+              text={`How you can earn more points in ${format(
+                new Date(),
+                'MMMM'
+              )}:`}
+            />
+          )}
+          {!!pointsTodoList &&
+            pointsTodoList.map((pointsLibraryScore) => {
+              return (
+                <PointsProgressCard
+                  currentPoints={pointsLibraryScore.pointsTotal}
+                  maxPoints={
+                    pointsLibraryScore.maxMonthlyPoints !== 0
+                      ? pointsLibraryScore.maxMonthlyPoints
+                      : pointsLibraryScore.maxYearlyPoints
+                  }
+                  description={pointsLibraryScore.subActivity || 'Unknown'}
+                />
+              );
+            })}
+        </div>
+        <div className="flex-column mt-10 justify-end p-4">
+          <Button
+            size="normal"
+            className="mb-4 w-full"
+            type="filled"
+            color="primary"
+            text="Share"
+            textColor="white"
+            icon="ShareIcon"
+            onClick={() => {
+              setShowPrintData(true);
+              setTimeout(() => {
+                if (shareRef.current) {
+                  captureAndDownloadComponent(
+                    shareRef.current,
+                    'points-month-summary.jpg'
+                  );
+                  setShowPrintData(false);
                 }
-                description={pointsLibraryScore.subActivity || 'Unknown'}
-              />
-            );
-          })}
-      </div>
-      <div className="flex-column mt-10 justify-end p-4">
-        <Button
-          size="normal"
-          className="mb-4 w-full"
-          type="filled"
-          color="primary"
-          text="Share"
-          textColor="white"
-          icon="ShareIcon"
-          onClick={() => {}} // TODO
+              }, 100);
+            }}
+          />
+          <Button
+            size="normal"
+            className="mb-4 w-full"
+            type="outlined"
+            color="primary"
+            text="See detailed report"
+            textColor="primary"
+            icon="EyeIcon"
+            onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.YEAR)}
+          />
+        </div>
+      </BannerWrapper>
+      <Dialog
+        fullScreen={true}
+        visible={showInfo}
+        position={DialogPosition.Full}
+      >
+        <PointsInfoPage onClose={() => setShowInfo(false)} />
+      </Dialog>
+      <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
+        <PointsShare
+          viewMode="Month"
+          pointsSummaries={filteredPointsSummaries}
+          userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
+          childCount={12} // TODO get correct count for practitioner
         />
-        <Button
-          size="normal"
-          className="mb-4 w-full"
-          type="outlined"
-          color="primary"
-          text="See detailed report"
-          textColor="primary"
-          icon="EyeIcon"
-          onClick={() => history.push(ROUTES.PRACTITIONER.POINTS.YEAR)}
-        />
       </div>
-    </BannerWrapper>
+    </>
   );
 };

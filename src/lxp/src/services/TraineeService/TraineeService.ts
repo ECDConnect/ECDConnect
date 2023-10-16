@@ -107,6 +107,8 @@ class TraineeService {
             startUpSupportStartDate
             startUpSupportEndDate
             startUpSupportAmount
+            smartSpaceLicenseNotAwardedSteps
+            smartSpaceLicenseNotAwardedDate
             traineeVisits {
                 id
                 plannedVisitDate

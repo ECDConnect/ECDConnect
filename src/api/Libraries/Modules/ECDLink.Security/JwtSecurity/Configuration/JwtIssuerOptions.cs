@@ -18,7 +18,7 @@ namespace ECDLink.Security.JwtSecurity.Configuration
 
         public DateTime IssuedAt => DateTime.UtcNow;
 
-        public TimeSpan ValidFor { get; set; } = TimeSpan.FromDays(1);
+        public TimeSpan ValidFor { get; set; } = TimeSpan.FromDays(40);
 
         public Func<Task<string>> JtiGenerator => () => Task.FromResult(Guid.NewGuid().ToString());
 

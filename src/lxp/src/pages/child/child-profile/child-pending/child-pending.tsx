@@ -132,12 +132,12 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     <BannerWrapper
       onBack={() => {
         if (isPrincipal && practitioners?.length! > 1) {
-          history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+          history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
         } else {
           if (isCoach) {
             history.goBack();
           } else {
-            history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
           }
         }
       }}

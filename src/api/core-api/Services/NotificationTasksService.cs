@@ -17,6 +17,8 @@ using ECDLink.DataAccessLayer.Repositories;
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Documents;
 
 namespace ECDLink.Core.Services
 {
@@ -26,7 +28,7 @@ namespace ECDLink.Core.Services
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INotificationService _notificationService;
-        private readonly IncomeExpenseService _incomeService;
+        private readonly IIncomeExpenseService _incomeService;
         private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
         IHolidayService<Holiday> _holidayService;
 
@@ -34,8 +36,10 @@ namespace ECDLink.Core.Services
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IncomeExpenseService incomeService,
-            HierarchyEngine hierarchyEngine, [Service] AttendanceTrackingRepository attendanceTrackingRepository, IHolidayService<Holiday> holidayService)
+            [Service] IIncomeExpenseService incomeService,
+            HierarchyEngine hierarchyEngine, 
+            [Service] AttendanceTrackingRepository attendanceTrackingRepository, 
+            IHolidayService<Holiday> holidayService)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
@@ -321,6 +325,35 @@ namespace ECDLink.Core.Services
                         await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.SubmitWeeksAttendance, DateTime.Now, requiredAttendance.practitionerData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(2));
                     }
                 
+            }
+        }
+
+        public async Task MonthlyAttendanceSLSyncAsync()
+        {
+            var adminId = _hierarchyEngine.GetAdminUserId();
+            var classroomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: adminId);
+            var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: adminId);
+            var entityRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: adminId);
+            var docRepo = _repositoryFactory.CreateGenericRepository<Document>(userContext: adminId);
+            var docTypeRepo = _repositoryFactory.CreateGenericRepository<DocumentType>(userContext: adminId);
+
+            var attendancePDF = docTypeRepo.GetAll().Where(d => d.Name.Equals("AttendancePDF")).FirstOrDefault();
+
+            DateTime startPeriod = DateTime.Now.GetStartOfMonth();
+
+            var allRequiredAttendance =
+                (
+                    from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
+                    join entityData in entityRepo.GetAll().Where(p => p.IsActive.Equals(true) && p.LastAttendanceSubmittedDate <= startPeriod && p.LocalEntity.Equals("Practitioner")) on classroomGroupData.UserId.ToString() equals entityData.UserId
+                    join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= startPeriod && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
+                    select new { classroomGroupData, entityData }
+                ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
+            foreach (var requiredAttendance in allRequiredAttendance)
+            {
+                var docs = docRepo.GetAll().Where(d => d.UserId.Equals(requiredAttendance.entityData.UserId) && d.DocumentTypeId.Equals(attendancePDF.Id)).ToList();
+                //TODO: finish gathering docs and sending to SL
+
+
             }
         }
 

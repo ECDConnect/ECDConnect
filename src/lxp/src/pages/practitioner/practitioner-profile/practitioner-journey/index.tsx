@@ -143,6 +143,8 @@ export const PractitionerJourney = ({
     }
 
     if (
+      visit?.visitType?.name === generalSupportVisitTypes.practitioner_visit ||
+      visit?.visitType?.name === generalSupportVisitTypes.practitioner_call ||
       visit?.visitType?.name === generalSupportVisitTypes.visit ||
       visit?.visitType?.name === generalSupportVisitTypes.call
     ) {

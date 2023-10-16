@@ -36,6 +36,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         {
             return await integrationService.IntegrationAttendanceData();
         }
+
+        public async Task<bool> IntegrationAttendanceByDueData([Service] IIntegrationService integrationService)//IIntegrationService
+        {
+            return await integrationService.IntegrationAttendanceByDueData();
+        }
+        
         public async Task<bool> IntegrationUpdates([Service] IIntegrationService integrationService)
          {
             return await integrationService.IntegrationUpdates();

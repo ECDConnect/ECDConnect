@@ -9,30 +9,36 @@ class PointsService {
     this._accessToken = accessToken;
   }
 
-  async getPointsSummaryForUser(userId: string): Promise<PointsUserSummary[]> {
+  async getPointsSummaryForUser(
+    userId: string,
+    startDate: Date,
+    endDate: Date
+  ): Promise<PointsUserSummary[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { pointsSummaryForUser: PointsUserSummary[] };
       errors?: {};
     }>(``, {
       query: `
-        query pointsSummaryForUser($userId: String) {
-            pointsSummaryForUser(userId: $userId) {
-                pointsTotal
-                pointsYTD
-                month
-                year
-                userId
-                pointsLibrary {
-                    id
-                    activity
-                    subActivity
-                    description
-                }
+        query pointsSummaryForUser($userId: String, $startDate: DateTime!, $endDate: DateTime!) {
+          pointsSummaryForUser(userId: $userId, startDate: $startDate, endDate: $endDate) {
+            pointsTotal
+            pointsYTD
+            month
+            year
+            userId
+            pointsLibrary {
+              id
+              activity
+              subActivity
+              description
             }
-        }`,
+          }
+      }`,
       variables: {
         userId,
+        startDate,
+        endDate,
       },
     });
 

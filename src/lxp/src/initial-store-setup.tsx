@@ -163,10 +163,15 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           ).unwrap())();
       }
       if (!isCoach) {
+        const currentDate = new Date();
+        const oneYearAgo = new Date();
+        oneYearAgo.setMonth(currentDate.getMonth() - 12);
         (async () =>
           await appDispatch(
             pointsThunkActions.getPointsSummaryForUser({
               userId: userData?.id!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
             })
           ).unwrap())();
 
@@ -181,7 +186,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   }, [appDispatch, userData, isCoach, practitioner]);
 
   useEffect(() => {
-    if (userData) {
+    if (userData && !!userData?.id && !isCoach) {
       (async () =>
         await appDispatch(
           practitionerThunkActions.getPractitionerByUserId({
@@ -189,7 +194,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           })
         ).unwrap())();
     }
-  }, [appDispatch, userData, practitioners]);
+  }, [appDispatch, userData, isCoach, practitioners]);
 
   useEffect(() => {
     if (userData) {

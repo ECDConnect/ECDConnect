@@ -6,8 +6,8 @@ import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selec
 import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
 
 export const WhatsappCall = () => {
-  const { practitionerId } = useParams<PractitionerBusinessParams>();
-  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
+  const { userId } = useParams<PractitionerBusinessParams>();
+  const practitioner = useSelector(getPractitionerByUserId(userId));
   const practitionerFirstName = practitioner?.user?.firstName;
   const practitionerNumber = practitioner?.user?.phoneNumber;
 

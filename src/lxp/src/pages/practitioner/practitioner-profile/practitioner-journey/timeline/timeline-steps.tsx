@@ -16,6 +16,7 @@ import {
 } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 import { getReAccreditationStepData } from '@/pages/coach/coach-practitioner-journey/timeline/re-accreditation/step';
 import { getPqaStepData } from '@/pages/coach/coach-practitioner-journey/timeline/pqa/step';
+import { CoachCirclesMeeting } from '@/pages/coach/coach-practitioner-journey/timeline/coach-circles-meetings';
 
 export interface ViewEvent {
   visit: Visit | Maybe<Visit>;
@@ -40,6 +41,7 @@ export const timelineSteps = ({
   const attendedSupportVisits = timeline.supportVisits?.filter(
     (item) => !!item?.attended
   );
+  const isOnline = true;
 
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
 
@@ -78,16 +80,23 @@ export const timelineSteps = ({
   }
 
   if (!!attendedSupportVisits?.length) {
+    const mergedVisits = [
+      ...(timeline?.supportVisits ?? []),
+      ...(timeline?.requestedCoachVisits ?? []),
+    ];
+
+    const lastVisit = mergedVisits[mergedVisits.length - 1];
     const date = new Date(
-      attendedSupportVisits[attendedSupportVisits.length - 1]?.actualVisitDate
+      lastVisit?.actualVisitDate || lastVisit?.plannedVisitDate
     ).toLocaleDateString('en-ZA', dateOptions);
+    const type = mergedVisits?.every((item) => !!item?.attended)
+      ? 'completed'
+      : 'todo';
 
     steps.push({
       title: 'General support visits',
-      subTitle: date,
-      type: timeline.supportVisits?.every((item) => !!item?.attended)
-        ? 'completed'
-        : 'todo',
+      subTitle: `${type === 'todo' ? 'By ' : ''}${date}`,
+      type,
       extraData: {
         date: new Date(date),
       },
@@ -149,6 +158,59 @@ export const timelineSteps = ({
           isLoading={isLoading}
           isOnline={true}
           onView={onView}
+          timeline={timeline}
+        />
+      ),
+    });
+  }
+
+  if (timeline?.coachCircles) {
+    const lastMeetingattendanceDate = timeline?.coachCircles?.attendanceText
+      ? new Date(timeline?.coachCircles?.attendanceText)
+      : new Date();
+    const coachingCirclesAttendedMeetings =
+      timeline?.coachCircles?.totalPresent;
+    const coachingCirclesTotalMeetings = timeline?.coachCircles?.totalMeetings;
+    const attendanceColor =
+      timeline?.coachCircles?.attendanceColor || 'Success';
+    const attendanceColorType =
+      timeline?.coachCircles?.attendanceColor === 'Success'
+        ? 'completed'
+        : 'inProgress';
+
+    const getIconBgColor = (attendanceColor: string) => {
+      switch (attendanceColor) {
+        case 'Success':
+          return 'successMain';
+        case 'Warning':
+          return 'alertMain';
+        case 'Error':
+          return 'errorMain';
+        default:
+          return '';
+      }
+    };
+
+    const date = new Date(
+      timeline.coachCircles?.attendanceText!
+    ).toLocaleDateString('en-ZA', dateOptions);
+    steps.push({
+      title: `${coachingCirclesAttendedMeetings}/${coachingCirclesTotalMeetings} coaching circles attended`,
+      subTitle: `${new Date(lastMeetingattendanceDate).toLocaleDateString(
+        'en-ZA',
+        dateOptions
+      )}`,
+      type: attendanceColorType,
+      extraData: {
+        date: new Date(date),
+      },
+      showAccordion: true,
+      inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',
+      color: getIconBgColor(attendanceColor),
+      accordionContent: (
+        <CoachCirclesMeeting
+          isLoading={isLoading}
+          isOnline={isOnline}
           timeline={timeline}
         />
       ),

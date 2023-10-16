@@ -21,11 +21,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         DateTime startDate,
         string loggedByUser,
         string classroomGroup = null,
-        bool permanentAssign = false
+        bool permanentAssign = false,
+        DateTime? endDate = null
         )
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.AddReassignmentForPractitioner(uId, fromUserId, toUserId, reason, startDate, loggedByUser, classroomGroup, permanentAssign);
+            return reassignmentService.AddReassignmentForPractitioner(uId, fromUserId, toUserId, reason, startDate, loggedByUser, classroomGroup, permanentAssign, endDate);
         }
 
 
@@ -36,6 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
         }
+
         public bool ExpireRelationshipLinksService([Service] IHttpContextAccessor contextAccessor,
     [Service] IReassignmentService reassignmentService)
         {

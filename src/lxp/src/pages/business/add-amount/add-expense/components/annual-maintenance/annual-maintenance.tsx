@@ -13,7 +13,6 @@ import DatePicker from 'react-datepicker';
 import * as styles from './annual-maintenance.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
-import { AddIncomeState } from './annual-maintenance.types';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { useMemo, useState } from 'react';
 import {
@@ -22,28 +21,27 @@ import {
 } from '@/schemas/expense-statements/expenses';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { statementsActions, statementsSelectors } from '@/store/statements';
-import { newGuid } from '@/utils/common/uuid.utils';
-import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
+import { statementsSelectors } from '@/store/statements';
 import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
-import { useAppDispatch } from '@/store';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { AddExpenseState } from '../../../add-amount.types';
+import { newGuid } from '@/utils/common/uuid.utils';
 
-export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
+export const AnnualMaintenance: React.FC<AddExpenseState> = ({
+  setType,
+  onSubmit,
+}) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const appDispatch = useAppDispatch();
-  const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const {
     trigger,
     control,
-    setValue: setRentValue,
+    setValue: setFormValue,
     register,
   } = useForm<ExpensesModel>({
     resolver: yupResolver(expensesSchema),
@@ -88,17 +86,17 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
   const lastDateOfMonth = lastDayOfMonth(today);
 
   const setPhotoUrl = (imageUrl: string) => {
-    setRentValue('expenseInvoice', imageUrl);
+    setFormValue('expenseInvoice', imageUrl);
     setRegistrationFormPhotoUrl(imageUrl);
     trigger();
     setPhotoActionBarVisible(false);
   };
 
   const sendIncomeUpdate = async () => {
-    const incomeId = newGuid();
     setIsLoading(true);
 
     const expensesInput = {
+      Id: newGuid(),
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
@@ -109,21 +107,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
       PhotoProof: expenseInvoice,
     };
 
-    const offlineStatement = {
-      ...expensesInput,
-      isOffline: true,
-      id: incomeId,
-    };
-
-    appDispatch(
-      statementsActions.addExpenses(isOnline ? expensesInput : offlineStatement)
-    );
-
-    if (isOnline) {
-      await new ExpensesStatementsService(
-        userAuth?.auth_token!
-      ).UpdateStatementsExpense(incomeId, expensesInput);
-    }
+    onSubmit(expensesInput);
 
     await history.push(ROUTES.BUSINESS);
 
@@ -162,7 +146,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-            setRentValue('date', date ? date.toISOString() : '');
+            setFormValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
           minDate={
@@ -202,7 +186,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
           register={register}
           overrideOnClick={() => setPhotoActionBarVisible(true)}
           onValueChange={(imageString: string) => {
-            setRentValue('expenseInvoice', imageString);
+            setFormValue('expenseInvoice', imageString);
             trigger();
           }}
         ></ImageInput>
@@ -218,7 +202,7 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
             onDelete={
               registrationFormPhotoUrl
                 ? () => {
-                    setRentValue('expenseInvoice', '');
+                    setFormValue('expenseInvoice', '');
                     setRegistrationFormPhotoUrl(undefined);
                     setPhotoActionBarVisible(false);
                   }

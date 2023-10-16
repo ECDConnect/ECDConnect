@@ -122,7 +122,7 @@ namespace ECDLink.SmartStart.Services
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
             var groups = _classGroupRepo.GetAll()
-                .Where(x =>x.IsActive && x.UserId.ToString() == userId)
+                .Where(x =>x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
                 .OrderBy(x => x.Id)
                 .ToList();
 
@@ -131,7 +131,9 @@ namespace ECDLink.SmartStart.Services
 
         public List<Child> GetChildrenForUser(string userId)
         {
-            return _childRepo.GetAll().ToList(); ; //Hierarchy based children
+            return _childRepo.GetAll()
+                .Where(x => x.IsActive)
+                .ToList(); ; //Hierarchy based children
         }
 
         public List<Practitioner> GetPractitionersByHierarchy()

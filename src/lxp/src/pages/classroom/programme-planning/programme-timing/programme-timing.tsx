@@ -96,12 +96,12 @@ const ProgrammeTiming: React.FC = () => {
     }
 
     if (isPrincipal && practitioners?.length! > 1) {
-      history.push(ROUTES.CLASSROOM, {
+      history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: 3,
         programmeStartDate: validatedDate,
       });
     } else {
-      history.push(ROUTES.CLASSROOM, {
+      history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: 2,
         programmeStartDate: validatedDate,
       });

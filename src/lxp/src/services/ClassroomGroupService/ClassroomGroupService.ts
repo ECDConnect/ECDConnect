@@ -117,17 +117,23 @@ class ClassroomGroupService {
     reason: string,
     absentDate: Date,
     loggedByUser: string,
-    classProgram: string
+    classProgram: string,
+    absentDateEnd?: Date
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation addAbsenteeForPractitioner ($practitionerId: String,$reason: String, $absentDate: DateTime!,$loggedByUser: String,$classProgram: String,$reassignedToPractitioner: String)
-       { 
-        addAbsenteeForPractitioner (practitionerId: $practitionerId, reason: $reason, absentDate: $absentDate, loggedByUser: $loggedByUser, classProgram: $classProgram, reassignedToPractitioner: $reassignedToPractitioner) {
-           id 
-            }   
-            }
+      mutation addAbsenteeForPractitioner ($practitionerId: String,
+        $reason: String, $absentDate: DateTime!,$loggedByUser: String,
+        $classProgram: String,$reassignedToPractitioner: String, $absentDateEnd: DateTime!)       {
+         addAbsenteeForPractitioner (practitionerId: $practitionerId,
+           reason: $reason, absentDate: $absentDate, 
+           loggedByUser: $loggedByUser, classProgram: $classProgram, 
+           reassignedToPractitioner: $reassignedToPractitioner, 
+           absentDateEnd: $absentDateEnd) { 
+                  id  
+                     }      
+                       }
       `,
       variables: {
         practitionerId: practitionerId,
@@ -136,6 +142,7 @@ class ClassroomGroupService {
         absentDate: absentDate,
         loggedByUser: loggedByUser,
         classProgram: classProgram,
+        absentDateEnd: absentDateEnd,
       },
     });
 

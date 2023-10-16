@@ -79,13 +79,11 @@ export const EditChildInformation: React.FC = () => {
   const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
-  const isFromEditClass = location?.state?.isFromEditClass;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const languages = useSelector(staticDataSelectors.getLanguages);
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
@@ -438,17 +436,13 @@ export const EditChildInformation: React.FC = () => {
         } as ChildCaregiverInformationModel);
 
         setchildEmergencyContactForm({
-          firstname: caregiver?.emergencyContactFirstName,
-          surname: caregiver?.emergencyContactSurname,
-          phoneNumber: caregiver?.emergencyContactPhoneNumber,
-          isAllowedCustody:
-            caregiver?.additionalFirstName &&
-            caregiver?.additionalFirstName.length > 0
-              ? false
-              : true,
-          custodianFirstname: caregiver?.additionalFirstName,
-          custodianSurname: caregiver?.additionalSurname,
-          custodianPhoneNumber: caregiver?.additionalPhoneNumber,
+          firstname: caregiver.emergencyContactFirstName,
+          surname: caregiver.emergencyContactSurname,
+          phoneNumber: caregiver.emergencyContactPhoneNumber,
+          isAllowedCustody: caregiver.isAllowedCustody,
+          custodianFirstname: caregiver.additionalFirstName,
+          custodianSurname: caregiver.additionalSurname,
+          custodianPhoneNumber: caregiver.additionalPhoneNumber,
         } as ChildEmergencyContactFormModel);
       }
 
@@ -597,13 +591,18 @@ export const EditChildInformation: React.FC = () => {
         emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
         emergencyContactPhoneNumber:
           childEmergencyContactForm?.phoneNumber ?? '',
-        additionalFirstName:
-          childEmergencyContactForm?.custodianFirstname ?? '',
-        additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-        additionalPhoneNumber:
-          childEmergencyContactForm?.custodianPhoneNumber ?? '',
+        additionalFirstName: childEmergencyContactForm?.isAllowedCustody
+          ? childEmergencyContactForm.firstname
+          : childEmergencyContactForm?.custodianFirstname,
+        additionalSurname: childEmergencyContactForm?.isAllowedCustody
+          ? childEmergencyContactForm.surname
+          : childEmergencyContactForm?.custodianSurname,
+        additionalPhoneNumber: childEmergencyContactForm?.isAllowedCustody
+          ? childEmergencyContactForm.phoneNumber
+          : childEmergencyContactForm?.custodianPhoneNumber,
         joinReferencePanel: caregiver?.joinReferencePanel ?? false,
         contribution: caregiver?.contribution ?? false,
+        isAllowedCustody: childEmergencyContactForm?.isAllowedCustody ?? false,
       };
 
       appDispatch(caregiverActions.updateCaregiver(careGiverInputModel));
@@ -618,31 +617,35 @@ export const EditChildInformation: React.FC = () => {
   };
 
   const saveChildEmergencyContact = async (
-    childEmergencyContactForm: ChildEmergencyContactFormModel
+    formData: ChildEmergencyContactFormModel
   ) => {
     if (caregiver) {
       const careGiverInputModel: CaregiverDto = {
-        id: caregiver?.id ?? newGuid(),
+        id: caregiver.id ?? newGuid(),
         isActive: true,
-        idNumber: caregiver?.idNumber ?? '',
-        phoneNumber: caregiver?.phoneNumber,
-        firstName: caregiver?.firstName ?? '',
-        surname: caregiver?.surname ?? '',
+        idNumber: caregiver.idNumber ?? '',
+        phoneNumber: caregiver.phoneNumber,
+        firstName: caregiver.firstName ?? '',
+        surname: caregiver.surname ?? '',
         insertedDate: new Date().toISOString(),
-        relationId: caregiver?.relationId,
-        siteAddress: caregiver?.siteAddress,
-        educationId: caregiver?.educationId,
-        emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
-        emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
-        emergencyContactPhoneNumber:
-          childEmergencyContactForm?.phoneNumber ?? '',
-        additionalFirstName:
-          childEmergencyContactForm?.custodianFirstname ?? '',
-        additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-        additionalPhoneNumber:
-          childEmergencyContactForm?.custodianPhoneNumber ?? '',
+        relationId: caregiver.relationId,
+        siteAddress: caregiver.siteAddress,
+        educationId: caregiver.educationId,
+        emergencyContactFirstName: formData.firstname,
+        emergencyContactSurname: formData.surname,
+        emergencyContactPhoneNumber: formData.phoneNumber,
+        additionalFirstName: formData.isAllowedCustody
+          ? formData.firstname
+          : formData.custodianFirstname,
+        additionalSurname: formData.isAllowedCustody
+          ? formData.surname
+          : formData.custodianSurname,
+        additionalPhoneNumber: formData.isAllowedCustody
+          ? formData.phoneNumber
+          : formData.custodianPhoneNumber,
         joinReferencePanel: caregiver?.joinReferencePanel ?? false,
         contribution: caregiver?.contribution ?? false,
+        isAllowedCustody: formData.isAllowedCustody,
       };
 
       appDispatch(caregiverActions.updateCaregiver(careGiverInputModel));

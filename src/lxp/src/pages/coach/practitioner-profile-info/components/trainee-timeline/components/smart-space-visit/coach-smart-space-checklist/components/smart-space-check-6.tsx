@@ -189,12 +189,13 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   useEffect(() => {
     if (
       (questions[0]?.answer === true && questions?.[1]?.answer === true) ||
-      (answer !== '' && questions?.[1]?.answer === true)
+      (answer !== '' && questions?.[1]?.answer === true) ||
+      (newAddress !== '' && questions?.[1]?.answer === true)
     ) {
       return setEnableButton?.(true);
     }
     setEnableButton(false);
-  }, [answer, questions]);
+  }, [answer, newAddress, questions]);
 
   const changeSmartSpaceCheckAddress = async () => {
     if (questions[0].answer === false && answer !== '') {
@@ -257,8 +258,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           textInputType="input"
           label={questions?.[2]?.question}
           placeholder={'e.g. street a'}
-          value={newAddress}
-          onChange={(e) => setAnswer(e.target.value)}
+          value={newAddress || (questions[2]?.answer as string)}
         />
       )}
       <Alert
@@ -324,7 +324,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
           onClose={() => setShowMap(false)}
           onSubmit={(address) => {
             onOptionSelected(address, 2);
-            setNewAddress(newAddress);
+            setNewAddress(address);
           }}
         />
       </Dialog>

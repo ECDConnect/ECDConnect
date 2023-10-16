@@ -32,11 +32,15 @@ import {
 import { IdDocumentStep } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/id-document';
 import { InfantCareStep } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/infant-care';
 
-export const getHealhcareteps = (
-  isDangerSignsFollowUp: boolean,
-  isFirstVisit: boolean,
-  isAntenatalClinicStep: boolean
-) => [
+export const getHealhcareteps = ({
+  isAntenatalClinicStep,
+  isDangerSignsFollowUp,
+  isFirstVisit,
+}: {
+  isDangerSignsFollowUp: boolean;
+  isFirstVisit: boolean;
+  isAntenatalClinicStep: boolean;
+}) => [
   AntenatalCare,
   ...(isAntenatalClinicStep ? [ClinicVisitsStep] : []),
   ...(isDangerSignsFollowUp ? [HealthcareDangerSignsFollowUpStep] : []),

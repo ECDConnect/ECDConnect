@@ -146,7 +146,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
           childId
             ? history.push(ROUTES.CHILD_PROFILE, { childId })
             : childUserId
-            ? history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 })
+            ? history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 })
             : history.goBack();
         }
       }}
@@ -273,7 +273,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
               childId
                 ? history.push(ROUTES.CHILD_PROFILE, { childId })
                 : childUserId
-                ? history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 })
+                ? history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 0 })
                 : history.goBack();
             }}
           ></OnlineOnlyModal>

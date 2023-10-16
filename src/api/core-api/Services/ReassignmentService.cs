@@ -125,7 +125,8 @@ namespace ECDLink.Core.Services
             DateTime startDate,
             string loggedByUser,
             string classroomGroup = null,
-            bool permanentAssign = false
+            bool permanentAssign = false,
+            DateTime? endDate = null
             )
         {
             var historyRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);

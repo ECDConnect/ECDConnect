@@ -2,10 +2,11 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import { BannerWrapper, Typography, renderIcon } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { add, format } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { dateOptions } from '../timeline-steps';
 import { staticDataSelectors } from '@/store/static-data';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 
 interface StartupSupportDetailsProps {
   practitioner: PractitionerDto | undefined;
@@ -21,6 +22,7 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
   const traineeTimeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline
   );
+
   const traineeVisitData = useSelector(traineeSelectors.getTraineeVisitData);
 
   const programmeTypeQuestionObject = traineeVisitData?.find(
@@ -31,6 +33,13 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
   const programme = programData?.find(
     (item) => item?.id === programmeTypeQuestionObject?.questionAnswer
   );
+  const startDate = new Date(
+    traineeTimeline?.signStartUpSupportAgreementDate
+  ).toLocaleDateString('en-ZA', dateOptions);
+  const endDate = add(
+    new Date(traineeTimeline?.signStartUpSupportAgreementDate),
+    { years: 1 }
+  ).toLocaleDateString('en-ZA', dateOptions);
 
   return (
     <BannerWrapper
@@ -85,60 +94,6 @@ export const StartupSupportDetails: React.FC<StartupSupportDetailsProps> = ({
               color={'textMid'}
               type={'body'}
               text={programme?.description}
-            />
-          </div>
-        </div>
-        <div className="mb-3">
-          <Typography
-            className={'my-1'}
-            color={'textMid'}
-            type={'body'}
-            text={'Start-up support provider'}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              className={'my-1'}
-              color={'textMid'}
-              type={'body'}
-              text={new Date(
-                traineeTimeline?.signStartUpSupportAgreementDate
-              ).toLocaleDateString('en-ZA', dateOptions)}
-            />
-          </div>
-        </div>
-        <div className="mb-3">
-          <Typography
-            className={'my-1'}
-            color={'textMid'}
-            type={'body'}
-            text={'Monthly start-up support amount'}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              className={'my-1'}
-              color={'textMid'}
-              type={'body'}
-              text={new Date(
-                traineeTimeline?.signStartUpSupportAgreementDate
-              ).toLocaleDateString('en-ZA', dateOptions)}
-            />
-          </div>
-        </div>
-        <div>
-          <Typography
-            className={'my-1'}
-            color={'textMid'}
-            type={'body'}
-            text={'Payment start and end dates'}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              className={'my-1'}
-              color={'textMid'}
-              type={'body'}
-              text={new Date(
-                traineeTimeline?.signStartUpSupportAgreementDate
-              ).toLocaleDateString('en-ZA', dateOptions)}
             />
           </div>
         </div>

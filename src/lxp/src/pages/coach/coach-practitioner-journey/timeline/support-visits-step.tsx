@@ -1,29 +1,39 @@
-import { Visit, Maybe, PractitionerTimeline } from '@ecdlink/graphql';
-import { dateOptions, getStepType, sortVisit } from './timeline-steps';
+import { Visit, PractitionerTimeline } from '@ecdlink/graphql';
+import { dateOptions, getStepType } from './timeline-steps';
 import { generalSupportVisitTypes } from '../coach-practitioner-journey.types';
 import { ClipboardCheckIcon, PhoneIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
 
 interface SupportVisitsProps {
   isLoading: boolean;
   timeline: PractitionerTimeline;
   isOnline: boolean;
+  practitionerId: string;
   onView: (visit: Visit) => void;
+  onStartRequestedSupportVisit: (visitId: string) => void;
 }
 
 export const SupportVisits = ({
   timeline,
   isOnline,
   isLoading,
+  practitionerId,
   onView,
-}: SupportVisitsProps) => (
-  <>
-    {timeline.supportVisits
-      ?.filter(
-        (visit: Maybe<Visit>) => typeof visit?.visitType?.order !== 'undefined'
-      )
-      ?.sort(sortVisit)
-      ?.map((item) => (
+  onStartRequestedSupportVisit,
+}: SupportVisitsProps) => {
+  const practitioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(practitionerId)
+  );
+  const mergedVisits = [
+    ...(timeline?.supportVisits ?? []),
+    ...(timeline?.requestedCoachVisits ?? []),
+  ];
+
+  return (
+    <>
+      {mergedVisits?.map((item, index) => (
         <div className="my-4" key={item?.id}>
           <div className="relative flex items-center gap-1">
             {item?.visitType?.name === generalSupportVisitTypes.call ? (
@@ -39,8 +49,37 @@ export const SupportVisits = ({
               type="body"
               color="textDark"
               className="w-6/12 font-bold"
-              text={item?.visitType?.description || ''}
+              text={
+                item?.visitType?.name?.includes('practitioner')
+                  ? `${practitioner?.user?.firstName} requested a ${
+                      item?.visitType?.name ===
+                      generalSupportVisitTypes.practitioner_visit
+                        ? 'visit'
+                        : 'call'
+                    }`
+                  : item?.visitType?.description || ''
+              }
             />
+            {item?.visitType?.name?.includes('practitioner') &&
+              !item?.attended &&
+              (!mergedVisits[index - 1] ||
+                !!mergedVisits[index - 1]?.attended) && (
+                <Button
+                  style={{
+                    position: 'absolute',
+                    right: -36,
+                  }}
+                  className="z-50 w-24"
+                  type="filled"
+                  color="primary"
+                  textColor="white"
+                  text="Start"
+                  icon="ArrowCircleRightIcon"
+                  isLoading={isLoading}
+                  disabled={isLoading}
+                  onClick={() => onStartRequestedSupportVisit?.(item?.id || '')}
+                />
+              )}
             {!!item?.attended && isOnline && (
               <Button
                 style={{
@@ -64,14 +103,14 @@ export const SupportVisits = ({
             color={getStepType(String('Success'))?.color || 'textMid'}
             text={
               !!item?.plannedVisitDate
-                ? `By ${new Date(item.plannedVisitDate).toLocaleDateString(
-                    'en-ZA',
-                    dateOptions
-                  )}`
+                ? `${item.attended ? '' : 'By '}${new Date(
+                    item.plannedVisitDate
+                  ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
             }
           />
         </div>
       ))}
-  </>
-);
+    </>
+  );
+};

@@ -39,7 +39,11 @@ public class MonthlyNotificationChecks : CronJobService
                     await service.ProgressReportsReminderAsync();
                 }                                
             }
-
+            //if the first sunday in the month, run weekly attendance PDFs
+            if (DateTime.Now.DayOfWeek == DayOfWeek.Sunday && DateTime.Now.Day <= 7)
+            {
+                await service.MonthlyAttendanceSLSyncAsync();
+            }
         }
     }
 }

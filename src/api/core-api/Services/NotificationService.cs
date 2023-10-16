@@ -78,8 +78,6 @@ namespace EcdLink.Api.CoreApi.Services
         {
             try
             {
-
-                bool bNeedsMapping = false;
                 var templates = await RetrieveTemplate(templatetype);
 
                 if (templates != null)
@@ -120,6 +118,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     await SendEmailAsync(notification, user, item);
                                     break;
                                 case MessageTypeConstants.HUB:
+                                case MessageTypeConstants.PORTAL:
                                 case MessageTypeConstants.PUSH:
                                     await SendHubMessageAsync(notification, user, item);
                                     break;
@@ -238,6 +237,22 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        public async Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType)
+        {
+            if (userId != null && templateType != null)
+            {
+                var notifications = _messageRepo.GetAll().Where(n => n.To == userId && n.MessageTemplateType == templateType).ToList();
+                if (notifications.Any())
+                {
+                    foreach (var notification in notifications)
+                    {
+                        await DisableNotification(notification.Id.ToString());
+                    }
+                }
+            }
+            return true;
+        }
+
         public async Task<bool> MarkAsReadNotification(string notificationId)
         {
             if (notificationId != null)
@@ -260,14 +275,17 @@ namespace EcdLink.Api.CoreApi.Services
 
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
-            string firstName = user.FirstName;
+            if (user != null)
+            {
+                string firstName = user.FirstName;
+                replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.FirstName, ReplacementValue = firstName });
+            }
 
             if (replacements == null)
             {
                 replacements = new List<TagsReplacements>();
             }
 
-            replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.FirstName, ReplacementValue = firstName });
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.ApplicationName, ReplacementValue = applicationName });
             replacements.Add(new TagsReplacements() { FindValue = MessageTemplateConstants.OrganisationName, ReplacementValue = organisationName });
             //add all basic tags here
