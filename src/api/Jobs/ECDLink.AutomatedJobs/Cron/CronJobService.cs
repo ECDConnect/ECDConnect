@@ -14,7 +14,7 @@ namespace ECDLink.AutomatedJobs.Cron
 
         protected CronJobService(string cronExpression, TimeZoneInfo timeZoneInfo)
         {
-            _expression = CronExpression.Parse(cronExpression, CronFormat.IncludeSeconds);
+            _expression = CronExpression.Parse(cronExpression);
             _timeZoneInfo = timeZoneInfo;
         }
 
