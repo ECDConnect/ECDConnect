@@ -558,7 +558,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SmartSpace license received
             License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-            if (smartSpaceLicense?.LicenseDate != null)
+            if (smartSpaceLicense?.LicenseDate != null  && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
@@ -622,7 +622,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var pqaVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
             var reaccreditationVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
             var supportVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
-            var requestedCoachVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
+            var requestedCoachVisits = _visitManager.GetCoachVisits(coach.Id, practitioner.Id); 
             var selfAssessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
             List<Visit> selfVisits = new List<Visit>();
 
@@ -826,7 +826,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SmartSpace license received
             License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-            if (smartSpaceLicense?.LicenseDate != null)
+            if (smartSpaceLicense?.LicenseDate != null && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
@@ -834,8 +834,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
             else
             {
-                timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
-                timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                if (smartSpaceLicense?.LicenseDate != null && smartSpaceLicense?.DeclinedDate != null)
+                {
+                    timeline.SmartSpaceLicenseNotAwardedDate = smartSpaceLicense?.DeclinedDate;
+                    timeline.SmartSpaceLicenseNotAwardedSteps = smartSpaceLicense?.DeclinedCommentsSteps;
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                }
+                else
+                {
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                }
             }
 
             // DayOneStartUpTraining
@@ -954,7 +964,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     dates.Add(timeline.CommunitySupportDate.Value);
                 }
 
-                if (sections.Count == 4 && timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() && dates.Count == 4)
+                if (/* sections.Count == 4  && */ timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() && dates.Count >= 3)
                 {
                     var latestDate = dates.OrderDescending().First();
                     latestDate = latestDate.AddDays(7);
@@ -1006,7 +1016,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // Startup Support
-            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == trainee.UserId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
+            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
             if (startupSupport != null)
             {
                 timeline.StartUpSupportStartDate = startupSupport?.StartDate;

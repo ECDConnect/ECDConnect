@@ -97,7 +97,9 @@ export const setStep = (
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
-    status !== smartSpaceLincenceReceveid;
+    status !== smartSpaceLincenceReceveid &&
+    status !== 'Consolidation meeting attended';
+
   if (!!status) {
     return {
       title: status,
@@ -119,7 +121,8 @@ export const setStep = (
             status === 'Get community support') ||
           (consolidationMeetingAttended &&
             status === 'Fill in the SmartSpace checklist') ||
-          (consolidationMeetingAttended &&
+          (nextStep === status &&
+            consolidationMeetingAttended &&
             status === 'Sign start-up support agreement') ||
           (consolidationMeetingAttended && status === 'Register 3 children')) &&
         status !== 'Consolidation meeting attended'

@@ -236,10 +236,16 @@ export const mapCaregiverDto = (
     emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
     emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
     emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
-    additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
-    additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-    additionalPhoneNumber:
-      childEmergencyContactForm?.custodianPhoneNumber ?? '',
+    isAllowedCustody: childEmergencyContactForm?.isAllowedCustody ?? false,
+    additionalFirstName: childEmergencyContactForm?.isAllowedCustody
+      ? childEmergencyContactForm.firstname
+      : childEmergencyContactForm?.custodianFirstname ?? '',
+    additionalSurname: childEmergencyContactForm?.isAllowedCustody
+      ? childEmergencyContactForm.surname
+      : childEmergencyContactForm?.custodianSurname ?? '',
+    additionalPhoneNumber: childEmergencyContactForm?.isAllowedCustody
+      ? childEmergencyContactForm.phoneNumber
+      : childEmergencyContactForm?.custodianPhoneNumber ?? '',
     joinReferencePanel: referencePanelForm?.interestedInJoiningPanel ?? false,
     contribution:
       childCareGiverContributionForm?.commitedToContributing ?? false,

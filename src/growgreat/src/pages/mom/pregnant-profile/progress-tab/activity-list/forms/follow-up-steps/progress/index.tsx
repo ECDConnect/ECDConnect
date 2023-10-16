@@ -1,5 +1,5 @@
 import { Header } from '@/pages/infant/infant-profile/components';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
 import { TipCard } from '../../../../../components';
@@ -8,6 +8,8 @@ import { useDialog } from '@ecdlink/core';
 import { ActionModal, DialogPosition, LoadingSpinner } from '@ecdlink/ui';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { OfflineCard } from '@/components/offline-card/offline-card';
 
 export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
@@ -15,55 +17,29 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
     () => mother?.user?.firstName || '',
     [mother?.user?.firstName]
   );
-  const dialog = useDialog();
 
-  // Previous visit data
-  const { isLoading } = useThunkFetchCall(
+  const { isOnline } = useOnlineStatus();
+
+  const { isLoading: isLoadingPreviousVisit } = useThunkFetchCall(
     'visits',
     VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER
   );
-  //const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  // const previousCurrentVisit = usePrevious(currentVisit) as
-  //   | VisitDto
-  //   | undefined;
-  const [isPrint, setIsPrint] = useState(false);
+  const { isLoading: isLoadingSummary } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_MOTHER_SUMMARY_BY_PRIORITY
+  );
 
-  // useLayoutEffect(() => {
-  //   if (
-  //     (!previousCurrentVisit ||
-  //       (!!previousCurrentVisit &&
-  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
-  //     !!currentVisit
-  //   )
-  //     appDispatch(
-  //       visitThunkActions.getPreviousVisitInformationForMother({
-  //         visitId: currentVisit?.id,
-  //       })
-  //     );
-  // }, [
-  //   appDispatch,
-  //   currentVisit,
-  //   currentVisit?.id,
-  //   mother?.id,
-  //   previousCurrentVisit,
-  // ]);
+  const isLoading = isLoadingPreviousVisit || isLoadingSummary;
+
+  const dialog = useDialog();
+
+  const [isPrint, setIsPrint] = useState(false);
 
   useEffect(() => {
     setEnableButton?.(true);
   }, [setEnableButton]);
 
-  if (isLoading) {
-    return (
-      <LoadingSpinner
-        className="pt-20"
-        size="medium"
-        spinnerColor={'primary'}
-        backgroundColor={'uiLight'}
-      />
-    );
-  }
-
-  const onShare = () => {
+  const onShare = useCallback(() => {
     dialog({
       blocking: false,
       position: DialogPosition.Middle,
@@ -100,17 +76,26 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
         );
       },
     });
-  };
+  }, [caregiverName, dialog]);
 
-  return (
-    <div>
-      <Header
-        icon="ChartBarIcon"
-        iconHexBackgroundColor={activitiesColours.other.primaryColor}
-        title="Progress"
-        subTitle={`${name}`}
-      />
-      <div className="p-4">
+  const renderContent = useMemo(() => {
+    if (!isOnline) {
+      return <OfflineCard />;
+    }
+
+    if (isLoading) {
+      return (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor={'primary'}
+          backgroundColor={'uiLight'}
+          className="p-4"
+        />
+      );
+    }
+
+    return (
+      <>
         <TipCard
           className="mb-4"
           hideLeftIcon
@@ -122,7 +107,19 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
         <div>
           <FollowUp mother={mother || {}} isPrint={isPrint} />
         </div>
-      </div>
+      </>
+    );
+  }, [mother, isLoading, isOnline, isPrint, onShare]);
+
+  return (
+    <div>
+      <Header
+        icon="ChartBarIcon"
+        iconHexBackgroundColor={activitiesColours.other.primaryColor}
+        title="Progress"
+        subTitle={`${name}`}
+      />
+      <div className="p-4">{renderContent}</div>
     </div>
   );
 };

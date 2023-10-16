@@ -68,7 +68,7 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
       renderBorder={true}
       title={'Programme best practices'}
       color={'primary'}
-      onBack={() => history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 })}
+      onBack={() => history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 })}
       className={`${styles.bannerContentWrapper}`}
       backgroundColour="uiBg"
       displayOffline={!isOnline}

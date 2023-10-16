@@ -1,4 +1,6 @@
+import { Colours } from '../../models';
 import { classNames } from '../../utils/style-class.utils';
+import StatusChip from '../status-chip/status-chip';
 import { Typography } from '../typography/typography';
 import * as styles from './alert.style';
 import { AlertProps } from './alert.types';
@@ -16,8 +18,15 @@ export const Alert: React.FC<AlertProps> = ({
   variant = 'flat',
   listColor = 'black',
   button,
+  leftChip,
+  rightChip,
 }) => {
   const icon = styles.alertIcon(type, variant);
+
+  const chipBackground = styles
+    .alertColor(type, variant)
+    .split(' ')?.[0]
+    ?.split('-')?.[1] as Colours;
 
   return (
     <div
@@ -28,7 +37,17 @@ export const Alert: React.FC<AlertProps> = ({
       )}
     >
       <div className={styles.innerWrapper}>
-        {customIcon || <div className={styles.iconWrapper}>{icon}</div>}
+        {!leftChip &&
+          (customIcon || <div className={styles.iconWrapper}>{icon}</div>)}
+        {leftChip && (
+          <StatusChip
+            className="ml-auto self-center"
+            borderColour={chipBackground}
+            backgroundColour={chipBackground}
+            textColour="white"
+            text={leftChip}
+          />
+        )}
         <div className={styles.contentWrapper}>
           <div className={styles.messageWrapper}>
             {title && (
@@ -70,6 +89,15 @@ export const Alert: React.FC<AlertProps> = ({
             <div className={styles.extendedContentWrapper}>{button}</div>
           )}
         </div>
+        {rightChip && (
+          <StatusChip
+            className="ml-auto self-center"
+            borderColour="primary"
+            backgroundColour="primary"
+            textColour="white"
+            text={rightChip}
+          />
+        )}
       </div>
     </div>
   );

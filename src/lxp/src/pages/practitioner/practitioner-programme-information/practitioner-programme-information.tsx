@@ -291,6 +291,28 @@ export const PractitionerProgrammeInformation: React.FC = () => {
       });
     }
 
+    if (!!classroom && (isPrincipal || practitioner?.isFundaAppAdmin)) {
+      const feeUpdatedThisYear =
+        !!classroom?.preschoolFeeAmountLastUpdateDate &&
+        new Date(classroom.preschoolFeeAmountLastUpdateDate).getFullYear() ===
+          new Date().getFullYear();
+
+      stackedActionList.push({
+        title: 'Monthly preschool fee',
+        subTitle: !!classroom.preschoolFeeAmount
+          ? `R ${classroom.preschoolFeeAmount}`
+          : feeUpdatedThisYear
+          ? 'No fee'
+          : 'Add the preschool fee',
+        switchTextStyles: true,
+        actionName: !!classroom.preschoolFeeAmount ? 'Edit' : 'Add',
+        actionIcon: !!classroom.preschoolFeeAmount ? 'PencilIcon' : 'PlusIcon',
+        onActionClick: () => {
+          history.push(ROUTES.CLASSROOM.UPDATE_FEE);
+        },
+      });
+    }
+
     setListItems(stackedActionList);
   };
 

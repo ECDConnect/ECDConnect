@@ -6,7 +6,7 @@ import {
   Typography,
   Alert,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -22,8 +22,12 @@ import Food from './components/food/food';
 import LearningMaterials from './components/learning-materials/learning-materials';
 import AnnualMaintenance from './components/annual-maintenance/annual-maintenance';
 import OtherExpense from './components/other-expense/other';
+import { StatementsExpensesInput } from '@ecdlink/graphql';
+import { statementsThunkActions } from '@/store/statements';
+import { authSelectors } from '@/store/auth';
 
 export const AddExpense: React.FC = () => {
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
@@ -49,22 +53,34 @@ export const AddExpense: React.FC = () => {
     }
   }, [user]);
 
+  const onSubmit = useCallback(
+    (expenseItem: StatementsExpensesInput) => {
+      appDispatch(
+        statementsThunkActions.addExpenseItem({
+          input: expenseItem,
+          firstAttempt: true,
+        })
+      );
+    },
+    [userAuth]
+  );
+
   const incomeType = (type?: string) => {
     switch (type) {
       case 'Rent':
-        return <Rent setType={setType} />;
+        return <Rent setType={setType} onSubmit={onSubmit} />;
       case 'Utilities':
-        return <Utilities setType={setType} />;
+        return <Utilities setType={setType} onSubmit={onSubmit} />;
       case 'SalaryAndWages':
-        return <SalaryAndWages setType={setType} />;
+        return <SalaryAndWages setType={setType} onSubmit={onSubmit} />;
       case 'Food':
-        return <Food setType={setType} />;
+        return <Food setType={setType} onSubmit={onSubmit} />;
       case 'LearningMaterials':
-        return <LearningMaterials setType={setType} />;
+        return <LearningMaterials setType={setType} onSubmit={onSubmit} />;
       case 'AnnualMaintenance':
-        return <AnnualMaintenance setType={setType} />;
+        return <AnnualMaintenance setType={setType} onSubmit={onSubmit} />;
       case 'Other':
-        return <OtherExpense setType={setType} />;
+        return <OtherExpense setType={setType} onSubmit={onSubmit} />;
       default:
         break;
     }

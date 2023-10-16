@@ -13,27 +13,26 @@ import {
   OtherIncomeModel,
   otherIncomeSchema,
 } from '@/schemas/income-statements/other-income';
-import { AddIncomeState } from './other-income.types';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { statementsActions, statementsSelectors } from '@/store/statements';
-import { newGuid } from '@/utils/common/uuid.utils';
+import { statementsSelectors } from '@/store/statements';
 import { useMemo } from 'react';
 import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
-import { useAppDispatch } from '@/store';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { StatementsIncomeInput } from '@ecdlink/graphql';
+import { AddIncomeState } from '../../../add-amount.types';
+import { newGuid } from '@/utils/common/uuid.utils';
 
-export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
+export const OtherIncome: React.FC<AddIncomeState> = ({
+  setType,
+  onSubmit,
+}) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const appDispatch = useAppDispatch();
-  const { isOnline } = useOnlineStatus();
   const history = useHistory();
 
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
@@ -44,7 +43,8 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
 
   const {
     control,
-    setValue: setPreschoolFeesValue,
+    setValue: setValue,
+
     register,
   } = useForm<OtherIncomeModel>({
     resolver: yupResolver(otherIncomeSchema),
@@ -61,8 +61,6 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const isNum = isNumber(incomeAmount!);
-
   const disabled = useMemo(() => {
     return !date || !incomeAmount || !description;
   }, [date, description, incomeAmount]);
@@ -78,9 +76,8 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
   const lastDateOfMonth = lastDayOfMonth(today);
 
   const sendIncomeUpdate = async () => {
-    const incomeId = newGuid();
-
-    const incomeInput = {
+    const incomeInput: StatementsIncomeInput = {
+      Id: newGuid(),
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
@@ -93,22 +90,9 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
       IncomeTypeId: incomeTypeValue?.id,
     };
 
-    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
-
-    appDispatch(
-      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
-    );
-
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, incomeInput);
+    onSubmit(incomeInput);
 
     await history.push(ROUTES.BUSINESS);
-  };
-
-  const handleSaveStartupSupportValues = () => {
-    sendIncomeUpdate();
-    setType('');
   };
 
   return (
@@ -132,7 +116,7 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
             date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
-            setPreschoolFeesValue('date', date ? date.toISOString() : '');
+            setValue('date', date ? date.toISOString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
           minDate={
@@ -173,8 +157,11 @@ export const OtherIncome: React.FC<AddIncomeState> = ({ setType }) => {
           type="filled"
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
-          onClick={handleSaveStartupSupportValues}
-          disabled={disabled || !isNum}
+          onClick={() => {
+            sendIncomeUpdate();
+            setType('');
+          }}
+          disabled={disabled}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

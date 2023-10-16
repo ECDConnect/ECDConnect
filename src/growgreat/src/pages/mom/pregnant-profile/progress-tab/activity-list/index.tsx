@@ -52,6 +52,7 @@ import {
 } from '@/store/mother/mother.selectors';
 import { usePrevious } from '@ecdlink/core';
 import { MotherActions } from '@/store/mother/mother.actions';
+import { clinicVisitsSectionName } from './forms/healthcare-steps/clinic-visits';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -167,6 +168,13 @@ export const MomActivityList: React.FC = () => {
           visitId: previousCurrentVisit.id,
           visitName: activitiesTypes.nutrition,
           visitSection: muacFormSection,
+        })
+      );
+      appDispatch(
+        visitThunkActions.getVisitAnswersForMother({
+          visitId: previousCurrentVisit.id,
+          visitName: activitiesTypes.healthCare,
+          visitSection: clinicVisitsSectionName,
         })
       );
       appDispatch(

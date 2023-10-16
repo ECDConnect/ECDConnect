@@ -63,3 +63,15 @@ export const getStringFromClassNameOrId = (data: string | HTMLElement) =>
 export const parseBool = (str: string) => {
   return /^(true|1)$/i.test(str);
 };
+
+export function formatStringWithFirstLetterCapitalized(input: string): string {
+  const words = input.split('-');
+
+  if (words.length > 0 && words[0].length > 0) {
+    words[0] = words[0].charAt(0).toUpperCase() + words[0].slice(1);
+  }
+
+  const formattedString = words.join(' ');
+
+  return formattedString;
+}

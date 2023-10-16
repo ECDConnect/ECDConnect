@@ -37,7 +37,6 @@ import {
   getClassroomGroupSchoolDays,
   getMissedAttendanceSummaryGroups,
   isValidAttendableDate,
-  removeDuplicates,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   getStorageItem,
@@ -56,8 +55,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   openReports,
   currentUserId,
 }) => {
-  const [displaySmartStartMessage, setDisplaySmartStartMessage] =
-    useState<boolean>(false);
   const [classroomName, setClassroomName] = useState<string>('');
 
   const [successMessageVisible, setSuccessMessageVisible] =
@@ -153,23 +150,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   }, [trackedAttendance]);
 
   useEffect(() => {
-    let hasClosedPointsMessage = getStorageItem<boolean>(
-      LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-    );
-
-    if (hasClosedPointsMessage === undefined) {
-      hasClosedPointsMessage = false;
-    }
-
     if (isCurrentSmartStartUser === undefined) {
       setStorageItem(true, LocalStorageKeys.isSmartStartUser);
     }
-
     setIsSmartStartUser(false);
-
-    if (!hasClosedPointsMessage) {
-      setDisplaySmartStartMessage(true);
-    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -430,14 +414,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     }
   }, [missedAttendanceDays]);
 
-  const closeMessage = () => {
-    setDisplaySmartStartMessage(false);
-    setStorageItem(
-      true,
-      LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-    );
-  };
-
   const closeEditAttendanceRegister = () => {
     setEditAttendanceRegisterVisible(false);
   };
@@ -499,15 +475,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           listItems={attendanceActionList}
           type={'ActionList'}
         ></StackedList>
-
-        <MessageModal
-          title={'What can you do with SmartStart points?'}
-          message={'Get R5 airtime for every 500 points you earn!'}
-          // todo: remove 'false' once needed.
-          visible={false && displaySmartStartMessage}
-          icon={'GiftIcon'}
-          onClose={closeMessage}
-        />
       </div>
       {attendanceEditDay && (
         <Dialog

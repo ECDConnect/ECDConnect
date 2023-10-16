@@ -18,9 +18,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Task<ClubLeader> AddNewClubLeader([Service] IClubService clubService, string clubId, string practitionerId)
+        public ClubLeader AddNewClubLeader([Service] IClubService clubService, string clubId, string practitionerId)
         {
             return clubService.AddNewClubLeader(new Guid(clubId), new Guid(practitionerId));
+        }
+
+        public bool AcceptNewClubLeaderRole([Service] IClubService clubService, string clubId, string practitionerId)
+        {
+            return clubService.AcceptNewClubLeaderRole(new Guid(clubId), new Guid(practitionerId))!=null;            
         }
 
     }

@@ -8,13 +8,20 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
-import { useHistory } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { AddPhotoDialog } from './add-photo-dialog';
 import { CoachAboutRouteState } from '@/pages/coach/coach-about/coach-about.types';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { useState } from 'react';
+import { CommunityRouteState } from '../community.types';
+import { coachThunkActions } from '@/store/coach';
+import { useAppDispatch } from '@/store';
+import { clubThunkActions } from '@/store/club';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ClubActions } from '@/store/club/club.actions';
+import { CoachActions } from '@/store/coach/coach.actions';
 
 export const CommunityWelcome: React.FC = () => {
   const [value, setValue] = useState<string>('');
@@ -25,12 +32,46 @@ export const CommunityWelcome: React.FC = () => {
   const { theme } = useTheme();
 
   const history = useHistory();
+  const location = useLocation<CommunityRouteState>();
+  const appDispatch = useAppDispatch();
+
+  const { isLoading: isLoadingCoachAbout } = useThunkFetchCall(
+    'clubs',
+    ClubActions.UPDATE_COACH_ABOUT_INFO
+  );
+  const { isLoading: isLoadingClubClicked } = useThunkFetchCall(
+    'coach',
+    CoachActions.UPDATE_COACH_CLUB_CLICKED
+  );
+  const { isLoading: isLoadingCoach } = useThunkFetchCall(
+    'coach',
+    CoachActions.GET_COACH_BY_COACH_ID
+  );
+
+  const isLoading =
+    isLoadingCoachAbout || isLoadingClubClicked || isLoadingCoach;
 
   const dialog = useDialog();
 
-  const onSave = () => {
-    // TODO: add endpoint
-    console.log('Submitting...', { payload: value });
+  const onSave = async () => {
+    if (value) {
+      await appDispatch(
+        clubThunkActions.updateCoachAboutInfo({
+          aboutInfo: value,
+          userId: user?.id,
+        })
+      );
+
+      await appDispatch(
+        coachThunkActions.updateCoachClubClicked({ userId: user?.id! })
+      );
+      await appDispatch(
+        coachThunkActions.getCoachByCoachId({
+          coachId: user?.id!,
+          forceUpdate: true,
+        })
+      );
+    }
 
     if (isToShowAddPhotoScreen) {
       return dialog({
@@ -52,7 +93,9 @@ export const CommunityWelcome: React.FC = () => {
         ),
       });
     } else {
-      history.push(ROUTES.COMMUNITY.ROOT);
+      history.push(ROUTES.COMMUNITY.ROOT, {
+        ...location.state,
+      } as CommunityRouteState);
     }
   };
 
@@ -105,6 +148,8 @@ export const CommunityWelcome: React.FC = () => {
           textColor="white"
           icon="SaveIcon"
           className="mt-auto mb-14"
+          isLoading={isLoading}
+          disabled={isLoading}
           onClick={onSave}
         />
       </div>

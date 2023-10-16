@@ -30,3 +30,16 @@ export const descriptionList = 'list-disc md:list-disc px-4';
 export const descriptionListItem = 'mt-2 text-sm text-uiLight';
 export const errorListItem = 'mt-2 text-sm text-errorMain';
 export const hintStyle = 'block mt-1 text-sm font-h1 font-normal text-textMid';
+
+export function getBorderClass(
+  value?: string | number,
+  maxCharacters?: number
+): string {
+  if (!maxCharacters) return '';
+
+  if (value && value.toString().length > maxCharacters) {
+    return 'border-errorMain';
+  } else {
+    return 'border-secondary';
+  }
+}

@@ -837,6 +837,7 @@ namespace EcdLink.Api.CoreApi
             public const string too_many_club_members = "Too many club members";
             public const string choose_club_leader = "Choose a new club leader";
             public const string missing_register = "Missing club meeting register";
+            public const string missing_register_for_month = " club meeting register";
             public const string club_attendance = "% club attendance in ";
             public const string new_club = "New club";
             public const string name_purple = "Purple";

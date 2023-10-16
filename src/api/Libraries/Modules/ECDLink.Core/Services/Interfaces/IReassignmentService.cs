@@ -14,7 +14,8 @@ namespace ECDLink.Core.Services.Interfaces
             DateTime startDate,
             string loggedByUser,
             string classroomGroup = null,
-            bool permanentAssign = false
+            bool permanentAssign = false,
+            DateTime? endDate = null
             );
         public bool ReassignClassroomsFromHistory(string uId, string userId);
 

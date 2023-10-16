@@ -12,7 +12,6 @@ import {
   FormInput,
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
-import { AddIncomeState } from './preschool-fees.types';
 import * as styles from './preschool-fees.styles';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
@@ -22,27 +21,24 @@ import {
   PreschoolFeesModel,
   preschoolFeesSchema,
 } from '@/schemas/income-statements/preschool-fees';
-import { statementsActions, statementsSelectors } from '@/store/statements';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { statementsSelectors } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { newGuid } from '@/utils/common/uuid.utils';
-import {
-  isNumber,
-  moneyInputFormat,
-} from '@/utils/statements/statements-utils';
 import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import StatementsWrapper from '@/pages/business/money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
-import { useAppDispatch } from '@/store';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { AddIncomeState } from '../../../add-amount.types';
+import { StatementsIncomeInput } from '@ecdlink/graphql';
+import { moneyInputFormat } from '@/utils/statements/statements-utils';
 
-export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
+export const PreschoolFees: React.FC<AddIncomeState> = ({
+  setType,
+  onSubmit,
+}) => {
   const history = useHistory();
-  const appDispatch = useAppDispatch();
-  const { isOnline } = useOnlineStatus();
   const children = useSelector(childrenSelectors.getChildren);
   const [selectedFeeTypeValue, setSelectedFeeTypeValue] = useState<string[]>(
     []
@@ -161,9 +157,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
   };
 
   const sendIncomeUpdate = async () => {
-    const incomeId = newGuid();
-
-    const incomeInput = {
+    const incomeInput: StatementsIncomeInput = {
       IsActive: true,
       UserId: userAuth?.id,
       ChildUserId: child,
@@ -178,35 +172,27 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       FeeTypeId: String(feeType) || '',
     };
 
-    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
+    onSubmit(incomeInput);
 
-    appDispatch(
-      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
-    );
-
-    await new IncomeStatementsService(userAuth?.auth_token!)
-      .UpdateStatementsIncome(incomeId, incomeInput)
-      .then(() => {
-        setNotification({
-          title: `Successfully Added Fees`,
-          variant: NOTIFICATION.SUCCESS,
-        });
-        setSelectedFeeTypeValue([]);
-        reset();
-        setPreschoolFeesValue('note', '');
-      });
+    // TODO -> after saving
+    setNotification({
+      title: `Successfully Added Fees`,
+      variant: NOTIFICATION.SUCCESS,
+    });
+    setSelectedFeeTypeValue([]);
+    reset();
+    setPreschoolFeesValue('note', '');
   };
 
-  const sendOneIncomeUpdatePayload = async () => {
+  const sendOneIncomeUpdate = async () => {
     if (stepIndex === 6) {
       setState({ stepIndex: 7 });
       history?.push(ROUTES?.BUSINESS);
       return;
     }
 
-    const incomeId = newGuid();
-
-    const incomeInput = {
+    const incomeInput: StatementsIncomeInput = {
+      Id: newGuid(),
       IsActive: true,
       UserId: userAuth?.id,
       ChildUserId: child,
@@ -221,19 +207,8 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       FeeTypeId: String(feeType) || '',
     };
 
-    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
+    onSubmit(incomeInput);
 
-    appDispatch(
-      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
-    );
-
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, incomeInput);
-  };
-
-  const sendOneIncomeUpdate = () => {
-    sendOneIncomeUpdatePayload();
     setType('');
   };
 
@@ -251,7 +226,6 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     }
   }, [stepIndex]);
 
-  const isNum = isNumber(amount!);
   const disabled = useMemo(() => {
     return (
       (!date || !child || !contributionType || !feeType) && stepIndex !== 6
@@ -402,7 +376,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             onClick={sendOneIncomeUpdate}
             disabled={
               disabled ||
-              (!isNum &&
+              (!amount &&
                 contributionType === moneyContributionTypeId &&
                 stepIndex !== 6)
             }
@@ -423,7 +397,8 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           className={'mx-auto mt-2 w-full rounded-2xl'}
           onClick={sendIncomeUpdate}
           disabled={
-            disabled || (!isNum && contributionType === moneyContributionTypeId)
+            disabled ||
+            (!amount && contributionType === moneyContributionTypeId)
           }
         >
           {renderIcon('PlusIcon', styles.buttonIconSaveFees)}

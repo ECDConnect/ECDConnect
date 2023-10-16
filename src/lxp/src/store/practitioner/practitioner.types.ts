@@ -14,7 +14,4 @@ export interface PractitionerState {
   practitioner?: PractitionerDto;
   practitioners?: PractitionerDto[];
   principalPractitioners?: PrincipalPractitioners[];
-  balanceSheet?: any[];
-  expenses?: ExpensesStatementsDto[];
-  income?: IncomeStatementsDto[];
 }

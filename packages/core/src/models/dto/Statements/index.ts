@@ -6,3 +6,7 @@ export * from './statements-fee-types.dto';
 export * from './statements-contribution-types.dto';
 export * from './statements-pay-types.dto';
 export * from './balance-sheet.dto';
+export * from './income-statement.dto';
+export * from './income-item.dto';
+export * from './expense-item.dto';
+export * from './base-item.dto';

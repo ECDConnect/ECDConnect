@@ -70,7 +70,7 @@ export const Login: React.FC = () => {
     checkIdOrPassport,
     'user id'
   ).toString();
-  const userLocalxpiration = Date.now() + 3600000;
+  const userLocalxpiration = Date.now() + 3600000000;
   const [currentUserId, setCurrentUserId] = useState(
     JSON.parse(localStorage?.getItem('userIdHash')!)
   );

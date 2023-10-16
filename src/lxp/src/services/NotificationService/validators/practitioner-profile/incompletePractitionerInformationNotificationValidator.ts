@@ -32,18 +32,6 @@ export class IncompletePractitionerInformationNotificationValidator
 
     if (!classroomState || !userState) return [];
     const isOnStipend = practitionerState?.practitioner?.isOnStipend;
-    const timeline = traineeState?.traineeOnboardTimeline;
-    const completedSteps = timelineSteps(
-      timeline!,
-      () => {},
-      false,
-      true,
-      // @ts-ignore
-      undefined,
-      '',
-      timeline?.consolidationMeetingStatus,
-      isOnStipend
-    ).filter((item) => item?.type === 'completed');
 
     /**
      * Notification is returned when
@@ -79,29 +67,43 @@ export class IncompletePractitionerInformationNotificationValidator
         (!addedByPrincipal && practitionerState?.practitioner?.progress === 0);
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
-      if (
-        (isTrainee && isOnStipend && completedSteps?.length < 7) ||
-        (isTrainee && isOnStipend !== true && completedSteps?.length < 6)
-      ) {
-        return [
-          {
-            reference: `trainee-profile`,
-            title: 'Start your trainee journey!',
-            message:
-              'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.',
-            dateCreated: new Date().toISOString(),
-            priority: NotificationPriority.lower,
-            viewOnDashboard: true,
-            area: 'practitioner',
-            icon: 'SwitchVerticalIcon',
-            color: 'primary',
-            actionText: 'Get started',
-            viewType: 'Hub',
-            routeConfig: {
-              route: ROUTES.TRAINEE.SETUP_TRAINEE,
+      if (isTrainee) {
+        const timeline = traineeState?.traineeOnboardTimeline;
+        const completedSteps = timelineSteps(
+          timeline!,
+          () => {},
+          false,
+          true,
+          // @ts-ignore
+          undefined,
+          '',
+          timeline?.consolidationMeetingStatus,
+          isOnStipend
+        ).filter((item) => item?.type === 'completed');
+        if (
+          (isOnStipend && completedSteps?.length < 7) ||
+          (isOnStipend !== true && completedSteps?.length < 6)
+        ) {
+          return [
+            {
+              reference: `trainee-profile`,
+              title: 'Start your trainee journey!',
+              message:
+                'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.',
+              dateCreated: new Date().toISOString(),
+              priority: NotificationPriority.lower,
+              viewOnDashboard: true,
+              area: 'practitioner',
+              icon: 'SwitchVerticalIcon',
+              color: 'primary',
+              actionText: 'Get started',
+              viewType: 'Hub',
+              routeConfig: {
+                route: ROUTES.TRAINEE.SETUP_TRAINEE,
+              },
             },
-          },
-        ];
+          ];
+        }
       }
 
       if (showNotificationForPrincipalFlow) {

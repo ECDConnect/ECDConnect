@@ -13,8 +13,11 @@ export const getCoachCircles = (
   state: RootState
 ): CoachCirclesDto | undefined => state.coach.coachCircles;
 
-export const getCoachClubs = (state: RootState): ClubDto[] | undefined =>
-  state.coach.coachClubs;
+export const getCoachClubs = (state: RootState): ClubDto[] | undefined => {
+  if (state.user.user?.roles?.some((role) => role.name === 'Coach'))
+    return state.coach.coachClubs;
+  return undefined;
+};
 
 export const getCircleTopics = (
   state: RootState

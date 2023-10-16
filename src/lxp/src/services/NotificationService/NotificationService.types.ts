@@ -11,6 +11,7 @@ export const enum NotificationPriority {
 }
 
 export enum NotificationIntervals {
+  oneMinute = 2000,
   halfhour = 60000,
   hour = 60000,
   twoHours = 60000,
