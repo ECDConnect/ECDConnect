@@ -48,12 +48,6 @@ namespace EcdLink.Api.CoreApi
                 c.CronExpression = CronTags.EveryTwentyMinutes;
             });
 
-            services.AddCronJob<IntegrationChanges>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryHour;
-            });
-
             services.AddCronJob<RemovePractitioners>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
