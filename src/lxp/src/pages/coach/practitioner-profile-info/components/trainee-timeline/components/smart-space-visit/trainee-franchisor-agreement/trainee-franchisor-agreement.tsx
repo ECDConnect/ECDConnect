@@ -14,12 +14,16 @@ import { authSelectors } from '@/store/auth';
 import {
   CmsVisitSectionInput,
   InputMaybe,
-  SsChecklistVisitModelInput,
+  CmsVisitDataInputModelInput,
 } from '@ecdlink/graphql';
 import { userSelectors } from '@/store/user';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { UserConsentInput } from '@ecdlink/graphql';
+import { contentConsentSelectors } from '@/store/content/consent';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
+  setNotificationStep: any;
 }
 
 export interface CoachSmartSpaceChecklistRouteState {
@@ -28,13 +32,20 @@ export interface CoachSmartSpaceChecklistRouteState {
 
 export const CoachTraineeFranchisorAgreement: React.FC<
   CoachSmartSpaceChecklistProps
-> = () => {
+> = ({ setNotificationStep }) => {
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const practitioner = location.state.practitioner;
+
+  const consentList = useSelector(contentConsentSelectors.getConsent);
+  const franchisorAgreement = consentList?.find(
+    (item) => item.type === 'FranchiseeAgreement'
+  );
+
   const coachSmartSpaceVisit2DataNotAttendedStandards = useSelector(
     traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
   );
@@ -63,6 +74,8 @@ export const CoachTraineeFranchisorAgreement: React.FC<
   };
 
   const submitCoachFranchisorAgreement = async () => {
+    const coachVisitId = timeline?.sSCoachVisitId;
+
     const sections = sectionQuestions?.map((item, index) => ({
       ...item,
       questions: item.questions.map((question) => ({
@@ -71,22 +84,37 @@ export const CoachTraineeFranchisorAgreement: React.FC<
       })),
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-    const visitDateInput: SsChecklistVisitModelInput = {
+    const visitDateInput: CmsVisitDataInputModelInput = {
       traineeId: practitioner?.userId,
       coachId: user?.id,
-      attended: true,
-      checklistData: {
-        traineeId: practitioner?.userId,
-        visitData: {
-          visitName: 'Coach smartspace check',
-          sections,
-        },
+      visitId: coachVisitId,
+      visitData: {
+        visitName: 'Coach smartspace check',
+        sections,
       },
     };
 
-    await new TraineeService(
-      userAuth?.auth_token!
-    ).AddCoachFranchiseeAgreementForTrainee(visitDateInput);
+    await new TraineeService(userAuth?.auth_token!).addCoachVisitData(
+      visitDateInput
+    );
+
+    if (franchisorAgreement) {
+      const agreementInput: UserConsentInput = {
+        ConsentId: franchisorAgreement?.id,
+        ConsentType: 'FranchiseeAgreement',
+        CreatedUserId: practitioner?.userId,
+        Id: newGuid(),
+        IsActive: true,
+        // UpdatedBy: '',
+        UserId: practitioner?.userId,
+      };
+
+      await new TraineeService(userAuth?.auth_token!).signFranchisorAgreement(
+        agreementInput?.Id,
+        agreementInput
+      );
+    }
+    setNotificationStep('');
   };
 
   const renderStep = (step: number) => {

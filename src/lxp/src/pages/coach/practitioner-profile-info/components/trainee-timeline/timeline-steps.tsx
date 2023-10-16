@@ -279,7 +279,7 @@ export const timelineSteps = (
           visitId: (timeline.sSCoachVisitId as string) || '',
         }),
       nextStep,
-      timeline?.sSCoachVisitEventId
+      timeline?.sSCoachVisitEventId || timeline?.sSCoachVisitId
     )
   );
   steps.push(

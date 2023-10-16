@@ -6,6 +6,8 @@ import { PractitionerDto } from '@ecdlink/core';
 import { SmartSpaceChecklist } from './components/smart-space-checklist/smart-space-checklist';
 import { SmartSpaceVisit } from './components/smart-space-visit/smart-space-visit';
 import { SmartSpaceSummary } from './components/smart-space-summary/smart-space-summary';
+import { TraineeAddSignature } from '../../../../trainee/trainee-onboarding/components/trainee-add-signature/trainee-add-signature';
+import { CoachTraineeFranchisorAgreement } from './components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
 
 interface TraineeOnboardingProps {
   practitioner: PractitionerDto | undefined;
@@ -37,9 +39,14 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
           practitioner?.signingSignature ||
           practitionerState?.signingSignature
         ) {
-          return null;
+          return <TraineeAddSignature />;
         }
-        return null;
+        return (
+          <CoachTraineeFranchisorAgreement
+            practitioner={practitioner || practitionerState}
+            setNotificationStep={setNotificationStep}
+          />
+        );
       case 'Sign start-up support agreement':
         return (
           <StartupSupportDetails

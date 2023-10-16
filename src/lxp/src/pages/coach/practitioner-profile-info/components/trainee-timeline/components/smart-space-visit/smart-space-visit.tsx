@@ -120,7 +120,7 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
     leadingIcon: 'ArrowCircleRightIcon',
   });
 
-  if (!!visitEventId) {
+  if (!!visitEventId || !!visitId) {
     history.push(ROUTES.COACH_SMARTSPACE_CHECK, {
       practitioner: practitioner,
     });
