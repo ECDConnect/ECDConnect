@@ -196,7 +196,9 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton && questions[0]?.answer === ''}
+              disabled={
+                !enableButton && questions[0]?.answer === '' && !isTrainee
+              }
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

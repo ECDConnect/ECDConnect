@@ -13,7 +13,7 @@ import { useAppDispatch } from '@/store';
 import { traineeThunkActions } from '@/store/trainee';
 import { userSelectors } from '@/store/user';
 import { CoachVisitInfo } from './components/trainee-onboarding-dashboard/components/coach-visit-info';
-import { SmartSpaceLicenceReceived } from './components/trainee-onboarding-dashboard/components/smartspace-licence-received';
+import { SmartSpaceDetails } from './components/trainee-onboarding-dashboard/components/smartspace-details';
 import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
 
 export const TraineeOnboarding = () => {
@@ -71,7 +71,14 @@ export const TraineeOnboarding = () => {
         );
       case 'SmartSpace Licence received':
         return (
-          <SmartSpaceLicenceReceived
+          <SmartSpaceDetails
+            setShowCoachVisit={setShowCoachVisit}
+            setNotificationStep={setNotificationStep}
+          />
+        );
+      case 'SmartSpace Licence not received':
+        return (
+          <SmartSpaceDetails
             setShowCoachVisit={setShowCoachVisit}
             setNotificationStep={setNotificationStep}
           />
