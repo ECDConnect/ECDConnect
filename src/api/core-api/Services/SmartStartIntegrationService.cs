@@ -698,10 +698,10 @@ public class SmartStartIntegrationService : IIntegrationService
         int attendancesSent = 0;
         bool isComplete = false;
 
-        _mappedEntities = await GetMappedEntities();
+        _mappedEntities = await GetMappedEntities(null, true, true);
         int trackingDays = 2;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315")).ToList();
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).Where(x => string.Equals(x.UserId, "81f04d5d-ccd5-4f3a-9e95-9604a8e6fc18")).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
 
         DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
         DateTime followingWeekDate = DateTime.Now.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
@@ -720,7 +720,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
         foreach (var parent in attendancesDueList)
         {
-
+            bool validParent = false;
             StringBuilder jsonAttendanceString = new StringBuilder();
             jsonAttendanceString.AppendLine("[");
             Dictionary<string, bool> meetingDays = new Dictionary<string, bool>();
@@ -738,7 +738,13 @@ public class SmartStartIntegrationService : IIntegrationService
                     if (learners.Any())
                     {
                         allLearners.AddRange(learners);
+                        validParent = true; //only valid if there are learners in a class
+                    } else
+                    {
+                        validParent = false;
+                        continue;
                     }
+
 
                     while (nextDay < followingWeekDate)
                     {
@@ -753,174 +759,187 @@ public class SmartStartIntegrationService : IIntegrationService
                     }
                 }
 
-                Dictionary<string, string> weeklyAttendanceList = new Dictionary<string, string>();
-                foreach (var meetDay in meetingDays)
+                if (validParent)
                 {
-                    if (holidays.Count > 0)
+                    Dictionary<string, string> weeklyBaseAttendanceList = new Dictionary<string, string>();
+                    foreach (var meetDay in meetingDays)
                     {
-                        foreach (var publicholiday in holidays)
+                        if (holidays.Count > 0)
                         {
-                            //if (meetingDays.ContainsKey(publicholiday.Day.ToString("dddd")) && )
-                            if (meetDay.Key == publicholiday.Day.ToString("dddd"))
+                            foreach (var publicholiday in holidays)
                             {
-                                if (!weeklyAttendanceList.Keys.Contains(meetDay.Key))
-                                    weeklyAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? pholiday : nosession) : pholiday);
-                                else
-                                    weeklyAttendanceList[meetDay.Key] = pholiday;
-                            } else
-                            {
-                                if (!weeklyAttendanceList.Keys.Contains(meetDay.Key))
-                                    weeklyAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? unknown : nosession) : unknown);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        if (!weeklyAttendanceList.Keys.Contains(meetDay.Key))
-                            weeklyAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? unknown : nosession) : unknown);
-                    }
-                }
-
-                //start buiulding up AttendanceList objects for each practitioner, and each class and learner, even if theres no attendance for a child, we will still have a list at the ready to send
-                foreach (var learner in allLearners)
-                {
-                    attendances.Add(new AttendanceList()
-                    {
-                        //ClassroomGroupId = classroomGroup.Id.ToString(),
-                        PractitionerUserId = parent.UserId,
-                        PractitionerRemoterId = parent.RemoteId,
-                        LearnerUserId = learner.UserId,
-                        WeeklyAttendance = weeklyAttendanceList //set the basic list back to object                        
-                    });
-                }
-            }
-
-            //now get the actual attendances available and set that back to objkect aswell
-            IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
-            if (weeklyAttendance.Any())
-            {
-                try
-                {
-                    //get list of children
-                    List<string> children = weeklyAttendance.Select(x => x.UserId).Distinct().ToList();
-                    foreach (var child in children)
-                    {
-                        //map the attendance up with the learner list and populate
-                        var learnerAttendance = attendances.Where(a => a.LearnerUserId == child).FirstOrDefault();
-                        if (learnerAttendance == null) //if this child is not in list then continue to next
-                            continue;
-                        //learnerAttendance.AttendanceData = weeklyAttendance.ToList();
-
-                        int daysPresent = 0;
-                        int daysAbsent = 0;
-
-                        //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
-                        if (mappedChild != null)
-                        {
-                            learnerAttendance.LearnerRemoteId = mappedChild.RemoteId;
-                            var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
-
-                            foreach (var attendance in childAttendances)
-                            {
-                                string attendedKey = attendance.AttendanceDate.ToString("dddd");
-                                if (learnerAttendance.WeeklyAttendance.ContainsKey(attendedKey))
+                                //if (meetingDays.ContainsKey(publicholiday.Day.ToString("dddd")) && )
+                                if (meetDay.Key == publicholiday.Day.ToString("dddd"))
                                 {
-                                    foreach (var d in learnerAttendance.WeeklyAttendance)
-                                    {
-                                        if (d.Key == attendedKey)
-                                        {
-                                            if (attendance.Attended)
-                                            {
-                                                daysPresent++;
-                                                learnerAttendance.WeeklyAttendance[attendedKey] = present;
-                                            }
-                                            else
-                                            {
-                                                daysAbsent++;
-                                                learnerAttendance.WeeklyAttendance[attendedKey] = absent;
-                                            }
-                                            continue;
-                                        }
-
-                                    }
+                                    if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
+                                        weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? pholiday : nosession) : pholiday);
+                                    else
+                                        weeklyBaseAttendanceList[meetDay.Key] = pholiday;
                                 }
-                                
+                                else
+                                {
+                                    if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
+                                        weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? unknown : nosession) : unknown);
+                                }
                             }
-                            learnerAttendance.daysAbsent = daysAbsent;
-                            learnerAttendance.daysPresent = daysPresent;
+                        }
+                        else
+                        {
+                            if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
+                                weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? unknown : nosession) : unknown);
                         }
                     }
-                        
-                }
-                catch (Exception e)
-                {
-                    await _logManager.IntegrationLog("WeeklyAttendance by Child Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
+
+                    //start buiulding up AttendanceList objects for each practitioner, and each class and learner, even if theres no attendance for a child, we will still have a list at the ready to send
+                    foreach (var learner in allLearners)
+                    {
+                        attendances.Add(new AttendanceList()
+                        {
+                            //ClassroomGroupId = classroomGroup.Id.ToString(),
+                            PractitionerUserId = parent.UserId,
+                            PractitionerRemoterId = parent.RemoteId,
+                            LearnerUserId = learner.UserId,
+                            WeeklyAttendance = weeklyBaseAttendanceList.Copy() //set the basic list back to object                        
+                        });
+                    }
                 }
             }
 
-            //now build up the strings to push
-            try
+            if (validParent)
             {
-
-                bool validAttendance = false;
-                foreach (var attendance in attendances)
+                //now get the actual attendances available and set that back to objkect aswell
+                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+                if (weeklyAttendance.Any())
                 {
-
-                    //[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
-                    int absentDays = attendance.daysPresent == 0 && attendance.daysAbsent == 0 ? meetingDays.Count : attendance.daysAbsent;
-
-                    jsonAttendanceString.AppendLine("{");
-                    jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
-                    jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + attendance.daysPresent + ",");
-                    jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + absentDays + ",");
-                    foreach (var item in attendance.WeeklyAttendance)
-                    {
-                        jsonAttendanceString.AppendLine("\""+ item.Key  +"\":\"" + item.Value + "\",");
-                    }
-                    jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + attendance.PractitionerRemoterId + "\"},");
-                    jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + attendance.LearnerRemoteId + "\"}");
-                    jsonAttendanceString.AppendLine("},");
-
-                    validAttendance = true;
-                }
-
-                if (validAttendance)
-                {
-                    jsonAttendanceString.AppendLine("]");
-
                     try
                     {
-                        //now send to API call <entity type>/Multiple
-                        var responseString = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
-                        if (!string.IsNullOrEmpty(responseString))
+                        //get list of children
+                        List<string> children = weeklyAttendance.Select(x => x.UserId).Distinct().ToList();
+                        foreach (var child in children)
                         {
-                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
-                            if (returnObj != null)
-                            {
-                                var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                isComplete = true;
-                                //mark mapped parent practitioner of last date attendance was sent
-                                parent.LastAttendanceSubmittedDate = DateTime.Now;
-                                _mapperRepo.Update(parent);
+                            //map the attendance up with the learner list and populate
+                            var learnerAttendance = attendances.Where(a => a.LearnerUserId == child).FirstOrDefault();
+                            if (learnerAttendance == null) //if this child is not in list then continue to next
+                                continue;
+                            //learnerAttendance.AttendanceData = weeklyAttendance.ToList();
 
-                                attendancesSent++;
-                            }
-                            else //error empty response received
+                            int daysPresent = 0;
+                            int daysAbsent = 0;
+
+                            //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
+                            var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
+                            if (mappedChild != null)
                             {
-                                await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonAttendanceString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > GetAPIHandlerResponse");
+                                learnerAttendance.LearnerRemoteId = mappedChild.RemoteId;
+                                var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+
+                                foreach (var attendance in childAttendances)
+                                {
+                                    string attendedKey = attendance.AttendanceDate.ToString("dddd");
+                                    if (learnerAttendance.WeeklyAttendance.ContainsKey(attendedKey))
+                                    {
+                                        foreach (var d in learnerAttendance.WeeklyAttendance)
+                                        {
+                                            if (d.Key == attendedKey)
+                                            {
+                                                if (attendance.Attended)
+                                                {
+                                                    daysPresent++;
+                                                    learnerAttendance.WeeklyAttendance[attendedKey] = present;
+                                                }
+                                                else
+                                                {
+                                                    daysAbsent++;
+                                                    learnerAttendance.WeeklyAttendance[attendedKey] = absent;
+                                                }
+                                                continue;
+                                            }
+
+                                        }
+                                    }
+
+                                }
+                                learnerAttendance.daysAbsent = daysAbsent;
+                                learnerAttendance.daysPresent = daysPresent;
                             }
                         }
+
                     }
                     catch (Exception e)
                     {
-                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAtIntegrationAttendanceByDueDatatendanceData > GetAPIHandlerResponse");
+                        await _logManager.IntegrationLog("WeeklyAttendance by Child Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
+
+
+                //now build up the strings to push
+                try
+                {
+
+                    bool validAttendance = false;
+                    foreach (var attendance in attendances)
+                    {
+                        if (attendance.LearnerRemoteId != null)
+                        {
+                            //[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
+                            int absentDays = attendance.daysPresent == 0 && attendance.daysAbsent == 0 ? meetingDays.Count : attendance.daysAbsent;
+
+                            jsonAttendanceString.AppendLine("{");
+                            jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                            jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + attendance.daysPresent + ",");
+                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + absentDays + ",");
+                            foreach (var item in attendance.WeeklyAttendance)
+                            {
+                                jsonAttendanceString.AppendLine("\"" + item.Key + "\":\"" + item.Value + "\",");
+                            }
+                            jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + attendance.PractitionerRemoterId + "\"},");
+                            jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + attendance.LearnerRemoteId + "\"}");
+                            jsonAttendanceString.AppendLine("},");
+
+                            validAttendance = true;
+                        }
+                    }
+
+                    if (validParent)
+                    {
+                        if (validAttendance)
+                        {
+                            jsonAttendanceString.AppendLine("]");
+
+                            try
+                            {
+                                //now send to API call <entity type>/Multiple
+                                var responseString = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
+                                if (!string.IsNullOrEmpty(responseString))
+                                {
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                                    if (returnObj != null)
+                                    {
+                                        var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                        isComplete = true;
+                                        //mark mapped parent practitioner of last date attendance was sent
+                                        parent.LastAttendanceSubmittedDate = DateTime.Now;
+                                        _mapperRepo.Update(parent);
+
+                                        attendancesSent++;
+                                    }
+                                    else //error empty response received
+                                    {
+                                        await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonAttendanceString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > GetAPIHandlerResponse");
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAtIntegrationAttendanceByDueDatatendanceData > GetAPIHandlerResponse");
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
+                }
             }
         }
     
@@ -1132,7 +1151,7 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<bool> IntegrationUpdates()
     {
         await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
-        int historyDays = 2;
+        int historyDays = 5;
         bool returnOK = false;
         _mappedEntities = await GetMappedEntities();
         _mappedColumns = await GetMappedColumns();
@@ -1549,37 +1568,47 @@ public class SmartStartIntegrationService : IIntegrationService
         }
     }
 
-    public async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null, bool getNew = false)
+    public async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null, bool getNew = false, bool excludeDocs = false)
     {
+        List<IntegrationEntityMapping> entities = new List<IntegrationEntityMapping>();
         try
         {
             if (getNew)
             {
                 if (entityType != null)
                 {
-                    return _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId != null).ToList();
-                } else return _mapperRepo.GetAll().ToList();
+                    entities = _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId != null).ToList();
+                }
+                else
+                {
+                    entities = _mapperRepo.GetAll().ToList();
+                }
             }
+
             if (entityType != null)
             {
                 if (_mappedEntities != null)
-                    return _mappedEntities.Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId != null).ToList();
+                    entities = _mappedEntities.Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId != null).ToList();
                 else
-                    return _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId != null).ToList();
+                    entities = _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId != null).ToList();
             }
             else
             {
                 if (_mappedEntities != null)
-                    return _mappedEntities;
+                    entities = _mappedEntities;
                 else
-                    return _mapperRepo.GetAll().ToList();
+                    entities = _mapperRepo.GetAll().ToList();
             }
+
+            if (excludeDocs) //return everything except documents
+                entities = entities.Where(x => x.LocalEntity != Constants.SSIntegrationSettings.SSDocument).ToList();
         }
         catch (Exception e)
         {
             await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetMappedEntities > " + entityType);
             throw new HttpRequestException("GetMappedEntities Error retrieving mapped " + entityType + ": " + e.Message);
         }
+        return entities;
     }
 
     public async Task<List<IntegrationEntityMapping>> GetMappedGroupingEntities(string groupingType = null)
