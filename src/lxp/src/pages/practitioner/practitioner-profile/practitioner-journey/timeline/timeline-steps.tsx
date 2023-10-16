@@ -4,10 +4,8 @@ import { dateOptions, getStepType, setStep } from './utils';
 import { SupportVisits } from './steps/support-visits';
 import { PQAFormType, RatingData } from '@/store/pqa/pqa.types';
 import { PrePqaVisits } from './steps/pre-pqa';
-// import { getPqaStepData } from './steps/pqa/step';
 import { PQAVisits } from './steps/pqa/step-accordion-content';
 import { ReAccreditationVisits } from './steps/re-accreditation/step-accordion-content';
-//import { getReAccreditationStepData } from './steps/re-accreditation/step';
 import { visitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import {
   divideArrayByFollowUp,
@@ -38,9 +36,6 @@ export const timelineSteps = ({
   currentReAccreditationRating,
   onView,
 }: TimelineStepsProps) => {
-  const attendedSupportVisits = timeline.supportVisits?.filter(
-    (item) => !!item?.attended
-  );
   const isOnline = true;
 
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
@@ -79,17 +74,27 @@ export const timelineSteps = ({
     );
   }
 
-  if (!!attendedSupportVisits?.length) {
+  if (
+    !!timeline?.supportVisits?.length ||
+    !!timeline?.requestedCoachVisits?.length
+  ) {
+    const mergedVisits = [
+      ...(timeline?.supportVisits ?? []),
+      ...(timeline?.requestedCoachVisits ?? []),
+    ];
+
+    const lastVisit = mergedVisits[mergedVisits.length - 1];
     const date = new Date(
-      attendedSupportVisits[attendedSupportVisits.length - 1]?.actualVisitDate
+      lastVisit?.actualVisitDate || lastVisit?.plannedVisitDate
     ).toLocaleDateString('en-ZA', dateOptions);
+    const type = mergedVisits?.every((item) => !!item?.attended)
+      ? 'completed'
+      : 'todo';
 
     steps.push({
       title: 'General support visits',
-      subTitle: date,
-      type: timeline.supportVisits?.every((item) => !!item?.attended)
-        ? 'completed'
-        : 'todo',
+      subTitle: `${type === 'todo' ? 'By ' : ''}${date}`,
+      type,
       extraData: {
         date: new Date(date),
       },

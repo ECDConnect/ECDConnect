@@ -19,6 +19,7 @@ export const PqaActions = {
   ADD_VISIT_FORM_DATA: 'addVisitFormData',
   ADD_RE_ACCREDITATION_VISIT_FORM_DATA: 'addReAccreditationVisitData',
   ADD_SUPPORT_VISIT_FORM_DATA: 'addSupportVisitFormData',
+  ADD_REQUESTED_SUPPORT_VISIT_FORM_DATA: 'addRequestedSupportVisitFormData',
   ADD_FOLLOW_UP_VISIT_FORM_DATA: 'addFollowUpVisitFormData',
   ADD_RE_ACCREDITATION_FOLLOW_UP_VISIT_FORM_DATA:
     'addReAccreditationFollowUpVisitFormData',
@@ -183,6 +184,45 @@ export const addSupportVisitFormData = createAsyncThunk<
               await new PQAService(
                 userAuth?.auth_token
               ).addSupportVisitForPractitioner(item.formData)
+          );
+
+          return promises?.length && Promise.all(promises);
+        }
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addRequestedSupportVisitFormData = createAsyncThunk<
+  any,
+  CmsVisitDataInputModelInput | undefined,
+  ThunkApiType<RootState>
+>(
+  PqaActions.ADD_REQUESTED_SUPPORT_VISIT_FORM_DATA,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      pqa: { requestedSupportVisitFormData },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!Object.keys(input).length) {
+          const response = await new PQAService(
+            userAuth?.auth_token
+          ).addSupportVisitData(input);
+
+          return response;
+        }
+
+        if (!!requestedSupportVisitFormData?.length) {
+          const promises = requestedSupportVisitFormData?.map(
+            async (item) =>
+              await new PQAService(userAuth?.auth_token).addSupportVisitData(
+                item.formData
+              )
           );
 
           return promises?.length && Promise.all(promises);

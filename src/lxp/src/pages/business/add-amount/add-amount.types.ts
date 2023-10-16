@@ -1,5 +1,16 @@
+import {
+  StatementsExpensesInput,
+  StatementsIncomeInput,
+} from '@ecdlink/graphql';
+
 export interface AddIncomeState {
-  setType: any;
+  setType: (arg0: string) => void;
+  onSubmit: (incomeItem: StatementsIncomeInput) => void;
+}
+
+export interface AddExpenseState {
+  setType: (arg0: string) => void;
+  onSubmit: (incomeItem: StatementsExpensesInput) => void;
 }
 
 export const ContributionTypes = [

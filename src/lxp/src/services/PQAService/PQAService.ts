@@ -43,6 +43,32 @@ class PQAService {
     return true;
   }
 
+  async addSupportVisitData(
+    input: CmsVisitDataInputModelInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addSupportVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation addSupportVisitData($input: CMSVisitDataInputModelInput) {
+          addSupportVisitData(input: $input) {
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add support visit failed - Server connection error');
+    }
+
+    return true;
+  }
+
   async addReAccreditationVisitData(
     input: ReAccreditationVisitModelInput
   ): Promise<boolean> {
@@ -325,6 +351,21 @@ class PQAService {
               overallScore
               visitName
               visitTypeName
+            }
+            requestedCoachVisits {
+              id
+              plannedVisitDate
+              insertedDate
+              attended
+              visitType {
+                description
+                id
+                isActive
+                name
+                normalizedName
+                order
+                type
+              }
             }
             selfAssessmentColor
             selfAssessmentDate

@@ -28,6 +28,7 @@ public class IncomeStatementsAutoSubmit : CronJobService
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
             await service.AutoSubmitStatements();
+            await service.IntegrationStatementsData();
         }
     }
 }

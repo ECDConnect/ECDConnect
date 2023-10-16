@@ -257,4 +257,48 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
 
             return valueToSend;
         }
+
+    public async Task<string> RemapStaticStringToGuid(string entityToRemap, string valueToSend)
+    {
+        if (!string.IsNullOrEmpty(valueToSend))
+        {
+            switch (entityToRemap)
+            {
+                case "Race":
+                    var race = _staticRaceRepo.GetAll().Where(x => x.Description == valueToSend).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = race.Id.ToString();
+                    break;
+                case "Gender":
+                    var gender = _staticGenderRepo.GetAll().Where(x => x.Description == valueToSend).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = gender.Id.ToString();
+                    break;
+                case "Language":
+                    var lang = _staticLanguageRepo.GetAll().Where(x => x.Description == valueToSend).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = lang.Id.ToString();
+                    break;
+                case "Relation":
+                    var rel = _staticRelationRepo.GetAll().Where(x => x.Description == valueToSend).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = rel.Id.ToString();
+                    break;
+                case "Province":
+                    var prov = _staticProvinceRepo.GetAll().Where(x => x.Description == valueToSend).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = prov.Id.ToString();
+                    break;
+                case "Education":
+                    var edu = _staticEducationRepo.GetAll().Where(x => x.Description == valueToSend).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = edu.Id.ToString();
+                    break;
+                case "Grant":
+                    var grant = _staticGrantRepo.GetAll().Where(x => x.Description == valueToSend).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = grant.Id.ToString();
+                    break;
+                case "DocumentType":
+                    var doctype = _docTypeRepo.GetAll().Where(x => x.Description == valueToSend).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = doctype.Id.ToString();
+                    break;
+            }
+        }
+
+        return valueToSend;
     }
+}

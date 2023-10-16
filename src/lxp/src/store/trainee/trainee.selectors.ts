@@ -52,7 +52,7 @@ export const getCoachSmartSpaceSection2VisitDataCount = (
   const step2CountFormatted = step2Count?.questions?.filter(
     (item: any) => item?.answer === true || item?.answer === 'true'
   );
-  return step2CountFormatted.length || undefined;
+  return step2CountFormatted?.length || undefined;
 };
 
 export const getCoachSmartSpaceVisit1DataNotAttendedStandards = (

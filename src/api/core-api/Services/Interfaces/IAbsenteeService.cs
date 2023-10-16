@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using ECDLink.DataAccessLayer.Entities.Users;
 
 namespace ECDLink.Api.CoreApi.Services.Interfaces
@@ -16,5 +17,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             DateTime? absentDateEnd = null,
             Guid? practitionerRemovalHistory = null);
 
+
+        List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? endDate = null);
     }
 }

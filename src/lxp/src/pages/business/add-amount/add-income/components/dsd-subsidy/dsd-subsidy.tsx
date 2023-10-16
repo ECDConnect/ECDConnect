@@ -14,27 +14,23 @@ import {
   DsdSubsidyModel,
   dsdSubsidySchema,
 } from '@/schemas/income-statements/dsd-subsidy';
-import { AddIncomeState } from './dsd-subsidy.types';
-import { statementsActions, statementsSelectors } from '@/store/statements';
+import { statementsSelectors } from '@/store/statements';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
-import { newGuid } from '@/utils/common/uuid.utils';
 import { useMemo } from 'react';
 import {
   isNumber,
   moneyInputFormat,
 } from '@/utils/statements/statements-utils';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
-import { useAppDispatch } from '@/store';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { StatementsIncomeInput } from '@ecdlink/graphql';
+import { AddIncomeState } from '../../../add-amount.types';
+import { newGuid } from '@/utils/common/uuid.utils';
 
-export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
+export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType, onSubmit }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const appDispatch = useAppDispatch();
-  const { isOnline } = useOnlineStatus();
   const history = useHistory();
 
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
@@ -62,8 +58,6 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     control: control,
   });
 
-  const isNum = isNumber(subsidyAmount!);
-
   const disabled = useMemo(() => {
     return !date || !childrenNumber || !subsidyAmount;
   }, [childrenNumber, date, subsidyAmount]);
@@ -79,9 +73,8 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   const lastDateOfMonth = lastDayOfMonth(today);
 
   const sendIncomeUpdate = async () => {
-    const incomeId = newGuid();
-
-    const incomeInput = {
+    const incomeInput: StatementsIncomeInput = {
+      Id: newGuid(),
       IsActive: true,
       UserId: userAuth?.id,
       Submitted: false,
@@ -93,15 +86,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
       IncomeTypeId: incomeTypeValue?.id,
     };
 
-    const offlineStatement = { ...incomeInput, isOffline: true, id: incomeId };
-
-    appDispatch(
-      statementsActions.addIncome(isOnline ? incomeInput : offlineStatement)
-    );
-
-    await new IncomeStatementsService(
-      userAuth?.auth_token!
-    ).UpdateStatementsIncome(incomeId, incomeInput);
+    onSubmit(incomeInput);
 
     await history.push(ROUTES.BUSINESS);
   };
@@ -187,7 +172,7 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           color="primary"
           className={'mx-auto mt-8 w-full rounded-2xl'}
           onClick={handleSaveStartupSupportValues}
-          disabled={disabled || !isNum}
+          disabled={disabled}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

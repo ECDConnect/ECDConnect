@@ -288,22 +288,20 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 <Typography
                   type={'h1'}
                   color="textDark"
-                  text={'Is someone absent today?'}
+                  text={`Mark ${practitioner?.user?.firstName} absent`}
                   className={styles.absentCardTitle}
                 />
                 <Typography
                   type={'body'}
                   color="textMid"
-                  text={
-                    'You can reassign a class to another practitioner for the day.'
-                  }
+                  text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
                   className={styles.absentCardSubTitle}
                 />
                 <div className="flex justify-center">
                   <Button
                     type="filled"
                     color="primary"
-                    className={'mt-6 mb-6 w-11/12'}
+                    className={'mt-6 mb-6 w-11/12 rounded-2xl'}
                     onClick={() => handleReassignClass(practitionerUserId)}
                   >
                     {renderIcon(
@@ -314,7 +312,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                       type="body"
                       className="mr-4"
                       color="white"
-                      text={'Reassign a class'}
+                      text={'Record absence/leave'}
                     ></Typography>
                   </Button>
                 </div>

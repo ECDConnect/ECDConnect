@@ -1,6 +1,9 @@
-﻿using ECDLink.Core.Extensions;
+﻿using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
@@ -46,16 +49,25 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly IGenericRepository<IntegrationAudit, Guid> _integrationAuditRepo;
 
-        
+        private readonly IGenericRepository<Club, Guid> _clubRepo;
+        private readonly IGenericRepository<ClubMember, Guid> _clubMemberRepo;
+        private readonly IGenericRepository<ClubLeader, Guid> _clubLeaderRepo;
+        private readonly IGenericRepository<ClubSupport, Guid> _clubSupportRepo;
+        private readonly IGenericRepository<PQARating, Guid> _pqaRatingRepo;
+        private readonly IGenericRepository<ClubPoints, Guid> _clubPointsRepo;
+        private readonly IGenericRepository<ClubPointsLibrary, Guid> _clubPointsLibraryRepo;
 
         private readonly ChildAttendanceReport _childAttendanceReport;
+
+        private VisitManager _visitManager;
 
         private readonly string _uId;
 
         public PointsEngineService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
-            ChildAttendanceReport childAttendanceReport
+            ChildAttendanceReport childAttendanceReport,
+            VisitManager visitManager
             )
         {
             _contextAccessor = contextAccessor;
@@ -83,8 +95,17 @@ namespace EcdLink.Api.CoreApi.Services
             _classRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
             _integrationAuditRepo = _repositoryFactory.CreateRepository<IntegrationAudit>(userContext: _uId);
 
-            _childAttendanceReport = childAttendanceReport;
+            _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
+            _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
+            _clubLeaderRepo = _repositoryFactory.CreateGenericRepository<ClubLeader>(userContext: _uId);
+            _clubSupportRepo = _repositoryFactory.CreateGenericRepository<ClubSupport>(userContext: _uId);
+            _clubPointsRepo = _repositoryFactory.CreateGenericRepository<ClubPoints>(userContext: _uId);
+            _clubPointsLibraryRepo = _repositoryFactory.CreateGenericRepository<ClubPointsLibrary>(userContext: _uId);
 
+            _pqaRatingRepo = _repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
+
+            _childAttendanceReport = childAttendanceReport;
+            _visitManager = visitManager;
         }
 
         #region PointsLibrary
@@ -1634,6 +1655,140 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
         #endregion
+
+        #region Clubs
+
+        // Yearly, calculate by 30 November and will be triggered by a cron job
+        public bool CalculateLeaveNoOneBehind(Guid clubId, string coachUserId, DateTime today) 
+        {
+            List<string> practitioners = new List<string>();
+            
+            // get all participants linked to this club, to calculate PQA ratings
+            List<string> clubMembers = _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).ToList();
+            practitioners.AddRange(clubMembers);
+
+            List<string> clubLeaders = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).ToList();
+            practitioners.AddRange(clubLeaders);
+
+            string clubSupport = _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).FirstOrDefault();
+            practitioners.Add(clubSupport);
+
+            // ensure we don't have any duplicate user Ids
+            practitioners = practitioners.Distinct().ToList();
+
+            Club club = _clubRepo.GetById(clubId);
+            double greenRatings = 0;
+            double orangeRatings = 0;
+            double redRatings = 0;
+            double finalRating = 0;
+            List<Visit> allVisits = new List<Visit>();
+            List<PQARating> pqaRatings = new List<PQARating>();
+            Guid clubPointsLibraryId = new Guid();
+
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.leave_no_one_behind && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+                foreach (var practitionerUserId in practitioners)
+                {
+                    allVisits = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId);
+                    pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Select(y => y.Id).Contains(x.VisitId)).ToList();
+                    greenRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
+                    orangeRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
+                    redRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
+                }
+            }
+            else
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.leave_no_one_behind && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+                foreach (var practitionerUserId in practitioners)
+                {
+                    allVisits = _visitManager.GetReAccreditationVisitsForPractitioner(practitionerUserId);
+                    pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Select(y => y.Id).Contains(x.VisitId)).ToList();
+                    greenRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
+                    orangeRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
+                    redRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
+                }
+            }
+
+            finalRating = greenRatings / (greenRatings + orangeRatings + redRatings);
+            _clubPointsRepo.Insert(new ClubPoints()
+            {
+                Id = Guid.NewGuid(),
+                ClubId = clubId,
+                UserId = coachUserId,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _uId,
+                IsActive = true,
+                ClubPointsLibraryId = clubPointsLibraryId,
+                Month = today.Month,
+                Year = today.Year,
+                Points = (int)finalRating,
+                PointsYTD = (int)finalRating
+            });
+
+            return true;
+        }
+
+        public bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = new Guid();
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.host_family_days && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            } else
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.host_family_days && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+
+            return true;
+        }
+
+        public bool CalculateCompleteChildProgressReports(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.child_progress_reports && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            return true;
+        }
+        public bool CalculateCaptureChildAttendance(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.capture_child_attendance && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            return true;
+        }
+        public bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = new Guid();
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+            else
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+
+
+            return true;
+        }
+        public bool CalculateBeCreative(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = new Guid();
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.be_creative && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+            else
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.be_creative && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+            return true;
+        }
+        #endregion
+
 
     }
 }

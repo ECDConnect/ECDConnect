@@ -96,6 +96,7 @@ export const timelineSteps = ({
   onView,
   onStart,
   onScheduleOrStart,
+  onStartRequestedSupportVisit,
   isLoading,
   isOnline,
   visits,
@@ -107,6 +108,7 @@ export const timelineSteps = ({
   onView: (visit: Visit) => void;
   onStart: (visitName: string) => void;
   onScheduleOrStart: (schedule: ScheduleOrStartProps) => void;
+  onStartRequestedSupportVisit: (visitId: string) => void;
   isLoading: boolean;
   isOnline: boolean;
   visits?: Maybe<Visit>[];
@@ -264,29 +266,39 @@ export const timelineSteps = ({
     });
   }
 
-  if (!!timeline.supportVisits?.length) {
+  if (
+    !!timeline.supportVisits?.length ||
+    !!timeline?.requestedCoachVisits?.length
+  ) {
+    const mergedVisits = [
+      ...(timeline?.supportVisits ?? []),
+      ...(timeline?.requestedCoachVisits ?? []),
+    ];
+
     const date = new Date(
-      timeline.supportVisits[
-        timeline.supportVisits.length - 1
-      ]?.plannedVisitDate
+      mergedVisits[mergedVisits.length - 1]?.plannedVisitDate
     ).toLocaleDateString('en-ZA', dateOptions);
+
+    const type = mergedVisits?.every((item) => !!item?.attended)
+      ? 'completed'
+      : 'todo';
 
     steps.push({
       title: 'General support visits',
-      subTitle: `By ${date}`,
-      type: timeline.supportVisits?.every((item) => !!item?.attended)
-        ? 'completed'
-        : 'todo',
+      subTitle: `${type === 'todo' ? 'By ' : ''}${date}`,
+      type,
       extraData: {
         date: new Date(date),
       },
       showAccordion: true,
       accordionContent: (
         <SupportVisits
+          practitionerId={practitionerId}
           isLoading={isLoading}
           timeline={timeline}
           onView={onView}
           isOnline={isOnline}
+          onStartRequestedSupportVisit={onStartRequestedSupportVisit}
         />
       ),
     });
