@@ -1,12 +1,14 @@
-import { ProgressBar, RoundIcon, Typography } from '@ecdlink/ui';
+import { ProgressBar } from '../../progress-bar';
+import { RoundIcon } from '../../round-icon/round-icon';
+import Typography from '../../typography/typography';
 import * as styles from './points-progress-card.styles';
 import { PointsProgressCardProps } from './points-progress-card.types';
-import { ReactComponent as BadgePurple } from '@ecdlink/ui/src/assets/badge/badge_purple.svg';
 
 export const PointsProgressCard: React.FC<PointsProgressCardProps> = ({
   currentPoints,
   maxPoints,
   description,
+  badgeImage,
 }) => {
   const percentageScore = (currentPoints / maxPoints) * 100;
 
@@ -29,9 +31,7 @@ export const PointsProgressCard: React.FC<PointsProgressCardProps> = ({
             marginLeft: 'auto',
           }}
         >
-          <BadgePurple
-            style={{ objectFit: 'cover', width: '100%', height: '100%' }}
-          />
+          {badgeImage}
           <h1
             className="text-2x1 font-semibold text-white"
             style={{

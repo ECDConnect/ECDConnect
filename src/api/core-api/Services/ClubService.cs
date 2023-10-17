@@ -17,6 +17,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
@@ -137,7 +138,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public ClubMember GetClubForPractitioner(Guid practitionerId)
         {
-            return _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive).FirstOrDefault();
+            return _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive == true).Include(x => x.Club).FirstOrDefault();
         }
 
         private Coach GetCoachForClub(string userId)

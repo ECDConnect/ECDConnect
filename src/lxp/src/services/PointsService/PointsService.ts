@@ -1,6 +1,10 @@
 import { Config } from '@ecdlink/core';
 import { api } from '../axios.helper';
-import { PointsLibrary, PointsUserSummary } from '@ecdlink/graphql';
+import {
+  PointsLibrary,
+  PointsUserSummary,
+  UserClubStandingModel,
+} from '@ecdlink/graphql';
 
 class PointsService {
   _accessToken: string;
@@ -24,6 +28,7 @@ class PointsService {
           pointsSummaryForUser(userId: $userId, startDate: $startDate, endDate: $endDate) {
             pointsTotal
             pointsYTD
+            timesScored
             month
             year
             userId
@@ -77,6 +82,30 @@ class PointsService {
     }
 
     return response.data.data.pointsLibrary;
+  }
+
+  async getUserClubStanding(userId: string): Promise<UserClubStandingModel> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { userClubStanding: UserClubStandingModel };
+      errors?: {};
+    }>(``, {
+      query: `query userClubStanding($userId: String) {
+          userClubStanding(userId: $userId) {
+            percentileStandingForCurrentMonth
+            percentileStandingForCurrentYear 
+          }
+        }`,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get standing for user Failed - Server connection error');
+    }
+
+    return response.data.data.userClubStanding;
   }
 }
 

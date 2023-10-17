@@ -5,6 +5,8 @@ import {
   BannerWrapper,
   Button,
   CelebrationCard,
+  Dialog,
+  DialogPosition,
   ScoreCard,
   Typography,
 } from '@ecdlink/ui';
@@ -20,18 +22,23 @@ import { PointsMonthSummary } from './components/points-month-summary';
 import ROUTES from '@/routes/routes';
 import { PointsShare } from '../points-share/points-share';
 import { captureAndDownloadComponent } from '@ecdlink/core';
-
-// TODO - fetch club standings
-// TODO - add text that depends on relative club points
-// TODO - Actions for share
+import { PointsInfoPage } from '../info/points-info-page';
+import { childrenSelectors } from '@/store/children';
 
 export const PointsYearView: React.FC = () => {
   const history = useHistory();
   const currentMonth = new Date().getMonth();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const children = useSelector(childrenSelectors.getChildren);
+  const userStanding = useSelector(
+    pointsSelectors.getCurrentClubPercentileStandingForYear()
+  );
+
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
+
+  const [showInfo, setShowInfo] = useState(false);
 
   const [monthsLoaded, setMonthsLoaded] = useState<number[]>([currentMonth]);
   const [loadNextMonthDisabled, setLoadNextMonthDisabled] = useState<boolean>(
@@ -42,9 +49,8 @@ export const PointsYearView: React.FC = () => {
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
   );
 
-  const pointsTotalForYear = currentMonthPoints.reduce(
-    (total, current) => (total += current.pointsYTD),
-    0
+  const pointsTotalForYear = useSelector(
+    pointsSelectors.getPointsTotalForYear()
   );
 
   const pointsMax =
@@ -62,6 +68,55 @@ export const PointsYearView: React.FC = () => {
 
   //TODO - Update this to use club data to set messages when available
   const celebrationCard = useMemo(() => {
+    if (!!userStanding) {
+      if (userStanding === 100) {
+        return (
+          <CelebrationCard
+            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
+            secondaryMessage="You are the top points earner in your club! You've earned the most points so far this year."
+            primaryTextColour="successMain"
+            secondaryTextColour="black"
+            backgroundColour="successBg"
+          />
+        );
+      }
+      if (userStanding > 75) {
+        return (
+          <CelebrationCard
+            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
+            secondaryMessage="You are one of the top points earners in your club!"
+            primaryTextColour="successMain"
+            secondaryTextColour="black"
+            backgroundColour="successBg"
+          />
+        );
+      }
+      if (userStanding >= 50) {
+        <CelebrationCard
+          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+          primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
+          secondaryMessage="So far this year, you have more points than most other SmartStarters in you club!"
+          primaryTextColour="secondary"
+          secondaryTextColour="black"
+          backgroundColour="infoBb"
+        />;
+      }
+      if (userStanding < 50) {
+        return (
+          <CelebrationCard
+            image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
+            primaryTextColour="errorMain"
+            backgroundColour="errorBg"
+            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
+            secondaryTextColour="black"
+          />
+        );
+      }
+    }
+
     if (pointsTotalForYear === 0) {
       return (
         <CelebrationCard
@@ -123,6 +178,8 @@ export const PointsYearView: React.FC = () => {
       onBack={() => history.goBack()}
       title="Points"
       backgroundColour="white"
+      displayHelp={true}
+      onHelp={() => setShowInfo(true)}
     >
       <div className="mt-5 flex-col justify-center p-4">
         <Typography
@@ -212,7 +269,7 @@ export const PointsYearView: React.FC = () => {
             text="Find out how you can earn points"
             textColor="white"
             icon="LightBulbIcon"
-            onClick={() => {}} // TODO
+            onClick={() => setShowInfo(true)}
           />
           <Button
             size="normal"
@@ -222,7 +279,7 @@ export const PointsYearView: React.FC = () => {
             text="Ask your coach for help"
             textColor="primary"
             icon="ChatIcon"
-            onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)} // TODO
+            onClick={() => history.push(ROUTES.PRACTITIONER.CONTACT_COACH)}
           />
         </div>
       )}
@@ -231,9 +288,18 @@ export const PointsYearView: React.FC = () => {
           viewMode="Year"
           pointsSummaries={filteredPointsSummaries}
           userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
-          childCount={12} // TODO get correct count for practitioner
+          childCount={children?.length || 0}
+          clubStanding={userStanding}
+          clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>
+      <Dialog
+        fullScreen={true}
+        visible={showInfo}
+        position={DialogPosition.Full}
+      >
+        <PointsInfoPage onClose={() => setShowInfo(false)} />
+      </Dialog>
     </BannerWrapper>
   );
 };

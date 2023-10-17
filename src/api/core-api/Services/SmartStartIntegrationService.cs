@@ -1211,9 +1211,9 @@ public class SmartStartIntegrationService : IIntegrationService
                 //Deletes
                 await PushDeletes();
                 //Inserts
-                await PushInserts();
+                await PushInserts(null, historyDays);
                 //Updates & Deactivates
-                await PushUpdates();
+                await PushUpdates(null, historyDays);
                 returnOK = true;
             }
         }
@@ -1523,15 +1523,9 @@ public class SmartStartIntegrationService : IIntegrationService
     {
         try
         {
-            //int changesCheckTime = 1620;
-            //List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
-
-            //get last task run time
-            //var lastScheduledRun = _schedulerService.GetLastRunTime(scheduledTask);
-
             //get all audits - excludin what the admin user did, these are cerates and SL pulls driven by t he system - so to avoid sending back what we got from SL, ignore these changes
-            var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals(auditUserId) && x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(historyDays * -1)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest
-                                                                                                                                                                                                                                  //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).OrderByDescending(x => x.InsertedDate)..ToList(); //overlaps with 10 minutes of changes
+            var audits = _auditRepo.GetAll().Where(x => x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(historyDays * -1)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest -- x.UserId.Equals(auditUserId) &&
+                                                                                                                                                                                                  //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).OrderByDescending(x => x.InsertedDate)..ToList(); //overlaps with 10 minutes of changes
             if (entityType != null)
                 return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
 
@@ -1756,20 +1750,23 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
                     foreach (var child in childrenToAlign)
                     {
-                        var group = classroomgroupRepo.GetAll().Where(x => x.UserId == Guid.Parse(newPractitioner.UserId) && x.Name == "Unsure").OrderBy(x => x.Id).FirstOrDefault();
-                        Learner newLearner = new Learner()
+                        if (child != null)
                         {
-                            UserId = child.UserId,
-                            StartedAttendance = DateTime.Now,
-                            Hierarchy = newPractitioner.Hierarchy
-                        };
+                            var group = classroomgroupRepo.GetAll().Where(x => x.UserId == Guid.Parse(newPractitioner.UserId) && x.Name == "Unsure").OrderBy(x => x.Id).FirstOrDefault();
+                            Learner newLearner = new Learner()
+                            {
+                                UserId = child.UserId,
+                                StartedAttendance = DateTime.Now,
+                                Hierarchy = newPractitioner.Hierarchy
+                            };
 
-                        if (group != null)
-                        {
-                            newLearner.ClassroomGroupId = group.Id;
-                            learnerRepo.Insert(newLearner);
+                            if (group != null)
+                            {
+                                newLearner.ClassroomGroupId = group.Id;
+                                learnerRepo.Insert(newLearner);
 
-                            returnOK = true;
+                                returnOK = true;
+                            }
                         }
                     }
                 }
@@ -3748,7 +3745,7 @@ public class SmartStartIntegrationService : IIntegrationService
         List<IntegrationAudit> completedAudits = new List<IntegrationAudit>();
 
         //Child user entities push
-        var childrenInserted = inserts.Where(a => a.Entity.Equals("Child"));
+        var childrenInserted = inserts.Where(a => string.Equals(a.Entity,"Child"));
         foreach (var childAudit in childrenInserted)
         {
             var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
@@ -3763,7 +3760,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     if (practitioner != null)
                     {
                         //get remoteId
-                        var mappedPractitioner = _mappedEntities.Where(x => x.UserId == practitioner.UserId).FirstOrDefault();
+                        var mappedPractitioner = _mappedEntities.Where(x => x.UserId == practitioner.UserId && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
 
                         if (mappedPractitioner != null)
                         {
@@ -3905,7 +3902,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
                                 if (returnObj != null)
                                 {
-                                    docRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                    docRemoteId = returnObj.Count() > 0 && returnObj[0].Guid != null ? returnObj[0].Guid.ToString() : null;
                                 }
                                 else //error empty response received
                                 {
