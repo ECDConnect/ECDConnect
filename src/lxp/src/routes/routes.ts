@@ -107,6 +107,12 @@ const ROUTES = {
       YEAR: '/year',
     }),
     CONTACT_COACH: '/contact-coach',
+    COMMUNITY: addPrefix('/community', {
+      ACCEPT_CLUB_LEADER_ROLE: '/accept-club-leader-role',
+      SUPPORT_ROLE: addPrefix('/support-role', {
+        EDIT: '/edit',
+      }),
+    }),
   }),
   TRAINEE: addPrefix('/trainee', {
     SETUP_TRAINEE: '/setup-trainee',

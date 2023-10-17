@@ -131,6 +131,7 @@ export const PointsYearView: React.FC = () => {
           text={format(new Date(), 'MMM yyyy')}
         />
         <ScoreCard
+          className="mt-5"
           mainText={`${pointsTotalForYear}`}
           secondaryText="points"
           currentPoints={pointsTotalForYear}

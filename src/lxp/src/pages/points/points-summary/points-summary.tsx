@@ -144,6 +144,7 @@ export const PointsSummary: React.FC = () => {
             text={format(new Date(), 'MMM yyyy')}
           />
           <ScoreCard
+            className="mt-5"
             mainText={`${pointsTotal} points`}
             currentPoints={pointsTotal}
             maxPoints={pointsMax}

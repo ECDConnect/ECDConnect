@@ -713,6 +713,7 @@ export const CoachPractitionerJourney = () => {
             />
           )}
           <ScoreCard
+            className="mt-5"
             mainText={`${userPointsTotalForYear}`}
             hint={`points earned so far in ${new Date().getFullYear()}`}
             currentPoints={userPointsTotalForYear}
