@@ -27,6 +27,7 @@ import { TraineeService } from '@/services/TraineeService';
 import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@/store/user';
 import { practitionerSelectors } from '@/store/practitioner';
+import { coachSelectors } from '@/store/coach';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
@@ -61,6 +62,8 @@ export const CoachSmartSpaceChecklist: React.FC<
   const [activeStep, setActiveStep] = useState(
     CoachSmartSpaceChecklistSteps.SMART_SPACE_CHECK
   );
+  const coach = useSelector(coachSelectors.getCoach);
+  const isCoach = coach?.user?.id === user?.id;
 
   const handleSetQuestions = useCallback(
     (value: SectionQuestions[] | undefined) => {
@@ -113,7 +116,7 @@ export const CoachSmartSpaceChecklist: React.FC<
   };
 
   const saveSmartSpaceCheckData = () => {
-    if (practitioner?.isTrainee) {
+    if (!isCoach) {
       return;
     }
     appDispatch(traineeActions.saveCoachSmartSpaceCheckData(sectionQuestions));
