@@ -9053,6 +9053,7 @@ export type PointsUserSummary = {
   pointsLibraryId: Scalars['UUID'];
   pointsTotal: Scalars['Int'];
   pointsYTD: Scalars['Int'];
+  timesScored: Scalars['Int'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   user?: Maybe<ApplicationUser>;
@@ -9071,6 +9072,7 @@ export type PointsUserSummaryFilterInput = {
   pointsLibraryId?: InputMaybe<ComparableGuidOperationFilterInput>;
   pointsTotal?: InputMaybe<ComparableInt32OperationFilterInput>;
   pointsYTD?: InputMaybe<ComparableInt32OperationFilterInput>;
+  timesScored?: InputMaybe<ComparableInt32OperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
@@ -9086,6 +9088,7 @@ export type PointsUserSummaryInput = {
   PointsLibraryId: Scalars['UUID'];
   PointsTotal: Scalars['Int'];
   PointsYTD: Scalars['Int'];
+  TimesScored: Scalars['Int'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
@@ -9101,6 +9104,7 @@ export type PointsUserSummarySortInput = {
   pointsLibraryId?: InputMaybe<SortEnumType>;
   pointsTotal?: InputMaybe<SortEnumType>;
   pointsYTD?: InputMaybe<SortEnumType>;
+  timesScored?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   user?: InputMaybe<ApplicationUserSortInput>;
@@ -10656,6 +10660,7 @@ export type Query = {
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
   userCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
+  userClubStanding?: Maybe<UserClubStandingModel>;
   userProgrammes?: Maybe<Array<Maybe<Programme>>>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
   visitAnswersForInfant?: Maybe<Array<Maybe<VisitData>>>;
@@ -13159,6 +13164,10 @@ export type QueryUserCalendarEventsArgs = {
   start?: InputMaybe<Scalars['DateTime']>;
 };
 
+export type QueryUserClubStandingArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryUsersArgs = {
   order?: InputMaybe<Array<ApplicationUserSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
@@ -15063,6 +15072,12 @@ export type UserByToken = {
   phoneNumber?: Maybe<Scalars['String']>;
   roleName?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;
+};
+
+export type UserClubStandingModel = {
+  __typename?: 'UserClubStandingModel';
+  percentileStandingForCurrentMonth: Scalars['Int'];
+  percentileStandingForCurrentYear: Scalars['Int'];
 };
 
 export type UserConsent = {

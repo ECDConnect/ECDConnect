@@ -285,6 +285,8 @@ class PractitionerService {
             isOnStipend
             stipendType
             isCompletedBusinessWalkThrough
+            clubId
+            clubName
           }
         }
       `,
@@ -361,6 +363,8 @@ class PractitionerService {
             isOnStipend
             stipendType
             isCompletedBusinessWalkThrough
+            clubId
+            clubName
           }
         }
       `,
