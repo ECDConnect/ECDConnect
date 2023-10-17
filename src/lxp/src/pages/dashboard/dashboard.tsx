@@ -499,7 +499,7 @@ export const Dashboard: React.FC = () => {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
-      icon: 'BellIcon',
+      icon: 'PresentationChartBarIcon',
       current: false,
       showDivider: true,
     });
@@ -636,6 +636,18 @@ export const Dashboard: React.FC = () => {
     });
   }
 
+  if (!isTrainee) {
+    dashboardItems.splice(1, 0, {
+      title: NavigationTypes.Training,
+      titleIcon: 'PresentationChartBarIcon',
+      titleIconClassName: styles.trainingIcon,
+      onActionClick: () => {
+        goToTraining();
+      },
+      classNames: 'bg-uiBg',
+    });
+  }
+
   if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
@@ -729,6 +741,10 @@ export const Dashboard: React.FC = () => {
       history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       return;
     }
+  };
+
+  const goToTraining = () => {
+    history.push(ROUTES.TRAINING);
   };
 
   const onNavigation = (navItem: any) => {
