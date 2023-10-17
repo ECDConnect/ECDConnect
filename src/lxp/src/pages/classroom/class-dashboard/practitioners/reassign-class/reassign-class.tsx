@@ -300,7 +300,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                   placeholderText={`Please select a date`}
                   wrapperClassName="text-center w-full"
                   className="border-uiLight text-textMid mx-auto w-full rounded-md"
-                  selected={selectedDate ? new Date(selectedDate) : undefined}
+                  selected={endDate ? new Date(endDate) : undefined}
                   onChange={(date: Date) => {
                     setEndDate(date);
                   }}

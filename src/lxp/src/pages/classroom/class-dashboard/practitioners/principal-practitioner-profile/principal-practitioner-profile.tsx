@@ -35,7 +35,7 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
-import { getMonth } from 'date-fns';
+import { format, getMonth, isSameDay } from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
@@ -51,6 +51,21 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
+  );
+  const practitionerAbsentees = practitioner?.absentees;
+  const validAbsenteesDates = practitionerAbsentees?.filter(
+    (item) => new Date(item?.absentDate as string) >= new Date()
+  );
+  const currentAbsentee =
+    validAbsenteesDates &&
+    validAbsenteesDates.reduce((a, b) => {
+      return new Date(a.absentDate as string) < new Date(b.absentDate as string)
+        ? a
+        : b;
+    });
+  const isToday = isSameDay(
+    new Date(currentAbsentee?.absentDate as string),
+    new Date()
   );
 
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
@@ -283,41 +298,133 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Card>
             )}
-            <Card className={styles.absentCard}>
-              <div className={styles.absentCardTitle}>
-                <Typography
-                  type={'h1'}
-                  color="textDark"
-                  text={`Mark ${practitioner?.user?.firstName} absent`}
-                  className={styles.absentCardTitle}
-                />
-                <Typography
-                  type={'body'}
-                  color="textMid"
-                  text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
-                  className={styles.absentCardSubTitle}
-                />
-                <div className="flex justify-center">
-                  <Button
-                    type="filled"
-                    color="primary"
-                    className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                    onClick={() => handleReassignClass(practitionerUserId)}
-                  >
-                    {renderIcon(
-                      'PencilAltIcon',
-                      'w-5 h-5 color-white text-white mr-1'
-                    )}
+            {currentAbsentee ? (
+              <Card className={styles.absentCard}>
+                <div className={'p-4'}>
+                  <Typography
+                    type={'h1'}
+                    color="textDark"
+                    text={
+                      isToday
+                        ? `${practitioner?.user?.firstName} is absent today`
+                        : `${
+                            practitioner?.user?.firstName
+                          } will be absent on ${format(
+                            new Date(currentAbsentee?.absentDate as string),
+                            'EEEE'
+                          )}, ${format(
+                            new Date(currentAbsentee?.absentDate as string),
+                            'd MMM'
+                          )}`
+                    }
+                    className={styles.absentCardTitle}
+                  />
+                  <div className="flex items-center gap-2">
                     <Typography
-                      type="body"
-                      className="mr-4"
-                      color="white"
-                      text={'Record absence/leave'}
-                    ></Typography>
-                  </Button>
+                      type={'body'}
+                      color="textMid"
+                      weight="bold"
+                      text={`Reason:`}
+                      className={styles.absentCardSubTitle}
+                    />
+                    <Typography
+                      type={'body'}
+                      color="textMid"
+                      text={`${currentAbsentee?.reason}`}
+                      className={'mt-4'}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Typography
+                      type={'body'}
+                      color="textMid"
+                      weight="bold"
+                      text={`${practitioner?.user?.firstName} will be back on:`}
+                      className={styles.absentCardSubTitle}
+                    />
+                    <Typography
+                      type={'body'}
+                      color="textMid"
+                      text={`${format(
+                        new Date(currentAbsentee?.absentDateEnd as string),
+                        'd MMM yyyy'
+                      )}`}
+                      className={'mt-4'}
+                    />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Typography
+                      type={'body'}
+                      color="textMid"
+                      weight="bold"
+                      text={`${currentAbsentee?.className} class reassigned to:`}
+                      className={styles.absentCardSubTitle}
+                    />
+                    <Typography
+                      type={'body'}
+                      color="textMid"
+                      text={`${currentAbsentee?.reassignedToPerson}`}
+                      className={'mt-4'}
+                    />
+                  </div>
+                  <div className="flex justify-center">
+                    <Button
+                      type="filled"
+                      color="primary"
+                      className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                      onClick={() => {}}
+                    >
+                      {renderIcon(
+                        'PencilAltIcon',
+                        'w-5 h-5 color-white text-white mr-1'
+                      )}
+                      <Typography
+                        type="body"
+                        className="mr-4"
+                        color="white"
+                        text={'Edit absence/leave'}
+                      ></Typography>
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            ) : (
+              <Card className={styles.absentCard}>
+                <div className={styles.absentCardTitle}>
+                  <Typography
+                    type={'h1'}
+                    color="textDark"
+                    text={`Mark ${practitioner?.user?.firstName} absent`}
+                    className={styles.absentCardTitle}
+                  />
+                  <Typography
+                    type={'body'}
+                    color="textMid"
+                    text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
+                    className={styles.absentCardSubTitle}
+                  />
+                  <div className="flex justify-center">
+                    <Button
+                      type="filled"
+                      color="primary"
+                      className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                      onClick={() => handleReassignClass(practitionerUserId)}
+                    >
+                      {renderIcon(
+                        'PencilAltIcon',
+                        'w-5 h-5 color-white text-white mr-1'
+                      )}
+                      <Typography
+                        type="body"
+                        className="mr-4"
+                        color="white"
+                        text={'Record absence/leave'}
+                      ></Typography>
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            )}
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
                   const classroomGroup = practitionerClassroomGroups?.find(
