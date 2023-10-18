@@ -19,5 +19,13 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
 
 
         List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? endDate = null);
+
+        public Absentees EditAbsentee(
+            string absenteeId,
+            bool deleteAbsentee = false,
+            string reassignedToPractitioner = null,
+            string reason = null,
+            DateTime? absentDate = null,
+            DateTime? absentDateEnd = null);
     }
 }
