@@ -49,6 +49,10 @@ namespace ECDLink.DataAccessLayer.Repositories.Factories
           where T : EntityBase<Guid>
         {
             IGenericRepository<T, Guid> repo = _provider.GetService<GenericRepository<T>>();
+            if (!string.IsNullOrWhiteSpace(userContext))
+            {
+                repo.SetUserContext(userContext);
+            }
             return repo;
         }
     }
