@@ -4,13 +4,11 @@ using HotChocolate;
 using System;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Abstractrions.Constants;
-using EcdLink.Api.CoreApi.Services;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using System.Collections.Generic;
 using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using Microsoft.AspNetCore.Http;
 using ECDLink.Security.Extensions;
@@ -114,7 +112,60 @@ namespace ECDLink.Api.CoreApi.Services
             return updated;
         }
 
-        public List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? endDate = null)
+        public Absentees EditAbsentee(
+            string absenteeId,
+            bool deleteAbsentee = false,
+            string reassignedToPractitioner = null,
+            string reason = null,
+            DateTime? absentDate = null,           
+            DateTime? absentDateEnd = null)
+        {
+            if (absenteeId != null) {
+                var absentee = _absenteeRepo.GetById(Guid.Parse(absenteeId));
+
+                if (absentee != null)
+                {
+                    if (deleteAbsentee)
+                    {
+                        absentee.IsActive = false;
+                    }
+                    else
+                    {
+                        absentee.IsActive = true;
+                        //FE is preventinmg the possibility of passed leave being edited
+                        if (reassignedToPractitioner != null)
+                        {
+                            if (absentee.ReassignedToPractitioner != reassignedToPractitioner)
+                            {
+                                absentee.ReassignedToPractitioner = reassignedToPractitioner;
+                            }
+                        }
+                        if (absentDate != null)
+                        {
+                            if (absentee.AbsentDate != absentDate)
+                            {
+                                absentee.AbsentDate = (DateTime)absentDate;
+                            }
+                        }
+                        if (absentDateEnd != null)
+                        {
+                            if (absentee.AbsentDateEnd != null && absentee.AbsentDateEnd != absentDateEnd)
+                            {
+                                absentee.AbsentDateEnd = (DateTime)absentDateEnd;
+                            }
+                        }
+
+                        if (reason != null)
+                            absentee.Reason = reason;
+                    }
+                    _absenteeRepo.Update(absentee);
+                    return absentee;
+                }
+            }
+            return null;
+        }
+
+            public List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? endDate = null)
         {
             var classRoomRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             List<AbsenteeDetail> absenteeDetails = new List<AbsenteeDetail>();
@@ -149,6 +200,7 @@ namespace ECDLink.Api.CoreApi.Services
                     }
 
                     absenteeDetails.Add(new AbsenteeDetail() { 
+                        AbsenteeId = item.Id.ToString(),
                         Reason = item.Reason, 
                         AbsentDate = item.AbsentDate,
                         AbsentDateEnd = item.AbsentDateEnd,
