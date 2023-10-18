@@ -3673,20 +3673,15 @@ public class SmartStartIntegrationService : IIntegrationService
                                 responseString = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
                                 if (!string.IsNullOrEmpty(responseString))
                                 {
-                                    if (responseString == "1") //success
+                                    if (responseString.StartsWith("{\"ExceptionMessage\":\""))
                                     {
-
+                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                    }
+                                    else
+                                    {
                                         await _logManager.UpdateAuditSubmitted(completedList);
                                         completedEntityList.Add(entityToUpdate.entity);
                                         await _logManager.IntegrationLog("Data Push Success: ", jsonString.ToString(), null, LogRelatedType.Log, "PushUpdates > GetAPIHandlerResponse");
-                                    }
-                                    else if (responseString == "0")
-                                    {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
-                                    }
-                                    else //error
-                                    {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                                     }
                                 }
                             }
