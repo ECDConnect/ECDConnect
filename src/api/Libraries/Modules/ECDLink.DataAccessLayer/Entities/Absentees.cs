@@ -51,6 +51,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     public class AbsenteeDetail
     {
+        public string AbsenteeId { get; set; }
         public string Reason { get; set; }
         public DateTime AbsentDate { get; set; }
         public DateTime? AbsentDateEnd { get; set; }
