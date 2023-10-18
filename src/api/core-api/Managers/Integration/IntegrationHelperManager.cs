@@ -39,6 +39,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
         public IntegrationHelperManager(
             IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, IntegrationLogManager logManager, ISystemSetting<IntegrationApiOptions> options, IntegrationAPIManager apiManager, HierarchyEngine hierarchyEngine)
         {
+            _uId = hierarchyEngine.GetIntegrationUserId();
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _logManager = logManager;
@@ -55,8 +56,6 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
             _staticEducationRepo = repoFactory.CreateGenericRepository<Education>(userContext: _uId); ;
             _staticGrantRepo = repoFactory.CreateGenericRepository<Grant>(userContext: _uId);
             _docTypeRepo = repoFactory.CreateGenericRepository<DocumentType>(userContext: _uId);
-
-            _uId = hierarchyEngine.GetIntegrationUserId();
         }
 
         public async Task<IntegrationEntityMapping> GetMappedEntity(string localUserId, string entityType)
