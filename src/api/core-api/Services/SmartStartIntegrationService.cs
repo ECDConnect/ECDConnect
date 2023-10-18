@@ -1151,9 +1151,9 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<bool> IntegrationUpdates()
     {
         await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
-        int historyDays = 5;
+        int historyDays = 2;
         bool returnOK = false;
-        _mappedEntities = await GetMappedEntities();
+        _mappedEntities = await GetMappedEntities(null, true, true);
         _mappedColumns = await GetMappedColumns();
 
         RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays*-1), DateTime.Now);

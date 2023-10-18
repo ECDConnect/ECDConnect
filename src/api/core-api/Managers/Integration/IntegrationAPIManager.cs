@@ -306,17 +306,7 @@ public class IntegrationAPIManager
     {
         try
         {
-            string[] columns = { "Guid","FullName","FirstName","Surname","IdNumber","WhatsAppNumber","SiteArea","IsFranchisee","HasStarterLicence","HasAttendedStartupTraining","HasReceivedPlaykit","HasReceivedAdminFile","HasPassedSmartSpaceVisit","IsSmartSpaceVisitValidated", "IsOnStipend","HasGivenPhotoConsent", "StarterLicenceDate","SmartSpaceLicenceDate","HomeAddressLine1","HomeAddressLine2","HomeAddressLine3","HomeAddressPostalCode","HighestEducationLevel","PreferredCommunicationLanguage","IsAdminFileAndPlaykitValidated","StipendType" };
-            //"ConsolidationMeetingDate",
-            //"FranchiseeAgreementAcceptedDate",
-            //"HasAcceptedChildAgreement",
-            //"HasAcceptedFranchiseeAgreement",
-            //"HasPropertyTitleDeed",
-            //"LivesOnProperty",
-            //"OwnsProgrammeVenue",
-            //"IsPropertyOnUnproclaimedLand",
-            //"HasAcceptedStipendAgreement",
-            //"ConsolidationMeetingStatus";
+            string[] columns = null; 
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
             if (traineesOnly)
@@ -324,10 +314,6 @@ public class IntegrationAPIManager
                 optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "IsFranchisee", Operator = "Equals", Value = "False" });
             }
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = remoteCoachId });
-
-            //List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
-            //relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Fra", AllColumns = "True", Columns = "", JoinType = "Outer" });
-
             var responseString = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SSTrainee + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, null);
             return JsonConvert.DeserializeObject<List<MappedTrainee>>(responseString);
 
@@ -335,7 +321,7 @@ public class IntegrationAPIManager
         catch (Exception e)
         {
             await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesByCoach > " + remoteCoachId);
-            return null; //throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            return null; 
         }
     }
 
@@ -344,9 +330,6 @@ public class IntegrationAPIManager
         try
         {
             string[] columns = null;
-            //List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
-            //relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "SiteAddress", AllColumns = "True", Columns = "", JoinType = "Outer" });
-
             var responseString = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLTrainee + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteId),columns, null, null);
 
             return JsonConvert.DeserializeObject<MappedTrainee>(responseString);
@@ -355,7 +338,7 @@ public class IntegrationAPIManager
         catch (Exception e)
         {
             await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesById > " + remoteId);
-            return null; //throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            return null; 
         }
     }
 
