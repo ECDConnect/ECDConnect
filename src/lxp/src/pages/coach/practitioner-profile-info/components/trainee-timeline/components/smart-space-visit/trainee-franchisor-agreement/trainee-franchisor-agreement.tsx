@@ -114,7 +114,7 @@ export const CoachTraineeFranchisorAgreement: React.FC<
         agreementInput
       );
     }
-    setNotificationStep('');
+    setNotificationStep && setNotificationStep('');
   };
 
   const renderStep = (step: number) => {
