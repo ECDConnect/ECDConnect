@@ -174,19 +174,14 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
                         responseString = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
                         if (!string.IsNullOrEmpty(responseString))
                         {
-                            if (responseString == "1") //success
+                            if (responseString.StartsWith("{\"ExceptionMessage\":\""))
                             {
-
+                                await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
+                            }
+                            else
+                            {
                                 await _logManager.UpdateAuditSubmitted(completedList);
                                 await _logManager.IntegrationLog("Data Push Success: ", jsonString.ToString(), null, LogRelatedType.Log, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
-                            }
-                            else if (responseString == "0")
-                            {
-                                await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
-                            }
-                            else //error
-                            {
-                                await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
                             }
                         }
                     }
