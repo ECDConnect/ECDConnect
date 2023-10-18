@@ -27,6 +27,7 @@ export type AbsenteeDetail = {
   __typename?: 'AbsenteeDetail';
   absentDate: Scalars['DateTime'];
   absentDateEnd?: Maybe<Scalars['DateTime']>;
+  absenteeId?: Maybe<Scalars['String']>;
   className?: Maybe<Scalars['String']>;
   classroomGroupId?: Maybe<Scalars['String']>;
   reason?: Maybe<Scalars['String']>;
@@ -5351,6 +5352,7 @@ export type Mutation = {
   delicensePractitioner: Scalars['Boolean'];
   demotePractitionerAsPrincipal?: Maybe<Practitioner>;
   disableNotification: Scalars['Boolean'];
+  editAbsentee?: Maybe<Absentees>;
   editVisitData: Scalars['Boolean'];
   expireNotification: Scalars['Boolean'];
   expireNotificationsTypesForUser: Scalars['Boolean'];
@@ -6954,6 +6956,15 @@ export type MutationDemotePractitionerAsPrincipalArgs = {
 
 export type MutationDisableNotificationArgs = {
   notificationId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationEditAbsenteeArgs = {
+  absentDate?: InputMaybe<Scalars['DateTime']>;
+  absentDateEnd?: InputMaybe<Scalars['DateTime']>;
+  absenteeId?: InputMaybe<Scalars['String']>;
+  deleteAbsentee?: Scalars['Boolean'];
+  reason?: InputMaybe<Scalars['String']>;
+  reassignedToPractitioner?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationEditVisitDataArgs = {
