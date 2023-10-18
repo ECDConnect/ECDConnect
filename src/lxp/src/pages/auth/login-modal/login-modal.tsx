@@ -26,6 +26,8 @@ import * as styles from './login-modal.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
+import { practitionerSelectors } from '@/store/practitioner';
+import { syncThunkActions } from '@/store/sync';
 const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
@@ -45,7 +47,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
-  const { resetAppStore } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
 
@@ -74,8 +76,25 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const { isValid } = loginFormState;
   const { idField, passportField, password, preferId } = useWatch({ control });
   const checkIdOrPassport = preferId ? idField : passportField;
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+
+  const sync = async () => {
+    if (practitioner?.isPrincipal === true) {
+      await appDispatch(syncThunkActions.syncOfflineData({}));
+    } else {
+      await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+    }
+    await appDispatch(settingActions.setLastDataSync());
+  };
 
   const submitForm = async () => {
+    if (user?.idNumber !== checkIdOrPassport) {
+      console.log(user?.idNumber !== checkIdOrPassport);
+      console.log('before', practitioner);
+      await sync();
+      await resetAppStore();
+      // await resetAuth()
+    }
     setDisplayError(false);
     if (isValid) {
       setIsLoading(true);
@@ -88,6 +107,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
       appDispatch(authThunkActions.login(body))
         .then(async (isAuthenticated: any) => {
+          console.log({ body });
           if (
             isAuthenticated &&
             isAuthenticated?.payload?.response?.status !== 401

@@ -61,6 +61,7 @@ import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
+import { LoginModal } from '../auth/login-modal/login-modal';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -109,8 +110,22 @@ export const Dashboard: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  console.log({ practitioner });
 
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
+
+  useEffect(() => {
+    if (isOnline) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit, onClose) => {
+          return <LoginModal loginSuccessful={onSubmit} />;
+        },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -275,9 +290,9 @@ export const Dashboard: React.FC = () => {
     ).unwrap();
   };
 
-  useEffect(() => {
-    initStaticStoreSetup();
-  }, []);
+  // useEffect(() => {
+  //   initStaticStoreSetup();
+  // }, []);
 
   useEffect(() => {
     if (
