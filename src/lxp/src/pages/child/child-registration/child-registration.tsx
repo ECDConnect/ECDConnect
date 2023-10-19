@@ -66,6 +66,11 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple-children-modal';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { pointsSelectors } from '@/store/points';
+import { ClassDashboardRouteState } from '@/pages/business/business.types';
+import {
+  TabsItems,
+  TabsItemsWithAttendance,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -79,6 +84,7 @@ export const ChildRegistration: React.FC = () => {
   const practitionerId = location?.state?.practitionerId;
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const consentList = useSelector(contentConsentSelectors.getConsent);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
   const authUser = useSelector(authSelectors.getAuthUser);
@@ -87,7 +93,8 @@ export const ChildRegistration: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal === true;
   const isTrainee = practitioner?.isTrainee;
   const isFromPqa = !!practitionerId;
-
+  const isPractitioner = !!practitioner;
+  const hasAttendanceRoute = isPrincipal && practitioners?.length! > 0;
   const dialog = useDialog();
 
   const pointsLibraryRegisterChild = useSelector(
@@ -388,7 +395,13 @@ export const ChildRegistration: React.FC = () => {
                 onClose();
               }}
               onCancel={() => {
-                history.push(ROUTES.COACH.PRACTITIONERS);
+                isPractitioner
+                  ? history.push(ROUTES.CLASSROOM.ROOT, {
+                      activeTabIndex: hasAttendanceRoute
+                        ? TabsItemsWithAttendance.CHILDREN
+                        : TabsItems.CHILDREN,
+                    } as ClassDashboardRouteState)
+                  : history.push(ROUTES.COACH.PRACTITIONERS);
                 onClose();
               }}
             />
