@@ -217,14 +217,12 @@ class AttendanceService {
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      trackAttendance?: boolean;
+      data: { trackAttendance: boolean };
       errors?: {};
     }>(``, {
       query: `
         mutation trackAttendance($attendance: [TrackAttendanceModelInput]) {
-          trackAttendance(attendance: $attendance){
-            trackAttendance
-          }
+          trackAttendance(attendance: $attendance)
         }
       `,
       variables: {
@@ -238,11 +236,11 @@ class AttendanceService {
     if (response.data.errors) {
       throw new Error('Update Attendance failed - please contact helpdesk');
     }
-    if (response.data.trackAttendance === false) {
+    if (response.data.data.trackAttendance === false) {
       throw new Error('Update Attendance failed - please contact helpdesk');
     }
 
-    return true;
+    return response.data.data.trackAttendance;
   }
 }
 
