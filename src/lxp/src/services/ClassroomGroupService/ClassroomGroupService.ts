@@ -155,6 +155,54 @@ class ClassroomGroupService {
     return true;
   }
 
+  async editAbsentee(
+    absenteeId: string,
+    deleteAbsentee: boolean,
+    reassignedToPractitioner: string,
+    reason: string,
+    absentDate: Date,
+    absentDateEnd?: Date
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation editAbsentee(
+        $absenteeId: String,
+    $deleteAbsentee: Boolean,
+    $reassignedToPractitioner: String!,
+    $reason: String!,
+    $absentDate: DateTime!,
+    $absentDateEnd: DateTime!)       {
+        editAbsentee (absenteeId: $absenteeId,
+        deleteAbsentee: $deleteAbsentee,
+    reassignedToPractitioner: $reassignedToPractitioner,
+     reason: $reason,
+     absentDate: $absentDate,
+     absentDateEnd: $absentDateEnd
+     ) { 
+          id   
+             }  
+               }
+      `,
+      variables: {
+        absenteeId,
+        deleteAbsentee,
+        reassignedToPractitioner,
+        reason,
+        absentDate,
+        absentDateEnd,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating classroom group failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
   async getClassAttendanceMetricsByUser(
     userId: string,
     startMonth: Date,
