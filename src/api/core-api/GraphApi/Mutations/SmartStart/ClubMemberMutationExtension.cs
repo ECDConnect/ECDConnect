@@ -5,7 +5,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using System.Threading.Tasks;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -26,6 +26,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public bool MoveClubMembers([Service] IClubService clubService, NewClubMember input)
         {
             return clubService.MoveClubMembers(input);
+
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public bool SaveWelcomeMessage([Service] IClubService clubService, Guid clubId, Guid practitionerId, string welcomeMessage)
+        {
+            return clubService.SaveWelcomeMessage(clubId, practitionerId, welcomeMessage);
+
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public bool UpdateNewMemberStatus([Service] IClubService clubService, Guid clubId, Guid practitionerId)
+        {
+            return clubService.UpdateNewMemberStatus(clubId, practitionerId);
 
         }
     }

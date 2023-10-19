@@ -70,7 +70,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public int RankNr { get; set; }
     }
 
-
     public class NewClubInput
     {
         public string Name { get; set; }
@@ -84,5 +83,62 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public Guid ClubId { get; set; }
         public virtual List<Guid> PractitionerIds { get; set; }
     }
-    
+
+    public class ActivityMeetRegular
+    {
+        public int Points { get; set; }
+        public string PointsColor { get; set; }
+        public virtual List<ClubMeeting> UpcomingMeetings { get; set; }
+        public virtual List<ActivityMeetRegularDetail> PastMeetings { get; set; }
+    }
+
+    public class ActivityMeetRegularDetail
+    {
+        public DateTime MeetingDate { get; set; }
+        public double MeetingAttendancePerc { get; set; }
+        public string MeetingAttendanceColor { get; set; }
+        public string MeetingNotes { get; set; }
+        public virtual List<ClubMeetingRegister> MeetingParticipants { get; set; }
+        public virtual List<ClubMeetingRegister> MeetingAbsentees { get; set; }
+        public int Points { get; set; }
+    }
+    public class ActivityBeCreative
+    {
+        public int Points { get; set; }
+        public string PointsColor { get; set; }
+        public virtual List<ActivityBeCreativeDetail> MonthlyRecords { get; set; }
+    }
+
+    public class ActivityBeCreativeDetail
+    {
+        public string MonthName { get; set; }
+        public string Description { get; set; }
+        public string DocumentName { get; set; }
+        public string DocumentReference { get; set; }
+    }
+    public class ActivityHostFamilyDays
+    {
+        public int Points { get; set; }
+        public string PointsColor { get; set; }
+    }
+
+    public class ActivityLeaveNoOneBehind
+    {
+        public int Points { get; set; }
+        public string PointsColor { get; set; }
+    }
+
+    public class ActivityChildAttendance
+    {
+        public int Points { get; set; }
+        public string PointsColor { get; set; }
+    }
+
+    public class ActivityChildProgress
+    {
+        public int Points { get; set; }
+        public string PointsColor { get; set; }
+    }
+
+
 }
