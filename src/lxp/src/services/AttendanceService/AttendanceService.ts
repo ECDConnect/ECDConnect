@@ -216,10 +216,15 @@ class AttendanceService {
     attendance: TrackAttendanceModelInput[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      trackAttendance?: boolean;
+      errors?: {};
+    }>(``, {
       query: `
         mutation trackAttendance($attendance: [TrackAttendanceModelInput]) {
-          trackAttendance(attendance: $attendance)
+          trackAttendance(attendance: $attendance){
+            trackAttendance
+          }
         }
       `,
       variables: {
@@ -229,6 +234,12 @@ class AttendanceService {
 
     if (response.status !== 200) {
       throw new Error('Tracking Attendance failed - Server connection error');
+    }
+    if (response.data.errors) {
+      throw new Error('Update Attendance failed - please contact helpdesk');
+    }
+    if (response.data.trackAttendance === false) {
+      throw new Error('Update Attendance failed - please contact helpdesk');
     }
 
     return true;
