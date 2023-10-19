@@ -96,7 +96,6 @@ export const ClassProgrammeAttendanceList: React.FC<
     });
   };
 
-  console.log({ attendanceList });
   return (
     <div className={styles.wrapper}>
       {isMultipleClasses && (
