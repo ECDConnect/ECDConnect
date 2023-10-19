@@ -8,4 +8,5 @@ export interface AbsenteeDto extends EntityBase {
   reason?: string;
   reassignedToPerson?: string;
   reassignedToUserId?: string;
+  absenteeId?: string;
 }

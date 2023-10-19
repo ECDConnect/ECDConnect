@@ -462,6 +462,7 @@ class PractitionerService {
               reason
               reassignedToPerson
               reassignedToUserId
+              absenteeId
           }
           }
         }

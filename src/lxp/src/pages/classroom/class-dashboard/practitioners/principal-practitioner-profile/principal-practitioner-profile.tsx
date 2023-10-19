@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
-import { useEffect, useState } from 'react';
-import { useTheme } from '@ecdlink/core';
+import { useCallback, useEffect, useState } from 'react';
+import { useDialog, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -12,6 +12,7 @@ import {
   StatusChip,
   Typography,
   Card,
+  ActionModal,
 } from '@ecdlink/ui';
 import {
   ClassroomMetricReport,
@@ -35,12 +36,14 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
-import { format, getMonth, isSameDay } from 'date-fns';
+import { format, getMonth, isPast, isSameDay } from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
+  const dialog = useDialog();
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -52,20 +55,29 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
+
   const practitionerAbsentees = practitioner?.absentees;
   const validAbsenteesDates = practitionerAbsentees?.filter(
-    (item) => new Date(item?.absentDate as string) >= new Date()
+    (item) => !isPast(new Date(item?.absentDate as string))
   );
-  const currentAbsentee =
-    validAbsenteesDates &&
-    validAbsenteesDates.reduce((a, b) => {
-      return new Date(a.absentDate as string) < new Date(b.absentDate as string)
-        ? a
-        : b;
-    });
+  const currentDates = validAbsenteesDates?.map((item) => {
+    return item?.absentDate as string;
+  });
+
+  const orderedDates = currentDates?.sort(function (a, b) {
+    return Date.parse(a) - Date.parse(b);
+  });
+
+  const currentAbsentee = validAbsenteesDates?.find(
+    (item) => item?.absentDate === orderedDates?.[0]
+  ) as AbsenteeDto;
+  const allAbsenteeClasses = practitionerAbsentees?.filter(
+    (item) => item?.absentDate === currentAbsentee?.absentDate
+  );
+
   const isToday = isSameDay(
-    new Date(currentAbsentee?.absentDate as string),
-    new Date()
+    new Date(),
+    new Date(currentAbsentee?.absentDate || '')
   );
 
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
@@ -85,11 +97,53 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const [childrenCount, setChildrenCount] = useState(0);
   const [classMetrics, setClassMetrics] = useState<ClassroomMetricReport[]>([]);
 
-  const handleReassignClass = (practitionerId: string) => {
-    history.push('practitioner-reassign-class', {
-      practitionerId,
+  const handleReassignClass = useCallback(
+    (practitionerId: string) => {
+      history.push('practitioner-reassign-class', {
+        practitionerId,
+        allAbsenteeClasses,
+      });
+    },
+    [allAbsenteeClasses, history]
+  );
+
+  const handleAbsenceModal = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`What would you like to edit?`}
+          actionButtons={[
+            {
+              text: 'Edit this absence',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                handleReassignClass(practitionerUserId);
+                onSubmit();
+              },
+              leadingIcon: 'PencilAltIcon',
+            },
+            {
+              text: 'Add a new leave/absence',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                handleReassignClass(practitionerUserId);
+                onSubmit();
+              },
+              leadingIcon: 'PlusIcon',
+            },
+          ]}
+        />
+      ),
     });
-  };
+  }, [dialog, handleReassignClass, practitionerUserId]);
 
   useEffect(() => {
     if (!!classMetrics && !!classMetrics?.length) {
@@ -352,27 +406,34 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                       className={'mt-4'}
                     />
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Typography
-                      type={'body'}
-                      color="textMid"
-                      weight="bold"
-                      text={`${currentAbsentee?.className} class reassigned to:`}
-                      className={styles.absentCardSubTitle}
-                    />
-                    <Typography
-                      type={'body'}
-                      color="textMid"
-                      text={`${currentAbsentee?.reassignedToPerson}`}
-                      className={'mt-4'}
-                    />
-                  </div>
+                  {allAbsenteeClasses &&
+                    allAbsenteeClasses?.length > 0 &&
+                    allAbsenteeClasses?.map((item) => {
+                      return (
+                        <div className="flex items-center gap-2">
+                          <Typography
+                            type={'body'}
+                            color="textMid"
+                            weight="bold"
+                            text={`${item?.className} class reassigned to:`}
+                            className={styles.absentCardSubTitle}
+                          />
+                          <Typography
+                            type={'body'}
+                            color="textMid"
+                            text={`${item?.reassignedToPerson}`}
+                            className={'mt-4'}
+                          />
+                        </div>
+                      );
+                    })}
+
                   <div className="flex justify-center">
                     <Button
                       type="filled"
                       color="primary"
                       className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                      onClick={() => {}}
+                      onClick={() => handleAbsenceModal()}
                     >
                       {renderIcon(
                         'PencilAltIcon',
