@@ -3,10 +3,11 @@ import { CheckboxChange, Colours, ComponentBaseProps } from '../../../models';
 import { classNames } from '../../../utils';
 import Typography from '../../typography/typography';
 import * as styles from './checkbox-input.styles';
+import { ReactElement } from 'react';
 
 export interface CheckboxProps<T extends FieldValues = {}>
   extends ComponentBaseProps {
-  description?: string;
+  description?: string | ReactElement;
   descriptionColor?: Colours;
   checkboxColor?: Colours;
   checked?: boolean;
@@ -79,11 +80,15 @@ export const Checkbox = <T extends FieldValues>({
               />
             )}
           </div>
-          <Typography
-            type="body"
-            color={descriptionColor}
-            text={description || ''}
-          ></Typography>
+          {typeof description === 'string' ? (
+            <Typography
+              type="body"
+              color={descriptionColor}
+              text={description || ''}
+            ></Typography>
+          ) : (
+            description
+          )}
         </label>
       )}
     </>

@@ -114,6 +114,7 @@ export const MeetRegularly: React.FC = () => {
         date={new Date()}
       />
       <ScoreCard
+        className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
         currentPoints={mockedPoints}
