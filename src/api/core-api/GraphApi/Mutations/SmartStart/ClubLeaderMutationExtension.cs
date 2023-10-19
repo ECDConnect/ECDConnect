@@ -6,7 +6,6 @@ using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
-using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -18,15 +17,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public ClubLeader AddNewClubLeader([Service] IClubService clubService, string clubId, string practitionerId)
+        public ClubLeader AddNewClubLeader([Service] IClubService clubService, Guid clubId, Guid practitionerId)
         {
-            return clubService.AddNewClubLeader(new Guid(clubId), new Guid(practitionerId));
+            return clubService.AddNewClubLeader(clubId, practitionerId);
         }
 
-        public bool AcceptNewClubLeaderRole([Service] IClubService clubService, string clubId, string practitionerId)
+        public bool AcceptNewClubLeaderRole([Service] IClubService clubService, Guid clubId, Guid practitionerId, Guid clubSupportPractitionerId)
         {
-            return clubService.AcceptNewClubLeaderRole(new Guid(clubId), new Guid(practitionerId))!=null;            
+            return clubService.AcceptNewClubLeaderRole(clubId, practitionerId, clubSupportPractitionerId);            
         }
+
+        public bool RejectNewClubLeaderRole([Service] IClubService clubService, Guid clubId, Guid practitionerId)
+        {
+            return clubService.RejectNewClubLeaderRole(clubId, practitionerId);
+        }
+
+        public bool ChangeClubSupportRole([Service] IClubService clubService, Guid clubId, Guid practitionerId)
+        {
+            return clubService.ChangeClubSupportRole(clubId, practitionerId);
+        }
+
 
     }
 }

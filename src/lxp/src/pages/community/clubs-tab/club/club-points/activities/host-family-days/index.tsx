@@ -91,6 +91,7 @@ export const HostFamilyDays: React.FC = () => {
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
       <ScoreCard
+        className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
         currentPoints={mockedPoints}

@@ -38,6 +38,7 @@ import { muacQuestion } from './nutrition-steps/mother-growth-muac';
 import { HIVQuestion } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/hiv-care';
 import { visitThunkActions } from '@/store/visit';
 import { useAppDispatch } from '@/store';
+import { antenatalClinicQuestion } from './healthcare-steps/clinic-visits';
 
 interface FormProps {
   onBack: () => void;
@@ -83,11 +84,9 @@ export const Form = ({ onBack }: FormProps) => {
     (item) => item?.visitData?.question === idDocumentSecondQuestion
   );
 
-  const antenatalVisitQuestionAnswer = previousVisit?.visitDataStatus?.find(
-    (item) => item?.comment === 'Clinic visits up to date'
-  )
-    ? true
-    : false;
+  const antenatalVisitQuestionAnswer = previousAnswers?.find(
+    (item) => item?.question === antenatalClinicQuestion
+  )?.questionAnswer;
 
   const previousMUAC = useMemo(
     () =>
@@ -129,7 +128,10 @@ export const Form = ({ onBack }: FormProps) => {
       Boolean(IDDocumentSecondPreviousAnswer?.visitData?.questionAnswer) ===
         true);
 
-  const isAntenatalClinicStep = isFirstVisit || antenatalVisitQuestionAnswer;
+  const isAntenatalClinicStep =
+    isFirstVisit || !antenatalVisitQuestionAnswer?.includes('true');
+
+  const isAntenatalClinicUpToDateStep = !isFirstVisit && !isAntenatalClinicStep;
 
   const isAlcoholUseStep =
     isFirstVisit && isEqualOrAfter98andEqualOrBefore168Days;
@@ -227,11 +229,11 @@ export const Form = ({ onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     switch (activityName) {
       case activitiesTypes.healthCare:
-        return getHealhcareteps(
-          isDangerSignsFollowUpForMom,
-          isFirstVisit,
-          isAntenatalClinicStep
-        );
+        return getHealhcareteps({
+          isDangerSignsFollowUp: isDangerSignsFollowUpForMom,
+          isAntenatalClinicUpToDateStep,
+          isAntenatalClinicStep,
+        });
       case activitiesTypes.nutrition:
         return careForBabySteps(isDangerSignsFollowUpForBaby, isMUACStep);
       case activitiesTypes.pregnancyCare:
@@ -250,6 +252,7 @@ export const Form = ({ onBack }: FormProps) => {
         return followUpSteps(!!referralsForMother?.length);
     }
   }, [
+    isAntenatalClinicUpToDateStep,
     activityName,
     isDangerSignsFollowUpForMom,
     isFirstVisit,
@@ -270,12 +273,12 @@ export const Form = ({ onBack }: FormProps) => {
   useEffect(() => {
     if (!activityNamePrevious && activityName === activitiesTypes.followUp) {
       appDispatch(
-        visitThunkActions.getPreviousVisitInformationForInfant({
+        visitThunkActions.getPreviousVisitInformationForMother({
           visitId,
         })
       ).unwrap();
       appDispatch(
-        visitThunkActions.GetInfantSummaryByPriority({
+        visitThunkActions.GetMotherSummaryByPriority({
           visitId,
         })
       );

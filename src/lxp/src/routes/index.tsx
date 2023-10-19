@@ -89,8 +89,6 @@ import SwitchPrincipal from '@/pages/practitioner/practitioner-programme-informa
 import { CoachPractitionerBusiness } from '@/pages/coach/coach-practitioner-business/coach-practitioner-business';
 import { PractitionerPreviousStatements } from '@/pages/coach/coach-practitioner-business/components/statements/previous-statements';
 import { PractitionerMonthStatements } from '@/pages/coach/coach-practitioner-business/components/statements/month-statements';
-import { StatementNotSubmitted } from '@/pages/coach/coach-practitioner-business/components/statements/not-submitted';
-import { StartupSupportEnding } from '@/pages/coach/coach-practitioner-business/components/support/startup-support-ending';
 import { PointsSummary } from '@/pages/points/points-summary/points-summary';
 import { CommunityWelcome } from '@/pages/community/welcome';
 import { Club } from '@/pages/community/clubs-tab/club/individual-club-view';
@@ -120,6 +118,9 @@ import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-pr
 import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
 import { CurrentMonthSummary } from '@/pages/business/money/monthly-statements/current-month-summary';
 import { PractitionerCurrentMonthSummary } from '@/pages/coach/coach-practitioner-business/components/statements/current-month-summary';
+import { AcceptClubLeaderRole } from '@/pages/practitioner/practitioner-community/accept-club-leader-role';
+import { PractitionerCommunity } from '@/pages/practitioner/practitioner-community';
+import { SupportRoleEdit } from '@/pages/practitioner/practitioner-community/club-tab/club/club-support-edit';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -311,6 +312,21 @@ const AuthRoutes: React.FC = () => {
       <Route
         path={[ROUTES.COMMUNITY.CLUB.POINTS.HELP, ROUTES.COMMUNITY.LEAGUE.HELP]}
         component={ActivityHelp}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.COMMUNITY.ROOT}
+        component={PractitionerCommunity}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE}
+        component={AcceptClubLeaderRole}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.COMMUNITY.SUPPORT_ROLE.EDIT}
+        component={SupportRoleEdit}
         exact
       />
       <Route

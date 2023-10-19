@@ -26,6 +26,7 @@ import { LocalStorageKeys, SmartStartPointsLibrary } from '@ecdlink/core';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { pointsSelectors } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useAppContext } from '@/walkthrougContext';
 
 export const Money: React.FC = () => {
   const history = useHistory();
@@ -146,6 +147,10 @@ export const Money: React.FC = () => {
     )
   );
 
+  const {
+    state: { tourActive },
+  } = useAppContext();
+
   return (
     <>
       {isLoading && (
@@ -198,7 +203,7 @@ export const Money: React.FC = () => {
             </div>
           )}
           <Dialog
-            visible={showUpdatePreschoolFeeReminder}
+            visible={showUpdatePreschoolFeeReminder && !tourActive}
             position={DialogPosition.Middle}
           >
             <div className={'flex flex-col items-center p-4'}>

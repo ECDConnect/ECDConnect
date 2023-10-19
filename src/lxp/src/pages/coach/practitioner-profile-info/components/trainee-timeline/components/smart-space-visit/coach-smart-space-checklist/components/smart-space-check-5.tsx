@@ -5,15 +5,17 @@ import { PractitionerDto } from '@ecdlink/core';
 import {
   Alert,
   Button,
-  Card,
   Colours,
   Divider,
   FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
+import { QuestionAnswersProps } from './smart-space-check-3';
+import { coachSelectors } from '@/store/coach';
+import { authSelectors } from '@/store/auth';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -45,6 +47,9 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   const numberOfAssistants = useSelector(
     traineeSelectors.getTraineeVisitDataAssitantsNumber
   );
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
   const [enableButton, setEnableButton] = useState(false);
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
@@ -147,6 +152,33 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
+    if (!isCoach) {
+      const previousData = questions.map((item) => {
+        const previousAnswer = visitData?.find((item: any) => {
+          const sectionData = item?.visitSection === visitSection;
+          return sectionData;
+        });
+
+        if (previousAnswer) {
+          return {
+            ...item,
+            answer: previousAnswer?.questionAnswer!,
+          };
+        }
+
+        return item;
+      });
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: previousData,
+        },
+      ]);
+
+      setAnswers(previousData as QuestionAnswersProps[]);
+      return;
+    }
+
     const previousData = questions.map((item) => {
       const visitDataWithoutTypo = visitData as any;
       const previousAnswer = visitDataWithoutTypo
@@ -154,7 +186,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
@@ -282,6 +314,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
                     message: 'Please enter a number that is more 49.',
                   },
                 })}
+              disabled={!isCoach}
             />
           );
         } else return null;
@@ -336,7 +369,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton}
+              disabled={!enableButton && isCoach}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

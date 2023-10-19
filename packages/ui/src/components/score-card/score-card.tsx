@@ -1,3 +1,4 @@
+import { classNames } from '../../utils';
 import { ProgressBar } from '../progress-bar';
 import * as styles from './score-card.styles';
 import { ScoreCardProps } from './score-card.types';
@@ -7,7 +8,10 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
   image,
   mainText,
   secondaryText,
+  textPosition = 'center',
   hint,
+  hintClassName,
+  className,
   currentPoints,
   maxPoints,
   bgColour,
@@ -20,7 +24,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
 
   return (
     <div
-      className={`${styles.wrapper} bg-${bgColour}`}
+      className={classNames(className, `${styles.wrapper} bg-${bgColour}`)}
       onClick={() => {
         !!onClick && onClick();
       }}
@@ -33,6 +37,8 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
             label={mainText}
             subLabel={secondaryText || ''}
             hint={hint}
+            hintClassName={hintClassName}
+            textPosition={textPosition}
             value={percentageScore}
             primaryColour={barColour}
             secondaryColour={barBgColour}

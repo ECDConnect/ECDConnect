@@ -13,7 +13,8 @@ import {
   UserAvatar,
   ScoreCard,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -101,6 +102,7 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+  const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
@@ -152,37 +154,43 @@ export const Dashboard: React.FC = () => {
 
     if (percentageScore < 60) {
       setPointsScoreProps({
-        mainText: `${pointsTotal} points`,
-        barBgColour: 'uiBg',
+        mainText: `${pointsTotal}`,
+        hint: 'points',
+        barBgColour: 'white',
+        textPosition: 'left',
         barColour: 'errorMain',
         bgColour: 'errorBg',
         currentPoints: pointsTotal,
         maxPoints: pointsMax,
-        textColour: 'errorMain',
+        textColour: 'textDark',
         onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
         image: <EmojiOrangeSmile className="mr-2 h-16 w-16" />,
       });
     } else if (percentageScore < 80) {
       setPointsScoreProps({
         mainText: `${pointsTotal} points`,
-        barBgColour: 'uiBg',
+        barBgColour: 'white',
+        hint: 'points',
+        textPosition: 'left',
         barColour: 'secondary',
         bgColour: 'infoBb',
         currentPoints: pointsTotal,
         maxPoints: pointsMax,
-        textColour: 'secondary',
+        textColour: 'textDark',
         onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
         image: <EmojiBlueSmile className="mr-2 h-16 w-16" />,
       });
     } else {
       setPointsScoreProps({
         mainText: `${pointsTotal} points`,
-        barBgColour: 'uiBg',
+        barBgColour: 'white',
+        hint: 'points',
+        textPosition: 'left',
         barColour: 'successMain',
         bgColour: 'successBg',
         currentPoints: pointsTotal,
         maxPoints: pointsMax,
-        textColour: 'successMain',
+        textColour: 'textDark',
         onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
         image: <EmojiGreenSmile className="mr-2 h-16 w-16" />,
       });
@@ -217,6 +225,45 @@ export const Dashboard: React.FC = () => {
       appDispatch(practitionerThunkActions.updatePractitioner(input));
     }
   }, [completedSteps?.length]);
+
+  const leagueCard = useMemo((): ScoreCardProps => {
+    // TODO: add integration
+    const mockedLeague = {
+      position: 4,
+      name: 'Lady Bugs',
+      currentPoints: 200,
+      maxPoints: 300,
+      isTop80Percent: true,
+    };
+    return {
+      image: (
+        <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
+          <Badge
+            className="absolute z-0 h-12 w-12"
+            fill={`var(--${
+              mockedLeague.isTop80Percent ? 'successMain' : 'secondary'
+            })`}
+          />
+          <Typography
+            className="relative z-10"
+            color="white"
+            type="h1"
+            text={String(mockedLeague.position)}
+          />
+        </div>
+      ),
+      currentPoints: mockedLeague.currentPoints,
+      maxPoints: mockedLeague.maxPoints,
+      barBgColour: 'white',
+      barColour: 'successMain',
+      hint: mockedLeague.name,
+      mainText: '',
+      hintClassName: 'mt-10',
+      bgColour: 'successBg',
+      textColour: 'black',
+      onClick: () => history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+    };
+  }, []);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -350,6 +397,13 @@ export const Dashboard: React.FC = () => {
         (async () =>
           await appDispatch(
             pointsThunkActions.getPointsLibrary({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getUserClubStanding({
               userId: userData?.id!,
             })
           ).unwrap())();
@@ -492,7 +546,7 @@ export const Dashboard: React.FC = () => {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
-      icon: 'BellIcon',
+      icon: 'PresentationChartBarIcon',
       current: false,
       showDivider: true,
     });
@@ -629,6 +683,18 @@ export const Dashboard: React.FC = () => {
     });
   }
 
+  if (!isTrainee) {
+    dashboardItems.splice(1, 0, {
+      title: NavigationTypes.Training,
+      titleIcon: 'PresentationChartBarIcon',
+      titleIconClassName: styles.trainingIcon,
+      onActionClick: () => {
+        goToTraining();
+      },
+      classNames: 'bg-uiBg',
+    });
+  }
+
   if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
@@ -722,6 +788,10 @@ export const Dashboard: React.FC = () => {
       history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
       return;
     }
+  };
+
+  const goToTraining = () => {
+    history.push(ROUTES.TRAINING);
   };
 
   const onNavigation = (navItem: any) => {
@@ -843,9 +913,11 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!pointsScoreProps && (
+        {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
+            className="mt-5 mb-1"
             mainText={pointsScoreProps.mainText}
+            hint={pointsScoreProps?.hint}
             currentPoints={pointsScoreProps.currentPoints}
             maxPoints={pointsScoreProps.maxPoints}
             onClick={pointsScoreProps.onClick}
@@ -854,6 +926,23 @@ export const Dashboard: React.FC = () => {
             bgColour={pointsScoreProps.bgColour}
             image={pointsScoreProps.image}
             textColour={pointsScoreProps.textColour}
+            textPosition={pointsScoreProps.textPosition}
+          />
+        )}
+        {isPractitioner && (
+          <ScoreCard
+            mainText={leagueCard.mainText}
+            hint={leagueCard.hint}
+            hintClassName={leagueCard.hintClassName}
+            textPosition="left"
+            currentPoints={leagueCard.currentPoints}
+            maxPoints={leagueCard.maxPoints}
+            onClick={leagueCard.onClick}
+            barBgColour={leagueCard.barBgColour}
+            barColour={leagueCard.barColour}
+            bgColour={leagueCard.bgColour}
+            image={leagueCard.image}
+            textColour={leagueCard.textColour}
           />
         )}
       </div>

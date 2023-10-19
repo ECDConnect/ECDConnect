@@ -1,4 +1,5 @@
-﻿using ECDLink.DataAccessLayer.Entities.PointsEngine;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;
 
@@ -16,8 +17,6 @@ namespace ECDLink.Core.Services.Interfaces
         PointsUser UpdateIndividualUserPoints(PointsUser input);
         PointsUserSummary InsertIndividualSummaryUserPoints(PointsUserSummary input);
         PointsUserSummary UpdateIndividualSummaryUserPoints(PointsUserSummary input);
-
-        bool UpdateUserSummaryPoints(string userId, DateTime today);
 
         // GG
         bool CalculatePregnantMomClientRegistration(string userId, DateTime today);
@@ -37,6 +36,20 @@ namespace ECDLink.Core.Services.Interfaces
         bool CalculateThreeConsecutiveIncomeStatementsSubmitted(string userId, DateTime today);
 
         // SS TODO: Pre-school fees on profile - development pending
+
+        /// <summary>
+        /// Gets the percentile standing of a user within relative to others within the club
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        UserClubStandingModel GetUserClubStanding(string userId);
+        // Clubs
+        bool CalculateLeaveNoOneBehind(Guid clubId, string userId, DateTime today);
+        bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
+        bool CalculateCompleteChildProgressReports(Guid clubId, string userId, DateTime today);
+        bool CalculateCaptureChildAttendance(Guid clubId, string userId, DateTime today);
+        bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today);
+        bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
 
     }
 }

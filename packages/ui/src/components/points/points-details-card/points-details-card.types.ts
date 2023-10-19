@@ -1,4 +1,4 @@
-import { Colours, ComponentBaseProps } from '@ecdlink/ui';
+import { Colours, ComponentBaseProps } from '../../../models';
 
 export interface PointsDetailsCardProps extends ComponentBaseProps {
   pointsEarned: number;
@@ -7,6 +7,6 @@ export interface PointsDetailsCardProps extends ComponentBaseProps {
   description?: string;
   size?: 'large' | 'medium';
   colour?: Colours;
-  badgeColour?: Colours;
   isShare?: boolean;
+  badgeImage: JSX.Element;
 }

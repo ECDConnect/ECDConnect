@@ -1,6 +1,6 @@
-import { Typography, classNames } from '@ecdlink/ui';
+import { classNames } from '../../../utils';
+import Typography from '../../typography/typography';
 import { PointsDetailsCardProps } from './points-details-card.types';
-import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 
 export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
   pointsEarned,
@@ -9,9 +9,9 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
   description,
   size = 'medium',
   colour = 'uiBg',
-  badgeColour = 'primary',
   className,
   isShare,
+  badgeImage,
 }) => {
   return (
     <div
@@ -36,10 +36,7 @@ export const PointsDetailsCard: React.FC<PointsDetailsCardProps> = ({
           size === 'large' ? 'h-16 w-16' : 'h-11 w-11'
         } items-center justify-center`}
       >
-        <Badge
-          className="absolute z-0 h-full w-full"
-          fill={`var(--${badgeColour})`}
-        />
+        {badgeImage}
         <Typography
           className={`relative z-10 ${isShare ? 'mb-4' : ''}`}
           color="white"
