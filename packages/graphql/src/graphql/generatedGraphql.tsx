@@ -1743,6 +1743,7 @@ export type ClubActivityUpload = {
   document?: Maybe<Document>;
   documentId: Scalars['UUID'];
   id: Scalars['UUID'];
+  imageApproved: Scalars['Boolean'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   month: Scalars['Int'];
@@ -1760,6 +1761,7 @@ export type ClubActivityUploadFilterInput = {
   document?: InputMaybe<DocumentFilterInput>;
   documentId?: InputMaybe<ComparableGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  imageApproved?: InputMaybe<BooleanOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   month?: InputMaybe<ComparableInt32OperationFilterInput>;
@@ -1777,6 +1779,7 @@ export type ClubActivityUploadInput = {
   Document?: InputMaybe<DocumentInput>;
   DocumentId: Scalars['UUID'];
   Id?: InputMaybe<Scalars['UUID']>;
+  ImageApproved: Scalars['Boolean'];
   IsActive: Scalars['Boolean'];
   Month: Scalars['Int'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -1791,6 +1794,7 @@ export type ClubActivityUploadSortInput = {
   document?: InputMaybe<DocumentSortInput>;
   documentId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
+  imageApproved?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   month?: InputMaybe<SortEnumType>;
@@ -5180,6 +5184,7 @@ export type Mutation = {
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
+  addClubMeeting?: Maybe<ClubMeeting>;
   addCoachCircleMeeting?: Maybe<ClubMeeting>;
   addCoachFranchiseeAgreementForTrainee?: Maybe<Visit>;
   addCoachToFranchisor?: Maybe<Coach>;
@@ -5513,6 +5518,7 @@ export type Mutation = {
   removePractitioner: Scalars['Boolean'];
   removeUserFromRoles: Scalars['Boolean'];
   resetUserPassword: Scalars['Boolean'];
+  saveWelcomeMessage: Scalars['Boolean'];
   scheduleConsolidationMeetingDate?: Maybe<Trainee>;
   sendAllProgressReportsCompletedForClassNotification: Scalars['Boolean'];
   sendAnyGGNotification: Scalars['Boolean'];
@@ -5679,6 +5685,7 @@ export type Mutation = {
   updateMotherContactDetails?: Maybe<Mother>;
   updateMotherDeliveryDate?: Maybe<Mother>;
   updateNavigation?: Maybe<Navigation>;
+  updateNewMemberStatus: Scalars['Boolean'];
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
   updatePQA?: Maybe<Pqa>;
@@ -5789,6 +5796,10 @@ export type MutationAddAdditionalVisitForMotherArgs = {
 
 export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
+};
+
+export type MutationAddClubMeetingArgs = {
+  input?: InputMaybe<ClubMeetingModelInput>;
 };
 
 export type MutationAddCoachCircleMeetingArgs = {
@@ -7231,6 +7242,12 @@ export type MutationResetUserPasswordArgs = {
   newPassword?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSaveWelcomeMessageArgs = {
+  clubId: Scalars['UUID'];
+  practitionerId: Scalars['UUID'];
+  welcomeMessage?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationScheduleConsolidationMeetingDateArgs = {
   scheduledDate?: InputMaybe<Scalars['DateTime']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -8102,6 +8119,11 @@ export type MutationUpdateMotherDeliveryDateArgs = {
 export type MutationUpdateNavigationArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<NavigationInput>;
+};
+
+export type MutationUpdateNewMemberStatusArgs = {
+  clubId: Scalars['UUID'];
+  practitionerId: Scalars['UUID'];
 };
 
 export type MutationUpdateNoteArgs = {
