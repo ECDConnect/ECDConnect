@@ -14,7 +14,7 @@ import {
   ScoreCard,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -111,6 +111,14 @@ export const Dashboard: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+
+  const a = useCallback(async () => {
+    appDispatch(practitionerThunkActions?.getAllPractitioners({}));
+  }, []);
+
+  useEffect(() => {
+    a();
+  }, []);
 
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 

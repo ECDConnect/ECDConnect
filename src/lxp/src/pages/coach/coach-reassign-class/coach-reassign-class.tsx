@@ -27,7 +27,10 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import * as styles from './coach-reassign-class.styles';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { authSelectors } from '@/store/auth';
@@ -35,6 +38,7 @@ import { userSelectors } from '@store/user';
 import { classroomsSelectors } from '@/store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
+import { useAppDispatch } from '@/store';
 
 const absentInfo = [
   {
@@ -74,6 +78,7 @@ interface reassignedClassroomGroupProps {
 
 export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   const { isOnline } = useOnlineStatus();
+  const dispatch = useAppDispatch();
   const { refreshClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const userData = useSelector(userSelectors.getUser);
@@ -89,7 +94,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerId = routeState?.practitionerId;
-  const [isOneDayLeave, setIsOneDayLeave] = useState<boolean | boolean[]>();
 
   const {
     control,
@@ -228,74 +232,11 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       });
 
       await refreshClassroom();
+      await dispatch(practitionerThunkActions?.getAllPractitioners({}));
     }
 
     history.push(ROUTES.DASHBOARD);
   };
-
-  const renderClassroomGroupsDropdown = useMemo(() => {
-    if (principalPractitioners && principalPractitioners?.length > 5) {
-      if (practitionerClassroomGroups.length > 0) {
-        practitionerClassroomGroups?.map((item, index) => {
-          const classroomId = item?.id!;
-          return (
-            <>
-              <Dropdown
-                key={index}
-                placeholder={'Select practitioner'}
-                list={practitionersTeachList || []}
-                fillType="clear"
-                label={`Who will teach the ${item?.name} class instead?`}
-                fullWidth
-                className={'mt-3 w-full'}
-                onChange={(practitioner: any) => {
-                  const reassignedData = {
-                    practitioner,
-                    classroomId,
-                  };
-                  setReassignClassValue('practitioner2', practitioner);
-                  handleReassignClassroomGroupPractitioner(reassignedData);
-                }}
-              />
-              {practitionerPresentName?.user?.fullName && (
-                <Alert
-                  className={'mt-5 mb-3'}
-                  title={`You are reassigning ${
-                    practitionerAbsentName?.user?.fullName || ''
-                  } class ${item?.name} to ${
-                    practitionerPresentName?.user?.fullName || ''
-                  } for ${format(new Date(selectedDate!), 'EEEE, d LLLL')}.`}
-                  type={'info'}
-                />
-              )}
-            </>
-          );
-        });
-      }
-      return (
-        <Alert
-          className={'mt-5 mb-3'}
-          title="No class reassignment needed."
-          list={[
-            `${practitionerAbsentName?.user?.firstName} is not currently assigned to a class.`,
-          ]}
-          type={'success'}
-        />
-      );
-    }
-  }, [
-    handleReassignClassroomGroupPractitioner,
-    practitionerAbsentName?.user?.firstName,
-    practitionerAbsentName?.user?.fullName,
-    practitionerClassroomGroups,
-    practitionerPresentName?.user?.fullName,
-    practitionersTeachList,
-    principalPractitioners,
-    selectedDate,
-    setReassignClassValue,
-  ]);
-
-  console.log({ practitionerClassroomGroups });
 
   return (
     <BannerWrapper
@@ -386,7 +327,57 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             />
           )}
 
-          {renderClassroomGroupsDropdown}
+          {principalPractitioners &&
+          principalPractitioners?.length > 0 &&
+          practitionerClassroomGroups.length > 0 ? (
+            practitionerClassroomGroups?.map((item, index) => {
+              const classroomId = item?.id!;
+              return (
+                <>
+                  <Dropdown
+                    key={index}
+                    placeholder={'Select practitioner'}
+                    list={practitionersTeachList || []}
+                    fillType="clear"
+                    label={`Who will teach the ${item?.name} class instead?`}
+                    fullWidth
+                    className={'mt-3 w-full'}
+                    onChange={(practitioner: any) => {
+                      const reassignedData = {
+                        practitioner,
+                        classroomId,
+                      };
+                      setReassignClassValue('practitioner2', practitioner);
+                      handleReassignClassroomGroupPractitioner(reassignedData);
+                    }}
+                  />
+                  {practitionerPresentName?.user?.fullName && (
+                    <Alert
+                      className={'mt-5 mb-3'}
+                      title={`You are reassigning ${
+                        practitionerAbsentName?.user?.fullName || ''
+                      } class ${item?.name} to ${
+                        practitionerPresentName?.user?.fullName || ''
+                      } for ${format(
+                        new Date(selectedDate!),
+                        'EEEE, d LLLL'
+                      )}.`}
+                      type={'info'}
+                    />
+                  )}
+                </>
+              );
+            })
+          ) : (
+            <Alert
+              className={'mt-5 mb-3'}
+              title="No class reassignment needed."
+              list={[
+                `${practitionerAbsentName?.user?.firstName} is not currently assigned to a class.`,
+              ]}
+              type={'success'}
+            />
+          )}
         </>
 
         <Button
