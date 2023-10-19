@@ -9,14 +9,20 @@ import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import { userSelectors } from '@/store/user';
+import { Roles } from '@/constants/roles';
 
 export const CaptureChildAttendance: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
+  const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const history = useHistory();
 
+  const isPractitioner = user?.roles?.some(
+    (item) => item?.name === Roles.PRACTITIONER
+  );
   const activityId = 'capture-child-attendance';
 
   const mockedPoints = 240;
@@ -114,7 +120,11 @@ export const CaptureChildAttendance: React.FC = () => {
         color="primary"
         text="Back to club"
         onClick={() =>
-          history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+          history.push(
+            isPractitioner
+              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
+              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+          )
         }
       />
     </BannerWrapper>

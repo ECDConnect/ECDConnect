@@ -892,7 +892,8 @@ export const Dashboard: React.FC = () => {
         />
         {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
-            className="mt-5 mb-1"
+            className="mt-5 mb-1 h-20"
+            progressBarClassName="flex pt-2"
             mainText={pointsScoreProps.mainText}
             hint={pointsScoreProps?.hint}
             currentPoints={pointsScoreProps.currentPoints}
@@ -908,6 +909,7 @@ export const Dashboard: React.FC = () => {
         )}
         {isPractitioner && (
           <ScoreCard
+            className="h-20"
             mainText={leagueCard.mainText}
             hint={leagueCard.hint}
             hintClassName={leagueCard.hintClassName}

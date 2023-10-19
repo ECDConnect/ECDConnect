@@ -1,12 +1,16 @@
+import { HostFamilyDaysRouteState } from '@/pages/community/clubs-tab/club/club-points/activities/host-family-days/index.types';
+import ROUTES from '@/routes/routes';
 import { ActionModal } from '@ecdlink/ui';
 import { QuestionMarkCircleIcon } from '@heroicons/react/solid';
+import { useHistory } from 'react-router';
 
-// todo: add a dialog with actions buttons
 export const AddEventOrMeetingDialog = ({
   onClose,
 }: {
   onClose: () => void;
 }) => {
+  const history = useHistory();
+
   return (
     <ActionModal
       title="What do you want to add?"
@@ -21,6 +25,9 @@ export const AddEventOrMeetingDialog = ({
           type: 'filled',
           leadingIcon: 'CalendarIcon',
           onClick: () => {
+            history.push(
+              ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+            );
             onClose();
           },
         },
@@ -31,6 +38,9 @@ export const AddEventOrMeetingDialog = ({
           type: 'outlined',
           leadingIcon: 'CalendarIcon',
           onClick: () => {
+            history.push(ROUTES.COMMUNITY.CLUB.POINTS.HOST_FAMILY_EVENT, {
+              isFromAddFamilyDayEvent: true,
+            } as HostFamilyDaysRouteState);
             onClose();
           },
         },
