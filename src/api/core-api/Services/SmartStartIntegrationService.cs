@@ -45,6 +45,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.SmartStart.Services;
+using AngleSharp.Io;
 
 namespace EcdLink.Api.CoreApi.Services;
 public class SmartStartIntegrationService : IIntegrationService
@@ -612,10 +613,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         try
                         {
                             //now send to API call <entity type>/Multiple
-                            var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
-                            if (!string.IsNullOrEmpty(responseString))
+                            var apiResponse = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
+                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                             {
-                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
                                 if (returnObj != null)
                                 {
                                     if (returnObj[0].Guid != null)
@@ -635,12 +636,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         statementsSent++;
                                     } else
                                     {
-                                        await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                                        await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonStatementString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
                                     }
                                 }
                                 else //error empty response received
                                 {
-                                    await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                                    await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonStatementString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
                                 }
                             }
                         }
@@ -887,38 +888,40 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
                     jsonAttendanceString.AppendLine("]");
 
-                    try
-                    {
-                        //now send to API call <entity type>/Multiple
-                        var responseString = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
-                        if (!string.IsNullOrEmpty(responseString))
-                        {
-                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
-                            if (returnObj != null)
+                            try
                             {
-                                var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                isComplete = true;
-                                //mark mapped parent practitioner of last date attendance was sent
-                                parent.LastAttendanceSubmittedDate = DateTime.Now;
-                                _mapperRepo.Update(parent);
+                                //now send to API call <entity type>/Multiple
+                                var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
+                                if (!string.IsNullOrEmpty(apiResponse.ResponseString))
+                                {
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
+                                    if (returnObj != null)
+                                    {
+                                        var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                        isComplete = true;
+                                        //mark mapped parent practitioner of last date attendance was sent
+                                        parent.LastAttendanceSubmittedDate = DateTime.Now;
+                                        _mapperRepo.Update(parent);
 
-                                attendancesSent++;
+                                        attendancesSent++;
+                                    }
+                                    else //error empty response received
+                                    {
+                                        await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > GetAPIHandlerResponse");
+                                    }
+                                }
                             }
-                            else //error empty response received
+                            catch (Exception e)
                             {
-                                await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonAttendanceString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > GetAPIHandlerResponse");
+                                await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAtIntegrationAttendanceByDueDatatendanceData > GetAPIHandlerResponse");
                             }
                         }
                     }
-                    catch (Exception e)
-                    {
-                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAtIntegrationAttendanceByDueDatatendanceData > GetAPIHandlerResponse");
-                    }
                 }
-            }
-            catch (Exception e)
-            {
-                await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
+                }
             }
         }
     
@@ -1091,10 +1094,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         if (validAttendance)
                         {
                             //now send to API call <entity type>/Multiple
-                            var responseString = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
-                            if (!string.IsNullOrEmpty(responseString))
+                            var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
+                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                             {
-                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
                                 if (returnObj != null)
                                 {
                                     var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
@@ -1107,7 +1110,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
                                 else //error empty response received
                                 {
-                                    await _logManager.IntegrationLog("Data Push Fail: " + responseString, jsonAttendanceString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
+                                    await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
                                 }
                             }
                         }
@@ -3343,7 +3346,6 @@ public class SmartStartIntegrationService : IIntegrationService
         _audits = await GetAudits(null, auditUserId, historyDays);
         var updates = _audits.Where(x => x.ChangeType.Equals("Update") && x.Submitted == null).ToList();
 
-        var responseString = "";
         List<IntegrationAudit> completedList = new List<IntegrationAudit>();
         List<IntegrationEntityMapping> completedEntityList = new List<IntegrationEntityMapping>();
         try
@@ -3477,29 +3479,25 @@ public class SmartStartIntegrationService : IIntegrationService
                         }
 
                         jsonString.AppendLine("]");
+                        IntegrationAPIManager.APIHandleResponse apiResponse = null;
                         try
                         {
 
                             if (validUpdate)
                             {
                                 //now send to API call <entity type>/Multiple
-                                responseString = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
-                                if (!string.IsNullOrEmpty(responseString))
+                                apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
+                                if (apiResponse != null)
                                 {
-                                    if (responseString == "1") //success
+                                    if (!apiResponse.Success)
                                     {
-
+                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                    }
+                                    else
+                                    {
                                         await _logManager.UpdateAuditSubmitted(completedList);
                                         completedEntityList.Add(entityToUpdate.entity);
                                         await _logManager.IntegrationLog("Data Push Success: ", jsonString.ToString(), null, LogRelatedType.Log, "PushUpdates > GetAPIHandlerResponse");
-                                    }
-                                    else if (responseString == "0")
-                                    {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
-                                    }
-                                    else //error
-                                    {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                                     }
                                 }
                             }
@@ -3511,7 +3509,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         }
                         catch (Exception e)
                         {
-                            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message + " - " + responseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                             //throw new HttpRequestException("SmartLink API Error: " + e.Message);
                         }
                     }
@@ -3656,7 +3654,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _mappedEntities = await GetMappedEntities();
         var mappedDocEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSDocument);
         string docRemoteId = "";
-        var responseString = "";
+        IntegrationAPIManager.APIHandleResponse apiResponse = null;
         if (newDoc != null)
         {
             string noteRemoteId = "";
@@ -3709,17 +3707,17 @@ public class SmartStartIntegrationService : IIntegrationService
                         try
                         {
                             //now send to API call <entity type>/Multiple
-                            responseString = await _apiManager.GetAPIHandlerResponse(docUrl, null, null, null, false, false, jsonDocString.ToString());
-                            if (!string.IsNullOrEmpty(responseString))
+                            apiResponse = await _apiManager.GetAPIHandlerResponse(docUrl, null, null, null, false, false, jsonDocString.ToString());
+                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                             {
-                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
                                 if (returnObj != null)
                                 {
                                     docRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
                                 }
                                 else //error empty response received
                                 {
-                                    await _logManager.IntegrationLog("Doc not created", jsonDocString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                    await _logManager.IntegrationLog("Doc not created", jsonDocString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                                 }
                             }
                         }
@@ -3765,10 +3763,10 @@ public class SmartStartIntegrationService : IIntegrationService
                             try
                             {
                                 //now send to API call <entity type>/Multiple
-                                responseString = await _apiManager.GetAPIHandlerResponse(noteUrl, null, null, null, false, false, jsonNoteString.ToString());
-                                if (!string.IsNullOrEmpty(responseString))
+                                apiResponse = await _apiManager.GetAPIHandlerResponse(noteUrl, null, null, null, false, false, jsonNoteString.ToString());
+                                if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                                 {
-                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
                                     if (returnObj != null)
                                     {
                                         if (returnObj[0].Guid != null)
@@ -3789,13 +3787,13 @@ public class SmartStartIntegrationService : IIntegrationService
                                     }
                                     else //error empty response received
                                     {
-                                        await _logManager.IntegrationLog("Note not created", jsonNoteString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                        await _logManager.IntegrationLog("Note not created", jsonNoteString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                                     }
                                 }
                             }
                             catch (Exception e)
                             {
-                                await _logManager.IntegrationLog(e.Message + " - " + responseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewDocument > GetAPIHandlerResponse");
+                                await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewDocument > GetAPIHandlerResponse");
                             }
                         }
                     }
@@ -3807,7 +3805,7 @@ public class SmartStartIntegrationService : IIntegrationService
             }
             catch (Exception e)
             {
-                await _logManager.IntegrationLog(e.Message + " - " + responseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewDocument > Overall");
+                await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewDocument > Overall");
             }
         }
         return docRemoteId;
@@ -3823,7 +3821,7 @@ public class SmartStartIntegrationService : IIntegrationService
          */
         string cgRemoteId = "";
         string childRemoteId = "";
-        var responseString = "";
+        IntegrationAPIManager.APIHandleResponse apiResponse = null;
         if (newChild != null)
         {
             try
@@ -3906,10 +3904,10 @@ public class SmartStartIntegrationService : IIntegrationService
                     try
                     {
                         //now send to API call <entity type>/Multiple
-                        responseString = await _apiManager.GetAPIHandlerResponse(cgUrl, null, null, null, false, false, jsonCaregiverString.ToString());
-                        if (!string.IsNullOrEmpty(responseString))
+                        apiResponse = await _apiManager.GetAPIHandlerResponse(cgUrl, null, null, null, false, false, jsonCaregiverString.ToString());
+                        if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                         {
-                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
                             if (returnObj != null)
                             {
                                 cgRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
@@ -3927,13 +3925,13 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             else //error empty response received
                             {
-                                await _logManager.IntegrationLog("Caregiver not created", jsonCaregiverString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
+                                await _logManager.IntegrationLog("Caregiver not created", jsonCaregiverString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
                             }
                         }
                     }
                     catch (Exception e)
                     {
-                        await _logManager.IntegrationLog(e.Message + " - " + responseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewChild > CreateCaregiver > GetAPIHandlerResponse");
+                        await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewChild > CreateCaregiver > GetAPIHandlerResponse");
                     }
 
                 }
@@ -4087,10 +4085,10 @@ public class SmartStartIntegrationService : IIntegrationService
                 try
                 {
                     //now send to API call <entity type>/Multiple
-                    responseString = await _apiManager.GetAPIHandlerResponse(childUrl, null, null, null, false, false, jsonChildString.ToString());
-                    if (!string.IsNullOrEmpty(responseString))
+                    apiResponse = await _apiManager.GetAPIHandlerResponse(childUrl, null, null, null, false, false, jsonChildString.ToString());
+                    if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                     {
-                        var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                        var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
                         if (returnObj != null)
                         {
                             childRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
@@ -4110,23 +4108,23 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             else //error empty response received
                             {
-                                await _logManager.IntegrationLog("Child not created", jsonChildString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
+                                await _logManager.IntegrationLog("Child not created", jsonChildString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
                             }
                         }
                         else //error empty response received
                         {
-                            await _logManager.IntegrationLog("Child not created", jsonChildString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
+                            await _logManager.IntegrationLog("Child not created", jsonChildString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
                         }
                     }
                 }
                 catch (Exception e)
                 {
-                    await _logManager.IntegrationLog(e.Message + " - " + responseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                    await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                 }
             }
             catch (Exception e)
             {
-                await _logManager.IntegrationLog(e.Message + " - " + responseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
             }
         }
         return childRemoteId;
@@ -4281,21 +4279,17 @@ public class SmartStartIntegrationService : IIntegrationService
                     try
                     {
                         //now send to API call <entity type>/Multiple
-                        var responseString = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
-                        if (!string.IsNullOrEmpty(responseString))
+                        var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
+                        if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                         {
-                            if (responseString == "1") //success
+                            if (apiResponse.Success) //success
                             {
                                 //mark entries as submitted
                                 await _logManager.UpdateAuditSubmitted(completedList);
                             }
-                            else if (responseString == "0")
-                            {
-                                await _logManager.IntegrationLog("Data push failed ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
-                            }
                             else //error
                             {
-                                await _logManager.IntegrationLog("Data push failed ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
+                                await _logManager.IntegrationLog("Data push failed ", jsonString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
                             }
                         }
                     }
@@ -5103,8 +5097,8 @@ public class SmartStartIntegrationService : IIntegrationService
         {
             //entity may have been manually mapped for inclusion, pull all details and update
             string url = Constants.SSIntegrationSettings.SLCoach + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", coach.RemoteId);
-            var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
-            MappedCoach entity = JsonConvert.DeserializeObject<MappedCoach>(responseString);
+            var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null);
+            MappedCoach entity = JsonConvert.DeserializeObject<MappedCoach>(apiResponse.ResponseString);
             if (entity != null)
             {
                 entity.localId = coach.LocalId;
@@ -5120,8 +5114,8 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
                 string url = Constants.SSIntegrationSettings.SLPractitioner + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", practitioner.RemoteId);
-                var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
-                MappedFranchisee entity = JsonConvert.DeserializeObject<MappedFranchisee>(responseString);
+                var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null);
+                MappedFranchisee entity = JsonConvert.DeserializeObject<MappedFranchisee>(apiResponse.ResponseString);
                 if (entity != null)
                 {
                     entity.localId = practitioner.LocalId;
@@ -5136,8 +5130,8 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
                 string url = Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", child.RemoteId);
-                var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
-                MappedChild entity = JsonConvert.DeserializeObject<MappedChild>(responseString);
+                var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null);
+                MappedChild entity = JsonConvert.DeserializeObject<MappedChild>(apiResponse.ResponseString);
                 if (entity != null)
                 {
                     entity.localId = child.LocalId;
@@ -5152,8 +5146,8 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
                 string url = Constants.SSIntegrationSettings.SLCaregiver + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", caregiver.RemoteId);
-                var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
-                MappedCaregiver entity = JsonConvert.DeserializeObject<MappedCaregiver>(responseString);
+                var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null);
+                MappedCaregiver entity = JsonConvert.DeserializeObject<MappedCaregiver>(apiResponse.ResponseString);
                 if (entity != null)
                 {
                     entity.localId = caregiver.LocalId;
@@ -5168,8 +5162,8 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
                 string url = Constants.SSIntegrationSettings.SLAddress + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", address.RemoteId);
-                var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
-                MappedAddress entity = JsonConvert.DeserializeObject<MappedAddress>(responseString);
+                var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null);
+                MappedAddress entity = JsonConvert.DeserializeObject<MappedAddress>(apiResponse.ResponseString);
                 if (entity != null)
                 {
                     entity.localId = address.LocalId;
@@ -5184,8 +5178,8 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 //entity may have been manually mapped for inclusion, pull all details and update
                 string url = Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", docs.RemoteId);
-                var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
-                MappedDocument entity = JsonConvert.DeserializeObject<MappedDocument>(responseString);
+                var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null);
+                MappedDocument entity = JsonConvert.DeserializeObject<MappedDocument>(apiResponse.ResponseString);
                 if (entity != null)
                 {
                     entity.localId = docs.LocalId;
