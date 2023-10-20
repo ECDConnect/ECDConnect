@@ -41,7 +41,13 @@ export const ClassProgrammeAttendanceList: React.FC<
       (x) => !Boolean(x.stoppedAttendance)
     );
 
-    for (const learner of _allLearners) {
+    const uniqueLearners = _allLearners.filter((object, index, array) => {
+      return (
+        index ===
+        array.findIndex((newObject) => newObject.userId === object.userId)
+      );
+    });
+    for (const learner of uniqueLearners) {
       if (learner.classroomGroupId !== classroomGroup.id) continue;
 
       const child = children?.find(
