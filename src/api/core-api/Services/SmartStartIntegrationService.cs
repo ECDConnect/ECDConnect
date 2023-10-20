@@ -1749,24 +1749,30 @@ public class SmartStartIntegrationService : IIntegrationService
                 var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: _uId);
                 try
                 {
+                    var childToAlignUserIds = childrenToAlign.Select(c => c.UserId);
+                    var existingLearners = learnerRepo.GetAll().Where(l => childToAlignUserIds.Contains(l.UserId) && l.IsActive == true);
+                    var unsureClassroomGroup = classroomgroupRepo.GetAll().Where(x => x.UserId == Guid.Parse(newPractitioner.UserId) && x.Name == "Unsure").OrderBy(x => x.Id).FirstOrDefault();
                     foreach (var child in childrenToAlign)
                     {
                         if (child != null)
                         {
-                            var group = classroomgroupRepo.GetAll().Where(x => x.UserId == Guid.Parse(newPractitioner.UserId) && x.Name == "Unsure").OrderBy(x => x.Id).FirstOrDefault();
-                            Learner newLearner = new Learner()
+                            var existingLearner = existingLearners.Where(l => l.UserId == child.UserId).FirstOrDefault();
+                            if (existingLearner == null)
                             {
-                                UserId = child.UserId,
-                                StartedAttendance = DateTime.Now,
-                                Hierarchy = newPractitioner.Hierarchy
-                            };
+                                Learner newLearner = new Learner()
+                                {
+                                    UserId = child.UserId,
+                                    StartedAttendance = DateTime.Now,
+                                    Hierarchy = newPractitioner.Hierarchy
+                                };
 
-                            if (group != null)
-                            {
-                                newLearner.ClassroomGroupId = group.Id;
-                                learnerRepo.Insert(newLearner);
+                                if (unsureClassroomGroup != null)
+                                {
+                                    newLearner.ClassroomGroupId = unsureClassroomGroup.Id;
+                                    learnerRepo.Insert(newLearner);
 
-                                returnOK = true;
+                                    returnOK = true;
+                                }
                             }
                         }
                     }
