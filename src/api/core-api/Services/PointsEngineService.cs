@@ -18,6 +18,7 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1690,6 +1691,33 @@ namespace EcdLink.Api.CoreApi.Services
                         (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
                 }
             }
+            return true;
+        }
+
+        public bool CalculatePreSchoolFees(string userId, DateTime today)
+        {
+            PointsLibrary activity = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement).Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac1).FirstOrDefault();
+            PointsUser activity_record = _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == activity.Id && x.UserId == userId && x.Year == today.Year).FirstOrDefault();
+
+            if (activity_record == null)
+            {
+                InsertIndividualUserPoints(
+                    new PointsUser
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedBy = _uId,
+                        Month = today.Month,
+                        Year = today.Year,
+                        Points = activity.Points,
+                        UserId = userId,
+                        PointsLibraryId = activity.Id
+                    }
+                );
+                UpdateUserSummaryPoints(userId, activity, today);
+            }
+
             return true;
         }
 
