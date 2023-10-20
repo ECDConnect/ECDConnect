@@ -143,8 +143,7 @@ export const OnboardingTraineeDashboard: React.FC<
       displayHelp={true}
       onHelp={displayTutorial}
       displayOffline={!isOnline}
-      renderOverflow={true}
-      className="h-screen"
+      className="h-screen pb-16"
     >
       <div className="bg-uiBg flex w-full items-center justify-center">
         <Typography

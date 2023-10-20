@@ -5513,6 +5513,7 @@ export type Mutation = {
   removePractitioner: Scalars['Boolean'];
   removeUserFromRoles: Scalars['Boolean'];
   resetUserPassword: Scalars['Boolean'];
+  saveWelcomeMessage: Scalars['Boolean'];
   scheduleConsolidationMeetingDate?: Maybe<Trainee>;
   sendAllProgressReportsCompletedForClassNotification: Scalars['Boolean'];
   sendAnyGGNotification: Scalars['Boolean'];
@@ -5679,6 +5680,7 @@ export type Mutation = {
   updateMotherContactDetails?: Maybe<Mother>;
   updateMotherDeliveryDate?: Maybe<Mother>;
   updateNavigation?: Maybe<Navigation>;
+  updateNewMemberStatus: Scalars['Boolean'];
   updateNote?: Maybe<Note>;
   updateNoteType?: Maybe<NoteType>;
   updatePQA?: Maybe<Pqa>;
@@ -7231,6 +7233,12 @@ export type MutationResetUserPasswordArgs = {
   newPassword?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationSaveWelcomeMessageArgs = {
+  clubId: Scalars['UUID'];
+  practitionerId: Scalars['UUID'];
+  welcomeMessage?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationScheduleConsolidationMeetingDateArgs = {
   scheduledDate?: InputMaybe<Scalars['DateTime']>;
   userId?: InputMaybe<Scalars['String']>;
@@ -8102,6 +8110,11 @@ export type MutationUpdateMotherDeliveryDateArgs = {
 export type MutationUpdateNavigationArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<NavigationInput>;
+};
+
+export type MutationUpdateNewMemberStatusArgs = {
+  clubId: Scalars['UUID'];
+  practitionerId: Scalars['UUID'];
 };
 
 export type MutationUpdateNoteArgs = {
@@ -13344,10 +13357,7 @@ export type QueryRoleForUserArgs = {
 };
 
 export type QueryStatementsIncomeExpensesPdfDataArgs = {
-  month: Scalars['Int'];
-  splitSupport?: Scalars['Boolean'];
-  userId?: InputMaybe<Scalars['String']>;
-  year: Scalars['Int'];
+  statementId: Scalars['UUID'];
 };
 
 export type QueryTotalDaysAbsentArgs = {

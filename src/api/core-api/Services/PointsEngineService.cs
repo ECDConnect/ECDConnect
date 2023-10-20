@@ -18,6 +18,7 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -1693,6 +1694,33 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        public bool CalculatePreSchoolFees(string userId, DateTime today)
+        {
+            PointsLibrary activity = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement).Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac1).FirstOrDefault();
+            PointsUser activity_record = _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == activity.Id && x.UserId == userId && x.Year == today.Year).FirstOrDefault();
+
+            if (activity_record == null)
+            {
+                InsertIndividualUserPoints(
+                    new PointsUser
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedBy = _uId,
+                        Month = today.Month,
+                        Year = today.Year,
+                        Points = activity.Points,
+                        UserId = userId,
+                        PointsLibraryId = activity.Id
+                    }
+                );
+                UpdateUserSummaryPoints(userId, activity, today);
+            }
+
+            return true;
+        }
+
         #endregion
 
         /// <summary>
@@ -1703,16 +1731,16 @@ namespace EcdLink.Api.CoreApi.Services
         public UserClubStandingModel GetUserClubStanding(string userId)
         {
             var practitionerId = _practitionerRepo.GetByUserId(userId).Id;
-            var clubId = _clubMemberRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).FirstOrDefault().ClubId;
+            ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).FirstOrDefault();
 
-            if (clubId == default)
+            if (clubMember == null)
             {
                 return new UserClubStandingModel();
             }
 
             var clubUserIds = _clubMemberRepo.GetAll()
                 .Include(x => x.Practitioner)
-                .Where(x => x.ClubId == clubId)
+                .Where(x => x.ClubId == clubMember.ClubId)
                 .Select(x => x.Practitioner.UserId).ToList();
 
             var usersPoints = _pointsUserSummaryRepo.GetAll()

@@ -162,7 +162,7 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
         color={'primary'}
         onBack={() => setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL)}
         displayOffline={!isOnline}
-        renderOverflow={true}
+        className="pb-16"
       >
         <div className="p-4">
           <Typography

@@ -83,11 +83,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const [currentDate] = useState(new Date());
 
-  const { isRejected: isAttendnaceRejected } = useThunkFetchCall(
-    'attendanceData',
-    'getAttendance'
-  );
-
   function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
     const filteredArray: boolean[] = studentsArray.map((student) => {
       const insertedDate = new Date(student.insertedDate); // convert insertedDate to a Date object
@@ -126,7 +121,14 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         ? new Date(currentClassProgramme?.programmeStartDate)
         : new Date();
 
-    for (const learner of _learners) {
+    const uniqueLearners = _learners.filter((object, index, array) => {
+      return (
+        index ===
+        array.findIndex((newObject) => newObject.userId === object.userId)
+      );
+    });
+
+    for (const learner of uniqueLearners) {
       const startedAttendanceDay = getDayOfYear(
         new Date(learner.startedAttendance)
       );

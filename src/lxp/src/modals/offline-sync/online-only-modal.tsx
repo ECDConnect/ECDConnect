@@ -14,7 +14,7 @@ const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({
     <ActionModal
       customIcon={
         <div className="rounded-full">
-          {renderIcon('ExclamationIcon', 'text-errorMain w-24 h-24')}
+          {renderIcon('ExclamationIcon', 'text-alertMain w-24 h-24')}
         </div>
       }
       iconColor="alertMain"
