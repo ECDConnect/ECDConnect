@@ -114,8 +114,8 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
         if (response.status >= 400) {
           alertGraphQL();
         }
-        return response;
       }
+      return response;
     },
     (error: AxiosError) => {
       if (error.config.baseURL === Config.graphQlApi) {
