@@ -115,17 +115,13 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     useState<boolean>(false);
 
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
-  console.log({ practitioner });
   const practitionerAbsentees = practitioner?.absentees;
-  console.log({ practitionerAbsentees });
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) => !isPast(new Date(item?.absentDate as string))
   );
   const currentDates = validAbsenteesDates?.map((item) => {
     return item?.absentDate as string;
   });
-
-  console.log({ currentDates });
 
   const orderedDates = currentDates?.sort(function (a, b) {
     return Date.parse(a) - Date.parse(b);
@@ -137,20 +133,26 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const allAbsenteeClasses = practitionerAbsentees?.filter(
     (item) => item?.absentDate === currentAbsentee?.absentDate
   );
-  console.log({ currentAbsentee });
+
   const isToday = isSameDay(
     new Date(),
     new Date(currentAbsentee?.absentDate || '')
   );
 
   const handleReassignClass = useCallback(
-    (practitionerId: string) => {
+    (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
+      if (allAbsenteeClasses) {
+        history.push('practitioner-reassign-class', {
+          practitionerId,
+          allAbsenteeClasses,
+        });
+        return;
+      }
       history.push('practitioner-reassign-class', {
         practitionerId,
-        allAbsenteeClasses,
       });
     },
-    [allAbsenteeClasses, history]
+    [history]
   );
 
   const handleAbsenceModal = useCallback(() => {
@@ -169,7 +171,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                handleReassignClass(practitionerId);
+                handleReassignClass(practitionerId, allAbsenteeClasses);
                 onSubmit();
               },
               leadingIcon: 'PencilAltIcon',
@@ -189,7 +191,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         />
       ),
     });
-  }, [dialog, handleReassignClass, practitionerId]);
+  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerId]);
 
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -475,7 +477,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
-  console.log({ currentAbsentee });
+
   return (
     <>
       {(practitioner?.isRegistered === null ||
@@ -634,20 +636,24 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                       allAbsenteeClasses?.length > 0 &&
                       allAbsenteeClasses?.map((item) => {
                         return (
-                          <div className="flex items-center gap-2">
-                            <Typography
-                              type={'body'}
-                              color="textMid"
-                              weight="bold"
-                              text={`${item?.className} class reassigned to:`}
-                              className={'mt-4 ml-4'}
-                            />
-                            <Typography
-                              type={'body'}
-                              color="textMid"
-                              text={`${item?.reassignedToPerson}`}
-                              className={'mt-4'}
-                            />
+                          <div>
+                            {item?.className && (
+                              <div className="flex items-center gap-2">
+                                <Typography
+                                  type={'body'}
+                                  color="textMid"
+                                  weight="bold"
+                                  text={`${item?.className} class reassigned to:`}
+                                  className={'mt-4 ml-4'}
+                                />
+                                <Typography
+                                  type={'body'}
+                                  color="textMid"
+                                  text={`${item?.reassignedToPerson}`}
+                                  className={'mt-4'}
+                                />
+                              </div>
+                            )}
                           </div>
                         );
                       })}

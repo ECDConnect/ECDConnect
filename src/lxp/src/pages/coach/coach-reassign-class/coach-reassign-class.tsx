@@ -6,8 +6,6 @@ import {
   Dropdown,
   renderIcon,
   Button,
-  ButtonGroup,
-  ButtonGroupTypes,
   FormInput,
   Alert,
 } from '@ecdlink/ui';
@@ -74,6 +72,7 @@ const absentInfo = [
 interface reassignedClassroomGroupProps {
   practitioner: string;
   classroomId: string;
+  absenteeId?: string;
 }
 
 export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
@@ -85,7 +84,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
   const { state: routeState } = useLocation<ReassignClassPageState>();
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  console.log({ practitioners });
   const absenteePractitioner = useSelector(
     getPractitionerByUserId(String(routeState?.practitionerId) || '')
   );
@@ -94,6 +92,8 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerId = routeState?.practitionerId;
+  const allAbsenteeClasses = routeState?.allAbsenteeClasses;
+  const [isLoading, setIsLoading] = useState(false);
 
   const {
     control,
@@ -153,8 +153,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       ),
     [absenteePractitioner, classroomGroups]
   );
-
-  console.log({ practitionerClassroomGroups });
 
   const practitionerAbsentName = useMemo(() => {
     return practitioners?.find((item) => {
@@ -218,8 +216,32 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   const submitReassignClass = async () => {
-    if (userAuth?.auth_token && selectedDate && userData?.id) {
+    if (
+      userAuth?.auth_token &&
+      selectedDate &&
+      userData?.id &&
+      reassignedClassroomGroups?.length > 0
+    ) {
       reassignedClassroomGroups?.map(async (item) => {
+        setIsLoading(true);
+        if (item?.absenteeId) {
+          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
+            item?.absenteeId,
+            false,
+            item?.practitioner,
+            reason,
+            new Date(selectedDate),
+            endDate || new Date(selectedDate)
+          );
+
+          dispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+          await refreshClassroom();
+          setIsLoading(false);
+          history.push(ROUTES.DASHBOARD);
+
+          return;
+        }
+        setIsLoading(true);
         await new ClassroomGroupService(
           userAuth.auth_token
         ).updateReassignClassroomGroup(
@@ -234,9 +256,43 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       });
 
       await refreshClassroom();
-      await dispatch(practitionerThunkActions?.getAllPractitioners({}));
-    }
+      dispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+      setIsLoading(false);
+    } else {
+      if (userAuth?.auth_token && selectedDate && userData?.id) {
+        const absenteeId = allAbsenteeClasses?.[0].absenteeId;
+        setIsLoading(true);
+        if (absenteeId) {
+          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
+            absenteeId,
+            false,
+            practitioner2,
+            reason,
+            new Date(selectedDate),
+            endDate || new Date(selectedDate)
+          );
 
+          await refreshClassroom();
+          setIsLoading(false);
+          history.push(ROUTES.DASHBOARD);
+
+          return;
+        }
+        setIsLoading(true);
+        await new ClassroomGroupService(
+          userAuth.auth_token
+        ).updateReassignClassroomGroup(
+          practitioner,
+          practitioner2,
+          reason,
+          new Date(selectedDate),
+          userData?.id!,
+          '',
+          endDate || new Date(selectedDate)
+        );
+      }
+    }
+    setIsLoading(false);
     history.push(ROUTES.DASHBOARD);
   };
 
@@ -271,7 +327,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             className={'mt-3 w-full'}
             selectedValue={practitioner}
             onChange={(item: any) => {
-              setReassignClassValue('practitioner', item);
+              setReassignClassValue('practitioner2', item);
               setPractitionersTeachList(
                 practitionersList.filter((prac) => prac.value !== item)
               );
@@ -300,7 +356,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
               placeholderText={`Please select a date`}
               wrapperClassName="text-center w-full"
               className="border-uiLight text-textMid mx-auto w-full rounded-md"
-              selected={selectedDate ? new Date(selectedDate) : undefined}
+              selected={endDate ? new Date(endDate) : undefined}
               onChange={(date: Date) => {
                 setEndDate(date);
               }}
@@ -329,9 +385,56 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             />
           )}
 
-          {principalPractitioners &&
-          principalPractitioners?.length > 0 &&
-          practitionerClassroomGroups.length > 0 ? (
+          {allAbsenteeClasses && allAbsenteeClasses?.length > 0 ? (
+            allAbsenteeClasses?.map((item, index) => {
+              const classroomId =
+                practitionerClassroomGroups?.find(
+                  (group) => group?.name === item?.className
+                )?.classroomId || '';
+              const absenteeId = item?.absenteeId;
+              return (
+                <>
+                  {item?.className && (
+                    <Dropdown
+                      key={index}
+                      placeholder={'Select practitioner'}
+                      list={practitionersTeachList || []}
+                      fillType="clear"
+                      label={`Who will teach the ${item?.className} class instead?`}
+                      fullWidth
+                      className={'mt-3 w-full'}
+                      onChange={(practitioner: any) => {
+                        const reassignedData = {
+                          practitioner,
+                          classroomId,
+                          absenteeId,
+                        };
+                        setReassignClassValue('practitioner2', practitioner);
+                        handleReassignClassroomGroupPractitioner(
+                          reassignedData
+                        );
+                      }}
+                    />
+                  )}
+                  {practitionerPresentName?.user?.fullName &&
+                    item?.className && (
+                      <Alert
+                        className={'mt-5 mb-3'}
+                        title={`You are reassigning ${
+                          practitionerAbsentName?.user?.fullName || ''
+                        } class ${item?.className} to ${
+                          practitionerPresentName?.user?.fullName || ''
+                        } for ${format(
+                          new Date(selectedDate!),
+                          'EEEE, d LLLL'
+                        )}.`}
+                        type={'info'}
+                      />
+                    )}
+                </>
+              );
+            })
+          ) : practitionerClassroomGroups.length > 0 ? (
             practitionerClassroomGroups?.map((item, index) => {
               const classroomId = item?.id!;
               return (
@@ -388,6 +491,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           className={'mx-auto mt-4 w-full rounded-xl'}
           onClick={submitReassignClass}
           disabled={disableButton}
+          isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography
