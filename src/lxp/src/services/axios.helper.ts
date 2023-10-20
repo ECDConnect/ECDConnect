@@ -5,6 +5,32 @@ import jwt_decode from 'jwt-decode';
 import { store } from '@store';
 import { refreshToken } from '@store/auth/auth.actions';
 
+const disableGraphqlErrorAlert =
+  process.env.REACT_APP_DISABLE_GRAPHQL_ERROR_ALERT;
+const disableGraphqlLogging = process.env.REACT_APP_DISABLE_GRAPHQL_LOGGING;
+
+const logGraphQL = (
+  logFunc: (message?: string, ...optionalParams: any[]) => void,
+  statusText: any,
+  status: any,
+  query: any,
+  result: any
+) => {
+  if (!!disableGraphqlLogging) return;
+  logFunc(`GRAPHQL: ${statusText}[${status}] `, {
+    query: query,
+    result: result,
+  });
+};
+
+const alertGraphQL = () => {
+  // temporary alert message - to be replaced with nicer UI.
+  if (!!disableGraphqlErrorAlert) return;
+  alert(
+    'Error communicating with the server.\nSee the browser console for more details.'
+  );
+};
+
 export const api = (baseUrl: string, token?: string): AxiosInstance => {
   const blackList = [
     APIs.authLogin,
@@ -59,12 +85,12 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
       if (response.config.baseURL === Config.graphQlApi) {
         // checked for internal exception.
         if (response.data.errors === undefined) {
-          console.log(
-            `GRAPHQL: ${response.request.statusText}[${response.request.status}] `,
-            {
-              query: response.config.data,
-              result: response.data,
-            }
+          logGraphQL(
+            console.log,
+            response.request.statusText,
+            response.request.status,
+            response.config.data,
+            response.data
           );
         } else {
           (response as any).original_status = response.status;
@@ -77,38 +103,31 @@ export const api = (baseUrl: string, token?: string): AxiosInstance => {
             response.data.errors[0].message
               ? ': ' + response.data.errors[0].message
               : '');
-          console.error(
-            `GRAPHQL: ${response.statusText}[${response.status}] `,
-            {
-              query: response.config.data,
-              result: response.data,
-            }
+          logGraphQL(
+            console.error,
+            response.statusText,
+            response.status,
+            response.config.data,
+            response.data
           );
         }
         if (response.status >= 400) {
-          // temporary alert message - to be replaced with nicer UI.
-          alert(
-            'Error communicating with the server.\nSee the browser console for more details.'
-          );
+          alertGraphQL();
         }
         return response;
       }
     },
     (error: AxiosError) => {
       if (error.config.baseURL === Config.graphQlApi) {
-        console.error(
-          `GRAPHQL: ${error.request.statusText}[${error.request.status}] `,
-          {
-            query: error.config.data,
-            result: error.response?.data,
-          }
+        logGraphQL(
+          console.error,
+          error.request.statusText,
+          error.request.status,
+          error.config.data,
+          error.response?.data
         );
-        // temporary alert message - to be replaced with nicer UI.
-        alert(
-          'Error communicating with the server.\nSee the browser console for more details.'
-        );
+        alertGraphQL();
       }
-
       return Promise.reject(error);
     }
   );
@@ -121,7 +140,6 @@ const blacklistCheckup = ($url: string, blacklist: string[]): boolean => {
   blacklist.forEach((i) => {
     if ($url.includes(i)) {
       returnValue = true;
-      return;
     }
   });
   return returnValue;
