@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;

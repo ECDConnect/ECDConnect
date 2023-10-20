@@ -144,36 +144,32 @@ class IncomeStatementsService {
   // Used to generate the PDF, can we refactor to fetch a link to the backend PDF,
   // or to use the income statement to create the pdf? Then it could work offline?
   async getMonthsIncomeExpensesReport(
-    userId: string,
-    month: Number,
-    year: Number
+    statementId: string
   ): Promise<ReportTableDataDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `query GetStatementsIncomeExpensesPDFData($userId: String, $month: Int!, $year: Int!) {
-                statementsIncomeExpensesPDFData(userId: $userId, month: $month, year: $year) {
-                tableName
-                type
-                total
-                headers {
-                    header
-                    dataKey
-                }
-                data {
-                    child
-                    date
-                    description
-                    amount
-                    invoiceNr
-                    photoProof
-                    type
-                }
-            }
-    }`,
+      query: `query GetStatementsIncomeExpensesPDFData($statementId: UUID!) {
+          statementsIncomeExpensesPDFData(statementId: $statementId) {
+          tableName
+          type
+          total
+          headers {
+              header
+              dataKey
+          }
+          data {
+              child
+              date
+              description
+              amount
+              invoiceNr
+              photoProof
+              type
+          }
+        }
+      }`,
       variables: {
-        userId,
-        month,
-        year,
+        statementId,
       },
     });
 

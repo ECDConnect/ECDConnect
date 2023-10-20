@@ -528,8 +528,9 @@ public class SmartStartIntegrationService : IIntegrationService
                         if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
                         {
                             //if doc is still null here and its a valid statement, generate it and redo this
-                            if (statementDoc == null) {
-                                statementDoc = _incomeManager.CreateIncomeStatementPDFDocument(statement.UserId, statement.Year, statement.Month);                                                                        
+                            if (statementDoc == null)
+                            {
+                                statementDoc = _incomeManager.CreateIncomeStatementPDFDocument(statement.UserId, statement);
                             }
 
                             if (statementDoc != null)

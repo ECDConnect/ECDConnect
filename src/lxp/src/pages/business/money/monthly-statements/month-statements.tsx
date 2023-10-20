@@ -74,23 +74,22 @@ export const MonthStatements: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (!isOnline || !statement) {
+    console.log('statementId', statementId);
+    if (!isOnline || !statementId) {
       return;
     }
 
     const monthlyDetailsdata = async () => {
+      console.log('fetching report');
       const report = await new IncomeStatementsService(
         userAuth?.auth_token || ''
-      ).getMonthsIncomeExpensesReport(
-        userAuth?.id!,
-        statement.month,
-        statement.year
-      );
+      ).getMonthsIncomeExpensesReport(statementId);
+      console.log('report', report);
       setPdfReportData(report);
     };
 
     monthlyDetailsdata();
-  }, [appDispatch, userAuth, isOnline, statement]);
+  }, [appDispatch, userAuth, isOnline, statementId]);
 
   const footer = [
     'Total',
