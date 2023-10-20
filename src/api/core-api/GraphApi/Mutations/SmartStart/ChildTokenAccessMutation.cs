@@ -1,6 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
+using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -44,7 +45,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IPointsEngineService pointsEngineService,
             string token,
             AddChildCaregiverTokenModel caregiver,
             AddChildLearnerTokenModel learner,
@@ -75,9 +75,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
 
                 var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo);
-
-                // Manage points for user
-                pointsEngineService.CalculateChildrenRegistrationAdd(appUser.Id, DateTime.UtcNow);
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 
@@ -199,6 +196,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] UserManager<ApplicationUser> userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
+            [Service] IPointsEngineService pointsEngineService,
             string firstname,
             string surname,
             Guid classgroupId)
@@ -217,8 +215,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
             var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).OrderBy(x => x.Id).FirstOrDefault();
-
-            var insertingUser = httpContext.HttpContext.GetUser().FullName;
+            var addedByUser = httpContext.HttpContext.GetUser();
+            var insertingUser = addedByUser.FullName;
 
             var child = new Child
             {
@@ -232,7 +230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var tokenWrapper = new ChildTokenWrapperModel
             {
-                AddedByUserId = httpContext.HttpContext.GetUser().Id,
+                AddedByUserId = addedByUser.Id,
                 ClassroomGroupId = classgroupId,
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = newChild.Id,
@@ -240,6 +238,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             };
 
             await userManager.AddToRoleAsync(appUser, "Child");
+
+            // Manage points for user
+            pointsEngineService.CalculateChildrenRegistrationAdd(addedByUser.Id, DateTime.UtcNow);
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
         }

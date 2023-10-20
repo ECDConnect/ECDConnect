@@ -1731,16 +1731,16 @@ namespace EcdLink.Api.CoreApi.Services
         public UserClubStandingModel GetUserClubStanding(string userId)
         {
             var practitionerId = _practitionerRepo.GetByUserId(userId).Id;
-            var clubId = _clubMemberRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).FirstOrDefault().ClubId;
+            ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).FirstOrDefault();
 
-            if (clubId == default)
+            if (clubMember == null)
             {
                 return new UserClubStandingModel();
             }
 
             var clubUserIds = _clubMemberRepo.GetAll()
                 .Include(x => x.Practitioner)
-                .Where(x => x.ClubId == clubId)
+                .Where(x => x.ClubId == clubMember.ClubId)
                 .Select(x => x.Practitioner.UserId).ToList();
 
             var usersPoints = _pointsUserSummaryRepo.GetAll()
