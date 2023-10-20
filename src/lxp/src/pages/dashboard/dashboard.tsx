@@ -62,6 +62,7 @@ import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -807,6 +808,24 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  const handleOnlineCallback = (callback: () => void) => {
+    if (isOnline) {
+      callback();
+    } else {
+      showOnlineOnly();
+    }
+  };
+
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
@@ -832,11 +851,15 @@ export const Dashboard: React.FC = () => {
                 onClick: isTrainee
                   ? async () => {
                       onSubmit();
-                      history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
+                      );
                     }
                   : async () => {
                       onSubmit();
-                      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                      );
                     },
               },
               {
