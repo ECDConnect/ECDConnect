@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState, useEffect } from 'react';
-import { useSnackbar, useTheme } from '@ecdlink/core';
+import { useState, useEffect, useCallback } from 'react';
+import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -12,6 +12,8 @@ import {
   StatusChip,
   Typography,
   StackedList,
+  Card,
+  ActionModal,
 } from '@ecdlink/ui';
 import { PractitionerService } from '@/services/PractitionerService';
 import { NoteTypeEnum } from '@ecdlink/graphql';
@@ -35,9 +37,11 @@ import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
-import { addDays } from 'date-fns';
+import { addDays, format, isPast, isSameDay } from 'date-fns';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
+  const dialog = useDialog();
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -111,6 +115,83 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     useState<boolean>(false);
 
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
+  const practitionerAbsentees = practitioner?.absentees;
+  const validAbsenteesDates = practitionerAbsentees?.filter(
+    (item) => !isPast(new Date(item?.absentDate as string))
+  );
+  const currentDates = validAbsenteesDates?.map((item) => {
+    return item?.absentDate as string;
+  });
+
+  const orderedDates = currentDates?.sort(function (a, b) {
+    return Date.parse(a) - Date.parse(b);
+  });
+
+  const currentAbsentee = validAbsenteesDates?.find(
+    (item) => item?.absentDate === orderedDates?.[0]
+  ) as AbsenteeDto;
+  const allAbsenteeClasses = practitionerAbsentees?.filter(
+    (item) => item?.absentDate === currentAbsentee?.absentDate
+  );
+
+  const isToday = isSameDay(
+    new Date(),
+    new Date(currentAbsentee?.absentDate || '')
+  );
+
+  const handleReassignClass = useCallback(
+    (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
+      if (allAbsenteeClasses) {
+        history.push('practitioner-reassign-class', {
+          practitionerId,
+          allAbsenteeClasses,
+        });
+        return;
+      }
+      history.push('practitioner-reassign-class', {
+        practitionerId,
+      });
+    },
+    [history]
+  );
+
+  const handleAbsenceModal = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`What would you like to edit?`}
+          actionButtons={[
+            {
+              text: 'Edit this absence',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                handleReassignClass(practitionerId, allAbsenteeClasses);
+                onSubmit();
+              },
+              leadingIcon: 'PencilAltIcon',
+            },
+            {
+              text: 'Add a new leave/absence',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                handleReassignClass(practitionerId);
+                onSubmit();
+              },
+              leadingIcon: 'PlusIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerId]);
 
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -478,6 +559,128 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 />
               </Button>
             </div>
+            {currentAbsentee && (
+              <div className="p-4">
+                <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
+                  <div className={'p-4'}>
+                    <Typography
+                      type={'h1'}
+                      color="textDark"
+                      text={
+                        isToday
+                          ? `${practitioner?.user?.firstName} is absent today`
+                          : `${
+                              practitioner?.user?.firstName
+                            } will be absent on ${
+                              currentAbsentee?.absentDate
+                                ? format(
+                                    new Date(
+                                      currentAbsentee?.absentDate as string
+                                    ),
+                                    'EEEE'
+                                  )
+                                : format(new Date(), 'EEEE')
+                            }, ${
+                              currentAbsentee?.absentDate
+                                ? format(
+                                    new Date(
+                                      currentAbsentee?.absentDate as string
+                                    ),
+                                    'd MMM'
+                                  )
+                                : format(new Date(), 'd MMM')
+                            }`
+                      }
+                      className={'mt-4 ml-4'}
+                    />
+                    <div className="flex items-center gap-2">
+                      <Typography
+                        type={'body'}
+                        color="textMid"
+                        weight="bold"
+                        text={`Reason:`}
+                        className={'mt-4 ml-4'}
+                      />
+                      <Typography
+                        type={'body'}
+                        color="textMid"
+                        text={`${currentAbsentee?.reason}`}
+                        className={'mt-4'}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Typography
+                        type={'body'}
+                        color="textMid"
+                        weight="bold"
+                        text={`${practitioner?.user?.firstName} will be back on:`}
+                        className={'mt-4 ml-4'}
+                      />
+                      <Typography
+                        type={'body'}
+                        color="textMid"
+                        text={`${
+                          currentAbsentee?.absentDateEnd
+                            ? format(
+                                new Date(
+                                  currentAbsentee?.absentDateEnd as string
+                                ),
+                                'd MMM yyyy'
+                              )
+                            : format(new Date(), 'd MMM yyyy')
+                        }`}
+                        className={'mt-4'}
+                      />
+                    </div>
+                    {allAbsenteeClasses &&
+                      allAbsenteeClasses?.length > 0 &&
+                      allAbsenteeClasses?.map((item) => {
+                        return (
+                          <div>
+                            {item?.className && (
+                              <div className="flex items-center gap-2">
+                                <Typography
+                                  type={'body'}
+                                  color="textMid"
+                                  weight="bold"
+                                  text={`${item?.className} class reassigned to:`}
+                                  className={'mt-4 ml-4'}
+                                />
+                                <Typography
+                                  type={'body'}
+                                  color="textMid"
+                                  text={`${item?.reassignedToPerson}`}
+                                  className={'mt-4'}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                    <div className="flex justify-center">
+                      <Button
+                        type="filled"
+                        color="primary"
+                        className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                        onClick={() => handleAbsenceModal()}
+                      >
+                        {renderIcon(
+                          'PencilAltIcon',
+                          'w-5 h-5 color-white text-white mr-1'
+                        )}
+                        <Typography
+                          type="body"
+                          className="mr-4"
+                          color="white"
+                          text={'Edit absence/leave'}
+                        ></Typography>
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
           </BannerWrapper>
           <div className="mt-4 flex justify-center">
             <div className="w-11/12">
@@ -652,23 +855,49 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             <Divider dividerType="dashed" className="my-4" />
             <div className="flex w-full justify-center">
               <Button
-                type="outlined"
+                type="filled"
                 color="primary"
-                className={'mt-6 mb-6 w-11/12'}
+                className={`mt-6 w-11/12 ${
+                  !practitioner?.isPrincipal &&
+                  !practitioner?.isFundaAppAdmin &&
+                  'mb-6'
+                }`}
                 onClick={() => setRemovePractionerReasonsVisible(true)}
               >
-                {renderIcon(
-                  'TrashIcon',
-                  'w-5 h-5 color-primary text-primary mr-2'
-                )}
+                {renderIcon('TrashIcon', 'w-5 h-5 color-white text-white mr-2')}
                 <Typography
                   type="body"
                   className="mr-4"
-                  color="primary"
+                  color="white"
                   text={`Remove ${practitioner?.user?.firstName}`}
                 ></Typography>
               </Button>
             </div>
+            {(practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) && (
+              <div className="flex w-full justify-center">
+                <Button
+                  type="outlined"
+                  color="primary"
+                  className={'mt-4 mb-6 w-11/12'}
+                  onClick={() =>
+                    history.push(ROUTES.COACH.PRACTITIONER_REASSIGN_CLASS, {
+                      practitionerId,
+                    })
+                  }
+                >
+                  {renderIcon(
+                    'PencilAltIcon',
+                    'w-5 h-5 color-primary text-primary mr-2'
+                  )}
+                  <Typography
+                    type="body"
+                    className="mr-4"
+                    color="primary"
+                    text={`Record leave`}
+                  ></Typography>
+                </Button>
+              </div>
+            )}
           </>
           <Dialog
             fullScreen
