@@ -83,7 +83,7 @@ namespace ECDLink.SmartStart.Services
             var learners = _dbContext.Learners
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
-                            .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId && l.User.IsActive);
+                            .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId);
             return learners.ToList();
         }
 
@@ -94,7 +94,8 @@ namespace ECDLink.SmartStart.Services
             var classroom = _dbContext.Classrooms
                                 .Include(x => x.ClassroomGroups)
                                 .ThenInclude(c => c.ClassProgrammes)
-                                .FirstOrDefault(c => string.Equals(userId, c.UserId));// c.Id == classroomId &&
+                                .Where(x => x.UserId == userId)
+                                .FirstOrDefault();// c.Id == classroomId &&
 
             if (classroom == default(Classroom))
             {
