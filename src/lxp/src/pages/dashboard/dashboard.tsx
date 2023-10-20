@@ -112,13 +112,13 @@ export const Dashboard: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
-  const a = useCallback(async () => {
-    appDispatch(practitionerThunkActions?.getAllPractitioners({}));
-  }, []);
+  // const a = useCallback(async () => {
+  //   appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap()
+  // }, []);
 
-  useEffect(() => {
-    a();
-  }, []);
+  // useEffect(() => {
+  //   a();
+  // }, []);
 
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 

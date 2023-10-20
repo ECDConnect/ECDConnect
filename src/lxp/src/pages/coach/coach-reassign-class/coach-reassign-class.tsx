@@ -154,6 +154,8 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     [absenteePractitioner, classroomGroups]
   );
 
+  console.log({ practitionerClassroomGroups });
+
   const practitionerAbsentName = useMemo(() => {
     return practitioners?.find((item) => {
       if (item?.userId === practitioner) {

@@ -125,6 +125,8 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     return item?.absentDate as string;
   });
 
+  console.log({ currentDates });
+
   const orderedDates = currentDates?.sort(function (a, b) {
     return Date.parse(a) - Date.parse(b);
   });
@@ -473,7 +475,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
-
+  console.log({ currentAbsentee });
   return (
     <>
       {(practitioner?.isRegistered === null ||
@@ -555,120 +557,124 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 />
               </Button>
             </div>
-            {
-              <Card className={'bg-uiBg mt-4 w-11/12 rounded-xl'}>
-                <div className={'p-4'}>
-                  <Typography
-                    type={'h1'}
-                    color="textDark"
-                    text={
-                      isToday
-                        ? `${practitioner?.user?.firstName} is absent today`
-                        : `${practitioner?.user?.firstName} will be absent on ${
-                            currentAbsentee?.absentDate
-                              ? format(
-                                  new Date(
-                                    currentAbsentee?.absentDate as string
-                                  ),
-                                  'EEEE'
-                                )
-                              : format(new Date(), 'EEEE')
-                          }, ${
-                            currentAbsentee?.absentDate
-                              ? format(
-                                  new Date(
-                                    currentAbsentee?.absentDate as string
-                                  ),
-                                  'd MMM'
-                                )
-                              : format(new Date(), 'd MMM')
-                          }`
-                    }
-                    className={'mt-4 ml-4'}
-                  />
-                  <div className="flex items-center gap-2">
+            {currentAbsentee && (
+              <div className="p-4">
+                <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
+                  <div className={'p-4'}>
                     <Typography
-                      type={'body'}
-                      color="textMid"
-                      weight="bold"
-                      text={`Reason:`}
+                      type={'h1'}
+                      color="textDark"
+                      text={
+                        isToday
+                          ? `${practitioner?.user?.firstName} is absent today`
+                          : `${
+                              practitioner?.user?.firstName
+                            } will be absent on ${
+                              currentAbsentee?.absentDate
+                                ? format(
+                                    new Date(
+                                      currentAbsentee?.absentDate as string
+                                    ),
+                                    'EEEE'
+                                  )
+                                : format(new Date(), 'EEEE')
+                            }, ${
+                              currentAbsentee?.absentDate
+                                ? format(
+                                    new Date(
+                                      currentAbsentee?.absentDate as string
+                                    ),
+                                    'd MMM'
+                                  )
+                                : format(new Date(), 'd MMM')
+                            }`
+                      }
                       className={'mt-4 ml-4'}
                     />
-                    <Typography
-                      type={'body'}
-                      color="textMid"
-                      text={`${currentAbsentee?.reason}`}
-                      className={'mt-4'}
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Typography
-                      type={'body'}
-                      color="textMid"
-                      weight="bold"
-                      text={`${practitioner?.user?.firstName} will be back on:`}
-                      className={'mt-4 ml-4'}
-                    />
-                    <Typography
-                      type={'body'}
-                      color="textMid"
-                      text={`${
-                        currentAbsentee?.absentDateEnd
-                          ? format(
-                              new Date(
-                                currentAbsentee?.absentDateEnd as string
-                              ),
-                              'd MMM yyyy'
-                            )
-                          : format(new Date(), 'd MMM yyyy')
-                      }`}
-                      className={'mt-4'}
-                    />
-                  </div>
-                  {allAbsenteeClasses &&
-                    allAbsenteeClasses?.length > 0 &&
-                    allAbsenteeClasses?.map((item) => {
-                      return (
-                        <div className="flex items-center gap-2">
-                          <Typography
-                            type={'body'}
-                            color="textMid"
-                            weight="bold"
-                            text={`${item?.className} class reassigned to:`}
-                            className={'mt-4 ml-4'}
-                          />
-                          <Typography
-                            type={'body'}
-                            color="textMid"
-                            text={`${item?.reassignedToPerson}`}
-                            className={'mt-4'}
-                          />
-                        </div>
-                      );
-                    })}
-
-                  <div className="flex justify-center">
-                    <Button
-                      type="filled"
-                      color="primary"
-                      className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                      onClick={() => handleAbsenceModal()}
-                    >
-                      {renderIcon(
-                        'PencilAltIcon',
-                        'w-5 h-5 color-white text-white mr-1'
-                      )}
+                    <div className="flex items-center gap-2">
                       <Typography
-                        type="body"
-                        className="mr-4"
-                        color="white"
-                        text={'Edit absence/leave'}
-                      ></Typography>
-                    </Button>
+                        type={'body'}
+                        color="textMid"
+                        weight="bold"
+                        text={`Reason:`}
+                        className={'mt-4 ml-4'}
+                      />
+                      <Typography
+                        type={'body'}
+                        color="textMid"
+                        text={`${currentAbsentee?.reason}`}
+                        className={'mt-4'}
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Typography
+                        type={'body'}
+                        color="textMid"
+                        weight="bold"
+                        text={`${practitioner?.user?.firstName} will be back on:`}
+                        className={'mt-4 ml-4'}
+                      />
+                      <Typography
+                        type={'body'}
+                        color="textMid"
+                        text={`${
+                          currentAbsentee?.absentDateEnd
+                            ? format(
+                                new Date(
+                                  currentAbsentee?.absentDateEnd as string
+                                ),
+                                'd MMM yyyy'
+                              )
+                            : format(new Date(), 'd MMM yyyy')
+                        }`}
+                        className={'mt-4'}
+                      />
+                    </div>
+                    {allAbsenteeClasses &&
+                      allAbsenteeClasses?.length > 0 &&
+                      allAbsenteeClasses?.map((item) => {
+                        return (
+                          <div className="flex items-center gap-2">
+                            <Typography
+                              type={'body'}
+                              color="textMid"
+                              weight="bold"
+                              text={`${item?.className} class reassigned to:`}
+                              className={'mt-4 ml-4'}
+                            />
+                            <Typography
+                              type={'body'}
+                              color="textMid"
+                              text={`${item?.reassignedToPerson}`}
+                              className={'mt-4'}
+                            />
+                          </div>
+                        );
+                      })}
+
+                    <div className="flex justify-center">
+                      <Button
+                        type="filled"
+                        color="primary"
+                        className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                        onClick={() => handleAbsenceModal()}
+                      >
+                        {renderIcon(
+                          'PencilAltIcon',
+                          'w-5 h-5 color-white text-white mr-1'
+                        )}
+                        <Typography
+                          type="body"
+                          className="mr-4"
+                          color="white"
+                          text={'Edit absence/leave'}
+                        ></Typography>
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </Card>
-            }
+                </Card>
+              </div>
+            )}
           </BannerWrapper>
           <div className="mt-4 flex justify-center">
             <div className="w-11/12">
