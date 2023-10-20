@@ -538,7 +538,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       onBack={() => setNotificationStep('')}
       displayOffline={!isOnline}
     >
-      <div className="flex flex-col justify-around p-4">
+      <div className="flex flex-col justify-around p-4 pb-16">
         <div>
           <Typography
             className={'my-3'}

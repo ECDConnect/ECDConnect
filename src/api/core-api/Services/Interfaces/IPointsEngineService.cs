@@ -36,6 +36,7 @@ namespace ECDLink.Core.Services.Interfaces
         bool CalculateThreeConsecutiveIncomeStatementsSubmitted(string userId, DateTime today);
 
         // SS TODO: Pre-school fees on profile - development pending
+        bool CalculatePreSchoolFees(string userId, DateTime today);
 
         /// <summary>
         /// Gets the percentile standing of a user within relative to others within the club

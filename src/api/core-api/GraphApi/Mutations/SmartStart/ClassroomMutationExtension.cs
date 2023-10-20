@@ -336,6 +336,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public bool UpdatePreschoolFeeForClassroom(
+            [Service] IPointsEngineService pointsEngineService,
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             Guid classroomId,
@@ -350,6 +351,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             classroom.PreschoolFeeAmountLastUpdateDate = DateTime.Now;
 
             classroomRepo.Update(classroom);
+
+            pointsEngineService.CalculatePreSchoolFees(uId, DateTime.Now);
 
             return true;
         }
