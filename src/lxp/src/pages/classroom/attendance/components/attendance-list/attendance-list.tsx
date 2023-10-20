@@ -196,8 +196,19 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       return [...prev, ...curr.list];
     }, [] as AttendanceListDataItem[]);
 
+    const uniqueAttendanceGroups = allAttendanceGroupLists?.filter(
+      (object, index, array) => {
+        return (
+          index ===
+          array.findIndex(
+            (newObject) => newObject.attenendeeId === object.attenendeeId
+          )
+        );
+      }
+    );
+
     const allAttendedChildren: ChildAttendance[] =
-      allAttendanceGroupLists?.map((x) => ({
+      uniqueAttendanceGroups?.map((x) => ({
         userId: x.attenendeeId,
         attended: x.status === AttendanceStatus.Present,
       })) || [];
