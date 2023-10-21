@@ -26,7 +26,7 @@ namespace ECDLink.SmartStart.Reports
 
         public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Guid classroomId, DateTime startMonth, DateTime endMonth)
         {
-            var classroom = _attendanceService.GetUserClassroom(userId);
+            var classroom = _attendanceService.GetUserClassroom(userId, classroomId);
             return GenerateMonthlyAttendanceReport(userId, classroom, startMonth, endMonth);
         }
 
