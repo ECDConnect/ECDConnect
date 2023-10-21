@@ -1,4 +1,11 @@
-import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  DialogPosition,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { activitySelectors } from '@store/content/activity';
 import React from 'react';
@@ -6,6 +13,8 @@ import { useSelector } from 'react-redux';
 import { ActivitySubCategoryCard } from '../../components/activity-sub-category-card/activity-sub-category-card';
 import { ActivityDetailsProps } from './activity-details.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useDialog } from '@ecdlink/core';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   activityId,
@@ -21,6 +30,26 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
   );
 
   const date = new Date();
+
+  const dialog = useDialog();
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  const handleActivityChanged = () => {
+    if (isOnline) {
+      onActivityChanged();
+    } else {
+      showOnlineOnly();
+    }
+  };
 
   if (!activityDetail) return <></>;
 
@@ -59,7 +88,7 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
               text={`Change activity`}
               icon={'SwitchVerticalIcon'}
               iconPosition={'start'}
-              onClick={onActivityChanged}
+              onClick={handleActivityChanged}
             />
           ) : (
             <Button

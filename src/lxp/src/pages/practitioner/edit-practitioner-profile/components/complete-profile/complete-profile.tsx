@@ -7,6 +7,9 @@ import { userSelectors } from '@store/user';
 import { traineeSelectors } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useDialog } from '@ecdlink/core';
+import { DialogPosition } from '@ecdlink/ui';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const CompleteProfile: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -15,6 +18,7 @@ export const CompleteProfile: React.FC = () => {
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const { isOnline } = useOnlineStatus();
   const isOnStipend = practitioner?.isOnStipend;
+  const dialog = useDialog();
 
   const completedSteps = timelineSteps(
     timeline!,
@@ -35,6 +39,20 @@ export const CompleteProfile: React.FC = () => {
   const notRegistered = !Boolean(practitioner?.isRegistered);
   const addedByPrincipal =
     Boolean(practitioner?.principalHierarchy) && !practitioner?.isPrincipal;
+
+  const handleOnlineCallback = (callback: () => void) => {
+    if (isOnline) {
+      callback();
+    } else {
+      dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+        },
+      });
+    }
+  };
 
   const showNotificationForPractitionerFlow =
     (hasPractitionerRole || addedByPrincipal) && notRegistered;
@@ -71,10 +89,12 @@ export const CompleteProfile: React.FC = () => {
             'Share more information about your programme to make Funda App useful for you.'
           }
           actionText={'Tell us more about you!'}
-          onActioned={
-            showNotificationForPractitionerFlow
-              ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-              : () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+          onActioned={() =>
+            handleOnlineCallback(() =>
+              showNotificationForPractitionerFlow
+                ? history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                : history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+            )
           }
         />
       </div>

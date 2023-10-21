@@ -87,63 +87,53 @@ export const getTraineeVisitDataAssitantsNumber = (
   state: RootState
 ): string | boolean | undefined => {
   const visitData = state.trainee.coachSmartSpaceCheckData;
-  const programmeDetailsSections: unknown = visitData?.find(
+  const programmeDetailsSection = visitData?.find(
     (item) => item?.visitSection === 'Programme details'
   );
-  const programmeDetailsSectionsWithoutTypo =
-    programmeDetailsSections! as SectionQuestions;
-  const questions = programmeDetailsSectionsWithoutTypo?.questions;
-  return questions?.[0]?.answer as string;
+
+  return programmeDetailsSection?.questionAnswer as string;
 };
 
 export const getCoachVisitDataNextSteps = (
   state: RootState
-): string | null | undefined => {
+): VisitData | null | undefined => {
   const visitData = state.trainee.coachSmartSpaceCheckData;
-  const programmeDetailsSections: unknown = visitData?.find(
+  const programmeDetailsSections = visitData?.find(
     (item) => item?.visitSection === 'Discuss next steps'
   );
-  const programmeDetailsSectionsWithoutTypo =
-    programmeDetailsSections as SectionQuestions;
-  const questions = programmeDetailsSectionsWithoutTypo?.questions;
-  return questions?.[0]?.answer as string;
+  return programmeDetailsSections;
 };
 
 export const getCoachVisitDataCovidStandards = (
   state: RootState
-): null | undefined | SectionQuestions => {
+): null | undefined | VisitData[] => {
   const visitData = state.trainee.coachSmartSpaceCheckData;
-  const programmeDetailsSections = visitData?.find(
-    (item) => item?.visitSection === 'COVID safety checklist (CC14)'
+  const programmeDetailsSections = visitData?.filter(
+    (item: VisitData) => item?.visitSection === 'COVID safety checklist (CC14)'
   );
-  const programmeDetailsSectionsWithoutTypo =
-    programmeDetailsSections as unknown;
 
-  return programmeDetailsSectionsWithoutTypo as SectionQuestions;
+  return programmeDetailsSections;
 };
 
 export const getCoachVisitDataStandardsChecklist = (
   state: RootState
-): null | undefined | SectionQuestions => {
+): VisitData[] | undefined => {
   const visitData = state.trainee.coachSmartSpaceCheckData;
-  const programmeDetailsSections = visitData?.find(
+  const programmeDetailsSections = visitData?.filter(
     (item) => item?.visitSection === 'Standards checklist'
   );
-  const programmeDetailsSectionsWithoutTypo =
-    programmeDetailsSections as unknown;
 
-  return programmeDetailsSectionsWithoutTypo as SectionQuestions;
+  return programmeDetailsSections;
 };
 
-export const getCoachVisitCapacity = (state: RootState): Question[] => {
+export const getCoachVisitCapacity = (
+  state: RootState
+): VisitData[] | undefined => {
   const visitData = state.trainee.coachSmartSpaceCheckData;
-  const programmeDetailsSections: unknown = visitData?.find(
+  const programmeDetailsSections = visitData?.filter(
     (item) => item?.visitSection === 'Calculate programme capacity'
   );
-  const programmeDetailsSectionsWithoutTypo =
-    programmeDetailsSections as SectionQuestions;
-  const questions = programmeDetailsSectionsWithoutTypo?.questions;
-  return questions;
+  return programmeDetailsSections;
 };
 
 export const getTraineeProgrammeType = (

@@ -104,9 +104,18 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     }
   };
 
+  const handleProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
+    if (isOnline) {
+      onProgrammeClick(routineItem);
+    } else {
+      showOnlineOnly();
+    }
+  };
+
   const showOnlineOnly = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      color: 'bg-white',
+      position: DialogPosition.Middle,
       render: (onSubmit) => {
         return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
       },
@@ -431,7 +440,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                     key={`id_${routineItem.id}`}
                     routineItem={routineItem}
                     day={currentDailyProgramme}
-                    onClick={() => onProgrammeClick(routineItem)}
+                    onClick={() => handleProgrammeClick(routineItem)}
                   />
                 );
               }
