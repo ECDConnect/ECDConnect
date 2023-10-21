@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
@@ -45,11 +46,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] IDocumentManagementService documentManagementService,
             string token,
             AddChildCaregiverTokenModel caregiver,
             AddChildLearnerTokenModel learner,
             AddChildSiteAddressTokenModel siteAddress,
-            AddChildTokenModel child)
+            AddChildTokenModel child,
+            AddChildRegistrationTokenModel registration,
+            AddChildUserConsentTokenModel consent)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
@@ -86,6 +90,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 appUser.RaceId = child.RaceId;
                 appUser.VerifiedByHomeAffairs = child.VerifiedByHomeAffairs;
 
+                if (registration != null)
+                {
+                    documentManagementService.AddUserDocument(registration.UserId, registration.FileType, registration.File, registration.FileName, tokenModel.AddedByUserId);
+                }
+
+                if (consent != null)
+                {
+                    AddConsent(scope, consent, tokenModel);
+                }
+
                 await tokenManager.RetractTokensAsync(appUser);
                 scope.SaveChanges();
 
@@ -104,6 +118,92 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 childRepo.Dispose();
             }
 
+            return true;
+        }
+
+
+        private bool AddConsent(AuthenticationDbContext context, AddChildUserConsentTokenModel consent, ChildTokenWrapperModel tokenModel)
+        {
+            if (consent.ChildPhotoConsentAccepted == true)
+            {
+                UserConsent consentPhoto = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 175,
+                    ConsentType = "PhotoPermissions",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(consentPhoto);
+                context.SaveChanges();
+            }
+            if (consent.CommitmentAgreementAccepted == true)
+            {
+                UserConsent commitmentAgreement = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 173,
+                    ConsentType = "CommitmentAgreement",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(commitmentAgreement);
+                context.SaveChanges();
+            }
+            if (consent.ConsentAgreementAccepted == true)
+            {
+                UserConsent consentAgreement = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 172,
+                    ConsentType = "ConsentAgreement",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(consentAgreement);
+                context.SaveChanges();
+            }
+            if (consent.IndemnityAgreementAccepted == true)
+            {
+                 UserConsent indemnityAgreement = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 174,
+                    ConsentType = "IndemnityAgreement",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(indemnityAgreement);
+                context.SaveChanges();
+            }
+            if (consent.PersonalInformationAgreementAccepted == true)
+            {
+                UserConsent personalAgreement = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 171,
+                    ConsentType = "PersonalInformationAgreement",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(personalAgreement);
+                context.SaveChanges();
+            }
             return true;
         }
 
@@ -259,7 +359,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var child = childRepo.GetById(childId);
-            
+
             if (classgroupId == Guid.Empty)
             {
                 var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: httpContext.HttpContext.GetUser().Id);

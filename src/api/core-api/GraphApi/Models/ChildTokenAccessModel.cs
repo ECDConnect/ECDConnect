@@ -16,6 +16,8 @@
         public string Surname { get; set; }
 
         public string GroupName { get; set; }
+
+        public string UserId { get; set; }
     }
 
     public class TokenAccessPractitionerDetailModel

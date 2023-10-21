@@ -28,7 +28,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { staticDataThunkActions } from '@store/static-data';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { useStaticData } from '@hooks/useStaticData';
-import { WorkflowStatusEnum } from '@ecdlink/graphql';
+import { WorkflowStatusEnum, FileTypeEnum } from '@ecdlink/graphql';
 import { contentConsentThunkActions } from '@store/content/consent';
 
 export const CaregiverChildRegistration: React.FC<
@@ -67,6 +67,7 @@ export const CaregiverChildRegistration: React.FC<
     await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
     setStaticDataLoading(false);
   };
+  const { getDocumentTypeIdByEnum } = useStaticData();
 
   useEffect(() => {
     const initStore = async () => {
@@ -141,10 +142,42 @@ export const CaregiverChildRegistration: React.FC<
   ) => {
     if (!formState.childInformationFormModel) return;
 
-    const userInputModel = childRegisterUtils.mapChildUserDto(
+    let userInputModel = childRegisterUtils.mapChildUserDto(
       formState.childInformationFormModel
     );
+
+    if (childDetails.child.userId) {
+      userInputModel = {
+        ...userInputModel,
+        id: childDetails.child.userId,
+      };
+    }
     const userId = userInputModel.id || '';
+
+    const userConsentInputModel =
+      childRegisterUtils.mapAddChildUserConsentTokenModelInput(
+        userId,
+        formState.childRegistrationFormModel
+      );
+
+    let registrationInputModel;
+
+    if (formState.childBirthCertificateFormModel?.birthCertificateImage) {
+      const fileType =
+        formState.childBirthCertificateFormModel?.birthCertificateType ===
+        'clinicCard'
+          ? FileTypeEnum.ChildClinicCard
+          : FileTypeEnum.ChildBirthCertificate;
+
+      const typeId = await getDocumentTypeIdByEnum(fileType);
+
+      registrationInputModel =
+        childRegisterUtils.mapAddChildRegistrationTokenModelInput(
+          userId,
+          typeId || '',
+          formState.childBirthCertificateFormModel
+        );
+    }
 
     const learnerInputModel =
       childRegisterUtils.mapAddChildLearnerTokenModelInput(
@@ -184,6 +217,8 @@ export const CaregiverChildRegistration: React.FC<
         child: childInputModel,
         learner: learnerInputModel,
         siteAddress: siteAddress,
+        registration: registrationInputModel,
+        userConsent: userConsentInputModel,
       })
     );
   };
