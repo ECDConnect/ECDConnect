@@ -42,6 +42,7 @@ export const CaregiverChildRegistration: React.FC<
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
   const { getWorkflowStatusIdByEnum } = useStaticData();
+
   const initAppData = async () => {
     setStaticDataLoading(true);
     await appDispatch(
@@ -356,7 +357,9 @@ export const CaregiverChildRegistration: React.FC<
           }
           onSubmit={(value) =>
             onStepChange(
-              CaregiverChildRegistrationSteps.childCareGiverContributionForm,
+              childDetails?.child.groupFeeAmount!! > 0
+                ? CaregiverChildRegistrationSteps.childCareGiverContributionForm
+                : CaregiverChildRegistrationSteps.childEmergencyContactForm,
               {
                 formProp: 'careGiverExtraInformationFormModel',
                 value,

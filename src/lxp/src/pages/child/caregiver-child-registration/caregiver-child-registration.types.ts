@@ -30,6 +30,7 @@ export interface ChildDetails {
   firstname: string;
   surname: string;
   groupName: string;
+  groupFeeAmount: number;
 }
 
 export interface PractitionerDetails {

@@ -240,6 +240,7 @@ class ChildService {
               firstname
               surname
               groupName
+              groupFeeAmount
             }
             practitoner {
               firstname

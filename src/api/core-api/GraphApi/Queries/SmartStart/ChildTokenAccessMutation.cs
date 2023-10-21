@@ -64,7 +64,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 {
                     Firstname = appUser.FirstName,
                     Surname = appUser.Surname,
-                    GroupName = classRoom?.Name ?? classGroup.Name
+                    GroupName = classRoom?.Name ?? classGroup.Name,
+                    GroupFeeAmount = classRoom?.PreschoolFeeAmount,
                 },
                 Practitoner = new TokenAccessPractitionerDetailModel
                 {
