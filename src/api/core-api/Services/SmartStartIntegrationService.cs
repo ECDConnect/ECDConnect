@@ -1856,7 +1856,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
-                            IsOnStipend = entity.StipendType != null ? true : false,
+                            IsOnStipend = entity.StipendType != null && entity.StipendType != "None" ? true : false,
                             SetupTraineeInitiated = true                                                    
                         };
 
