@@ -87,7 +87,7 @@ namespace ECDLink.SmartStart.Services
             return learners.ToList();
         }
 
-        public Classroom GetUserClassroom(string userId, string classroomId = null)
+        public Classroom GetUserClassroom(string userId, Guid classroomId = default(Guid))
         {
             Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId));
 
@@ -95,10 +95,20 @@ namespace ECDLink.SmartStart.Services
                                 .Include(x => x.ClassroomGroups)
                                 .ThenInclude(c => c.ClassProgrammes)
                                 .Where(x => x.UserId == userId)
-                                .FirstOrDefault();// c.Id == classroomId &&
+                                .FirstOrDefault();
 
-            if (classroom == default(Classroom))
+            if (classroom == default(Classroom) || classroomId != default(Guid))
             {
+                classroom = (Classroom)_dbContext.Classrooms
+                                .Include(x => x.ClassroomGroups)
+                                .ThenInclude(c => c.ClassProgrammes)
+                                .Where(x => x.Id == classroomId)
+                                .FirstOrDefault(); 
+            }
+
+                if (classroom == default(Classroom))
+            {
+
                 //a practitioner may call here on a classroom that only the principal has access to, since practitioners are assigned to classroomgroups, and principals to classrooms.
                 //So get the parent of the practitioner and if that matches the classroom id by their principal id to the classroom id, then allow the request
                 if (practi != null && practi.PrincipalHierarchy.HasValue)
