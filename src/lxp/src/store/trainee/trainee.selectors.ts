@@ -97,7 +97,8 @@ export const getTraineeVisitDataAssitantsNumber = (
 export const getCoachVisitDataNextSteps = (
   state: RootState
 ): VisitData | null | undefined => {
-  const visitData = state.trainee.coachSmartSpaceCheckData;
+  const visitData = state?.trainee?.coachSmartSpaceCheckData;
+
   const programmeDetailsSections = visitData?.find(
     (item) => item?.visitSection === 'Discuss next steps'
   );

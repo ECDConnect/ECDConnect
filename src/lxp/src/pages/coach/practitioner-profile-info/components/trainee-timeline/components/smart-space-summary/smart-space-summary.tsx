@@ -53,8 +53,8 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
 
   const smartSpaceCapacity = visitProgrammeCapacityData?.[2]?.questionAnswer;
   const totalMetresSquaredAvailable =
-    ((Number(visitProgrammeCapacityData?.[0].questionAnswer) / 100) *
-      Number(visitProgrammeCapacityData?.[1].questionAnswer)) /
+    ((Number(visitProgrammeCapacityData?.[0]?.questionAnswer) / 100) *
+      Number(visitProgrammeCapacityData?.[1]?.questionAnswer)) /
     100;
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(

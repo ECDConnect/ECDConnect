@@ -145,6 +145,7 @@ export const CoachSmartSpaceChecklist: React.FC<
     await new TraineeService(userAuth?.auth_token!).addCoachVisitData(
       visitDateInput
     );
+    appDispatch(traineeActions.resetCoachSmartSpaceVisitData());
 
     return;
   };
@@ -178,6 +179,7 @@ export const CoachSmartSpaceChecklist: React.FC<
             setSectionQuestions={handleSetQuestions}
             handleNextSection={handleNextSection}
             saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+            onSubmit={onSubmit}
           />
         );
       case 4:

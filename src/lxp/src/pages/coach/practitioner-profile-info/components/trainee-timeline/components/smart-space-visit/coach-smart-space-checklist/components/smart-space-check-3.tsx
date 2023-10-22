@@ -14,7 +14,7 @@ import {
 } from '@ecdlink/ui';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { traineeSelectors } from '@/store/trainee';
+import { traineeActions, traineeSelectors } from '@/store/trainee';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
@@ -28,6 +28,7 @@ interface SmartSpaceCheck1Props {
   setSectionQuestions: (value?: SectionQuestions[]) => void;
   handleNextSection: any;
   saveSmartSpaceCheckData: () => void;
+  onSubmit: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -53,6 +54,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   setSectionQuestions,
   handleNextSection,
   saveSmartSpaceCheckData,
+  onSubmit,
 }) => {
   const dispatch = useAppDispatch();
   const dialog = useDialog();
@@ -194,7 +196,9 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         nextStepsComments: questions[0].answer,
       })
     );
-  }, [dispatch, practitioner?.userId, questions]);
+    await onSubmit();
+    await dispatch(traineeActions.resetCoachSmartSpaceVisitData());
+  }, [dispatch, onSubmit, practitioner?.userId, questions]);
 
   const exitCoachSmartSpaceVisit = useCallback(() => {
     dialog({
