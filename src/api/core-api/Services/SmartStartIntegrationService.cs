@@ -45,7 +45,6 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.SmartStart.Services;
-using AngleSharp.Io;
 
 namespace EcdLink.Api.CoreApi.Services;
 public class SmartStartIntegrationService : IIntegrationService
@@ -703,7 +702,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _mappedEntities = await GetMappedEntities(null, true, true);
         int trackingDays = 2;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).Where(x => string.Equals(x.UserId, "81f04d5d-ccd5-4f3a-9e95-9604a8e6fc18")).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
 
         DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
         DateTime followingWeekDate = DateTime.Now.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
@@ -795,9 +794,18 @@ public class SmartStartIntegrationService : IIntegrationService
                     //start buiulding up AttendanceList objects for each practitioner, and each class and learner, even if theres no attendance for a child, we will still have a list at the ready to send
                     foreach (var learner in allLearners)
                     {
+                        //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
+                        string learnerRemoteId = "";
+                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId,learner.UserId) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
+                        if (mappedChild != null)
+                        {
+                            learnerRemoteId = mappedChild.RemoteId;
+                        }
+
                         attendances.Add(new AttendanceList()
                         {
                             //ClassroomGroupId = classroomGroup.Id.ToString(),
+                            LearnerRemoteId = learnerRemoteId,
                             PractitionerUserId = parent.UserId,
                             PractitionerRemoterId = parent.RemoteId,
                             LearnerUserId = learner.UserId,
@@ -821,49 +829,44 @@ public class SmartStartIntegrationService : IIntegrationService
                         {
                             //map the attendance up with the learner list and populate
                             var learnerAttendance = attendances.Where(a => a.LearnerUserId == child).FirstOrDefault();
-                            if (learnerAttendance == null) //if this child is not in list then continue to next
+                            if (learnerAttendance == null || string.IsNullOrWhiteSpace(learnerAttendance.LearnerRemoteId)) //if this child is not in list then continue to next
                                 continue;
                             //learnerAttendance.AttendanceData = weeklyAttendance.ToList();
 
                             int daysPresent = 0;
                             int daysAbsent = 0;
 
-                            //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
-                            var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
-                            if (mappedChild != null)
+                            var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+
+                            foreach (var attendance in childAttendances)
                             {
-                                learnerAttendance.LearnerRemoteId = mappedChild.RemoteId;
-                                var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
-
-                                foreach (var attendance in childAttendances)
+                                string attendedKey = attendance.AttendanceDate.ToString("dddd");
+                                if (learnerAttendance.WeeklyAttendance.ContainsKey(attendedKey))
                                 {
-                                    string attendedKey = attendance.AttendanceDate.ToString("dddd");
-                                    if (learnerAttendance.WeeklyAttendance.ContainsKey(attendedKey))
+                                    foreach (var d in learnerAttendance.WeeklyAttendance)
                                     {
-                                        foreach (var d in learnerAttendance.WeeklyAttendance)
+                                        if (d.Key == attendedKey)
                                         {
-                                            if (d.Key == attendedKey)
+                                            if (attendance.Attended)
                                             {
-                                                if (attendance.Attended)
-                                                {
-                                                    daysPresent++;
-                                                    learnerAttendance.WeeklyAttendance[attendedKey] = present;
-                                                }
-                                                else
-                                                {
-                                                    daysAbsent++;
-                                                    learnerAttendance.WeeklyAttendance[attendedKey] = absent;
-                                                }
-                                                continue;
+                                                daysPresent++;
+                                                learnerAttendance.WeeklyAttendance[attendedKey] = present;
                                             }
-
+                                            else
+                                            {
+                                                daysAbsent++;
+                                                learnerAttendance.WeeklyAttendance[attendedKey] = absent;
+                                            }
+                                            continue;
                                         }
-                                    }
 
+                                    }
                                 }
-                                learnerAttendance.daysAbsent = daysAbsent;
-                                learnerAttendance.daysPresent = daysPresent;
+
                             }
+                            learnerAttendance.daysAbsent = daysAbsent;
+                            learnerAttendance.daysPresent = daysPresent;
+                            
                         }
 
                     }
@@ -1856,7 +1859,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
-                            IsOnStipend = entity.StipendType != null ? true : false,
+                            IsOnStipend = entity.StipendType != null && entity.StipendType != "None" ? true : false,
                             SetupTraineeInitiated = true                                                    
                         };
 
