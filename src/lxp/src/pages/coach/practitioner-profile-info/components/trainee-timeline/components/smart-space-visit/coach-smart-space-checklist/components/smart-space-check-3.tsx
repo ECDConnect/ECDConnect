@@ -283,6 +283,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
                       handleNextSection();
                     }
                   : () => {
+                      handleNextSection();
                       saveSmartSpaceCheckData();
                       exitCoachSmartSpaceVisit();
                     }

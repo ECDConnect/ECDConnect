@@ -99,7 +99,6 @@ export const CoachSmartSpaceChecklist: React.FC<
             },
           ];
         }, []);
-
         return updatedQuestions;
       });
     },
