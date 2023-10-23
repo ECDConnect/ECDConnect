@@ -82,12 +82,17 @@ export const PointsSummary: React.FC = () => {
     (total, current) => (total += current.pointsTotal),
     0
   );
-  const pointsMax =
+  let pointsMax =
     isPrincipal || isFundaAppAdmin
       ? pointsConstants.principalOrAdminMonthlyMax
       : pointsConstants.practitionerMonthlyMax;
 
   const percentageScore = (pointsTotal / pointsMax) * 100;
+
+  // without this rule the progress bar goes beyond the component
+  if (pointsTotal > pointsMax) {
+    pointsMax = pointsTotal;
+  }
 
   const celebrationCard = useMemo(() => {
     if (!!userStanding) {
