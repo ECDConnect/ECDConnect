@@ -2,13 +2,18 @@ import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-ev
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
-import { traineeActions, traineeThunkActions } from '@/store/trainee';
+import {
+  traineeActions,
+  traineeSelectors,
+  traineeThunkActions,
+} from '@/store/trainee';
 import { CalendarEventModel, PractitionerDto } from '@ecdlink/core';
 import { UpdateVisitPlannedVisitDateModelInput } from '@ecdlink/graphql';
 import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
 import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
 import { addDays, addMinutes } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 
 interface SmartSpaceVisitProps {
@@ -30,6 +35,10 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
   const visitId: string = options.visitId || '';
   const visitEventId: string = options.visitEventId || '';
   const plannedVisitDate: string = options.plannedVisitDate || '';
+
+  useEffect(() => {
+    appDispatch(traineeActions?.resetCoachSmartSpaceVisitData());
+  }, []);
 
   const onSchedule = () => {
     setVisible(false);
