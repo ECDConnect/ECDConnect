@@ -10,7 +10,6 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> PullPQAData(string franchiseeId = null);
         Task<bool> PullSmartSpaceVisitsData();
         Task<bool> IntegrationStatementsData();
-        Task<bool> IntegrationAttendanceData();
         Task<bool> IntegrationAttendanceByDueData();
         Task<bool> IntegrationUpdates();
         Task<bool> IntegrationByTrainees();

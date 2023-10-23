@@ -28,6 +28,12 @@ import ROUTES from '@/routes/routes';
 import { useSelector } from 'react-redux';
 import { getUser } from '@/store/user/user.selectors';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import { practitionerSelectors } from '@/store/practitioner';
+import {
+  TabsItems,
+  TabsItemsWithAttendance,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
+import { ClassDashboardRouteState } from '@/pages/business/business.types';
 
 export interface CaregiverLinkProps extends ComponentBaseProps {
   childDetails: ChildBasicInfoModel;
@@ -50,10 +56,16 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const { isOnline } = useOnlineStatus();
 
   const user = useSelector(getUser);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
+  const isPrincipal = user?.principalObjectData?.isPrincipal;
   const isCoachView = user?.roles?.some(
     (role) => role.name === UserTypeEnum.Coach
   );
+  const isPractitionerView = user?.roles?.some(
+    (role) => role.name === UserTypeEnum.Practitioner
+  );
+  const hasAttendanceRoute = isPrincipal && practitioners?.length! > 0;
 
   const practitionerId = location?.state?.practitionerId;
 
@@ -98,7 +110,13 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   };
 
   const onExit = () => {
-    history.push(ROUTES.COACH.PRACTITIONERS);
+    isPractitionerView
+      ? history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: hasAttendanceRoute
+            ? TabsItemsWithAttendance.CHILDREN
+            : TabsItems.CHILDREN,
+        } as ClassDashboardRouteState)
+      : history.push(ROUTES.COACH.PRACTITIONERS);
   };
 
   const createLink = async () => {

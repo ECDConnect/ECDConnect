@@ -15,6 +15,8 @@ import { traineeSelectors } from '@/store/trainee';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { coachSelectors } from '@/store/coach';
+import { authSelectors } from '@/store/auth';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -48,7 +50,9 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
   setNotificationStep,
 }) => {
   const history = useHistory();
-  const isTrainee = practitioner?.isTrainee;
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const [questions, setAnswers] = useState([
     {
@@ -65,7 +69,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
   }, [questions]);
 
   useEffect(() => {
-    if (isTrainee) {
+    if (!isCoach) {
       const previousData = questions.map((item) => {
         const previousAnswer = visitData?.find((item: any) => {
           const sectionData = item?.visitSection === visitSection;
@@ -184,7 +188,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
           </div>
         </div>
       </div>
-      {isTrainee && (
+      {!isCoach && (
         <Alert
           className="my-4"
           type="warning"
@@ -210,7 +214,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
           value={item.question}
           onChange={() => onOptionSelected(!item.answer, index)}
           className="mb-1"
-          disabled={isTrainee}
+          disabled={!isCoach}
         />
       ))}
 
@@ -230,7 +234,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={
-                isTrainee
+                !isCoach
                   ? setNotificationStep('')
                   : () => {
                       handleNextSection();

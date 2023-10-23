@@ -11,7 +11,6 @@ import {
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ProgrammeTypeDto } from '@ecdlink/core';
-import { Controller } from 'react-hook-form';
 import { staticDataSelectors } from '@/store/static-data';
 import { ModelInfo } from './components/model-info';
 import { ProgrammeTypeTexts } from './components/modelTexts';

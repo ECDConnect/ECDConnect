@@ -2,8 +2,10 @@ import { ChildDto, Config } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
   AddChildLearnerTokenModelInput,
+  AddChildRegistrationTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
+  AddChildUserConsentTokenModelInput,
   ChildInput,
 } from '@ecdlink/graphql';
 import { ChildRegistrationDetails } from '../../pages/child/caregiver-child-registration/caregiver-child-registration.types';
@@ -152,6 +154,29 @@ class ChildService {
     return true;
   }
 
+  async calculateChildrenRegistrationRemoval(userId: string): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation CalculateChildrenRegistrationRemoval($userId: String) {
+          calculateChildrenRegistrationRemoval(userId: $userId){
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Calculate Children Registration Removal failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
   async createChild(input: ChildInput): Promise<ChildDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -240,6 +265,8 @@ class ChildService {
               firstname
               surname
               groupName
+              userId
+              groupFeeAmount
             }
             practitoner {
               firstname
@@ -269,13 +296,21 @@ class ChildService {
     caregiver: AddChildCaregiverTokenModelInput,
     learner: AddChildLearnerTokenModelInput,
     siteAddress: AddChildSiteAddressTokenModelInput,
-    child: AddChildTokenModelInput
+    child: AddChildTokenModelInput,
+    registration?: AddChildRegistrationTokenModelInput,
+    consent?: AddChildUserConsentTokenModelInput
   ): Promise<string> {
     const apiInstance = await api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation openAccessAddChild($token: String, $caregiver: AddChildCaregiverTokenModelInput, $learner: AddChildLearnerTokenModelInput, $siteAddress: AddChildSiteAddressTokenModelInput, $child: AddChildTokenModelInput) {
-          openAccessAddChild(token: $token,caregiver: $caregiver, learner: $learner, siteAddress: $siteAddress, child: $child)
+        mutation openAccessAddChild($token: String, 
+          $caregiver: AddChildCaregiverTokenModelInput, 
+          $learner: AddChildLearnerTokenModelInput, 
+          $siteAddress: AddChildSiteAddressTokenModelInput, 
+          $child: AddChildTokenModelInput,
+          $registration: AddChildRegistrationTokenModelInput,
+          $consent: AddChildUserConsentTokenModelInput) {
+            openAccessAddChild(token: $token,caregiver: $caregiver, learner: $learner, siteAddress: $siteAddress, child: $child, registration: $registration, consent: $consent)
         }
       `,
       variables: {
@@ -284,6 +319,8 @@ class ChildService {
         learner: learner,
         siteAddress: siteAddress,
         child: child,
+        registration: registration,
+        consent: consent,
       },
     });
 

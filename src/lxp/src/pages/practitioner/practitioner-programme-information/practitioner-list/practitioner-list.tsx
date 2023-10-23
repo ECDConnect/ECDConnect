@@ -43,8 +43,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const practitionerId = practitioner?.user?.id;
   const [editPractitionerVisible, setEditiPractitionerVisible] =
     useState(false);
-  const [otherColleagues, setOtherColleagues] = useState<any[]>([]);
-  const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>(
+  const [otherColleagues, setOtherColleagues] = useState<any[]>([]); // FIX THIS
+  const [otherColleaguesFiltered, setOtherColleaguesFiltered] = useState<any>( // FIX THIS
     []
   );
   const [colleagueProfile, setColleagueProfile] = useState({});
@@ -74,7 +74,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
   useEffect(() => {
     if (otherColleagues && user?.firstName) {
       const filteredColleagues = otherColleagues?.filter(
-        (item) => !item?.name.includes(user?.firstName)
+        (item) => !item?.name?.includes(user?.firstName)
       );
       const firstNameFilteredColleagues = filteredColleagues.map((item) => ({
         name: item?.name.split(' ')[0],
@@ -128,7 +128,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
 
   const stackedListItems: ActionListDataItem[] =
     practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-      ? practitioners?.map((item) => {
+      ? [practitioner, ...(practitioners || [])].map((item) => {
           return {
             title: item?.user?.fullName ? item?.user?.fullName : '',
             subTitle: item?.isPrincipal
@@ -139,11 +139,12 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
             switchTextStyles: true,
             actionName: 'Remove',
             actionIcon: 'PencilIcon',
-            buttonType: !!practitioners.length ? 'filled' : 'ghost',
+            buttonType:
+              !!practitioners && practitioners.length ? 'filled' : 'ghost',
             onActionClick: () => {
               const userId = item?.userId || '';
               if (item?.isPrincipal && userId === practitioner?.userId) {
-                if (!!practitioners.length) {
+                if (!!practitioners && practitioners.length) {
                   history.push(ROUTES.PRINCIPAL.SWAP_PRINCIPAL);
                 }
               } else {

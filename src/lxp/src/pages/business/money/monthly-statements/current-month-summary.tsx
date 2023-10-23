@@ -1,15 +1,14 @@
 import ROUTES from '@/routes/routes';
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
-import { authSelectors } from '@/store/auth';
 import { MonthStatementsDetails } from '../../components/month-statements-details';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { BannerWrapper } from '@ecdlink/ui';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { IncomeStatementDates } from '@/constants/Dates';
-import { getPreviousMonth } from '@ecdlink/core';
+import { getNextMonth, getPreviousMonth } from '@ecdlink/core';
 
 export const CurrentMonthSummary: React.FC = () => {
   const history = useHistory();
@@ -17,6 +16,7 @@ export const CurrentMonthSummary: React.FC = () => {
 
   const income = useSelector(statementsSelectors.getUnsubmittedIncomeItems);
   const expenses = useSelector(statementsSelectors.getUnsubmittedExpenseItems);
+  const statements = useSelector(statementsSelectors.getIncomeStatements);
 
   const onBack = () => {
     history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST);
@@ -27,11 +27,26 @@ export const CurrentMonthSummary: React.FC = () => {
     currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
     currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
+  const isThisMonthSubmitted = useMemo(
+    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
+    [statements]
+  );
+  const isPreviousMonthSubmitted = useMemo(
+    () => !!statements?.find((x) => x.month === new Date().getMonth()),
+    [statements]
+  );
+
+  // submit window open And last statement not submitted -> previous month
+  // submitted this month -> next month
+  // otherwise current month
   const summaryDate =
-    !isSubmitWindowOpen ||
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay
-      ? currentDate
-      : getPreviousMonth(currentDate);
+    !isPreviousMonthSubmitted && isSubmitWindowOpen
+      ? getPreviousMonth(currentDate)
+      : isThisMonthSubmitted
+      ? getNextMonth(currentDate)
+      : currentDate;
+
+  console.log('Summary Date', summaryDate);
 
   return (
     <BannerWrapper

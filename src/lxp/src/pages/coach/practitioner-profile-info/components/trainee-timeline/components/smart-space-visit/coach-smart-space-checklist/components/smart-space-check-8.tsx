@@ -1,4 +1,6 @@
 import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
+import { authSelectors } from '@/store/auth';
+import { coachSelectors } from '@/store/coach';
 import { traineeSelectors } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import {
@@ -41,7 +43,9 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
-  const isTrainee = practitioner?.isTrainee;
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
   const [questions, setAnswers] = useState([
     {
       question: `I gave ${practitioner?.user?.firstName} a playkit and admin file and explained the contents of the file.`,
@@ -90,7 +94,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
-    if (isTrainee) {
+    if (!isCoach) {
       const previousData = questions.map((item) => {
         const previousAnswer = visitData?.find((item: any) => {
           const sectionData = item?.visitSection === visitSection;
@@ -165,7 +169,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
         className={'my-3'}
       />
       <Divider dividerType="dashed" className={'my-4'} />
-      {isTrainee && (
+      {!isCoach && (
         <Alert
           className="my-4"
           type="warning"
@@ -192,7 +196,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
           value={item.question}
           onChange={() => onOptionSelected(!item.answer, index)}
           className="mb-1"
-          disabled={isTrainee}
+          disabled={!isCoach}
         />
       ))}
 
@@ -207,7 +211,7 @@ export const SmartSpaceCheck8: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!trueAnswers}
+              disabled={!trueAnswers && isCoach}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

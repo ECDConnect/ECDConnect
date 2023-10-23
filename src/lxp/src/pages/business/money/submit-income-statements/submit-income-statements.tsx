@@ -547,22 +547,22 @@ export const SubmitIncomeStatements: React.FC = () => {
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(
-                        Number(previousMonthTotalBalance)
-                      )}
+                      text={formatCurrentValue(previousMonthTotalBalance)}
                       type="body"
-                      color={'successMain'}
+                      color={
+                        previousMonthTotalBalance >= 0
+                          ? 'successMain'
+                          : 'errorMain'
+                      }
                       align={'center'}
                     />
                   </td>
                   <td className="w-1/3">
                     <Typography
-                      text={formatCurrentValue(
-                        Number(currentMonthTotalBalance)
-                      )}
+                      text={formatCurrentValue(currentMonthTotalBalance)}
                       type="body"
                       color={
-                        Number(currentMonthTotalBalance!) >= 0
+                        currentMonthTotalBalance >= 0
                           ? 'successMain'
                           : 'errorMain'
                       }

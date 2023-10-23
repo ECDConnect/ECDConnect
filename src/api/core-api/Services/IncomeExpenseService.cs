@@ -30,7 +30,6 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
-        private readonly int _submitEndDate;
         private IGenericRepository<StatementsExpenseType, Guid> _statementsExpenseTypeRepo;
         private IGenericRepository<StatementsExpenses, Guid> _statementsExpensesRepo;
         private IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
@@ -60,8 +59,7 @@ namespace ECDLink.Core.Services
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
-            _submitEndDate = int.Parse(submitEndDate.Value.IncomeStatementSubmitEnd);            
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());       
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
@@ -88,8 +86,10 @@ namespace ECDLink.Core.Services
 
         public List<StatementsIncomeStatement> GetAllStatementsIncomeStatement(string userId, int year, int month)
         {
-            var expenseRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            var statements = expenseRepo.GetAll()
+            var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
+            var statements = statementRepo.GetAll()
+                .Include(x => x.IncomeItems)
+                .Include(x => x.ExpenseItems)
                 .Where(x => x.UserId.Equals(userId) && x.Year.Equals(year))
                 .ToList();
 
@@ -145,7 +145,7 @@ namespace ECDLink.Core.Services
             return statements;
         }
 
-        public List<StatementReport> GetAllStatementExpenses(string userId, string statementId)
+        private List<StatementReport> GetAllStatementExpenses(string userId, string statementId)
         {
             List<StatementReport> reportData = new List<StatementReport>();
             // Only return types linked to expenses for params
@@ -163,7 +163,7 @@ namespace ECDLink.Core.Services
             return reportData;
         }
 
-        public List<StatementReport> GetAllStatementIncome(string userId, string statementId)
+        private List<StatementReport> GetAllStatementIncome(string userId, string statementId)
         {
             List<StatementReport> reportData = new List<StatementReport>();
             // Only return types linked to income for params
@@ -180,167 +180,7 @@ namespace ECDLink.Core.Services
 
             return reportData;
         }
-
-
-        public List<StatementsExpenseType> GetAllStatementExpenseTypes(string userId, int year, int month)
-        {
-            // Only return types linked to expenses for params
-            return
-            (
-                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.DatePaid.Year.Equals(year) && y.DatePaid.Month.Equals(month) && y.Submitted.Equals(true))
-                join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
-                select statementExpenseType
-            ).Distinct().ToList();
-        }
-
-        public List<IncomeExpensePDFDataModel> GetAllStatementsExpensesForType(string userId, int year, int month, string expenseTypeId)
-        {
-            List<StatementsExpenses> expenseRows = _statementsExpensesRepo.GetAll()
-                    .Where(x => string.Equals(x.UserId, userId)
-                        && x.IsActive == true
-                        && x.DatePaid.Year.Equals(year)
-                        && x.DatePaid.Month.Equals(month)
-                        && string.Equals(x.ExpenseTypeId, expenseTypeId)
-                        && x.Submitted.Equals(true))
-                    .ToList();
-
-            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
-            var invoiceNr = 1;
-            foreach (var expense in expenseRows)
-            {
-                var result = new IncomeExpensePDFDataModel();
-                result.Description = expense.Notes;
-                result.Date = expense.DatePaid;
-                result.Amount = expense.Amount;
-                result.PhotoProof = expense.PhotoProof;
-                result.InvoiceNr = invoiceNr;
-                results.Add(result);
-                invoiceNr++;
-            }
-            return results;
-        }
-
-        public List<StatementsIncomeType> GetAllStatementIncomeTypes(string userId, int year, int month)
-        {
-            // Only return types linked to incomes for params
-            return
-            (
-                from statementsIncome in _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true))
-                join statementIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsIncome.IncomeTypeId equals statementIncomeType.Id.ToString()
-                select statementIncomeType
-            ).Distinct().ToList();
-        }
         
-        public List<StatementsContributionType> GetAllStatementContributionTypes(string userId, int year, int month)
-        {
-            // Only return types linked to incomes for params
-            return
-            (
-                from statementsIncome in _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true))
-                join statementContributionType in _statementsContributionTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsIncome.ContributionTypeId equals statementContributionType.Id.ToString()
-                select statementContributionType
-            ).Distinct().ToList();
-        }
-
-        public List<IncomeExpensePDFDataModel> GetMonetaryContributions(string userId, int year, int month, string preschoolFeeId, string moneyId)
-        {
-            List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
-                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
-                        && x.DateReceived.Year.Equals(year)
-                        && x.DateReceived.Month.Equals(month)
-                        && x.Submitted.Equals(true)
-                        && x.IncomeTypeId == preschoolFeeId
-                        && x.ContributionTypeId == moneyId)
-                    .ToList();
-
-            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
-            foreach (var income in incomeRows)
-            {
-                var child = _childRepo.GetAll().Where(x => x.Id.ToString() == income.ChildUserId).Select(x => x.User).FirstOrDefault();
-                var result = new IncomeExpensePDFDataModel();
-                result.Description = income.Notes;
-                result.Date = income.DateReceived;
-                result.Amount = income.Amount;
-                result.PhotoProof = income.PhotoProof;
-                result.Child = child?.FirstName + " " + child?.Surname;
-                results.Add(result);
-            }
-            return results;
-        }
-
-        public List<IncomeExpensePDFDataModel> getNonMonetaryContributions(string userId, int year, int month, string preschoolFeeId, string moneyId)
-        {
-            List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
-                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
-                        && x.DateReceived.Year.Equals(year)
-                        && x.DateReceived.Month.Equals(month)
-                        && x.Submitted.Equals(true)
-                        && x.IncomeTypeId == preschoolFeeId
-                        && x.ContributionTypeId != moneyId)
-                    .ToList();
-
-            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
-            foreach (var income in incomeRows)
-            {
-                var child = _childRepo.GetAll().Where(x => x.Id.ToString() == income.ChildUserId).Select(x => x.User).FirstOrDefault();
-                var result = new IncomeExpensePDFDataModel();
-                result.Description = income.Notes;
-                result.Date = income.DateReceived;
-                result.Amount = income.Amount;
-                result.PhotoProof = income.PhotoProof;
-                result.Child = child?.FirstName + " " + child?.Surname;
-                results.Add(result);
-            }
-            return results;
-        }
-
-        public List<IncomeExpensePDFDataModel> GetSubsidiesDonationsContributions(string userId, int year, int month, string otherId, List<StatementsIncomeType> incomeTypes)
-        {
-            List<string> incomeIds = incomeTypes.Select(x => x.Id.ToString()).ToList();
-
-            List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
-                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
-                        && x.DateReceived.Year.Equals(year)
-                        && x.DateReceived.Month.Equals(month)
-                        && x.Submitted.Equals(true)
-                        && x.IncomeTypeId != otherId
-                        && incomeIds.Contains(x.IncomeTypeId))
-                    .ToList();
-
-            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
-            foreach (var income in incomeRows)
-            {
-                var result = new IncomeExpensePDFDataModel();
-                result.Description = income.Notes;
-                result.Date = income.DateReceived;
-                result.Amount = income.Amount;
-                result.PhotoProof = income.PhotoProof;
-                result.Type = incomeTypes.Where(x => x.Id.ToString() == income.IncomeTypeId).Select(y => y.Description).FirstOrDefault();
-                results.Add(result);
-            }
-            return results;
-
-        }
-        
-        public List<IncomeExpensePDFDataModel> GetOtherIncome(string userId, int year, int month, string otherId)
-        {
-            List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
-                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true) && x.IncomeTypeId.Equals(otherId))
-                    .ToList();
-
-            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
-            foreach (var income in incomeRows)
-            {
-                var result = new IncomeExpensePDFDataModel();
-                result.Description = income.Notes;
-                result.Date = income.DateReceived;
-                result.Amount = income.Amount;
-                result.PhotoProof = income.PhotoProof;
-                results.Add(result);
-            }
-            return results;
-        }
-
         /// <summary>
         /// Gets all statements between the given date ranges. End date can be ommitted to get everything from the start date
         /// </summary>
@@ -569,23 +409,25 @@ namespace ECDLink.Core.Services
 
             _statementsRepo.Insert(submittedStatement);
 
-            //try generating autosubmit doc
-            if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
-            {
-                // TODO FIX THE DATA INPUT INTO CREATE PDF
-                var pdfDoc = CreateIncomeStatementPDFDocument(userId, year, month);
-                if (pdfDoc != null)
-                {
-                    submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
-                }
-            }
-            _statementsRepo.Update(submittedStatement); // Don't know why I have to update this separately, but otherwise EF gets confused and breaks
-
-
             if (!autoSubmitted)
             {
                 _pointsEngineService.CalculateIncomeStatements(userId, DateTime.Now);
             }
+
+            //try generating autosubmit doc
+            if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
+            {
+                // TODO FIX THE DATA INPUT INTO CREATE PDF
+                var pdfDoc = CreateIncomeStatementPDFDocument(userId, submittedStatement);
+                if (pdfDoc != null)
+                {
+                    submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
+                }
+
+                _statementsRepo.Update(submittedStatement);
+            }
+
+           
 
             return submittedStatement;
         }
@@ -666,11 +508,10 @@ namespace ECDLink.Core.Services
 
         #region PDF STUFF
 
-
-        public Document CreateIncomeStatementPDFDocument(string userId, int year, int month)
+        public Document CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement)
         {
             // Data for pdf
-            var htmlData = GetStatementsIncomeExpensesPDFData(userId, year, month);
+            var htmlData = GetStatementsIncomeExpensesPDFData(statement);
 
             var uId = _contextAccessor.HttpContext.GetUser().Id;
             var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
@@ -683,12 +524,11 @@ namespace ECDLink.Core.Services
             var hasExpenses = false;
             var receipts = new List<ExpenseReceipt>();
 
-            string signDateRow = _documentManager.GetSignatureRow(
-                _personnelService.GetUserSignature(userId));
-            string filename = _documentManager.GetDocumentHeader(year, month) + " Statement";
+            string signDateRow = _documentManager.GetSignatureRow(_personnelService.GetUserSignature(userId));
+            string filename = $"{new DateTime(statement.Year, statement.Month, 1).ToString("MMMM yyyy")} Statement";
             string html = $"<html><head>{_documentManager.GetDocumentStyling()}</head><body>";
 
-            PdfDocumentHeader pdfDocumentHeader = new PdfDocumentHeader();
+            var pdfDocumentHeader = new PdfDocumentHeader();
             pdfDocumentHeader.UserId = userId;
             pdfDocumentHeader.SiteAddress = _personnelService.GetUserSiteAddress(userId);
             pdfDocumentHeader.ReportType = "StatementsPDF";
@@ -895,93 +735,110 @@ namespace ECDLink.Core.Services
             return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
         }
 
-        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(string userId, int year, int month, bool splitSupport = false)
+        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId)
         {
-            List<IncomeExpensePDFTableModel> tables = new List<IncomeExpensePDFTableModel>();
-            var table = new IncomeExpensePDFTableModel();
+            var statement = _statementsRepo.GetAll()
+                .Include(x => x.IncomeItems)
+                .Include(x => x.ExpenseItems)
+                .Where(x => x.Id == statementId)
+                .First();
+
+            return GetStatementsIncomeExpensesPDFData(statement);
+        }
+
+        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(StatementsIncomeStatement statement)
+        {
+            var tables = new List<IncomeExpensePDFTableModel>();
+
+            var expenseTypes = _statementsExpenseTypeRepo.GetAll().ToList();
+            var incomeTypes = _statementsIncomeTypeRepo.GetAll().ToList();
+            var contributionTypes = _statementsContributionTypeRepo.GetAll().ToList();
+            var childUserIds = statement.IncomeItems.Where(x => !string.IsNullOrWhiteSpace(x.ChildUserId)).Select(x => x.ChildUserId);
+            var childNamesById = _childRepo.GetAll()
+                .Include(x => x.User)
+                .Where(x => childUserIds.Contains(x.UserId))
+                .Select(x => new { x.UserId, Name = $"{x.User.FirstName} {x.User.Surname}" })
+                .ToDictionary(x => x.UserId, x => x.Name);
 
             //
             //  EXPENSES
             //
-            List<StatementsExpenseType> expenseTypes = GetAllStatementExpenseTypes(userId, year, month);
             foreach (StatementsExpenseType type in expenseTypes)
             {
-                table = new IncomeExpensePDFTableModel();
-                table.TableName = type.Description;
-                table.Type = IncomeExpensePDF.EXPENSES;
-                table.Headers = getExpensePDFHeader();
-                table.Data = GetAllStatementsExpensesForType(userId, year, month, type.Id.ToString());
-                if (table.Data != null && table.Data.Count > 0)
+                var expenses = statement.ExpenseItems.Where(x => x.ExpenseTypeId == type.Id.ToString());
+
+                if (!expenses.Any())
                 {
-                    table.Total = table.Data.Select(x => x.Amount).Sum();
-                    tables.Add(table);
+                    continue;
                 }
+
+                tables.Add(new IncomeExpensePDFTableModel
+                {
+                    TableName = type.Description,
+                    Type = IncomeExpensePDF.EXPENSES,
+                    Headers = getExpensePDFHeader(),
+                    Data = MapExpenseToPdfData(expenses),
+                    Total = expenses.Select(x => x.Amount).Sum(),
+                });
             }
 
             //
             //  INCOME
             //
-            List<StatementsIncomeType> incomeTypes = GetAllStatementIncomeTypes(userId, year, month);
-            List<StatementsContributionType> contributionTypes = GetAllStatementContributionTypes(userId, year, month);
-            var otherId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.OTHER).Select(y => y.Id).FirstOrDefault();
-            var preschoolFeeId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.PRESCHOOL_FEE).Select(y => y.Id).FirstOrDefault();
-            var moneyId = contributionTypes.Where(x => x.Description == IncomeExpensePDF.MONEY).Select(y => y.Id).FirstOrDefault();
+            var otherId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.OTHER).Select(y => y.Id).First().ToString();
+            var preschoolFeeId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.PRESCHOOL_FEE).Select(y => y.Id).First().ToString();
+            var moneyId = contributionTypes.Where(x => x.Description == IncomeExpensePDF.MONEY).Select(y => y.Id).First().ToString();
 
-            var includeChild = true;
-            var includeAmount = true;
-            var includeDescription = true;
-            var includeType = true;
-            var includeItem = true;
 
             // Preschool fees: Monetary contributions
-            includeChild = true; includeAmount = true; includeDescription = false; includeType = false; includeItem = false;
-            table = new IncomeExpensePDFTableModel();
-            table.TableName = IncomeExpensePDF.MONETARY_CONTRIBUTIONS;
-            table.Type = IncomeExpensePDF.INCOME;
-            table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
-            table.Data = GetMonetaryContributions(userId, year, month, preschoolFeeId.ToString(), moneyId.ToString());
-            if (table.Data != null && table.Data.Count > 0)
-            {
-                table.Total = table.Data.Select(x => x.Amount).Sum();
-                tables.Add(table);
-            }
+            var monetaryFeeIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == preschoolFeeId && x.ContributionTypeId == moneyId);
+            tables.Add(new IncomeExpensePDFTableModel {
+                TableName = IncomeExpensePDF.MONETARY_CONTRIBUTIONS,
+                Type = IncomeExpensePDF.INCOME,
+                Headers = GetIncomePDFHeader(true, true, false, false, false),
+                Data = MapIncomeToPdfData(monetaryFeeIncome, childNamesById),
+                Total = monetaryFeeIncome.Select(x => x.Amount).Sum(),
+            });
 
             // Preschool fees: Non-monetary contributions
-            includeChild = true; includeAmount = false; includeDescription = false; includeType = false; includeItem = true;
-            table = new IncomeExpensePDFTableModel();
-            table.TableName = IncomeExpensePDF.NON_MONETARY_CONTRIBUTIONS;
-            table.Type = IncomeExpensePDF.INCOME;
-            table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
-            table.Data = getNonMonetaryContributions(userId, year, month, preschoolFeeId.ToString(), moneyId.ToString());
-            if (table.Data != null && table.Data.Count > 0)
+            var nonMonetaryFeeIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == preschoolFeeId && x.ContributionTypeId != moneyId);
+            if (nonMonetaryFeeIncome.Any())
             {
-                tables.Add(table);
+                tables.Add(new IncomeExpensePDFTableModel
+                {
+                    TableName = IncomeExpensePDF.NON_MONETARY_CONTRIBUTIONS,
+                    Type = IncomeExpensePDF.INCOME,
+                    Headers = GetIncomePDFHeader(true, false, false, false, false),
+                    Data = MapIncomeToPdfData(nonMonetaryFeeIncome, childNamesById),
+                });
             }
 
             // Subsidies, donations, contributions
-            includeChild = false; includeAmount = true; includeDescription = false; includeType = true; includeItem = true;
-            table = new IncomeExpensePDFTableModel();
-            table.TableName = IncomeExpensePDF.SUBSIDIES_DONATIONS_CONTRIBUTIONS;
-            table.Type = IncomeExpensePDF.INCOME;
-            table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
-            table.Data = GetSubsidiesDonationsContributions(userId, year, month, otherId.ToString(), incomeTypes);
-            if (table.Data != null && table.Data.Count > 0)
+            var subsidyAndDonationIncome = statement.IncomeItems.Where(x => x.IncomeTypeId != preschoolFeeId && x.IncomeTypeId != otherId);
+            if (subsidyAndDonationIncome.Any())
             {
-                table.Total = table.Data.Select(x => x.Amount).Sum();
-                tables.Add(table);
+                tables.Add(new IncomeExpensePDFTableModel
+                {
+                    TableName = IncomeExpensePDF.SUBSIDIES_DONATIONS_CONTRIBUTIONS,
+                    Type = IncomeExpensePDF.INCOME,
+                    Headers = GetIncomePDFHeader(false, true, false, true, true),
+                    Data = MapIncomeToPdfData(subsidyAndDonationIncome, childNamesById),
+                    Total = subsidyAndDonationIncome.Select(x => x.Amount).Sum()
+                });
             }
 
             // Other
-            includeChild = false; includeAmount = true; includeDescription = true; includeType = false; includeItem = false;
-            table = new IncomeExpensePDFTableModel();
-            table.TableName = IncomeExpensePDF.OTHER;
-            table.Type = IncomeExpensePDF.INCOME;
-            table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
-            table.Data = GetOtherIncome(userId, year, month, otherId.ToString());
-            if (table.Data != null && table.Data.Count > 0)
+            var otherIncome = statement.IncomeItems.Where(x => x.IncomeTypeId == otherId);
+            if (otherIncome.Any())
             {
-                table.Total = table.Data.Select(x => x.Amount).Sum();
-                tables.Add(table);
+                tables.Add(new IncomeExpensePDFTableModel
+                {
+                    TableName = IncomeExpensePDF.OTHER,
+                    Type = IncomeExpensePDF.INCOME,
+                    Headers = GetIncomePDFHeader(false, true, true, false, false),
+                    Data = MapIncomeToPdfData(otherIncome, childNamesById),
+                    Total = otherIncome.Select(x => x.Amount).Sum()
+                });
             }
 
             return tables;
@@ -1014,9 +871,9 @@ namespace ECDLink.Core.Services
             return headers;
         }
 
-        private List<IncomeExpensePDFHeaderModel> getIncomePDFHeader(bool includeChild, bool includeAmount, bool includeDescription, bool includeType, bool includeItem)
+        private List<IncomeExpensePDFHeaderModel> GetIncomePDFHeader(bool includeChild, bool includeAmount, bool includeDescription, bool includeType, bool includeItem)
         {
-            List<IncomeExpensePDFHeaderModel> headers = new List<IncomeExpensePDFHeaderModel>();
+            var headers = new List<IncomeExpensePDFHeaderModel>();
 
             var header = new IncomeExpensePDFHeaderModel();
             header.Header = "Date";
@@ -1065,6 +922,42 @@ namespace ECDLink.Core.Services
             return headers;
         }
 
+        private List<IncomeExpensePDFDataModel> MapExpenseToPdfData(IEnumerable<StatementsExpenses> expenseRows)
+        {
+            var results = new List<IncomeExpensePDFDataModel>();
+            var invoiceNr = 1;
+            foreach (var expense in expenseRows)
+            {
+                results.Add(new IncomeExpensePDFDataModel
+                {
+                    Description = expense.Notes,
+                    Date = expense.DatePaid,
+                    Amount = expense.Amount,
+                    PhotoProof = expense.PhotoProof,
+                    InvoiceNr = invoiceNr,
+                });
+                invoiceNr++;
+            }
+            return results;
+        }
+
+
+        private List<IncomeExpensePDFDataModel> MapIncomeToPdfData(IEnumerable<StatementsIncome> incomeRows, IDictionary<string, string> childNamesById)
+        {
+            var results = new List<IncomeExpensePDFDataModel>();
+            foreach (var income in incomeRows)
+            {
+                var child = _childRepo.GetAll().Where(x => x.Id.ToString() == income.ChildUserId).Select(x => x.User).FirstOrDefault();
+                var result = new IncomeExpensePDFDataModel();
+                result.Description = income.Notes;
+                result.Date = income.DateReceived;
+                result.Amount = income.Amount;
+                result.PhotoProof = income.PhotoProof;
+                result.Child = child?.FirstName + " " + child?.Surname;
+                results.Add(result);
+            }
+            return results;
+        }
         #endregion
     }
 }

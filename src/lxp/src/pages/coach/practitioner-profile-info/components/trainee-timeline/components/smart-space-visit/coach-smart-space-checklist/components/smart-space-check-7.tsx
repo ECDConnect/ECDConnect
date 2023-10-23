@@ -13,6 +13,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 import covid_guidelines from '@/assets/CC14_COVID19_Reopening_Support_&_Verification_Visit.pdf';
+import { coachSelectors } from '@/store/coach';
+import { authSelectors } from '@/store/auth';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -42,7 +44,9 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
-  const isTrainee = practitioner?.isTrainee;
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
   const [questions, setAnswers] = useState([
     {
       question:
@@ -239,7 +243,7 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
   };
 
   useEffect(() => {
-    if (isTrainee) {
+    if (!isCoach) {
       const previousData = questions.map((item) => {
         const previousAnswer = visitData?.find((item: any) => {
           const sectionData = item?.visitSection === visitSection;
@@ -340,7 +344,7 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
         </div>
       </div>
       <Divider dividerType="dashed" className={'my-4'} />
-      {isTrainee && (
+      {!isCoach && (
         <Alert
           className="my-4"
           type="warning"
@@ -368,7 +372,7 @@ export const SmartSpaceCheck7: React.FC<SmartSpaceCheck1Props> = ({
           value={item.question}
           onChange={() => onOptionSelected(!item.answer, index)}
           className="mb-1"
-          disabled={isTrainee}
+          disabled={!isCoach}
         />
       ))}
 

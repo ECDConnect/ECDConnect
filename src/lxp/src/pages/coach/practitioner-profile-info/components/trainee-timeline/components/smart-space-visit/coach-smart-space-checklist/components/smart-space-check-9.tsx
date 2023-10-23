@@ -14,6 +14,8 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { traineeSelectors } from '@/store/trainee';
 import { useSelector } from 'react-redux';
+import { coachSelectors } from '@/store/coach';
+import { authSelectors } from '@/store/auth';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -47,7 +49,9 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
-  const isTrainee = practitioner?.isTrainee;
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
   const [answer, setAnswer] = useState<boolean | undefined>(undefined);
   const [enableButton, setEnableButton] = useState(false);
   const [questions, setAnswers] = useState([
@@ -156,7 +160,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
-    if (isTrainee) {
+    if (!isCoach) {
       const previousData = questions.map((item) => {
         const previousAnswer = visitData?.find((item: any) => {
           const sectionData = item?.visitSection === visitSection;
@@ -230,10 +234,10 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
   }, [answer]);
 
   useEffect(() => {
-    if (isTrainee) {
+    if (!isCoach) {
       setAnswer(true);
     }
-  }, [isTrainee]);
+  }, [isCoach]);
 
   return (
     <div className="p-4">
@@ -251,7 +255,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
           color="textDark"
           className="mb-2"
         />
-        <div className={`${isTrainee && 'pointer-events-none opacity-50'}`}>
+        <div className={`${!isCoach && 'pointer-events-none opacity-50'}`}>
           <ButtonGroup<boolean>
             color="secondary"
             type={ButtonGroupTypes.Button}
@@ -262,7 +266,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
       </div>
       {answer && (
         <div>
-          {!isTrainee && (
+          {isCoach && (
             <Alert
               type={'info'}
               title={
@@ -276,7 +280,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
             />
           )}
           <Divider dividerType="dashed" className={'my-4'} />
-          {isTrainee && (
+          {!isCoach && (
             <Alert
               className="my-4"
               type="warning"
@@ -296,7 +300,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
               value={item.question}
               onChange={() => onOptionSelected(!item.answer, index)}
               className="mb-1"
-              disabled={isTrainee}
+              disabled={!isCoach}
             />
           ))}
           <div className="mt-2 flex items-center gap-2">
@@ -322,7 +326,7 @@ export const SmartSpaceCheck9: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton && !isTrainee}
+              disabled={!enableButton && isCoach}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

@@ -7,6 +7,7 @@ import {
 } from '@ecdlink/ui/';
 import {
   addDays,
+  addMonths,
   getDate,
   getISODay,
   getMonth,
@@ -57,15 +58,22 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const addDay = useCallback(() => {
     setSelectedDate(addDays(selectedDate!, 1));
   }, [selectedDate, setSelectedDate]);
+  // Business rule to only go back 3 months and forward 6 months
+  const threeMonthsBack: Date = addMonths(selectedDate!, -3);
+  const sixMonthsForward: Date = addMonths(selectedDate!, 6);
 
   const subDay = useCallback(() => {
-    if (new Date(selectedDate!) > new Date()) {
+    var selectDate = new Date(selectedDate!);
+    if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
       setSelectedDate(subDays(selectedDate!, 1));
     }
   }, [selectedDate, setSelectedDate]);
 
   const setDayCurrentDate = () => {
-    setSelectedDate(new Date());
+    var selectDate = new Date(selectedDate!);
+    if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
+      setSelectedDate(selectDate!, 1);
+    }
   };
 
   return (

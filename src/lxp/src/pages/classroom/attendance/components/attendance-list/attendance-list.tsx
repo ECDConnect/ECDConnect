@@ -1,6 +1,7 @@
 import { ClassroomGroupDto, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
+  Alert,
   AttendanceListDataItem,
   AttendanceStatus,
   Button,
@@ -49,15 +50,14 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
   const [absentChildrenCount, setAbsentChildrenCount] = useState<number>(0);
   const userData = useSelector(userSelectors.getUser);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner: any = practitioners?.find(
-    (item) => item?.userId === userData?.id
-  );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal === true;
-  const [isButtonActive, setIsButtonActive] = useState<boolean>(false);
+  const [hasChildren, setHasChildren] = useState<boolean>(false);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [shouldFilter] = useState<boolean>(true);
-
+  const allLearners = useSelector(
+    classroomsSelectors.getClassroomGroupLearners
+  );
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
 
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
@@ -108,6 +108,18 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                 : primaryClassProgramme[0]?.classroomGroupId)
           );
       setSelectedClassroomGroups(selectedGroups);
+
+      const _allLearners = allLearners.filter(
+        (x) => !Boolean(x.stoppedAttendance)
+      );
+
+      const uniqueLearners = _allLearners.filter((object, index, array) => {
+        return (
+          index ===
+          array.findIndex((newObject) => newObject.userId === object.userId)
+        );
+      });
+      setHasChildren(uniqueLearners && uniqueLearners.length > 0);
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,11 +128,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
     const attendanceStatusCheck = getAttendanceStatusCheck(
       attendanceGroups,
-      isButtonActive
+      hasChildren
     );
     setPresentChildrenCount(attendanceStatusCheck.presentCount);
     setAbsentChildrenCount(attendanceStatusCheck.absentCount);
-    setIsButtonActive(attendanceStatusCheck.isValid);
   };
 
   useEffect(() => {
@@ -196,8 +207,19 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       return [...prev, ...curr.list];
     }, [] as AttendanceListDataItem[]);
 
+    const uniqueAttendanceGroups = allAttendanceGroupLists?.filter(
+      (object, index, array) => {
+        return (
+          index ===
+          array.findIndex(
+            (newObject) => newObject.attenendeeId === object.attenendeeId
+          )
+        );
+      }
+    );
+
     const allAttendedChildren: ChildAttendance[] =
-      allAttendanceGroupLists?.map((x) => ({
+      uniqueAttendanceGroups?.map((x) => ({
         userId: x.attenendeeId,
         attended: x.status === AttendanceStatus.Present,
       })) || [];
@@ -351,77 +373,93 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           )}
       </div>
       <div>
-        <div className={styles.statusChipsWrapper(false)}>
-          <StatusChip
-            className={'mr-2 '}
-            padding={'px-3 py-3'}
-            textColour="successMain"
-            borderColour="white"
-            textType="h2"
-            backgroundColour="white"
-            text={`${presentChildrenCount} present`}
-          />
-          <div>
-            <StatusChip
-              textColour="errorMain"
-              padding={'px-3 py-3'}
-              borderColour="white"
-              textType="h2"
-              backgroundColour="white"
-              text={`${absentChildrenCount} absent`}
+        {hasChildren ? (
+          <>
+            <div>
+              <div className={styles.statusChipsWrapper(false)}>
+                <StatusChip
+                  className={'mr-2 '}
+                  padding={'px-3 py-3'}
+                  textColour="successMain"
+                  borderColour="white"
+                  textType="h2"
+                  backgroundColour="white"
+                  text={`${presentChildrenCount} present`}
+                />
+                <div>
+                  <StatusChip
+                    textColour="errorMain"
+                    padding={'px-3 py-3'}
+                    borderColour="white"
+                    textType="h2"
+                    backgroundColour="white"
+                    text={`${absentChildrenCount} absent`}
+                  />
+                </div>
+              </div>
+            </div>
+            <div className={styles.attendanceListsWrapper}>
+              {selectedClassroomGroups.map((selectedGroup, idx) => {
+                const isPrimaryList =
+                  selectedGroup.id ===
+                  primaryClassProgramme[0]?.classroomGroupId;
+                return (
+                  <div id={`attendanceList${selectedGroup.id}`}>
+                    <ClassProgrammeAttendanceList
+                      key={`class_attencance_list_${idx}`}
+                      isPrimaryClass={isPrimaryList}
+                      classroomGroup={selectedGroup}
+                      attendanceDate={attendanceDate}
+                      isMultipleClasses={selectedClassroomGroups.length > 1}
+                      onAttendanceUpdated={(state) => {
+                        validateAttendanceList(
+                          editAttendanceRegisterVisible
+                            ? classroomgroupId ?? ''
+                            : selectedGroup.id ?? '',
+                          state.listItems,
+                          isPrimaryList
+                        );
+                      }}
+                      id={`attendance-list${selectedGroup.id}`}
+                    />
+                  </div>
+                );
+              })}
+
+              <div className={'px-4'}>
+                <Button
+                  id="gtm-add-attendance"
+                  onClick={submitPrompt}
+                  className="mt-4 w-full"
+                  size="small"
+                  color="primary"
+                  type="filled"
+                  // disabled={isButtonActive}
+                >
+                  {renderIcon('PaperAirplaneIcon', 'h-5 w-5 text-white')}
+                  <Typography
+                    type="h6"
+                    className="ml-2"
+                    text={
+                      submitText.length > 0
+                        ? submitText
+                        : 'Submit today’s register'
+                    }
+                    color="white"
+                  />
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className={'mb-2 flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
+            <Alert
+              title={'There are no children in your class(es).'}
+              message={'Add children to your class(es) to capture attendance.'}
+              type={'info'}
             />
           </div>
-        </div>
-      </div>
-      <div className={styles.attendanceListsWrapper}>
-        {selectedClassroomGroups.map((selectedGroup, idx) => {
-          const isPrimaryList =
-            selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
-
-          return (
-            <div id={`attendanceList${selectedGroup.id}`}>
-              <ClassProgrammeAttendanceList
-                key={`class_attencance_list_${idx}`}
-                isPrimaryClass={isPrimaryList}
-                classroomGroup={selectedGroup}
-                attendanceDate={attendanceDate}
-                isMultipleClasses={selectedClassroomGroups.length > 1}
-                onAttendanceUpdated={(state) => {
-                  validateAttendanceList(
-                    editAttendanceRegisterVisible
-                      ? classroomgroupId ?? ''
-                      : selectedGroup.id ?? '',
-                    state.listItems,
-                    isPrimaryList
-                  );
-                }}
-                id={`attendance-list${selectedGroup.id}`}
-              />
-            </div>
-          );
-        })}
-
-        <div className={'px-4'}>
-          <Button
-            id="gtm-add-attendance"
-            onClick={submitPrompt}
-            className="mt-4 w-full"
-            size="small"
-            color="primary"
-            type="filled"
-            // disabled={isButtonActive}
-          >
-            {renderIcon('PaperAirplaneIcon', 'h-5 w-5 text-white')}
-            <Typography
-              type="h6"
-              className="ml-2"
-              text={
-                submitText.length > 0 ? submitText : 'Submit today’s register'
-              }
-              color="white"
-            />
-          </Button>
-        </div>
+        )}
       </div>
     </div>
   );

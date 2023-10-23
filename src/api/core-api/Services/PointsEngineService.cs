@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -16,9 +17,13 @@ using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -95,6 +100,9 @@ namespace EcdLink.Api.CoreApi.Services
             _classRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
             _integrationAuditRepo = _repositoryFactory.CreateRepository<IntegrationAudit>(userContext: _uId);
 
+            _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
+
+            _childAttendanceReport = childAttendanceReport;
             _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
             _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
             _clubLeaderRepo = _repositoryFactory.CreateGenericRepository<ClubLeader>(userContext: _uId);
@@ -1178,75 +1186,79 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region UserSummary
 
-        public bool UpdateUserSummaryPoints(string userId, DateTime today)
+        // Used for grow great, where multiple categories are scored at once
+        private void UpdateUserSummaryPoints(string userId, DateTime today)
         {
-            List<PointsLibrary> allRecords = GetPointsLibraryForTenant();
+            var allRecords = GetPointsLibraryForTenant();
 
-            foreach (var item in allRecords)
+            foreach (var activity in allRecords) 
             {
-                int monthTotal = _pointsUserRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == item.Id).Select(x => x.Points).Sum();
-                int ytdTotal = _pointsUserRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == item.Id).Select(x => x.Points).Sum();
+                UpdateUserSummaryPoints(userId, activity, today);
+            }
+        }
 
-                // ss max point implementation
-                if (item.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3)
+        private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin = false)
+        {
+            var pointsScoredThisYear = _pointsUserRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
+
+            int monthTotal = pointsScoredThisYear.Where(x => x.Month == today.Month).Select(x => x.Points).Sum();
+            int ytdTotal = pointsScoredThisYear.Select(x => x.Points).Sum();
+
+            if (isPrincipalOrAdmin)
+            {
+                if (activity.MaxPointsPrincipalMonthly != 0 && monthTotal > activity.MaxPointsPrincipalMonthly)
                 {
-                    if (ytdTotal > 1200)
-                    {
-                        ytdTotal = 1200;
-                    }
+                    monthTotal = activity.MaxPointsNonPrincipalMonthly;
                 }
-                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac2)
+                if (activity.MaxPointsPrincipalYearly != 0 && ytdTotal > activity.MaxPointsPrincipalYearly)
                 {
-                    if (ytdTotal > 300)
-                    {
-                        ytdTotal = 300;
-                    }
-                }
-                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac3)
-                {
-                    if (ytdTotal > 300)
-                    {
-                        ytdTotal = 300;
-                    }
-                }
-                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac4)
-                {
-                    if (ytdTotal > 100)
-                    {
-                        ytdTotal = 100;
-                    }
-                }
-                if (monthTotal > 0 && ytdTotal > 0)
-                {
-                    var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == item.Id).FirstOrDefault();
-                    if (record == null)
-                    {
-                        InsertIndividualSummaryUserPoints(
-                            new PointsUserSummary
-                            {
-                                Id = Guid.NewGuid(),
-                                IsActive = true,
-                                InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
-                                Month = today.Month,
-                                Year = today.Year,
-                                UserId = userId,
-                                PointsLibraryId = item.Id,
-                                PointsTotal = monthTotal,
-                                PointsYTD = ytdTotal
-                            }
-                        );
-                    } else
-                    {
-                        record.PointsTotal = monthTotal;
-                        record.PointsYTD = ytdTotal;
-                        record.UpdatedDate = DateTime.Now;
-                        record.UpdatedBy = _uId;
-                        UpdateIndividualSummaryUserPoints(record);
-                    }
+                    ytdTotal = activity.MaxPointsPrincipalYearly;
                 }
             }
-            return true;
+            else
+            {
+                if (activity.MaxPointsIndividualMonthly != 0 && monthTotal > activity.MaxPointsIndividualMonthly)
+                {
+                    monthTotal = activity.MaxPointsNonPrincipalMonthly;
+                }
+                if (activity.MaxPointsNonPrincipalYearly != 0 && ytdTotal > activity.MaxPointsNonPrincipalYearly)
+                {
+                    ytdTotal = activity.MaxPointsNonPrincipalYearly;
+                }
+            }
+
+            if (monthTotal > 0 && ytdTotal > 0)
+            {
+                var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
+                if (record == null)
+                {
+                    InsertIndividualSummaryUserPoints(
+                        new PointsUserSummary
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActive = true,
+                            InsertedDate = DateTime.Now,
+                            UpdatedBy = _uId,
+                            Month = today.Month,
+                            Year = today.Year,
+                            UserId = userId,
+                            PointsLibraryId = activity.Id,
+                            PointsTotal = monthTotal,
+                            PointsYTD = ytdTotal,
+                            TimesScored = 1,
+                        }
+                    );
+                } else
+                {
+                    record.PointsTotal = monthTotal;
+                    record.PointsYTD = ytdTotal;
+                    record.UpdatedDate = DateTime.Now;
+                    record.UpdatedBy = _uId;
+                    record.TimesScored = record.TimesScored + 1;
+
+                    UpdateIndividualSummaryUserPoints(record);
+                }
+            }
         }
 
         #endregion
@@ -1293,7 +1305,11 @@ namespace EcdLink.Api.CoreApi.Services
                     activity_record.UpdatedBy = _uId;
                     UpdateIndividualUserPoints(activity_record);
                 }
-                UpdateUserSummaryPoints(userId, today);
+                UpdateUserSummaryPoints(
+                    userId, 
+                    activity, 
+                    today, 
+                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
             }
             return true;
         }
@@ -1348,8 +1364,12 @@ namespace EcdLink.Api.CoreApi.Services
                         activity_record.Comment = "Total: " + childCount;
                         UpdateIndividualUserPoints(activity_record);
                     }
-                }
-                UpdateUserSummaryPoints(userId, today);
+                    UpdateUserSummaryPoints(
+                        userId, 
+                        activity,
+                        today,
+                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
+                }               
             }
             return true;
         }
@@ -1414,7 +1434,13 @@ namespace EcdLink.Api.CoreApi.Services
                     activity_record.Comment = "Total: " + perc;
                     UpdateIndividualUserPoints(activity_record);
                 }
-                UpdateUserSummaryPoints(userId, today);
+
+                var practitioner = _practitionerRepo.GetByUserId(userId);
+                UpdateUserSummaryPoints(
+                    userId,
+                    activity,
+                    today,
+                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
             }
             return true;
         }
@@ -1480,7 +1506,12 @@ namespace EcdLink.Api.CoreApi.Services
                         activity_record.Comment = "Total: " + rows.Count;
                         UpdateIndividualUserPoints(activity_record);
                     }
-                    UpdateUserSummaryPoints(userId, today);
+
+                    UpdateUserSummaryPoints(
+                        userId,
+                        activity,
+                        today,
+                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
                 }
             }
             return true;
@@ -1554,7 +1585,12 @@ namespace EcdLink.Api.CoreApi.Services
                         UpdateIndividualUserPoints(activity_record);
                     }
                 }
-                UpdateUserSummaryPoints(userId, today);
+
+                UpdateUserSummaryPoints(
+                    userId,
+                    activity,
+                    today,
+                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
             }
             return true;
         }
@@ -1648,14 +1684,104 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     }
 
-                    UpdateUserSummaryPoints(userId, today);
+                    UpdateUserSummaryPoints(
+                        userId,
+                        activity,
+                        today,
+                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
                 }
             }
             return true;
         }
 
+        public bool CalculatePreSchoolFees(string userId, DateTime today)
+        {
+            PointsLibrary activity = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement).Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac1).FirstOrDefault();
+            PointsUser activity_record = _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == activity.Id && x.UserId == userId && x.Year == today.Year).FirstOrDefault();
+
+            if (activity_record == null)
+            {
+                InsertIndividualUserPoints(
+                    new PointsUser
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedBy = _uId,
+                        Month = today.Month,
+                        Year = today.Year,
+                        Points = activity.Points,
+                        UserId = userId,
+                        PointsLibraryId = activity.Id
+                    }
+                );
+                UpdateUserSummaryPoints(userId, activity, today);
+            }
+
+            return true;
+        }
+
         #endregion
 
+        /// <summary>
+        /// Gets the percentile standing of a user within relative to others within the club
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public UserClubStandingModel GetUserClubStanding(string userId)
+        {
+            var practitionerId = _practitionerRepo.GetByUserId(userId).Id;
+            ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).FirstOrDefault();
+
+            if (clubMember == null)
+            {
+                return new UserClubStandingModel();
+            }
+
+            var clubUserIds = _clubMemberRepo.GetAll()
+                .Include(x => x.Practitioner)
+                .Where(x => x.ClubId == clubMember.ClubId)
+                .Select(x => x.Practitioner.UserId).ToList();
+
+            var usersPoints = _pointsUserSummaryRepo.GetAll()
+                .Where(x => clubUserIds.Contains(x.UserId))
+                .GroupBy(x => x.UserId)
+                .Select(x => new { UserId = x.First().UserId, PointsSummaries = x.Select(y => new { y.Month, y.PointsTotal }) })
+                .ToList();
+
+            var usersByMonth = usersPoints.Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Where(y => y.Month == DateTime.Now.Month).Sum(z => z.PointsTotal) }).ToList();
+            var usersByYear = usersPoints.Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Sum(y => y.PointsTotal) }).ToList();
+
+            var userMonthPosition = usersByMonth.FindIndex(x => x.UserId == userId);
+            var userYearPosition = usersByYear.FindIndex(x => x.UserId == userId);
+
+            var standing = new UserClubStandingModel();
+
+            var totalMembers = clubUserIds.Count();
+
+            if (usersByMonth.Count() > 1 && usersByYear.Count() > 1)
+            {
+                // Check for first place tie
+                var standingForCurrentMonth = userMonthPosition == 0 && totalMembers > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal
+                        ? 99
+                        : (totalMembers - userMonthPosition) * 100 / totalMembers;
+
+                var standingForCurrentYear = userYearPosition == 0 && totalMembers > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal
+                        ? 99
+                        : (totalMembers - userYearPosition) * 100 / totalMembers;
+
+
+                return new UserClubStandingModel
+                {
+                    PercentileStandingForCurrentMonth = standingForCurrentMonth,
+                    PercentileStandingForCurrentYear = standingForCurrentYear,
+                };
+            }
+            else
+            {
+                return standing; 
+            }
+        }
         #region Clubs
 
         // Yearly, calculate by 30 November and will be triggered by a cron job

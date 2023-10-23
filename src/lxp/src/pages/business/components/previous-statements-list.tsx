@@ -16,6 +16,7 @@ import {
   ExpenseItemDto,
   IncomeItemDto,
   IncomeStatementDto,
+  getNextMonth,
   getPreviousMonth,
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
@@ -51,11 +52,24 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
     currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
     currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
+  const isThisMonthSubmitted = useMemo(
+    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
+    [statements]
+  );
+  const isPreviousMonthSubmitted = useMemo(
+    () => !!statements?.find((x) => x.month === new Date().getMonth()),
+    [statements]
+  );
+
+  // submit window open And last statement not submitted -> previous month
+  // submitted this month -> next month
+  // otherwise current month
   const summaryDate =
-    !isSubmitWindowOpen ||
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay
-      ? currentDate
-      : getPreviousMonth(currentDate);
+    !isPreviousMonthSubmitted && isSubmitWindowOpen
+      ? getPreviousMonth(currentDate)
+      : isThisMonthSubmitted
+      ? getNextMonth(currentDate)
+      : currentDate;
 
   const prevStatementsItems = useMemo(() => {
     return [

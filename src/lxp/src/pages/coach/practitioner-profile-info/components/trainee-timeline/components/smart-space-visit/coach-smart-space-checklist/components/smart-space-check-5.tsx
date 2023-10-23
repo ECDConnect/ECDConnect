@@ -14,6 +14,8 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { QuestionAnswersProps } from './smart-space-check-3';
+import { coachSelectors } from '@/store/coach';
+import { authSelectors } from '@/store/auth';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -45,7 +47,9 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   const numberOfAssistants = useSelector(
     traineeSelectors.getTraineeVisitDataAssitantsNumber
   );
-  const isTrainee = practitioner?.isTrainee;
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
   const [enableButton, setEnableButton] = useState(false);
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
@@ -148,7 +152,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
-    if (isTrainee) {
+    if (!isCoach) {
       const previousData = questions.map((item) => {
         const previousAnswer = visitData?.find((item: any) => {
           const sectionData = item?.visitSection === visitSection;
@@ -310,6 +314,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
                     message: 'Please enter a number that is more 49.',
                   },
                 })}
+              disabled={!isCoach}
             />
           );
         } else return null;
@@ -364,7 +369,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton && !isTrainee}
+              disabled={!enableButton && isCoach}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

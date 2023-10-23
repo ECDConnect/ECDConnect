@@ -115,6 +115,7 @@ import { ActivityHelp } from '@/pages/community/clubs-tab/0-components/help-scre
 import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add';
 import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
 import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-preschool-fee';
+import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
 import { CurrentMonthSummary } from '@/pages/business/money/monthly-statements/current-month-summary';
 import { PractitionerCurrentMonthSummary } from '@/pages/coach/coach-practitioner-business/components/statements/current-month-summary';
 import { AcceptClubLeaderRole } from '@/pages/practitioner/practitioner-community/accept-club-leader-role';
@@ -577,6 +578,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONERS}
         component={Practitioners}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_REASSIGN_CLASS}
+        component={CoachReassignClass}
       />
       <Route
         exact

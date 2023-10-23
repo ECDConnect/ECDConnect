@@ -13,6 +13,8 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { QuestionAnswersProps } from './smart-space-check-3';
+import { coachSelectors } from '@/store/coach';
+import { authSelectors } from '@/store/auth';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -42,7 +44,9 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
-  const isTrainee = practitioner?.isTrainee;
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
     traineeSelectors.getTraineeProgrammeType
@@ -91,7 +95,7 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
-    if (isTrainee) {
+    if (!isCoach) {
       const previousData = questions.map((item) => {
         const previousAnswer = visitData?.find((item: any) => {
           const sectionData = item?.visitSection === visitSection;
@@ -180,7 +184,7 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
           subLabel="Any programme with more than 10 children must have an assistant."
           onChange={(e) => onOptionSelected(e.target.value, index)}
           onKeyDown={(e) => e.code !== '69'}
-          disabled={isTrainee}
+          disabled={!isCoach}
           key={index}
         />
       ))}
@@ -196,7 +200,7 @@ export const SmartSpaceCheck4: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
-              disabled={!enableButton && questions[0]?.answer === ''}
+              disabled={!enableButton && questions[0]?.answer === '' && isCoach}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

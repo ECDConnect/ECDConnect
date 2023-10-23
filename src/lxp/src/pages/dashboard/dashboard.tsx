@@ -14,7 +14,7 @@ import {
   ScoreCard,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -62,6 +62,7 @@ import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -111,6 +112,14 @@ export const Dashboard: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+
+  const a = useCallback(async () => {
+    appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+  }, []);
+
+  useEffect(() => {
+    a();
+  }, []);
 
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 
@@ -400,6 +409,13 @@ export const Dashboard: React.FC = () => {
               userId: userData?.id!,
             })
           ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getUserClubStanding({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
       }
     }
   }, [userData]);
@@ -539,7 +555,7 @@ export const Dashboard: React.FC = () => {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
-      icon: 'BellIcon',
+      icon: 'PresentationChartBarIcon',
       current: false,
       showDivider: true,
     });
@@ -676,6 +692,18 @@ export const Dashboard: React.FC = () => {
     });
   }
 
+  if (!isTrainee) {
+    dashboardItems.splice(1, 0, {
+      title: NavigationTypes.Training,
+      titleIcon: 'PresentationChartBarIcon',
+      titleIconClassName: styles.trainingIcon,
+      onActionClick: () => {
+        goToTraining();
+      },
+      classNames: 'bg-uiBg',
+    });
+  }
+
   if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
@@ -771,6 +799,10 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const goToTraining = () => {
+    history.push(ROUTES.TRAINING);
+  };
+
   const onNavigation = (navItem: any) => {
     if (
       (classroom && classroom.id && navItem.href.includes('classroom')) ||
@@ -781,6 +813,24 @@ export const Dashboard: React.FC = () => {
       showCompleteProfileBlockingDialog();
     } else {
       history.push(navItem.href, navItem.params);
+    }
+  };
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  const handleOnlineCallback = (callback: () => void) => {
+    if (isOnline) {
+      callback();
+    } else {
+      showOnlineOnly();
     }
   };
 
@@ -809,11 +859,15 @@ export const Dashboard: React.FC = () => {
                 onClick: isTrainee
                   ? async () => {
                       onSubmit();
-                      history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
+                      );
                     }
                   : async () => {
                       onSubmit();
-                      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                      );
                     },
               },
               {

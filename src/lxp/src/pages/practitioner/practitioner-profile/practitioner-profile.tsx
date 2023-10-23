@@ -25,6 +25,7 @@ import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerJourney } from './practitioner-journey';
 import { usePrevious } from 'react-use';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -55,6 +56,20 @@ export const PractitionerProfile: React.FC = () => {
   //   }
   //   await appDispatch(settingActions.setLastDataSync());
   // };
+
+  const handleOnlineCallback = (callback: () => void) => {
+    if (isOnline) {
+      callback();
+    } else {
+      dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+        },
+      });
+    }
+  };
 
   useEffect(() => {
     if (!isOnline) {
@@ -193,7 +208,9 @@ export const PractitionerProfile: React.FC = () => {
                         leadingIcon: 'ArrowCircleRightIcon',
                         onClick: async () => {
                           onSubmit();
-                          history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                          handleOnlineCallback(() =>
+                            history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                          );
                         },
                       },
                       {
