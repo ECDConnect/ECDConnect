@@ -10,7 +10,6 @@ import {
   ClassroomGroupInput,
   ClassroomInput,
   LearnerInput,
-  ProgrammeTypeEnum,
   SiteAddressInput,
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
@@ -21,7 +20,6 @@ import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
 import { PractitionerService } from '@/services/PractitionerService';
-import { ProgrammeTypeTexts } from '@/pages/trainee/trainee-onboarding/components/trainee-franchisor-agreement/components/programme-type-agreement/components/modelTexts';
 
 export const getClassroom = createAsyncThunk<
   ClassroomDto,
