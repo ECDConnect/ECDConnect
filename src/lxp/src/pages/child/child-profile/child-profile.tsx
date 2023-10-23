@@ -458,16 +458,18 @@ export const ChildProfile: React.FC = () => {
 
     setChildAge(ageOfChild);
 
-    new AttendanceService(authUser?.auth_token ?? '')
-      .getChildAttendanceRecords(
-        child.userId ?? '',
-        playGroup?.id ?? '',
-        startOfISOWeekYear(new Date()),
-        currentDate
-      )
-      .then((data) => {
-        setAttendanceReport(data);
-      });
+    if (isOnline) {
+      new AttendanceService(authUser?.auth_token ?? '')
+        .getChildAttendanceRecords(
+          child.userId ?? '',
+          playGroup?.id ?? '',
+          startOfISOWeekYear(new Date()),
+          currentDate
+        )
+        .then((data) => {
+          setAttendanceReport(data);
+        });
+    }
 
     const applicableNotifications: ListItemProps[] = [];
 
