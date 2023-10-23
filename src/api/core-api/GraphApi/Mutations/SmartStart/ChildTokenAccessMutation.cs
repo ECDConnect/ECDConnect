@@ -1,7 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
-using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -105,6 +104,47 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
 
             return true;
+        }
+
+        public Guid UpdateChildRecord([Service] IHttpContextAccessor contextAccessor,
+                                [Service] IGenericRepositoryFactory repoFactory,
+                                [Service] IPointsEngineService pointsEngineService,
+                                EditChildTokenModel input, 
+                                Guid id)
+        {
+            var uId = contextAccessor.HttpContext.GetUser()?.Id;
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            Child child = childRepo.GetById(id);
+            if (child != null)
+            {
+                child.IsActive = input.IsActive;
+                child.LanguageId = input.LanguageId;
+                child.CaregiverId = input.CaregiverId;
+                child.Allergies = input.Allergies;
+                child.Disabilities = input.Disabilities;
+                child.OtherHealthConditions = input.OtherHealthConditions;
+                child.WorkflowStatusId = input.WorkflowStatusId;
+                child.InsertedBy = input.InsertedBy;
+                child.UpdatedBy = uId;
+                child.UpdatedDate = DateTime.Now;
+
+                childRepo.Update(child);
+
+                if (child.IsActive == false)
+                {
+                    // Manage points for user
+                    pointsEngineService.CalculateChildrenRegistrationRemoval(uId, DateTime.UtcNow);
+                }
+
+                return child.Id;
+            }
+
+            return id;
+        }
+
+        public bool CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, string userId)
+        {
+            return pointsEngineService.CalculateChildrenRegistrationRemoval(userId, DateTime.UtcNow);
         }
 
         private SiteAddress AddSiteAddress(AddChildSiteAddressTokenModel siteAddress, IGenericRepository<SiteAddress, Guid> repoFactory)

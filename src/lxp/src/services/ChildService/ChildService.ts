@@ -152,6 +152,29 @@ class ChildService {
     return true;
   }
 
+  async calculateChildrenRegistrationRemoval(userId: string): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation CalculateChildrenRegistrationRemoval($userId: String) {
+          calculateChildrenRegistrationRemoval(userId: $userId){
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Calculate Children Registration Removal failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
   async createChild(input: ChildInput): Promise<ChildDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {

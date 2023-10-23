@@ -1191,9 +1191,9 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var allRecords = GetPointsLibraryForTenant();
 
-            foreach (var acitivy in allRecords) 
+            foreach (var activity in allRecords) 
             {
-                UpdateUserSummaryPoints(userId, acitivy, today);
+                UpdateUserSummaryPoints(userId, activity, today);
             }
         }
 
