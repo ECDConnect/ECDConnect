@@ -110,6 +110,8 @@ export const ChildRegistration: React.FC = () => {
     childrenSelectors.getChildUserById(existingChild?.userId)
   );
 
+  const classroom = useSelector(classroomsSelectors.getClassroom);
+
   const { goToStep, canGoBack, goBackOneStep, activeStepKey } =
     useStepNavigation(routeStep || ChildRegistrationSteps.registrationForm);
 
@@ -717,7 +719,9 @@ export const ChildRegistration: React.FC = () => {
               }
               onSubmit={(form) => {
                 onStepChange(
-                  ChildRegistrationSteps.childCareGiverContributionForm,
+                  classroom?.preschoolFeeAmount!! > 0
+                    ? ChildRegistrationSteps.childCareGiverContributionForm
+                    : ChildRegistrationSteps.childEmergencyContactForm,
                   {
                     formProp: 'careGiverExtraInformationFormModel',
                     value: form,

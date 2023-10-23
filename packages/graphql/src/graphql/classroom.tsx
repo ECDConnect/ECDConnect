@@ -39,6 +39,8 @@ export const GetAllClassroom = gql`
       numberOfOtherAssistants
       doesOwnerTeach
       insertedDate
+      preschoolFeeAmount
+      preschoolFeeAmountLastUpdateDate
       siteAddressId
       siteAddress {
         id

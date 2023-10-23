@@ -225,6 +225,13 @@ export type AddChildLearnerTokenModelInput = {
   otherAttendanceReason?: InputMaybe<Scalars['String']>;
 };
 
+export type AddChildRegistrationTokenModelInput = {
+  file?: InputMaybe<Scalars['String']>;
+  fileName?: InputMaybe<Scalars['String']>;
+  fileType?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type AddChildSiteAddressTokenModelInput = {
   addressLine1?: InputMaybe<Scalars['String']>;
   addressLine2?: InputMaybe<Scalars['String']>;
@@ -254,6 +261,15 @@ export type AddChildTokenModelInput = {
   userId?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs: Scalars['Boolean'];
   workflowStatusId?: InputMaybe<Scalars['UUID']>;
+};
+
+export type AddChildUserConsentTokenModelInput = {
+  childPhotoConsentAccepted: Scalars['Boolean'];
+  commitmentAgreementAccepted: Scalars['Boolean'];
+  consentAgreementAccepted: Scalars['Boolean'];
+  indemnityAgreementAccepted: Scalars['Boolean'];
+  personalInformationAgreementAccepted: Scalars['Boolean'];
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type AgeSpreadDisplay = {
@@ -7160,7 +7176,9 @@ export type MutationMoveClubMembersArgs = {
 export type MutationOpenAccessAddChildArgs = {
   caregiver?: InputMaybe<AddChildCaregiverTokenModelInput>;
   child?: InputMaybe<AddChildTokenModelInput>;
+  consent?: InputMaybe<AddChildUserConsentTokenModelInput>;
   learner?: InputMaybe<AddChildLearnerTokenModelInput>;
+  registration?: InputMaybe<AddChildRegistrationTokenModelInput>;
   siteAddress?: InputMaybe<AddChildSiteAddressTokenModelInput>;
   token?: InputMaybe<Scalars['String']>;
 };
@@ -15019,8 +15037,10 @@ export type ThemeInput = {
 export type TokenAccessChildDetailModel = {
   __typename?: 'TokenAccessChildDetailModel';
   firstname?: Maybe<Scalars['String']>;
+  groupFeeAmount?: Maybe<Scalars['Float']>;
   groupName?: Maybe<Scalars['String']>;
   surname?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type TokenAccessPractitionerDetailModel = {
