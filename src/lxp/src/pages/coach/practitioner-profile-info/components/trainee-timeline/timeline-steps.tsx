@@ -261,21 +261,23 @@ export const timelineSteps = (
     );
   }
 
-  steps.push(
-    setStep(
-      timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',
-      timeline?.sSCoachVisitDate || timeline?.sSCoachVisitDeadlineDate,
-      timeline?.sSCoachVisitColor,
-      () =>
-        onView('SmartSpace visit from coach', {
-          visitEventId: (timeline.sSCoachVisitEventId as string) || '',
-          plannedVisitDate: (timeline.sSCoachVisitDate as string) || '',
-          visitId: (timeline.sSCoachVisitId as string) || '',
-        }),
-      nextStep,
-      timeline?.sSCoachVisitEventId || timeline?.sSCoachVisitId
-    )
-  );
+  if (timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received') {
+    steps.push(
+      setStep(
+        timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',
+        timeline?.sSCoachVisitDate || timeline?.sSCoachVisitDeadlineDate,
+        timeline?.sSCoachVisitColor,
+        () =>
+          onView('SmartSpace visit from coach', {
+            visitEventId: (timeline.sSCoachVisitEventId as string) || '',
+            plannedVisitDate: (timeline.sSCoachVisitDate as string) || '',
+            visitId: (timeline.sSCoachVisitId as string) || '',
+          }),
+        nextStep,
+        timeline?.sSCoachVisitEventId || timeline?.sSCoachVisitId
+      )
+    );
+  }
   steps.push(
     setStep(
       timeline?.signFranchiseeAgreementStatus || 'Sign franchisee agreement',

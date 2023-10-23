@@ -143,7 +143,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
