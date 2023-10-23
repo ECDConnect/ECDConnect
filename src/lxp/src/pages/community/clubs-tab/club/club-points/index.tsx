@@ -150,6 +150,7 @@ export const ClubPoints: React.FC = () => {
         text={format(new Date(), 'MMMM yyyy')}
       />
       <ScoreCard
+        className="mt-5"
         mainText={String(club?.totalClubPoints || 0)}
         hint="points"
         currentPoints={club?.totalClubPoints ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)

@@ -107,6 +107,12 @@ const ROUTES = {
       YEAR: '/year',
     }),
     CONTACT_COACH: '/contact-coach',
+    COMMUNITY: addPrefix('/community', {
+      ACCEPT_CLUB_LEADER_ROLE: '/accept-club-leader-role',
+      SUPPORT_ROLE: addPrefix('/support-role', {
+        EDIT: '/edit',
+      }),
+    }),
   }),
   TRAINEE: addPrefix('/trainee', {
     SETUP_TRAINEE: '/setup-trainee',
@@ -143,6 +149,7 @@ const ROUTES = {
     }),
     PRACTITIONERS: '/practitioners',
     PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
+    PRACTITIONER_REASSIGN_CLASS: '/practitioner-reassign-class',
     PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
     PRACTITIONER_BUSINESS: addPrefix('/practitioner-business', {
       BUSINESS: '/:userId',

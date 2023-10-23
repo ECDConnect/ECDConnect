@@ -346,7 +346,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         color={'primary'}
         onBack={() => setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL)}
         displayOffline={!isOnline}
-        renderOverflow={true}
+        className="pb-16"
       >
         <div
           className={`p-4 ${

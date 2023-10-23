@@ -49,4 +49,6 @@ export * from './note';
 export * from './empty-page';
 export * from './score-card/score-card';
 export * from './points/celebration-card/celebration-card';
+export * from './points/points-details-card/points-details-card';
 export * from './more-information-page/more-information-page';
+export * from './points/points-progress-card/points-progress-card';

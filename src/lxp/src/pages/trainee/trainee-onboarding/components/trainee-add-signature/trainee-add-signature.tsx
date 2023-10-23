@@ -81,7 +81,7 @@ export const TraineeAddSignature = () => {
       color={'primary'}
       onBack={history.goBack}
       displayOffline={!isOnline}
-      renderOverflow={true}
+      className="pb-16"
     >
       <div className={'p-4'}>
         <div className={styles.labelContainer}>

@@ -23,6 +23,7 @@ import { isRejectedWithValue } from '@reduxjs/toolkit';
 import { TraineeService } from '@/services/TraineeService';
 import { TraineeAddressModelInput } from '@ecdlink/graphql';
 import { Step6Map } from './map/map';
+import { coachSelectors } from '@/store/coach';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -67,7 +68,8 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
   const [showMap, setShowMap] = useState(false);
-  const isTrainee = practitioner?.isTrainee;
+  const coach = useSelector(coachSelectors.getCoach);
+  const isCoach = coach?.user?.id === userAuth?.id;
 
   const [questions, setAnswers] = useState([
     {
@@ -236,14 +238,14 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         color={'textDark'}
       />
       <Divider dividerType="dashed" className={'my-4'} />
-      {isTrainee && (
+      {!isCoach && (
         <Alert
           className="my-4"
           type="warning"
           title="You are viewing this form and cannot fill in responses."
         />
       )}
-      <div className={`${isTrainee && 'pointer-events-none opacity-50'}`}>
+      <div className={`${!isCoach && 'pointer-events-none opacity-50'}`}>
         <div>
           {' '}
           <Typography
@@ -321,7 +323,7 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
                 saveSmartSpaceCheckData();
                 changeSmartSpaceCheckAddress();
               }}
-              disabled={!enableButton && !isTrainee}
+              disabled={!enableButton && isCoach}
             >
               {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
               <Typography type={'help'} text={'Next'} color={'white'} />

@@ -6,7 +6,6 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { attendanceSelectors } from '@store/attendance';
 import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
@@ -18,7 +17,6 @@ export const ClassProgrammeAttendanceList: React.FC<
   isPrimaryClass,
   classroomGroup,
   onAttendanceUpdated,
-  attendanceDate,
   isMultipleClasses,
 }) => {
   const [attendanceList, setAttendanceList] = useState<
@@ -30,9 +28,6 @@ export const ClassProgrammeAttendanceList: React.FC<
   const allLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const attendance = useSelector(
-    attendanceSelectors.getClassroomProgrammeAttendanceFor(attendanceDate)
-  );
 
   useEffect(() => {
     if (!classroomGroup) return;
@@ -41,7 +36,13 @@ export const ClassProgrammeAttendanceList: React.FC<
       (x) => !Boolean(x.stoppedAttendance)
     );
 
-    for (const learner of _allLearners) {
+    const uniqueLearners = _allLearners.filter((object, index, array) => {
+      return (
+        index ===
+        array.findIndex((newObject) => newObject.userId === object.userId)
+      );
+    });
+    for (const learner of uniqueLearners) {
       if (learner.classroomGroupId !== classroomGroup.id) continue;
 
       const child = children?.find(
@@ -65,9 +66,6 @@ export const ClassProgrammeAttendanceList: React.FC<
     const attendanceStackList: AttendanceListDataItem[] = learners.map(
       (learner, index) => {
         const childUser = childUsers?.find((x) => x.id === learner.userId);
-        const existingAttendanceRecord = attendance.find(
-          (att) => att.userId === learner.userId
-        );
         const profileTextString =
           childUser?.firstName![0] ?? '' + childUser?.surname![0] ?? '';
 
@@ -76,11 +74,7 @@ export const ClassProgrammeAttendanceList: React.FC<
           profileText: profileTextString.toLocaleUpperCase(),
           attenendeeId: childUser?.id || index.toString(),
           avatarColor: getAvatarColor(),
-          status: existingAttendanceRecord
-            ? existingAttendanceRecord.attended
-              ? 1
-              : 2
-            : 1,
+          status: 1,
         };
       }
     );

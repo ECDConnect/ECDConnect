@@ -45,6 +45,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = Guid.Parse(principalUser.UserId);
+                        practitioner.IsFundaAppAdmin = false;
+                        practitioner.IsPrincipal = false;
                         practitionerRepo.Update(practitioner);
 
                         //update users nicknames

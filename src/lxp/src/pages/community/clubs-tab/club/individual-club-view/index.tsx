@@ -241,6 +241,7 @@ export const Club: React.FC = () => {
           />
           {shouldShowPointsScreen() && (
             <ScoreCard
+              className="mt-5"
               mainText={String(club?.totalClubPoints || 0)}
               hint="points"
               currentPoints={club?.totalClubPoints}

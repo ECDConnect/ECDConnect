@@ -78,8 +78,7 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
         setShowCoachVisit(false);
       }}
       displayOffline={!isOnline}
-      renderOverflow={true}
-      className="h-screen"
+      className="h-screen pb-16"
     >
       <div className="h-screen p-4">
         {timeline?.smartSpaceLicenseNotAwardedDate ? (

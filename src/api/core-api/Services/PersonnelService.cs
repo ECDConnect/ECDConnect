@@ -349,7 +349,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
                 if (isRolePrincipal) { practitionerToPromote.IsPrincipal = true; }
-                if (isRoleFAA) { practitionerToPromote.IsPrincipal = true; }
+                if (isRoleFAA) { practitionerToPromote.IsFundaAppAdmin = true; }
                 practitionerToPromote.ShareInfo = true;
                 practitionerToPromote.PrincipalHierarchy = null;
                 practitionerToPromote.DateLinked = null;
@@ -358,7 +358,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitionerToPromote);
 
                 if (isRolePrincipal) { practitionerToDemote.IsPrincipal = false; }
-                if (isRoleFAA) { practitionerToDemote.IsPrincipal = false; }
+                if (isRoleFAA) { practitionerToDemote.IsFundaAppAdmin = false; }
                 practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;

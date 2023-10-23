@@ -23,7 +23,6 @@ import {
 } from '@/schemas/practitioner/reassign-class';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
-import { InformationCircleIcon } from '@heroicons/react/solid';
 import * as styles from './reassign-class.styles';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
@@ -67,6 +66,7 @@ const absentInfo = [
 interface reassignedClassroomGroupProps {
   practitioner: string;
   classroomId: string;
+  absenteeId?: string;
 }
 
 export const ReassignClass: React.FC<ComponentBaseProps> = () => {
@@ -82,6 +82,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     ? new Date(routeState?.reportingDate)
     : new Date();
   const practitionerId = routeState?.practitionerId;
+  const allAbsenteeClasses = routeState?.allAbsenteeClasses;
+
   const formattedDate = reportingDate
     ? format(reportingDate, 'EEEE, d LLLL')
     : '';
@@ -204,6 +206,23 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const submitReassignClass = async () => {
     if (userAuth?.auth_token && selectedDate && userData?.id) {
       reassignedClassroomGroups?.map(async (item) => {
+        if (item?.absenteeId) {
+          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
+            item?.absenteeId,
+            false,
+            item?.practitioner,
+            reason,
+            new Date(selectedDate),
+            endDate || new Date(selectedDate)
+          );
+
+          await refreshClassroom();
+
+          history.push(ROUTES.DASHBOARD);
+
+          return;
+        }
+
         await new ClassroomGroupService(
           userAuth.auth_token
         ).updateReassignClassroomGroup(
@@ -300,7 +319,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                   placeholderText={`Please select a date`}
                   wrapperClassName="text-center w-full"
                   className="border-uiLight text-textMid mx-auto w-full rounded-md"
-                  selected={selectedDate ? new Date(selectedDate) : undefined}
+                  selected={endDate ? new Date(endDate) : undefined}
                   onChange={(date: Date) => {
                     setEndDate(date);
                   }}
@@ -329,7 +348,53 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 placeholder={'e.g. personal appointment'}
               />
             )}
-            {practitionerClassroomGroups.length > 0 ? (
+            {allAbsenteeClasses && allAbsenteeClasses?.length > 0 ? (
+              allAbsenteeClasses?.map((item, index) => {
+                const classroomId =
+                  practitionerClassroomGroups?.find(
+                    (group) => group?.name === item?.className
+                  )?.classroomId || '';
+                const absenteeId = item?.absenteeId;
+                return (
+                  <>
+                    <Dropdown
+                      key={index}
+                      placeholder={'Select practitioner'}
+                      list={practitionersTeachList || []}
+                      fillType="clear"
+                      label={`Who will teach the ${item?.className} class instead?`}
+                      fullWidth
+                      className={'mt-3 w-full'}
+                      onChange={(practitioner: any) => {
+                        const reassignedData = {
+                          practitioner,
+                          classroomId,
+                          absenteeId,
+                        };
+                        setReassignClassValue('practitioner2', practitioner);
+                        handleReassignClassroomGroupPractitioner(
+                          reassignedData
+                        );
+                      }}
+                    />
+                    {practitionerPresentName?.user?.fullName && (
+                      <Alert
+                        className={'mt-5 mb-3'}
+                        title={`You are reassigning ${
+                          practitionerAbsentName?.user?.fullName || ''
+                        } class ${item?.className} to ${
+                          practitionerPresentName?.user?.fullName || ''
+                        } for ${format(
+                          new Date(selectedDate!),
+                          'EEEE, d LLLL'
+                        )}.`}
+                        type={'info'}
+                      />
+                    )}
+                  </>
+                );
+              })
+            ) : practitionerClassroomGroups.length > 0 ? (
               practitionerClassroomGroups?.map((item, index) => {
                 const classroomId = item?.id!;
                 return (
