@@ -15,6 +15,7 @@ import {
   OnNext,
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
+import { UNSURE_CLASS } from '@/constants/classroom';
 
 export const ConfirmClasses = ({
   title,
@@ -39,9 +40,14 @@ export const ConfirmClasses = ({
     practitionerSelectors.getPractitioner
   );
 
+  // The principal should not be able to edit, remove, or add an unsure class during profile setup flow
+  const filteredClassroomGroups = classroomGroups.filter(
+    (item) => item?.name !== UNSURE_CLASS
+  );
+
   useEffect(() => {
     const list = [];
-    for (const classroomGroup of classroomGroups as ClassroomGroupDto[]) {
+    for (const classroomGroup of filteredClassroomGroups as ClassroomGroupDto[]) {
       const current =
         currentPractitioner?.userId === classroomGroup.userId
           ? currentPractitioner?.user?.firstName

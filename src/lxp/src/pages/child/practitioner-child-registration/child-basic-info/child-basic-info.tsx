@@ -27,6 +27,8 @@ import { ChildMatchingDto } from './child-basic-info.types';
 import { useLocation } from 'react-router';
 import { PractitionerChildRegisterState } from '../types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
+import { filterUniqueClassrooms } from '@/utils/classroom/classroom';
+import { UNSURE_CLASS } from '@/constants/classroom';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -47,15 +49,13 @@ export const ChildBasicInfo: React.FC<
   const practitionerFromPractitionerFlow = useSelector(
     practitionerSelectors.getPractitioner
   );
-  const userId =
-    practitionerFromPractitionerFlow?.userId ||
-    practitionerFromCoachFlow?.userId;
-  const classroomForPractitioner = allClassroomGroups.filter(
-    (item) => item.userId === userId
-  );
-  const isPrincipal =
-    practitionerFromPractitionerFlow?.isPrincipal ||
-    practitionerFromCoachFlow?.isPrincipal;
+
+  const practitioner =
+    practitionerFromPractitionerFlow || practitionerFromCoachFlow;
+  const isTrainee = practitioner?.isTrainee;
+  const isPrincipal = practitioner?.isPrincipal;
+
+  const userId = practitioner?.userId;
 
   const practitionersForPrincipal = allPractitioners?.filter(
     (item) => item.principalHierarchy === userId
@@ -66,9 +66,19 @@ export const ChildBasicInfo: React.FC<
         (practitioner) => practitioner.userId === item.userId
       )
   );
-  const classroomsForPrincipal = isPrincipal
+  // Practitioners who are not principals OR FAAs should not be able to see the “Unsure” class or add children to the unsure class
+  const classroomForPractitioner = allClassroomGroups
+    .filter((item) => item.userId === userId)
+    .filter(
+      (item) =>
+        (isTrainee && item) || (!isTrainee && item.name !== UNSURE_CLASS)
+    );
+
+  let classroomsForPrincipal = isPrincipal
     ? [...classroomForPractitioner, ...classroomsByPractitionersForPrincipal]
     : allClassroomGroups;
+
+  classroomsForPrincipal = filterUniqueClassrooms(classroomsForPrincipal);
 
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
