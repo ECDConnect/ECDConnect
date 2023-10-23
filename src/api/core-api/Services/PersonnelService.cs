@@ -418,8 +418,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user to principal
                 var user = _userManager.FindByIdAsync(userId).Result;
-                _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
-                _userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+                var remove = _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER).Result;
+                var add = _userManager.AddToRoleAsync(user, Roles.PRINCIPAL).Result;
 
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
@@ -427,7 +427,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     FindValue = "PrincipalOrFAA",
                     ReplacementValue = "Principal"
                 });
-                var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",
