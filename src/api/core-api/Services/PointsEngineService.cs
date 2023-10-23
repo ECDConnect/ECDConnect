@@ -1759,21 +1759,28 @@ namespace EcdLink.Api.CoreApi.Services
 
             var totalMembers = clubUserIds.Count();
 
-            // Check for first place tie
-            var standingForCurrentMonth = userMonthPosition == 0 && totalMembers > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal
-                    ? 99
-                    : (totalMembers - userMonthPosition) * 100 / totalMembers;
-
-            var standingForCurrentYear = userYearPosition == 0 && totalMembers > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal
-                    ? 99
-                    : (totalMembers - userYearPosition) * 100 / totalMembers;
-
-
-            return new UserClubStandingModel
+            if (usersByMonth.Count() > 1 && usersByYear.Count() > 1)
             {
-                PercentileStandingForCurrentMonth = standingForCurrentMonth,
-                PercentileStandingForCurrentYear = standingForCurrentYear,
-            };
+                // Check for first place tie
+                var standingForCurrentMonth = userMonthPosition == 0 && totalMembers > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal
+                        ? 99
+                        : (totalMembers - userMonthPosition) * 100 / totalMembers;
+
+                var standingForCurrentYear = userYearPosition == 0 && totalMembers > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal
+                        ? 99
+                        : (totalMembers - userYearPosition) * 100 / totalMembers;
+
+
+                return new UserClubStandingModel
+                {
+                    PercentileStandingForCurrentMonth = standingForCurrentMonth,
+                    PercentileStandingForCurrentYear = standingForCurrentYear,
+                };
+            }
+            else
+            {
+                return standing; 
+            }
         }
         #region Clubs
 
