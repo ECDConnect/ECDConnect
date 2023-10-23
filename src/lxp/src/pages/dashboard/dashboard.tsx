@@ -154,12 +154,18 @@ export const Dashboard: React.FC = () => {
       }
       return total;
     }, 0);
-    const pointsMax =
+
+    let pointsMax =
       isPrincipal || isFundaAppAdmin
         ? pointsConstants.principalOrAdminMonthlyMax
         : pointsConstants.practitionerMonthlyMax;
 
     const percentageScore = (pointsTotal / pointsMax) * 100;
+
+    // without this rule the progress bar goes beyond the component
+    if (pointsTotal > pointsMax) {
+      pointsMax = pointsTotal;
+    }
 
     if (percentageScore < 60) {
       setPointsScoreProps({
@@ -177,7 +183,7 @@ export const Dashboard: React.FC = () => {
       });
     } else if (percentageScore < 80) {
       setPointsScoreProps({
-        mainText: `${pointsTotal} points`,
+        mainText: `${pointsTotal}`,
         barBgColour: 'white',
         hint: 'points',
         textPosition: 'left',
@@ -191,7 +197,7 @@ export const Dashboard: React.FC = () => {
       });
     } else {
       setPointsScoreProps({
-        mainText: `${pointsTotal} points`,
+        mainText: `${pointsTotal}`,
         barBgColour: 'white',
         hint: 'points',
         textPosition: 'left',
