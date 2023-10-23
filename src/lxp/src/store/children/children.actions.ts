@@ -2,8 +2,10 @@ import { ChildDto, UserDto } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
   AddChildLearnerTokenModelInput,
+  AddChildRegistrationTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
+  AddChildUserConsentTokenModelInput,
   ChildInput,
   UserModelInput,
   WorkflowStatusEnum,
@@ -339,6 +341,8 @@ export type TokenAddChildRequest = {
   learner: AddChildLearnerTokenModelInput;
   siteAddress: AddChildSiteAddressTokenModelInput;
   child: AddChildTokenModelInput;
+  registration?: AddChildRegistrationTokenModelInput;
+  userConsent?: AddChildUserConsentTokenModelInput;
 };
 
 export const openAccessAddChild = createAsyncThunk<
@@ -350,7 +354,15 @@ export const openAccessAddChild = createAsyncThunk<
   'openAccessAddChild',
   // eslint-disable-next-line no-empty-pattern
   async (
-    { token, caregiver, learner, siteAddress, child },
+    {
+      token,
+      caregiver,
+      learner,
+      siteAddress,
+      child,
+      registration,
+      userConsent,
+    },
     { rejectWithValue }
   ) => {
     try {
@@ -359,7 +371,9 @@ export const openAccessAddChild = createAsyncThunk<
         caregiver,
         learner,
         siteAddress,
-        child
+        child,
+        registration,
+        userConsent
       );
       return result;
     } catch (err) {

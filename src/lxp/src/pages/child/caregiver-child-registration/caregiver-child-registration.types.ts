@@ -31,6 +31,7 @@ export interface ChildDetails {
   surname: string;
   groupName: string;
   groupFeeAmount: number;
+  userId?: string;
 }
 
 export interface PractitionerDetails {
