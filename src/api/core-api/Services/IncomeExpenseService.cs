@@ -409,6 +409,11 @@ namespace ECDLink.Core.Services
 
             _statementsRepo.Insert(submittedStatement);
 
+            if (!autoSubmitted)
+            {
+                _pointsEngineService.CalculateIncomeStatements(userId, DateTime.Now);
+            }
+
             //try generating autosubmit doc
             if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
             {
@@ -422,10 +427,7 @@ namespace ECDLink.Core.Services
                 _statementsRepo.Update(submittedStatement);
             }
 
-            if (!autoSubmitted)
-            {
-                _pointsEngineService.CalculateIncomeStatements(userId, DateTime.Now);
-            }
+           
 
             return submittedStatement;
         }
