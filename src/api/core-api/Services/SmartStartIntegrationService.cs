@@ -721,7 +721,6 @@ public class SmartStartIntegrationService : IIntegrationService
 
         foreach (var parent in attendancesDueList)
         {
-            //bool validParent = false;
             StringBuilder jsonAttendanceString = new StringBuilder();
             jsonAttendanceString.AppendLine("[");
             Dictionary<string, bool> meetingDays = new Dictionary<string, bool>();
@@ -767,7 +766,6 @@ public class SmartStartIntegrationService : IIntegrationService
                         {
                             foreach (var publicholiday in holidays)
                             {
-                                //if (meetingDays.ContainsKey(publicholiday.Day.ToString("dddd")) && )
                                 if (meetDay.Key == publicholiday.Day.ToString("dddd"))
                                 {
                                     if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
@@ -789,7 +787,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         }
                     }
 
-                    //start buiulding up AttendanceList objects for each practitioner, and each class and learner, even if theres no attendance for a child, we will still have a list at the ready to send
+                    //start building up AttendanceList objects for each practitioner, and each class and learner, even if theres no attendance for a child, we will still have a list at the ready to send
                     foreach (var learner in allLearners)
                     {
                         //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
@@ -829,7 +827,6 @@ public class SmartStartIntegrationService : IIntegrationService
                             var learnerAttendance = attendances.Where(a => a.LearnerUserId == child).FirstOrDefault();
                             if (learnerAttendance == null || string.IsNullOrWhiteSpace(learnerAttendance.LearnerRemoteId)) //if this child is not in list then continue to next
                                 continue;
-                            //learnerAttendance.AttendanceData = weeklyAttendance.ToList();
 
                             int daysPresent = 0;
                             int daysAbsent = 0;
@@ -857,23 +854,18 @@ public class SmartStartIntegrationService : IIntegrationService
                                             }
                                             continue;
                                         }
-
                                     }
                                 }
-
                             }
                             learnerAttendance.daysAbsent = daysAbsent;
                             learnerAttendance.daysPresent = daysPresent;
-                            
                         }
-
                     }
                     catch (Exception e)
                     {
                         await _logManager.IntegrationLog("WeeklyAttendance by Child Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
                     }
                 }
-
 
                 //now build up the strings to push
                 try
@@ -883,8 +875,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     foreach (var attendance in attendances)
                     {
                         if (!string.IsNullOrWhiteSpace(attendance.LearnerRemoteId))
-                        {
-                            //[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
+                        {                            
                             int absentDays = attendance.daysPresent == 0 && attendance.daysAbsent == 0 ? meetingDays.Count : attendance.daysAbsent;
 
                             jsonAttendanceString.AppendLine("{");
