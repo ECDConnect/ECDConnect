@@ -386,7 +386,7 @@ class ClubService {
       errors?: {};
     }>(``, {
       query: `
-        mutation AddNewClubLeader($clubId: String, $practitionerId: String) {
+        mutation AddNewClubLeader($clubId: UUID!, $practitionerId: UUID!) {
           addNewClubLeader(clubId: $clubId, practitionerId: $practitionerId) {
               isActive
               dateAssigned

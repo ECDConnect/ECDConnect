@@ -1,7 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
-using EcdLink.Api.CoreApi.Services;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
@@ -121,6 +120,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return true;
         }
 
+        public bool CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, string userId)
+        {
+            return pointsEngineService.CalculateChildrenRegistrationRemoval(userId, DateTime.UtcNow);
+        }
 
         private bool AddConsent(AuthenticationDbContext context, AddChildUserConsentTokenModel consent, ChildTokenWrapperModel tokenModel)
         {
