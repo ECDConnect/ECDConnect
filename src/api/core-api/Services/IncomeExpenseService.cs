@@ -417,7 +417,6 @@ namespace ECDLink.Core.Services
             //try generating autosubmit doc
             if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
             {
-                // TODO FIX THE DATA INPUT INTO CREATE PDF
                 var pdfDoc = CreateIncomeStatementPDFDocument(userId, submittedStatement);
                 if (pdfDoc != null)
                 {
