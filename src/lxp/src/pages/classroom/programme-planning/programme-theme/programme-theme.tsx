@@ -76,7 +76,7 @@ const ProgrammeTheme: React.FC = () => {
       />
       <div className="px-2">
         {themes?.map((theme, idx) => (
-          <div className="mb-1 rounded-3xl">
+          <div className="mb-1 rounded-3xl" key={idx}>
             <IconImageListItem
               key={`theme-item-${theme.id}`}
               color={theme.color}
