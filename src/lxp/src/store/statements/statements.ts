@@ -67,16 +67,10 @@ const statementsSlice = createSlice({
     builder.addCase(submitIncomeStatement.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       state.incomeStatements = [...state.incomeStatements, action.payload];
-      state.unsyncedIncomeItems = [
-        ...state.unsyncedIncomeItems.filter((x) =>
-          action.payload.incomeItems.some((y) => y.id === x.Id)
-        ),
-      ];
-      state.unsyncedExpenseItems = [
-        ...state.unsyncedExpenseItems.filter((x) =>
-          action.payload.expenseItems.some((y) => y.id === x.Id)
-        ),
-      ];
+      state.unsyncedIncomeItems = [];
+      state.unsyncedExpenseItems = [];
+      state.unSubmittedIncomeItems = [];
+      state.unSubmittedExpenseItems = [];
     });
     builder.addCase(getIncomeStatements.fulfilled, (state, action) => {
       state.incomeStatements = action.payload;

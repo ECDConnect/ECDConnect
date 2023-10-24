@@ -95,4 +95,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public bool Contribution { get; set; }
     }
+
+    public class AddChildRegistrationTokenModel
+    {
+        public string UserId { get; set; }
+        public string File { get; set; }
+        public string FileName { get; set; }
+        public string FileType { get; set; }
+
+    }
+
+    public class AddChildUserConsentTokenModel
+    {
+        public string UserId { get; set; }
+
+        public bool ChildPhotoConsentAccepted { get; set; }
+
+        public bool PersonalInformationAgreementAccepted { get; set; }
+        public bool ConsentAgreementAccepted { get; set; }
+        public bool CommitmentAgreementAccepted { get; set; }
+        public bool IndemnityAgreementAccepted { get; set; }
+
+    }
+
 }

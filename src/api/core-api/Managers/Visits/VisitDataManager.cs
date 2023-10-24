@@ -4,6 +4,7 @@ using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -32,8 +33,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
+        private IGenericRepository<Trainee, Guid> _traineeRepo;
 
         private UserLicenseManager _userLicenseManager;
+        private VisitManager _visitManager;
 
         private string _applicationUserId;
 
@@ -43,6 +46,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             VisitDataStatusManager visitDataStatusManager,
             VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner,
             UserLicenseManager userLicenseManager,
+            VisitManager visitManager,
             [Service] IPointsEngineService pointsEngineService,
             HierarchyEngine hierarchyEngine)
         {
@@ -53,12 +57,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _pointsEngineService = pointsEngineService;
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
+            _visitManager = visitManager; 
 
             _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
+            _traineeRepo = _repoFactory.CreateRepository<Trainee>(userContext: _applicationUserId);
         }
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
@@ -252,33 +258,23 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var programme = "Programme details";
             var health = "Health, sanitation & safety";
             var safety = "Safety - structure, space & area";
-            var space = "Space & emergency planning";
 
             int programmeCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == programme).Count();
             int healthCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == health && x.QuestionAnswer == "true").Count();
             int safetyCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == safety && x.QuestionAnswer == "true").Count();
-            int spaceCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == space && x.QuestionAnswer == "true").Count();
 
             // EC-1359 - remove spacecount which is not compulsory
             if (programmeCount > 6 && healthCount == 7 && safetyCount == 10)
-            {
-                Visit visit = _visitRepo.GetById(visitId);
-                // when the smart space checklist is completed, we activate the smartspace license
-                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(visit.Trainee.UserId, Constants.SSSettings.ss_smart_space_licence);
-                if (smartSpaceLicense == null)
-                {
-                    _userLicenseManager.AddSmartSpaceLicense(visit.Trainee.UserId, DateTime.Now);
-                } 
-
-                // update the visit record to show attended/completed 
-                var entityToUpdate = _visitRepo.GetById(visitId);
-                entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId;
-                entityToUpdate.Attended = true;
-                entityToUpdate.ActualVisitDate = DateTime.Now;
-                return _visitRepo.Update(entityToUpdate);
+            {          
+               
+               // update the visit record to show attended/completed 
+               var entityToUpdate = _visitRepo.GetById(visitId);
+               entityToUpdate.UpdatedDate = DateTime.Now;
+               entityToUpdate.UpdatedBy = _applicationUserId;
+               entityToUpdate.Attended = true;
+               entityToUpdate.ActualVisitDate = DateTime.Now;
+               return _visitRepo.Update(entityToUpdate);  
             }
-
             return null;
         }
         public Boolean AddCoachData(CMSVisitDataInputModel input)
@@ -308,6 +304,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         _visitDataRepo.Insert(visitData);
                     }
                 }
+            }
+
+            //mark the visit as 'attended' once the sections are completed
+            var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.coach_smartspace_check).Select(y => y.VisitSection).Distinct().ToList();
+            if (completedSections.Count >= 10)
+            {
+                // when the smart space checklist is completed, we activate the smartspace license
+                Trainee trainee = _traineeRepo.GetByUserId(input.TraineeId);
+                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId, Constants.SSSettings.ss_smart_space_licence);
+                if (smartSpaceLicense == null)
+                {
+                    _userLicenseManager.AddSmartSpaceLicense(trainee.UserId, DateTime.Now);
+                }
+
+                // update the visit record to show attended/completed 
+                var entityToUpdate = _visitRepo.GetById(new Guid(input.VisitId));
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.Attended = true;
+                entityToUpdate.ActualVisitDate = DateTime.Now;
+                _visitRepo.Update(entityToUpdate);
             }
             return true;
         }

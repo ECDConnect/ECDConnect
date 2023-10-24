@@ -17,6 +17,7 @@ export interface GeneratePdfReportButtonProps {
   pageOriantations?: jsPDFOptions['orientation'];
   signature: string;
   downloadDate: string;
+  numberOfChildren: number;
 }
 
 const GeneratePdfReportButton = ({
@@ -33,6 +34,7 @@ const GeneratePdfReportButton = ({
   component,
   signature,
   downloadDate,
+  numberOfChildren,
 }: GeneratePdfReportButtonProps) => {
   const { generateReport } = useGeneratePdfReport();
   return (
@@ -45,6 +47,7 @@ const GeneratePdfReportButton = ({
           tableData ?? [],
           signature,
           downloadDate,
+          numberOfChildren,
           tableHeadStyles,
           content,
           tableBottomContent,

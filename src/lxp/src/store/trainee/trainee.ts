@@ -2,6 +2,7 @@ import { PractitionerDto, TraineeDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  getCoachSmartSpaceVisitData,
   getTraineeById,
   getTraineeTimeline,
   getTraineeVisitData,
@@ -33,6 +34,9 @@ const traineeSlice = createSlice({
       checkData?.push(...action?.payload);
       state.coachSmartSpaceCheckData = checkData ? checkData : action.payload;
     },
+    resetCoachSmartSpaceVisitData: (state) => {
+      state.coachSmartSpaceCheckData = initialState?.coachSmartSpaceCheckData;
+    },
     saveCoachFranchisorAgreementData: (state, action) => {
       const checkData = state.coachFranchisorAgreementData?.filter(
         (item) => item?.visitSection !== action.payload?.[0]?.visitSection
@@ -63,6 +67,10 @@ const traineeSlice = createSlice({
     });
     builder.addCase(getTraineeVisitData.fulfilled, (state, action) => {
       state.traineeVisitData = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getCoachSmartSpaceVisitData.fulfilled, (state, action) => {
+      state.coachSmartSpaceCheckData = action.payload;
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(

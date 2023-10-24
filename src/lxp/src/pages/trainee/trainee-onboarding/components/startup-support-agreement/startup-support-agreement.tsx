@@ -152,7 +152,7 @@ export const StartupSupportAgreement: React.FC<
       color={'primary'}
       onBack={handleBackButton}
       displayOffline={!isOnline}
-      renderOverflow={true}
+      className="pb-16"
     >
       <div className="h-screen">{renderStep(agreementStep)}</div>
     </BannerWrapper>

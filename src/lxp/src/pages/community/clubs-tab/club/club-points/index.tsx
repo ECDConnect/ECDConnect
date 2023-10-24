@@ -16,9 +16,9 @@ import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
 import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
 import partnershipIcon from '@/assets/icon/partnership.svg';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '../individual-club-view';
 import ROUTES from '@/routes/routes';
-import { LeagueType } from '@/constants/club';
+import { LeagueType, ClubActivities } from '@/constants/club';
+import { getScoreBarColor } from '../../index.filters';
 
 export const ClubPoints: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -29,14 +29,15 @@ export const ClubPoints: React.FC = () => {
 
   const history = useHistory();
 
-  // TODO: replace mockedPoint with actual points
-  const mockedPoint = '0';
-
   const activities: MenuListDataItem[] = [
     {
-      title: 'Meet regularly',
+      title: ClubActivities.MeetRegularly,
       menuIconUrl: partnershipIcon,
-      subItem: mockedPoint,
+      subItem: String(
+        club?.clubActivities?.find(
+          (item) => item?.name === ClubActivities.MeetRegularly
+        )?.points ?? 0
+      ),
       route: ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
         ':clubId',
         clubId
@@ -45,9 +46,13 @@ export const ClubPoints: React.FC = () => {
     ...(!isPurpleLeague
       ? [
           {
-            title: 'Be creative',
+            title: ClubActivities.BeCreative,
             menuIconUrl: paintPaletteIcon,
-            subItem: mockedPoint,
+            subItem: String(
+              club?.clubActivities?.find(
+                (item) => item?.name === ClubActivities.BeCreative
+              )?.points ?? 0
+            ),
             route: ROUTES.COMMUNITY.CLUB.POINTS.BE_CREATIVE.replace(
               ':clubId',
               clubId
@@ -58,9 +63,13 @@ export const ClubPoints: React.FC = () => {
     ...(isPurpleLeague
       ? [
           {
-            title: 'Capture child attendance',
+            title: ClubActivities.CaptureChildAttendance,
             menuIcon: 'ClipboardCheckIcon',
-            subItem: mockedPoint,
+            subItem: String(
+              club?.clubActivities?.find(
+                (item) => item?.name === ClubActivities.CaptureChildAttendance
+              )?.points ?? 0
+            ),
             route:
               ROUTES.COMMUNITY.CLUB.POINTS.CAPTURE_CHILD_ATTENDANCE.replace(
                 ':clubId',
@@ -70,9 +79,13 @@ export const ClubPoints: React.FC = () => {
         ]
       : []),
     {
-      title: 'Host family days',
+      title: ClubActivities.HostFamilyDays,
       menuIconUrl: familyIcon,
-      subItem: mockedPoint,
+      subItem: String(
+        club?.clubActivities?.find(
+          (item) => item?.name === ClubActivities.HostFamilyDays
+        )?.points ?? 0
+      ),
       route: ROUTES.COMMUNITY.CLUB.POINTS.HOST_FAMILY_EVENT.replace(
         ':clubId',
         clubId
@@ -81,9 +94,14 @@ export const ClubPoints: React.FC = () => {
     ...(isPurpleLeague
       ? [
           {
-            title: 'Complete child progress reports',
+            title: ClubActivities.CompleteChildProgressReports,
             menuIcon: 'DocumentReportIcon',
-            subItem: mockedPoint,
+            subItem: String(
+              club?.clubActivities?.find(
+                (item) =>
+                  item?.name === ClubActivities.CompleteChildProgressReports
+              )?.points ?? 0
+            ),
             route:
               ROUTES.COMMUNITY.CLUB.POINTS.COMPLETE_CHILD_PROGRESS_REPORTS.replace(
                 ':clubId',
@@ -93,9 +111,13 @@ export const ClubPoints: React.FC = () => {
         ]
       : []),
     {
-      title: 'Leave no one behind',
+      title: ClubActivities.LeaveNoOneBehind,
       menuIconUrl: inclusiveIcon,
-      subItem: mockedPoint,
+      subItem: String(
+        club?.clubActivities?.find(
+          (item) => item?.name === ClubActivities.LeaveNoOneBehind
+        )?.points ?? 0
+      ),
       route: ROUTES.COMMUNITY.CLUB.POINTS.LEAVE_NO_ONE_BEHIND.replace(
         ':clubId',
         clubId
@@ -128,19 +150,13 @@ export const ClubPoints: React.FC = () => {
         text={format(new Date(), 'MMMM yyyy')}
       />
       <ScoreCard
+        className="mt-5"
         mainText={String(club?.totalClubPoints || 0)}
         hint="points"
-        currentPoints={club?.totalClubPoints ?? 0}
+        currentPoints={club?.totalClubPoints ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)
         maxPoints={club?.maxClubPoints ?? 0}
         barBgColour="uiLight"
-        barColour={
-          isCurrentPointsAtLeast80PercentOfTotal(
-            club?.totalClubPoints || 0,
-            club?.maxClubPoints || 0
-          )
-            ? 'successMain'
-            : 'secondary'
-        }
+        barColour={getScoreBarColor(club?.totalClubPoints ?? 0)}
         bgColour="uiBg"
         textColour="black"
       />

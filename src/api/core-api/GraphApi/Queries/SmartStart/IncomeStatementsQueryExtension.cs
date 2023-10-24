@@ -15,9 +15,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
         }
 
-        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData([Service] IIncomeExpenseService incomeManager, string userId, int year, int month, bool splitSupport = false)
+        public List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(
+            [Service] IIncomeExpenseService incomeManager, Guid statementId)
         {
-            return incomeManager.GetStatementsIncomeExpensesPDFData(userId, year, month);
+            return incomeManager.GetStatementsIncomeExpensesPDFData(statementId);
         }
 
         /// <summary>

@@ -81,7 +81,7 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             <Typography type="body" text={activity.name} color={'textDark'} />
           </div>
           <div>
-            <div className="flex max-h-20 items-center gap-2">
+            <div className="flex max-h-20 items-center justify-between gap-2">
               <Radio
                 isActivity={true}
                 description={limitStringLength(activity.materials, 50)}

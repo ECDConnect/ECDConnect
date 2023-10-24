@@ -300,6 +300,7 @@ export const MonthlyAttendanceReport = ({
           tableStyles={tableStyles}
           signature={practitioner?.signingSignature ?? ''}
           downloadDate={today}
+          numberOfChildren={attendanceSum}
         />
       </div>
     </BannerWrapper>

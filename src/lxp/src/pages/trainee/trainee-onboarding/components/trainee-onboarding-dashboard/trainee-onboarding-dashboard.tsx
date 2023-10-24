@@ -61,7 +61,7 @@ export const OnboardingTraineeDashboard: React.FC<
   };
   const isOnStipend = practitioner?.isOnStipend;
 
-  const uncompletedSteps = timelineSteps(
+  const steps = timelineSteps(
     timeline!,
     () => {},
     false,
@@ -71,12 +71,18 @@ export const OnboardingTraineeDashboard: React.FC<
     '',
     timeline?.consolidationMeetingStatus,
     isOnStipend
-  ).filter(
+  );
+
+  const uncompletedSteps = steps?.filter(
     (item) =>
       item?.type !== 'completed' &&
       item?.type !== 'inProgress' &&
       item?.title !== 'SmartSpace Licence'
   );
+
+  const completedSteps = steps?.filter((item) => item?.type === 'completed');
+
+  const stepperCount = steps?.length;
 
   const extradataTimeValue =
     uncompletedSteps?.length > 0 &&
@@ -88,30 +94,6 @@ export const OnboardingTraineeDashboard: React.FC<
       extradataTimeValue ? (extradataTimeValue?.[0] as Date) : new Date()
     )
   );
-
-  const completedSteps = timelineSteps(
-    timeline!,
-    () => {},
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined,
-    '',
-    timeline?.consolidationMeetingStatus,
-    isOnStipend
-  ).filter((item) => item?.type === 'completed');
-
-  const stepperCount = timelineSteps(
-    timeline!,
-    () => {},
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined,
-    '',
-    timeline?.consolidationMeetingStatus,
-    isOnStipend
-  ).length;
 
   useEffect(() => {
     if (
@@ -161,8 +143,7 @@ export const OnboardingTraineeDashboard: React.FC<
       displayHelp={true}
       onHelp={displayTutorial}
       displayOffline={!isOnline}
-      renderOverflow={true}
-      className="h-screen"
+      className="h-screen pb-16"
     >
       <div className="bg-uiBg flex w-full items-center justify-center">
         <Typography

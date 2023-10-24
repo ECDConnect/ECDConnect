@@ -13,6 +13,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
+import { coachSelectors } from '@/store/coach';
+import { authSelectors } from '@/store/auth';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -42,6 +44,9 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
 
   const [questions, setAnswers] = useState([
     {
@@ -157,6 +162,37 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
+    if (!isCoach) {
+      const previousData = questions.map((item) => {
+        const previousAnswer = visitData?.find((item: any) => {
+          const sectionData = item?.visitSection === visitSection;
+          return sectionData;
+        });
+
+        const previousHasTrueAnswer =
+          Boolean(previousAnswer?.questionAnswer) === true ||
+          previousAnswer?.questionAnswer === 'true';
+
+        if (previousAnswer) {
+          return {
+            ...item,
+            answer: previousHasTrueAnswer!,
+          };
+        }
+
+        return item;
+      });
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: previousData,
+        },
+      ]);
+
+      setAnswers(previousData);
+      return;
+    }
+
     const previousData = questions.map((item) => {
       const visitDataWithoutTypo = visitData as any;
       const previousAnswer = visitDataWithoutTypo
@@ -164,7 +200,7 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
@@ -206,12 +242,19 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
         className={'my-3'}
       />
       <Divider dividerType="dashed" className={'my-4'} />
-
-      <Alert
-        className="my-4"
-        type="info"
-        title="Walk around the site and make sure the following standards are in place."
-      />
+      {!isCoach ? (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      ) : (
+        <Alert
+          className="my-4"
+          type="info"
+          title="Walk around the site and make sure the following standards are in place."
+        />
+      )}
 
       {questions.map((item, index) => (
         <CheckboxGroup
@@ -226,6 +269,7 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
           value={item.question}
           onChange={() => onOptionSelected(!item.answer, index)}
           className="mb-1"
+          disabled={!isCoach}
         />
       ))}
       <div className="mt-2 flex items-center gap-2">

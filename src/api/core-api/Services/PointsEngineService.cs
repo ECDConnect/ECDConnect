@@ -1,6 +1,10 @@
-﻿using ECDLink.Core.Extensions;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
@@ -13,9 +17,13 @@ using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -46,16 +54,25 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly IGenericRepository<IntegrationAudit, Guid> _integrationAuditRepo;
 
-        
+        private readonly IGenericRepository<Club, Guid> _clubRepo;
+        private readonly IGenericRepository<ClubMember, Guid> _clubMemberRepo;
+        private readonly IGenericRepository<ClubLeader, Guid> _clubLeaderRepo;
+        private readonly IGenericRepository<ClubSupport, Guid> _clubSupportRepo;
+        private readonly IGenericRepository<PQARating, Guid> _pqaRatingRepo;
+        private readonly IGenericRepository<ClubPoints, Guid> _clubPointsRepo;
+        private readonly IGenericRepository<ClubPointsLibrary, Guid> _clubPointsLibraryRepo;
 
         private readonly ChildAttendanceReport _childAttendanceReport;
+
+        private VisitManager _visitManager;
 
         private readonly string _uId;
 
         public PointsEngineService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
-            ChildAttendanceReport childAttendanceReport
+            ChildAttendanceReport childAttendanceReport,
+            VisitManager visitManager
             )
         {
             _contextAccessor = contextAccessor;
@@ -83,8 +100,20 @@ namespace EcdLink.Api.CoreApi.Services
             _classRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
             _integrationAuditRepo = _repositoryFactory.CreateRepository<IntegrationAudit>(userContext: _uId);
 
-            _childAttendanceReport = childAttendanceReport;
+            _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
 
+            _childAttendanceReport = childAttendanceReport;
+            _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
+            _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
+            _clubLeaderRepo = _repositoryFactory.CreateGenericRepository<ClubLeader>(userContext: _uId);
+            _clubSupportRepo = _repositoryFactory.CreateGenericRepository<ClubSupport>(userContext: _uId);
+            _clubPointsRepo = _repositoryFactory.CreateGenericRepository<ClubPoints>(userContext: _uId);
+            _clubPointsLibraryRepo = _repositoryFactory.CreateGenericRepository<ClubPointsLibrary>(userContext: _uId);
+
+            _pqaRatingRepo = _repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
+
+            _childAttendanceReport = childAttendanceReport;
+            _visitManager = visitManager;
         }
 
         #region PointsLibrary
@@ -1157,75 +1186,79 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region UserSummary
 
-        public bool UpdateUserSummaryPoints(string userId, DateTime today)
+        // Used for grow great, where multiple categories are scored at once
+        private void UpdateUserSummaryPoints(string userId, DateTime today)
         {
-            List<PointsLibrary> allRecords = GetPointsLibraryForTenant();
+            var allRecords = GetPointsLibraryForTenant();
 
-            foreach (var item in allRecords)
+            foreach (var activity in allRecords) 
             {
-                int monthTotal = _pointsUserRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == item.Id).Select(x => x.Points).Sum();
-                int ytdTotal = _pointsUserRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == item.Id).Select(x => x.Points).Sum();
+                UpdateUserSummaryPoints(userId, activity, today);
+            }
+        }
 
-                // ss max point implementation
-                if (item.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3)
+        private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin = false)
+        {
+            var pointsScoredThisYear = _pointsUserRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
+
+            int monthTotal = pointsScoredThisYear.Where(x => x.Month == today.Month).Select(x => x.Points).Sum();
+            int ytdTotal = pointsScoredThisYear.Select(x => x.Points).Sum();
+
+            if (isPrincipalOrAdmin)
+            {
+                if (activity.MaxPointsPrincipalMonthly != 0 && monthTotal > activity.MaxPointsPrincipalMonthly)
                 {
-                    if (ytdTotal > 1200)
-                    {
-                        ytdTotal = 1200;
-                    }
+                    monthTotal = activity.MaxPointsNonPrincipalMonthly;
                 }
-                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac2)
+                if (activity.MaxPointsPrincipalYearly != 0 && ytdTotal > activity.MaxPointsPrincipalYearly)
                 {
-                    if (ytdTotal > 300)
-                    {
-                        ytdTotal = 300;
-                    }
-                }
-                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac3)
-                {
-                    if (ytdTotal > 300)
-                    {
-                        ytdTotal = 300;
-                    }
-                }
-                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac4)
-                {
-                    if (ytdTotal > 100)
-                    {
-                        ytdTotal = 100;
-                    }
-                }
-                if (monthTotal > 0 && ytdTotal > 0)
-                {
-                    var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == item.Id).FirstOrDefault();
-                    if (record == null)
-                    {
-                        InsertIndividualSummaryUserPoints(
-                            new PointsUserSummary
-                            {
-                                Id = Guid.NewGuid(),
-                                IsActive = true,
-                                InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
-                                Month = today.Month,
-                                Year = today.Year,
-                                UserId = userId,
-                                PointsLibraryId = item.Id,
-                                PointsTotal = monthTotal,
-                                PointsYTD = ytdTotal
-                            }
-                        );
-                    } else
-                    {
-                        record.PointsTotal = monthTotal;
-                        record.PointsYTD = ytdTotal;
-                        record.UpdatedDate = DateTime.Now;
-                        record.UpdatedBy = _uId;
-                        UpdateIndividualSummaryUserPoints(record);
-                    }
+                    ytdTotal = activity.MaxPointsPrincipalYearly;
                 }
             }
-            return true;
+            else
+            {
+                if (activity.MaxPointsIndividualMonthly != 0 && monthTotal > activity.MaxPointsIndividualMonthly)
+                {
+                    monthTotal = activity.MaxPointsNonPrincipalMonthly;
+                }
+                if (activity.MaxPointsNonPrincipalYearly != 0 && ytdTotal > activity.MaxPointsNonPrincipalYearly)
+                {
+                    ytdTotal = activity.MaxPointsNonPrincipalYearly;
+                }
+            }
+
+            if (monthTotal > 0 && ytdTotal > 0)
+            {
+                var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
+                if (record == null)
+                {
+                    InsertIndividualSummaryUserPoints(
+                        new PointsUserSummary
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActive = true,
+                            InsertedDate = DateTime.Now,
+                            UpdatedBy = _uId,
+                            Month = today.Month,
+                            Year = today.Year,
+                            UserId = userId,
+                            PointsLibraryId = activity.Id,
+                            PointsTotal = monthTotal,
+                            PointsYTD = ytdTotal,
+                            TimesScored = 1,
+                        }
+                    );
+                } else
+                {
+                    record.PointsTotal = monthTotal;
+                    record.PointsYTD = ytdTotal;
+                    record.UpdatedDate = DateTime.Now;
+                    record.UpdatedBy = _uId;
+                    record.TimesScored = record.TimesScored + 1;
+
+                    UpdateIndividualSummaryUserPoints(record);
+                }
+            }
         }
 
         #endregion
@@ -1272,7 +1305,11 @@ namespace EcdLink.Api.CoreApi.Services
                     activity_record.UpdatedBy = _uId;
                     UpdateIndividualUserPoints(activity_record);
                 }
-                UpdateUserSummaryPoints(userId, today);
+                UpdateUserSummaryPoints(
+                    userId, 
+                    activity, 
+                    today, 
+                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
             }
             return true;
         }
@@ -1327,8 +1364,12 @@ namespace EcdLink.Api.CoreApi.Services
                         activity_record.Comment = "Total: " + childCount;
                         UpdateIndividualUserPoints(activity_record);
                     }
-                }
-                UpdateUserSummaryPoints(userId, today);
+                    UpdateUserSummaryPoints(
+                        userId, 
+                        activity,
+                        today,
+                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
+                }               
             }
             return true;
         }
@@ -1393,7 +1434,13 @@ namespace EcdLink.Api.CoreApi.Services
                     activity_record.Comment = "Total: " + perc;
                     UpdateIndividualUserPoints(activity_record);
                 }
-                UpdateUserSummaryPoints(userId, today);
+
+                var practitioner = _practitionerRepo.GetByUserId(userId);
+                UpdateUserSummaryPoints(
+                    userId,
+                    activity,
+                    today,
+                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
             }
             return true;
         }
@@ -1459,7 +1506,12 @@ namespace EcdLink.Api.CoreApi.Services
                         activity_record.Comment = "Total: " + rows.Count;
                         UpdateIndividualUserPoints(activity_record);
                     }
-                    UpdateUserSummaryPoints(userId, today);
+
+                    UpdateUserSummaryPoints(
+                        userId,
+                        activity,
+                        today,
+                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
                 }
             }
             return true;
@@ -1533,7 +1585,12 @@ namespace EcdLink.Api.CoreApi.Services
                         UpdateIndividualUserPoints(activity_record);
                     }
                 }
-                UpdateUserSummaryPoints(userId, today);
+
+                UpdateUserSummaryPoints(
+                    userId,
+                    activity,
+                    today,
+                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
             }
             return true;
         }
@@ -1627,13 +1684,230 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     }
 
-                    UpdateUserSummaryPoints(userId, today);
+                    UpdateUserSummaryPoints(
+                        userId,
+                        activity,
+                        today,
+                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
                 }
             }
             return true;
         }
 
+        public bool CalculatePreSchoolFees(string userId, DateTime today)
+        {
+            PointsLibrary activity = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement).Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac1).FirstOrDefault();
+            PointsUser activity_record = _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == activity.Id && x.UserId == userId && x.Year == today.Year).FirstOrDefault();
+
+            if (activity_record == null)
+            {
+                InsertIndividualUserPoints(
+                    new PointsUser
+                    {
+                        Id = Guid.NewGuid(),
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedBy = _uId,
+                        Month = today.Month,
+                        Year = today.Year,
+                        Points = activity.Points,
+                        UserId = userId,
+                        PointsLibraryId = activity.Id
+                    }
+                );
+                UpdateUserSummaryPoints(userId, activity, today);
+            }
+
+            return true;
+        }
+
         #endregion
+
+        /// <summary>
+        /// Gets the percentile standing of a user within relative to others within the club
+        /// </summary>
+        /// <param name="userId"></param>
+        /// <returns></returns>
+        public UserClubStandingModel GetUserClubStanding(string userId)
+        {
+            var practitionerId = _practitionerRepo.GetByUserId(userId).Id;
+            ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).FirstOrDefault();
+
+            if (clubMember == null)
+            {
+                return new UserClubStandingModel();
+            }
+
+            var clubUserIds = _clubMemberRepo.GetAll()
+                .Include(x => x.Practitioner)
+                .Where(x => x.ClubId == clubMember.ClubId)
+                .Select(x => x.Practitioner.UserId).ToList();
+
+            var usersPoints = _pointsUserSummaryRepo.GetAll()
+                .Where(x => clubUserIds.Contains(x.UserId))
+                .GroupBy(x => x.UserId)
+                .Select(x => new { UserId = x.First().UserId, PointsSummaries = x.Select(y => new { y.Month, y.PointsTotal }) })
+                .ToList();
+
+            var usersByMonth = usersPoints.Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Where(y => y.Month == DateTime.Now.Month).Sum(z => z.PointsTotal) }).ToList();
+            var usersByYear = usersPoints.Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Sum(y => y.PointsTotal) }).ToList();
+
+            var userMonthPosition = usersByMonth.FindIndex(x => x.UserId == userId);
+            var userYearPosition = usersByYear.FindIndex(x => x.UserId == userId);
+
+            var standing = new UserClubStandingModel();
+
+            var totalMembers = clubUserIds.Count();
+
+            // Check for first place tie
+            var standingForCurrentMonth = userMonthPosition == 0 && usersByMonth.Count() > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal
+                    ? 99
+                    : (totalMembers - userMonthPosition) * 100 / totalMembers;
+
+            var standingForCurrentYear = userYearPosition == 0 && usersByYear.Count() > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal
+                    ? 99
+                    : (totalMembers - userYearPosition) * 100 / totalMembers;
+
+
+            return new UserClubStandingModel
+            {
+                PercentileStandingForCurrentMonth = standingForCurrentMonth,
+                PercentileStandingForCurrentYear = standingForCurrentYear,
+            };
+        }
+        #region Clubs
+
+        // Yearly, calculate by 30 November and will be triggered by a cron job
+        public bool CalculateLeaveNoOneBehind(Guid clubId, string coachUserId, DateTime today) 
+        {
+            List<string> practitioners = new List<string>();
+            
+            // get all participants linked to this club, to calculate PQA ratings
+            List<string> clubMembers = _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).ToList();
+            practitioners.AddRange(clubMembers);
+
+            List<string> clubLeaders = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).ToList();
+            practitioners.AddRange(clubLeaders);
+
+            string clubSupport = _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).FirstOrDefault();
+            practitioners.Add(clubSupport);
+
+            // ensure we don't have any duplicate user Ids
+            practitioners = practitioners.Distinct().ToList();
+
+            Club club = _clubRepo.GetById(clubId);
+            double greenRatings = 0;
+            double orangeRatings = 0;
+            double redRatings = 0;
+            double finalRating = 0;
+            List<Visit> allVisits = new List<Visit>();
+            List<PQARating> pqaRatings = new List<PQARating>();
+            Guid clubPointsLibraryId = new Guid();
+
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.leave_no_one_behind && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+                foreach (var practitionerUserId in practitioners)
+                {
+                    allVisits = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId);
+                    pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Select(y => y.Id).Contains(x.VisitId)).ToList();
+                    greenRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
+                    orangeRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
+                    redRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
+                }
+            }
+            else
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.leave_no_one_behind && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+                foreach (var practitionerUserId in practitioners)
+                {
+                    allVisits = _visitManager.GetReAccreditationVisitsForPractitioner(practitionerUserId);
+                    pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Select(y => y.Id).Contains(x.VisitId)).ToList();
+                    greenRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
+                    orangeRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
+                    redRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
+                }
+            }
+
+            finalRating = greenRatings / (greenRatings + orangeRatings + redRatings);
+            _clubPointsRepo.Insert(new ClubPoints()
+            {
+                Id = Guid.NewGuid(),
+                ClubId = clubId,
+                UserId = coachUserId,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _uId,
+                IsActive = true,
+                ClubPointsLibraryId = clubPointsLibraryId,
+                Month = today.Month,
+                Year = today.Year,
+                Points = (int)finalRating,
+                PointsYTD = (int)finalRating
+            });
+
+            return true;
+        }
+
+        public bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = new Guid();
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.host_family_days && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            } else
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.host_family_days && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+
+            return true;
+        }
+
+        public bool CalculateCompleteChildProgressReports(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.child_progress_reports && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            return true;
+        }
+        public bool CalculateCaptureChildAttendance(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.capture_child_attendance && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            return true;
+        }
+        public bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = new Guid();
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+            else
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+
+
+            return true;
+        }
+        public bool CalculateBeCreative(Guid clubId, string userId, DateTime today)
+        {
+            Club club = _clubRepo.GetById(clubId);
+            Guid clubPointsLibraryId = new Guid();
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.be_creative && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+            else
+            {
+                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.be_creative && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+            }
+            return true;
+        }
+        #endregion
+
 
     }
 }

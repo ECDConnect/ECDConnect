@@ -2,8 +2,10 @@ import { ChildDto, UserDto } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
   AddChildLearnerTokenModelInput,
+  AddChildRegistrationTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
+  AddChildUserConsentTokenModelInput,
   ChildInput,
   UserModelInput,
   WorkflowStatusEnum,
@@ -104,6 +106,32 @@ export const updateChild = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
+
+export const calculateChildrenRegistrationRemoval = createAsyncThunk<
+  boolean,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'calculateChildrenRegistrationRemoval',
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ChildService(
+          userAuth?.auth_token
+        ).calculateChildrenRegistrationRemoval(userAuth?.id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 type UpdateChildUserRequest = {
   childUser: UserDto;
@@ -339,6 +367,8 @@ export type TokenAddChildRequest = {
   learner: AddChildLearnerTokenModelInput;
   siteAddress: AddChildSiteAddressTokenModelInput;
   child: AddChildTokenModelInput;
+  registration?: AddChildRegistrationTokenModelInput;
+  userConsent?: AddChildUserConsentTokenModelInput;
 };
 
 export const openAccessAddChild = createAsyncThunk<
@@ -350,7 +380,15 @@ export const openAccessAddChild = createAsyncThunk<
   'openAccessAddChild',
   // eslint-disable-next-line no-empty-pattern
   async (
-    { token, caregiver, learner, siteAddress, child },
+    {
+      token,
+      caregiver,
+      learner,
+      siteAddress,
+      child,
+      registration,
+      userConsent,
+    },
     { rejectWithValue }
   ) => {
     try {
@@ -359,7 +397,9 @@ export const openAccessAddChild = createAsyncThunk<
         caregiver,
         learner,
         siteAddress,
-        child
+        child,
+        registration,
+        userConsent
       );
       return result;
     } catch (err) {

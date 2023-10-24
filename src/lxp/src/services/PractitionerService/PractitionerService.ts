@@ -285,6 +285,8 @@ class PractitionerService {
             isOnStipend
             stipendType
             isCompletedBusinessWalkThrough
+            clubId
+            clubName
           }
         }
       `,
@@ -361,6 +363,8 @@ class PractitionerService {
             isOnStipend
             stipendType
             isCompletedBusinessWalkThrough
+            clubId
+            clubName
           }
         }
       `,
@@ -450,6 +454,16 @@ class PractitionerService {
             isClubLeader
             isClubSupport
             clubId
+            absentees {
+              absentDate
+              absentDateEnd
+              className
+              classroomGroupId
+              reason
+              reassignedToPerson
+              reassignedToUserId
+              absenteeId
+          }
           }
         }
       `,

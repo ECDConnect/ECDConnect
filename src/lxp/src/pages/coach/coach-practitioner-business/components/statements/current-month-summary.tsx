@@ -1,6 +1,6 @@
 import ROUTES from '@/routes/routes';
 import { BannerWrapper } from '@ecdlink/ui';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
@@ -9,7 +9,7 @@ import { PractitionerBusinessParams } from '../../coach-practitioner-business.ty
 import { MonthStatementsDetails } from '@/pages/business/components/month-statements-details';
 import { practitionerForCoachSelectors } from '@/store/practitionerForCoach';
 import { IncomeStatementDates } from '@/constants/Dates';
-import { getPreviousMonth } from '@ecdlink/core';
+import { getNextMonth, getPreviousMonth } from '@ecdlink/core';
 
 export const PractitionerCurrentMonthSummary: React.FC = () => {
   const history = useHistory();
@@ -33,15 +33,25 @@ export const PractitionerCurrentMonthSummary: React.FC = () => {
   };
 
   const currentDate = new Date();
-  const isSubmitWindowOpen =
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
-    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
-  const summaryDate =
-    !isSubmitWindowOpen ||
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay
-      ? currentDate
-      : getPreviousMonth(currentDate);
+  const statements = useSelector(
+    practitionerForCoachSelectors.getStatementsForUser(userId)
+  );
+  const isThisMonthSubmitted = useMemo(
+    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
+    [statements]
+  );
+  const isPreviousMonthSubmitted = useMemo(
+    () => !!statements?.find((x) => x.month === new Date().getMonth()),
+    [statements]
+  );
+
+  const summaryDate = isThisMonthSubmitted
+    ? getNextMonth(currentDate)
+    : !isPreviousMonthSubmitted &&
+      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
+    ? getPreviousMonth(currentDate)
+    : currentDate;
 
   return (
     <>

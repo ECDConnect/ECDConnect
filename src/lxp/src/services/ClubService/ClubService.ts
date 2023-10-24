@@ -72,8 +72,10 @@ class ClubService {
               secondaryText
               secondaryTextColor
               maxClubPoints
+              leagueRankNr
               totalClubPoints
-              leaguePosition
+              totalClubPointsColor
+              firstInLeague
               secondaryTextPriority
               clubMeetings {
                 id
@@ -170,6 +172,11 @@ class ClubService {
               clubActivities {
                   name
                   points
+              }
+              issuesTasks {
+                secondaryText
+                secondaryTextColor
+                secondaryDescription
               }
           }
       }
@@ -379,7 +386,7 @@ class ClubService {
       errors?: {};
     }>(``, {
       query: `
-        mutation AddNewClubLeader($clubId: String, $practitionerId: String) {
+        mutation AddNewClubLeader($clubId: UUID!, $practitionerId: UUID!) {
           addNewClubLeader(clubId: $clubId, practitionerId: $practitionerId) {
               isActive
               dateAssigned

@@ -41,6 +41,7 @@ export const getPointsSummaryWithLibrary = (date: Date) =>
 
             pointsTotal: pointsSummaryForMonth?.pointsTotal || 0,
             pointsYTD: pointsSummaryForMonth?.pointsYTD || 0,
+            timesScored: pointsSummaryForMonth?.timesScored || 0,
 
             activity: pointsLibrary.activity || '',
             subActivity: pointsLibrary.subActivity || '',
@@ -106,6 +107,7 @@ export const getPointsSummariesForActivity = (id: string) =>
 
           pointsTotal: pointsSummaryForMonth?.pointsTotal || 0,
           pointsYTD: pointsSummaryForMonth?.pointsYTD || 0,
+          timesScored: pointsSummaryForMonth?.timesScored || 0,
 
           activity: activity.activity || '',
           subActivity: activity.subActivity || '',
@@ -123,5 +125,35 @@ export const getPointsSummariesForActivity = (id: string) =>
       }
 
       return pointsSummaries;
+    }
+  );
+
+export const getPointsTotalForYear = () =>
+  createSelector(
+    (state: RootState) => state.points.pointsSummary,
+    (pointsSummary: PointsUserSummary[]) => {
+      return pointsSummary
+        .filter((x) => x.year === new Date().getFullYear())
+        .reduce((total, current) => (total += current.pointsTotal), 0);
+    }
+  );
+
+export const getCurrentPercentileClubStandingForMonth = () =>
+  createSelector(
+    (state: RootState) => state.points.userClubStanding,
+    (userClubStanding) => {
+      return !!userClubStanding
+        ? userClubStanding.standing.percentileStandingForCurrentMonth
+        : 0;
+    }
+  );
+
+export const getCurrentClubPercentileStandingForYear = () =>
+  createSelector(
+    (state: RootState) => state.points.userClubStanding,
+    (userClubStanding) => {
+      return !!userClubStanding
+        ? userClubStanding.standing.percentileStandingForCurrentYear
+        : 0;
     }
   );
