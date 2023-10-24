@@ -187,7 +187,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService,  practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
+                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
                 if (metric.Any())
                 {
                     metrics.AddRange(metric);
@@ -771,7 +771,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     UserId = Guid.Parse(practitionerId),
                     UserType = "practitioner",
                     numberOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods,
-                    percentageOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods/ children?.Count ?? 1,
+                    percentageOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods / children?.Count ?? 1,
                     totalChildren = children?.Count ?? 0,
                     numberOfPeriods = 2
                 });
@@ -845,33 +845,44 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
         private static int GetIncompleteChildRegistrations(List<Child> children, IQueryable<Learner> learners)
         {
-            var incompleteRegistrations = 0; 
-            foreach (var child in children)
+            var incompleteRegistrations = 0;
+            if (children != null && children.Count() > 0)
             {
-                if (child != null)
+                foreach (var child in children)
                 {
-                    var existingLearner = learners.Where(l => l.UserId == child.UserId).FirstOrDefault();
-                    if (existingLearner == null)
+                    if (child != null)
                     {
-                        incompleteRegistrations += 1; 
-                    } 
-                    else
-                    {
-                        if (child.CaregiverId is null)
+                        if (learners != null && learners.Count() > 0)
+                        {
+                            var existingLearner = learners.Where(l => l.UserId == child.UserId).FirstOrDefault();
+                            if (existingLearner == null)
+                            {
+                                incompleteRegistrations += 1;
+                            }
+                            else
+                            {
+                                if (child.CaregiverId is null || child.Documents is null || child.Documents.Count() == 0)
+                                {
+                                    incompleteRegistrations += 1;
+                                }
+                            }
+                        }
+                        else
                         {
                             incompleteRegistrations += 1;
                         }
+
                     }
                 }
             }
-            return incompleteRegistrations; 
+            return incompleteRegistrations;
         }
 
-                    [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<ClassReassignmentDisplay>> GetActionItemClassReassignmentHistory(
-            IGenericRepositoryFactory repoFactory,
-            [Service] UserManager<ApplicationUser> userManager,
-            string practitionerId)
+IGenericRepositoryFactory repoFactory,
+[Service] UserManager<ApplicationUser> userManager,
+string practitionerId)
         {
             DateTime currentDate = DateTime.Now;
 
@@ -894,7 +905,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .SelectMany(ch => ch.ReassignedClassroomGroups.Split(';'))
                 .Where(ch => !string.IsNullOrWhiteSpace(ch))
                 .Select(
-                    ch => {
+                    ch =>
+                    {
                         Guid.TryParse(ch, out Guid id);
                         return id;
                     })
@@ -909,12 +921,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (classReassignmentHistoryList?.Count() > 0)
             {
-                foreach (var reassignment in classReassignmentHistoryList) {
+                foreach (var reassignment in classReassignmentHistoryList)
+                {
                     // This is done again to avoid multiple calls to the DB
                     var classesReassignedIds = reassignment.ReassignedClassroomGroups?.Split(';')
                         .Where(ch => !string.IsNullOrWhiteSpace(ch))
                         .Select(
-                            ch => {
+                            ch =>
+                            {
                                 Guid.TryParse(ch, out Guid id);
                                 return id;
                             })
@@ -1043,10 +1057,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Get attendance reports submitted for period
             if (practitioner?.IsPrincipal == true)
             {
-                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId.ToString()).Select(cg=>cg.Id).ToListAsync();
+                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId.ToString()).Select(cg => cg.Id).ToListAsync();
 
             }
-            else {
+            else
+            {
                 classroomGroupIds = await classroomGroupRepo.GetAll()
                     .Where(cg => cg.UserId.ToString() == practitioner.UserId)
                     .Select(cg => cg.Id)
@@ -1058,7 +1073,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             int missingRegisterDayCount = 0;
 
-            foreach (var classroomGroupId in classroomGroupIds) {
+            foreach (var classroomGroupId in classroomGroupIds)
+            {
                 // Get meeting days for the classroom group
                 var classProgrammes = (await classProgrammeRepo.GetAll()
                     .Where(p => p.ClassroomGroupId == classroomGroupId)
@@ -1074,14 +1090,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     allAttendanceForPeriod = await attendanceRepo.GetAllByDateRange(reportingPeriodStart, reportingPeriodEnd)
                         .Where(c => c.ParentRecordId == practitioner.UserId)
                         .ToListAsync();
-                } else
+                }
+                else
                 {
                     allAttendanceForPeriod = await attendanceRepo.GetAllByDateRange(reportingPeriodStart, reportingPeriodEnd)
                         .Where(c => classProgrammes.Select(c => c.Id).Contains(c.ClassroomProgrammeId))
                         .ToListAsync();
                 }
 
-                var numberOfDaysNotAttendedForClassroomGroup = availableClassDays.Except(allAttendanceForPeriod.Select(a=> a.AttendanceDate));
+                var numberOfDaysNotAttendedForClassroomGroup = availableClassDays.Except(allAttendanceForPeriod.Select(a => a.AttendanceDate));
             }
 
             return missingRegisterDayCount;
@@ -1316,8 +1333,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region INCOMPLETE CHILD REGISTRATIONS
-                var children = childRepo.GetAll().Where(c => c.IsActive == true  && c.Hierarchy.StartsWith(practitioner.Hierarchy))
+                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
                                         .Include(c => c.User)
+                                        .ThenInclude(x => x.Documents)
                                         .ToListAsync().Result;
                 var childUserIds = children.Select(c => c.UserId);
                 var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true);
@@ -1325,7 +1343,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners);
                 if (incompleteRegistrations > 0)
                 {
-                    notification.Subject = "${incompleteRegistrations} Incomplete child registrations";
+                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
                     notification.Icon = MetricsIconEnum.Error.ToString();
                     notification.Color = MetricsColorEnum.Error.ToString();
                     notification.Message = "";

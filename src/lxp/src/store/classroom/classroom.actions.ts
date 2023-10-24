@@ -287,6 +287,9 @@ export const upsertClassroom = createAsyncThunk<
           SiteAddress: classroom?.siteAddress
             ? mapSiteAddress(classroom?.siteAddress!)
             : null,
+          PreschoolFeeAmount: classroom?.preschoolFeeAmount || 0,
+          PreschoolFeeAmountLastUpdateDate:
+            classroom?.preschoolFeeAmountLastUpdateDate,
         };
 
         const result = await new ClassroomService(
