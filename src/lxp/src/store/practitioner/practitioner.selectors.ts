@@ -1,9 +1,4 @@
-import {
-  BalanceSheetDto,
-  ExpensesStatementsDto,
-  IncomeStatementsDto,
-  PractitionerDto,
-} from '@ecdlink/core';
+import { PractitionerDto } from '@ecdlink/core';
 import { RootState } from '../types';
 import { PrincipalPractitioners } from './practitioner.types';
 import { createSelector } from '@reduxjs/toolkit';
