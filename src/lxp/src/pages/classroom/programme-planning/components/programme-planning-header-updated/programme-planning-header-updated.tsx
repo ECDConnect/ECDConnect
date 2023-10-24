@@ -11,15 +11,12 @@ import {
   addMonths,
   getDate,
   getISODay,
-  getMonth,
-  getYear,
   isSameDay,
   subDays,
 } from 'date-fns';
 import { ProgrammePlanningHeaderProps } from './programme-planning-header-updated.types';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import { useCallback, useEffect, useState } from 'react';
-// import { monthsList } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
 import format from 'date-fns/format';
@@ -88,7 +85,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     if (newMonthYearList.length === 0) {
       const datesToAdd: DropDownOption<string>[] = [];
       var selectedDropDownLabel = '';
-      var selectedMonth = 0;
       if (selectedDate) {
         for (var i = 0; i < 10; i++) {
           var listItem: Date = addMonths(threeMonthsBack, i);
@@ -96,7 +92,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             format(listItem, 'MMM yyyy') === format(selectedDate, 'MMM yyyy')
           ) {
             selectedDropDownLabel = format(listItem, 'MMM yyyy');
-            selectedMonth = i;
           }
           datesToAdd.push({
             label: format(listItem, 'MMM yyyy'),
