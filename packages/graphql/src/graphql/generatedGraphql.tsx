@@ -5238,6 +5238,7 @@ export type Mutation = {
   autoSubmitStatement?: Maybe<ResultReturnObject>;
   autoSubmitStatements: Scalars['Boolean'];
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
+  calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   cancelRemovalFromProgramme: Scalars['Boolean'];
   changeClubName?: Maybe<Club>;
   changeClubSupportRole: Scalars['Boolean'];
@@ -5974,6 +5975,10 @@ export type MutationAddVisitDataArgs = {
 
 export type MutationBulkDeleteUserArgs = {
   ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type MutationCalculateChildrenRegistrationRemovalArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCancelRemovalFromProgrammeArgs = {
