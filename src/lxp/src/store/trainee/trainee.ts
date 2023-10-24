@@ -34,6 +34,9 @@ const traineeSlice = createSlice({
       checkData?.push(...action?.payload);
       state.coachSmartSpaceCheckData = checkData ? checkData : action.payload;
     },
+    resetCoachSmartSpaceVisitData: (state) => {
+      state.coachSmartSpaceCheckData = initialState?.coachSmartSpaceCheckData;
+    },
     saveCoachFranchisorAgreementData: (state, action) => {
       const checkData = state.coachFranchisorAgreementData?.filter(
         (item) => item?.visitSection !== action.payload?.[0]?.visitSection

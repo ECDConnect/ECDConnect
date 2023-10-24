@@ -5,5 +5,5 @@ export interface CareGiverContributionFormModel {
 }
 
 export const careGiverContributionFormSchema = Yup.object().shape({
-  commitedToContributing: Yup.boolean(),
+  commitedToContributing: Yup.boolean().required(),
 });

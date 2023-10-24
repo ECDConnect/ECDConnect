@@ -14,7 +14,7 @@ import {
   ScoreCard,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -62,6 +62,7 @@ import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -112,6 +113,14 @@ export const Dashboard: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
+  const a = useCallback(async () => {
+    appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+  }, []);
+
+  useEffect(() => {
+    a();
+  }, []);
+
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 
   const dashboardNotification = useSelector(
@@ -145,12 +154,18 @@ export const Dashboard: React.FC = () => {
       }
       return total;
     }, 0);
-    const pointsMax =
+
+    let pointsMax =
       isPrincipal || isFundaAppAdmin
         ? pointsConstants.principalOrAdminMonthlyMax
         : pointsConstants.practitionerMonthlyMax;
 
     const percentageScore = (pointsTotal / pointsMax) * 100;
+
+    // without this rule the progress bar goes beyond the component
+    if (pointsTotal > pointsMax) {
+      pointsMax = pointsTotal;
+    }
 
     if (percentageScore < 60) {
       setPointsScoreProps({
@@ -168,7 +183,7 @@ export const Dashboard: React.FC = () => {
       });
     } else if (percentageScore < 80) {
       setPointsScoreProps({
-        mainText: `${pointsTotal} points`,
+        mainText: `${pointsTotal}`,
         barBgColour: 'white',
         hint: 'points',
         textPosition: 'left',
@@ -182,7 +197,7 @@ export const Dashboard: React.FC = () => {
       });
     } else {
       setPointsScoreProps({
-        mainText: `${pointsTotal} points`,
+        mainText: `${pointsTotal}`,
         barBgColour: 'white',
         hint: 'points',
         textPosition: 'left',
@@ -807,6 +822,24 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  const handleOnlineCallback = (callback: () => void) => {
+    if (isOnline) {
+      callback();
+    } else {
+      showOnlineOnly();
+    }
+  };
+
   const showCompleteProfileBlockingDialog = () => {
     dialog({
       blocking: true,
@@ -832,11 +865,15 @@ export const Dashboard: React.FC = () => {
                 onClick: isTrainee
                   ? async () => {
                       onSubmit();
-                      history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
+                      );
                     }
                   : async () => {
                       onSubmit();
-                      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                      );
                     },
               },
               {
@@ -915,7 +952,8 @@ export const Dashboard: React.FC = () => {
         />
         {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
-            className="mt-5 mb-1"
+            className="mt-5 mb-1 h-20"
+            progressBarClassName="flex pt-2"
             mainText={pointsScoreProps.mainText}
             hint={pointsScoreProps?.hint}
             currentPoints={pointsScoreProps.currentPoints}
@@ -931,6 +969,7 @@ export const Dashboard: React.FC = () => {
         )}
         {isPractitioner && (
           <ScoreCard
+            className="h-20"
             mainText={leagueCard.mainText}
             hint={leagueCard.hint}
             hintClassName={leagueCard.hintClassName}

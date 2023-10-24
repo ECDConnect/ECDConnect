@@ -7,6 +7,7 @@ export const useGeneratePdfReport = () => {
     tableData: ReportTableDataDto[],
     signature: string,
     downloadDate: string,
+    numberOfChildren: number,
     tableHeadStyles?: UserOptions['headStyles'],
     content?: any,
     tableBottomContent?: any,
@@ -176,6 +177,11 @@ export const useGeneratePdfReport = () => {
         doc.text(
           'Number of Children:',
           105,
+          (doc as any).lastAutoTable.finalY + 48
+        );
+        doc.text(
+          `${numberOfChildren}`,
+          145,
           (doc as any).lastAutoTable.finalY + 48
         );
         doc.setFillColor(255, 0, 0);

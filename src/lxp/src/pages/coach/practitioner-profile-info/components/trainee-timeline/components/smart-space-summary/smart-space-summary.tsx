@@ -1,6 +1,6 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { staticDataSelectors } from '@/store/static-data';
-import { traineeSelectors } from '@/store/trainee';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -11,11 +11,12 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as BalloonsImg } from '../../../../../../../assets/balloons.svg';
 import { format } from 'date-fns';
-import { Question } from '../smart-space-checklist/components/programme-details/programme-details.types';
+import { useAppDispatch } from '@/store';
+
 interface SmartSpaceSummaryProps {
   practitioner: PractitionerDto;
   setNotificationStep: (item: string) => void;
@@ -38,19 +39,22 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   setNotificationStep,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const smartSpaceVisitId = timeline?.sSCoachVisitId;
   const visitNotes = useSelector(traineeSelectors.getCoachVisitDataNextSteps);
   const assistantsNumber = useSelector(
     traineeSelectors.getTraineeVisitDataAssitantsNumber
   );
+
   const visitProgrammeCapacityData = useSelector(
     traineeSelectors.getCoachVisitCapacity
   );
 
-  const smartSpaceCapacity = visitProgrammeCapacityData?.[2]?.answer;
+  const smartSpaceCapacity = visitProgrammeCapacityData?.[2]?.questionAnswer;
   const totalMetresSquaredAvailable =
-    ((Number(visitProgrammeCapacityData?.[0].answer) / 100) *
-      Number(visitProgrammeCapacityData?.[1].answer)) /
+    ((Number(visitProgrammeCapacityData?.[0]?.questionAnswer) / 100) *
+      Number(visitProgrammeCapacityData?.[1]?.questionAnswer)) /
     100;
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
   const traineeProgrammeType = useSelector(
@@ -59,36 +63,63 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   const traineeProgrammeTypeObject = programData?.find(
     (item) => item?.id === traineeProgrammeType
   );
+  const visitSmartSpaceAnswers = useSelector(
+    traineeSelectors.getCoachSmartSpaceStandardsAnswers
+  );
+  const visitSmartSpaceFalseAnswers = visitSmartSpaceAnswers?.filter(
+    (item) => item?.questionAnswer === 'false'
+  );
+
   const visitProgrammeCovidStandards = useSelector(
     traineeSelectors.getCoachVisitDataCovidStandards
   );
+
   const visitProgrammeCovidStandardsFalseAnswers =
-    visitProgrammeCovidStandards?.questions?.filter(
-      (item) => item?.answer === false || item?.answer === 'false'
+    visitProgrammeCovidStandards?.filter(
+      (item) => item?.questionAnswer === 'false'
     );
 
   const visitProgrammeStandardsChecklist = useSelector(
     traineeSelectors.getCoachVisitDataStandardsChecklist
   );
+
   const visitProgrammeStandardsChecklistTrueAnswers =
-    visitProgrammeStandardsChecklist?.questions?.filter(
-      (item) => item?.answer === true || item?.answer === 'true'
+    visitProgrammeStandardsChecklist?.filter(
+      (item) => item?.questionAnswer === 'true'
     );
+
   const visitProgrammeStandardsChecklistFalseAnswers =
-    visitProgrammeStandardsChecklist?.questions?.filter(
-      (item) => item?.answer === false || item?.answer === 'false'
+    visitProgrammeStandardsChecklist?.filter(
+      (item) => item?.questionAnswer === 'false'
     );
   const visitProgrammeAdditionalStandardsChecklist = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
-  ) as Question[];
+    traineeSelectors.getCoachSmartSpaceAdditionalStandardsAnswers
+  );
+
+  const visitAdditionalStandardsChecklistFalseAnswers =
+    visitProgrammeAdditionalStandardsChecklist?.filter(
+      (item) => item?.questionAnswer === 'false'
+    );
 
   const programmeNotRunning = useMemo(
     () =>
-      visitProgrammeStandardsChecklist?.questions.every(
-        (item) => item.answer === false || item.answer === 'false'
+      visitProgrammeStandardsChecklist?.every(
+        (item) => item.questionAnswer === 'false'
       ),
-    [visitProgrammeStandardsChecklist?.questions]
+    [visitProgrammeStandardsChecklist]
   );
+
+  const fetchSmartSpaceVisitData = useCallback(async () => {
+    await appDispatch(
+      traineeThunkActions.getCoachSmartSpaceVisitData({
+        visitId: smartSpaceVisitId,
+      })
+    );
+  }, [appDispatch, smartSpaceVisitId]);
+
+  useEffect(() => {
+    fetchSmartSpaceVisitData();
+  }, [fetchSmartSpaceVisitData]);
 
   const renderLicenceResponseCard = useMemo(() => {
     const notAwardedDate = new Date(timeline?.smartSpaceLicenseNotAwardedDate);
@@ -161,7 +192,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
                 visitProgrammeStandardsChecklistTrueAnswers?.length as number
               )} items-center justify-center font-bold text-white`}
             >
-              {`${visitProgrammeStandardsChecklistTrueAnswers?.length} / ${visitProgrammeStandardsChecklist?.questions?.length}`}
+              {`${visitProgrammeStandardsChecklistTrueAnswers?.length} / ${visitProgrammeStandardsChecklist?.length}`}
             </div>
             <Typography type="body" color="textDark" text={`standards met`} />
           </div>
@@ -193,7 +224,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
               visitProgrammeStandardsChecklistTrueAnswers?.length as number
             )} items-center justify-center font-bold text-white`}
           >
-            {`${visitProgrammeStandardsChecklistTrueAnswers?.length} / ${visitProgrammeStandardsChecklist?.questions?.length}`}
+            {`${visitProgrammeStandardsChecklistTrueAnswers?.length} / ${visitProgrammeStandardsChecklist?.length}`}
           </div>
           <Typography type="body" color="textDark" text={`standards met`} />
         </div>
@@ -219,9 +250,80 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   }, [
     practitioner?.user?.firstName,
     programmeNotRunning,
-    visitProgrammeStandardsChecklist?.questions?.length,
+    visitProgrammeStandardsChecklist?.length,
     visitProgrammeStandardsChecklistFalseAnswers,
     visitProgrammeStandardsChecklistTrueAnswers?.length,
+  ]);
+
+  const renderStillWorkingOn = useMemo(() => {
+    if (
+      timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received' &&
+      visitAdditionalStandardsChecklistFalseAnswers &&
+      visitAdditionalStandardsChecklistFalseAnswers?.length > 0
+    ) {
+      return (
+        <>
+          <div>
+            <Typography
+              type="body"
+              color="textDark"
+              weight="bold"
+              text={`${practitioner?.user?.firstName}  is still working on the following additional standards:`}
+              className="mt-4"
+            />
+            {visitAdditionalStandardsChecklistFalseAnswers?.map(
+              (item, index) => {
+                return (
+                  <Typography
+                    type="body"
+                    color="textMid"
+                    text={`• ${item?.question}`}
+                    key={index}
+                  />
+                );
+              }
+            )}
+          </div>
+          <Divider dividerType="dashed" className="my-4" />
+        </>
+      );
+    }
+
+    if (
+      timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence not received' &&
+      visitSmartSpaceFalseAnswers &&
+      visitSmartSpaceFalseAnswers?.length > 0
+    ) {
+      return (
+        <>
+          <div>
+            <Typography
+              type="body"
+              color="textDark"
+              weight="bold"
+              text={`${practitioner?.user?.firstName}  is still working on the following SmartSpace standards:`}
+              className="mt-4"
+            />
+            {visitSmartSpaceFalseAnswers?.map((item, index) => {
+              return (
+                <Typography
+                  type="body"
+                  color="textMid"
+                  text={`• ${item?.question}`}
+                  key={index}
+                />
+              );
+            })}
+          </div>
+          <Divider dividerType="dashed" className="my-4" />
+        </>
+      );
+    }
+  }, [
+    practitioner?.user?.firstName,
+    timeline?.smartSpaceLicenseStatus,
+    visitAdditionalStandardsChecklistFalseAnswers,
+    visitSmartSpaceFalseAnswers,
   ]);
 
   return (
@@ -250,6 +352,8 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
         />
         {renderLicenceResponseCard}
         <Divider dividerType="dashed" className="my-4" />
+        {/* {timeline?.smartSpaceLicenseStatus === "SmartSpace Licence received" && visitProgrammeAdditionalStandardsChecklist && visitProgrammeAdditionalStandardsChecklist?.length > 0 && 
+        <>
         <div>
           <Typography
             type="body"
@@ -268,18 +372,25 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
               />
             );
           })}
-          <Divider dividerType="dashed" className="my-4" />
         </div>
+        <Divider dividerType="dashed" className="my-4" />
+        </>
+} */}
+        {renderStillWorkingOn}
         <div className="flex flex-col gap-2">
           <Typography
             type="h4"
             color="textDark"
             text={'Your SmartSpace visit notes:'}
           />
-          <Typography type="body" color="textMid" text={`• ${visitNotes}`} />
+          <Typography
+            type="body"
+            color="textMid"
+            text={`• ${visitNotes?.questionAnswer}`}
+          />
         </div>
         <Divider dividerType="dashed" className="my-4" />
-        {timeline?.smartSpaceLicenseNotAwardedDate && (
+        {!timeline?.smartSpaceLicenseNotAwardedDate && (
           <>
             <div className="flex flex-col gap-2">
               <Typography

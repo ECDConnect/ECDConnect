@@ -5,13 +5,7 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import {
-  addDays,
-  getDate,
-  getDayOfYear,
-  isSameDay,
-  startOfWeek,
-} from 'date-fns';
+import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -36,8 +30,6 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
 import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
@@ -83,11 +75,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const [currentDate] = useState(new Date());
 
-  const { isRejected: isAttendnaceRejected } = useThunkFetchCall(
-    'attendanceData',
-    'getAttendance'
-  );
-
   function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
     const filteredArray: boolean[] = studentsArray.map((student) => {
       const insertedDate = new Date(student.insertedDate); // convert insertedDate to a Date object
@@ -126,7 +113,14 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         ? new Date(currentClassProgramme?.programmeStartDate)
         : new Date();
 
-    for (const learner of _learners) {
+    const uniqueLearners = _learners.filter((object, index, array) => {
+      return (
+        index ===
+        array.findIndex((newObject) => newObject.userId === object.userId)
+      );
+    });
+
+    for (const learner of uniqueLearners) {
       const startedAttendanceDay = getDayOfYear(
         new Date(learner.startedAttendance)
       );

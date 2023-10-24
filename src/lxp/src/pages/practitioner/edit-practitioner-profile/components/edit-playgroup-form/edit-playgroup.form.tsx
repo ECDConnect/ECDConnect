@@ -58,6 +58,9 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const programmeType = useSelector(
     classroomsSelectors.getClassroomProgrammeType()
   );
+  const currentPractitioner = useSelector(
+    practitionerSelectors.getPractitioner
+  );
 
   const { isOnline } = useOnlineStatus();
 
@@ -114,6 +117,11 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         return undefined;
       })
       .filter(Boolean) as { label: string; value: any }[];
+
+    _list.push({
+      label: currentPractitioner?.user?.fullName || '',
+      value: currentPractitioner?.userId,
+    });
 
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps

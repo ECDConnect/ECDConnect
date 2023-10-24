@@ -454,6 +454,16 @@ class PractitionerService {
             isClubLeader
             isClubSupport
             clubId
+            absentees {
+              absentDate
+              absentDateEnd
+              className
+              classroomGroupId
+              reason
+              reassignedToPerson
+              reassignedToUserId
+              absenteeId
+          }
           }
         }
       `,

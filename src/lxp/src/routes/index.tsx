@@ -115,11 +115,15 @@ import { ActivityHelp } from '@/pages/community/clubs-tab/0-components/help-scre
 import { ClubMemberAdd } from '@/pages/community/clubs-tab/club/club-member-add';
 import { ClubMemberView } from '@/pages/community/clubs-tab/club/club-member-view';
 import UpdatePreschoolFee from '@/pages/classroom/update-preschool-fee/update-preschool-fee';
+import CoachReassignClass from '@/pages/coach/coach-reassign-class/coach-reassign-class';
 import { CurrentMonthSummary } from '@/pages/business/money/monthly-statements/current-month-summary';
 import { PractitionerCurrentMonthSummary } from '@/pages/coach/coach-practitioner-business/components/statements/current-month-summary';
 import { AcceptClubLeaderRole } from '@/pages/practitioner/practitioner-community/accept-club-leader-role';
 import { PractitionerCommunity } from '@/pages/practitioner/practitioner-community';
 import { SupportRoleEdit } from '@/pages/practitioner/practitioner-community/club-tab/club/club-support-edit';
+import { AddMeeting } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-meeting';
+import { AddAFamilyDayEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-family-day-event';
+import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-collage-event';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -324,8 +328,23 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.SUPPORT_ROLE.EDIT}
+        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT}
         component={SupportRoleEdit}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING}
+        component={AddMeeting}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.FAMILY_DAY_EVENT.ADD_EVENT}
+        component={AddAFamilyDayEvent}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.COLLAGE_EVENT.ADD_EVENT}
+        component={AddCollageEvent}
         exact
       />
       <Route
@@ -559,6 +578,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONERS}
         component={Practitioners}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_REASSIGN_CLASS}
+        component={CoachReassignClass}
       />
       <Route
         exact

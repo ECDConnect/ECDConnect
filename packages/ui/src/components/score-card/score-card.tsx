@@ -11,6 +11,7 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
   textPosition = 'center',
   hint,
   hintClassName,
+  progressBarClassName,
   className,
   currentPoints,
   maxPoints,
@@ -31,7 +32,10 @@ export const ScoreCard: React.FC<ScoreCardProps> = ({
     >
       <div className={styles.content}>
         {!!image && image}
-        <div className="h-16 w-full">
+        <div
+          className={classNames(progressBarClassName, 'w-full')}
+          style={{ height: 80 }}
+        >
           <ProgressBar
             className="h-2"
             label={mainText}
