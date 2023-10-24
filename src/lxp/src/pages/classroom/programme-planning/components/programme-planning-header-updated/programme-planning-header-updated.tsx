@@ -4,6 +4,7 @@ import {
   Card,
   renderIcon,
   Dropdown,
+  DropDownOption,
 } from '@ecdlink/ui/';
 import {
   addDays,
@@ -17,10 +18,11 @@ import {
 } from 'date-fns';
 import { ProgrammePlanningHeaderProps } from './programme-planning-header-updated.types';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
-import { useCallback, useState } from 'react';
-import { monthsList } from '@ecdlink/core';
+import { useCallback, useEffect, useState } from 'react';
+// import { monthsList } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
+import format from 'date-fns/format';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -49,18 +51,18 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     return isSameDay(new Date(item?.dayDate), new Date(selectedDate!));
   });
   const [month, setMonth] = useState<string | undefined>();
-  const currentMonth = getMonth(selectedDate!);
-  const currentYear = getYear(new Date());
-  const monthDropdownLabel = monthsList[currentMonth]?.label;
+
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosedTheme = themes?.find((item) => item?.name === theme?.name);
   const isCurrentDay = isSameDay(selectedDate!, new Date());
-  const addDay = useCallback(() => {
-    setSelectedDate(addDays(selectedDate!, 1));
-  }, [selectedDate, setSelectedDate]);
+
   // Business rule to only go back 3 months and forward 6 months
   const threeMonthsBack: Date = addMonths(selectedDate!, -3);
   const sixMonthsForward: Date = addMonths(selectedDate!, 6);
+
+  const addDay = useCallback(() => {
+    setSelectedDate(addDays(selectedDate!, 1));
+  }, [selectedDate, setSelectedDate]);
 
   const subDay = useCallback(() => {
     var selectDate = new Date(selectedDate!);
@@ -76,6 +78,58 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     }
   };
 
+  // Build new list of months for dropdown, which includes year
+  const [newMonthYearList, setNewMonthYearList] = useState<
+    DropDownOption<string>[]
+  >([]);
+  const [monthDropdownLabel, setMonthDropdownLabel] = useState('');
+
+  useEffect(() => {
+    if (newMonthYearList.length === 0) {
+      const datesToAdd: DropDownOption<string>[] = [];
+      var selectedDropDownLabel = '';
+      var selectedMonth = 0;
+      if (selectedDate) {
+        for (var i = 0; i < 10; i++) {
+          var listItem: Date = addMonths(threeMonthsBack, i);
+          if (
+            format(listItem, 'MMM yyyy') === format(selectedDate, 'MMM yyyy')
+          ) {
+            selectedDropDownLabel = format(listItem, 'MMM yyyy');
+            selectedMonth = i;
+          }
+          datesToAdd.push({
+            label: format(listItem, 'MMM yyyy'),
+            value: i.toString(),
+          });
+        }
+        setNewMonthYearList(datesToAdd);
+        setMonthDropdownLabel(selectedDropDownLabel);
+      }
+    }
+  }, [
+    newMonthYearList,
+    threeMonthsBack,
+    selectedDate,
+    monthDropdownLabel,
+    setNewMonthYearList,
+    setMonthDropdownLabel,
+  ]);
+
+  const monthYearHandler = useCallback(
+    (index: number) => {
+      var selectedListValue = newMonthYearList[index];
+      var arrListValue = selectedListValue.label.split(' ');
+      var year = Number(arrListValue[1]);
+      var monthName = arrListValue[0];
+      var monthNr = new Date(monthName + '-1-01').getMonth();
+      var newDate = new Date(year, monthNr, selectedDate?.getDate());
+
+      setSelectedDate(newDate);
+    },
+    [newMonthYearList, selectedDate, setSelectedDate]
+  );
+
   return (
     <div>
       {!weekSummary && (
@@ -87,16 +141,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             {renderIcon('ChevronLeftIcon', 'h-6 w-6 text-textMid')}
           </div>
           <Dropdown
-            placeholder={`${monthDropdownLabel} ${currentYear}`}
-            list={monthsList}
+            placeholder={`${monthDropdownLabel}`}
+            list={newMonthYearList}
             selectedValue={month}
             onChange={(item) => {
-              setMonth(monthsList[currentMonth]?.label);
-              setSelectedDate(
-                new Date(currentYear, Number(item), 1) < new Date()
-                  ? new Date()
-                  : new Date(currentYear, Number(item) - 1, 1)
-              );
+              monthYearHandler(Number(item));
             }}
             fillColor="secondary"
             textColor="white"
