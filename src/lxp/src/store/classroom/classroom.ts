@@ -15,6 +15,7 @@ import {
   getClassroomProgrammes,
   getClassroomDetailsForPractitioner,
   updatePreschoolFee,
+  createLearner,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 
@@ -236,6 +237,7 @@ const classroomsSlice = createSlice({
         }
       }
     );
+    builder.addCase(createLearner.fulfilled, (state, action) => {});
     builder.addCase(updatePreschoolFee.fulfilled, (state, action) => {
       if (action.payload && !!state.classroom) {
         state.classroom = {
