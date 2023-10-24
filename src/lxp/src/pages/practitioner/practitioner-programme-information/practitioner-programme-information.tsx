@@ -261,7 +261,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           : otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
         switchTextStyles: true,
         actionName:
-          practitioners?.length! > 1 || otherColleaguesFiltered?.length! > 0
+          practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0
             ? isPrincipal
               ? 'Edit'
               : 'View'

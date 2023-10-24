@@ -199,7 +199,7 @@ export const UserProfile: React.FC = () => {
               icon="PencilIcon"
               type="filled"
               color="primary"
-              text="Edit shot description"
+              text="Edit short description"
               textColor="white"
               onClick={() => setIsDialogOpen(true)}
             />

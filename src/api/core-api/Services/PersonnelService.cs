@@ -64,6 +64,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
         private IClubService _clubService;
+        private IAbsenteeService _absenteeService;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -75,6 +76,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
+            [Service] IAbsenteeService absenteeService,
             UserManager<ApplicationUser> userManager,
             [Service] HierarchyEngine hierarchyEngine)
         {
@@ -107,6 +109,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _clubService = clubService;
+            _absenteeService = absenteeService;
         }
 
 
@@ -172,6 +175,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.ClubName = clubMember?.Club?.Name;
             practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
             practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+
+            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
+            if (absentees.Any())
+            {
+                practitionerRecord.Absentees = absentees;
+            }
 
             return practitionerRecord;
         }
@@ -340,7 +349,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
                 if (isRolePrincipal) { practitionerToPromote.IsPrincipal = true; }
-                if (isRoleFAA) { practitionerToPromote.IsPrincipal = true; }
+                if (isRoleFAA) { practitionerToPromote.IsFundaAppAdmin = true; }
                 practitionerToPromote.ShareInfo = true;
                 practitionerToPromote.PrincipalHierarchy = null;
                 practitionerToPromote.DateLinked = null;
@@ -349,7 +358,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitionerToPromote);
 
                 if (isRolePrincipal) { practitionerToDemote.IsPrincipal = false; }
-                if (isRoleFAA) { practitionerToDemote.IsPrincipal = false; }
+                if (isRoleFAA) { practitionerToDemote.IsFundaAppAdmin = false; }
                 practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;
@@ -409,8 +418,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user to principal
                 var user = _userManager.FindByIdAsync(userId).Result;
-                _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
-                _userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+                var remove = _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER).Result;
+                var add = _userManager.AddToRoleAsync(user, Roles.PRINCIPAL).Result;
 
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
@@ -418,7 +427,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     FindValue = "PrincipalOrFAA",
                     ReplacementValue = "Principal"
                 });
-                var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",

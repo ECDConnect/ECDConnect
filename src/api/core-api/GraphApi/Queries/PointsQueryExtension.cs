@@ -1,4 +1,5 @@
-﻿using ECDLink.Abstractrions.GraphQL.Enums;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.EGraphQL.Authorization;
@@ -36,6 +37,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var pointsLibrary = pointsService.GetPointsLibraryForTenant();
 
             return pointsLibrary;
+        }
+        
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public UserClubStandingModel GetUserClubStanding(
+            [Service] IPointsEngineService pointsService,
+            string userId)
+        {
+            var userStanding = pointsService.GetUserClubStanding(userId);
+
+            return userStanding;
         }
     }
 }

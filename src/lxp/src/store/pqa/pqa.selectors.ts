@@ -15,7 +15,7 @@ import {
   visitTypes,
 } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import { chunkArray } from '@ecdlink/core';
-import { Maybe, PqaRating } from '@ecdlink/graphql';
+import { Maybe, PqaRating, Visit } from '@ecdlink/graphql';
 import { sortVisits } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
@@ -307,3 +307,36 @@ export const getLastCoachAttendedFollowUpVisitByUserId = (
       return mostRecentVisit;
     }, null);
   });
+
+export const getCalendarEventLinkedVisit = (id: string) =>
+  createSelector(
+    (state: RootState) => state.pqa.coachPractitionersTimeline,
+    (coachPractitionersTimeline: PractitionerTimelineState[] | undefined) => {
+      var visit: Visit | null | undefined;
+      if (!!coachPractitionersTimeline) {
+        const found = coachPractitionersTimeline.find((x) => {
+          visit = x.timeline.pQASiteVisits?.find((v) => v?.eventId === id);
+          if (!!visit) return true;
+          visit = x.timeline.supportVisits?.find((v) => v?.eventId === id);
+          if (!!visit) return true;
+          visit = x.timeline.prePQASiteVisits?.find((v) => v?.eventId === id);
+          if (!!visit) return true;
+          visit = x.timeline.requestedCoachVisits?.find(
+            (v) => v?.eventId === id
+          );
+          if (!!visit) return true;
+          visit = x.timeline.selfAssessmentVisits?.find(
+            (v) => v?.eventId === id
+          );
+          if (!!visit) return true;
+          visit = x.timeline.reAccreditationVisits?.find(
+            (v) => v?.eventId === id
+          );
+          if (!!visit) return true;
+          return false;
+        });
+        if (!!visit) return visit;
+      }
+      return null;
+    }
+  );

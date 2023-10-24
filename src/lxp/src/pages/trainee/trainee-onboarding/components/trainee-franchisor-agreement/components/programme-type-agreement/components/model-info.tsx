@@ -23,7 +23,7 @@ export const ModelInfo: React.FC<ModelTypeProps> = ({
       title={modelTypeObject?.title}
       color={'primary'}
       onBack={() => setOpenModelInfo(false)}
-      renderOverflow={true}
+      className="pb-16"
     >
       <div className="p-4">
         <Typography

@@ -14,6 +14,9 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import ROUTES from '@/routes/routes';
+import { useHistory, useLocation } from 'react-router';
+import { CommunityRouteState } from '../../../../community.types';
 
 interface AboutYourselfDialogProps {
   visible: boolean;
@@ -31,7 +34,8 @@ export const AboutYourselfDialog = ({
   );
 
   const appDispatch = useAppDispatch();
-
+  const history = useHistory();
+  const location = useLocation<CommunityRouteState>();
   const { showMessage } = useSnackbar();
 
   const user = useSelector(userSelectors.getUser);
@@ -43,6 +47,10 @@ export const AboutYourselfDialog = ({
         userId: user?.id,
       })
     );
+
+    history.push(ROUTES.COMMUNITY.ROOT, {
+      ...location.state,
+    } as CommunityRouteState);
   };
 
   useEffect(() => {

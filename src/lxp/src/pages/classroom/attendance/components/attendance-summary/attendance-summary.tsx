@@ -10,7 +10,6 @@ import {
   Alert,
   Dialog,
   DialogPosition,
-  MessageModal,
   StackedList,
   Typography,
 } from '@ecdlink/ui';
@@ -68,10 +67,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   >([]);
 
   const userData = useSelector(userSelectors.getUser);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner: any = practitioners?.find(
-    (item) => item?.userId === userData?.id
-  );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [attendanceEditDay, setAttendanceEditDay] = useState<Date>();
   const [missedAttendanceGroups, setMissedAttendanceGroups] = useState<
     MissedAttendanceGroups[]

@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
@@ -44,12 +45,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IPointsEngineService pointsEngineService,
+            [Service] IDocumentManagementService documentManagementService,
             string token,
             AddChildCaregiverTokenModel caregiver,
             AddChildLearnerTokenModel learner,
             AddChildSiteAddressTokenModel siteAddress,
-            AddChildTokenModel child)
+            AddChildTokenModel child,
+            AddChildRegistrationTokenModel registration,
+            AddChildUserConsentTokenModel consent)
         {
             var tokenModel = JsonConvert.DeserializeObject<ChildTokenWrapperModel>(TokenHelper.DecodeToken(token));
 
@@ -76,9 +79,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo);
 
-                // Manage points for user
-                pointsEngineService.CalculateChildrenRegistrationAdd(appUser.Id, DateTime.UtcNow);
-
                 AddLearner(childEntity, learner, tokenModel, scope);
 
                 appUser.UserName = appUser.Id;
@@ -88,6 +88,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 appUser.IsSouthAfricanCitizen = child.IsSouthAfricanCitizen;
                 appUser.RaceId = child.RaceId;
                 appUser.VerifiedByHomeAffairs = child.VerifiedByHomeAffairs;
+
+                if (registration != null)
+                {
+                    documentManagementService.AddUserDocument(registration.UserId, registration.FileType, registration.File, registration.FileName, tokenModel.AddedByUserId);
+                }
+
+                if (consent != null)
+                {
+                    AddConsent(scope, consent, tokenModel);
+                }
 
                 await tokenManager.RetractTokensAsync(appUser);
                 scope.SaveChanges();
@@ -107,6 +117,96 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 childRepo.Dispose();
             }
 
+            return true;
+        }
+
+        public bool CalculateChildrenRegistrationRemoval([Service] IPointsEngineService pointsEngineService, string userId)
+        {
+            return pointsEngineService.CalculateChildrenRegistrationRemoval(userId, DateTime.UtcNow);
+        }
+
+        private bool AddConsent(AuthenticationDbContext context, AddChildUserConsentTokenModel consent, ChildTokenWrapperModel tokenModel)
+        {
+            if (consent.ChildPhotoConsentAccepted == true)
+            {
+                UserConsent consentPhoto = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 175,
+                    ConsentType = "PhotoPermissions",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(consentPhoto);
+                context.SaveChanges();
+            }
+            if (consent.CommitmentAgreementAccepted == true)
+            {
+                UserConsent commitmentAgreement = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 173,
+                    ConsentType = "CommitmentAgreement",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(commitmentAgreement);
+                context.SaveChanges();
+            }
+            if (consent.ConsentAgreementAccepted == true)
+            {
+                UserConsent consentAgreement = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 172,
+                    ConsentType = "ConsentAgreement",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(consentAgreement);
+                context.SaveChanges();
+            }
+            if (consent.IndemnityAgreementAccepted == true)
+            {
+                 UserConsent indemnityAgreement = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 174,
+                    ConsentType = "IndemnityAgreement",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(indemnityAgreement);
+                context.SaveChanges();
+            }
+            if (consent.PersonalInformationAgreementAccepted == true)
+            {
+                UserConsent personalAgreement = new UserConsent()
+                {
+                    Id = Guid.NewGuid(),
+                    ConsentId = 171,
+                    ConsentType = "PersonalInformationAgreement",
+                    UserId = consent.UserId,
+                    CreatedUserId = tokenModel.AddedByUserId,
+                    TenantId = _tenantId,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now
+                };
+                context.UserConsents.Add(personalAgreement);
+                context.SaveChanges();
+            }
             return true;
         }
 
@@ -199,6 +299,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] UserManager<ApplicationUser> userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
+            [Service] IPointsEngineService pointsEngineService,
             string firstname,
             string surname,
             Guid classgroupId)
@@ -217,8 +318,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
             var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).OrderBy(x => x.Id).FirstOrDefault();
-
-            var insertingUser = httpContext.HttpContext.GetUser().FullName;
+            var addedByUser = httpContext.HttpContext.GetUser();
+            var insertingUser = addedByUser.FullName;
 
             var child = new Child
             {
@@ -232,7 +333,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var tokenWrapper = new ChildTokenWrapperModel
             {
-                AddedByUserId = httpContext.HttpContext.GetUser().Id,
+                AddedByUserId = addedByUser.Id,
                 ClassroomGroupId = classgroupId,
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = newChild.Id,
@@ -240,6 +341,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             };
 
             await userManager.AddToRoleAsync(appUser, "Child");
+
+            // Manage points for user
+            pointsEngineService.CalculateChildrenRegistrationAdd(addedByUser.Id, DateTime.UtcNow);
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
         }
@@ -258,7 +362,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var child = childRepo.GetById(childId);
-            
+
             if (classgroupId == Guid.Empty)
             {
                 var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: httpContext.HttpContext.GetUser().Id);

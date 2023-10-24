@@ -131,6 +131,8 @@ export const Form = ({ onBack }: FormProps) => {
   const isAntenatalClinicStep =
     isFirstVisit || !antenatalVisitQuestionAnswer?.includes('true');
 
+  const isAntenatalClinicUpToDateStep = !isFirstVisit && !isAntenatalClinicStep;
+
   const isAlcoholUseStep =
     isFirstVisit && isEqualOrAfter98andEqualOrBefore168Days;
 
@@ -229,7 +231,7 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.healthCare:
         return getHealhcareteps({
           isDangerSignsFollowUp: isDangerSignsFollowUpForMom,
-          isFirstVisit,
+          isAntenatalClinicUpToDateStep,
           isAntenatalClinicStep,
         });
       case activitiesTypes.nutrition:
@@ -250,6 +252,7 @@ export const Form = ({ onBack }: FormProps) => {
         return followUpSteps(!!referralsForMother?.length);
     }
   }, [
+    isAntenatalClinicUpToDateStep,
     activityName,
     isDangerSignsFollowUpForMom,
     isFirstVisit,

@@ -20,14 +20,20 @@ import { Header } from '../0-components/header';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
 import { ClubMember, Maybe } from '@ecdlink/graphql';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import { userSelectors } from '@/store/user';
+import { Roles } from '@/constants/roles';
 
 export const LeaveNoOneBehind: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
+  const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const history = useHistory();
 
+  const isPractitioner = user?.roles?.some(
+    (item) => item?.name === Roles.PRACTITIONER
+  );
   const activityId = 'leave-no-one-behind';
 
   const mockedPoints = 20;
@@ -89,6 +95,7 @@ export const LeaveNoOneBehind: React.FC = () => {
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
       <ScoreCard
+        className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
         currentPoints={mockedPoints}
@@ -171,7 +178,11 @@ export const LeaveNoOneBehind: React.FC = () => {
         color="primary"
         text="Back to club"
         onClick={() =>
-          history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+          history.push(
+            isPractitioner
+              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
+              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+          )
         }
       />
     </BannerWrapper>

@@ -1,8 +1,10 @@
-import { LanguageDto } from '@ecdlink/core';
+import { LanguageDto, useDialog } from '@ecdlink/core';
 import {
+  ActionModal,
   Alert,
   AlertProps,
   BannerWrapper,
+  DialogPosition,
   Divider,
   Dropdown,
   FADButton,
@@ -30,6 +32,7 @@ import { useAppDispatch } from '@/store';
 import { programmeThunkActions } from '@/store/programme';
 import { addDays, format } from 'date-fns';
 import { practitionerSelectors } from '@/store/practitioner';
+import walktroughImage from '../../../../assets/walktroughImage.png';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
@@ -50,6 +53,7 @@ const ProgrammeTiming: React.FC = () => {
     resolver: yupResolver(programmeTimingSchema),
     mode: 'onChange',
   });
+  const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
@@ -77,9 +81,7 @@ const ProgrammeTiming: React.FC = () => {
 
   const handleSave = async () => {
     const formValue = getValues();
-
     const validatedDate = validateStartDate(new Date(formValue.date));
-
     const newProgramme = await createProgramme(
       validatedDate,
       formValue.language,
@@ -95,7 +97,9 @@ const ProgrammeTiming: React.FC = () => {
       }
     }
 
-    if (isPrincipal && practitioners?.length! > 1) {
+    handleDialog();
+
+    if (isPrincipal && practitioners?.length! >= 1) {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: 3,
         programmeStartDate: validatedDate,
@@ -106,6 +110,52 @@ const ProgrammeTiming: React.FC = () => {
         programmeStartDate: validatedDate,
       });
     }
+  };
+
+  const handleDialog = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            customIcon={
+              <div className="flex">
+                <img src={walktroughImage} alt="profile" className="mb-2" />
+              </div>
+            }
+            importantText={
+              `Great, I have set up your ` +
+              selectedTheme?.name +
+              ` programme! Start planning your Mahala Fridays`
+            }
+            detailText={`Activities for Monday to Thursday are planned! Choose your own activities for Fridays.`}
+            textAlignment="center"
+            actionButtons={[
+              {
+                text: 'Plan Fridays',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  onCancel();
+                },
+                leadingIcon: 'ClipboardListIcon',
+              },
+              {
+                text: 'Close',
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  onCancel();
+                },
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
   };
 
   useEffect(() => {
@@ -245,6 +295,7 @@ const ProgrammeTiming: React.FC = () => {
           text="When would you like to end this programme?"
         />
         <DatePicker
+          disabled={selectedDate == null}
           placeholderText={`Please select a date`}
           className="border-uiLight text-textMid w-full rounded-md"
           selected={endDate ? new Date(endDate) : undefined}

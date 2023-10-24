@@ -1,8 +1,8 @@
 import { pointsSelectors } from '@/store/points';
-import { Divider, Typography } from '@ecdlink/ui';
+import { Divider, PointsDetailsCard, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { format } from 'date-fns';
-import { PointsDetailsCard } from '@/pages/dashboard/components/points-details-card/points-details-card';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 
 export type PointsMonthSummaryProps = {
   month: number;
@@ -28,12 +28,20 @@ export const PointsMonthSummary: React.FC<PointsMonthSummaryProps> = ({
       <Typography type={'h2'} color="black" text={`${pointsTotal} points`} />
       {pointsEarnedForMonth.map((pointsLibraryScore) => {
         return (
-          <PointsDetailsCard
-            pointsEarned={pointsLibraryScore.pointsTotal}
-            activityCount={12} // TODO - replace with actual value once available
-            title={pointsLibraryScore.subActivity || 'Unknown'}
-            size="large"
-          />
+          <div key={pointsLibraryScore.pointsLibraryId}>
+            <PointsDetailsCard
+              pointsEarned={pointsLibraryScore.pointsTotal}
+              activityCount={pointsLibraryScore.timesScored}
+              title={pointsLibraryScore.subActivity || 'Unknown'}
+              size="large"
+              badgeImage={
+                <Badge
+                  className="absolute z-0 h-full w-full"
+                  fill="var(--primary)"
+                />
+              }
+            />
+          </div>
         );
       })}
     </>

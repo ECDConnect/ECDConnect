@@ -5,13 +5,7 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import {
-  addDays,
-  getDate,
-  getDayOfYear,
-  isSameDay,
-  startOfWeek,
-} from 'date-fns';
+import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -36,8 +30,6 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
 import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {

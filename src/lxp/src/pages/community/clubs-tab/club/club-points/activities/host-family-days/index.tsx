@@ -5,7 +5,7 @@ import {
   EmptyPage,
   ScoreCard,
 } from '@ecdlink/ui';
-import { useHistory, useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../../../individual-club-view';
@@ -16,13 +16,23 @@ import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
 import familyIcon from '@/assets/icon/family.svg';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import { HostFamilyDaysRouteState } from './index.types';
+import { userSelectors } from '@/store/user';
+import { Roles } from '@/constants/roles';
 
 export const HostFamilyDays: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
+  const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const history = useHistory();
+  const location = useLocation<HostFamilyDaysRouteState>();
+
+  const isFromAddFamilyDayEvent = location?.state?.isFromAddFamilyDayEvent;
+  const isPractitioner = user?.roles?.some(
+    (item) => item?.name === Roles.PRACTITIONER
+  );
 
   const activityId = 'host-family-days';
 
@@ -73,7 +83,11 @@ export const HostFamilyDays: React.FC = () => {
       size="small"
       title={formatStringWithFirstLetterCapitalized(activityId)}
       subTitle={club?.name ?? ''}
-      onBack={() => history.goBack()}
+      onBack={() =>
+        isFromAddFamilyDayEvent
+          ? history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT)
+          : history.goBack()
+      }
       displayHelp
       onHelp={() =>
         history.push(
@@ -91,6 +105,7 @@ export const HostFamilyDays: React.FC = () => {
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
       <ScoreCard
+        className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
         currentPoints={mockedPoints}
@@ -123,6 +138,22 @@ export const HostFamilyDays: React.FC = () => {
           subTitle=""
         />
       )}
+      {/* TODO: check real rule to show this button */}
+      {isFromAddFamilyDayEvent && (
+        <Button
+          className="mt-auto mb-4"
+          icon="PlusCircleIcon"
+          type="filled"
+          textColor="white"
+          color="primary"
+          text="Add an event"
+          onClick={() =>
+            history.push(
+              ROUTES.PRACTITIONER.COMMUNITY.CLUB.FAMILY_DAY_EVENT.ADD_EVENT
+            )
+          }
+        />
+      )}
       <Button
         className="mt-auto"
         icon="ArrowCircleLeftIcon"
@@ -131,7 +162,11 @@ export const HostFamilyDays: React.FC = () => {
         color="primary"
         text="Back to club"
         onClick={() =>
-          history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+          history.push(
+            isPractitioner
+              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
+              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+          )
         }
       />
     </BannerWrapper>
