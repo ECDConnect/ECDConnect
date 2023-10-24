@@ -8,11 +8,9 @@ export const login = createAsyncThunk<
   LoginRequestModel,
   ThunkApiType<RootState>
 >('auth/login', async (body, { rejectWithValue }) => {
-  console.log(Config.authApi);
   try {
     return await new AuthService().login(Config.authApi, body);
   } catch (err) {
-    console.log({ err });
     return rejectWithValue((err as Error).message);
   }
 });

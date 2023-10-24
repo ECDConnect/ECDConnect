@@ -89,11 +89,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
   const submitForm = async () => {
     if (user?.idNumber !== checkIdOrPassport) {
-      console.log(user?.idNumber !== checkIdOrPassport);
-      console.log('before', practitioner);
       await sync();
       await resetAppStore();
-      // await resetAuth()
+      await resetAuth();
+      localStorage?.clear();
+      history.push(ROUTES.LOGIN);
     }
     setDisplayError(false);
     if (isValid) {
@@ -107,7 +107,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
       appDispatch(authThunkActions.login(body))
         .then(async (isAuthenticated: any) => {
-          console.log({ body });
           if (
             isAuthenticated &&
             isAuthenticated?.payload?.response?.status !== 401

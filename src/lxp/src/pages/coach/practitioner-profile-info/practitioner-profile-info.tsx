@@ -55,7 +55,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     (practitioner) => practitioner?.userId === practitionerId
   );
   const isPrincipal = practitioner?.isPrincipal === true;
-  console.log({ isPrincipal });
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
 
