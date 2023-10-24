@@ -91,7 +91,7 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
         color={'primary'}
         onBack={() => setNotificationStep('')}
         displayOffline={!isOnline}
-        renderOverflow={true}
+        className="pb-16"
       >
         <div className="flex flex-col justify-around p-4">
           <div>

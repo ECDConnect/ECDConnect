@@ -203,15 +203,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string userId, string aboutInfo)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = coachRepo.GetByUserId(userId);
+            var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            Coach coach = dbRepo.GetByUserId(userId);
 
             if (coach != null)
             {
                 coach.AboutInfo = aboutInfo;
                 coach.UpdatedDate = DateTime.UtcNow;
                 coach.UpdatedBy = uId;
-                coachRepo.Update(coach);
+                dbRepo.Update(coach);
 
                 return coach;
             }

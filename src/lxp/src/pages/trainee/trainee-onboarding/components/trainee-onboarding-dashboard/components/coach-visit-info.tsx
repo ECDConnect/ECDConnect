@@ -51,8 +51,7 @@ export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
         setShowCoachVisit(false);
       }}
       displayOffline={!isOnline}
-      renderOverflow={true}
-      className="h-screen"
+      className="h-screen pb-16"
     >
       <div className="h-screen p-4">
         <Typography

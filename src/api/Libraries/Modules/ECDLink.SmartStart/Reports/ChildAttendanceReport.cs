@@ -40,7 +40,7 @@ namespace ECDLink.SmartStart.Reports
         {
             List<ClassroomGroupChildAttendanceReportModel> classReports = new List<ClassroomGroupChildAttendanceReportModel>();
             //get classroom
-            var classroom = _attendanceService.GetUserClassroom(userId, classgroupId.ToString());
+            var classroom = _attendanceService.GetUserClassroom(userId, classgroupId);
 
             if (!classroom.ClassroomGroups.Any())
             {

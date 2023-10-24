@@ -866,6 +866,14 @@ namespace EcdLink.Api.CoreApi
             public const string meet_regularly = "Meet regularly";
             public const string be_creative = "Be creative";
 
+            public static readonly int[] allowed_months = { 4,5,6,7,8,9,10,11 };
+
+            public const int warning_start_800 = 1;
+            public const int warning_end_800 = 599;
+
+            public const int success_start_800 = 600;
+            public const int success_end_800 = 800;
+
         }
 
     }

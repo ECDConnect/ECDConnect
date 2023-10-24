@@ -17,9 +17,6 @@ import {
   CmsVisitDataInputModelInput,
 } from '@ecdlink/graphql';
 import { userSelectors } from '@/store/user';
-import { newGuid } from '@/utils/common/uuid.utils';
-import { UserConsentInput } from '@ecdlink/graphql';
-import { contentConsentSelectors } from '@/store/content/consent';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
@@ -40,11 +37,6 @@ export const CoachTraineeFranchisorAgreement: React.FC<
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const practitioner = location.state.practitioner;
-
-  const consentList = useSelector(contentConsentSelectors.getConsent);
-  const franchisorAgreement = consentList?.find(
-    (item) => item.type === 'FranchiseeAgreement'
-  );
 
   const coachSmartSpaceVisit2DataNotAttendedStandards = useSelector(
     traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
@@ -98,23 +90,7 @@ export const CoachTraineeFranchisorAgreement: React.FC<
       visitDateInput
     );
 
-    if (franchisorAgreement) {
-      const agreementInput: UserConsentInput = {
-        ConsentId: franchisorAgreement?.id,
-        ConsentType: 'FranchiseeAgreement',
-        CreatedUserId: practitioner?.userId,
-        Id: newGuid(),
-        IsActive: true,
-        // UpdatedBy: '',
-        UserId: practitioner?.userId,
-      };
-
-      await new TraineeService(userAuth?.auth_token!).signFranchisorAgreement(
-        agreementInput?.Id,
-        agreementInput
-      );
-    }
-    setNotificationStep('');
+    setNotificationStep && setNotificationStep('');
   };
 
   const renderStep = (step: number) => {

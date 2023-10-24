@@ -269,5 +269,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             return clubService.GetClubsMembers(clubIds);
         }
+       
     }
 }

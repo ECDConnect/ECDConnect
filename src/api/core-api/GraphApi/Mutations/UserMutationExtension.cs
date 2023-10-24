@@ -218,10 +218,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             if (input.DateOfBirth.HasValue
-                && input.DateOfBirth.Value != user.DateOfBirth.Date) //avoid time changes
+                && input.DateOfBirth.Value.Date != user.DateOfBirth.Date) //avoid time changes
             {
-                auditFields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.Date.ToString(), ValueAfter = input.DateOfBirth.Value.ToString() });
-                user.DateOfBirth = input.DateOfBirth.Value;
+                auditFields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.Date.ToString(), ValueAfter = input.DateOfBirth.Value.Date.ToString() });
+                user.DateOfBirth = input.DateOfBirth.Value.Date;
             }
 
             if (input.GenderId is not null 
@@ -321,7 +321,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // If userId is null, you're prob. an admin, admins are allowed to log into any tenant. Management.
             user.TenantId = user.TenantId == null ? null : tenantId;
-            user.UpdatedDate = DateTime.UtcNow;
 
             if (!string.IsNullOrWhiteSpace(input.IdNumber)
                 && input.IdNumber != user.IdNumber)
@@ -373,17 +372,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 auditFields.Add(new AuditChanges() { FieldName = "ProfileImageUrl", ValueBefore = user.ProfileImageUrl, ValueAfter = input.ProfileImageUrl });
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
-            user.UpdatedDate = DateTime.UtcNow;
-
-            var updateResult = await userManager.UpdateAsync(user);
-
-            DoAudit(currentUserId, repoFactory, auditFields, id);
-            //Update RemoteEntity - Integration
-            //await integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
-
-            if (!updateResult.Succeeded)
+            if (auditFields.Count > 0)
             {
-                throw new QueryException(updateResult.Errors.First().Description);
+                user.UpdatedDate = DateTime.UtcNow;
+                var updateResult = await userManager.UpdateAsync(user);
+
+                DoAudit(currentUserId, repoFactory, auditFields, id);
+
+                if (!updateResult.Succeeded)
+                {
+                    throw new QueryException(updateResult.Errors.First().Description);
+                }
             }
 
             return user;
