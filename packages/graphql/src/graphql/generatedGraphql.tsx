@@ -1759,6 +1759,7 @@ export type ClubActivityUpload = {
   document?: Maybe<Document>;
   documentId: Scalars['UUID'];
   id: Scalars['UUID'];
+  imageApproved: Scalars['Boolean'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   month: Scalars['Int'];
@@ -1776,6 +1777,7 @@ export type ClubActivityUploadFilterInput = {
   document?: InputMaybe<DocumentFilterInput>;
   documentId?: InputMaybe<ComparableGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  imageApproved?: InputMaybe<BooleanOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   month?: InputMaybe<ComparableInt32OperationFilterInput>;
@@ -1793,6 +1795,7 @@ export type ClubActivityUploadInput = {
   Document?: InputMaybe<DocumentInput>;
   DocumentId: Scalars['UUID'];
   Id?: InputMaybe<Scalars['UUID']>;
+  ImageApproved: Scalars['Boolean'];
   IsActive: Scalars['Boolean'];
   Month: Scalars['Int'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -1807,6 +1810,7 @@ export type ClubActivityUploadSortInput = {
   document?: InputMaybe<DocumentSortInput>;
   documentId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
+  imageApproved?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   month?: InputMaybe<SortEnumType>;
@@ -5196,6 +5200,7 @@ export type Mutation = {
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
+  addClubMeeting?: Maybe<ClubMeeting>;
   addCoachCircleMeeting?: Maybe<ClubMeeting>;
   addCoachFranchiseeAgreementForTrainee?: Maybe<Visit>;
   addCoachToFranchisor?: Maybe<Coach>;
@@ -5233,6 +5238,7 @@ export type Mutation = {
   autoSubmitStatement?: Maybe<ResultReturnObject>;
   autoSubmitStatements: Scalars['Boolean'];
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
+  calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   cancelRemovalFromProgramme: Scalars['Boolean'];
   changeClubName?: Maybe<Club>;
   changeClubSupportRole: Scalars['Boolean'];
@@ -5809,6 +5815,10 @@ export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
 };
 
+export type MutationAddClubMeetingArgs = {
+  input?: InputMaybe<ClubMeetingModelInput>;
+};
+
 export type MutationAddCoachCircleMeetingArgs = {
   input?: InputMaybe<ClubMeetingModelInput>;
 };
@@ -5965,6 +5975,10 @@ export type MutationAddVisitDataArgs = {
 
 export type MutationBulkDeleteUserArgs = {
   ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export type MutationCalculateChildrenRegistrationRemovalArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCancelRemovalFromProgrammeArgs = {
