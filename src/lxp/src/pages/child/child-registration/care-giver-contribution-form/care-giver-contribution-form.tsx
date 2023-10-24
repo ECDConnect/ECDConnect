@@ -33,6 +33,7 @@ export const CareGiverContributionForm: React.FC<
     getValues: getCareGiverContributionFormValues,
     setValue: setCareGiverContributionFormValue,
     control: careGiverContributionFormControl,
+    trigger: careGiverContributionFormTrigger,
   } = useForm<CareGiverContributionFormModel>({
     resolver: yupResolver(careGiverContributionFormSchema),
     mode: 'onBlur',
@@ -82,7 +83,7 @@ export const CareGiverContributionForm: React.FC<
         )}
         {variation === 'caregiver' && (
           <CaregiverForm
-            amount={classroom?.preschoolFeeAmount || 0}
+            amount={childDetails?.child.groupFeeAmount || 0}
             playgroupName={childDetails?.child?.groupName || ''}
           />
         )}
@@ -95,6 +96,7 @@ export const CareGiverContributionForm: React.FC<
                 value as boolean
               );
               setCommitedToContributing(value as boolean);
+              careGiverContributionFormTrigger();
             }}
             selectedOptions={commitedToContributing}
             color="secondary"
