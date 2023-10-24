@@ -267,6 +267,8 @@ class IncomeStatementsService {
     input: SubmitStatementModelInput
   ): Promise<IncomeStatementDto | undefined> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    console.log('submitting statement now');
     const response = await apiInstance.post<any>(``, {
       query: `mutation submitMonthlyStatement($input: SubmitStatementModelInput) {      
           submitMonthlyStatement(input: $input) {
@@ -464,7 +466,6 @@ class IncomeStatementsService {
       );
     }
 
-    console.log('response.data.data.unsubmittedIncomeItems', response);
     return response.data.data.unsubmittedIncomeItems;
   }
 
@@ -493,7 +494,6 @@ class IncomeStatementsService {
       );
     }
 
-    console.log('response.data.data.unsubmittedExpenseItems', response);
     return response.data.data.unsubmittedExpenseItems;
   }
 

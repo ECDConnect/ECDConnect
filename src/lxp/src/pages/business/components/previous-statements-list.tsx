@@ -48,9 +48,6 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
     sumIncomeOrExpenseItems(unsubmittedExpenses);
 
   const currentDate = new Date();
-  const isSubmitWindowOpen =
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
-    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
   const isThisMonthSubmitted = useMemo(
     () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
@@ -64,18 +61,18 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
   // submit window open And last statement not submitted -> previous month
   // submitted this month -> next month
   // otherwise current month
-  const summaryDate =
-    !isPreviousMonthSubmitted && isSubmitWindowOpen
-      ? getPreviousMonth(currentDate)
-      : isThisMonthSubmitted
-      ? getNextMonth(currentDate)
-      : currentDate;
+  const summaryDate = isThisMonthSubmitted
+    ? getNextMonth(currentDate)
+    : !isPreviousMonthSubmitted &&
+      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
+    ? getPreviousMonth(currentDate)
+    : currentDate;
 
   const prevStatementsItems = useMemo(() => {
     return [
       ...statements.map((item) => {
         return {
-          title: `${getMonthName(Number(item.month) - 1)} ${item.year}`,
+          title: `${getMonthName(item.month - 1)} ${item.year}`,
           titleStyle: 'text-textDark font-semibold text-base leading-snug',
           subTitleStyle:
             'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
@@ -87,7 +84,7 @@ export const PreviousStatementsList: React.FC<PreviousStatementsListProps> = ({
       }),
       {
         title: `${getMonthName(
-          Number(summaryDate.getMonth())
+          summaryDate.getMonth()
         )} ${summaryDate.getFullYear()}`,
         titleStyle: 'text-textDark font-semibold text-base leading-snug',
         subTitleStyle:

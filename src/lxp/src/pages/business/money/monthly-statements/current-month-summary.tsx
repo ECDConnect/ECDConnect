@@ -23,9 +23,6 @@ export const CurrentMonthSummary: React.FC = () => {
   };
 
   const currentDate = new Date();
-  const isSubmitWindowOpen =
-    currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
-    currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
   const isThisMonthSubmitted = useMemo(
     () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
@@ -39,12 +36,12 @@ export const CurrentMonthSummary: React.FC = () => {
   // submit window open And last statement not submitted -> previous month
   // submitted this month -> next month
   // otherwise current month
-  const summaryDate =
-    !isPreviousMonthSubmitted && isSubmitWindowOpen
-      ? getPreviousMonth(currentDate)
-      : isThisMonthSubmitted
-      ? getNextMonth(currentDate)
-      : currentDate;
+  const summaryDate = isThisMonthSubmitted
+    ? getNextMonth(currentDate)
+    : !isPreviousMonthSubmitted &&
+      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
+    ? getPreviousMonth(currentDate)
+    : currentDate;
 
   console.log('Summary Date', summaryDate);
 
