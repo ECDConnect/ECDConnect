@@ -109,8 +109,19 @@ const ROUTES = {
     CONTACT_COACH: '/contact-coach',
     COMMUNITY: addPrefix('/community', {
       ACCEPT_CLUB_LEADER_ROLE: '/accept-club-leader-role',
-      SUPPORT_ROLE: addPrefix('/support-role', {
-        EDIT: '/edit',
+      CLUB: addPrefix('/club', {
+        SUPPORT_ROLE: addPrefix('/support-role', {
+          EDIT: '/edit',
+        }),
+        MEETING: addPrefix('/meeting', {
+          ADD_MEETING: '/add',
+        }),
+        FAMILY_DAY_EVENT: addPrefix('/family-day-event', {
+          ADD_EVENT: '/add',
+        }),
+        COLLAGE_EVENT: addPrefix('/collage-event', {
+          ADD_EVENT: '/add',
+        }),
       }),
     }),
   }),

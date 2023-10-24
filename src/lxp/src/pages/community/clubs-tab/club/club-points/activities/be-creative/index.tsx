@@ -1,5 +1,5 @@
 import { BannerWrapper, Button, EmptyPage, ScoreCard } from '@ecdlink/ui';
-import { useHistory, useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../../../individual-club-view';
@@ -10,13 +10,24 @@ import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
 import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import { BeCreativeRouteState } from './index.types';
+import { userSelectors } from '@/store/user';
+import { Roles } from '@/constants/roles';
 
 export const BeCreative: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
+  const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const history = useHistory();
+
+  const location = useLocation<BeCreativeRouteState>();
+
+  const isPractitioner = user?.roles?.some(
+    (item) => item?.name === Roles.PRACTITIONER
+  );
+  const isFromAddCollageEvent = location?.state?.isFromAddCollageEvent;
 
   const activityId = 'be-creative';
 
@@ -72,7 +83,11 @@ export const BeCreative: React.FC = () => {
       size="small"
       title={formatStringWithFirstLetterCapitalized(activityId)}
       subTitle={club?.name ?? ''}
-      onBack={() => history.goBack()}
+      onBack={() =>
+        isFromAddCollageEvent
+          ? history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT)
+          : history.goBack()
+      }
       displayHelp
       onHelp={() =>
         history.push(
@@ -120,6 +135,21 @@ export const BeCreative: React.FC = () => {
           subTitle=""
         />
       )}
+      {isFromAddCollageEvent && (
+        <Button
+          className="mt-auto mb-4"
+          icon="PlusCircleIcon"
+          type="filled"
+          textColor="white"
+          color="primary"
+          text="Add image to {month}"
+          onClick={() =>
+            history.push(
+              ROUTES.PRACTITIONER.COMMUNITY.CLUB.COLLAGE_EVENT.ADD_EVENT
+            )
+          }
+        />
+      )}
       <Button
         className="mt-auto"
         icon="ArrowCircleLeftIcon"
@@ -128,7 +158,11 @@ export const BeCreative: React.FC = () => {
         color="primary"
         text="Back to club"
         onClick={() =>
-          history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+          history.push(
+            isPractitioner
+              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
+              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+          )
         }
       />
     </BannerWrapper>

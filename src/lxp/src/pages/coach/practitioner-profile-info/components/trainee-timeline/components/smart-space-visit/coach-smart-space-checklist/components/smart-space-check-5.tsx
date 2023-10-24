@@ -45,7 +45,7 @@ export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
   saveSmartSpaceCheckData,
 }) => {
   const numberOfAssistants = useSelector(
-    traineeSelectors.getTraineeVisitDataAssitantsNumber
+    traineeSelectors.getCoachVisitDataAssitantsNumber
   );
   const coach = useSelector(coachSelectors.getCoach);
   const user = useSelector(authSelectors.getAuthUser);

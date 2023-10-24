@@ -392,9 +392,7 @@ export const CaregiverChildRegistration: React.FC<
           }
           onSubmit={(value) =>
             onStepChange(
-              childDetails?.child.groupFeeAmount!! > 0
-                ? CaregiverChildRegistrationSteps.childCareGiverContributionForm
-                : CaregiverChildRegistrationSteps.childEmergencyContactForm,
+              CaregiverChildRegistrationSteps.childCareGiverContributionForm,
               {
                 formProp: 'careGiverExtraInformationFormModel',
                 value,

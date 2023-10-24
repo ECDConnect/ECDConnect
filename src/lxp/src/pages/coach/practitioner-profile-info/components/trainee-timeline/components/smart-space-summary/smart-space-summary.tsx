@@ -15,7 +15,6 @@ import { useCallback, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as BalloonsImg } from '../../../../../../../assets/balloons.svg';
 import { format } from 'date-fns';
-import { Question } from '../smart-space-checklist/components/programme-details/programme-details.types';
 import { useAppDispatch } from '@/store';
 
 interface SmartSpaceSummaryProps {
@@ -47,6 +46,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   const assistantsNumber = useSelector(
     traineeSelectors.getTraineeVisitDataAssitantsNumber
   );
+
   const visitProgrammeCapacityData = useSelector(
     traineeSelectors.getCoachVisitCapacity
   );
@@ -63,6 +63,13 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   const traineeProgrammeTypeObject = programData?.find(
     (item) => item?.id === traineeProgrammeType
   );
+  const visitSmartSpaceAnswers = useSelector(
+    traineeSelectors.getCoachSmartSpaceStandardsAnswers
+  );
+  const visitSmartSpaceFalseAnswers = visitSmartSpaceAnswers?.filter(
+    (item) => item?.questionAnswer === 'false'
+  );
+
   const visitProgrammeCovidStandards = useSelector(
     traineeSelectors.getCoachVisitDataCovidStandards
   );
@@ -75,6 +82,7 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   const visitProgrammeStandardsChecklist = useSelector(
     traineeSelectors.getCoachVisitDataStandardsChecklist
   );
+
   const visitProgrammeStandardsChecklistTrueAnswers =
     visitProgrammeStandardsChecklist?.filter(
       (item) => item?.questionAnswer === 'true'
@@ -85,8 +93,13 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
       (item) => item?.questionAnswer === 'false'
     );
   const visitProgrammeAdditionalStandardsChecklist = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
-  ) as Question[];
+    traineeSelectors.getCoachSmartSpaceAdditionalStandardsAnswers
+  );
+
+  const visitAdditionalStandardsChecklistFalseAnswers =
+    visitProgrammeAdditionalStandardsChecklist?.filter(
+      (item) => item?.questionAnswer === 'false'
+    );
 
   const programmeNotRunning = useMemo(
     () =>
@@ -242,6 +255,77 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
     visitProgrammeStandardsChecklistTrueAnswers?.length,
   ]);
 
+  const renderStillWorkingOn = useMemo(() => {
+    if (
+      timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received' &&
+      visitAdditionalStandardsChecklistFalseAnswers &&
+      visitAdditionalStandardsChecklistFalseAnswers?.length > 0
+    ) {
+      return (
+        <>
+          <div>
+            <Typography
+              type="body"
+              color="textDark"
+              weight="bold"
+              text={`${practitioner?.user?.firstName}  is still working on the following additional standards:`}
+              className="mt-4"
+            />
+            {visitAdditionalStandardsChecklistFalseAnswers?.map(
+              (item, index) => {
+                return (
+                  <Typography
+                    type="body"
+                    color="textMid"
+                    text={`• ${item?.question}`}
+                    key={index}
+                  />
+                );
+              }
+            )}
+          </div>
+          <Divider dividerType="dashed" className="my-4" />
+        </>
+      );
+    }
+
+    if (
+      timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence not received' &&
+      visitSmartSpaceFalseAnswers &&
+      visitSmartSpaceFalseAnswers?.length > 0
+    ) {
+      return (
+        <>
+          <div>
+            <Typography
+              type="body"
+              color="textDark"
+              weight="bold"
+              text={`${practitioner?.user?.firstName}  is still working on the following SmartSpace standards:`}
+              className="mt-4"
+            />
+            {visitSmartSpaceFalseAnswers?.map((item, index) => {
+              return (
+                <Typography
+                  type="body"
+                  color="textMid"
+                  text={`• ${item?.question}`}
+                  key={index}
+                />
+              );
+            })}
+          </div>
+          <Divider dividerType="dashed" className="my-4" />
+        </>
+      );
+    }
+  }, [
+    practitioner?.user?.firstName,
+    timeline?.smartSpaceLicenseStatus,
+    visitAdditionalStandardsChecklistFalseAnswers,
+    visitSmartSpaceFalseAnswers,
+  ]);
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -268,6 +352,8 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
         />
         {renderLicenceResponseCard}
         <Divider dividerType="dashed" className="my-4" />
+        {/* {timeline?.smartSpaceLicenseStatus === "SmartSpace Licence received" && visitProgrammeAdditionalStandardsChecklist && visitProgrammeAdditionalStandardsChecklist?.length > 0 && 
+        <>
         <div>
           <Typography
             type="body"
@@ -286,8 +372,11 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
               />
             );
           })}
-          <Divider dividerType="dashed" className="my-4" />
         </div>
+        <Divider dividerType="dashed" className="my-4" />
+        </>
+} */}
+        {renderStillWorkingOn}
         <div className="flex flex-col gap-2">
           <Typography
             type="h4"

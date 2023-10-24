@@ -117,15 +117,17 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(updateCoachAboutInfo.fulfilled, (state, action) => {
-      state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
-        return {
-          ...club,
-          coach: {
-            ...club.coach,
-            aboutInfo: action.payload.aboutInfo ?? '',
-          },
-        } as MergedCoachingClub;
-      });
+      if (action.payload && action.payload.aboutInfo) {
+        state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
+          return {
+            ...club,
+            coach: {
+              ...club.coach,
+              aboutInfo: action.payload.aboutInfo ?? '',
+            },
+          } as MergedCoachingClub;
+        });
+      }
       setFulfilledThunkActionStatus(state, action);
     });
   },

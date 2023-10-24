@@ -107,6 +107,32 @@ export const updateChild = createAsyncThunk<
   }
 });
 
+export const calculateChildrenRegistrationRemoval = createAsyncThunk<
+  boolean,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'calculateChildrenRegistrationRemoval',
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ChildService(
+          userAuth?.auth_token
+        ).calculateChildrenRegistrationRemoval(userAuth?.id);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 type UpdateChildUserRequest = {
   childUser: UserDto;
   id: string;

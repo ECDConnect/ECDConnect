@@ -316,17 +316,7 @@ public class IntegrationAPIManager
     {
         try
         {
-            string[] columns = { "Guid","FullName","FirstName","Surname","IdNumber","WhatsAppNumber","SiteArea","IsFranchisee","HasStarterLicence","HasAttendedStartupTraining","HasReceivedPlaykit","HasReceivedAdminFile","HasPassedSmartSpaceVisit","IsSmartSpaceVisitValidated", "IsOnStipend","HasGivenPhotoConsent", "StarterLicenceDate","SmartSpaceLicenceDate","HomeAddressLine1","HomeAddressLine2","HomeAddressLine3","HomeAddressPostalCode","HighestEducationLevel","PreferredCommunicationLanguage","IsAdminFileAndPlaykitValidated","StipendType" };
-            //"ConsolidationMeetingDate",
-            //"FranchiseeAgreementAcceptedDate",
-            //"HasAcceptedChildAgreement",
-            //"HasAcceptedFranchiseeAgreement",
-            //"HasPropertyTitleDeed",
-            //"LivesOnProperty",
-            //"OwnsProgrammeVenue",
-            //"IsPropertyOnUnproclaimedLand",
-            //"HasAcceptedStipendAgreement",
-            //"ConsolidationMeetingStatus";
+            string[] columns = null; 
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
             if (traineesOnly)
@@ -345,7 +335,7 @@ public class IntegrationAPIManager
         catch (Exception e)
         {
             await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesByCoach > " + remoteCoachId);
-            return null; //throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            return null; 
         }
     }
 
@@ -365,7 +355,7 @@ public class IntegrationAPIManager
         catch (Exception e)
         {
             await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesById > " + remoteId);
-            return null; //throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            return null; 
         }
     }
 

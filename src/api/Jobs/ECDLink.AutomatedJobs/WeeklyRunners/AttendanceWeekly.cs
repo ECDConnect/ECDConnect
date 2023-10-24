@@ -27,7 +27,7 @@ public class AttendanceWeekly : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
-            await service.IntegrationAttendanceData();
+            await service.IntegrationAttendanceByDueData();
         }
     }
 }

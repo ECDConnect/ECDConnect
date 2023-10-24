@@ -8,6 +8,7 @@ export interface ScoreCardProps extends ComponentBaseProps {
   secondaryText?: string;
   hint?: string;
   hintClassName?: ProgressBarProps['hintClassName'];
+  progressBarClassName?: ProgressBarProps['className'];
   currentPoints: number;
   maxPoints: number;
   bgColour: Colours;

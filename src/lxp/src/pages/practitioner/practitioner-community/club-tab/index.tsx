@@ -13,12 +13,20 @@ import {
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useMemo } from 'react';
-import { MAX_MEMBERS_IN_CLUB, MIN_MEMBERS_IN_CLUB } from '@/constants/club';
+import {
+  ClubActivities,
+  MAX_MEMBERS_IN_CLUB,
+  MIN_MEMBERS_IN_CLUB,
+} from '@/constants/club';
 import PositiveEmoticon from '@/assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
 import { AddEventOrMeetingDialog } from './0-components/add-event-or-meeting-dialog';
+import familyIcon from '@/assets/icon/family.svg';
+import inclusiveIcon from '@/assets/icon/inclusive.svg';
+import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
+import partnershipIcon from '@/assets/icon/partnership.svg';
 
 export const ClubTab: React.FC = () => {
   const history = useHistory();
@@ -29,6 +37,7 @@ export const ClubTab: React.FC = () => {
   const isLoading = false;
 
   // TODO: add integration
+  const clubId = '1';
   const totalMembers = 6;
   const isClubInALeague = true;
   const isPurpleLeague = false;
@@ -135,6 +144,79 @@ export const ClubTab: React.FC = () => {
     []
   );
 
+  const activities: MenuListDataItem[] = [
+    {
+      title: ClubActivities.MeetRegularly,
+      menuIconUrl: partnershipIcon,
+      route: ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
+        ':clubId',
+        clubId
+      ),
+    },
+    ...(!isPurpleLeague
+      ? [
+          {
+            title: ClubActivities.BeCreative,
+            menuIconUrl: paintPaletteIcon,
+            route: ROUTES.COMMUNITY.CLUB.POINTS.BE_CREATIVE.replace(
+              ':clubId',
+              clubId
+            ),
+          },
+        ]
+      : []),
+    ...(isPurpleLeague
+      ? [
+          {
+            title: ClubActivities.CaptureChildAttendance,
+            menuIcon: 'ClipboardCheckIcon',
+            route:
+              ROUTES.COMMUNITY.CLUB.POINTS.CAPTURE_CHILD_ATTENDANCE.replace(
+                ':clubId',
+                clubId
+              ),
+          },
+        ]
+      : []),
+    {
+      title: ClubActivities.HostFamilyDays,
+      menuIconUrl: familyIcon,
+      route: ROUTES.COMMUNITY.CLUB.POINTS.HOST_FAMILY_EVENT.replace(
+        ':clubId',
+        clubId
+      ),
+    },
+    ...(isPurpleLeague
+      ? [
+          {
+            title: ClubActivities.CompleteChildProgressReports,
+            menuIcon: 'DocumentReportIcon',
+            route:
+              ROUTES.COMMUNITY.CLUB.POINTS.COMPLETE_CHILD_PROGRESS_REPORTS.replace(
+                ':clubId',
+                clubId
+              ),
+          },
+        ]
+      : []),
+    {
+      title: ClubActivities.LeaveNoOneBehind,
+      menuIconUrl: inclusiveIcon,
+      route: ROUTES.COMMUNITY.CLUB.POINTS.LEAVE_NO_ONE_BEHIND.replace(
+        ':clubId',
+        clubId
+      ),
+    },
+  ].map((item) => ({
+    ...item,
+    ...(item.menuIconUrl && { menuIconUrl: item.menuIconUrl }),
+    ...(item.menuIcon && { menuIcon: item.menuIcon }),
+    titleStyle: 'text-textDark whitespace-normal',
+    iconBackgroundColor: 'tertiary',
+    showIcon: true,
+    onActionClick: () => history.push(item.route),
+  }));
+
   const renderLeagueContent = useMemo(() => {
     if (isClubInALeague) {
       return (
@@ -161,7 +243,7 @@ export const ClubTab: React.FC = () => {
               barColour="successMain"
               bgColour="uiBg"
               textColour="black"
-              onClick={() => {}}
+              onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
             />
           )}
         </div>
@@ -175,7 +257,22 @@ export const ClubTab: React.FC = () => {
         title="This club is not in a league."
       />
     );
-  }, [isClubInALeague, leagueCard]);
+  }, [history, isClubInALeague, leagueCard]);
+
+  const renderActivitiesContent = useMemo(() => {
+    if (isClubInALeague) return <></>;
+
+    return (
+      <div className="mt-7 mb-5">
+        <Typography className="mb-2" type="h3" text="Activities" />
+        <StackedList
+          className="flex flex-col gap-2"
+          type={'MenuList' as StackedListType}
+          listItems={activities}
+        />
+      </div>
+    );
+  }, [activities, isClubInALeague]);
 
   return (
     <div className="p-4 pt-6">
@@ -226,7 +323,9 @@ export const ClubTab: React.FC = () => {
               text={'Change'}
               icon="RefreshIcon"
               onClick={() =>
-                history.push(ROUTES.PRACTITIONER.COMMUNITY.SUPPORT_ROLE.EDIT)
+                history.push(
+                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
+                )
               }
             />
           </div>
@@ -243,6 +342,7 @@ export const ClubTab: React.FC = () => {
               listItems={[clubSupportRole]}
             />
           )}
+          {renderActivitiesContent}
           <div className="mt-auto flex flex-col">
             <Button
               icon="PlusCircleIcon"

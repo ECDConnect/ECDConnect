@@ -16,15 +16,21 @@ import ROUTES from '@/routes/routes';
 import partnershipIcon from '@/assets/icon/partnership.svg';
 import { Header } from '../0-components/header';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import { userSelectors } from '@/store/user';
+import { Roles } from '@/constants/roles';
 
 export const MeetRegularly: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
+  const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const history = useHistory();
 
   const activityId = 'meet-regularly';
+  const isPractitioner = user?.roles?.some(
+    (item) => item?.name === Roles.PRACTITIONER
+  );
 
   const mockedPoints = 210;
 
@@ -155,7 +161,11 @@ export const MeetRegularly: React.FC = () => {
         color="primary"
         text="Back to club"
         onClick={() =>
-          history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+          history.push(
+            isPractitioner
+              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
+              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+          )
         }
       />
     </BannerWrapper>

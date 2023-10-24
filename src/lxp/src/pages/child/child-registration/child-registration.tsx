@@ -719,9 +719,7 @@ export const ChildRegistration: React.FC = () => {
               }
               onSubmit={(form) => {
                 onStepChange(
-                  classroom?.preschoolFeeAmount!! > 0
-                    ? ChildRegistrationSteps.childCareGiverContributionForm
-                    : ChildRegistrationSteps.childEmergencyContactForm,
+                  ChildRegistrationSteps.childCareGiverContributionForm,
                   {
                     formProp: 'careGiverExtraInformationFormModel',
                     value: form,
