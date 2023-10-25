@@ -15,7 +15,7 @@ import DatePicker from 'react-datepicker';
 import { useHistory, useLocation } from 'react-router';
 import { ReassignClassPageState, yesNoOptions } from './reassign-class.types';
 import ROUTES from '@routes/routes';
-import { format } from 'date-fns';
+import { format, setDate } from 'date-fns';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import {
   ReassignClassModel,
@@ -24,13 +24,17 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, useWatch } from 'react-hook-form';
 import * as styles from './reassign-class.styles';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { authSelectors } from '@/store/auth';
 import { userSelectors } from '@store/user';
 import { classroomsSelectors } from '@/store/classroom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useAppDispatch } from '@/store';
 
 const absentInfo = [
   {
@@ -71,6 +75,7 @@ interface reassignedClassroomGroupProps {
 
 export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
   const { refreshClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const userData = useSelector(userSelectors.getUser);
@@ -83,12 +88,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     : new Date();
   const practitionerId = routeState?.practitionerId;
   const allAbsenteeClasses = routeState?.allAbsenteeClasses;
+  const hasAbsenteeClasses =
+    allAbsenteeClasses && allAbsenteeClasses?.length > 0;
 
   const formattedDate = reportingDate
     ? format(reportingDate, 'EEEE, d LLLL')
     : '';
   const [isOneDayLeave, setIsOneDayLeave] = useState<boolean | boolean[]>();
-
   const {
     control,
     // register: reassignClassRegister,
@@ -118,7 +124,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   >([]);
   const [endDate, setEndDate] = useState<Date>();
   const [isLoading, setIsLoading] = useState(false);
-
   const handleReassignClassroomGroupPractitioner = useCallback(
     (classroomGroup: reassignedClassroomGroupProps) => {
       setReassignedClassroomGroups([
@@ -145,11 +150,34 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       ),
     [classroomGroups, practitioner]
   );
+
   const disableButton =
     !practitioner ||
     !selectedDate ||
     !reason ||
-    reassignedClassroomGroups?.length === 0;
+    (practitionerClassroomGroups?.length > 0 &&
+      reassignedClassroomGroups?.length === 0);
+
+  useEffect(() => {
+    if (hasAbsenteeClasses) {
+      if (
+        allAbsenteeClasses?.[0]?.absentDate ===
+        allAbsenteeClasses?.[0]?.absentDateEnd
+      ) {
+        setIsOneDayLeave(true);
+      } else {
+        setIsOneDayLeave(false);
+      }
+
+      setReassignClassValue(
+        'date',
+        allAbsenteeClasses?.[0]?.absentDate
+          ? allAbsenteeClasses?.[0]?.absentDate.toString()
+          : ''
+      );
+      setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
+    }
+  }, [allAbsenteeClasses, endDate, hasAbsenteeClasses, setReassignClassValue]);
 
   const practitionerAbsentName = useMemo(() => {
     return practitioners?.find((item) => {
@@ -259,8 +287,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           );
 
           await refreshClassroom();
+          await appDispatch(
+            practitionerThunkActions.getAllPractitioners({})
+          ).unwrap();
           setIsLoading(false);
-          history.push(ROUTES.DASHBOARD);
+          history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+            practitionerId,
+          });
 
           return;
         }
@@ -279,9 +312,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       });
 
       await refreshClassroom();
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap();
     }
-    setIsLoading(true);
-    history.push(ROUTES.DASHBOARD);
+    setIsLoading(false);
+    history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+      practitionerId,
+    });
   };
 
   return (
@@ -319,6 +357,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               practitionersList.filter((prac) => prac.value !== item)
             );
           }}
+          disabled={hasAbsenteeClasses}
         />
         <label className={styles.label}>
           Will the practitioner be absent for one day or longer?
@@ -329,7 +368,11 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           selectedOptions={isOneDayLeave}
           color="secondary"
           type={ButtonGroupTypes.Button}
-          className={'w-full'}
+          className={`w-full ${
+            allAbsenteeClasses &&
+            allAbsenteeClasses?.length > 0 &&
+            'pointer-events-none'
+          }`}
         />
         {isOneDayLeave !== undefined && (
           <>
@@ -352,6 +395,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               }}
               dateFormat="EEE, dd MMM yyyy"
               minDate={new Date()}
+              disabled={hasAbsenteeClasses}
             />
             {!isOneDayLeave && (
               <>
@@ -367,6 +411,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                     setEndDate(date);
                   }}
                   dateFormat="EEE, dd MMM yyyy"
+                  minDate={new Date(selectedDate as string)}
+                  disabled={hasAbsenteeClasses}
                 />
               </>
             )}
