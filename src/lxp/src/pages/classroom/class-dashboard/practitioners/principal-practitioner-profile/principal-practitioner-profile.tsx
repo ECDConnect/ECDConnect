@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useDialog, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -36,7 +36,18 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
-import { format, getMonth, isPast, isSameDay } from 'date-fns';
+import {
+  addDays,
+  format,
+  getMonth,
+  isFriday,
+  isPast,
+  isSameDay,
+  isToday,
+  isWeekend,
+  nextDay,
+  nextMonday,
+} from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
@@ -58,8 +69,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const practitionerAbsentees = practitioner?.absentees;
   const validAbsenteesDates = practitionerAbsentees?.filter(
-    (item) => !isPast(new Date(item?.absentDate as string))
+    (item) =>
+      !isPast(new Date(item?.absentDate as string)) ||
+      isToday(new Date(item?.absentDate as string))
   );
+
   const currentDates = validAbsenteesDates?.map((item) => {
     return item?.absentDate as string;
   });
@@ -75,9 +89,13 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     (item) => item?.absentDate === currentAbsentee?.absentDate
   );
 
-  const isToday = isSameDay(
+  const absenceIsToday = isSameDay(
     new Date(),
     new Date(currentAbsentee?.absentDate || '')
+  );
+  const isLeave = useMemo(
+    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
 
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
@@ -106,6 +124,14 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     },
     [allAbsenteeClasses, history]
   );
+
+  const handleComebackDay = useCallback((date: Date) => {
+    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
+      return nextMonday(new Date(date));
+    }
+
+    return new Date(addDays(new Date(date), 1));
+  }, []);
 
   const handleAbsenceModal = useCallback(() => {
     dialog({
@@ -359,7 +385,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                     type={'h1'}
                     color="textDark"
                     text={
-                      isToday
+                      absenceIsToday
                         ? `${practitioner?.user?.firstName} is absent today`
                         : `${
                             practitioner?.user?.firstName
@@ -400,7 +426,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                       type={'body'}
                       color="textMid"
                       text={`${format(
-                        new Date(currentAbsentee?.absentDateEnd as string),
+                        new Date(
+                          handleComebackDay(
+                            currentAbsentee?.absentDateEnd as Date
+                          )
+                        ),
                         'd MMM yyyy'
                       )}`}
                       className={'mt-4'}
@@ -443,7 +473,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                         type="body"
                         className="mr-4"
                         color="white"
-                        text={'Edit absence/leave'}
+                        text={isLeave ? 'Edit leave' : 'Edit absence'}
                       ></Typography>
                     </Button>
                   </div>
