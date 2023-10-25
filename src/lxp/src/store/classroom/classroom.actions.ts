@@ -678,7 +678,7 @@ export const updatePreschoolFee = createAsyncThunk<
   { classroomId: string; amount: number | undefined },
   ThunkApiType<RootState>
 >(
-  'createLearner',
+  'updatePreschoolFee',
   async ({ classroomId, amount }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },

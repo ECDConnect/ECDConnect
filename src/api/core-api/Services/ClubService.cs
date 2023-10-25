@@ -77,9 +77,9 @@ namespace EcdLink.Api.CoreApi.Services
             _userManager = userManager;
         }
 
-        public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input)
+        public ClubMeeting AddClubMeeting(ClubMeetingModel input, string meetingType)
         {
-            Guid meetingTypeId = _meetingTypeRepo.GetAll().Where(x => x.Name == Constants.CoachingCircleSettings.meeting_type_coach_circle).Select(x => x.Id).FirstOrDefault();
+            Guid meetingTypeId = _meetingTypeRepo.GetAll().Where(x => x.Name == meetingType).Select(x => x.Id).FirstOrDefault();
             List<ClubMeetingRegister> participants = new List<ClubMeetingRegister>();
 
             // insert club meeting
@@ -97,7 +97,7 @@ namespace EcdLink.Api.CoreApi.Services
                 MeetingNotes = input.MeetingNotes
             });
             
-            // insert participants for club  meeting
+            // insert participants for club meeting
             foreach (var participant in input.ClubMeetingParticipants)
             {
                 participants.Add(new ClubMeetingRegister {
