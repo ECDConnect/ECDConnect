@@ -23,3 +23,6 @@ export const getNextClubLeaderByClubIdSelector = (clubId: string) =>
       ? club?.currentClubLeader
       : club?.newClubLeader
   );
+
+export const getActivityMeetRegularDetailsSelector = (state: RootState) =>
+  state.clubs?.points?.meetRegularly;

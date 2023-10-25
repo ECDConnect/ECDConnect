@@ -10,6 +10,8 @@ import {
   NewClubMemberInput,
   CoachingClubBase,
   ClubMember,
+  QueryActivityMeetRegularDetailsArgs,
+  ActivityMeetRegular,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
@@ -444,6 +446,61 @@ class ClubService {
     }
 
     return response.data.data.updateCoachAboutInfo;
+  }
+
+  async getActivityMeetRegularDetails(
+    input: QueryActivityMeetRegularDetailsArgs
+  ): Promise<ActivityMeetRegular> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityMeetRegularDetails: ActivityMeetRegular };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityMeetRegularDetails($clubId: UUID!, $month: Int!, $year: Int!) {
+          activityMeetRegularDetails(clubId: $clubId, month: $month, year: $year) {
+              points
+              pointsColor
+              upcomingMeetings {
+                  meetingDate
+              }
+              pastMeetings {
+                  meetingDate
+                  meetingNotes
+                  meetingAttendancePerc
+                  meetingAttendanceColor
+                  points
+                  meetingParticipants {
+                  practitioner {
+                      user {
+                        firstName
+                        surname
+                      }
+                  }
+              }
+              meetingAbsentees {
+                  practitioner {
+                      user {
+                          id
+                          firstName
+                          surname
+                          }
+                      }
+                  }
+              }      
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get all clubs failed - Server connection error');
+    }
+
+    return response.data.data.activityMeetRegularDetails;
   }
 }
 

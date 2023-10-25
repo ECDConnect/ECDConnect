@@ -1,3 +1,4 @@
+import { MetricsColorEnum } from '../../../core/src/enums/metrics-color';
 import { AlertSeverityType } from '../components/stacked-list/models/AlertListDataItem';
 import { Colours } from '../models';
 

@@ -3,4 +3,5 @@ export interface ClubsRouteState {
   coachId?: string;
   leaderId?: string;
   practitionerId?: string;
+  meetingId?: string;
 }

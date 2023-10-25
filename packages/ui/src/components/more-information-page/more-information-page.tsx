@@ -4,6 +4,7 @@ import Divider from '../divider/divider';
 import BannerWrapper from '../banner-wrapper/banner-wrapper';
 import Button from '../button/button';
 import LanguageSelector from '../language-selector/language-selector';
+import { useWindowSize } from '@reach/window-size';
 
 // This is a copy paste from the text.utils, since this project doesn't have access
 const replaceBraces = (sentenceWithBraces: string, value: string) => {
@@ -29,6 +30,10 @@ export const MoreInformationPage = ({
   moreInformation: any; // TODO - doesn't ref the graphQL library which is what we are passing in here :/ Could make a DTO
   languages: { value: string; label: string }[];
 }) => {
+  const { height } = useWindowSize();
+
+  const SELECTOR_HEIGHT = 64;
+
   const renderContent = useMemo(() => {
     if (moreInformation) {
       return (
@@ -192,7 +197,10 @@ export const MoreInformationPage = ({
           languages={languages}
         />
       </div>
-      <div className="flex h-full flex-col p-4">
+      <div
+        className="flex flex-col p-4"
+        style={{ height: height - SELECTOR_HEIGHT }}
+      >
         {renderContent}
         <Button
           className="mt-auto mb-4"

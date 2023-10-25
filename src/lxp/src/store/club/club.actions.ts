@@ -1,6 +1,7 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import {
+  ActivityMeetRegular,
   Club,
   ClubLeader,
   ClubMember,
@@ -11,6 +12,7 @@ import {
   MutationUpdateCoachAboutInfoArgs,
   NewClubInput,
   NewClubMemberInput,
+  QueryActivityMeetRegularDetailsArgs,
 } from '@ecdlink/graphql';
 import { ClubService } from '@/services/ClubService';
 import { NewClubLeaderInput } from '@/services/ClubService/types';
@@ -26,6 +28,7 @@ export const ClubActions = {
   MOVE_CLUB_MEMBERS: 'moveClubMembers',
   CHANGE_CLUB_NAME: 'changeClubName',
   UPDATE_COACH_ABOUT_INFO: 'updateCoachAboutInfo',
+  GET_ACTIVITY_MEET_REGULAR_DETAILS: 'getActivityMeetRegularDetails',
 };
 
 export const getAllClubsForCoach = createAsyncThunk<
@@ -269,6 +272,31 @@ export const updateCoachAboutInfo = createAsyncThunk<
         return await new ClubService(userAuth?.auth_token).updateCoachAboutInfo(
           input
         );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getActivityMeetRegularDetails = createAsyncThunk<
+  ActivityMeetRegular,
+  QueryActivityMeetRegularDetailsArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_MEET_REGULAR_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityMeetRegularDetails(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
