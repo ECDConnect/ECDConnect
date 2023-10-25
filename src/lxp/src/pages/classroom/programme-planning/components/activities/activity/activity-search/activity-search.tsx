@@ -9,9 +9,10 @@ import {
   FilterInfo,
   SearchDropDownOption,
   Button,
+  Alert,
 } from '@ecdlink/ui/';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import ActivityCard from '../activity-card/activity-card';
 import { staticDataSelectors } from '@store/static-data';
@@ -87,6 +88,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     useState<SearchDropDownOption<ProgressTrackingSubCategoryDto>[]>();
 
   const [pageSize, setPageSize] = useState(ACTIVITY_PAGE_SIZE);
+  const [activityWarningText, setActivityWarningText] = useState('');
 
   const themeDropDownOptions: SearchDropDownOption<number>[] = useMemo(
     () =>
@@ -278,6 +280,14 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
       },
     };
 
+  const setSelectedWarningTextHandler = useCallback(
+    (activity, programme) => {
+      const warningText = getSelectedActivityWarningText(activity, programme);
+      setActivityWarningText(warningText!);
+    },
+    [setActivityWarningText]
+  );
+
   return (
     <>
       <BannerWrapper
@@ -410,13 +420,14 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 key={`activity-search-filtered-card-${activity.id}`}
                 activity={activity}
                 selected={isSelected}
-                warningText={
-                  isSelected
-                    ? getSelectedActivityWarningText(activity, programme)
-                    : ''
-                }
+                // warningText={
+                //   isSelected
+                //     ? getSelectedActivityWarningText(activity, programme)
+                //     : ''
+                // }
                 onSelected={() => {
                   setSelectedActivityId(activity.id);
+                  setSelectedWarningTextHandler(activity, programme);
                 }}
                 onDeselection={() => {
                   setSelectedActivityId(undefined);
@@ -438,6 +449,15 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
                 onClick={() => setPageSize(pageSize + ACTIVITY_PAGE_SIZE)}
               />
             </>
+          )}
+
+          {!!activityWarningText && (
+            <Alert
+              type="warning"
+              message={activityWarningText}
+              variant="flat"
+              className={'mt-5 mb-3'}
+            />
           )}
 
           <Divider className="my-2" />
