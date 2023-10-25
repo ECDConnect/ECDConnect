@@ -91,11 +91,11 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
         }
 
         public async Task<List<ClassroomGroupChildAttendanceReportModel>> ClassroomAttendanceReport(
-  [Service] ChildAttendanceReport report,
-  string userId,
-  Guid classgroupId,
-  DateTime startDate,
-  DateTime endDate)
+             [Service] ChildAttendanceReport report,
+             string userId,
+             Guid classgroupId,
+             DateTime startDate,
+             DateTime endDate)
         {
             var startMonth = startDate.GetStartOfMonth();
             //var endMonth = endDate.GetEndOfMonth();
@@ -106,11 +106,11 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
         }
 
         public async Task<ClassroomGroupChildAttendanceReportOverviewModel> ClassroomAttendanceOverviewReport(
-[Service] ChildAttendanceReport report,
-string userId,
-Guid classgroupId,
-DateTime startDate,
-DateTime endDate)
+            [Service] ChildAttendanceReport report,
+            string userId,
+            Guid classgroupId,
+            DateTime startDate,
+            DateTime endDate)
         {
             var startMonth = startDate.GetStartOfMonth();
             //var endMonth = endDate.GetEndOfMonth();

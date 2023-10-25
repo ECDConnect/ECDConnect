@@ -1519,7 +1519,7 @@ export type ClassroomGroup = {
 
 export type ClassroomGroupChildAttendanceReportModel = {
   __typename?: 'ClassroomGroupChildAttendanceReportModel';
-  attendance?: Maybe<Array<KeyValuePairOfInt32AndInt32>>;
+  attendance?: Maybe<Array<KeyValuePairOfInt32AndNullableOfInt32>>;
   attendancePercentage: Scalars['Int'];
   childFullName?: Maybe<Scalars['String']>;
   childIdNumber?: Maybe<Scalars['String']>;
@@ -4297,6 +4297,12 @@ export type KeyValuePairOfInt32AndInt32 = {
   __typename?: 'KeyValuePairOfInt32AndInt32';
   key: Scalars['Int'];
   value: Scalars['Int'];
+};
+
+export type KeyValuePairOfInt32AndNullableOfInt32 = {
+  __typename?: 'KeyValuePairOfInt32AndNullableOfInt32';
+  key: Scalars['Int'];
+  value?: Maybe<Scalars['Int']>;
 };
 
 export type Language = {
@@ -15066,7 +15072,7 @@ export type TokenAccessPractitionerDetailModel = {
 
 export type TotalAttendanceStatsReport = {
   __typename?: 'TotalAttendanceStatsReport';
-  totalChildrenAttendedSessions: Scalars['Int'];
+  totalChildrenAttendedAllSessions: Scalars['Int'];
   totalMonthlyAttendance: Scalars['Int'];
   totalSessions: Scalars['Int'];
 };
