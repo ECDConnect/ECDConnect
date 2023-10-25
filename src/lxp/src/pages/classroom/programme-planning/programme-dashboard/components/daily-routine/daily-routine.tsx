@@ -45,6 +45,10 @@ import {
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
 import { isSameWeek, isWeekend } from 'date-fns';
+import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
+import { userSelectors } from '@/store/user';
+import format from 'date-fns/format';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -82,6 +86,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const nextProgrammes = useSelector(
     programmeSelectors.getProgrammesAfterDate(selectedDate!)
   );
+  const userData = useSelector(userSelectors.getUser);
+  const [celebrateMessage, setCelebrateMessage] = useState('');
+
   const nextProgrammeDaysWithoutActivity =
     nextProgrammes?.[0]?.dailyProgrammes?.filter((item) => {
       return (
@@ -337,6 +344,27 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     saveCurrentDay(currentDayCopy);
   };
 
+  console.log('programmeWeeks', programmeWeeks);
+  console.log('selectedDate', selectedDate);
+
+  useEffect(() => {
+    if (programmeWeeks && programmeWeeks.length >= 4 && selectedDate) {
+      var lastWeek = programmeWeeks[programmeWeeks.length - 1];
+      if (
+        format(lastWeek.endDate, 'dd MMM yyyy') ===
+        format(selectedDate, 'dd MMM yyyy')
+      ) {
+        var message =
+          'Wow, great job ' +
+          userData?.firstName +
+          '! You have planned for ' +
+          programmeWeeks.length +
+          ' weeks in a row. Keep it up!';
+        setCelebrateMessage(message);
+      }
+    }
+  }, [programmeWeeks, setCelebrateMessage, userData]);
+
   const onEditActivityItem = (
     routineItem: ProgrammeRoutineItemDto,
     day?: DailyProgrammeDto
@@ -456,6 +484,17 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             })}
           </div>
         ))}
+
+      {programmeWeeks && programmeWeeks.length && celebrateMessage && (
+        <CustomSuccessCard
+          className="my-4"
+          customIcon={<CelebrateIcon className="h-14	w-14" />}
+          text={celebrateMessage}
+          textColour="successDark"
+          color="successBg"
+        />
+      )}
+
       <Button
         id="gtm-add-programme"
         className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}

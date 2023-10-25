@@ -59,6 +59,7 @@ export const getProgrammeWeeks = (
       return prev;
     }
   }, [] as ProgrammeWeek[]);
+  weeks.sort((a, b) => (a.endDate > b.endDate ? 1 : -1));
   return weeks;
 };
 
