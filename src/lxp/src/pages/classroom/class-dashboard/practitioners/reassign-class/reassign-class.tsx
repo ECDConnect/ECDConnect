@@ -47,7 +47,7 @@ const absentInfo = [
   },
   {
     id: 4,
-    name: 'Funeral at home',
+    name: 'Attending training',
   },
   {
     id: 5,
@@ -117,6 +117,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     reassignedClassroomGroupProps[]
   >([]);
   const [endDate, setEndDate] = useState<Date>();
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleReassignClassroomGroupPractitioner = useCallback(
     (classroomGroup: reassignedClassroomGroupProps) => {
@@ -138,9 +139,17 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     control: control,
   });
   const practitionerClassroomGroups = useMemo(
-    () => classroomGroups?.filter((item) => item?.userId === practitioner),
+    () =>
+      classroomGroups?.filter(
+        (item) => item?.userId === practitioner && item?.name !== 'Unsure'
+      ),
     [classroomGroups, practitioner]
   );
+  const disableButton =
+    !practitioner ||
+    !selectedDate ||
+    !reason ||
+    reassignedClassroomGroups?.length === 0;
 
   const practitionerAbsentName = useMemo(() => {
     return practitioners?.find((item) => {
@@ -160,6 +169,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
   useEffect(() => {
     const _list = practitioners
+      ?.filter((item) => item?.userId !== String(practitionerId))
       ?.map((p) => {
         if (p?.user?.firstName && p?.user?.surname) {
           return {
@@ -173,6 +183,37 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
     setPractitionersList(_list);
     setPractitionersTeachList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const _list = practitioners
+      ?.map((p) => {
+        if (p?.user?.firstName && p?.user?.surname) {
+          return {
+            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            value: p.userId,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
+
+    const _list2 = practitioners
+      ?.filter((item) => item?.userId !== String(practitionerId))
+      ?.map((p) => {
+        if (p?.user?.firstName && p?.user?.surname) {
+          return {
+            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            value: p.userId,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
+
+    setPractitionersList(_list);
+    setPractitionersTeachList(_list2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -206,6 +247,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const submitReassignClass = async () => {
     if (userAuth?.auth_token && selectedDate && userData?.id) {
       reassignedClassroomGroups?.map(async (item) => {
+        setIsLoading(true);
         if (item?.absenteeId) {
           await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
             item?.absenteeId,
@@ -217,12 +259,12 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           );
 
           await refreshClassroom();
-
+          setIsLoading(false);
           history.push(ROUTES.DASHBOARD);
 
           return;
         }
-
+        setIsLoading(true);
         await new ClassroomGroupService(
           userAuth.auth_token
         ).updateReassignClassroomGroup(
@@ -238,7 +280,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
       await refreshClassroom();
     }
-
+    setIsLoading(true);
     history.push(ROUTES.DASHBOARD);
   };
 
@@ -309,6 +351,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 setReassignClassValue('date', date ? date.toString() : '');
               }}
               dateFormat="EEE, dd MMM yyyy"
+              minDate={new Date()}
             />
             {!isOneDayLeave && (
               <>
@@ -382,7 +425,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         className={'mt-5 mb-3'}
                         title={`You are reassigning ${
                           practitionerAbsentName?.user?.fullName || ''
-                        } class ${item?.className} to ${
+                        }'s class ${item?.className} to ${
                           practitionerPresentName?.user?.fullName || ''
                         } for ${format(
                           new Date(selectedDate!),
@@ -453,6 +496,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           color="primary"
           className={'mx-auto mt-4 w-full rounded-xl'}
           onClick={submitReassignClass}
+          disabled={disableButton}
+          isLoading={isLoading}
         >
           {renderIcon('SaveIcon', styles.buttonIcon)}
           <Typography

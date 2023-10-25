@@ -116,10 +116,17 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const [classMetrics, setClassMetrics] = useState<ClassroomMetricReport[]>([]);
 
   const handleReassignClass = useCallback(
-    (practitionerId: string) => {
+    (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
+      if (allAbsenteeClasses) {
+        history.push('practitioner-reassign-class', {
+          practitionerId,
+          allAbsenteeClasses,
+        });
+        return;
+      }
+
       history.push('practitioner-reassign-class', {
         practitionerId,
-        allAbsenteeClasses,
       });
     },
     [allAbsenteeClasses, history]
@@ -149,7 +156,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                handleReassignClass(practitionerUserId);
+                handleReassignClass(practitionerUserId, allAbsenteeClasses);
                 onSubmit();
               },
               leadingIcon: 'PencilAltIcon',
