@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
@@ -1327,5 +1328,32 @@ namespace EcdLink.Api.CoreApi.Services
             return activityChildProgress;
         }
 
+        public ClubModel GetClubForUser(string userId)
+        {
+            // Get practitioner since we need the practitioner id (TODO remove this once we are set up to use userId everywhere)
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+
+            var club = _clubMemberRepo.GetAll()
+                .Where(x => x.PractitionerId == practitioner.Id && x.IsActive) // Do we need to check the club is active too?
+                .Include(x => x.Club)
+                .ThenInclude(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
+                .Include(x => x.Club)
+                .ThenInclude(x => x.League)
+                .ThenInclude(x => x.LeagueType)
+                .FirstOrDefault().Club;
+
+            if (club == null) return null;
+
+            // Get points total for club
+            var pointsTotal = club.ClubPoints.Select(x => x.Points).Sum();
+
+            var maxPointsTotal = club.League == null
+                ? 0
+                : club.League?.LeagueType?.Name == Constants.ClubSettings.name_purple
+                    ? Constants.ClubSettings.purple_club_max_points
+                    : Constants.ClubSettings.non_purple_club_max_points;
+
+            return new ClubModel(club, pointsTotal, maxPointsTotal, GetClubLeagueRankPosition(club, DateTime.Now));
+        }
     }
 }

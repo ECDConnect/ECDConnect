@@ -1392,7 +1392,7 @@ namespace EcdLink.Api.CoreApi.Services
                     var result = _childAttendanceReport.GetClassroomAttendanceOverView(item.Id, userId, today.GetStartOfMonth(), today.GetEndOfDay());
 
                     totalExpectedAttendance += result.TotalAttendanceStatsReport.TotalSessions;
-                    totalChildrenAttendedSessions += result.TotalAttendanceStatsReport.TotalChildrenAttendedSessions;
+                    totalChildrenAttendedSessions += result.TotalAttendanceStatsReport.TotalChildrenAttendedAllSessions;
                 }
             }
 

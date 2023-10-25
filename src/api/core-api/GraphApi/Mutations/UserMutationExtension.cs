@@ -220,7 +220,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (input.DateOfBirth.HasValue
                 && input.DateOfBirth.Value.Date != user.DateOfBirth.Date) //avoid time changes
             {
-                auditFields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.Date.ToString(), ValueAfter = input.DateOfBirth.Value.Date.ToString() });
+                auditFields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.ToString(), ValueAfter = input.DateOfBirth.Value.ToString() });
                 user.DateOfBirth = input.DateOfBirth.Value.Date;
             }
 

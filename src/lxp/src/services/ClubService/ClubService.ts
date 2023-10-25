@@ -15,6 +15,7 @@ import {
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
+import { ClubDto } from '@/models/club/club.dto';
 
 class ClubService {
   _accessToken: string;
@@ -473,6 +474,7 @@ class ClubService {
                   meetingParticipants {
                   practitioner {
                       user {
+                        id
                         firstName
                         surname
                       }
@@ -497,10 +499,45 @@ class ClubService {
     });
 
     if (response.status !== 200 || response.data.errors) {
-      throw new Error('Get all clubs failed - Server connection error');
+      throw new Error(
+        'Get activity meet regular details failed - Server connection error'
+      );
     }
 
     return response.data.data.activityMeetRegularDetails;
+  }
+
+  async getClubForUser(userId: string): Promise<ClubDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { clubForUser: ClubDto };
+      errors?: {};
+    }>(``, {
+      query: `query clubForUser($userId: String) {
+          clubForUser(userId: $userId) {
+            id
+            name
+            pointsTotal
+            maxPointsTotal
+            leagueRanking
+            league {
+              id
+              name
+              leagueTypeId
+              leagueTypeName
+            }
+          }
+        }`,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get club for user failed - Server connection error');
+    }
+
+    return response.data.data.clubForUser;
   }
 }
 

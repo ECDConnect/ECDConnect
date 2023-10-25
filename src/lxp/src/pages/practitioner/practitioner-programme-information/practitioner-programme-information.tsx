@@ -254,6 +254,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         isPrincipal !== false ||
         practitioner?.isLeaving !== null)
     ) {
+      if (isPrincipal) {
+        practitionersList?.push(practitioner);
+      }
       stackedActionList.push({
         title: 'Other practitioners on site',
         subTitle: isPrincipal
