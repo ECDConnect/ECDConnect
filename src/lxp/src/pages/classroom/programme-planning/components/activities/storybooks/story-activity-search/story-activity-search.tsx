@@ -11,7 +11,7 @@ import {
   SearchDropDownOption,
   Typography,
 } from '@ecdlink/ui/';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import SearchHeader, {
   SearchHeaderAlternativeRenderItem,
@@ -40,7 +40,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
   preSelectedActivityId,
   onClose,
   onSave,
-  submitButtonText = 'Save',
+  submitButtonText = 'Save & next',
 }) => {
   const { isOnline } = useOnlineStatus();
   const allStories = useSelector(storyBookSelectors.getStoryBooks);
@@ -64,6 +64,8 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     useState<SearchDropDownOption<StoryBookTypes>[]>();
 
   const [displayHelp, setDisplayHelp] = useState(false);
+  const [showNextButton, setShowNextButton] = useState(false);
+  const [bookedStory, setBookedStory] = useState<StoryBookDto>();
   const languages = useSelector(staticDataSelectors.getLanguages);
   const allThemes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const StoryTypeOptions = [
@@ -225,6 +227,29 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
     setSelectedTypeFilterOptions(filterOptions);
   };
 
+  const setSelectedStoryHandler = useCallback(
+    (story: StoryBookDto | undefined) => {
+      if (story) {
+        setShowNextButton(true);
+        setBookedStory(story);
+      } else {
+        setShowNextButton(false);
+        setBookedStory(undefined);
+      }
+    },
+    [setShowNextButton, setBookedStory]
+  );
+
+  const onButtonClick = useCallback(() => {
+    if (!selectedStory && bookedStory) {
+      setSelectedStory(bookedStory);
+    }
+
+    if (selectedStory?.id && selectedActivity?.id) {
+      onSave(selectedStory?.id, selectedActivity?.id);
+    }
+  }, [selectedStory, selectedActivity, bookedStory, onSave]);
+
   const alternativeSearchHeaderItems: SearchHeaderAlternativeRenderItem<StoryBookDto> =
     {
       render: (item) => {
@@ -335,6 +360,9 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             className={'mt-4'}
           />
           {!selectedStory && (
+            <Typography type="body" text="Step 1 of 2" className={'mt-4'} />
+          )}
+          {!selectedStory && (
             <>
               {hasActiveFilters && filteredStories.length === 0 && (
                 <EmptyActivities
@@ -344,7 +372,8 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
               )}
               <StorySelectView
                 stories={filteredStories}
-                onStorySelected={(story) => setSelectedStory(story)}
+                selectedStoryBookId={bookedStory?.id!}
+                onStorySelected={(story) => setSelectedStoryHandler(story)}
               />
             </>
           )}
@@ -371,11 +400,11 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
             className="mb-32 w-full"
             color="primary"
             icon="SaveIcon"
-            text={submitButtonText}
+            text={!selectedStory ? submitButtonText : 'Save'}
             textColor="white"
             iconPosition="start"
-            disabled={!selectedStory || !selectedActivity}
-            onClick={() => onSave(selectedStory?.id, selectedActivity?.id)}
+            onClick={() => onButtonClick()}
+            disabled={!showNextButton}
           />
         </div>
       </BannerWrapper>

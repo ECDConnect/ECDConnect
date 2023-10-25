@@ -99,9 +99,9 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
           <Alert type="info" message={recommendedText} variant="flat" />
         )}
 
-        {!!warningText && (
+        {/* {!!warningText && (
           <Alert type="warning" message={warningText} variant="flat" />
-        )}
+        )} */}
       </Card>
       <Dialog
         visible={displayDetails}
