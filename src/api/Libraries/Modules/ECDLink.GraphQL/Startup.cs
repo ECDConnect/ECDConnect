@@ -35,6 +35,7 @@ namespace ECDLink.EGraphQL
               .ModifyOptions(o => o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial)
               .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = isDevelopment)
               .AddQueryType<Query>()
+              .SetRequestOptions(_ => new HotChocolate.Execution.Options.RequestExecutorOptions { ExecutionTimeout = System.TimeSpan.FromMinutes(1) })
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
               .AddMutationType<Mutation>()
