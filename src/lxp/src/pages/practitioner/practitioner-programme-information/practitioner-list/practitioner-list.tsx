@@ -238,20 +238,43 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
               ></StackedList>
             )}
             {isPrincipal && (
-              <div>
-                <Button
-                  size="small"
-                  type="filled"
-                  color="primary"
-                  text="Add practitioner"
-                  textColor="white"
-                  icon="PlusIcon"
-                  className="mt-8"
-                  onClick={() =>
-                    history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)
-                  }
-                />
-              </div>
+              <>
+                <div>
+                  <Button
+                    size="small"
+                    type="filled"
+                    color="primary"
+                    text="Add practitioner"
+                    textColor="white"
+                    icon="PlusIcon"
+                    className="mt-8"
+                    onClick={() =>
+                      history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)
+                    }
+                  />
+                </div>
+                <div className="mb-8 flex justify-center">
+                  <Button
+                    type="outlined"
+                    color="primary"
+                    className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                    onClick={() =>
+                      history.push('/principal/practitioner-reassign-class')
+                    }
+                  >
+                    {renderIcon(
+                      'PencilAltIcon',
+                      'w-5 h-5 color-primary text-primary mr-1'
+                    )}
+                    <Typography
+                      type="body"
+                      className="mr-4"
+                      color="primary"
+                      text={'Record absence/leave'}
+                    ></Typography>
+                  </Button>
+                </div>
+              </>
             )}
           </div>
         </>
