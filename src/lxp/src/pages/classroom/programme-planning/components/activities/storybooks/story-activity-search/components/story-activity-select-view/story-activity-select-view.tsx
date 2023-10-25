@@ -48,7 +48,7 @@ export const StoryActivitySelectView: React.FC<
         text={'Choose a different story'}
         icon={'CheckCircleIcon'}
         iconPosition={'start'}
-        onClick={() => setSelectedStory(undefined)}
+        onClick={() => onClearStory()}
       />
 
       <Typography
