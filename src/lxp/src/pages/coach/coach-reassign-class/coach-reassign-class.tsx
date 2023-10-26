@@ -89,18 +89,15 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     allAbsenteeClasses && allAbsenteeClasses?.length > 0;
   const [isLoading, setIsLoading] = useState(false);
 
-  const {
-    control,
-    // register: reassignClassRegister,
-    setValue: setReassignClassValue,
-  } = useForm<ReassignClassModel>({
-    resolver: yupResolver(reassignClassSchema),
-    mode: 'onChange',
-    defaultValues: {
-      date: new Date().toString(),
-      practitioner: practitionerId ? practitionerId : '',
-    },
-  });
+  const { control, setValue: setReassignClassValue } =
+    useForm<ReassignClassModel>({
+      resolver: yupResolver(reassignClassSchema),
+      mode: 'onChange',
+      defaultValues: {
+        date: new Date().toString(),
+        practitioner: practitionerId ? practitionerId : '',
+      },
+    });
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
   >([]);
@@ -346,10 +343,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             className={'mt-3 w-full'}
             selectedValue={practitioner}
             onChange={(item: any) => {
-              // setReassignClassValue('practitioner2', item);
-              // setPractitionersTeachList(
-              //   practitionersList.filter((prac) => prac.value !== item)
-              // );
               setPrincipalOrFundaAppAdmin(item);
             }}
           />
@@ -402,7 +395,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             <FormInput
               className="my-4 w-full"
               label={'Type the reason'}
-              // value={}
               onChange={(e) => {}}
               textInputType="input"
               placeholder={'e.g. personal appointment'}
