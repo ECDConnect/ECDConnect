@@ -145,7 +145,11 @@ export type ActivityBeCreativeDetail = {
   description?: Maybe<Scalars['String']>;
   documentName?: Maybe<Scalars['String']>;
   documentReference?: Maybe<Scalars['String']>;
+  documentStatus?: Maybe<Scalars['String']>;
+  documentStatusColor?: Maybe<Scalars['String']>;
+  imageApproved?: Maybe<Scalars['Boolean']>;
   monthName?: Maybe<Scalars['String']>;
+  points: Scalars['Int'];
 };
 
 export type ActivityChildAttendance = {
