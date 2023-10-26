@@ -66,23 +66,18 @@ export const useGeneratePdfReport = () => {
           headStyles: tableHeadStyles,
           footStyles: tableFootStyles,
           styles: tableStyles,
-          head: [
-            table.tableName === undefined
-              ? [
-                  {
-                    content: ``,
-                    colSpan: 30,
-                  },
-                ]
-              : [
+          head: !!table.tableName
+            ? [
+                [
                   {
                     content: `${table.tableName}`,
                     colSpan: 5,
                     styles: { halign: 'left' },
                   },
                 ],
-            table.headers.map((h) => h.header),
-          ],
+                table.headers.map((h) => h.header),
+              ]
+            : [table.headers.map((h) => h.header)],
           columns: headers,
           body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
           foot: finalFooter,
@@ -210,11 +205,12 @@ export const useGeneratePdfReport = () => {
     //get Y value after the last table end to place info
     //min 3 items in row
     let afterTable = (doc as any).lastAutoTable.finalY;
-    doc.setFontSize(13);
+    doc.setFontSize(9);
     if (tableBottomContent && tableBottomContent.length > 0) {
       doc.text(tableBottomContent[0], 15, afterTable + 15);
-      doc.text(tableBottomContent[1], 110, afterTable + 15);
-      doc.text(tableBottomContent[2], 190, afterTable + 15);
+      doc.text(tableBottomContent[1], 60, afterTable + 15);
+      doc.text(tableBottomContent[2], 105, afterTable + 15);
+      doc.text(tableBottomContent[3], 180, afterTable + 15);
     }
 
     if (tableData.length === 1) {

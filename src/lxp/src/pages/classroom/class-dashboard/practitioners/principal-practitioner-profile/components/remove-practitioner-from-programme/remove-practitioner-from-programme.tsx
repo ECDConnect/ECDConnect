@@ -63,6 +63,10 @@ export const RemovePractitionerFromProgramme: React.FC<
   );
   const classroom = useSelector(classroomsSelectors?.getClassroom);
 
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
   //Get list of practitioners for classroom
   const practitionersForClass = useMemo(
     () =>
@@ -305,7 +309,7 @@ export const RemovePractitionerFromProgramme: React.FC<
                 );
                 triggerRemovePractionerForm();
               }}
-              minDate={new Date()}
+              minDate={tomorrow}
               dateFormat="EEE, dd MMM yyyy"
             />
           </div>
