@@ -134,9 +134,10 @@ public class IntegrationAPIManager
     {
         try
         {
-            string[] columns = null;
+            string[] columns = {     "Column", "DateTimeStamp", "RecordChange", "NewValue" };
+            string[] relatedColumns = { "Column", "DateTimeStamp", "RecordChange", "NewValue" };
             List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
-            relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "RecordChange", AllColumns = "True", Columns = "" });
+            relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "RecordChange", AllColumns = "True", Columns = ""/*relatedColumns*/ });
 
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "DateTimeStamp", Operator = "GreaterOrEqual", Value = startDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") });
