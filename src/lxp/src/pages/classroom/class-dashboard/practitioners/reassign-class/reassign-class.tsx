@@ -74,7 +74,7 @@ const multiDaysAbsentInfo = [
   },
   {
     id: 2,
-    name: 'Family responsability',
+    name: 'Family responsibility',
   },
   {
     id: 3,
