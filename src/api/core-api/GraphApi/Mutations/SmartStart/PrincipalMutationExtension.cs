@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         List<ClassroomGroup> classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == practitioner.UserId))
                                                                                    .OrderBy(x => x.Id)
                                                                                    .ToList();
-                        if (classroomGroups.Count > 0)
+                        if (classroomGroups != null && classroomGroups.Count > 0)
                         {
                             foreach (var group in classroomGroups)
                             {
