@@ -2,16 +2,37 @@ import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
-import { format } from 'date-fns';
 import ROUTES from '@/routes/routes';
 import { ClubsRouteState } from '@/pages/community/clubs-tab/index.types';
+import { useEffect } from 'react';
+import { getPointsActivityDateDetails } from '@/pages/community/clubs-tab/index.filters';
+import { ActivityMeetRegularDetail } from '@ecdlink/graphql';
 
 export const MeetingDetails: React.FC = () => {
-  const { clubId } = useParams<ClubsRouteState>();
+  const { clubId, meetingId } = useParams<ClubsRouteState>();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
+  const details = useSelector(
+    clubSelectors.getActivityMeetRegularDetailsSelector
+  );
 
   const history = useHistory();
+
+  const currentDate = new Date();
+  currentDate.setHours(0, 0, 0, 0);
+  const meetingDate = new Date(`${meetingId}T00:00:00`);
+
+  const isUpcomingVisit = currentDate < meetingDate;
+
+  const meeting = isUpcomingVisit
+    ? details?.upcomingMeetings?.find((item) =>
+        item?.meetingDate.includes(meetingId)
+      )
+    : details?.pastMeetings?.find((item) =>
+        item?.meetingDate.includes(meetingId)
+      );
+
+  const { formattedDate } = getPointsActivityDateDetails(meeting?.meetingDate);
 
   const mockedData = {
     note: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
@@ -23,6 +44,17 @@ export const MeetingDetails: React.FC = () => {
       { attended: false, name: 'Bulelwa Mahlangu' },
     ],
   };
+
+  useEffect(() => {
+    if (!details) {
+      history.push(
+        ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
+          ':clubId',
+          clubId
+        )
+      );
+    }
+  }, [clubId, details, history]);
 
   const Item = ({ name }: { name: string }) => (
     <>
@@ -37,36 +69,46 @@ export const MeetingDetails: React.FC = () => {
       className="flex flex-col p-4 pt-6"
       size="small"
       title={`${club?.name ?? ''} meeting`}
-      // TODO: change to meeting date
-      subTitle={format(new Date(), 'dd MMMM yyyy')}
+      subTitle={formattedDate}
       onBack={() => history.goBack()}
     >
-      {/* TODO: change to meeting date */}
-      <Typography type="h2" text={format(new Date(), 'dd MMMM yyyy')} />
-      <div className="bg-uiBg rounded-15 my-5 p-4">
-        <Typography type="h3" text="Notes" />
-        <Typography type="body" color="textMid" text={mockedData.note} />
-      </div>
-      <Typography type="h2" className="mb-5" text="Attendance" />
-      <div className="flex items-center gap-2">
-        <p className="bg-successMain rounded-3xl px-2 py-1">00%</p>
-        <Typography type="h4" text="club members attended:" />
-      </div>
-      {mockedData.members
-        .filter((member) => member.attended)
-        .map((member) => (
-          <Item key={member.name} name={member.name} />
-        ))}
-      <Typography
-        type="h4"
-        text="These practitioners were absent:"
-        className="mt-5 mb-2"
-      />
-      {mockedData.members
-        .filter((member) => !member.attended)
-        .map((member) => (
-          <Item key={member.name} name={member.name} />
-        ))}
+      <Typography type="h2" text={formattedDate} />
+      {meeting?.meetingNotes && (
+        <div className="bg-uiBg rounded-15 my-5 p-4">
+          <Typography type="h3" text="Notes" />
+          <Typography type="body" color="textMid" text={meeting.meetingNotes} />
+        </div>
+      )}
+      {!isUpcomingVisit && meeting && (
+        <>
+          <Typography type="h2" className="mb-5" text="Attendance" />
+          <div className="flex items-center gap-2">
+            <p className="bg-successMain rounded-3xl px-2 py-1">
+              {(meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc}%
+            </p>
+            <Typography type="h4" text="club members attended:" />
+          </div>
+          {(meeting as ActivityMeetRegularDetail)?.meetingParticipants?.map(
+            (member) => (
+              <Item
+                key={member?.practitioner?.user?.id}
+                name={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+              />
+            )
+          )}
+          <Typography
+            type="h4"
+            text="These practitioners were absent:"
+            className="mt-5 mb-2"
+          />
+          {/* TODO: check how to get this data */}
+          {mockedData.members
+            .filter((member) => !member.attended)
+            .map((member) => (
+              <Item key={member.name} name={member.name} />
+            ))}
+        </>
+      )}
       <Button
         className="mt-auto"
         icon="ArrowCircleLeftIcon"
