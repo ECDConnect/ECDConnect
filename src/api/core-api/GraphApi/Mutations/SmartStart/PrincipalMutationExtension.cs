@@ -5,6 +5,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -35,13 +36,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             var practitionerUser = new PractitionerQueryExtension().GetPractitionerByIdNumberInternal(contextAccessor, userManager, repoFactory, idNumber);
+            var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
+            var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
+
             if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
             {
                 if (practitionerUser != null)
                 {
                     Practitioner practitioner = practitionerRepo.GetByUserId(practitionerUser.Id);
-                    if (practitioner != null && principalUser != null && practitioner.CoachHierarchy == principalUser.CoachHierarchy && principalUser.UserId != practitioner.UserId) //only allow the same coach line sto be added to each other,a nd the user ids are different
+                    if (practitioner != null && practitioner.CoachHierarchy == principalUser.CoachHierarchy && principalUser.UserId != practitioner.UserId) //only allow the same coach line sto be added to each other,a nd the user ids are different
                     {
                         practitioner.DateLinked = DateTime.Now;
                         practitioner.PrincipalHierarchy = Guid.Parse(principalUser.UserId);
@@ -49,6 +53,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         practitioner.IsPrincipal = false;
                         practitionerRepo.Update(practitioner);
 
+                        //link the practitioners classroom groups to the correct classroom
+                        Classroom principalClassRoom = classroomRepo.GetAll().Where(x => x.UserId.Equals(principalUser.UserId)).OrderBy(x => x.Id).FirstOrDefault();
+                        List<ClassroomGroup> classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == practitioner.UserId))
+                                                                                   .OrderBy(x => x.Id)
+                                                                                   .ToList();
+                        if (classroomGroups != null && classroomGroups.Count > 0)
+                        {
+                            Classroom classroom = null;
+                            foreach (var group in classroomGroups)
+                            {
+                                classroom = classroomRepo.GetById(group.ClassroomId);
+                                if (principalClassRoom != null && principalClassRoom.Id != group.ClassroomId)
+                                {
+                                    group.ClassroomId = principalClassRoom.Id;
+                                    classroomGroupRepo.Update(group);
+                                }
+                            }
+                            if (classroom != null && classroom.Id != principalClassRoom.Id)
+                            {
+                                classroomRepo.Delete(classroom.Id);
+                            }
+                        }
                         //update users nicknames
                         var user = userManager.FindByIdAsync(practitioner.UserId).Result;
                         user.NickFirstName = firstName;
@@ -56,14 +82,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         user.NickFullName = firstName + " " + lastName;
 
                         userManager.UpdateAsync(user);
+                        return practitioner;
                     }
                     else return null;
-
-                    return practitioner;
                 }
                 else return null;
             }
-            else return null;
+            return null;
         }
 
         public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
@@ -133,14 +158,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public bool SwitchPrincipal([Service] PersonnelService personnelManager,
             [Service] UserManager<ApplicationUser> userManager,
-            string oldPrincipalUserId, 
+            string oldPrincipalUserId,
             string newPrincipalUserId)
         {
             var result = personnelManager.SwitchPrincipal(oldPrincipalUserId, newPrincipalUserId);
             return result != null;
         }
 
-        public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager, 
+        public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager,
             [Service] UserManager<ApplicationUser> userManager,
              string userId)
         {
@@ -152,7 +177,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
              [Service] UserManager<ApplicationUser> userManager,
              string userId)
         {
-            Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);                        
+            Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);
             return practitionerToDemote;
         }
 
