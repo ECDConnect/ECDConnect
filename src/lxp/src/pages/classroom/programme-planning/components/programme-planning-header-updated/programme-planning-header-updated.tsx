@@ -58,13 +58,36 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const sixMonthsForward: Date = addMonths(selectedDate!, 6);
 
   const addDay = useCallback(() => {
-    setSelectedDate(addDays(selectedDate!, 1));
+    var selectDate = new Date(selectedDate!);
+    if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
+      // skip weekends
+      var dayNr = selectDate.getDay();
+      if (dayNr == 5) {
+        // Sat
+        setSelectedDate(addDays(selectedDate!, 3));
+      } else if (dayNr == 6) {
+        // Sun
+        setSelectedDate(addDays(selectedDate!, 2));
+      } else {
+        setSelectedDate(addDays(selectedDate!, 1));
+      }
+    }
   }, [selectedDate, setSelectedDate]);
 
   const subDay = useCallback(() => {
     var selectDate = new Date(selectedDate!);
     if (selectDate >= threeMonthsBack && selectDate <= sixMonthsForward) {
-      setSelectedDate(subDays(selectedDate!, 1));
+      // skip weekends
+      var dayNr = selectDate.getDay();
+      if (dayNr == 0) {
+        // Sat
+        setSelectedDate(subDays(selectedDate!, 2));
+      } else if (dayNr == 1) {
+        // Sun
+        setSelectedDate(subDays(selectedDate!, 3));
+      } else {
+        setSelectedDate(subDays(selectedDate!, 1));
+      }
     }
   }, [selectedDate, setSelectedDate]);
 

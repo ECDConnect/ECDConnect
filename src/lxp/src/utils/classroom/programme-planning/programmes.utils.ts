@@ -413,6 +413,8 @@ export const getSelectedActivityWarningText = (
 };
 
 export const getAllGroupActivityIds = (programme: ProgrammeDto) => {
+  if (!programme) return [];
+
   const programmeDays = programme?.dailyProgrammes;
 
   const plannedActivities: number[] = [];
