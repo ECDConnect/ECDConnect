@@ -337,10 +337,6 @@ export const Dashboard: React.FC = () => {
     ).unwrap();
   };
 
-  // useEffect(() => {
-  //   initStaticStoreSetup();
-  // }, []);
-
   useEffect(() => {
     if (
       dashboardNotification?.isNew &&
