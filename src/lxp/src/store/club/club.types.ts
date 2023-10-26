@@ -1,4 +1,5 @@
 import {
+  ActivityBeCreative,
   ActivityMeetRegular,
   CoachingClub,
   CoachingClubBase,
@@ -7,7 +8,8 @@ import {
 export type MergedCoachingClub = CoachingClubBase & CoachingClub;
 
 export type Points = {
-  meetRegularly: ActivityMeetRegular;
+  meetRegularly?: ActivityMeetRegular;
+  beCreative?: ActivityBeCreative;
 };
 
 export type ClubState = {
