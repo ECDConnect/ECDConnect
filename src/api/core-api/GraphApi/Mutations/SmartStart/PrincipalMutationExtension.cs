@@ -60,19 +60,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                                                                    .ToList();
                         if (classroomGroups != null && classroomGroups.Count > 0)
                         {
+                            Classroom classroom = null;
                             foreach (var group in classroomGroups)
                             {
-                                Classroom classroom = classroomRepo.GetById(group.ClassroomId);
+                                classroom = classroomRepo.GetById(group.ClassroomId);
                                 if (principalClassRoom != null && principalClassRoom.Id != group.ClassroomId)
                                 {
                                     group.ClassroomId = principalClassRoom.Id;
                                     classroomGroupRepo.Update(group);
-
-                                    if (classroom != null && classroom.Id != principalClassRoom.Id)
-                                    {
-                                        classroomRepo.Delete(classroom.Id);
-                                    }
                                 }
+                            }
+                            if (classroom != null && classroom.Id != principalClassRoom.Id)
+                            {
+                                classroomRepo.Delete(classroom.Id);
                             }
                         }
                         //update users nicknames
