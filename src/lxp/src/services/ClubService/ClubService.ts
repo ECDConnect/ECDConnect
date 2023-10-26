@@ -12,6 +12,8 @@ import {
   ClubMember,
   QueryActivityMeetRegularDetailsArgs,
   ActivityMeetRegular,
+  ActivityBeCreative,
+  QueryActivityBeCreativeDetailsArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
@@ -472,24 +474,24 @@ class ClubService {
                   meetingAttendanceColor
                   points
                   meetingParticipants {
-                  practitioner {
+                    practitioner {
                       user {
                         id
                         firstName
                         surname
                       }
                   }
-              }
-              meetingAbsentees {
-                  practitioner {
-                      user {
-                          id
-                          firstName
-                          surname
+                  meetingAbsentees {
+                    practitioner {
+                        user {
+                            id
+                            firstName
+                            surname
                           }
-                      }
-                  }
-              }      
+                        }
+                    }
+                } 
+              }     
           }
         }
       `,
@@ -505,6 +507,42 @@ class ClubService {
     }
 
     return response.data.data.activityMeetRegularDetails;
+  }
+
+  async getActivityBeCreativeDetails(
+    input: QueryActivityBeCreativeDetailsArgs
+  ): Promise<ActivityBeCreative> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityBeCreativeDetails: ActivityBeCreative };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityBeCreativeDetails($clubId: UUID!) {
+          activityBeCreativeDetails(clubId: $clubId) {
+              points
+              pointsColor
+              monthlyRecords {
+                  monthName
+                  description
+                  documentName
+                  documentReference
+              }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity be creative details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityBeCreativeDetails;
   }
 
   async getClubForUser(userId: string): Promise<ClubDto> {

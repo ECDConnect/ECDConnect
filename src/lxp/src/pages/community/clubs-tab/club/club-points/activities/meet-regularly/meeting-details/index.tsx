@@ -34,17 +34,6 @@ export const MeetingDetails: React.FC = () => {
 
   const { formattedDate } = getPointsActivityDateDetails(meeting?.meetingDate);
 
-  const mockedData = {
-    note: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod',
-    members: [
-      { attended: true, name: 'Cynthia Jacobs' },
-      { attended: true, name: 'Lerato Setsego' },
-      { attended: true, name: 'Palesa Ndlovu' },
-      { attended: true, name: 'Hope Mokoena' },
-      { attended: false, name: 'Bulelwa Mahlangu' },
-    ],
-  };
-
   useEffect(() => {
     if (!details) {
       history.push(
@@ -101,12 +90,14 @@ export const MeetingDetails: React.FC = () => {
             text="These practitioners were absent:"
             className="mt-5 mb-2"
           />
-          {/* TODO: check how to get this data */}
-          {mockedData.members
-            .filter((member) => !member.attended)
-            .map((member) => (
-              <Item key={member.name} name={member.name} />
-            ))}
+          {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.map(
+            (member) => (
+              <Item
+                key={member?.practitioner?.user?.id}
+                name={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+              />
+            )
+          )}
         </>
       )}
       <Button
