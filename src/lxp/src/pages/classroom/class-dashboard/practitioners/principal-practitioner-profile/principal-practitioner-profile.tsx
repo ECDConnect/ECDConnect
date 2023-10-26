@@ -377,13 +377,13 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           <Typography
             type={'h1'}
             color="textDark"
-            text={`${practitioner?.user?.firstName} will be absent on ${format(
-              new Date(currentAbsentee?.absentDate as string),
-              'EEEE'
-            )}, ${format(
-              new Date(currentAbsentee?.absentDate as string),
-              'd MMM'
-            )}`}
+            text={`${practitioner?.user?.firstName} will be absent on ${
+              currentAbsentee?.absentDate &&
+              format(new Date(currentAbsentee?.absentDate as string), 'EEEE')
+            }, ${
+              currentAbsentee?.absentDate &&
+              format(new Date(currentAbsentee?.absentDate as string), 'd MMM')
+            }`}
             className={styles.absentCardTitle}
           />
           <div className="flex items-center gap-2">
@@ -412,12 +412,15 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
             <Typography
               type={'body'}
               color="textMid"
-              text={`${format(
-                new Date(
-                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-                ),
-                'd MMM yyyy'
-              )}`}
+              text={`${
+                currentAbsentee?.absentDateEnd &&
+                format(
+                  new Date(
+                    handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+                  ),
+                  'd MMM yyyy'
+                )
+              }`}
               className={'mt-4'}
             />
           </div>

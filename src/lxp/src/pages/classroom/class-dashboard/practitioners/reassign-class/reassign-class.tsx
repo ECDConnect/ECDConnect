@@ -67,6 +67,29 @@ const absentInfo = [
   },
 ];
 
+const multiDaysAbsentInfo = [
+  {
+    id: 1,
+    name: 'Sick',
+  },
+  {
+    id: 2,
+    name: 'Family responsability',
+  },
+  {
+    id: 3,
+    name: 'Maternity',
+  },
+  {
+    id: 4,
+    name: 'No reason given',
+  },
+  {
+    id: 5,
+    name: 'Other',
+  },
+];
+
 interface reassignedClassroomGroupProps {
   practitioner: string;
   classroomId: string;
@@ -119,6 +142,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const [absentInfoList, setAbsentInfoList] = useState<
     { label: string; value: any }[]
   >([]);
+  const [multiDaysAbsentInfoList, setMultiDaysAbsentInfoList] = useState<
+    { label: string; value: any }[]
+  >([]);
   const [reassignedClassroomGroups, setReassignedClassroomGroups] = useState<
     reassignedClassroomGroupProps[]
   >([]);
@@ -156,7 +182,8 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     !selectedDate ||
     !reason ||
     (practitionerClassroomGroups?.length > 0 &&
-      reassignedClassroomGroups?.length === 0);
+      reassignedClassroomGroups?.length !==
+        practitionerClassroomGroups?.length);
 
   useEffect(() => {
     if (hasAbsenteeClasses) {
@@ -253,6 +280,16 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       };
     });
     setAbsentInfoList(_list);
+  }, []);
+
+  useEffect(() => {
+    const _list = multiDaysAbsentInfo?.map((item) => {
+      return {
+        label: item.name,
+        value: item.name,
+      };
+    });
+    setMultiDaysAbsentInfoList(_list);
   }, []);
 
   useEffect(() => {
@@ -418,7 +455,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             )}
             <Dropdown
               placeholder={'Select reason'}
-              list={absentInfoList}
+              list={isOneDayLeave ? absentInfoList : multiDaysAbsentInfoList}
               fillType="clear"
               label={'Reason for absence'}
               fullWidth
