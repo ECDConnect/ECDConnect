@@ -115,6 +115,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string Description { get; set; }
         public string DocumentName { get; set; }
         public string DocumentReference { get; set; }
+        public bool? ImageApproved { get; set; }
+        public string DocumentStatus { get; set; }
+        public string DocumentStatusColor { get; set; }
+        public int Points { get; set; }
     }
     public class ActivityHostFamilyDays
     {

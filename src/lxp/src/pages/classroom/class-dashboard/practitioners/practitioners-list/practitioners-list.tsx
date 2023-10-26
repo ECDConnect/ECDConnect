@@ -216,9 +216,7 @@ export const PractitionersList: React.FC = () => {
                   <Typography
                     type={'body'}
                     color="textMid"
-                    text={
-                      'Keep track of practitioner absenteeism and leave, and record your own leave.'
-                    }
+                    text={'Keep track of practitioner absenteeism and leave.'}
                     className={styles.absentCardSubTitle}
                   />
                   <div className="flex justify-center">

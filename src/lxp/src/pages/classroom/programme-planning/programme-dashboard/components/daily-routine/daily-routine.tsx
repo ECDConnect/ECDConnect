@@ -4,10 +4,14 @@ import {
   Typography,
   DialogPosition,
   renderIcon,
+  Alert,
+  Card,
+  RoundIcon,
 } from '@ecdlink/ui';
 import { DateFormats } from '../../../../../../constants/Dates';
 import {
   getActivityIdForRoutineItem,
+  getAllGroupActivityIds,
   getProgrammeWeeks,
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
@@ -18,6 +22,7 @@ import { programmeRoutineSelectors } from '@store/content/programme-routine';
 import {
   DailyProgrammeDto,
   ProgrammeRoutineItemDto,
+  getWeekDate,
   useDialog,
 } from '@ecdlink/core';
 import { MessageBoard } from '../../../components/message-board/message-board';
@@ -45,6 +50,11 @@ import {
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
 import { isSameWeek, isWeekend } from 'date-fns';
+import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
+import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
+import { userSelectors } from '@/store/user';
+import format from 'date-fns/format';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -65,6 +75,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     useProgrammePlanningRecommendations();
   const recommendedActivities =
     getCurrentProgrammeRecommendedActivities(programme);
+  const { getAdditionalRecommendedSubCategories } =
+    useProgrammePlanningRecommendations();
+  const additionalRecommendedActivities =
+    getAdditionalRecommendedSubCategories(programme);
   const isCurrentDayEmpty =
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
@@ -82,6 +96,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const nextProgrammes = useSelector(
     programmeSelectors.getProgrammesAfterDate(selectedDate!)
   );
+  const userData = useSelector(userSelectors.getUser);
+  const [celebrateMessage, setCelebrateMessage] = useState('');
+  const [skillMixMessage, setSkillMixMessage] = useState('');
+  const [improveProgrammeMessage, setImproveProgrammeMessage] = useState('');
+  const plannedActivities = getAllGroupActivityIds(programme!);
+
   const nextProgrammeDaysWithoutActivity =
     nextProgrammes?.[0]?.dailyProgrammes?.filter((item) => {
       return (
@@ -337,6 +357,47 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     saveCurrentDay(currentDayCopy);
   };
 
+  useEffect(() => {
+    // Celebrate message
+    if (programmeWeeks && programmeWeeks.length >= 4 && selectedDate) {
+      var lastWeek = programmeWeeks[programmeWeeks.length - 1];
+      if (
+        format(lastWeek.endDate, 'dd MMM yyyy') ===
+        format(selectedDate, 'dd MMM yyyy')
+      ) {
+        var message =
+          'Wow, great job ' +
+          userData?.firstName +
+          '! You have planned for ' +
+          programmeWeeks.length +
+          ' weeks in a row. Keep it up!';
+        setCelebrateMessage(message);
+      }
+    }
+
+    if (plannedActivities) {
+      setSkillMixMessage('');
+      setImproveProgrammeMessage('');
+      // Mix skill message
+      if (plannedActivities.length > 9) {
+        setSkillMixMessage(
+          'Good job, your programme has a good mix of skills!'
+        );
+      }
+      // Improve programme
+      if (plannedActivities.length > 0 && plannedActivities.length < 9) {
+        setImproveProgrammeMessage('Want to improve your programme?');
+      }
+    }
+  }, [
+    programmeWeeks,
+    setCelebrateMessage,
+    userData,
+    plannedActivities,
+    setSkillMixMessage,
+    setImproveProgrammeMessage,
+  ]);
+
   const onEditActivityItem = (
     routineItem: ProgrammeRoutineItemDto,
     day?: DailyProgrammeDto
@@ -456,6 +517,60 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             })}
           </div>
         ))}
+
+      {celebrateMessage && (
+        <CustomSuccessCard
+          className="my-4"
+          customIcon={<CelebrateIcon className="h-14	w-14" />}
+          text={celebrateMessage}
+          textColour="successDark"
+          color="successBg"
+        />
+      )}
+      {skillMixMessage && (
+        <Alert
+          type="success"
+          variant="flat"
+          customMessage={
+            <div>
+              <Typography type="body" color="textDark" text={skillMixMessage} />
+            </div>
+          }
+          messageColor="textMid"
+          customIcon={<BalloonsIcon />}
+        />
+      )}
+      {improveProgrammeMessage && (
+        <>
+          <Typography
+            type={'h4'}
+            text={improveProgrammeMessage}
+            className="mt-4"
+          />
+          <Typography type={'h4'} text="Add more of these skills:" />
+          <Card className="border-primary mt-2 w-full rounded-xl border-2 bg-white py-4 px-2">
+            {recommendedActivities &&
+              recommendedActivities?.map((activityItem) => {
+                if (activityItem?.subCategory) {
+                  return (
+                    <div className="mb-1 flex items-center gap-3">
+                      <RoundIcon
+                        imageUrl={activityItem?.subCategory.imageUrl}
+                        backgroundColor="tertiary"
+                      />
+                      <Typography
+                        type={'body'}
+                        text={activityItem?.subCategory.name}
+                      />
+                    </div>
+                  );
+                }
+                return null;
+              })}
+          </Card>
+        </>
+      )}
+
       <Button
         id="gtm-add-programme"
         className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}

@@ -1,4 +1,4 @@
-import { LanguageDto, useDialog } from '@ecdlink/core';
+import { LanguageDto, getWeekDate, useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -98,19 +98,23 @@ const ProgrammeTiming: React.FC = () => {
     }
 
     handleDialog();
+  };
+
+  const handleDialogClick = useCallback(() => {
+    var friday = getWeekDate('friday');
 
     if (isPrincipal && practitioners?.length! >= 1) {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: 3,
-        programmeStartDate: validatedDate,
+        programmeStartDate: friday,
       });
     } else {
       history.push(ROUTES.CLASSROOM.ROOT, {
         activeTabIndex: 2,
-        programmeStartDate: validatedDate,
+        programmeStartDate: friday,
       });
     }
-  };
+  }, [isPrincipal, practitioners, history]);
 
   const handleDialog = () => {
     dialog({
@@ -137,6 +141,7 @@ const ProgrammeTiming: React.FC = () => {
                 colour: 'primary',
                 type: 'filled',
                 onClick: () => {
+                  handleDialogClick();
                   onCancel();
                 },
                 leadingIcon: 'ClipboardListIcon',
