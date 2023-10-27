@@ -1,6 +1,6 @@
 export enum MetricsColorEnum {
-  None = 'white',
-  Error = 'red',
-  Warning = 'orange',
-  Success = 'green',
+  None = 'None',
+  Error = 'Error',
+  Warning = 'Warning',
+  Success = 'Success',
 }
