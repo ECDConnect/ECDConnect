@@ -26,7 +26,6 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
-import { useAppDispatch } from '@store';
 import EditRemovePractitionerFromProgrammePrompt from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { classroomsSelectors } from '@/store/classroom';
 
@@ -187,98 +186,90 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         });
 
   return (
-    <div>
-      <>
-        <Dialog
-          fullScreen
-          visible={editPractitionerVisible}
-          position={DialogPosition.Top}
-        >
-          <EditPractitioner
-            setEditiPractitionerVisible={setEditiPractitionerVisible}
-          />
-        </Dialog>
-        <Dialog
-          fullScreen
-          visible={practitionerInfo}
-          position={DialogPosition.Top}
-        >
-          <OtherPractitionerProfile
-            practitionerId={practitionerId!}
-            setPractitionerInfo={setPractitionerInfo}
-            colleagueProfile={colleagueProfile}
-          />
-        </Dialog>
-        <>
-          <div className={styles.container}>
-            <BannerWrapper
-              showBackground={true}
-              backgroundUrl={theme?.images.graphicOverlayUrl}
-              backgroundImageColour={'primary'}
-              title={isPrincipal ? `Edit Practitioners` : `View Practitioners`}
-              color={'primary'}
-              size="medium"
-              renderBorder={true}
-              renderOverflow={false}
-              onBack={history.goBack}
-              displayOffline={!isOnline}
-            ></BannerWrapper>
+    <div className="scroll-auto mb-8 h-screen">
+      <BannerWrapper
+        // showBackground={true}
+        backgroundUrl={theme?.images.graphicOverlayUrl}
+        backgroundImageColour={'primary'}
+        title={isPrincipal ? `Edit Practitioners` : `View Practitioners`}
+        color={'primary'}
+        size="normal"
+        renderBorder={true}
+        renderOverflow={false}
+        onBack={history.goBack}
+        displayOffline={!isOnline}
+      />
+      <div className="ml-4 mt-4">
+        <Typography
+          type={'h2'}
+          text={isPrincipal ? 'Edit Practitioners' : 'View Practitioners'}
+          color={'textDark'}
+        />
+        {stackedListItems && (
+          <StackedList
+            className="pr-4"
+            listItems={stackedListItems}
+            type={'ActionList'}
+          ></StackedList>
+        )}
+        {isPrincipal && (
+          <div className="mb-8 h-full">
+            <div>
+              <Button
+                size="small"
+                type="filled"
+                color="primary"
+                text="Add practitioner"
+                textColor="white"
+                icon="PlusIcon"
+                className="mt-8"
+                onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
+              />
+            </div>
+            <div className="mb-8 flex justify-center">
+              <Button
+                type="outlined"
+                color="primary"
+                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                onClick={() =>
+                  history.push('/principal/practitioner-reassign-class')
+                }
+              >
+                {renderIcon(
+                  'PencilAltIcon',
+                  'w-5 h-5 color-primary text-primary mr-1'
+                )}
+                <Typography
+                  type="body"
+                  className="mr-4"
+                  color="primary"
+                  text={'Record absence/leave'}
+                ></Typography>
+              </Button>
+            </div>
           </div>
-          <div className="ml-4 mt-4">
-            <Typography
-              type={'h2'}
-              text={isPrincipal ? 'Edit Practitioners' : 'View Practitioners'}
-              color={'textDark'}
-            />
-            {stackedListItems && (
-              <StackedList
-                className="pr-4"
-                listItems={stackedListItems}
-                type={'ActionList'}
-              ></StackedList>
-            )}
-            {isPrincipal && (
-              <>
-                <div>
-                  <Button
-                    size="small"
-                    type="filled"
-                    color="primary"
-                    text="Add practitioner"
-                    textColor="white"
-                    icon="PlusIcon"
-                    className="mt-8"
-                    onClick={() =>
-                      history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)
-                    }
-                  />
-                </div>
-                <div className="mb-8 flex justify-center">
-                  <Button
-                    type="outlined"
-                    color="primary"
-                    className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                    onClick={() =>
-                      history.push('/principal/practitioner-reassign-class')
-                    }
-                  >
-                    {renderIcon(
-                      'PencilAltIcon',
-                      'w-5 h-5 color-primary text-primary mr-1'
-                    )}
-                    <Typography
-                      type="body"
-                      className="mr-4"
-                      color="primary"
-                      text={'Record absence/leave'}
-                    ></Typography>
-                  </Button>
-                </div>
-              </>
-            )}
-          </div>
-        </>
-      </>
+        )}
+      </div>
+      <Dialog
+        fullScreen
+        visible={editPractitionerVisible}
+        position={DialogPosition.Top}
+      >
+        <EditPractitioner
+          setEditiPractitionerVisible={setEditiPractitionerVisible}
+        />
+      </Dialog>
+      <Dialog
+        fullScreen
+        visible={practitionerInfo}
+        position={DialogPosition.Top}
+      >
+        <OtherPractitionerProfile
+          practitionerId={practitionerId!}
+          setPractitionerInfo={setPractitionerInfo}
+          colleagueProfile={colleagueProfile}
+        />
+      </Dialog>
       <Dialog
         className={'mb-16 px-4'}
         stretch={true}
