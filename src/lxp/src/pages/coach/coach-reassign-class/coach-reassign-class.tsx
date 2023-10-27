@@ -131,7 +131,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     practitioner,
     reason,
     practitioner2,
-    reassignedClass,
   } = useWatch({
     control: control,
   });
@@ -484,7 +483,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                         )} to ${format(new Date(endDate!), 'EEEE, d LLLL')}.`}
                         list={[
                           `${principalOrFundaAppAdminPractitioner?.user?.firstName} will be the Funda App Admin for ${practitionerProgramme}`,
-                          `${practitionerAbsentName?.user?.firstName} will teach the ${item?.name}`,
+                          `${practitionerPresentName?.user?.firstName} will teach the ${item?.name} class`,
                         ]}
                         type={'info'}
                       />
