@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
@@ -37,7 +37,15 @@ import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
-import { addDays, format, isPast, isSameDay } from 'date-fns';
+import {
+  addDays,
+  format,
+  isFriday,
+  isPast,
+  isSameDay,
+  isWeekend,
+  nextMonday,
+} from 'date-fns';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
@@ -134,10 +142,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     (item) => item?.absentDate === currentAbsentee?.absentDate
   );
 
-  const isToday = isSameDay(
+  const absenceIsToday = isSameDay(
     new Date(),
     new Date(currentAbsentee?.absentDate || '')
   );
+
+  const isOnLeave =
+    isPast(new Date(currentAbsentee?.absentDate as string)) &&
+    !isPast(new Date(currentAbsentee?.absentDateEnd as string));
 
   const handleReassignClass = useCallback(
     (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
@@ -478,6 +490,264 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     setCreatePractitionerdNoteVisible(false);
   };
 
+  const handleComebackDay = useCallback((date: Date) => {
+    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
+      return nextMonday(new Date(date));
+    }
+
+    return new Date(addDays(new Date(date), 1));
+  }, []);
+
+  const renderCardHeader = useMemo(() => {
+    if (absenceIsToday) {
+      return (
+        <>
+          <Typography
+            type={'h1'}
+            color="textDark"
+            text={`${practitioner?.user?.firstName} is absent today`}
+            className={'mt-6 ml-4'}
+          />
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`Reason:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${currentAbsentee?.reason}`}
+              className={'mt-4'}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`${practitioner?.user?.firstName} will be back on:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${format(
+                new Date(
+                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+                ),
+                'd MMM yyyy'
+              )}`}
+              className={'mt-4'}
+            />
+          </div>
+        </>
+      );
+    }
+
+    if (isOnLeave) {
+      return (
+        <>
+          <Typography
+            type={'h1'}
+            color="textDark"
+            text={`${practitioner?.user?.firstName} is on leave`}
+            className={'mt-6 ml-4'}
+          />
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`Start date:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${format(
+                new Date(
+                  handleComebackDay(currentAbsentee?.absentDate as Date)
+                ),
+                'd MMM yyyy'
+              )}`}
+              className={'mt-4'}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`End date:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${format(
+                new Date(
+                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+                ),
+                'd MMM yyyy'
+              )}`}
+              className={'mt-4'}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`Reason:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${currentAbsentee?.reason}`}
+              className={'mt-4'}
+            />
+          </div>
+        </>
+      );
+    }
+
+    if (
+      !isOnLeave &&
+      currentAbsentee?.absentDate === currentAbsentee?.absentDateEnd
+    ) {
+      return (
+        <>
+          <Typography
+            type={'h1'}
+            color="textDark"
+            text={`${practitioner?.user?.firstName} will be absent on ${
+              currentAbsentee?.absentDate &&
+              format(new Date(currentAbsentee?.absentDate as string), 'EEEE')
+            }, ${
+              currentAbsentee?.absentDate &&
+              format(new Date(currentAbsentee?.absentDate as string), 'd MMM')
+            }`}
+            className={'mt-6 ml-4'}
+          />
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`Reason:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${currentAbsentee?.reason}`}
+              className={'mt-4'}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`${practitioner?.user?.firstName} will be back on:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${
+                currentAbsentee?.absentDateEnd &&
+                format(
+                  new Date(
+                    handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+                  ),
+                  'd MMM yyyy'
+                )
+              }`}
+              className={'mt-4'}
+            />
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Typography
+          type={'h1'}
+          color="textDark"
+          text={`${practitioner?.user?.firstName} will be on leave`}
+          className={'mt-4 ml-4'}
+        />
+        <div className="flex items-center gap-2">
+          <Typography
+            type={'body'}
+            color="textMid"
+            weight="bold"
+            text={`Start date:`}
+            className={'mt-4 ml-4'}
+          />
+          <Typography
+            type={'body'}
+            color="textMid"
+            text={`${format(
+              new Date(handleComebackDay(currentAbsentee?.absentDate as Date)),
+              'd MMM yyyy'
+            )}`}
+            className={'mt-4'}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Typography
+            type={'body'}
+            color="textMid"
+            weight="bold"
+            text={`End date:`}
+            className={'mt-4 ml-4'}
+          />
+          <Typography
+            type={'body'}
+            color="textMid"
+            text={`${format(
+              new Date(
+                handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+              ),
+              'd MMM yyyy'
+            )}`}
+            className={'mt-4'}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Typography
+            type={'body'}
+            color="textMid"
+            weight="bold"
+            text={`Reason:`}
+            className={'mt-4 ml-4'}
+          />
+          <Typography
+            type={'body'}
+            color="textMid"
+            text={`${currentAbsentee?.reason}`}
+            className={'mt-4'}
+          />
+        </div>
+      </>
+    );
+  }, [
+    absenceIsToday,
+    currentAbsentee?.absentDate,
+    currentAbsentee?.absentDateEnd,
+    currentAbsentee?.reason,
+    handleComebackDay,
+    isOnLeave,
+    practitioner?.user?.firstName,
+  ]);
+
   return (
     <>
       {(practitioner?.isRegistered === null ||
@@ -563,75 +833,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               <div className="p-4">
                 <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
                   <div className={'p-4'}>
-                    <Typography
-                      type={'h1'}
-                      color="textDark"
-                      text={
-                        isToday
-                          ? `${practitioner?.user?.firstName} is absent today`
-                          : `${
-                              practitioner?.user?.firstName
-                            } will be absent on ${
-                              currentAbsentee?.absentDate
-                                ? format(
-                                    new Date(
-                                      currentAbsentee?.absentDate as string
-                                    ),
-                                    'EEEE'
-                                  )
-                                : format(new Date(), 'EEEE')
-                            }, ${
-                              currentAbsentee?.absentDate
-                                ? format(
-                                    new Date(
-                                      currentAbsentee?.absentDate as string
-                                    ),
-                                    'd MMM'
-                                  )
-                                : format(new Date(), 'd MMM')
-                            }`
-                      }
-                      className={'mt-4 ml-4'}
-                    />
-                    <div className="flex items-center gap-2">
-                      <Typography
-                        type={'body'}
-                        color="textMid"
-                        weight="bold"
-                        text={`Reason:`}
-                        className={'mt-4 ml-4'}
-                      />
-                      <Typography
-                        type={'body'}
-                        color="textMid"
-                        text={`${currentAbsentee?.reason}`}
-                        className={'mt-4'}
-                      />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Typography
-                        type={'body'}
-                        color="textMid"
-                        weight="bold"
-                        text={`${practitioner?.user?.firstName} will be back on:`}
-                        className={'mt-4 ml-4'}
-                      />
-                      <Typography
-                        type={'body'}
-                        color="textMid"
-                        text={`${
-                          currentAbsentee?.absentDateEnd
-                            ? format(
-                                new Date(
-                                  currentAbsentee?.absentDateEnd as string
-                                ),
-                                'd MMM yyyy'
-                              )
-                            : format(new Date(), 'd MMM yyyy')
-                        }`}
-                        className={'mt-4'}
-                      />
-                    </div>
+                    {renderCardHeader}
                     {allAbsenteeClasses &&
                       allAbsenteeClasses?.length > 0 &&
                       allAbsenteeClasses?.map((item) => {

@@ -156,7 +156,7 @@ export const ClubPoints: React.FC = () => {
         currentPoints={club?.totalClubPoints ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)
         maxPoints={club?.maxClubPoints ?? 0}
         barBgColour="uiLight"
-        barColour={getScoreBarColor(club?.totalClubPoints ?? 0)}
+        barColour={getScoreBarColor(club?.totalClubPoints ?? 0, 1500, 1499)}
         bgColour="uiBg"
         textColour="black"
       />

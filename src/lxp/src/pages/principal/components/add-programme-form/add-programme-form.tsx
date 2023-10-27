@@ -170,6 +170,29 @@ export const AddProgrammeForm: React.FC<{
     appDispatch(classroomsActions.setProgrammeType(programme.type));
   };
 
+  const updateClassroom = (
+    programme: EditProgrammeModel,
+    classroomId: string
+  ) => {
+    const classroomInputModel: ClassroomDto = {
+      userId: user?.id ?? '',
+      id: classroomId,
+      name: programme?.name ?? '',
+      isPrinciple: programme?.isPrincipalOrLeader ?? false,
+      numberPractitioners: programme?.smartStartPractitioners
+        ? +programme?.smartStartPractitioners
+        : 0,
+      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
+        ? +programme?.nonSmartStartPractitioners
+        : 0,
+      insertedDate: new Date().toISOString(),
+      isActive: true,
+    };
+
+    appDispatch(classroomsActions.updateClassroom(classroomInputModel));
+    appDispatch(classroomsActions.setProgrammeType(programme.type));
+  };
+
   const onSubmit = (e: EditProgrammeModel) => {
     if (!isFundaAppAdmin && isPrincipleOrOwnerSmartStarter === true) {
       setIsNotPrincipal(true);
@@ -182,6 +205,9 @@ export const AddProgrammeForm: React.FC<{
   };
 
   const onSubmitForImportedUser = (e: EditProgrammeModel) => {
+    if (classroom?.id) {
+      updateClassroom(e, classroom.id);
+    }
     onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
 
