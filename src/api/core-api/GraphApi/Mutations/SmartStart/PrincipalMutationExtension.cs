@@ -63,9 +63,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             Classroom classroom = null;
                             foreach (var group in classroomGroups)
                             {
-                                classroom = classroomRepo.GetById(group.ClassroomId);
+                               
                                 if (principalClassRoom != null && principalClassRoom.Id != group.ClassroomId)
                                 {
+                                    classroom = classroomRepo.GetById(group.ClassroomId);
                                     group.ClassroomId = principalClassRoom.Id;
                                     classroomGroupRepo.Update(group);
                                 }
