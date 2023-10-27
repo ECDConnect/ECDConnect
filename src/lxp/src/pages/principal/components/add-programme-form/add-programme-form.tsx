@@ -14,11 +14,7 @@ import {
 } from '@schemas/practitioner/edit-programme';
 import { yesNoOptions } from './add-programme-form.types';
 import { userSelectors } from '@/store/user';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@/store/classroom';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@/utils/common/uuid.utils';
 import {
@@ -165,9 +161,12 @@ export const AddProgrammeForm: React.FC<{
       insertedDate: new Date().toISOString(),
       isActive: true,
     };
+    const programmeInput = programData?.find((x) => x.id === programme.type);
 
     appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    appDispatch(classroomsActions.setProgrammeType(programme.type));
+    if (programmeInput) {
+      appDispatch(classroomsActions.setProgrammeType(programmeInput));
+    }
   };
 
   const updateClassroom = (
@@ -189,8 +188,11 @@ export const AddProgrammeForm: React.FC<{
       isActive: true,
     };
 
+    const programmeInput = programData?.find((x) => x.id === programme.type);
     appDispatch(classroomsActions.updateClassroom(classroomInputModel));
-    appDispatch(classroomsActions.setProgrammeType(programme.type));
+    if (programmeInput) {
+      appDispatch(classroomsActions.setProgrammeType(programmeInput));
+    }
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
