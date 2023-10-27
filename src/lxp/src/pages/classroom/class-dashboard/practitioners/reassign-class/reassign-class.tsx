@@ -590,7 +590,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                         className={'mt-5 mb-3'}
                         title={`You are reassigning ${
                           practitionerAbsentName?.user?.fullName || ''
-                        } class ${item?.name} to ${
+                        }'s class ${item?.name} to ${
                           practitionerPresentName?.user?.fullName || ''
                         } for ${format(
                           new Date(selectedDate!),

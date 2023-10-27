@@ -435,7 +435,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                         className={'mt-5 mb-3'}
                         title={`You are reassigning ${
                           practitionerAbsentName?.user?.fullName || ''
-                        } class ${item?.className} to ${
+                        }'s class ${item?.className} to ${
                           practitionerPresentName?.user?.fullName || ''
                         } for ${format(
                           new Date(selectedDate!),
