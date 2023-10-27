@@ -65,6 +65,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
+  const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
 
   const practitionerAbsentees = practitioner?.absentees;
   const validAbsenteesDates = practitionerAbsentees?.filter(
@@ -120,6 +121,25 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const handleReassignClass = useCallback(
     (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
+      const isPrincipal = practitionerUser?.isPrincipal;
+
+      if (isPrincipal) {
+        if (allAbsenteeClasses) {
+          history.push('practitioner-reassign-class', {
+            practitionerId,
+            allAbsenteeClasses,
+            principalPractitioner: practitionerUser,
+          });
+          return;
+        }
+        history.push('practitioner-reassign-class', {
+          practitionerId,
+          principalPractitioner: practitionerUser,
+        });
+
+        return;
+      }
+
       if (allAbsenteeClasses) {
         history.push('practitioner-reassign-class', {
           practitionerId,
