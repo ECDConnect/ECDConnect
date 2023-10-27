@@ -38,7 +38,6 @@ import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   addDays,
-  format,
   getMonth,
   isFriday,
   isPast,
@@ -51,6 +50,7 @@ import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
+import { AbsenceCard } from './components/absence-card/absence-card';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -179,7 +179,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         />
       ),
     });
-  }, [dialog, handleReassignClass, practitionerUserId]);
+  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerUserId]);
 
   useEffect(() => {
     if (!!classMetrics && !!classMetrics?.length) {
@@ -249,256 +249,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
     setExisitingRemoval(undefined);
   };
-
-  const renderCardHeader = useMemo(() => {
-    if (absenceIsToday) {
-      return (
-        <>
-          <Typography
-            type={'h1'}
-            color="textDark"
-            text={`${practitioner?.user?.firstName} is absent today`}
-            className={styles.absentCardTitle}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Reason:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${currentAbsentee?.reason}`}
-              className={'mt-4'}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`${practitioner?.user?.firstName} will be back on:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${format(
-                new Date(
-                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-                ),
-                'd MMM yyyy'
-              )}`}
-              className={'mt-4'}
-            />
-          </div>
-        </>
-      );
-    }
-
-    if (isOnLeave) {
-      return (
-        <>
-          <Typography
-            type={'h1'}
-            color="textDark"
-            text={`${practitioner?.user?.firstName} is on leave`}
-            className={styles.absentCardTitle}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Start date:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${format(
-                new Date(
-                  handleComebackDay(currentAbsentee?.absentDate as Date)
-                ),
-                'd MMM yyyy'
-              )}`}
-              className={'mt-4'}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`End date:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${format(
-                new Date(
-                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-                ),
-                'd MMM yyyy'
-              )}`}
-              className={'mt-4'}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Reason:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${currentAbsentee?.reason}`}
-              className={'mt-4'}
-            />
-          </div>
-        </>
-      );
-    }
-
-    if (
-      !isOnLeave &&
-      currentAbsentee?.absentDate === currentAbsentee?.absentDateEnd
-    ) {
-      return (
-        <>
-          <Typography
-            type={'h1'}
-            color="textDark"
-            text={`${practitioner?.user?.firstName} will be absent on ${
-              currentAbsentee?.absentDate &&
-              format(new Date(currentAbsentee?.absentDate as string), 'EEEE')
-            }, ${
-              currentAbsentee?.absentDate &&
-              format(new Date(currentAbsentee?.absentDate as string), 'd MMM')
-            }`}
-            className={styles.absentCardTitle}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Reason:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${currentAbsentee?.reason}`}
-              className={'mt-4'}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`${practitioner?.user?.firstName} will be back on:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${
-                currentAbsentee?.absentDateEnd &&
-                format(
-                  new Date(
-                    handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-                  ),
-                  'd MMM yyyy'
-                )
-              }`}
-              className={'mt-4'}
-            />
-          </div>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <Typography
-          type={'h1'}
-          color="textDark"
-          text={`${practitioner?.user?.firstName} will be on leave`}
-          className={styles.absentCardTitle}
-        />
-        <div className="flex items-center gap-2">
-          <Typography
-            type={'body'}
-            color="textMid"
-            weight="bold"
-            text={`Start date:`}
-            className={styles.absentCardSubTitle}
-          />
-          <Typography
-            type={'body'}
-            color="textMid"
-            text={`${format(
-              new Date(handleComebackDay(currentAbsentee?.absentDate as Date)),
-              'd MMM yyyy'
-            )}`}
-            className={'mt-4'}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            type={'body'}
-            color="textMid"
-            weight="bold"
-            text={`End date:`}
-            className={styles.absentCardSubTitle}
-          />
-          <Typography
-            type={'body'}
-            color="textMid"
-            text={`${format(
-              new Date(
-                handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-              ),
-              'd MMM yyyy'
-            )}`}
-            className={'mt-4'}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            type={'body'}
-            color="textMid"
-            weight="bold"
-            text={`Reason:`}
-            className={styles.absentCardSubTitle}
-          />
-          <Typography
-            type={'body'}
-            color="textMid"
-            text={`${currentAbsentee?.reason}`}
-            className={'mt-4'}
-          />
-        </div>
-      </>
-    );
-  }, [
-    absenceIsToday,
-    currentAbsentee?.absentDate,
-    currentAbsentee?.absentDateEnd,
-    currentAbsentee?.reason,
-    handleComebackDay,
-    isOnLeave,
-    practitioner?.user?.firstName,
-  ]);
 
   return (
     <>
@@ -638,90 +388,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Card>
             )}
-            {currentAbsentee ? (
-              <Card className={styles.absentCard}>
-                <div className={'p-4'}>
-                  {renderCardHeader}
-                  {allAbsenteeClasses &&
-                    allAbsenteeClasses?.length > 0 &&
-                    allAbsenteeClasses?.map((item) => {
-                      return (
-                        <div className="flex items-center gap-2">
-                          <Typography
-                            type={'body'}
-                            color="textMid"
-                            weight="bold"
-                            text={`${item?.className} class reassigned to:`}
-                            className={styles.absentCardSubTitle}
-                          />
-                          <Typography
-                            type={'body'}
-                            color="textMid"
-                            text={`${item?.reassignedToPerson}`}
-                            className={'mt-4'}
-                          />
-                        </div>
-                      );
-                    })}
-
-                  <div className="flex justify-center">
-                    <Button
-                      type="filled"
-                      color="primary"
-                      className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                      onClick={() => handleAbsenceModal()}
-                    >
-                      {renderIcon(
-                        'PencilAltIcon',
-                        'w-5 h-5 color-white text-white mr-1'
-                      )}
-                      <Typography
-                        type="body"
-                        className="mr-4"
-                        color="white"
-                        text={isLeave ? 'Edit leave' : 'Edit absence'}
-                      ></Typography>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ) : (
-              <Card className={styles.absentCard}>
-                <div className={styles.absentCardTitle}>
-                  <Typography
-                    type={'h1'}
-                    color="textDark"
-                    text={`Mark ${practitioner?.user?.firstName} absent`}
-                    className={styles.absentCardTitle}
-                  />
-                  <Typography
-                    type={'body'}
-                    color="textMid"
-                    text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
-                    className={styles.absentCardSubTitle}
-                  />
-                  <div className="flex justify-center">
-                    <Button
-                      type="filled"
-                      color="primary"
-                      className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                      onClick={() => handleReassignClass(practitionerUserId)}
-                    >
-                      {renderIcon(
-                        'PencilAltIcon',
-                        'w-5 h-5 color-white text-white mr-1'
-                      )}
-                      <Typography
-                        type="body"
-                        className="mr-4"
-                        color="white"
-                        text={'Record absence/leave'}
-                      ></Typography>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            )}
+            <AbsenceCard
+              absenceIsToday={absenceIsToday}
+              currentAbsentee={currentAbsentee}
+              handleComebackDay={handleComebackDay}
+              practitioner={practitioner!}
+              isOnLeave={isOnLeave}
+              handleReassignClass={handleReassignClass}
+              handleAbsenceModal={handleAbsenceModal}
+              isLeave={isLeave}
+              allAbsenteeClasses={allAbsenteeClasses}
+              practitionerUserId={practitionerUserId}
+            />
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
                   const classroomGroup = practitionerClassroomGroups?.find(
