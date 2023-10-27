@@ -249,10 +249,9 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
 
     if (
-      (practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0) &&
-      (practitioner?.isRegistered !== null ||
-        isPrincipal !== false ||
-        practitioner?.isLeaving !== null)
+      practitioner?.isRegistered !== null ||
+      isPrincipal !== false ||
+      practitioner?.isLeaving !== null
     ) {
       if (isPrincipal) {
         practitionersList?.push(practitioner);
