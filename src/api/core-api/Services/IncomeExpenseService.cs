@@ -180,7 +180,7 @@ namespace ECDLink.Core.Services
 
             return reportData;
         }
-        
+
         /// <summary>
         /// Gets all statements between the given date ranges. End date can be ommitted to get everything from the start date
         /// </summary>
@@ -425,8 +425,6 @@ namespace ECDLink.Core.Services
 
                 _statementsRepo.Update(submittedStatement);
             }
-
-           
 
             return submittedStatement;
         }
@@ -946,13 +944,12 @@ namespace ECDLink.Core.Services
             var results = new List<IncomeExpensePDFDataModel>();
             foreach (var income in incomeRows)
             {
-                var child = _childRepo.GetAll().Where(x => x.Id.ToString() == income.ChildUserId).Select(x => x.User).FirstOrDefault();
                 var result = new IncomeExpensePDFDataModel();
                 result.Description = income.Notes;
                 result.Date = income.DateReceived;
                 result.Amount = income.Amount;
                 result.PhotoProof = income.PhotoProof;
-                result.Child = child?.FirstName + " " + child?.Surname;
+                result.Child = childNamesById[income.ChildUserId];
                 results.Add(result);
             }
             return results;
