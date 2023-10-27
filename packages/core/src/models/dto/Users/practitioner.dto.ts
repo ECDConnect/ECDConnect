@@ -41,4 +41,5 @@ export interface PractitionerDto extends EntityBase {
   clubId?: string;
   clubName?: string;
   absentees?: AbsenteeDto[];
+  daysAbsentLastMonth?: number | string;
 }

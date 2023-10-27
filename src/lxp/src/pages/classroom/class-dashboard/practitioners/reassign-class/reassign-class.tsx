@@ -455,7 +455,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 setReassignClassValue('date', date ? date.toString() : '');
               }}
               dateFormat="EEE, dd MMM yyyy"
-              minDate={new Date()}
+              // minDate={new Date()}
             />
             {!isOneDayLeave && (
               <>
@@ -471,7 +471,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                     setEndDate(date);
                   }}
                   dateFormat="EEE, dd MMM yyyy"
-                  minDate={new Date(selectedDate as string)}
+                  // minDate={new Date(selectedDate as string)}
                 />
               </>
             )}
