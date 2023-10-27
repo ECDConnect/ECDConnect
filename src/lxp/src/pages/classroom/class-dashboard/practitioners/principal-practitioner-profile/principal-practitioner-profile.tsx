@@ -45,7 +45,6 @@ import {
   isSameDay,
   isToday,
   isWeekend,
-  nextDay,
   nextMonday,
 } from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
@@ -133,7 +132,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         practitionerId,
       });
     },
-    [allAbsenteeClasses, history]
+    [history]
   );
 
   const handleComebackDay = useCallback((date: Date) => {
