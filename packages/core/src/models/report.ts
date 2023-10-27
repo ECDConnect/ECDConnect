@@ -64,6 +64,6 @@ export interface ClassRoomChildAttendanceMonthlyReportModel {
   totalAttendanceStatsReport: {
     totalSessions: number;
     totalMonthlyAttendance: number;
-    totalChildrenAttendedSessions: number;
+    totalChildrenAttendedAllSessions: number;
   };
 }

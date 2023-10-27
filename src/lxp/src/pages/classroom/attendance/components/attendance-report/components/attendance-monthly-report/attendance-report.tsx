@@ -44,7 +44,13 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
   classroomGroupId: string;
   reportData: ChildAttendanceOverallReportModel[];
   totalAttendance: any[];
-  totalAttendanceStatsReport: any;
+  totalAttendanceStatsReport:
+    | {
+        totalSessions: number;
+        totalMonthlyAttendance: number;
+        totalChildrenAttendedAllSessions: number;
+      }
+    | undefined;
 }
 
 export const MonthlyAttendanceReport = ({
@@ -104,7 +110,7 @@ export const MonthlyAttendanceReport = ({
       const { childFullName, childIdNumber } = item;
       const attendance = item.attendance.reduce(
         (obj: { [x: string]: any }, { key, value }: any, i: number) => {
-          obj[`day${key}`] = value;
+          obj[`day${key}`] = value !== null ? value : '*';
           return obj;
         },
         {}
@@ -158,12 +164,12 @@ export const MonthlyAttendanceReport = ({
       reportDetails?.phone === null ? '' : reportDetails?.phone
     }`,
     //column2 with 3 rows of text
-    text_column_two_row_one: `ProgrammeType:${
+    text_column_two_row_one: `Programme Type: ${
       reportDetails?.programmeTypeName === null
         ? ''
         : reportDetails?.programmeTypeName
     } `,
-    text_column_two_row_two: `Programme Days:${
+    text_column_two_row_two: `Programme Days: ${
       reportDetails?.programmeDays === null ? '' : reportDetails?.programmeDays
     } `,
     text_column_two_row_three: `Site: ${
@@ -179,8 +185,9 @@ export const MonthlyAttendanceReport = ({
     `Number of children who attended all sessions: ${
       attendanceSum === 0
         ? '0'
-        : totalAttendanceStatsReport?.totalChildrenAttendedSessions
+        : totalAttendanceStatsReport?.totalChildrenAttendedAllSessions
     }`,
+    '* = child was not registered yet OR practitioner did not take attendance',
   ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {

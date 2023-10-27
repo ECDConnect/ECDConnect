@@ -7,6 +7,7 @@ import {
 } from '@/constants/club';
 import { MergedCoachingClub } from '@/store/club/club.types';
 import { Colours, SearchDropDownOption } from '@ecdlink/ui';
+import { format, parseISO } from 'date-fns';
 
 enum SortBy {
   PRIORITY = 'Priority',
@@ -193,13 +194,31 @@ export const searchList = (list: MergedCoachingClub[], searchTerm: string) => {
   return list.filter((item) => item?.name?.toLowerCase().includes(lowerSearch));
 };
 
-export function getScoreBarColor(totalClubPoints: number) {
+export function getScoreBarColor(
+  totalClubPoints: number,
+  greenPoints: number,
+  amberPoints: number
+) {
   let barColor: Colours = 'errorMain';
 
-  if (totalClubPoints >= 1500) {
-    barColor = 'successMain'; // 1500+
-  } else if (totalClubPoints >= 1 && totalClubPoints <= 1499) {
-    barColor = 'alertMain'; // 1-1499
+  if (totalClubPoints >= greenPoints) {
+    barColor = 'successMain';
+  } else if (totalClubPoints >= 1 && totalClubPoints <= amberPoints) {
+    barColor = 'alertMain';
   }
   return barColor;
+}
+
+export function getPointsActivityDateDetails(date: string) {
+  if (!date) return { monthName: '', formattedDate: '' };
+
+  const parsedDate = parseISO(date);
+  const formattedDate = format(parsedDate, 'd MMMM yyyy');
+  const monthName = format(parsedDate, 'MMMM');
+
+  return {
+    meetingId: parsedDate.toISOString().split('T')[0],
+    monthName,
+    formattedDate,
+  };
 }

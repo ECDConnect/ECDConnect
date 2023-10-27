@@ -14,11 +14,7 @@ import {
 } from '@schemas/practitioner/edit-programme';
 import { yesNoOptions } from './add-programme-form.types';
 import { userSelectors } from '@/store/user';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@/store/classroom';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@/utils/common/uuid.utils';
 import {
@@ -165,9 +161,38 @@ export const AddProgrammeForm: React.FC<{
       insertedDate: new Date().toISOString(),
       isActive: true,
     };
+    const programmeInput = programData?.find((x) => x.id === programme.type);
 
     appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    appDispatch(classroomsActions.setProgrammeType(programme.type));
+    if (programmeInput) {
+      appDispatch(classroomsActions.setProgrammeType(programmeInput));
+    }
+  };
+
+  const updateClassroom = (
+    programme: EditProgrammeModel,
+    classroomId: string
+  ) => {
+    const classroomInputModel: ClassroomDto = {
+      userId: user?.id ?? '',
+      id: classroomId,
+      name: programme?.name ?? '',
+      isPrinciple: programme?.isPrincipalOrLeader ?? false,
+      numberPractitioners: programme?.smartStartPractitioners
+        ? +programme?.smartStartPractitioners
+        : 0,
+      numberOfOtherAssistants: programme?.nonSmartStartPractitioners
+        ? +programme?.nonSmartStartPractitioners
+        : 0,
+      insertedDate: new Date().toISOString(),
+      isActive: true,
+    };
+
+    const programmeInput = programData?.find((x) => x.id === programme.type);
+    appDispatch(classroomsActions.updateClassroom(classroomInputModel));
+    if (programmeInput) {
+      appDispatch(classroomsActions.setProgrammeType(programmeInput));
+    }
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
@@ -182,6 +207,9 @@ export const AddProgrammeForm: React.FC<{
   };
 
   const onSubmitForImportedUser = (e: EditProgrammeModel) => {
+    if (classroom?.id) {
+      updateClassroom(e, classroom.id);
+    }
     onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
 

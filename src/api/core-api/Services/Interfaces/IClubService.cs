@@ -1,4 +1,5 @@
 ﻿
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
@@ -24,7 +25,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public Club ChangeClubName(Guid clubId, string clubName);
         public bool IsClubLeader(Guid practitionerId);
         public bool IsClubSupport(Guid practitionerId);
-        public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input);
+        public ClubMeeting AddClubMeeting(ClubMeetingModel input, string meetingType);
         public ClubLeader AddNewClubLeader(Guid clubId, Guid practitionerId);
         public bool AddNewClubMembers(NewClubMember input);
         public bool MoveClubMembers(NewClubMember input);
@@ -40,5 +41,6 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ActivityLeaveNoOneBehind GetActivityLeaveNoOneBehindDetails(Guid clubId);
         public ActivityChildAttendance GetActivityChildAttendance(Guid clubId);
         public ActivityChildProgress GetActivityChildProgress(Guid clubId);
+        ClubModel GetClubForUser(string userId);
     }
 }

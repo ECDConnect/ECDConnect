@@ -1,4 +1,5 @@
 ﻿using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
@@ -77,9 +78,9 @@ namespace EcdLink.Api.CoreApi.Services
             _userManager = userManager;
         }
 
-        public ClubMeeting AddCoachCircleMeeting(ClubMeetingModel input)
+        public ClubMeeting AddClubMeeting(ClubMeetingModel input, string meetingType)
         {
-            Guid meetingTypeId = _meetingTypeRepo.GetAll().Where(x => x.Name == Constants.CoachingCircleSettings.meeting_type_coach_circle).Select(x => x.Id).FirstOrDefault();
+            Guid meetingTypeId = _meetingTypeRepo.GetAll().Where(x => x.Name == meetingType).Select(x => x.Id).FirstOrDefault();
             List<ClubMeetingRegister> participants = new List<ClubMeetingRegister>();
 
             // insert club meeting
@@ -97,7 +98,7 @@ namespace EcdLink.Api.CoreApi.Services
                 MeetingNotes = input.MeetingNotes
             });
             
-            // insert participants for club  meeting
+            // insert participants for club meeting
             foreach (var participant in input.ClubMeetingParticipants)
             {
                 participants.Add(new ClubMeetingRegister {
@@ -1210,7 +1211,10 @@ namespace EcdLink.Api.CoreApi.Services
                     activityBeCreative.MonthlyRecords.Add(
                         new ActivityBeCreativeDetail()
                         {
-                            MonthName = date.ToString("MMMM")
+                            MonthName = date.ToString("MMMM"),
+                            DocumentStatusColor = MetricsColorEnum.Error.ToString(),
+                            DocumentStatus = Constants.ClubSettings.document_no_success,
+                            Points = 0
                         }
                     );
                 } 
@@ -1222,7 +1226,10 @@ namespace EcdLink.Api.CoreApi.Services
                             MonthName = date.ToString("MMMM"),
                             Description = clubBeCreative?.Description,
                             DocumentName = clubBeCreative?.Document?.Name,
-                            DocumentReference = clubBeCreative?.Document?.Reference
+                            ImageApproved = clubBeCreative?.ImageApproved,
+                            DocumentStatusColor = (bool)clubBeCreative?.ImageApproved ? MetricsColorEnum.Warning.ToString() : MetricsColorEnum.Error.ToString(),
+                            DocumentStatus = (bool)clubBeCreative?.ImageApproved ? Constants.ClubSettings.document_success : Constants.ClubSettings.document_no_success,
+                            Points = 0
                         }
                     );
                 }
@@ -1327,5 +1334,35 @@ namespace EcdLink.Api.CoreApi.Services
             return activityChildProgress;
         }
 
+        public ClubModel GetClubForUser(string userId)
+        {
+            // Get practitioner since we need the practitioner id (TODO remove this once we are set up to use userId everywhere)
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+
+            var club = _clubMemberRepo.GetAll()
+                .Where(x => x.PractitionerId == practitioner.Id && x.IsActive) // Do we need to check the club is active too?
+                .Include(x => x.Club)
+                .ThenInclude(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
+                .Include(x => x.Club)
+                .ThenInclude(x => x.League)
+                .ThenInclude(x => x.LeagueType)
+                .Select(x => x.Club)
+                .FirstOrDefault();
+
+            if (club == null) return null;
+
+            // Get points total for club
+            var pointsTotal = club.ClubPoints.Select(x => x.Points).Sum();
+
+
+
+            var maxPointsTotal = club.League == null
+                ? 0
+                : club.League?.LeagueType?.Name == Constants.ClubSettings.name_purple
+                    ? Constants.ClubSettings.purple_club_max_points
+                    : Constants.ClubSettings.non_purple_club_max_points;
+
+            return new ClubModel(club, pointsTotal, maxPointsTotal, GetClubLeagueRankPosition(club, DateTime.Now));
+        }
     }
 }

@@ -19,7 +19,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ClubMeeting AddCoachCircleMeeting([Service] IClubService clubService, ClubMeetingModel input)
         {
-            return clubService.AddCoachCircleMeeting(input);
+            return clubService.AddClubMeeting(input, Constants.CoachingCircleSettings.meeting_type_coach_circle);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public ClubMeeting AddClubMeeting([Service] IClubService clubService, ClubMeetingModel input)
+        {
+            return clubService.AddClubMeeting(input, Constants.ClubSettings.meeting_type_club_meeting);
         }
 
     }

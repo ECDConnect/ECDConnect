@@ -88,7 +88,7 @@ namespace ECDLink.Api.CoreApi.Services
 
                     replacements.Add(new TagsReplacements()
                     {
-                        FindValue = "ParentPrincipalFAACoachName",
+                        FindValue = "PrincipalName",
                         ReplacementValue = parentToSend.FirstName
                     });
                 }
