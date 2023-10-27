@@ -1,4 +1,3 @@
-import { MetricsColorEnum } from '../../../../../../core/src/enums/metrics-color';
 import { Colours } from '../../../../models/Colours';
 import { AlertSeverityType } from '../../models/UserAlertListDataItem';
 

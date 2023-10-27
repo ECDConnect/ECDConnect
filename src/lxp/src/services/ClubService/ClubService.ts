@@ -526,7 +526,10 @@ class ClubService {
                   monthName
                   description
                   documentName
-                  documentReference
+                  documentStatusColor
+                  documentStatus
+                  imageApproved
+                  points
               }
           }
         }
