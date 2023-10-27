@@ -38,7 +38,8 @@ namespace ECDLink.SmartStart.Reports
 
         public List<ClassroomGroupChildAttendanceReportModel> GetClassroomAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
-            List<ClassroomGroupChildAttendanceReportModel> classReports = new List<ClassroomGroupChildAttendanceReportModel>();
+            var classReports = new List<ClassroomGroupChildAttendanceReportModel>();
+
             //get classroom
             var classroom = _attendanceService.GetUserClassroom(userId, classgroupId);
 
@@ -48,17 +49,17 @@ namespace ECDLink.SmartStart.Reports
             }
 
             //retrieve only groups the user is allowed to see
-            List<ClassroomGroup> groups = _attendanceService.GetUserClassroomGroups(userId);
-            var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
+            var groups = _attendanceService.GetUserClassroomGroups(userId);
+            //var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
             foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
             {
                 var learners = _attendanceService.GetAllLearnerGroupInstances(classroomGroup.Id);
                 //get all children the user is allowed to see and run against hierarchy
-                List<Child> children = _attendanceService.GetChildrenForUser(userId);
+                var children = _attendanceService.GetChildrenForUser(userId);
                 if (learners.Any())
                 {
-                    foreach (var learner in learners.Where(x => children.Select(y => y.UserId).Contains(x.UserId)))
+                    foreach (var learner in learners.Where(x => children.Any(y => y.UserId == x.UserId)))
                     {
                         var attendanceForPeriod = _attendanceService.GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
                         var allAttendance = new List<List<Tuple<int, int>>>();
@@ -85,9 +86,12 @@ namespace ECDLink.SmartStart.Reports
                                                             && x.Year == dt.Year
                                                             && x.Attended == true);
 
-                                    attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
+                                    attendance.Add(
+                                        Tuple.Create(
+                                            daysOfClass.Count(), // Total attendance records for this month (attended or absent)
+                                            attendedClasses.Count())); // Days attended
 
-                                }// else attendance.Add(Tuple.Create(0, 0));
+                                }
                             }
                             if (attendance.Any())
                             {
@@ -96,16 +100,18 @@ namespace ECDLink.SmartStart.Reports
                             }
                         }
                         var reports = _attendanceService.GetMonthlyReport(monthlyAttendance);
+
                         //setting up the days allowed for attendance - not taking into account actual meeting days - but we need this for a calendar PDF
-                        SortedDictionary<int, int> attendanceDays = new SortedDictionary<int, int>();
+                        var attendanceDays = new SortedDictionary<int, int?>();
                         int daysInMonth = DateTime.DaysInMonth(startMonth.Year, startMonth.Month);
                         for (int i = 1; i <= daysInMonth; i++)
                         {
-                            DateTime dtCheck = Convert.ToDateTime(startMonth.Year + "-" + startMonth.Month + "-" + i.ToString());
+                            var dtCheck = new DateTime(startMonth.Year, startMonth.Month, i);
+                            // TODO - I think this also needs to check if the programme runs on this day
                             if (dtCheck.DayOfWeek != DayOfWeek.Sunday && dtCheck.DayOfWeek != DayOfWeek.Saturday)
                             {
                                 if (!attendanceDays.ContainsKey(i))
-                                    attendanceDays[i] = 0;
+                                    attendanceDays[i] = null;
                             }
                         }
 
@@ -114,9 +120,10 @@ namespace ECDLink.SmartStart.Reports
                             var keyDays = attendanceDays.Keys.ToList();
                             foreach (var report in reports.OrderByDescending(x => x.MonthNumber))
                             {
-                                SortedDictionary<int, int> totalAttendance = attendanceDays.Copy();
+                                var totalAttendance = attendanceDays.Copy();
 
-                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day) && c.AttendanceDate.Date >= startMonth.Date && c.AttendanceDate.Date <= endMonth.Date).OrderBy(p => p.AttendanceDate).ToList();
+                                // TODO - We should not need to hit the DB again here, we have already fetched attendance above
+                                var attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day) && c.AttendanceDate.Date >= startMonth.Date && c.AttendanceDate.Date <= endMonth.Date).OrderBy(p => p.AttendanceDate).ToList();
 
                                 foreach (var attendance in attendances)
                                 {
@@ -126,17 +133,21 @@ namespace ECDLink.SmartStart.Reports
                                 if (classReports.Where(x => x.ChildUserId.Equals(learner.UserId)).FirstOrDefault() != null)
                                 {
                                     //append to existing report and not add if child already exists in report list based on different classes child may be in
-                                    ClassroomGroupChildAttendanceReportModel existingReport = classReports.Where(x => x.ChildUserId.Equals(learner.UserId) && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();
-                                    int totalActualAttendance = existingReport.TotalActualAttendance + report.ActualAttendance;
-                                    existingReport.TotalActualAttendance = totalActualAttendance;
-                                    int totalExpectedAttendance = existingReport.TotalExpectedAttendance + report.ExpectedAttendance;
-                                    existingReport.TotalExpectedAttendance = totalExpectedAttendance;
-                                    int totalAttendancePercentage = existingReport.AttendancePercentage + report.AttendancePercentage;
+                                    var existingReport = classReports.Where(x => x.ChildUserId.Equals(learner.UserId) && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();
+                                    
+                                    existingReport.TotalActualAttendance = existingReport.TotalActualAttendance + report.ActualAttendance;
+                                    existingReport.TotalExpectedAttendance = existingReport.TotalExpectedAttendance + report.ExpectedAttendance;
+
+                                    int totalAttendancePercentage = (existingReport.TotalExpectedAttendance > 0 ? (int)Math.Round((double)existingReport.TotalActualAttendance / existingReport.TotalExpectedAttendance * 100) : 0);
+                                                                        
                                     existingReport.AttendancePercentage = totalAttendancePercentage > 0 ? (totalAttendancePercentage > 100 ? 100 : totalAttendancePercentage) : 0;
+
                                     foreach (var item in totalAttendance)
                                     {
                                         if (existingReport.Attendance.ContainsKey(item.Key))
+                                        {
                                             existingReport.Attendance[item.Key] = existingReport.Attendance[item.Key] + item.Value;
+                                        }
                                     }
                                 }
                                 else
@@ -167,11 +178,11 @@ namespace ECDLink.SmartStart.Reports
 
         public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView( Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
-            ClassroomGroupChildAttendanceReportOverviewModel overviewReport = new ClassroomGroupChildAttendanceReportOverviewModel();
+            var overviewReport = new ClassroomGroupChildAttendanceReportOverviewModel();
             endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
             overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
 
-            SortedDictionary<int, int> totalAttendance = new SortedDictionary<int, int>();
+            var totalAttendance = new SortedDictionary<int, int>();
             int totalExpectedAttendance = 0;
 
             foreach (var report in overviewReport.ClassroomAttendanceReport)
@@ -180,17 +191,24 @@ namespace ECDLink.SmartStart.Reports
                 foreach (var dayAttendance in report.Attendance)
                 {
                     if (totalAttendance.ContainsKey(dayAttendance.Key))
-                        totalAttendance[dayAttendance.Key] = totalAttendance[dayAttendance.Key] + dayAttendance.Value;
+                        totalAttendance[dayAttendance.Key] = totalAttendance[dayAttendance.Key] + (dayAttendance.Value.HasValue ? dayAttendance.Value.Value : 0);
                     else
-                        totalAttendance.Add(dayAttendance.Key, dayAttendance.Value);
+                        totalAttendance.Add(dayAttendance.Key, dayAttendance.Value.HasValue ? dayAttendance.Value.Value : 0);
                 }
 
             }
 
             overviewReport.TotalAttendance = totalAttendance;
-            TotalAttendanceStatsReport stats = new TotalAttendanceStatsReport();
-            stats.TotalSessions = totalExpectedAttendance;
-            stats.TotalChildrenAttendedSessions = overviewReport.ClassroomAttendanceReport.Count();
+            var stats = new TotalAttendanceStatsReport();
+
+            // We should get this from the programme details, but just taking the first record now
+            stats.TotalSessions = overviewReport.ClassroomAttendanceReport.Any()
+                ? overviewReport.ClassroomAttendanceReport.First().TotalExpectedAttendance
+                : 0;  
+
+            // Total children who were not absent on any day
+            stats.TotalChildrenAttendedAllSessions = overviewReport.ClassroomAttendanceReport.Where(x => x.Attendance.All(y => !y.Value.HasValue || y.Value.Value != 0)).Select(x => x.ChildUserId).Distinct().Count();
+
             stats.TotalMonthlyAttendance = totalAttendance.Values.Sum();
             overviewReport.TotalAttendanceStatsReport = stats;
 

@@ -37,7 +37,7 @@ export const AttendanceMonthlyReport: React.FC<
   const [totalAttendanceStatsReport, setTotalAttendanceStatsReport] = useState<{
     totalSessions: number;
     totalMonthlyAttendance: number;
-    totalChildrenAttendedSessions: number;
+    totalChildrenAttendedAllSessions: number;
   }>();
 
   const [viewReportDate, setViewReportDate] = useState<string>();

@@ -22,10 +22,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
   onSelected,
   onCleared,
   onActivityCleared,
-  buttonIcon,
-  buttonText,
   className,
-  hideDetails,
 }) => {
   const [displayDetails, setDisplayDetails] = useState(false);
   const handleDetailsClick = () => {
@@ -44,7 +41,13 @@ const StoryCard: React.FC<StoryCardProps> = ({
         shadowSize={'lg'}
         borderRaduis="lg"
       >
-        <div className="bg-uiBg rounded-lg p-4">
+        <div
+          className={
+            selected
+              ? 'bg-secondaryAccent2 rounded-lg p-4'
+              : 'bg-uiBg rounded-lg p-4'
+          }
+        >
           <div className="flex flex-row items-center justify-between">
             <Typography
               type="body"
@@ -56,7 +59,7 @@ const StoryCard: React.FC<StoryCardProps> = ({
           <div>
             {languages && languages.length > 0 && (
               <>
-                <div className="bg-uiBg">
+                <div className={selected ? 'bg-secondaryAccent2' : 'bg-uiBg'}>
                   <div className="flex max-h-20 items-center justify-between gap-2">
                     <Radio
                       isActivity={true}

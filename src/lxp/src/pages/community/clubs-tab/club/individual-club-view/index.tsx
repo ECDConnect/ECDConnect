@@ -247,7 +247,11 @@ export const Club: React.FC = () => {
               currentPoints={club?.totalClubPoints}
               maxPoints={club?.maxClubPoints}
               barBgColour="uiLight"
-              barColour={getScoreBarColor(club?.totalClubPoints ?? 0)}
+              barColour={getScoreBarColor(
+                club?.totalClubPoints ?? 0,
+                1500,
+                1499
+              )}
               bgColour="uiBg"
               textColour="black"
               onClick={() =>

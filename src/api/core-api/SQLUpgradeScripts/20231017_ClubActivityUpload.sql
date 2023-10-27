@@ -12,6 +12,7 @@ CREATE TABLE public."ClubActivityUpload" (
 	"ActivityType" text NULL,
 	"Month" int4 NULL,
 	"Year" int4 NULL,
+	"ImageApproved" bool NULL DEFAULT false,
 	CONSTRAINT "PK_ClubActivityUpload" PRIMARY KEY ("Id")
 );
 

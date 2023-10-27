@@ -81,6 +81,7 @@ namespace ECDLink.SmartStart.Services
         public List<Learner> GetAllLearnerGroupInstances(Guid classgroupId = default(Guid))
         {
             var learners = _dbContext.Learners
+                            .Include(x => x.User)
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
                             .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId);
@@ -302,9 +303,9 @@ namespace ECDLink.SmartStart.Services
 
             foreach (var item in monthlyAttendance)
             {
-                var totalAttendance = item.Value.Sum(x => x.Item1);
+                var expectedAttendance = item.Value.Sum(x => x.Item1);
                 var actualAttendance = item.Value.Sum(x => x.Item2);
-                var attendancePercentage = (totalAttendance > 0 && actualAttendance > 0 ? (int)Math.Round(((double)actualAttendance / totalAttendance) * 100) : 0);
+                var attendancePercentage = (expectedAttendance > 0 && actualAttendance > 0 ? (int)Math.Round(((double)actualAttendance / expectedAttendance) * 100) : 0);
 
                 report.Add(new ChildAttendanceMonthlyReportModel
                 {
@@ -312,7 +313,7 @@ namespace ECDLink.SmartStart.Services
                     Year = item.Key.Year,
                     MonthNumber = item.Key.Month,
                     ActualAttendance = actualAttendance,
-                    ExpectedAttendance = totalAttendance,
+                    ExpectedAttendance = expectedAttendance,
                     AttendancePercentage = (attendancePercentage > 0 ? (attendancePercentage > 100 ? 100 : attendancePercentage) : 0)
                 });
             }

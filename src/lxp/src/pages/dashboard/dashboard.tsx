@@ -339,9 +339,6 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     initStaticStoreSetup();
-  }, []);
-
-  useEffect(() => {
     if (
       dashboardNotification?.isNew &&
       practitioner?.progress! >= 2 &&

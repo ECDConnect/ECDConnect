@@ -5,6 +5,8 @@ import {
   addNewClubLeader,
   addNewClubMembers,
   changeClubName,
+  getActivityBeCreativeDetails,
+  getActivityMeetRegularDetails,
   getAllClubMembersForCoach,
   getAllClubsDetailsForCoach,
   getAllClubsForCoach,
@@ -30,6 +32,27 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, changeClubName);
     setThunkActionStatus(builder, updateCoachAboutInfo);
     setThunkActionStatus(builder, getAllClubsDetailsForCoach);
+    setThunkActionStatus(builder, getActivityMeetRegularDetails);
+    setThunkActionStatus(builder, getActivityBeCreativeDetails);
+    builder.addCase(getActivityBeCreativeDetails.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      state.points = {
+        ...state.points,
+        beCreative: action.payload,
+      };
+    });
+    builder.addCase(
+      getActivityMeetRegularDetails.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+
+        state.points = {
+          ...state.points,
+          meetRegularly: action.payload,
+        };
+      }
+    );
     builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 

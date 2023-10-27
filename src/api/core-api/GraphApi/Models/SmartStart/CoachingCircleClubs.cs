@@ -10,7 +10,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public DateTime MeetingDate { get; set; }
         public string Name { get; set; }
         public int? ContentValueId { get; set; }
-        public string MeetingType { get; set; } = Constants.CoachingCircleSettings.meeting_type_coach_circle;
+        public string MeetingType { get; set; }
         public string MeetingNotes { get; set; }
         public Guid ClubId { get; set; }
         public virtual ICollection<ClubMeetingRegisterModel> ClubMeetingParticipants { get; set; }

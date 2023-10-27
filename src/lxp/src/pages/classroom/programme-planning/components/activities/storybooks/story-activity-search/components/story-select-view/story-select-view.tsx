@@ -8,13 +8,14 @@ import { StorySelectViewProps } from './story-select-view.types';
 export const StorySelectView: React.FC<StorySelectViewProps> = ({
   stories,
   onStorySelected,
+  selectedStoryBookId,
 }) => {
   const storieProps: StoryCardProps[] = stories.map((item) => ({
     storyBookId: item.id,
     title: item.name,
     type: item.type,
     languages: item.availableLanguages,
-    selected: false,
+    selected: selectedStoryBookId == item.id,
     onSelected: () => {
       onStorySelected(item);
     },
