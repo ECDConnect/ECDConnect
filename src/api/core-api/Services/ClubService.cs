@@ -1346,12 +1346,15 @@ namespace EcdLink.Api.CoreApi.Services
                 .Include(x => x.Club)
                 .ThenInclude(x => x.League)
                 .ThenInclude(x => x.LeagueType)
-                .FirstOrDefault().Club;
+                .Select(x => x.Club)
+                .FirstOrDefault();
 
             if (club == null) return null;
 
             // Get points total for club
             var pointsTotal = club.ClubPoints.Select(x => x.Points).Sum();
+
+
 
             var maxPointsTotal = club.League == null
                 ? 0

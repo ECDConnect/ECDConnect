@@ -74,7 +74,7 @@ const multiDaysAbsentInfo = [
   },
   {
     id: 2,
-    name: 'Family responsability',
+    name: 'Family responsibility',
   },
   {
     id: 3,
@@ -104,7 +104,11 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const history = useHistory();
   const { state: routeState } = useLocation<ReassignClassPageState>();
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitionersUsers = useSelector(
+    practitionerSelectors.getPractitioners
+  );
+  const [practitioners, setPractitioners] = useState(practitionersUsers);
+  const principalPractitioner = routeState?.principalPractitioner;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const reportingDate = routeState?.reportingDate
     ? new Date(routeState?.reportingDate)
@@ -118,6 +122,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     ? format(reportingDate, 'EEEE, d LLLL')
     : '';
   const [isOneDayLeave, setIsOneDayLeave] = useState<boolean | boolean[]>();
+  const [principalOrFundaAppAdmin, setPrincipalOrFundaAppAdmin] = useState();
   const {
     control,
     // register: reassignClassRegister,
@@ -186,6 +191,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         practitionerClassroomGroups?.length);
 
   useEffect(() => {
+    if (principalPractitioner) {
+      if (practitioners) {
+        setPractitioners([...practitioners, principalPractitioner]);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
     if (hasAbsenteeClasses) {
       if (
         allAbsenteeClasses?.[0]?.absentDate ===
@@ -239,7 +252,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     setPractitionersList(_list);
     setPractitionersTeachList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [practitioners]);
 
   useEffect(() => {
     const _list = practitioners
@@ -270,7 +283,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     setPractitionersList(_list);
     setPractitionersTeachList(_list2);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [practitioners]);
 
   useEffect(() => {
     const _list = absentInfo?.map((item) => {
@@ -328,6 +341,11 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             practitionerThunkActions.getAllPractitioners({})
           ).unwrap();
           setIsLoading(false);
+
+          if (principalPractitioner) {
+            history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+            return;
+          }
           history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
             practitionerId,
           });
@@ -354,6 +372,12 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       ).unwrap();
     }
     setIsLoading(false);
+
+    if (principalPractitioner) {
+      history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+      return;
+    }
+
     history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
       practitionerId,
     });
@@ -394,7 +418,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               practitionersList.filter((prac) => prac.value !== item)
             );
           }}
-          disabled={hasAbsenteeClasses}
+          disabled={hasAbsenteeClasses || principalPractitioner !== undefined}
         />
         <label className={styles.label}>
           Will the practitioner be absent for one day or longer?
@@ -472,6 +496,25 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 onChange={(e) => {}}
                 textInputType="input"
                 placeholder={'e.g. personal appointment'}
+              />
+            )}
+            {principalPractitioner && isOneDayLeave === false && (
+              <Dropdown
+                placeholder={'Select practitioner'}
+                list={
+                  practitionersList.filter(
+                    (item) => item?.value !== principalPractitioner?.userId
+                  ) || []
+                }
+                fillType="clear"
+                label={`Which practitioner will be the Funda App Admin during this time?`}
+                subLabel={`Every programme must have one practitioner responsible for submitting income statements and managing the programme.`}
+                fullWidth
+                className={'mt-3 w-full'}
+                selectedValue={practitioner}
+                onChange={(item: any) => {
+                  setPrincipalOrFundaAppAdmin(item);
+                }}
               />
             )}
             {allAbsenteeClasses && allAbsenteeClasses?.length > 0 ? (
