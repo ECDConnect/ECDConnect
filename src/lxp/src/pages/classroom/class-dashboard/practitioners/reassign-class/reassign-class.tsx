@@ -456,7 +456,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               }}
               dateFormat="EEE, dd MMM yyyy"
               minDate={new Date()}
-              disabled={hasAbsenteeClasses}
             />
             {!isOneDayLeave && (
               <>
@@ -473,7 +472,6 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                   }}
                   dateFormat="EEE, dd MMM yyyy"
                   minDate={new Date(selectedDate as string)}
-                  disabled={hasAbsenteeClasses}
                 />
               </>
             )}

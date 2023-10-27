@@ -361,7 +361,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             }}
             dateFormat="EEE, dd MMM yyyy"
             minDate={new Date()}
-            disabled={hasAbsenteeClasses}
           />
           <>
             <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
@@ -377,7 +376,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
               }}
               dateFormat="EEE, dd MMM yyyy"
               minDate={new Date(selectedDate as string)}
-              disabled={hasAbsenteeClasses}
             />
           </>
           <Dropdown
