@@ -598,6 +598,7 @@ namespace EcdLink.Api.CoreApi.Services
                 clubMember.WelcomeMessage = welcomeMessage;
                 clubMember.UpdatedDate = DateTime.Now;
                 clubMember.UpdatedBy = _applicationUserId;
+                clubMember.IsNewInClub = false;
                 _clubMemberRepo.Update(clubMember);
                 return true;
             }
