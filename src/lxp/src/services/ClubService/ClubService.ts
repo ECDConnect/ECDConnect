@@ -14,10 +14,12 @@ import {
   ActivityMeetRegular,
   ActivityBeCreative,
   QueryActivityBeCreativeDetailsArgs,
+  ClubModel,
+  QueryClubForUserArgs,
+  MutationSaveWelcomeMessageArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
-import { ClubDto } from '@/models/club/club.dto';
 
 class ClubService {
   _accessToken: string;
@@ -548,10 +550,10 @@ class ClubService {
     return response.data.data.activityBeCreativeDetails;
   }
 
-  async getClubForUser(userId: string): Promise<ClubDto> {
+  async getClubForUser(input: QueryClubForUserArgs): Promise<ClubModel> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { clubForUser: ClubDto };
+      data: { clubForUser: ClubModel };
       errors?: {};
     }>(``, {
       query: `query clubForUser($userId: String) {
@@ -570,7 +572,7 @@ class ClubService {
           }
         }`,
       variables: {
-        userId,
+        ...input,
       },
     });
 
@@ -579,6 +581,32 @@ class ClubService {
     }
 
     return response.data.data.clubForUser;
+  }
+
+  async saveWelcomeMessage(
+    input: MutationSaveWelcomeMessageArgs
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { saveWelcomeMessage: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation SaveWelcomeMessage($clubId: UUID!, $practitionerId: UUID!, $welcomeMessage: String) {
+          saveWelcomeMessage(clubId: $clubId, practitionerId: $practitionerId, welcomeMessage: $welcomeMessage) {
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Save welcome message failed - Server connection error');
+    }
+
+    return response.data.data.saveWelcomeMessage;
   }
 }
 

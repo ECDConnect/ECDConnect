@@ -1,6 +1,11 @@
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
 
+// Practitioner
+export const getClubForPractitionerSelector = (state: RootState) =>
+  state.clubs?.clubForPractitioner;
+
+// Coach
 export const getAllClubsForCoachSelector = (state: RootState) =>
   state.clubs?.allClubsForCoach;
 

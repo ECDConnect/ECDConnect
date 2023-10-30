@@ -27,19 +27,30 @@ import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
 import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
 import partnershipIcon from '@/assets/icon/partnership.svg';
+import { ClubActions } from '@/store/club/club.actions';
+import { useSelector } from 'react-redux';
+import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '@/pages/community/clubs-tab/club/individual-club-view';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const ClubTab: React.FC = () => {
+  const club = useSelector(getClubForPractitionerSelector);
+
+  console.log('club', club);
   const history = useHistory();
 
   const dialog = useDialog();
 
-  // TODO: add integration
-  const isLoading = false;
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_CLUB_FOR_USER
+  );
+
+  const clubId = club?.id ?? '';
+  const isClubInALeague = !!club?.league;
 
   // TODO: add integration
-  const clubId = '1';
   const totalMembers = 6;
-  const isClubInALeague = true;
   const isPurpleLeague = false;
   const isLeaderRequest = false;
   const isLeader = true;
@@ -47,7 +58,7 @@ export const ClubTab: React.FC = () => {
   const onAddMeetingOrEvent = () => {
     return dialog({
       position: DialogPosition.Middle,
-      blocking: true,
+      blocking: false,
       render: (onClose) => {
         return <AddEventOrMeetingDialog onClose={onClose} />;
       },
@@ -120,11 +131,11 @@ export const ClubTab: React.FC = () => {
     return <></>;
   }, [isLeader, isLeaderRequest]);
 
-  // TODO: add integration
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: `{leagueName}`,
+      title: club?.league?.name ?? '',
       titleStyle: 'text-textDark',
+      onActionClick: () => {}, // TODO: add integration
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
@@ -135,13 +146,13 @@ export const ClubTab: React.FC = () => {
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(1)}
+            text={String(club?.leagueRanking ?? 0)}
           />
         </div>
       ),
       backgroundColor: true ? 'successBg' : 'infoBb',
     }),
-    []
+    [club?.league?.name, club?.leagueRanking]
   );
 
   const activities: MenuListDataItem[] = [
@@ -231,21 +242,25 @@ export const ClubTab: React.FC = () => {
             type={'MenuList' as StackedListType}
             listItems={[leagueCard]}
           />
-          {/* TODO: add integration */}
-          {true && (
-            <ScoreCard
-              className="mt-2"
-              mainText={String(1150 || 0)}
-              hint="points"
-              currentPoints={1150}
-              maxPoints={2000}
-              barBgColour="uiLight"
-              barColour="successMain"
-              bgColour="uiBg"
-              textColour="black"
-              onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
-            />
-          )}
+          <ScoreCard
+            className="mt-2"
+            mainText={String(club?.pointsTotal ?? 0)}
+            hint="points"
+            currentPoints={club?.pointsTotal || 18}
+            maxPoints={club?.maxPointsTotal ?? 0}
+            barBgColour="uiLight"
+            barColour={
+              isCurrentPointsAtLeast80PercentOfTotal(
+                club?.pointsTotal || 0,
+                club?.maxPointsTotal || 0
+              )
+                ? 'successMain'
+                : 'secondary'
+            }
+            bgColour="uiBg"
+            textColour="black"
+            onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
+          />
         </div>
       );
     }
@@ -257,7 +272,13 @@ export const ClubTab: React.FC = () => {
         title="This club is not in a league."
       />
     );
-  }, [history, isClubInALeague, leagueCard]);
+  }, [
+    club?.maxPointsTotal,
+    club?.pointsTotal,
+    history,
+    isClubInALeague,
+    leagueCard,
+  ]);
 
   const renderActivitiesContent = useMemo(() => {
     if (isClubInALeague) return <></>;
@@ -285,7 +306,7 @@ export const ClubTab: React.FC = () => {
         />
       ) : (
         <>
-          <Typography type="h2" text={'LadyBugs'} />
+          <Typography type="h2" text={club?.name ?? ''} />
           <div className="mt-4 flex gap-2">
             {isPurpleLeague && (
               <Tag icon="StarIcon" title="Purple" color="primary" />

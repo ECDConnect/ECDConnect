@@ -10,7 +10,9 @@ import {
   getAllClubMembersForCoach,
   getAllClubsDetailsForCoach,
   getAllClubsForCoach,
+  getClubForUser,
   moveClubMembers,
+  saveWelcomeMessage,
   updateCoachAboutInfo,
 } from './club.actions';
 import { ClubState, MergedCoachingClub } from './club.types';
@@ -24,6 +26,7 @@ const clubSlice = createSlice({
   initialState,
   reducers: {},
   extraReducers: (builder) => {
+    // Coach
     setThunkActionStatus(builder, getAllClubsForCoach);
     setThunkActionStatus(builder, addNewClub);
     setThunkActionStatus(builder, addNewClubLeader);
@@ -151,6 +154,17 @@ const clubSlice = createSlice({
           } as MergedCoachingClub;
         });
       }
+      setFulfilledThunkActionStatus(state, action);
+    });
+    // Practitioner
+    setThunkActionStatus(builder, getClubForUser);
+    setThunkActionStatus(builder, saveWelcomeMessage);
+    builder.addCase(getClubForUser.fulfilled, (state, action) => {
+      state.clubForPractitioner = action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(saveWelcomeMessage.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },

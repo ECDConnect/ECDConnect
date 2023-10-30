@@ -1,6 +1,7 @@
 import {
   ActivityBeCreative,
   ActivityMeetRegular,
+  ClubModel,
   CoachingClub,
   CoachingClubBase,
 } from '@ecdlink/graphql';
@@ -14,5 +15,6 @@ export type Points = {
 
 export type ClubState = {
   allClubsForCoach?: MergedCoachingClub[];
+  clubForPractitioner?: ClubModel;
   points?: Points;
 };
