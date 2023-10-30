@@ -192,7 +192,7 @@ export default function ProgrammeWrapper() {
     } else if (type === 'step:after' && index === 9) {
       setState({ run: true, stepIndex: 10 });
     } else if (action === 'reset' || lifecycle === 'complete') {
-      setStorageItem(true, LocalStorageKeys.programmeTutorialComplete);
+      setStorageItem(true, LocalStorageKeys.programmeWalkthroughComplete);
       setState({ run: false, stepIndex: 0, tourActive: false });
     }
   };
