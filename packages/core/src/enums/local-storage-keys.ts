@@ -5,6 +5,7 @@ export enum LocalStorageKeys {
   practitionerProfilePicture = 'PractitionerProfilePicture',
   practitionerProgrammePicture = 'PractitionerProgrammePicture',
   attendanceTutorialComplete = 'AttendanceTutorialComplete',
+  programmeWalkthroughComplete = 'programmeWalkthroughComplete',
   hasClosedAttendanceSmartStartPointsMessage = 'HasClosedAttendanceSmartStartPointsMessage',
   HasTrackedChildProgressBefore = 'HasTrackedChildProgressBefore',
   isSmartStartUser = 'IsSmartStartUser',
