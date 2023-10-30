@@ -101,7 +101,7 @@ namespace EcdLink.Api.CoreApi.Services
                 ContentValueId = input.ContentValueId,
                 MeetingTypeId = meetingTypeId,
                 MeetingNotes = input.MeetingNotes,
-                CoachAttended = input.CoachAttend
+                CoachAttended = input.CoachAttend == null ? false : true
             });
             
             // insert participants for club meeting

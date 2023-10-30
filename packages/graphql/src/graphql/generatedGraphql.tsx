@@ -1971,7 +1971,7 @@ export type ClubMeetingModelInput = {
   clubMeetingParticipants?: InputMaybe<
     Array<InputMaybe<ClubMeetingRegisterModelInput>>
   >;
-  coachAttend: Scalars['Boolean'];
+  coachAttend?: InputMaybe<Scalars['Boolean']>;
   contentValueId?: InputMaybe<Scalars['Int']>;
   meetingDate: Scalars['DateTime'];
   meetingNotes?: InputMaybe<Scalars['String']>;
