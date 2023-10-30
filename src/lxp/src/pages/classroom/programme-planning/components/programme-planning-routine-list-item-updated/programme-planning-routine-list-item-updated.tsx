@@ -14,6 +14,8 @@ import {
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
 import BaseListItemUpdated from '../base-list-item-updated/base-list-item-updated';
+import ProgrammeWrapper from '../../programme-dashboard/walkthrough/programme-wrapper';
+import { useAppContext } from '@/walkthrougContext';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
@@ -189,26 +191,37 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   };
 
   return (
-    <BaseListItemUpdated
-      backgroundColor={'white'}
-      overwritePreSlotRender={getRoutineItemPreSlotRender}
-      titleTypography={{
-        type: getTitleTextType(),
-        text: getTitle(),
-        color: canLinkActionToType && activity ? 'textMid' : 'black',
-        weight: canLinkActionToType && activity ? 'skinny' : 'bold',
-      }}
-      subTitleTypography={{
-        type: getSubTitleTextType(),
-        text: getSubTitle(),
-        color: canLinkActionToType && activity ? 'black' : 'textMid',
-        weight: canLinkActionToType && activity ? 'bold' : 'skinny',
-      }}
-      overwritePostSlotRender={getRoutineItemPostSlotRender}
-      dividerType={'solid'}
-      dividerColor={'uiLight'}
-      onClick={onClick}
-      routineItem={routineItem}
-    />
+    <>
+      <ProgrammeWrapper />
+      <div
+        id={
+          getTitle() === 'Small group activity'
+            ? 'walkthrough-plan-activity'
+            : ''
+        }
+      >
+        <BaseListItemUpdated
+          backgroundColor={'white'}
+          overwritePreSlotRender={getRoutineItemPreSlotRender}
+          titleTypography={{
+            type: getTitleTextType(),
+            text: getTitle(),
+            color: canLinkActionToType && activity ? 'textMid' : 'black',
+            weight: canLinkActionToType && activity ? 'skinny' : 'bold',
+          }}
+          subTitleTypography={{
+            type: getSubTitleTextType(),
+            text: getSubTitle(),
+            color: canLinkActionToType && activity ? 'black' : 'textMid',
+            weight: canLinkActionToType && activity ? 'bold' : 'skinny',
+          }}
+          overwritePostSlotRender={getRoutineItemPostSlotRender}
+          dividerType={'solid'}
+          dividerColor={'uiLight'}
+          onClick={onClick}
+          routineItem={routineItem}
+        />
+      </div>
+    </>
   );
 };

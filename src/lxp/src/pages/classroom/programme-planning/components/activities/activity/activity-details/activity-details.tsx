@@ -105,39 +105,40 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 
         <Divider dividerType="dashed" />
 
-        <Typography
-          type="body"
-          weight="bold"
-          fontSize={'18'}
-          text={'Skills'}
-          color={'textDark'}
-          className="mt-5"
-        />
-        <Card className="border-primary mt-2 rounded-lg border">
-          {activityDetail.subCategories?.map((subCategory, idx) => (
-            <ActivitySubCategoryCard
-              key={`activity-details-sub-category-${idx}`}
-              subCategory={subCategory}
-            />
-          ))}
-        </Card>
+        <div id="walkthrough-activity-detail">
+          <Typography
+            type="body"
+            weight="bold"
+            fontSize={'18'}
+            text={'Skills'}
+            color={'textDark'}
+            className="mt-5"
+          />
+          <Card className="border-primary mt-2 rounded-lg border">
+            {activityDetail.subCategories?.map((subCategory, idx) => (
+              <ActivitySubCategoryCard
+                key={`activity-details-sub-category-${idx}`}
+                subCategory={subCategory}
+              />
+            ))}
+          </Card>
 
-        <Typography
-          type="body"
-          fontSize={'18'}
-          weight="bold"
-          text={'What do I need?'}
-          color={'textDark'}
-          className="mt-5"
-        />
+          <Typography
+            type="body"
+            fontSize={'18'}
+            weight="bold"
+            text={'What do I need?'}
+            color={'textDark'}
+            className="mt-5"
+          />
 
-        <Typography
-          type="body"
-          fontSize={'16'}
-          text={activityDetail.materials}
-          color={'textMid'}
-        />
-
+          <Typography
+            type="body"
+            fontSize={'16'}
+            text={activityDetail.materials}
+            color={'textMid'}
+          />
+        </div>
         <Typography
           type="body"
           fontSize={'18'}

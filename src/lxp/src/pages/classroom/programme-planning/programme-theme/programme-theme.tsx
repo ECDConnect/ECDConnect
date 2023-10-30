@@ -9,12 +9,14 @@ import {
   Typography,
   DialogPosition,
 } from '@ecdlink/ui';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { programmeThemeSelectors } from '@store/content/programme-theme';
 import ROUTES from '@routes/routes';
+import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
+import { useAppContext } from '@/walkthrougContext';
 
 const ProgrammeTheme: React.FC = () => {
   const dialog = useDialog();
@@ -22,8 +24,15 @@ const ProgrammeTheme: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const handleBack = () => {
-    history.replace('/classroom', { activeTabIndex: 2 });
+    history.replace('/classroom', { activeTabIndex: 3 });
   };
+
+  const { setState, state } = useAppContext();
+  const nextStep = () => {
+    setState({ stepIndex: 2 });
+  };
+
+  console.log('programme theme state', state);
 
   const handleDialog = () => {
     dialog({
@@ -53,6 +62,7 @@ const ProgrammeTheme: React.FC = () => {
   };
 
   const handelThemeSelected = (theme: ProgrammeThemeModel) => {
+    nextStep();
     history.push(ROUTES.PROGRAMMES.TIMING, { theme });
   };
 
@@ -68,28 +78,37 @@ const ProgrammeTheme: React.FC = () => {
       onHelp={handleDialog}
       displayOffline={!isOnline}
     >
-      <Typography
-        className={'mx-4 my-2'}
-        type="h1"
-        text="Choose a theme"
-        color={'primary'}
-      />
-      <div className="px-2">
-        {themes?.map((theme, idx) => (
-          <div className="mb-1 rounded-3xl" key={idx}>
-            <IconImageListItem
-              key={`theme-item-${theme.id}`}
-              color={theme.color}
-              title={theme.name}
-              icon={theme.imageUrl}
-              showDivider={idx > 0}
-              onClick={() => handelThemeSelected(theme)}
-              backgroundColor={'uiBg'}
-              borderRadius={'xl'}
-            />
-          </div>
-        ))}
-      </div>
+      <ProgrammeWrapper />
+      <>
+        <Typography
+          className={'mx-4 my-2'}
+          type="h1"
+          text="Choose a theme"
+          color={'primary'}
+        />
+        <div className="px-2">
+          {themes?.map((theme, idx) => (
+            <div
+              className="mb-1 rounded-3xl"
+              key={idx}
+              id={
+                theme.name === 'Nature tree' ? 'walkthrough-nature-theme' : ''
+              }
+            >
+              <IconImageListItem
+                key={`theme-item-${theme.id}`}
+                color={theme.color}
+                title={theme.name}
+                icon={theme.imageUrl}
+                showDivider={idx > 0}
+                onClick={() => handelThemeSelected(theme)}
+                backgroundColor={'uiBg'}
+                borderRadius={'xl'}
+              />
+            </div>
+          ))}
+        </div>
+      </>
     </BannerWrapper>
   );
 };
