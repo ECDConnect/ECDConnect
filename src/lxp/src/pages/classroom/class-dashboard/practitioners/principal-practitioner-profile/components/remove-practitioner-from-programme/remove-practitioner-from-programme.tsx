@@ -412,7 +412,7 @@ export const RemovePractitionerFromProgramme: React.FC<
               type={'error'}
               title={`${practitioner?.user?.firstName} will be removed from the programme on this date`}
               list={[
-                `${practitioner?.user?.firstName} now, they will no longer be able to see child information.`,
+                `${practitioner?.user?.firstName} will no longer be able to see child information.`,
               ]}
             />
           </div>

@@ -186,6 +186,11 @@ export const AddProgrammeForm: React.FC<{
         : 0,
       insertedDate: new Date().toISOString(),
       isActive: true,
+      siteAddress: classroom?.siteAddress,
+      siteAddressId: classroom?.siteAddressId,
+      preschoolFeeAmount: classroom?.preschoolFeeAmount,
+      preschoolFeeAmountLastUpdateDate:
+        classroom?.preschoolFeeAmountLastUpdateDate,
     };
 
     const programmeInput = programData?.find((x) => x.id === programme.type);

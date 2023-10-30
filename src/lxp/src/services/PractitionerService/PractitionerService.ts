@@ -603,6 +603,11 @@ class PractitionerService {
             classroomGroupId
             insertedDate
             classSiteAddress
+            id
+            preschoolFeeAmount
+            preschoolFeeAmountLastUpdateDate
+            programmeTypeId
+            classSiteAddressId
           }
         }
       `,
@@ -807,12 +812,13 @@ class PractitionerService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String) {
+        mutation addPractitionerToPrincipal ($firstName: String, $idNumber: String, $lastName: String, $userId: String,  $programmeTypeId: UUID!) {
           addPractitionerToPrincipal(
             firstName: $firstName
             idNumber: $idNumber
             lastName: $lastName
             userId: $userId
+            programmeTypeId: $programmeTypeId
           ) {
             userId
             isActive
@@ -824,6 +830,7 @@ class PractitionerService {
         idNumber: input.idNumber,
         firstName: input.firstName,
         lastName: input.lastName,
+        programmeTypeId: input.programmeTypeId,
       },
     });
 
