@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -48,12 +49,14 @@ namespace EcdLink.Api.CoreApi.Services
 
         INotificationService _notificationService;
         UserManager<ApplicationUser> _userManager;
+        IPointsEngineService _pointsEngineService;
 
         public ClubService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IPointsEngineService pointsEngineService
             )
         {
             _contextAccessor = contextAccessor;
@@ -76,12 +79,14 @@ namespace EcdLink.Api.CoreApi.Services
 
             _notificationService = notificationService;
             _userManager = userManager;
+            _pointsEngineService = pointsEngineService;
         }
 
         public ClubMeeting AddClubMeeting(ClubMeetingModel input, string meetingType)
         {
             Guid meetingTypeId = _meetingTypeRepo.GetAll().Where(x => x.Name == meetingType).Select(x => x.Id).FirstOrDefault();
             List<ClubMeetingRegister> participants = new List<ClubMeetingRegister>();
+            Club club = _clubRepo.GetById(input.ClubId);
 
             // insert club meeting
             ClubMeeting clubMeeting = _clubMeetingRepo.Insert(new ClubMeeting
@@ -95,7 +100,8 @@ namespace EcdLink.Api.CoreApi.Services
                 ClubId = input.ClubId,
                 ContentValueId = input.ContentValueId,
                 MeetingTypeId = meetingTypeId,
-                MeetingNotes = input.MeetingNotes
+                MeetingNotes = input.MeetingNotes,
+                CoachAttended = input.CoachAttend
             });
             
             // insert participants for club meeting
@@ -112,6 +118,15 @@ namespace EcdLink.Api.CoreApi.Services
                 });
             }
             _clubMeetingRegisterRepo.InsertMany(participants);
+
+            // Add club points if meeting is not in future
+            if (meetingType == Constants.ClubSettings.meeting_type_club_meeting && club.LeagueId != null)
+            {
+                if (clubMeeting.MeetingDate.HasValue && clubMeeting.MeetingDate.Value.Date <= DateTime.Now.Date)
+                {
+                    _pointsEngineService.CalculateMeetRegularly(input.ClubId, _applicationUserId, DateTime.Now);
+                }
+            }
             return clubMeeting;
         }
 
@@ -1202,9 +1217,10 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             ClubActivityUpload clubBeCreative = new ClubActivityUpload();
+            List<ClubActivityUpload> clubActivities = _clubActivityUploadRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive && x.Year == today.Year).ToList();
             foreach (DateTime date in yearMonths)
             {
-                clubBeCreative = _clubActivityUploadRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive && x.Year == date.Year && x.Month == date.Month).FirstOrDefault();
+                clubBeCreative = clubActivities.Where(x => x.ClubId == clubId && x.IsActive && x.Year == date.Year && x.Month == date.Month).FirstOrDefault();
 
                 if (clubBeCreative == null)
                 {
