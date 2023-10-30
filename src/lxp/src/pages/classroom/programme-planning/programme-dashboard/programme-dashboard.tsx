@@ -25,7 +25,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   // const { isOnline } = useOnlineStatus();
 
   const completeProgrammeTutorial = () => {
-    setStorageItem(true, LocalStorageKeys.programmeTutorialComplete);
+    setStorageItem(true, LocalStorageKeys.programmeWalkthroughComplete);
   };
 
   const [selectedDate, setSelectedDate] = useState(
@@ -48,7 +48,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   } = useAppContext();
 
   const programmeTutorialTaken = getStorageItem(
-    LocalStorageKeys.programmeTutorialComplete
+    LocalStorageKeys.programmeWalkthroughComplete
   );
 
   const handleClickStart = () => {
@@ -109,7 +109,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
                 submit();
                 setStorageItem(
                   true,
-                  LocalStorageKeys.programmeTutorialComplete
+                  LocalStorageKeys.programmeWalkthroughComplete
                 );
               },
               leadingIcon: 'XIcon',
