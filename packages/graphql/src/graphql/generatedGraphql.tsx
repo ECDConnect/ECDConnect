@@ -2765,7 +2765,9 @@ export type ContentTypeField = {
   contentType?: Maybe<ContentType>;
   contentTypeId: Scalars['Int'];
   dataLinkName?: Maybe<Scalars['String']>;
+  displayMainTable: Scalars['Boolean'];
   displayName?: Maybe<Scalars['String']>;
+  displayPage: Scalars['Boolean'];
   fieldName?: Maybe<Scalars['String']>;
   fieldOrder: Scalars['Int'];
   fieldType?: Maybe<FieldType>;
@@ -3278,7 +3280,9 @@ export type FieldDefinitionModel = {
   __typename?: 'FieldDefinitionModel';
   assemblyDataTypeName?: Maybe<Scalars['String']>;
   dataType?: Maybe<Scalars['String']>;
+  displayMainTable: Scalars['Boolean'];
   displayName?: Maybe<Scalars['String']>;
+  displayPage: Scalars['Boolean'];
   fieldTypeId: Scalars['Int'];
   graphDataTypeName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;

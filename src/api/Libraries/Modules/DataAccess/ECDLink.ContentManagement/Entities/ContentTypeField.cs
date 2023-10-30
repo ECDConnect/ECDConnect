@@ -13,6 +13,10 @@ namespace ECDLink.ContentManagement.Entities
         public string FieldName { get; set; }
         public string DisplayName { get; set; }
 
+        public bool DisplayMainTable { get; set; }
+
+        public bool DisplayPage { get; set; }
+
         public int FieldTypeId { get; set; }
         
 
@@ -26,5 +30,6 @@ namespace ECDLink.ContentManagement.Entities
         public bool IsActive { get; set; }
 
         public string DataLinkName { get; set; }
+
     }
 }

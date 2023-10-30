@@ -1,3 +1,5 @@
+
+
 namespace ECDLink.Core.Models.ContentManagement
 {
     public class FieldDefinitionModel
@@ -9,8 +11,13 @@ namespace ECDLink.Core.Models.ContentManagement
         public string Name { get; set; }
         public string DisplayName { get; set; }
 
+        public bool DisplayMainTable { get; set; }
+
+        public bool DisplayPage { get; set; }
+
         public string AssemblyDataTypeName { get; set; }
 
         public string GraphDataTypeName { get; set; }
+
     }
 }
