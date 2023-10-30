@@ -106,8 +106,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
   const isWalkthroughSession = Boolean(state.run);
 
-  console.log('state', state);
-
   const nextProgrammeDaysWithoutActivity =
     nextProgrammes?.[0]?.dailyProgrammes?.filter((item) => {
       return (

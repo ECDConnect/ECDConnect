@@ -32,8 +32,6 @@ const ProgrammeTheme: React.FC = () => {
     setState({ stepIndex: 2 });
   };
 
-  console.log('programme theme state', state);
-
   const handleDialog = () => {
     dialog({
       position: DialogPosition.Bottom,

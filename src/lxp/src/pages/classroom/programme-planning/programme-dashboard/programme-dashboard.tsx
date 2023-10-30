@@ -57,9 +57,9 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
 
   useEffect(() => {
     //if (programmeTutorialTaken === undefined && !programmeTutorialTaken) {
-    if (!run) {
-      showProgrammeWalkthrough();
-    }
+    // if (!run) {
+    //   showProgrammeWalkthrough();
+    // }
     //}
   }, [programmeTutorialTaken]);
 

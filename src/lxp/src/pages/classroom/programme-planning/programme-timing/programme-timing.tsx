@@ -34,7 +34,6 @@ import { addDays, format } from 'date-fns';
 import { practitionerSelectors } from '@/store/practitioner';
 import walktroughImage from '../../../../assets/walktroughImage.png';
 import ProgrammeWrapper from '../programme-dashboard/walkthrough/programme-wrapper';
-import { useAppContext } from '@/walkthrougContext';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
