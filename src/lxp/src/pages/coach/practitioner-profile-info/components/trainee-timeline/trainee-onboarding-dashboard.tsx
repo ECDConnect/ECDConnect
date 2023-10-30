@@ -10,7 +10,6 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useWindowSize } from '@reach/window-size';
 import { differenceInDays } from 'date-fns';
 import { useState } from 'react';
-import { useHistory } from 'react-router';
 import { timelineSteps } from './timeline-steps';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
@@ -23,13 +22,18 @@ interface OnboardingTraineeDashboardProps {
   setNotificationStep: (notificationStep: string, options?: any) => void;
   setIsSmartChecklist?: any;
   practitioner?: PractitionerDto;
+  setShowTraineeDashboard: any;
 }
 
 export const OnboardingTraineeDashboard: React.FC<
   OnboardingTraineeDashboardProps
-> = ({ setNotificationStep, setIsSmartChecklist, practitioner }) => {
+> = ({
+  setNotificationStep,
+  setIsSmartChecklist,
+  practitioner,
+  setShowTraineeDashboard,
+}) => {
   const { isOnline } = useOnlineStatus();
-  const history = useHistory();
   const isOnStipend = practitioner?.isOnStipend;
 
   const { width } = useWindowSize();
@@ -48,7 +52,7 @@ export const OnboardingTraineeDashboard: React.FC<
     setNotificationStep(notificationStep, options);
   };
 
-  const uncompletedSteps = timelineSteps(
+  const steps = timelineSteps(
     timeline!,
     (a, b) => onView(a, b),
     false,
@@ -57,7 +61,9 @@ export const OnboardingTraineeDashboard: React.FC<
     undefined,
     '',
     isOnStipend
-  ).filter(
+  );
+
+  const uncompletedSteps = steps?.filter(
     (item) =>
       item?.type !== 'completed' &&
       item?.type !== 'inProgress' &&
@@ -72,27 +78,11 @@ export const OnboardingTraineeDashboard: React.FC<
     return differenceInDays(new Date(), date);
   };
 
-  const overdueSteps = timelineSteps(
-    timeline!,
-    (a, b) => onView(a, b),
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined,
-    '',
-    isOnStipend
-  ).filter((item) => item?.subTitleColor === 'alertMain');
+  const overdueSteps = steps?.filter(
+    (item) => item?.subTitleColor === 'alertMain'
+  );
 
-  const completedSteps = timelineSteps(
-    timeline!,
-    (a, b) => onView(a, b),
-    false,
-    isOnline,
-    // @ts-ignore
-    undefined,
-    '',
-    isOnStipend
-  ).filter((item) => item?.type === 'completed');
+  const completedSteps = steps?.filter((item) => item?.type === 'completed');
 
   const onboardingNotCompleted = completedSteps?.length < 8;
   const twoWeeksAgo = addDays(new Date(), -14);
@@ -190,13 +180,13 @@ export const OnboardingTraineeDashboard: React.FC<
         `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`
       }
       color={'primary'}
-      onBack={() => history.goBack()}
+      onBack={() => setShowTraineeDashboard(false)}
       displayOffline={!isOnline}
       renderOverflow={true}
       className="h-screen"
     >
       <div className="h-screen p-4">
-        {overdueSteps?.length > 0 && (
+        {(overdueSteps?.length > 0 || onboardingIncompleted) && (
           <div className="pt-2 pb-6">
             <StackedList
               isFullHeight={false}

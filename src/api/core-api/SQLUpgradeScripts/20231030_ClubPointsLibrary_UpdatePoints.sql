@@ -1,0 +1,1 @@
+update "ClubPointsLibrary" set "Points" = 100 where "Activity" = 'Meet regularly'; 

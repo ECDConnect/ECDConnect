@@ -4,12 +4,18 @@ import localForage from 'localforage';
 import {
   getPractitionerById,
   getPractitionersForCoach,
+  getUserExpensesForCoach,
+  getUserIncomeForCoach,
+  getUserStatementsForCoach,
 } from './practitionerForCoach.actions';
 import { PractitionerForCoachState } from './practitionerForCoach.types';
+import { getUserPointsSummaryForCoach } from '../points/points.actions';
 
 const initialState: PractitionerForCoachState = {
   practitionerForCoach: undefined,
   practitionersForCoach: undefined,
+  pointsForPractitionerUser: {},
+  statementsForPractitionerUser: {},
 };
 
 const practitionerForCoachSlice = createSlice({
@@ -19,6 +25,7 @@ const practitionerForCoachSlice = createSlice({
     resetPractitionerState: (state) => {
       state.practitionerForCoach = initialState.practitionerForCoach;
       state.practitionersForCoach = initialState.practitionersForCoach;
+      state.pointsForPractitionerUser = initialState.pointsForPractitionerUser;
     },
     updatePractitioner: (state, action: PayloadAction<PractitionerDto>) => {
       if (state.practitionerForCoach) {
@@ -40,6 +47,49 @@ const practitionerForCoachSlice = createSlice({
 
         state.practitionersForCoach = practitionersForCoach;
       }
+    });
+
+    builder.addCase(getUserPointsSummaryForCoach.fulfilled, (state, action) => {
+      state.pointsForPractitionerUser = {
+        ...state.pointsForPractitionerUser,
+        [action.meta.arg.userId]: {
+          dateLoaded: new Date().toISOString(),
+          pointsSummaries: action.payload,
+        },
+      };
+    });
+
+    builder.addCase(getUserStatementsForCoach.fulfilled, (state, action) => {
+      state.statementsForPractitionerUser = {
+        ...state.statementsForPractitionerUser,
+        [action.meta.arg.userId]: {
+          ...state.statementsForPractitionerUser[action.meta.arg.userId],
+          statementsDateLoaded: new Date().toISOString(),
+          statements: action.payload,
+        },
+      };
+    });
+
+    builder.addCase(getUserIncomeForCoach.fulfilled, (state, action) => {
+      state.statementsForPractitionerUser = {
+        ...state.statementsForPractitionerUser,
+        [action.meta.arg.userId]: {
+          ...state.statementsForPractitionerUser[action.meta.arg.userId],
+          incomeDateLoaded: new Date().toISOString(),
+          unsubmittedIncomeItems: action.payload,
+        },
+      };
+    });
+
+    builder.addCase(getUserExpensesForCoach.fulfilled, (state, action) => {
+      state.statementsForPractitionerUser = {
+        ...state.statementsForPractitionerUser,
+        [action.meta.arg.userId]: {
+          ...state.statementsForPractitionerUser[action.meta.arg.userId],
+          expensesDateLoaded: new Date().toISOString(),
+          unsubmittedExpenseItems: action.payload,
+        },
+      };
     });
   },
 });

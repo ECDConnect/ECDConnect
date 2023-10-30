@@ -22,9 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class ClassroomMutationExtension
     {
-
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-
         public ClassroomGroup UpdatePractitionerToTeachClassroom(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -56,15 +54,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id.Equals(id)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             Guid? programmeType = input.ProgrammeTypeId;
-            //if a programmetype already exists on a previously created classroomgroup, use that to avoid mismatching programmes
-            var existingGroup = classRepo.GetAll()
-                    .Where(x => x.ClassroomId == input.ClassroomId)
-                    .OrderByDescending(x => x.InsertedDate)
-                    .FirstOrDefault();
-
-            if (existingGroup != null) { 
-                programmeType = existingGroup.ProgrammeTypeId;
-            }
 
             var hierarchy = engine.GetUserHierarchy(input.UserId != null ? input.UserId.ToString() : uId);
             if (classRoomGroup == null)
@@ -335,6 +324,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
             }
             return childrenReassigned;
+        }
+
+        public bool UpdatePreschoolFeeForClassroom(
+            [Service] IPointsEngineService pointsEngineService,
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            Guid classroomId,
+            double? amount)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var classroom = classroomRepo.GetById(classroomId);
+
+            classroom.PreschoolFeeAmount = amount;
+            classroom.PreschoolFeeAmountLastUpdateDate = DateTime.Now;
+
+            classroomRepo.Update(classroom);
+
+            pointsEngineService.CalculatePreSchoolFees(uId, DateTime.Now);
+
+            return true;
         }
     }
 }

@@ -458,16 +458,18 @@ export const ChildProfile: React.FC = () => {
 
     setChildAge(ageOfChild);
 
-    new AttendanceService(authUser?.auth_token ?? '')
-      .getChildAttendanceRecords(
-        child.userId ?? '',
-        playGroup?.id ?? '',
-        startOfISOWeekYear(new Date()),
-        currentDate
-      )
-      .then((data) => {
-        setAttendanceReport(data);
-      });
+    if (isOnline) {
+      new AttendanceService(authUser?.auth_token ?? '')
+        .getChildAttendanceRecords(
+          child.userId ?? '',
+          playGroup?.id ?? '',
+          startOfISOWeekYear(new Date()),
+          currentDate
+        )
+        .then((data) => {
+          setAttendanceReport(data);
+        });
+    }
 
     const applicableNotifications: ListItemProps[] = [];
 
@@ -713,12 +715,12 @@ export const ChildProfile: React.FC = () => {
         renderOverflow={false}
         onBack={() => {
           if (isPrincipal && practitioners?.length! > 1) {
-            history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
           } else {
             if (isCoach) {
               history.goBack();
             } else {
-              history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
             }
           }
         }}

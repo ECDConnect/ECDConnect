@@ -32,6 +32,7 @@ import {
   reAccreditationFollowUpQuestion,
   supportVisitQuestion2,
   supportVisitSharedQuestion,
+  visitAnswer,
   visitOrCallQuestion,
 } from './constants';
 import { PqaRating } from '@ecdlink/graphql';
@@ -72,7 +73,7 @@ export const CoachingAndVisitOrCallStep = ({
   ]);
 
   const visitTypeOptions = [
-    { text: 'Visit', value: 'Visit', disabled: isView },
+    { text: 'Visit', value: visitAnswer, disabled: isView },
     { text: 'Call', value: callAnswer, disabled: isView },
   ];
 
@@ -189,6 +190,10 @@ export const CoachingAndVisitOrCallStep = ({
     activityName.includes(visitTypes.reaccreditation.followUp.name);
 
   const visitId = window.sessionStorage.getItem(visitIdKey);
+
+  const requestedCoachVisit = timeline?.requestedCoachVisits?.find(
+    (item) => item?.id === visitId
+  );
 
   const previousVisitAnswers = useSelector(
     getVisitDataByVisitIdSelector(visitId || '', 'prePqaPreviousFormData')
@@ -408,6 +413,25 @@ export const CoachingAndVisitOrCallStep = ({
   };
 
   useEffect(() => {
+    if (!!requestedCoachVisit && !questions[0].answer) {
+      setAnswers((prevState) => {
+        const updatedQuestions = prevState.map((item, index) => {
+          if (index === 0) {
+            return {
+              ...item,
+              answer: requestedCoachVisit?.visitType?.name?.includes('Call')
+                ? callAnswer
+                : visitAnswer,
+            };
+          }
+          return item;
+        });
+        return updatedQuestions;
+      });
+    }
+  }, [questions, requestedCoachVisit]);
+
+  useEffect(() => {
     if (isToShowPqaFollowUpQuestion) {
       setAnswers((prevState) => [
         ...prevState,
@@ -465,21 +489,27 @@ export const CoachingAndVisitOrCallStep = ({
         />
       )}
       {(isPqaFollowUp || isReAccreditationFollowUp) && <InfoCard />}
-      <Typography
-        type="h4"
-        text={replaceBraces(questions[0].question, firstName)}
-        color={isView ? 'textLight' : 'textDark'}
-        className="my-4"
-      />
-      <ButtonGroup<string>
-        color="secondary"
-        type={ButtonGroupTypes.Button}
-        options={visitTypeOptions}
-        selectedOptions={
-          questions[0].answer !== '' ? String(questions[0].answer) : undefined
-        }
-        onOptionSelected={(value) => onOptionSelected(value, 0)}
-      />
+      {!requestedCoachVisit && (
+        <>
+          <Typography
+            type="h4"
+            text={replaceBraces(questions[0].question, firstName)}
+            color={isView ? 'textLight' : 'textDark'}
+            className="my-4"
+          />
+          <ButtonGroup<string>
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            options={visitTypeOptions}
+            selectedOptions={
+              questions[0].answer !== ''
+                ? String(questions[0].answer)
+                : undefined
+            }
+            onOptionSelected={(value) => onOptionSelected(value, 0)}
+          />
+        </>
+      )}
       {questions.slice(1, 5).map((item, index) => {
         const placeholders = [
           'e.g. Follow up on creating a healthy environment.',

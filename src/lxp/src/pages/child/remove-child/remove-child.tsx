@@ -96,11 +96,16 @@ export const RemoveChild: React.FC = () => {
     appDispatch(
       classroomsActions.deactivateClassroomGroupLearner(updatedChild)
     );
+    appDispatch(
+      childrenThunkActions.calculateChildrenRegistrationRemoval(
+        updatedChild.isActive
+      )
+    );
     if (isCoach) {
       history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId });
       return;
     }
-    history.replace(ROUTES.CLASSROOM);
+    history.replace(ROUTES.CLASSROOM.ROOT);
   };
 
   return (

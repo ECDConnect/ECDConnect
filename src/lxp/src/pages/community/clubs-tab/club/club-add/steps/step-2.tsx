@@ -39,13 +39,27 @@ export const Step2 = ({
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const clubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
 
+  const leadersAndNextLeaders = clubs?.map((item) => ({
+    ...item.currentClubLeader,
+    ...item.newClubLeader,
+  }));
+
   const otherClubs = clubs?.filter((item) => item?.id !== club?.id);
   const mergedMembers = otherClubs
     ?.map((club) => club.clubMembers)
     .flat()
     .map((item) => item?.practitioner);
 
-  const availableMembers = mergedMembers?.filter(
+  // filteredMembers contains the members from mergedMembers that are not in leadersAndNextLeaders
+  const filteredMembers = mergedMembers?.filter((member) => {
+    const memberId = member?.user?.id;
+
+    return !leadersAndNextLeaders?.some(
+      (leader) => leader?.practitioner?.user?.id === memberId
+    );
+  });
+
+  const availableMembers = filteredMembers?.filter(
     (member) => !selectedIds.includes(member?.id ?? '')
   );
 
@@ -111,7 +125,9 @@ export const Step2 = ({
       <Typography
         className="mt-4 mb-2"
         type="h4"
-        text={`Would you like to move any SmartStarters from a different club into the ${step1?.clubName} club?`}
+        text={`Would you like to move any SmartStarters from a different club into the ${
+          step1?.clubName || club?.name
+        } club?`}
       />
       <ButtonGroup<boolean>
         color="secondary"

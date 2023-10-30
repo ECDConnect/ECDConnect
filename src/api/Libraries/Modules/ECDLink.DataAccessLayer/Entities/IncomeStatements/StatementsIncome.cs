@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
@@ -15,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
     {
 
     }
-    public class StatementsIncome<TKey> : EntityBase<TKey>, ITrackableType, StatementsIncomeStatementJoin<Guid?>
+    public class StatementsIncome<TKey> : EntityBase<TKey>, StatementsIncomeStatementJoin<Guid?>
          where TKey : IEquatable<TKey>
     {
         public string Notes { get; set; }

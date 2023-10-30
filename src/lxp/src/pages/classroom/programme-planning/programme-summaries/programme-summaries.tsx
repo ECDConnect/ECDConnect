@@ -22,7 +22,7 @@ export const ProgrammeSummaries: React.FC = () => {
   const programme = idProgramme || todaysProgramme;
 
   const handleBack = () => {
-    history.replace(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+    history.replace(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 2 });
   };
 
   return (

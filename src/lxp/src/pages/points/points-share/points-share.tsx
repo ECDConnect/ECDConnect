@@ -1,21 +1,19 @@
-import { PointsDetailsCard } from '@/pages/dashboard/components/points-details-card/points-details-card';
 import { PointsSummaryDto } from '@ecdlink/core';
-import {
-  BannerWrapper,
-  CelebrationCard,
-  Typography,
-  renderIcon,
-} from '@ecdlink/ui';
+import { PointsDetailsCard, Typography, renderIcon } from '@ecdlink/ui';
 import { format } from 'date-fns';
-
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { ReactComponent as EmojiYellowSmile } from '@ecdlink/ui/src/assets/emoji/emoji_yellow_smileEyes.svg';
+import { ReactComponent as EmojiYellowBigSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { ReactComponent as EmojiLightBulb } from '@ecdlink/ui/src/assets/emoji/emoji_lightbulb.svg';
+import { useMemo } from 'react';
 
 export type PointsShareProps = {
   viewMode: 'Month' | 'Year';
   pointsSummaries: PointsSummaryDto[];
   userFullName: string;
   childCount: number;
+  clubStanding: number;
+  clubName: string;
 };
 
 export const PointsShare: React.FC<PointsShareProps> = ({
@@ -23,6 +21,8 @@ export const PointsShare: React.FC<PointsShareProps> = ({
   pointsSummaries,
   userFullName,
   childCount,
+  clubStanding,
+  clubName,
 }) => {
   const pointsTotal = pointsSummaries.reduce(
     (total, current) =>
@@ -60,18 +60,31 @@ export const PointsShare: React.FC<PointsShareProps> = ({
       </div>
       <div className="mt-5 flex flex-col p-4">
         <div
-          className={`bg-secondary h-115 mt-2 rounded-lg px-4 py-4 shadow-sm sm:px-6`}
+          className={`bg-${
+            clubStanding > 50 ? 'successMain' : 'secondary'
+          } h-115 mt-2 rounded-lg px-4 py-4 shadow-sm sm:px-6`}
         >
           <div className="flex flex-row gap-3">
-            <EmojiYellowSmile className="mr-2 h-16 w-16" />
+            {clubStanding > 50 ? (
+              <EmojiYellowBigSmile className="mr-2 h-16 w-16" />
+            ) : (
+              <EmojiYellowSmile className="mr-2 h-16 w-16" />
+            )}
             <div className="flex-column gap-3">
               <Typography
                 type="h3"
                 color="uiBg"
-                text={'High points earner!'}
+                text={
+                  clubStanding === 100
+                    ? `Top SmartStarter in the ${clubName} for this period!`
+                    : clubStanding > 75
+                    ? `One of the top SmartStarters in the ${clubName} for this period!`
+                    : clubStanding > 50
+                    ? 'High points earner!'
+                    : 'High points earner!'
+                }
                 className="pt-2"
               />
-              {/* <div className={'mt-2 flex flex-1 flex-row'}> */}
               <table>
                 <tr className="mb-2">
                   <td>
@@ -86,19 +99,26 @@ export const PointsShare: React.FC<PointsShareProps> = ({
                   </td>
                 </tr>
               </table>
-              {/* </div> */}
             </div>
           </div>
         </div>
-        {/* TODO add club points based celebration messages once data is available */}
         {pointsSummaries.map((pointsLibraryScore) => {
           return (
-            <PointsDetailsCard
-              pointsEarned={pointsLibraryScore.pointsTotal}
-              activityCount={12} // TODO - replace with actual value once available
-              description={pointsLibraryScore.subActivity || 'Unknown'}
-              isShare={true}
-            />
+            <div className="mt-5">
+              <PointsDetailsCard
+                pointsEarned={pointsLibraryScore.pointsTotal}
+                activityCount={pointsLibraryScore.timesScored}
+                title={pointsLibraryScore.subActivity || 'Unknown'}
+                isShare
+                size="large"
+                badgeImage={
+                  <Badge
+                    className="absolute z-0 h-full w-full"
+                    fill="var(--primary)"
+                  />
+                }
+              />
+            </div>
           );
         })}
         <div className="mt-6 flex flex-1 flex-row">

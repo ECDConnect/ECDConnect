@@ -57,7 +57,9 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
   return (
     <div
       className={
-        hasClickHandler
+        item?.successColor
+          ? styles.menuItemIconContainerCoachCirclesNoAction
+          : hasClickHandler
           ? styles.menulistItemContainer
           : styles.menuItemIconContainerNoAction
       }
@@ -70,7 +72,7 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
-          <div>{renderAvatar}</div>
+          {!item?.hideAvatar && <div>{renderAvatar}</div>}
           <div className={stackedListStyles.paragraphWrapper}>
             <div>
               <Typography
@@ -115,7 +117,16 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
             </div>
           </div>
         </div>
-        <div>
+        <div className="flex items-center">
+          {item?.subItem && (
+            <p
+              className={
+                'bg-primary mr-6 truncate rounded-3xl px-2 py-1 text-base font-medium text-white'
+              }
+            >
+              {item?.subItem}
+            </p>
+          )}
           {hasClickHandler &&
             renderIcon(
               !!item.rightIcon ? item.rightIcon : 'ChevronRightIcon',

@@ -59,6 +59,7 @@ export const getProgrammeWeeks = (
       return prev;
     }
   }, [] as ProgrammeWeek[]);
+  weeks.sort((a, b) => (a.endDate > b.endDate ? 1 : -1));
   return weeks;
 };
 
@@ -412,6 +413,8 @@ export const getSelectedActivityWarningText = (
 };
 
 export const getAllGroupActivityIds = (programme: ProgrammeDto) => {
+  if (!programme) return [];
+
   const programmeDays = programme?.dailyProgrammes;
 
   const plannedActivities: number[] = [];

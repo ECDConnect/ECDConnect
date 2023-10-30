@@ -1,6 +1,7 @@
 import { DocumentDto } from '../Documents';
 import { EntityBase } from '../entity-base';
 import { SiteAddressDto } from '../SiteAddress';
+import { AbsenteeDto } from './absentee.dto';
 import { UserDto } from './user.dto';
 
 export interface PractitionerDto extends EntityBase {
@@ -37,4 +38,7 @@ export interface PractitionerDto extends EntityBase {
   isOnStipend?: boolean;
   stipendType?: string;
   isCompletedBusinessWalkThrough?: boolean;
+  clubId?: string;
+  clubName?: string;
+  absentees?: AbsenteeDto[];
 }

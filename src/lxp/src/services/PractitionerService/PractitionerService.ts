@@ -154,6 +154,21 @@ class PractitionerService {
                 visitName
                 visitTypeName
               }
+              requestedCoachVisits {
+                id
+                plannedVisitDate
+                insertedDate
+                attended
+                visitType {
+                  description
+                  id
+                  isActive
+                  name
+                  normalizedName
+                  order
+                  type
+                }
+              }
               selfAssessmentVisits {
                 id
                 plannedVisitDate
@@ -270,6 +285,8 @@ class PractitionerService {
             isOnStipend
             stipendType
             isCompletedBusinessWalkThrough
+            clubId
+            clubName
           }
         }
       `,
@@ -346,6 +363,8 @@ class PractitionerService {
             isOnStipend
             stipendType
             isCompletedBusinessWalkThrough
+            clubId
+            clubName
           }
         }
       `,
@@ -434,6 +453,17 @@ class PractitionerService {
             isCompletedBusinessWalkThrough
             isClubLeader
             isClubSupport
+            clubId
+            absentees {
+              absentDate
+              absentDateEnd
+              className
+              classroomGroupId
+              reason
+              reassignedToPerson
+              reassignedToUserId
+              absenteeId
+          }
           }
         }
       `,

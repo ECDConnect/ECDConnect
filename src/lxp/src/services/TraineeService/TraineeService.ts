@@ -107,6 +107,8 @@ class TraineeService {
             startUpSupportStartDate
             startUpSupportEndDate
             startUpSupportAmount
+            smartSpaceLicenseNotAwardedSteps
+            smartSpaceLicenseNotAwardedDate
             traineeVisits {
                 id
                 plannedVisitDate
@@ -258,15 +260,17 @@ class TraineeService {
     return true;
   }
 
-  async addVisitData(input: CmsVisitDataInputModelInput): Promise<boolean> {
+  async addCoachVisitData(
+    input: CmsVisitDataInputModelInput
+  ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { addVisitData: boolean };
       errors?: {};
     }>(``, {
       query: `
-      mutation AddVisitData($input: CMSVisitDataInputModelInput) {
-        addVisitData(input: $input) {
+      mutation AddCoachVisitData($input: CMSVisitDataInputModelInput) {
+        addCoachVisitData(input: $input) {
         }
     }
       `,

@@ -5,8 +5,9 @@ import {
   MIN_PURPLE_CLUB_POINTS,
   MIN_RISING_STARS_POINTS,
 } from '@/constants/club';
-import { CoachingClub } from '@ecdlink/graphql';
-import { SearchDropDownOption } from '@ecdlink/ui';
+import { MergedCoachingClub } from '@/store/club/club.types';
+import { Colours, SearchDropDownOption } from '@ecdlink/ui';
+import { format, parseISO } from 'date-fns';
 
 enum SortBy {
   PRIORITY = 'Priority',
@@ -35,9 +36,9 @@ export const sortByOptions: SearchDropDownOption<string>[] = [
 }));
 
 export function filterClubsByLeagueType(
-  clubs: CoachingClub[],
+  clubs: MergedCoachingClub[],
   leagueType?: string
-): CoachingClub[] {
+): MergedCoachingClub[] {
   if (!leagueType) {
     return clubs;
   }
@@ -103,7 +104,7 @@ const assignRank = (points: number, leagueType: string): number => {
   }
 };
 
-function sortByPointsEarnedThisYear(clubs: CoachingClub[]) {
+function sortByPointsEarnedThisYear(clubs: MergedCoachingClub[]) {
   return clubs.sort((a, b) => {
     // Ensure that a.league and a.league.leagueType are not null or undefined
     const leagueTypeA = a.league?.leagueType?.name ?? LeagueType.Other;
@@ -126,7 +127,46 @@ function sortByPointsEarnedThisYear(clubs: CoachingClub[]) {
   });
 }
 
-export function sortClubBy(clubs: CoachingClub[], sortBy: string) {
+function sortByMeetingAttendance(clubs: MergedCoachingClub[]) {
+  return clubs.sort((a, b) => {
+    // @ts-ignore: update graphql types
+    const startsWithMissingA = a.meetingAttendanceText?.startsWith('Missing');
+    // @ts-ignore: update graphql types
+    const startsWithMissingB = b.meetingAttendanceText?.startsWith('Missing');
+    // @ts-ignore: update graphql types
+    const endsWithClubMeetingA = a.meetingAttendanceText?.endsWith(
+      'club meeting register'
+    );
+    // @ts-ignore: update graphql types
+    const endsWithClubMeetingB = b.meetingAttendanceText?.endsWith(
+      'club meeting register'
+    );
+
+    if (startsWithMissingA && !startsWithMissingB) {
+      return -1;
+    }
+    if (!startsWithMissingA && startsWithMissingB) {
+      return 1;
+    }
+
+    if (startsWithMissingA === startsWithMissingB) {
+      if (endsWithClubMeetingA && !endsWithClubMeetingB) {
+        return -1;
+      }
+      if (!endsWithClubMeetingA && endsWithClubMeetingB) {
+        return 1;
+      }
+    }
+    // @ts-ignore: update graphql types
+    const attendanceA = a.meetingAttendance || 0;
+    // @ts-ignore: update graphql types
+    const attendanceB = b.meetingAttendance || 0;
+
+    return attendanceA - attendanceB;
+  });
+}
+
+export function sortClubBy(clubs: MergedCoachingClub[], sortBy: string) {
   const clubsCopy = [...clubs];
 
   if (!sortBy) return clubs;
@@ -139,16 +179,46 @@ export function sortClubBy(clubs: CoachingClub[], sortBy: string) {
     case SortBy.POINTS_EARNED_THIS_YEAR:
       return sortByPointsEarnedThisYear(clubsCopy);
     case SortBy.PRIORITY:
-      // TODO: Implement this (EC-1371)
-      return clubs;
+      return clubsCopy?.sort(
+        (a, b) =>
+          (a.secondaryTextPriority ?? 0) - (b.secondaryTextPriority ?? 0)
+      );
     case SortBy.MEETING_ATTENDANCE:
-      // TODO: Implement this (EC-1371)
-      return clubs;
+      return sortByMeetingAttendance(clubs);
     default:
       return clubs;
   }
 }
-export const searchList = (list: CoachingClub[], searchTerm: string) => {
+export const searchList = (list: MergedCoachingClub[], searchTerm: string) => {
   const lowerSearch = searchTerm.toLowerCase();
   return list.filter((item) => item?.name?.toLowerCase().includes(lowerSearch));
 };
+
+export function getScoreBarColor(
+  totalClubPoints: number,
+  greenPoints: number,
+  amberPoints: number
+) {
+  let barColor: Colours = 'errorMain';
+
+  if (totalClubPoints >= greenPoints) {
+    barColor = 'successMain';
+  } else if (totalClubPoints >= 1 && totalClubPoints <= amberPoints) {
+    barColor = 'alertMain';
+  }
+  return barColor;
+}
+
+export function getPointsActivityDateDetails(date: string) {
+  if (!date) return { monthName: '', formattedDate: '' };
+
+  const parsedDate = parseISO(date);
+  const formattedDate = format(parsedDate, 'd MMMM yyyy');
+  const monthName = format(parsedDate, 'MMMM');
+
+  return {
+    meetingId: parsedDate.toISOString().split('T')[0],
+    monthName,
+    formattedDate,
+  };
+}

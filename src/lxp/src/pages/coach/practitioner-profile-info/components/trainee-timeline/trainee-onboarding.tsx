@@ -1,18 +1,17 @@
-import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
-import { useHistory, useLocation } from 'react-router';
-import { useAppDispatch } from '@/store';
-import { traineeThunkActions } from '@/store/trainee';
-import { userSelectors } from '@/store/user';
+import { useState } from 'react';
+import { useLocation } from 'react-router';
 import { OnboardingTraineeDashboard } from './trainee-onboarding-dashboard';
 import { StartupSupportDetails } from './components/startup-support';
 import { PractitionerDto } from '@ecdlink/core';
 import { SmartSpaceChecklist } from './components/smart-space-checklist/smart-space-checklist';
 import { SmartSpaceVisit } from './components/smart-space-visit/smart-space-visit';
+import { SmartSpaceSummary } from './components/smart-space-summary/smart-space-summary';
+import { TraineeAddSignature } from '../../../../trainee/trainee-onboarding/components/trainee-add-signature/trainee-add-signature';
+import { CoachTraineeFranchisorAgreement } from './components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
 
 interface TraineeOnboardingProps {
   practitioner: PractitionerDto | undefined;
+  setShowTraineeDashboard: any;
 }
 
 export interface TraineeOnboardingRouteState {
@@ -21,6 +20,7 @@ export interface TraineeOnboardingRouteState {
 
 export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
   practitioner,
+  setShowTraineeDashboard,
 }) => {
   const [notificationStep, setNotificationStep] = useState('');
   const [stepOptions, setStepOptions] = useState<any>(null);
@@ -39,9 +39,14 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
           practitioner?.signingSignature ||
           practitionerState?.signingSignature
         ) {
-          return null;
+          return <TraineeAddSignature />;
         }
-        return null;
+        return (
+          <CoachTraineeFranchisorAgreement
+            practitioner={practitioner || practitionerState}
+            setNotificationStep={setNotificationStep}
+          />
+        );
       case 'Sign start-up support agreement':
         return (
           <StartupSupportDetails
@@ -65,6 +70,20 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
             options={stepOptions}
           />
         );
+      case 'SmartSpace Licence not awarded':
+        return (
+          <SmartSpaceSummary
+            practitioner={practitioner || practitionerState}
+            setNotificationStep={setNotificationStep}
+          />
+        );
+      case 'SmartSpace Licence received':
+        return (
+          <SmartSpaceSummary
+            practitioner={practitioner || practitionerState}
+            setNotificationStep={setNotificationStep}
+          />
+        );
       default:
         return (
           <OnboardingTraineeDashboard
@@ -74,6 +93,7 @@ export const CoachTraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
             }}
             setIsSmartChecklist={setIsSmartChecklist}
             practitioner={practitioner || practitionerState}
+            setShowTraineeDashboard={setShowTraineeDashboard}
           />
         );
     }

@@ -30,14 +30,20 @@ const ROUTES = {
     '/business-submit-income-statements-list',
   BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
+  BUSINESS_CURRENT_MONTH_STATEMENTS_DETAILS: '/current-month-statement-details',
   CALENDAR: '/calendar',
-  CLASSROOM: '/classroom',
+  CLASSROOM: addPrefix('/classroom', {
+    UPDATE_FEE: '/preschool-fee',
+  }),
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
     WELCOME: '/welcome',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
       EDIT: '/edit',
+      MEMBER: addPrefix('/member/:practitionerId', {
+        ADD: '/add',
+      }),
       MEMBERS: addPrefix('/members', {
         ADD: '/add',
         EDIT: '/edit',
@@ -46,11 +52,25 @@ const ROUTES = {
         ADD: '/add',
         EDIT: '/edit',
       }),
-      USER_PROFILE: {
+      USER_PROFILE: addPrefix('/user-profile', {
         COACH: '/coach/:coachId',
         LEADER: '/leader/:leaderId',
         MEMBER: '/member/:practitionerId',
-      },
+      }),
+      POINTS: addPrefix('/points', {
+        MEET_REGULARLY: addPrefix('/meet-regularly', {
+          MEETING_DETAILS: '/:meetingId/meeting-details',
+        }),
+        BE_CREATIVE: '/be-creative',
+        HOST_FAMILY_EVENT: '/host-family-event',
+        LEAVE_NO_ONE_BEHIND: '/leave-no-one-behind',
+        CAPTURE_CHILD_ATTENDANCE: '/capture-child-attendance',
+        COMPLETE_CHILD_PROGRESS_REPORTS: '/complete-child-progress-reports',
+        HELP: '/help/:activityId',
+      }),
+    }),
+    LEAGUE: addPrefix('/league/:leagueId', {
+      HELP: '/help/:activityId',
     }),
   }),
   CHILD: addPrefix('/child', {
@@ -87,6 +107,23 @@ const ROUTES = {
       YEAR: '/year',
     }),
     CONTACT_COACH: '/contact-coach',
+    COMMUNITY: addPrefix('/community', {
+      ACCEPT_CLUB_LEADER_ROLE: '/accept-club-leader-role',
+      CLUB: addPrefix('/club', {
+        SUPPORT_ROLE: addPrefix('/support-role', {
+          EDIT: '/edit',
+        }),
+        MEETING: addPrefix('/meeting', {
+          ADD_MEETING: '/add',
+        }),
+        FAMILY_DAY_EVENT: addPrefix('/family-day-event', {
+          ADD_EVENT: '/add',
+        }),
+        COLLAGE_EVENT: addPrefix('/collage-event', {
+          ADD_EVENT: '/add',
+        }),
+      }),
+    }),
   }),
   TRAINEE: addPrefix('/trainee', {
     SETUP_TRAINEE: '/setup-trainee',
@@ -123,15 +160,13 @@ const ROUTES = {
     }),
     PRACTITIONERS: '/practitioners',
     PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
+    PRACTITIONER_REASSIGN_CLASS: '/practitioner-reassign-class',
     PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
     PRACTITIONER_BUSINESS: addPrefix('/practitioner-business', {
-      BUSINESS: '/:practitionerId',
-      LIST_STATEMENTS: '/:practitionerId/previous-statements-list',
-      STATEMENT_DETAILS: '/:practitionerId/statement-details',
-      NOT_SUBMITTED: '/:practitionerId/not-submitted',
-      STARTUP_SUPPORT_ENDING: '/:practitionerId/startup-support-ending',
-      PROFIT: '/:practitionerId/profit',
-      LOSS: '/:practitionerId/loss',
+      BUSINESS: '/:userId',
+      LIST_STATEMENTS: '/:userId/previous-statements-list',
+      STATEMENT_DETAILS: '/:userId/statement-details',
+      CURRENT_MONTH_SUMMARY: '/:userId/current-month-summary',
     }),
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',

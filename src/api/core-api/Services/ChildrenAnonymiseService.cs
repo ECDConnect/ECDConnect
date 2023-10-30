@@ -46,15 +46,40 @@ namespace EcdLink.Api.CoreApi.Services
             var children = GetChildrenToRemove(childRepo);
             foreach (var child in children)
             {
-                childRepo.Delete(child.Id);
-                //remove learners from allocated classes
-                var learnerRow = learnerRepo.GetByUserId(child.UserId);
-                learnerRepo.Delete(learnerRow.Id);
-                _hierarchyEngine.DeleteHierarchy(child.UserId);
-                RemoveChildDocuments(child, adminId);
+                try
+                {
+                    if (child.User != null)
+                    {
+                        //check that child record hasnt already been removed
+                        if (childRepo.GetAll().Where(c => c.UserId.Equals(child.UserId)).FirstOrDefault() != null)
+                        {
+                            childRepo.Delete(child.Id);
+                        }
+                        //remove learners from allocated classes
+                        var learnerRow = learnerRepo.GetByUserId(child.UserId);
+                        if (learnerRow != null)
+                            learnerRepo.Delete(learnerRow.Id);
 
-                var result = _userManager.DeleteAsync(child.User).Result;
+                        _hierarchyEngine.DeleteHierarchy(child.UserId);
 
+                        RemoveChildDocuments(child, adminId);
+
+                        var result = _userManager.DeleteAsync(child.User).Result;
+                    } else
+                    {
+                        //remove user - find it first
+                        ApplicationUser childUser = _userManager.FindByIdAsync(child.UserId).Result;
+                        if (childUser != null)
+                        {
+                            var result = _userManager.DeleteAsync(childUser).Result;
+                        }
+                        //notify of problem child that cant delete
+                    }
+                }
+                catch (Exception e)
+                {
+                    //notify of error
+                }
             }
         }
 
@@ -70,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private List<Child> GetChildrenToRemove(IGenericRepository<Child, Guid> childRepo)
         {
-            var expiryTime = DateTime.UtcNow.AddDays(-30);
+            var expiryTime = DateTime.UtcNow.AddDays(-21);
 
             // Removed child where status is pending (not all required information saved)
             // and they were inserted within the last 21 days

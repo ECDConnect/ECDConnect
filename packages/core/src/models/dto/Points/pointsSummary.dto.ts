@@ -3,6 +3,7 @@ export interface PointsSummaryDto {
   month: number;
   pointsTotal: number;
   pointsYTD: number;
+  timesScored: number;
   year: number;
   activity: string;
   description: string;

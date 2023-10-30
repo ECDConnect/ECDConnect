@@ -249,11 +249,13 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     }
 
     if (
-      (practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0) &&
-      (practitioner?.isRegistered !== null ||
-        isPrincipal !== false ||
-        practitioner?.isLeaving !== null)
+      practitioner?.isRegistered !== null ||
+      isPrincipal !== false ||
+      practitioner?.isLeaving !== null
     ) {
+      if (isPrincipal) {
+        practitionersList?.push(practitioner);
+      }
       stackedActionList.push({
         title: 'Other practitioners on site',
         subTitle: isPrincipal
@@ -261,7 +263,7 @@ export const PractitionerProgrammeInformation: React.FC = () => {
           : otherColleaguesFiltered?.map((x: any) => x?.name).join(', '),
         switchTextStyles: true,
         actionName:
-          practitioners?.length! > 1 || otherColleaguesFiltered?.length! > 0
+          practitioners?.length! > 0 || otherColleaguesFiltered?.length! > 0
             ? isPrincipal
               ? 'Edit'
               : 'View'
@@ -287,6 +289,28 @@ export const PractitionerProgrammeInformation: React.FC = () => {
         actionIcon: isPrincipal ? 'PencilIcon' : 'EyeIcon',
         onActionClick: () => {
           history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, { a: 'hello' });
+        },
+      });
+    }
+
+    if (!!classroom && (isPrincipal || practitioner?.isFundaAppAdmin)) {
+      const feeUpdatedThisYear =
+        !!classroom?.preschoolFeeAmountLastUpdateDate &&
+        new Date(classroom.preschoolFeeAmountLastUpdateDate).getFullYear() ===
+          new Date().getFullYear();
+
+      stackedActionList.push({
+        title: 'Monthly preschool fee',
+        subTitle: !!classroom.preschoolFeeAmount
+          ? `R ${classroom.preschoolFeeAmount}`
+          : feeUpdatedThisYear
+          ? 'No fee'
+          : 'Add the preschool fee',
+        switchTextStyles: true,
+        actionName: !!classroom.preschoolFeeAmount ? 'Edit' : 'Add',
+        actionIcon: !!classroom.preschoolFeeAmount ? 'PencilIcon' : 'PlusIcon',
+        onActionClick: () => {
+          history.push(ROUTES.CLASSROOM.UPDATE_FEE);
         },
       });
     }

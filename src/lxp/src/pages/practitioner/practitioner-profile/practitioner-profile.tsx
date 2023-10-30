@@ -8,8 +8,12 @@ import {
   StackedList,
   TabItem,
   TabList,
+  Card,
+  Typography,
+  Button,
+  renderIcon,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -25,6 +29,8 @@ import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerJourney } from './practitioner-journey';
 import { usePrevious } from 'react-use';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -56,6 +62,20 @@ export const PractitionerProfile: React.FC = () => {
   //   await appDispatch(settingActions.setLastDataSync());
   // };
 
+  const handleOnlineCallback = (callback: () => void) => {
+    if (isOnline) {
+      callback();
+    } else {
+      dialog({
+        color: 'bg-white',
+        position: DialogPosition.Middle,
+        render: (onSubmit) => {
+          return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+        },
+      });
+    }
+  };
+
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -67,6 +87,24 @@ export const PractitionerProfile: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
+
+  const handleReassignClass = useCallback(
+    (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
+      if (allAbsenteeClasses) {
+        history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
+          practitionerId,
+          allAbsenteeClasses,
+        });
+        return;
+      }
+
+      history.push(ROUTES.PRINCIPAL.PRACTITIONER_REASSIGN_CLASS, {
+        practitionerId,
+        principalPractitioner: practitioner,
+      });
+    },
+    [history, practitioner]
+  );
 
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
@@ -193,7 +231,9 @@ export const PractitionerProfile: React.FC = () => {
                         leadingIcon: 'ArrowCircleRightIcon',
                         onClick: async () => {
                           onSubmit();
-                          history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                          handleOnlineCallback(() =>
+                            history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                          );
                         },
                       },
                       {
@@ -267,6 +307,43 @@ export const PractitionerProfile: React.FC = () => {
           message={'Password or Username incorrect. Please try again'}
           type={'error'}
         />
+      )}
+      {practitioner?.isPrincipal && (
+        <Card className={'bg-uiBg mt-4 ml-4 mb-8 w-11/12 rounded-xl pt-2'}>
+          <div className={'mt-6 ml-4'}>
+            <Typography
+              type={'h1'}
+              color="textDark"
+              text={`Log my time off`}
+              className={'mt-6 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`Need time off for more than 1 day? Record your leave here and your coach will get a notification.`}
+              className={'mt-4 ml-4'}
+            />
+            <div className="flex justify-center">
+              <Button
+                type="filled"
+                color="primary"
+                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                onClick={() => handleReassignClass(practitioner?.userId!)}
+              >
+                {renderIcon(
+                  'PencilAltIcon',
+                  'w-5 h-5 color-white text-white mr-1'
+                )}
+                <Typography
+                  type="body"
+                  className="mr-4"
+                  color="white"
+                  text={'Take time off'}
+                ></Typography>
+              </Button>
+            </div>
+          </div>
+        </Card>
       )}
     </BannerWrapper>
   );

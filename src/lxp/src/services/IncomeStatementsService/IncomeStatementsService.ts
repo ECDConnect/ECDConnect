@@ -5,10 +5,19 @@ import {
   IncomeStatementsDto,
   ReportTableDataDto,
   IncomeStatementPDFDocInput,
+  IncomeStatementsTypes,
+  StatementsFeeTypes,
+  StatementsContributionTypes,
+  StatementsPayTypes,
+  IncomeStatementDto,
+  ExpensesStatementsDto,
+  ExpenseItemDto,
+  IncomeItemDto,
 } from '@ecdlink/core';
 import {
+  StatementsExpensesInput,
   StatementsIncomeInput,
-  StatementsSubmitInput,
+  SubmitStatementModelInput,
 } from '@/../../../packages/graphql/lib';
 
 class IncomeStatementsService {
@@ -18,55 +27,14 @@ class IncomeStatementsService {
     this._accessToken = accessToken;
   }
 
-  async GetAllStatementsIncome(): Promise<IncomeStatementsDto[]> {
+  async GetAllStatementsIncomeType(): Promise<IncomeStatementsTypes[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllStatementsIncome() {
-        GetAllStatementsIncome() {
-          amount
-          amountExpected
-          childCoverAmount
-          childUserId?
-          contributionTypeId
-          dateReceived
-          description
-          id
-          statementsIncomeStatementId
-          incomeTypeId
-          insertedDate
-          isActive
-          notes
-          payTypeId
-          photoProof
-          submitted
-          updatedBy
-          updatedDate
-          userId
-        }
-    }
-          `,
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Get all statements income Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.GetAllStatementsIncome;
-  }
-
-  async GetAllStatementsIncomeType(): Promise<any[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllStatementsIncomeType() {
-        GetAllStatementsIncomeType() {
+      query: `query GetAllStatementsIncomeType() {
+          GetAllStatementsIncomeType() {
             id description insertedDate notes
-        }
-    }
-          `,
+          }
+        }`,
     });
 
     if (response.status !== 200) {
@@ -78,16 +46,14 @@ class IncomeStatementsService {
     return response.data.data.GetAllStatementsIncomeType;
   }
 
-  async GetAllStatementsFeeType(): Promise<any[]> {
+  async GetAllStatementsFeeType(): Promise<StatementsFeeTypes[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllStatementsFeeType() {
-        GetAllStatementsFeeType() {
+      query: `query GetAllStatementsFeeType() {
+          GetAllStatementsFeeType() {
             id description insertedDate notes
-        }
-    }
-          `,
+          }
+        }`,
     });
 
     if (response.status !== 200) {
@@ -99,16 +65,16 @@ class IncomeStatementsService {
     return response.data.data.GetAllStatementsFeeType;
   }
 
-  async GetAllStatementsContributionType(): Promise<any[]> {
+  async GetAllStatementsContributionType(): Promise<
+    StatementsContributionTypes[]
+  > {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllStatementsContributionType() {
-        GetAllStatementsContributionType() {
+      query: `query GetAllStatementsContributionType() {
+          GetAllStatementsContributionType() {
             id description insertedDate notes
-        }
-    }
-          `,
+          }
+        }`,
     });
 
     if (response.status !== 200) {
@@ -120,16 +86,14 @@ class IncomeStatementsService {
     return response.data.data.GetAllStatementsContributionType;
   }
 
-  async GetAllStatementsPayType(): Promise<any[]> {
+  async GetAllStatementsPayType(): Promise<StatementsPayTypes[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query GetAllStatementsPayType() {
-        GetAllStatementsPayType() {
+      query: `query GetAllStatementsPayType() {
+          GetAllStatementsPayType() {
             id description insertedDate notes
-        }
-    }
-          `,
+          }
+        }`,
     });
 
     if (response.status !== 200) {
@@ -142,90 +106,70 @@ class IncomeStatementsService {
   }
 
   async UpdateStatementsIncome(
-    id: string,
     input: StatementsIncomeInput
-  ): Promise<any> {
+  ): Promise<IncomeItemDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation updateIncome($id: String!, $input: StatementsIncomeInput ) { 
-         updateIncome( id: $id, input: $input) {
-           result  resultObject resultMessage 
+      query: `mutation updateIncome($input: StatementsIncomeInput) { 
+          updateIncome(input: $input) {
+            incomeTypeId
+            id
+            dateReceived
+            amount
+            childUserId
+            notes
+            description
+            amountExpected
+            childCoverAmount
+            payTypeId
+            contributionTypeId
+            photoProof
+            feeTypeId
           }
-        }
-      `,
+        }`,
       variables: {
-        id,
         input,
       },
     });
 
-    if (response.status !== 200) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error(
         'Update income statement Failed - Server connection error'
       );
     }
 
-    return response.data.data.updateStatementsIncome;
+    return response.data.data.updateIncome;
   }
 
-  async saveIncomeStatementPDF(
-    input: IncomeStatementPDFDocInput
-  ): Promise<any> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
-      query: `
-      mutation saveIncomeStatementPDF($input: IncomeStatementPDFDocInput) { 
-         saveIncomeStatementPDF(input: $input) {
-          id
-          }
-        }
-      `,
-      variables: {
-        input,
-      },
-    });
-
-    if (response.status !== 200) {
-      throw new Error(
-        'Submit income report statement Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.saveIncomeStatementPDF;
-  }
-
+  // Used to generate the PDF, can we refactor to fetch a link to the backend PDF,
+  // or to use the income statement to create the pdf? Then it could work offline?
   async getMonthsIncomeExpensesReport(
-    userId: string,
-    month: Number,
-    year: Number
+    statementId: string
   ): Promise<ReportTableDataDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `query GetStatementsIncomeExpensesPDFData($userId: String, $month: Int!, $year: Int!) {
-                statementsIncomeExpensesPDFData(userId: $userId, month: $month, year: $year) {
-                tableName
-                type
-                total
-                headers {
-                    header
-                    dataKey
-                }
-                data {
-                    child
-                    date
-                    description
-                    amount
-                    invoiceNr
-                    photoProof
-                    type
-                }
-            }
-    }`,
+      query: `query GetStatementsIncomeExpensesPDFData($statementId: UUID!) {
+          statementsIncomeExpensesPDFData(statementId: $statementId) {
+          tableName
+          type
+          total
+          headers {
+              header
+              dataKey
+          }
+          data {
+              child
+              date
+              description
+              amount
+              invoiceNr
+              photoProof
+              type
+          }
+        }
+      }`,
       variables: {
-        userId,
-        month,
-        year,
+        statementId,
       },
     });
 
@@ -237,6 +181,7 @@ class IncomeStatementsService {
     return response.data.data.statementsIncomeExpensesPDFData;
   }
 
+  // THIS CAN PROBABLY BE REMOVED< OR REFACTORED TO ONLY GET THE LATEST
   async allStatementsIncome(
     userId: string,
     month: Number,
@@ -280,6 +225,7 @@ class IncomeStatementsService {
     return response.data.data.allStatementsIncome;
   }
 
+  // IS THIS USED
   async allStatementsIncomeStatement(
     userId: string
   ): Promise<IncomeStatementsDto[]> {
@@ -317,12 +263,33 @@ class IncomeStatementsService {
     return response.data.data.allStatementsIncome;
   }
 
-  async submitStatement(input: StatementsSubmitInput): Promise<any> {
+  async submitStatement(
+    input: SubmitStatementModelInput
+  ): Promise<IncomeStatementDto | undefined> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    console.log('submitting statement now');
     const response = await apiInstance.post<any>(``, {
-      query: `mutation submitStatement($input: StatementsSubmitInput) {      
-          submitStatement(input: $input) {
-            result  resultObject resultMessage 
+      query: `mutation submitMonthlyStatement($input: SubmitStatementModelInput) {      
+          submitMonthlyStatement(input: $input) {
+            id 
+            incomeTotal
+            expenseTotal
+            balance
+            month
+            year
+            incomeItems {
+              incomeTypeId
+              id
+              dateReceived
+              amount
+            } 
+            expenseItems {
+              expenseTypeId
+              id
+              datePaid
+              amount
+            }
           } 
         }`,
       variables: {
@@ -330,19 +297,16 @@ class IncomeStatementsService {
       },
     });
 
-    if (
-      response.status !== 200 ||
-      !!response.data.errors ||
-      !response.data.data.submitStatement.result
-    ) {
+    if (response.status !== 200 || !!response.data.errors) {
       throw new Error(
         'Submit income statement Failed - Server connection error'
       );
     }
 
-    return response.data.data.submitStatement;
+    return response.data.data.submitMonthlyStatement;
   }
 
+  // Can remove this later
   async getAllStatementsBalanceSheet(
     userId: string,
     year: Number,
@@ -379,6 +343,7 @@ class IncomeStatementsService {
     return response.data.data.allStatementsBalanceSheet;
   }
 
+  // NOT SURE WHAT THIS DOES
   async GetAllIncomeStatementsInfo(locale: string): Promise<BalanceSheetDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -404,16 +369,15 @@ class IncomeStatementsService {
     return response.data.data.GetAllIncomeStatements;
   }
 
+  // FIX RETURN TYPE!!! WHY DOES THIS NOT USE THE DEFAULT LANGUAGE DTO!!!
   async allContentLanguages(contentType: string): Promise<BalanceSheetDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `
-      query allContentLanguages($contentType: String!) {
+      query: `query allContentLanguages($contentType: String!) {
           allContentLanguages(contentType: $contentType) { 
-             id description locale  
-             }
-            }
-          `,
+            id description locale  
+          }
+        }`,
       variables: {
         contentType,
       },
@@ -426,6 +390,231 @@ class IncomeStatementsService {
     }
 
     return response.data.data.allContentLanguages;
+  }
+
+  async getIncomeStatements(
+    userId: string,
+    startDate: Date,
+    endDate: Date | undefined
+  ): Promise<IncomeStatementDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `query incomeStatements($userId: String, $startDate: DateTime!, $endDate: DateTime) { 
+          incomeStatements(userId: $userId, startDate: $startDate, endDate: $endDate) { 
+            id 
+            incomeTotal
+            expenseTotal
+            balance
+            month
+            year
+            incomeItems {
+              incomeTypeId
+              id
+              dateReceived
+              amount
+            } 
+            expenseItems {
+              expenseTypeId
+              id
+              datePaid
+              amount
+            }    
+          }
+        }`,
+      variables: {
+        userId,
+        startDate,
+        endDate,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error('Get income statements Failed - Server connection error');
+    }
+
+    return response.data.data.incomeStatements;
+  }
+
+  async getUnsubmittedIncomeItems(userId: string): Promise<IncomeItemDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `query unsubmittedIncomeItems($userId: String) { 
+          unsubmittedIncomeItems(userId: $userId) {           
+            incomeTypeId
+            id
+            dateReceived
+            amount
+            childUserId
+            notes
+            description
+            amountExpected
+            childCoverAmount
+            payTypeId
+            contributionTypeId
+            photoProof
+            feeTypeId
+          }
+        }`,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Get unsubmitted income items Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.unsubmittedIncomeItems;
+  }
+
+  async getUnsubmittedExpenseItems(userId: string): Promise<ExpenseItemDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `query unsubmittedExpenseItems($userId: String) { 
+          unsubmittedExpenseItems(userId: $userId) {           
+            expenseTypeId
+            id
+            datePaid
+            amount
+            description
+            notes
+            photoProof
+          }
+        }`,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Get unsubmitted expense items Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.unsubmittedExpenseItems;
+  }
+
+  async GetAllStatementsExpenses(): Promise<any[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllStatementsExpenses() {
+        GetAllStatementsExpenses() {
+            id description
+            insertedDate
+            notes
+            userId
+            submitted
+            amount
+            expenseTypeId
+            statementsIncomeStatementId
+            photoProof
+            datePaid
+        }
+    }
+          `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements expenses Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.GetAllStatementsExpenses;
+  }
+
+  async GetAllStatementsExpensesType(): Promise<any[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetAllStatementsExpenseType() {
+        GetAllStatementsExpenseType() {
+            id description insertedDate notes
+        }
+    }
+          `,
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements expenses Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.GetAllStatementsExpenseType;
+  }
+
+  async updateStatementsExpense(
+    input: StatementsExpensesInput
+  ): Promise<ExpenseItemDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `mutation updateExpense($input: StatementsExpensesInput ) { 
+          updateExpense(input: $input) {
+            expenseTypeId
+            id
+            datePaid
+            amount
+            description
+            notes
+            photoProof
+        }
+      }`,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || !!response.data.errors) {
+      throw new Error(
+        'Update expense statement Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateExpense;
+  }
+
+  async allStatementsExpenses(
+    userId: string,
+    month: Number,
+    year: Number
+  ): Promise<ExpensesStatementsDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query allStatementsExpenses($userId: String, $month: Int!, $year: Int!) {
+        allStatementsExpenses(userId: $userId, month: $month, year: $year) {
+            id description 
+            insertedDate 
+            notes 
+            expenseTypeId 
+            userId 
+            submitted 
+            amount 
+            datePaid
+            insertedDate
+            statementsIncomeStatementId
+            photoProof
+        }
+    }
+          `,
+      variables: {
+        userId,
+        month,
+        year,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all statements expenses Failed - Server connection error'
+      );
+    }
+    return response.data.data.allStatementsExpenses;
   }
 }
 

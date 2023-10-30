@@ -10,7 +10,6 @@ import {
   ClassroomGroupInput,
   ClassroomInput,
   LearnerInput,
-  ProgrammeTypeEnum,
   SiteAddressInput,
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
@@ -21,7 +20,6 @@ import { ClassroomGroupService } from '@services/ClassroomGroupService';
 import { ClassroomService } from '@services/ClassroomService';
 import { RootState, ThunkApiType } from '../types';
 import { PractitionerService } from '@/services/PractitionerService';
-import { ProgrammeTypeTexts } from '@/pages/trainee/trainee-onboarding/components/trainee-franchisor-agreement/components/programme-type-agreement/components/modelTexts';
 
 export const getClassroom = createAsyncThunk<
   ClassroomDto,
@@ -130,6 +128,10 @@ export const getClassroomGroups = createAsyncThunk<
         if (!groups) {
           return rejectWithValue('Error getting Classroom Groups');
         }
+
+        groups.sort((a, b) => {
+          return (a.name || '') > (b.name || '') ? 1 : -1;
+        });
 
         return groups;
       } catch (err) {
@@ -289,6 +291,9 @@ export const upsertClassroom = createAsyncThunk<
           SiteAddress: classroom?.siteAddress
             ? mapSiteAddress(classroom?.siteAddress!)
             : null,
+          PreschoolFeeAmount: classroom?.preschoolFeeAmount || 0,
+          PreschoolFeeAmountLastUpdateDate:
+            classroom?.preschoolFeeAmountLastUpdateDate,
         };
 
         const result = await new ClassroomService(
@@ -671,6 +676,33 @@ export const createLearner = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
+
+export const updatePreschoolFee = createAsyncThunk<
+  boolean,
+  { classroomId: string; amount: number | undefined },
+  ThunkApiType<RootState>
+>(
+  'updatePreschoolFee',
+  async ({ classroomId, amount }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        await new ClassroomService(userAuth?.auth_token).updatePreschoolFee(
+          classroomId,
+          amount
+        );
+
+        return true;
+      }
+      return rejectWithValue('no access token, profile check required');
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 const mapClassroomGroupInput = (
   x: Partial<ClassroomGroupDto>

@@ -1,8 +1,8 @@
-import { Visit, Maybe, PractitionerTimeline } from '@ecdlink/graphql';
+import { PractitionerTimeline } from '@ecdlink/graphql';
 import { ClipboardCheckIcon, PhoneIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { generalSupportVisitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
-import { dateOptions, getStepType, sortVisitByInsertedDate } from '../../utils';
+import { dateOptions, getStepType } from '../../utils';
 import { ViewEvent } from '../../timeline-steps';
 
 interface SupportVisitsProps {
@@ -17,17 +17,20 @@ export const SupportVisits = ({
   isOnline,
   isLoading,
   onView,
-}: SupportVisitsProps) => (
-  <>
-    {timeline.supportVisits
-      ?.filter(
-        (visit: Maybe<Visit>) => typeof visit?.visitType?.order !== 'undefined'
-      )
-      ?.sort(sortVisitByInsertedDate)
-      ?.map((item) => (
+}: SupportVisitsProps) => {
+  const mergedVisits = [
+    ...(timeline?.supportVisits ?? []),
+    ...(timeline?.requestedCoachVisits ?? []),
+  ];
+
+  return (
+    <>
+      {mergedVisits?.map((item) => (
         <div className="my-4" key={item?.id}>
           <div className="relative flex items-center gap-1">
-            {item?.visitType?.name === generalSupportVisitTypes.call ? (
+            {item?.visitType?.name === generalSupportVisitTypes.call ||
+            item?.visitType?.name ===
+              generalSupportVisitTypes.practitioner_call ? (
               <span>
                 <PhoneIcon className="text-primary h-4 w-4" />
               </span>
@@ -40,7 +43,16 @@ export const SupportVisits = ({
               type="body"
               color="textDark"
               className="w-6/12 font-bold"
-              text={item?.visitType?.description || ''}
+              text={
+                item?.visitType?.name?.includes('practitioner')
+                  ? `Requested ${
+                      item?.visitType?.name ===
+                      generalSupportVisitTypes.practitioner_call
+                        ? 'Call'
+                        : 'Visit'
+                    }`
+                  : item?.visitType?.description || ''
+              }
             />
             {!!item?.attended && isOnline && (
               <Button
@@ -75,5 +87,6 @@ export const SupportVisits = ({
           />
         </div>
       ))}
-  </>
-);
+    </>
+  );
+};

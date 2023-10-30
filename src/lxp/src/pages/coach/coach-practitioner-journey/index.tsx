@@ -9,6 +9,7 @@ import {
   DialogPosition,
   LoadingSpinner,
   MenuListDataItem,
+  ScoreCard,
   StackedList,
   Steps,
   Typography,
@@ -22,7 +23,13 @@ import {
   generalSupportVisitTypes,
   visitTypes,
 } from './coach-practitioner-journey.types';
-import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
@@ -57,13 +64,19 @@ import {
   useDialog,
   usePrevious,
 } from '@ecdlink/core';
-import { UpdateVisitPlannedVisitDateModelInput, Visit } from '@ecdlink/graphql';
+import {
+  PointsUserSummary,
+  UpdateVisitPlannedVisitDateModelInput,
+  Visit,
+} from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ExclamationIcon } from '@heroicons/react/solid';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
 import { isDateWithinThreeMonths } from './timeline/utils';
 import { getReAccreditationStepData } from './timeline/re-accreditation/step';
+import { getUserPointsSummaryForCoach } from '@/store/points/points.actions';
+import { pointsConstants } from '@/constants/points';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
@@ -385,8 +398,14 @@ export const CoachPractitionerJourney = () => {
     })
     .shift();
 
-  const onSupportVisit = () => {
-    window.sessionStorage.setItem(currentActivityKey, visitTypes.supportVisit);
+  const onSupportVisit = (visitId?: string) => {
+    window.sessionStorage.setItem(
+      currentActivityKey,
+      visitId ? visitTypes.requestedVisit : visitTypes.supportVisit
+    );
+    if (visitId) {
+      window.sessionStorage.setItem(visitIdKey, visitId);
+    }
     setShowForm(true);
   };
 
@@ -403,6 +422,8 @@ export const CoachPractitionerJourney = () => {
     );
 
     if (
+      visit.visitType?.name === generalSupportVisitTypes.practitioner_visit ||
+      visit.visitType?.name === generalSupportVisitTypes.practitioner_call ||
       visit.visitType?.name === generalSupportVisitTypes.visit ||
       visit.visitType?.name === generalSupportVisitTypes.call
     ) {
@@ -617,6 +638,44 @@ export const CoachPractitionerJourney = () => {
     }
   }, [routeState]);
 
+  // POINTS
+  const [userPointsSummaries, setUserPointsSummaries] = useState<
+    PointsUserSummary[]
+  >([]);
+
+  useEffect(() => {
+    const currentDate = new Date();
+    appDispatch(
+      getUserPointsSummaryForCoach({
+        userId: practitionerId,
+        startDate: new Date(
+          currentDate.getFullYear(),
+          currentDate.getMonth(),
+          1
+        ),
+        endDate: currentDate,
+      })
+    ).then((userPoints) => {
+      setUserPointsSummaries(userPoints.payload as PointsUserSummary[]);
+    });
+  }, [appDispatch, practitionerId]);
+
+  const userPointsTotalForYear = useMemo(
+    () =>
+      userPointsSummaries.reduce(
+        (total, current) => (total += current.pointsYTD),
+        0
+      ),
+    [userPointsSummaries]
+  );
+
+  const pointsMax =
+    practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+      ? pointsConstants.principalOrAdminYearlyMax
+      : pointsConstants.practitionerYearlyMax;
+
+  const percentageScore = (userPointsTotalForYear / pointsMax) * 100;
+
   if (
     (showForm && isView) ||
     (showForm && currentVisit?.extraData?.visitId) ||
@@ -653,6 +712,23 @@ export const CoachPractitionerJourney = () => {
               listItems={[currentVisit]}
             />
           )}
+          <ScoreCard
+            className="mt-5"
+            mainText={`${userPointsTotalForYear}`}
+            hint={`points earned so far in ${new Date().getFullYear()}`}
+            currentPoints={userPointsTotalForYear}
+            maxPoints={pointsMax}
+            barBgColour="uiLight"
+            barColour={
+              percentageScore < 60
+                ? 'errorMain'
+                : percentageScore < 80
+                ? 'secondary'
+                : 'successMain'
+            }
+            bgColour="uiBg"
+            textColour="black"
+          />
           {renderAlert()}
           <Typography
             className="mt-4 mb-2"
@@ -692,6 +768,9 @@ export const CoachPractitionerJourney = () => {
                 onView,
                 onStart,
                 onScheduleOrStart,
+                onStartRequestedSupportVisit(visitId) {
+                  onSupportVisit(visitId);
+                },
                 isLoading,
                 isOnline,
                 visits: uncompletedVisits,

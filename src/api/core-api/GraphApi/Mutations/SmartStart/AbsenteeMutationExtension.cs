@@ -28,10 +28,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string reason,
             DateTime absentDate,
             string loggedByUser,
-            string classProgram = null)
+            string classProgram = null,
+            DateTime? absentDateEnd = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            return absenteetService.AddAbsenteeForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram);
+            return absenteetService.AddAbsenteeForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd);
+        }
+
+        public Absentees EditAbsentee(
+    [Service] IAbsenteeService absenteetService,
+    string absenteeId,
+    bool deleteAbsentee = false,
+    string reassignedToPractitioner = null,
+    string reason = null,
+    DateTime? absentDate = null,
+    DateTime? absentDateEnd = null)
+        {
+            return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd);
         }
 
         public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,

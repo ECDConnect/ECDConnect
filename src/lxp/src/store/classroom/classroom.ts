@@ -4,6 +4,7 @@ import {
   ClassroomDto,
   ClassroomGroupDto,
   LearnerDto,
+  ProgrammeTypeDto,
 } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
@@ -14,6 +15,8 @@ import {
   getClassroomGroups,
   getClassroomProgrammes,
   getClassroomDetailsForPractitioner,
+  updatePreschoolFee,
+  createLearner,
 } from './classroom.actions';
 import { ClassroomState } from './classroom.types';
 
@@ -31,8 +34,14 @@ const classroomsSlice = createSlice({
   name: 'classrooms',
   initialState,
   reducers: {
-    setProgrammeType: (state, action: PayloadAction<string>) => {
-      state.programmeType = action.payload;
+    setProgrammeType: (state, action: PayloadAction<ProgrammeTypeDto>) => {
+      state.programmeType = action.payload?.id;
+      if (state.classroomGroups) {
+        for (let i = 0; i < state.classroomGroups.length; i++) {
+          state.classroomGroups[i].programmeTypeId = action.payload?.id;
+          state.classroomGroups[i].programmeType = action.payload;
+        }
+      }
     },
     resetClassroomState: (state) => {
       state.classroom = initialState.classroom;
@@ -228,13 +237,23 @@ const classroomsSlice = createSlice({
     );
     builder.addCase(
       getClassroomDetailsForPractitioner.fulfilled,
-      (state, action: any) => {
+      (state, action) => {
         if (action.payload) {
           const classroomProgramme = action?.payload;
           state.classroom = classroomProgramme;
         }
       }
     );
+    builder.addCase(createLearner.fulfilled, (state, action) => {});
+    builder.addCase(updatePreschoolFee.fulfilled, (state, action) => {
+      if (action.payload && !!state.classroom) {
+        state.classroom = {
+          ...state.classroom,
+          preschoolFeeAmount: action.meta.arg.amount,
+          preschoolFeeAmountLastUpdateDate: new Date(),
+        };
+      }
+    });
   },
 });
 

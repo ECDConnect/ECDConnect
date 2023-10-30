@@ -64,6 +64,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
         private IClubService _clubService;
+        private IAbsenteeService _absenteeService;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -75,6 +76,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
+            [Service] IAbsenteeService absenteeService,
             UserManager<ApplicationUser> userManager,
             [Service] HierarchyEngine hierarchyEngine)
         {
@@ -107,6 +109,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _clubService = clubService;
+            _absenteeService = absenteeService;
         }
 
 
@@ -172,6 +175,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.ClubName = clubMember?.Club?.Name;
             practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
             practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+
+            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
+            if (absentees.Any())
+            {
+                practitionerRecord.Absentees = absentees;
+            }
 
             return practitionerRecord;
         }
@@ -340,7 +349,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
                 if (isRolePrincipal) { practitionerToPromote.IsPrincipal = true; }
-                if (isRoleFAA) { practitionerToPromote.IsPrincipal = true; }
+                if (isRoleFAA) { practitionerToPromote.IsFundaAppAdmin = true; }
                 practitionerToPromote.ShareInfo = true;
                 practitionerToPromote.PrincipalHierarchy = null;
                 practitionerToPromote.DateLinked = null;
@@ -349,7 +358,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitionerToPromote);
 
                 if (isRolePrincipal) { practitionerToDemote.IsPrincipal = false; }
-                if (isRoleFAA) { practitionerToDemote.IsPrincipal = false; }
+                if (isRoleFAA) { practitionerToDemote.IsFundaAppAdmin = false; }
                 practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;
@@ -409,8 +418,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user to principal
                 var user = _userManager.FindByIdAsync(userId).Result;
-                _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
-                _userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+                var remove = _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER).Result;
+                var add = _userManager.AddToRoleAsync(user, Roles.PRINCIPAL).Result;
 
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
                 replacements.Add(new TagsReplacements()
@@ -418,7 +427,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     FindValue = "PrincipalOrFAA",
                     ReplacementValue = "Principal"
                 });
-                var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",
@@ -558,7 +568,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SmartSpace license received
             License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-            if (smartSpaceLicense?.LicenseDate != null)
+            if (smartSpaceLicense?.LicenseDate != null  && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
@@ -622,7 +632,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var pqaVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).ToList();
             var reaccreditationVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).ToList();
             var supportVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_support || x.VisitType.Name == Constants.SSSettings.visitType_call).ToList();
-            var requestedCoachVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit).ToList();
+            var requestedCoachVisits = _visitManager.GetCoachVisits(coach.Id, practitioner.Id); 
             var selfAssessments = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_self_assessment).ToList();
             List<Visit> selfVisits = new List<Visit>();
 
@@ -826,7 +836,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SmartSpace license received
             License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-            if (smartSpaceLicense?.LicenseDate != null)
+            if (smartSpaceLicense?.LicenseDate != null && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
@@ -834,8 +844,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
             else
             {
-                timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
-                timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                if (smartSpaceLicense?.LicenseDate != null && smartSpaceLicense?.DeclinedDate != null)
+                {
+                    timeline.SmartSpaceLicenseNotAwardedDate = smartSpaceLicense?.DeclinedDate;
+                    timeline.SmartSpaceLicenseNotAwardedSteps = smartSpaceLicense?.DeclinedCommentsSteps;
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                }
+                else
+                {
+                    timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+                }
             }
 
             // DayOneStartUpTraining

@@ -12,6 +12,7 @@ import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
+import { traineeSelectors } from '@/store/trainee';
 
 interface CoachVisitInfoProps {
   setShowCoachVisit: any;
@@ -24,6 +25,7 @@ export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const coach = useSelector(coachSelectors.getCoach);
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   const call = () => {
     window.open(`tel:${coach?.user?.phoneNumber}`);
@@ -49,8 +51,7 @@ export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
         setShowCoachVisit(false);
       }}
       displayOffline={!isOnline}
-      renderOverflow={true}
-      className="h-screen"
+      className="h-screen pb-16"
     >
       <div className="h-screen p-4">
         <Typography
@@ -59,14 +60,16 @@ export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
           type={'h2'}
           text={`Request a visit from ${coach?.user?.firstName}`}
         />
-        <Alert
-          className="mt-4"
-          variant="outlined"
-          type="success"
-          title={`Well done! You have completed all the required SmartSpace steps. `}
-          message="Your coach has been asked to schedule the SmartSpace check!"
-          customIcon={<Emoji3 className="h-auto w-16" />}
-        />
+        {!timeline?.smartSpaceLicenseNotAwardedDate && (
+          <Alert
+            className="mt-4"
+            variant="outlined"
+            type="success"
+            title={`Well done! You have completed all the required SmartSpace steps. `}
+            message="Your coach has been asked to schedule the SmartSpace check!"
+            customIcon={<Emoji3 className="h-auto w-16" />}
+          />
+        )}
         <Typography
           text={`Contact ${coach?.user?.firstName}`}
           type="h3"

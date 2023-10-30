@@ -76,7 +76,7 @@ const ProgrammeSummary: React.FC<ProgrammeSummaryProps> = ({
   };
 
   const handleBackToClassroom = () => {
-    history.replace(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+    history.replace(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
   };
 
   const showOnlineOnly = () => {

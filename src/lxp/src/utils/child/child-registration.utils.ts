@@ -5,12 +5,15 @@ import {
   LearnerDto,
   SiteAddressDto,
   UserDto,
+  getBase64FromBaseString,
 } from '@ecdlink/core';
 import {
   AddChildCaregiverTokenModelInput,
   AddChildLearnerTokenModelInput,
   AddChildSiteAddressTokenModelInput,
   AddChildTokenModelInput,
+  AddChildRegistrationTokenModelInput,
+  AddChildUserConsentTokenModelInput,
 } from '@ecdlink/graphql';
 import { CareGiverChildInformationFormModel } from '@schemas/child/child-registration/care-giver-child-information-form';
 import { CareGiverContributionFormModel } from '@schemas/child/child-registration/care-giver-contribution-form';
@@ -20,8 +23,10 @@ import { CareGiverReferencePanelFormModel } from '@schemas/child/child-registrat
 import { ChildEmergencyContactFormModel } from '@schemas/child/child-registration/child-emergency-contact-form';
 import { ChildExtraInformationFormModel } from '@schemas/child/child-registration/child-extra-information-form';
 import { ChildHealthInformationFormModel } from '@schemas/child/child-registration/child-health-information-form';
+import { ChildRegistrationFormModel } from '@schemas/child/child-registration/child-registration-form';
 import { ChildInformationFormModel } from '@schemas/child/child-registration/child-information-form';
 import { newGuid } from '../common/uuid.utils';
+import { ChildBirthCertificateFormModel } from '@/schemas/child/child-registration/child-birth-certificate-form';
 
 export const mapChildUserDto = (
   childInformationForm: ChildInformationFormModel,
@@ -236,10 +241,16 @@ export const mapCaregiverDto = (
     emergencyContactFirstName: childEmergencyContactForm?.firstname ?? '',
     emergencyContactSurname: childEmergencyContactForm?.surname ?? '',
     emergencyContactPhoneNumber: childEmergencyContactForm?.phoneNumber ?? '',
-    additionalFirstName: childEmergencyContactForm?.custodianFirstname ?? '',
-    additionalSurname: childEmergencyContactForm?.custodianSurname ?? '',
-    additionalPhoneNumber:
-      childEmergencyContactForm?.custodianPhoneNumber ?? '',
+    isAllowedCustody: childEmergencyContactForm?.isAllowedCustody ?? false,
+    additionalFirstName: childEmergencyContactForm?.isAllowedCustody
+      ? childEmergencyContactForm.firstname
+      : childEmergencyContactForm?.custodianFirstname ?? '',
+    additionalSurname: childEmergencyContactForm?.isAllowedCustody
+      ? childEmergencyContactForm.surname
+      : childEmergencyContactForm?.custodianSurname ?? '',
+    additionalPhoneNumber: childEmergencyContactForm?.isAllowedCustody
+      ? childEmergencyContactForm.phoneNumber
+      : childEmergencyContactForm?.custodianPhoneNumber ?? '',
     joinReferencePanel: referencePanelForm?.interestedInJoiningPanel ?? false,
     contribution:
       childCareGiverContributionForm?.commitedToContributing ?? false,
@@ -287,6 +298,42 @@ export const mapAddChildSiteAddressTokenModelInput = (
     addressLine3: childCareGiverChildInformationForm?.city ?? '',
     postalCode: childCareGiverChildInformationForm?.postalCode ?? '',
     ward: childCareGiverChildInformationForm?.apartmentNumber ?? '',
+  };
+};
+
+export const mapAddChildRegistrationTokenModelInput = (
+  userId: string,
+  fileType: string,
+  childBirthCertificateForm: ChildBirthCertificateFormModel
+): AddChildRegistrationTokenModelInput => {
+  const splitString = getBase64FromBaseString(
+    childBirthCertificateForm?.birthCertificateImage
+  );
+
+  return {
+    file: splitString,
+    fileName: 'F4-registrationform.png',
+    fileType: fileType,
+    userId: userId,
+  };
+};
+
+export const mapAddChildUserConsentTokenModelInput = (
+  userId: string,
+  childRegistrationFormModel?: ChildRegistrationFormModel
+): AddChildUserConsentTokenModelInput => {
+  return {
+    userId: userId,
+    childPhotoConsentAccepted:
+      childRegistrationFormModel?.childPhotoConsentAccepted || false,
+    commitmentAgreementAccepted:
+      childRegistrationFormModel?.commitmentAgreementAccepted || false,
+    consentAgreementAccepted:
+      childRegistrationFormModel?.consentAgreementAccepted || false,
+    indemnityAgreementAccepted:
+      childRegistrationFormModel?.indemnityAgreementAccepted || false,
+    personalInformationAgreementAccepted:
+      childRegistrationFormModel?.personalInformationAgreementAccepted || false,
   };
 };
 

@@ -5,14 +5,17 @@ import {
   addNewClubLeader,
   addNewClubMembers,
   changeClubName,
+  getActivityBeCreativeDetails,
+  getActivityMeetRegularDetails,
+  getAllClubMembersForCoach,
+  getAllClubsDetailsForCoach,
   getAllClubsForCoach,
   moveClubMembers,
   updateCoachAboutInfo,
 } from './club.actions';
-import { ClubState } from './club.types';
+import { ClubState, MergedCoachingClub } from './club.types';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
-import { CoachingClub } from '@ecdlink/graphql';
 
 const initialState: ClubState = {};
 
@@ -28,10 +31,57 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, moveClubMembers);
     setThunkActionStatus(builder, changeClubName);
     setThunkActionStatus(builder, updateCoachAboutInfo);
+    setThunkActionStatus(builder, getAllClubsDetailsForCoach);
+    setThunkActionStatus(builder, getActivityMeetRegularDetails);
+    setThunkActionStatus(builder, getActivityBeCreativeDetails);
+    builder.addCase(getActivityBeCreativeDetails.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      state.points = {
+        ...state.points,
+        beCreative: action.payload,
+      };
+    });
+    builder.addCase(
+      getActivityMeetRegularDetails.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+
+        state.points = {
+          ...state.points,
+          meetRegularly: action.payload,
+        };
+      }
+    );
     builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
-      state.allClubsForCoach = action.payload;
+      if (!state.allClubsForCoach) {
+        state.allClubsForCoach = [];
+      }
+
+      const newState = [...state.allClubsForCoach]; // Create a new array to avoid mutating the original state
+
+      const payloadAsMergedClubs = action.payload as MergedCoachingClub[];
+
+      payloadAsMergedClubs.forEach((newClub) => {
+        const existingClubIndex = newState.findIndex(
+          (club) => club.id === newClub.id
+        );
+
+        if (existingClubIndex !== -1) {
+          // If the club already exists in the state, merge the data
+          newState[existingClubIndex] = {
+            ...newState[existingClubIndex],
+            ...newClub,
+          };
+        } else {
+          // If the club doesn't exist in the state, add the new club
+          newState.push(newClub);
+        }
+      });
+
+      state.allClubsForCoach = newState;
     });
     builder.addCase(addNewClub.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
@@ -57,17 +107,50 @@ const clubSlice = createSlice({
       });
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(getAllClubMembersForCoach.fulfilled, (state, action) => {
+      const updatedClubs = state.allClubsForCoach?.map((club) => {
+        const matchingPayload = action.payload.find(
+          (payloadItem) => payloadItem.id === club.id
+        );
 
-    builder.addCase(updateCoachAboutInfo.fulfilled, (state, action) => {
-      state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
-        return {
-          ...club,
-          coach: {
-            ...club.coach,
-            aboutInfo: action.payload.aboutInfo ?? '',
-          },
-        } as CoachingClub;
+        if (matchingPayload) {
+          return {
+            ...club,
+            ...matchingPayload,
+          };
+        }
+
+        return club;
       });
+
+      if (updatedClubs) {
+        state.allClubsForCoach = updatedClubs;
+      }
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getAllClubsDetailsForCoach.fulfilled, (state, action) => {
+      state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
+        const updatedClub = action.payload.find((item) => item.id === club.id);
+        if (!!updatedClub?.id) {
+          return updatedClub as MergedCoachingClub;
+        }
+        return club;
+      });
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateCoachAboutInfo.fulfilled, (state, action) => {
+      if (action.payload && action.payload.aboutInfo) {
+        state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
+          return {
+            ...club,
+            coach: {
+              ...club.coach,
+              aboutInfo: action.payload.aboutInfo ?? '',
+            },
+          } as MergedCoachingClub;
+        });
+      }
       setFulfilledThunkActionStatus(state, action);
     });
   },

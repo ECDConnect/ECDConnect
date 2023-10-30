@@ -148,7 +148,7 @@ export const AddPractitioner = ({
       userAuth?.auth_token!
     ).AddPractitionerToPrincipal(input);
 
-    history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
   };
 
   const callForHelp = () => {

@@ -89,7 +89,7 @@ export const getTraineeVisitData = createAsyncThunk<
     }
 
     if (!content) {
-      return rejectWithValue('Error getting visit answers for mother');
+      return rejectWithValue('Error getting visit answers for trainee');
     }
     return content;
   } catch (err) {
@@ -118,6 +118,40 @@ export const updateTraineeOnboardTimelineSSVisitEvent = createAsyncThunk<
           return response;
         }
       }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getCoachSmartSpaceVisitData = createAsyncThunk<
+  VisitData[],
+  { visitId: string },
+  ThunkApiType<RootState>
+>(
+  'getCoachSmartSpaceVisitData',
+  async ({ visitId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let content: VisitData[] | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        content = await new TraineeService(
+          userAuth?.auth_token ?? ''
+        ).getVisitDataForVisitId(visitId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!content) {
+        return rejectWithValue(
+          'Error getting visit answers for coach smartspace visit'
+        );
+      }
+      return content;
     } catch (err) {
       return rejectWithValue(err);
     }

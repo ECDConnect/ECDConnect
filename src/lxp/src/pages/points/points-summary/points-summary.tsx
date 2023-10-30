@@ -5,6 +5,9 @@ import {
   BannerWrapper,
   Button,
   CelebrationCard,
+  Dialog,
+  DialogPosition,
+  PointsProgressCard,
   ScoreCard,
   Typography,
 } from '@ecdlink/ui';
@@ -16,23 +19,30 @@ import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji
 import { format } from 'date-fns';
 import { useMemo, useRef, useState } from 'react';
 import { PointsSummaryDto, captureAndDownloadComponent } from '@ecdlink/core';
-import { PointsProgressCard } from '@/pages/dashboard/components/points-progress-card/points-progress-card';
 import ROUTES from '@/routes/routes';
 import { PointsShare } from '../points-share/points-share';
-
-// TODO - fetch club standings
-// TODO - add text that depends on relative club points
-// TODO - Actions for share
+import { PointsInfoPage } from '../info/points-info-page';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import { childrenSelectors } from '@/store/children';
 
 export const PointsSummary: React.FC = () => {
   const history = useHistory();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const children = useSelector(childrenSelectors.getChildren);
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
 
+  const [showInfo, setShowInfo] = useState(false);
+
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
+  );
+  const userStanding = useSelector(
+    pointsSelectors.getCurrentPercentileClubStandingForMonth()
+  );
+  const pointsTotalForYear = useSelector(
+    pointsSelectors.getPointsTotalForYear()
   );
   const filteredPointsSummaries = pointsSummaryDataWithLibrary.filter(
     (x) => x.pointsTotal > 0
@@ -72,15 +82,68 @@ export const PointsSummary: React.FC = () => {
     (total, current) => (total += current.pointsTotal),
     0
   );
-  const pointsMax =
+  let pointsMax =
     isPrincipal || isFundaAppAdmin
       ? pointsConstants.principalOrAdminMonthlyMax
       : pointsConstants.practitionerMonthlyMax;
 
   const percentageScore = (pointsTotal / pointsMax) * 100;
 
-  //TODO - Update this to use club data to set messages when available
+  // without this rule the progress bar goes beyond the component
+  if (pointsTotal > pointsMax) {
+    pointsMax = pointsTotal;
+  }
+
   const celebrationCard = useMemo(() => {
+    if (!!userStanding) {
+      if (userStanding === 100) {
+        return (
+          <CelebrationCard
+            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
+            secondaryMessage="You are the top points earner in your club! Keep it up!"
+            primaryTextColour="successMain"
+            secondaryTextColour="black"
+            backgroundColour="successBg"
+          />
+        );
+      }
+      if (userStanding > 75) {
+        return (
+          <CelebrationCard
+            image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Wow, well done ${practitioner?.user?.firstName}!`}
+            secondaryMessage="You are one of the top points earners in your club! Keep it up!"
+            primaryTextColour="successMain"
+            secondaryTextColour="black"
+            backgroundColour="successBg"
+          />
+        );
+      }
+      if (userStanding >= 50) {
+        <CelebrationCard
+          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+          primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
+          secondaryMessage="So far this year, you have more points than most other SmartStarters in you club!"
+          primaryTextColour="secondary"
+          secondaryTextColour="black"
+          backgroundColour="infoBb"
+        />;
+      }
+      if (userStanding < 50) {
+        return (
+          <CelebrationCard
+            image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
+            primaryTextColour="errorMain"
+            backgroundColour="errorBg"
+            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
+            secondaryTextColour="black"
+          />
+        );
+      }
+    }
+
     if (percentageScore < 60) {
       return (
         <CelebrationCard
@@ -89,7 +152,7 @@ export const PointsSummary: React.FC = () => {
           primaryTextColour="errorMain"
           backgroundColour="errorBg"
           secondaryMessage="Check out the tips below to earn more points this month."
-          secondaryTextColour="errorMain"
+          secondaryTextColour="black"
         />
       );
     } else if (percentageScore < 80) {
@@ -99,7 +162,7 @@ export const PointsSummary: React.FC = () => {
           primaryMessage={`Wow, great job ${practitioner?.user?.firstName}!`}
           secondaryMessage="You're doing well, keep it up! You can still earn more points this month."
           primaryTextColour="secondary"
-          secondaryTextColour="secondary"
+          secondaryTextColour="black"
           backgroundColour="infoBb"
         />
       );
@@ -110,12 +173,12 @@ export const PointsSummary: React.FC = () => {
           primaryMessage={`Well done ${practitioner?.user?.firstName}!`}
           secondaryMessage="You're doing well, keep it up!"
           primaryTextColour="successMain"
-          secondaryTextColour="successMain"
+          secondaryTextColour="black"
           backgroundColour="successBg"
         />
       );
     }
-  }, [percentageScore]);
+  }, [percentageScore, userStanding]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);
@@ -129,6 +192,8 @@ export const PointsSummary: React.FC = () => {
         onBack={() => history.goBack()}
         title="Points"
         backgroundColour="white"
+        displayHelp={true}
+        onHelp={() => setShowInfo(true)}
       >
         <div className="mt-5 flex-col justify-center p-4">
           <Typography
@@ -137,6 +202,7 @@ export const PointsSummary: React.FC = () => {
             text={format(new Date(), 'MMM yyyy')}
           />
           <ScoreCard
+            className="mt-5"
             mainText={`${pointsTotal} points`}
             currentPoints={pointsTotal}
             maxPoints={pointsMax}
@@ -174,6 +240,16 @@ export const PointsSummary: React.FC = () => {
                       : pointsLibraryScore.maxYearlyPoints
                   }
                   description={pointsLibraryScore.subActivity || 'Unknown'}
+                  badgeImage={
+                    <Badge
+                      style={{
+                        objectFit: 'cover',
+                        width: '100%',
+                        height: '100%',
+                      }}
+                      fill="var(--primary)"
+                    />
+                  }
                 />
               );
             })}
@@ -212,12 +288,21 @@ export const PointsSummary: React.FC = () => {
           />
         </div>
       </BannerWrapper>
+      <Dialog
+        fullScreen={true}
+        visible={showInfo}
+        position={DialogPosition.Full}
+      >
+        <PointsInfoPage onClose={() => setShowInfo(false)} />
+      </Dialog>
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Month"
           pointsSummaries={filteredPointsSummaries}
           userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
-          childCount={12} // TODO get correct count for practitioner
+          childCount={children?.length || 0}
+          clubStanding={userStanding}
+          clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>
     </>

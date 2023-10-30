@@ -1,11 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { PointsState } from './points.types';
-import { getPointsLibrary, getPointsSummaryForUser } from './points.actions';
+import {
+  getPointsLibrary,
+  getPointsSummaryForUser,
+  getUserClubStanding,
+} from './points.actions';
 
 const initialState: PointsState = {
   pointsSummary: [],
   pointsLibrary: [],
+  userClubStanding: undefined,
 };
 
 const pointsState = createSlice({
@@ -14,6 +19,8 @@ const pointsState = createSlice({
   reducers: {
     resetPointsState: (state) => {
       state.pointsSummary = [];
+      state.pointsLibrary = [];
+      state.userClubStanding = undefined;
     },
   },
   extraReducers: (builder) => {
@@ -22,6 +29,12 @@ const pointsState = createSlice({
     });
     builder.addCase(getPointsLibrary.fulfilled, (state, action) => {
       state.pointsLibrary = action.payload;
+    });
+    builder.addCase(getUserClubStanding.fulfilled, (state, action) => {
+      state.userClubStanding = {
+        standing: action.payload,
+        dateLoaded: new Date().toISOString(),
+      };
     });
   },
 });

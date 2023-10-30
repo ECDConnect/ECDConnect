@@ -1,7 +1,7 @@
 import { useDialog, useTheme } from '@ecdlink/core';
 import { IonContent } from '@ionic/react';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { userSelectors } from '@store/user';
@@ -48,11 +48,34 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const { stopService } = useNotificationService();
 
+  const showOnlineOnly = useCallback(() => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit) => {
+        return (
+          <OnlineOnlyModal
+            overrideText={'You need to be online to complete your profile'}
+            onSubmit={() => {
+              history.goBack();
+              onSubmit();
+            }}
+          ></OnlineOnlyModal>
+        );
+      },
+    });
+  }, [dialog, history]);
+
   useEffect(() => {
-    if (!addedByPrincipal) {
+    if (!isOnline) {
+      showOnlineOnly();
+    }
+  }, [isOnline, showOnlineOnly]);
+
+  useEffect(() => {
+    if (!addedByPrincipal && isOnline) {
       return history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
     }
-  }, [addedByPrincipal, history]);
+  }, [addedByPrincipal, history, isOnline]);
 
   useEffect(() => {
     if (activeStep === EditPractitionerSteps.WELCOME) {
@@ -97,20 +120,6 @@ export const EditPractitionerProfile: React.FC = () => {
     } else {
       showOnlineOnly();
     }
-  };
-
-  const showOnlineOnly = () => {
-    dialog({
-      position: DialogPosition.Bottom,
-      render: (onSubmit) => {
-        return (
-          <OnlineOnlyModal
-            overrideText={'You need to be online to complete your profile'}
-            onSubmit={onSubmit}
-          ></OnlineOnlyModal>
-        );
-      },
-    });
   };
 
   const steps = (step: EditPractitionerSteps) => {

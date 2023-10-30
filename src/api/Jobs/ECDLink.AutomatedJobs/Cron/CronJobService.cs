@@ -14,7 +14,7 @@ namespace ECDLink.AutomatedJobs.Cron
 
         protected CronJobService(string cronExpression, TimeZoneInfo timeZoneInfo)
         {
-            _expression = CronExpression.Parse(cronExpression, CronFormat.IncludeSeconds);
+            _expression = CronExpression.Parse(cronExpression);
             _timeZoneInfo = timeZoneInfo;
         }
 
@@ -33,23 +33,30 @@ namespace ECDLink.AutomatedJobs.Cron
                 {
                     await ScheduleJob(cancellationToken);
                 }
-                _timer = new System.Timers.Timer(delay.TotalMilliseconds);
-                _timer.Elapsed += async (sender, args) =>
+                try
                 {
-                    _timer.Dispose();  // reset and dispose timer
-                    _timer = null;
-
-                    if (!cancellationToken.IsCancellationRequested)
+                    _timer = new System.Timers.Timer(delay.TotalMilliseconds);
+                    _timer.Elapsed += async (sender, args) =>
                     {
-                        await DoWork(cancellationToken);
-                    }
+                        _timer.Dispose();  // reset and dispose timer
+                        _timer = null;
 
-                    if (!cancellationToken.IsCancellationRequested)
-                    {
-                        await ScheduleJob(cancellationToken);    // reschedule next
-                    }
-                };
-                _timer.Start();
+                        if (!cancellationToken.IsCancellationRequested)
+                        {
+                            await DoWork(cancellationToken);
+                        }
+
+                        if (!cancellationToken.IsCancellationRequested)
+                        {
+                            await ScheduleJob(cancellationToken);    // reschedule next
+                        }
+                    };
+                    _timer.Start();
+                } catch (Exception ex)
+                {
+                    throw ex;
+
+                }
             }
             await Task.CompletedTask;
         }

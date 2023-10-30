@@ -1,9 +1,4 @@
-import {
-  BalanceSheetDto,
-  ExpensesStatementsDto,
-  IncomeStatementsDto,
-  PractitionerDto,
-} from '@ecdlink/core';
+import { PractitionerDto } from '@ecdlink/core';
 import { RootState } from '../types';
 import { PrincipalPractitioners } from './practitioner.types';
 import { createSelector } from '@reduxjs/toolkit';
@@ -43,18 +38,3 @@ export const getPractitionersByUserIds = (ids: string[]) =>
       );
     }
   );
-
-export const getPractitionerBalanceSheet = (
-  state: RootState
-): BalanceSheetDto[] | undefined =>
-  [...(state.practitioner.balanceSheet || [])].sort(
-    (a, b) => a.month - b.month
-  ) || [];
-
-export const getPractitionerIncome = (
-  state: RootState
-): IncomeStatementsDto[] | undefined => state?.practitioner?.income || [];
-
-export const getPractitionerExpenses = (
-  state: RootState
-): ExpensesStatementsDto[] | undefined => state?.practitioner?.expenses || [];

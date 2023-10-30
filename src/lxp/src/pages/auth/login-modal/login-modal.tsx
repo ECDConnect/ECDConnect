@@ -26,6 +26,8 @@ import * as styles from './login-modal.styles';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
+import { practitionerSelectors } from '@/store/practitioner';
+import { syncThunkActions } from '@/store/sync';
 const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
@@ -45,7 +47,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
-  const { resetAppStore } = useStoreSetup();
+  const { resetAppStore, resetAuth } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
 
@@ -55,11 +57,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     JSON.parse(localStorage?.getItem('userHash')!)
   );
 
-  const userHashDecrypted = CryptoJS.AES.decrypt(
-    userHashUpdated,
-    'secret key 123'
-  );
-  const userHashToString = userHashDecrypted.toString(CryptoJS.enc.Utf8);
+  const userHashDecrypted =
+    userHashUpdated && CryptoJS.AES.decrypt(userHashUpdated, 'secret key 123');
+  const userHashToString =
+    userHashDecrypted && userHashDecrypted.toString(CryptoJS.enc.Utf8);
 
   const {
     register: loginRegister,
@@ -75,8 +76,25 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const { isValid } = loginFormState;
   const { idField, passportField, password, preferId } = useWatch({ control });
   const checkIdOrPassport = preferId ? idField : passportField;
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+
+  const sync = async () => {
+    if (practitioner?.isPrincipal === true) {
+      await appDispatch(syncThunkActions.syncOfflineData({}));
+    } else {
+      await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+    }
+    await appDispatch(settingActions.setLastDataSync());
+  };
 
   const submitForm = async () => {
+    if (user?.idNumber !== checkIdOrPassport) {
+      await sync();
+      await resetAppStore();
+      await resetAuth();
+      localStorage?.clear();
+      history.push(ROUTES.LOGIN);
+    }
     setDisplayError(false);
     if (isValid) {
       setIsLoading(true);
@@ -95,7 +113,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           ) {
             loginSuccessful();
             // updateTime()
-            const userLocalxpiration = Date.now() + 60000;
+            const userLocalxpiration = Date.now() + 3600000000;
             localStorage.setItem(
               'userLocalxpiration',
               JSON.stringify(userLocalxpiration)

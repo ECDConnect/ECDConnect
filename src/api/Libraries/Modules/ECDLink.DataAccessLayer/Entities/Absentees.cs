@@ -25,6 +25,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string UserId { get; set; }
         public string Reason { get; set; }
         public DateTime AbsentDate { get; set; }
+        public DateTime? AbsentDateEnd { get; set; }
         public string LoggedBy { get; set; }
         public string ReassignedClass { get; set; }
         public string ReassignedToPractitioner { get; set; }
@@ -46,5 +47,20 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(AbsenteesId))]
         public Absentees Absentees { get; set; }
         public TKey AbsenteesId { get; set; }
+    }
+
+    public class AbsenteeDetail
+    {
+        public string AbsenteeId { get; set; }
+        public string Reason { get; set; }
+        public DateTime AbsentDate { get; set; }
+        public DateTime? AbsentDateEnd { get; set; }
+
+        public string ClassName { get; set; }
+        public string ClassroomGroupId { get; set; }
+
+        public string ReassignedToPerson { get; set; }
+        public string ReassignedToUserId { get; set; }
+
     }
 }

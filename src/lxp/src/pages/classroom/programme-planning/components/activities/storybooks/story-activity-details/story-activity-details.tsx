@@ -1,8 +1,14 @@
-import { ActivityDto, getAvatarColor, StoryBookDto } from '@ecdlink/core/';
+import {
+  ActivityDto,
+  getAvatarColor,
+  StoryBookDto,
+  useDialog,
+} from '@ecdlink/core/';
 import {
   Alert,
   BannerWrapper,
   Button,
+  DialogPosition,
   Divider,
   RoundIcon,
   StatusChip,
@@ -21,6 +27,7 @@ import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import StoryActivityCard from '../story-activity-card/story-activity-card';
 import StoryCard from '../story-card/story-card';
 import { StoryActivityDetailsProps } from './story-activity-details.types';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 const StoryActivityDetails: React.FC<StoryActivityDetailsProps> = ({
   storyBookId,
@@ -516,6 +523,27 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
   onActivitySwitched,
   onStorySwitched,
 }) => {
+  const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  const handleActivitySwitched = () => {
+    if (isOnline) {
+      onActivitySwitched?.();
+    } else {
+      showOnlineOnly();
+    }
+  };
+
   return (
     <div className={'flex flex-col'}>
       <div className={'flex flex-col pb-24'}>
@@ -538,7 +566,7 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
                 text={'Change activity'}
                 icon={'SwitchVerticalIcon'}
                 iconPosition={'start'}
-                onClick={onActivitySwitched}
+                onClick={handleActivitySwitched}
               />
             </div>
           ) : (

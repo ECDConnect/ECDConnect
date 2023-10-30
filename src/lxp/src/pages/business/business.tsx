@@ -30,8 +30,6 @@ export const Business: React.FC = () => {
   const appDispatch = useAppDispatch();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
-  const [showInfo, setShowInfo] = useState(false);
-  const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const [isFromAutomaticallyStart, setIsFromAutomaticallyStart] =
     useState(false);
 
@@ -40,6 +38,9 @@ export const Business: React.FC = () => {
   };
 
   const practitioner = useSelector(getPractitioner);
+  const [showInfo, setShowInfo] = useState(
+    !practitioner?.isCompletedBusinessWalkThrough || false
+  );
 
   const updateWalkThroughStatus = useCallback(
     (status: boolean) => {
@@ -53,14 +54,6 @@ export const Business: React.FC = () => {
     },
     [appDispatch, practitioner?.userId]
   );
-
-  useEffect(() => {
-    if (practitioner?.isCompletedBusinessWalkThrough) {
-      setShowInfo(false);
-    } else {
-      setShowInfo(true);
-    }
-  }, [practitioner?.isCompletedBusinessWalkThrough]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -85,12 +78,7 @@ export const Business: React.FC = () => {
     {
       title: 'Money',
       initActive: true,
-      child: (
-        <Money
-          hasIncomeStatements={hasIncomeStatements}
-          setHasIncomeStatements={setHasIncomeStatements}
-        />
-      ),
+      child: <Money />,
     },
     {
       title: 'Resources',
@@ -117,7 +105,7 @@ export const Business: React.FC = () => {
   const { setState } = useAppContext();
 
   return (
-    <div key={String(hasIncomeStatements)} className="h-screen">
+    <div className="h-screen">
       <BannerWrapper
         showBackground={false}
         size="medium"

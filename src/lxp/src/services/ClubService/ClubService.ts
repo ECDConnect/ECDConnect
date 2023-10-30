@@ -8,9 +8,16 @@ import {
   MutationUpdateCoachAboutInfoArgs,
   NewClubInput,
   NewClubMemberInput,
+  CoachingClubBase,
+  ClubMember,
+  QueryActivityMeetRegularDetailsArgs,
+  ActivityMeetRegular,
+  ActivityBeCreative,
+  QueryActivityBeCreativeDetailsArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
+import { ClubDto } from '@/models/club/club.dto';
 
 class ClubService {
   _accessToken: string;
@@ -19,23 +26,62 @@ class ClubService {
     this._accessToken = accessToken;
   }
 
-  async getAllClubsForCoach(userId: string): Promise<CoachingClub[]> {
+  async getAllClubsForCoach(userId: string): Promise<CoachingClubBase[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { allClubsForCoach: CoachingClub[] };
+      data: { allClubsForCoach: CoachingClubBase[] };
       errors?: {};
     }>(``, {
       query: `
-        query GetAllClubsForCoach($userId: String) {
+        query allClubsForCoach($userId: String) {
           allClubsForCoach(userId: $userId) {
+            id
+            name
+            userId
+            secondaryText
+            secondaryTextColor
+            secondaryTextPriority
+            meetingAttendance
+            meetingAttendanceColor
+            meetingAttendanceText 
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get all clubs failed - Server connection error');
+    }
+
+    return response.data.data.allClubsForCoach;
+  }
+
+  async getAllClubsDetailsForCoach(
+    userId: string,
+    clubId?: string
+  ): Promise<CoachingClub[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { allClubsDetailsForCoach: CoachingClub[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query allClubsDetailsForCoach($userId: String, $clubId: String!) {
+          allClubsDetailsForCoach(userId: $userId, clubId: $clubId) {
               id
               name
               userId
               secondaryText
               secondaryTextColor
               maxClubPoints
+              leagueRankNr
               totalClubPoints
-              leaguePosition
+              totalClubPointsColor
+              firstInLeague
+              secondaryTextPriority
               clubMeetings {
                 id
                 name
@@ -44,7 +90,7 @@ class ClubService {
                 meetingNotes
                 coachAttended
               }
-              clubLeaders {
+              currentClubLeader {
                   isActive
                   dateAssigned
                   dateAccepted
@@ -59,6 +105,22 @@ class ClubService {
                           profileImageUrl
                       }
                   }
+              }
+              newClubLeader {
+                isActive
+                dateAssigned
+                dateAccepted
+                practitioner {
+                    id
+                    user {
+                        id
+                        firstName
+                        surname
+                        phoneNumber
+                        whatsAppNumber
+                        profileImageUrl
+                    }
+                }
               }
               clubSupport {
                   isActive
@@ -116,6 +178,57 @@ class ClubService {
                   name
                   points
               }
+              issuesTasks {
+                secondaryText
+                secondaryTextColor
+                secondaryDescription
+              }
+          }
+      }
+      `,
+      variables: {
+        userId,
+        clubId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get all clubs failed - Server connection error');
+    }
+
+    return response.data.data.allClubsDetailsForCoach;
+  }
+
+  async getAllClubsMembersForCoach(userId: string): Promise<CoachingClub[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: {
+        allClubsDetailsForCoach: (CoachingClub['id'] &
+          CoachingClub['clubMembers'])[];
+      };
+      errors?: {};
+    }>(``, {
+      query: `
+        query allClubsDetailsForCoach($userId: String) {
+          allClubsDetailsForCoach(userId: $userId) {
+              id
+              clubMembers {
+                  welcomeMessage
+                  isActive
+                  dateClubJoined
+                  isNewInClub
+                  practitioner {
+                      id
+                      user {
+                          id
+                          firstName
+                          surname
+                          phoneNumber
+                          whatsAppNumber
+                          profileImageUrl
+                      }
+                  }
+              }
           }
       }
       `,
@@ -125,10 +238,45 @@ class ClubService {
     });
 
     if (response.status !== 200 || response.data.errors) {
-      throw new Error('Get all clubs failed - Server connection error');
+      throw new Error('Get all members failed - Server connection error');
     }
 
-    return response.data.data.allClubsForCoach;
+    return response.data.data.allClubsDetailsForCoach;
+  }
+
+  async getClubsMembers(clubIds: string[]): Promise<ClubMember[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: {
+        clubsMembers: ClubMember[];
+      };
+      errors?: {};
+    }>(``, {
+      query: `
+        query clubsMembers($clubIds: [UUID!]) {
+          clubsMembers(clubIds: $clubIds) {
+            practitioner {
+                id
+                user {
+                    id
+                    firstName
+                    surname
+                    isActive
+                }
+            }
+          }
+      }
+      `,
+      variables: {
+        clubIds,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get all members failed - Server connection error');
+    }
+
+    return response.data.data.clubsMembers;
   }
 
   async addNewClubMembers(input: NewClubMemberInput): Promise<boolean> {
@@ -243,7 +391,7 @@ class ClubService {
       errors?: {};
     }>(``, {
       query: `
-        mutation AddNewClubLeader($clubId: String, $practitionerId: String) {
+        mutation AddNewClubLeader($clubId: UUID!, $practitionerId: UUID!) {
           addNewClubLeader(clubId: $clubId, practitionerId: $practitionerId) {
               isActive
               dateAssigned
@@ -301,6 +449,136 @@ class ClubService {
     }
 
     return response.data.data.updateCoachAboutInfo;
+  }
+
+  async getActivityMeetRegularDetails(
+    input: QueryActivityMeetRegularDetailsArgs
+  ): Promise<ActivityMeetRegular> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityMeetRegularDetails: ActivityMeetRegular };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityMeetRegularDetails($clubId: UUID!, $month: Int!, $year: Int!) {
+          activityMeetRegularDetails(clubId: $clubId, month: $month, year: $year) {
+              points
+              pointsColor
+              upcomingMeetings {
+                  meetingDate
+              }
+              pastMeetings {
+                  meetingDate
+                  meetingNotes
+                  meetingAttendancePerc
+                  meetingAttendanceColor
+                  points
+                  meetingParticipants {
+                    practitioner {
+                      user {
+                        id
+                        firstName
+                        surname
+                      }
+                  }
+                  meetingAbsentees {
+                    practitioner {
+                        user {
+                            id
+                            firstName
+                            surname
+                          }
+                        }
+                    }
+                } 
+              }     
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity meet regular details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityMeetRegularDetails;
+  }
+
+  async getActivityBeCreativeDetails(
+    input: QueryActivityBeCreativeDetailsArgs
+  ): Promise<ActivityBeCreative> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityBeCreativeDetails: ActivityBeCreative };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityBeCreativeDetails($clubId: UUID!) {
+          activityBeCreativeDetails(clubId: $clubId) {
+              points
+              pointsColor
+              monthlyRecords {
+                  monthName
+                  description
+                  documentName
+                  documentStatusColor
+                  documentStatus
+                  imageApproved
+                  points
+              }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity be creative details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityBeCreativeDetails;
+  }
+
+  async getClubForUser(userId: string): Promise<ClubDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { clubForUser: ClubDto };
+      errors?: {};
+    }>(``, {
+      query: `query clubForUser($userId: String) {
+          clubForUser(userId: $userId) {
+            id
+            name
+            pointsTotal
+            maxPointsTotal
+            leagueRanking
+            league {
+              id
+              name
+              leagueTypeId
+              leagueTypeName
+            }
+          }
+        }`,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get club for user failed - Server connection error');
+    }
+
+    return response.data.data.clubForUser;
   }
 }
 

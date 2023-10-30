@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState, useEffect } from 'react';
-import { useSnackbar, useTheme } from '@ecdlink/core';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -12,6 +12,8 @@ import {
   StatusChip,
   Typography,
   StackedList,
+  Card,
+  ActionModal,
 } from '@ecdlink/ui';
 import { PractitionerService } from '@/services/PractitionerService';
 import { NoteTypeEnum } from '@ecdlink/graphql';
@@ -35,9 +37,20 @@ import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { CoachTraineeOnboarding } from './components/trainee-timeline/trainee-onboarding';
 import { useAppDispatch } from '@/store';
-import { addDays } from 'date-fns';
+import {
+  addDays,
+  format,
+  isFriday,
+  isPast,
+  isSameDay,
+  isToday,
+  isWeekend,
+  nextMonday,
+} from 'date-fns';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
+  const dialog = useDialog();
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -50,6 +63,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerId
   );
+
   const isPrincipal = practitioner?.isPrincipal === true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
@@ -62,6 +76,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isOnStipend = practitioner?.isOnStipend;
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
+
+  // TODO: change this when we have the real data
+  const isAssignedToAClub = false;
 
   const timelineStepsArray = timelineSteps(
     timeline!,
@@ -87,11 +104,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   );
   const onboardingNotCompleted = completedSteps?.length < 8;
   const twoWeeksAgo = addDays(new Date(), -14);
+  const fourWeeksAgo = addDays(new Date(), -28);
   const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
     ? new Date(timeline?.smartSpaceLicenseDate)
     : new Date();
   const onboardingIncompleteAfter2Weeks =
     onboardingNotCompleted && smartSpaceLicenseDate < twoWeeksAgo;
+  const onboardingIncompleteAfter4Weeks =
+    onboardingNotCompleted && smartSpaceLicenseDate < fourWeeksAgo;
 
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
@@ -105,6 +125,89 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     useState<boolean>(false);
 
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
+  const practitionerAbsentees = practitioner?.absentees;
+  const validAbsenteesDates = practitionerAbsentees?.filter(
+    (item) =>
+      !isPast(new Date(item?.absentDate as string)) ||
+      isToday(new Date(item?.absentDate as string))
+  );
+  const currentDates = validAbsenteesDates?.map((item) => {
+    return item?.absentDate as string;
+  });
+
+  const orderedDates = currentDates?.sort(function (a, b) {
+    return Date.parse(a) - Date.parse(b);
+  });
+
+  const currentAbsentee = validAbsenteesDates?.find(
+    (item) => item?.absentDate === orderedDates?.[0]
+  ) as AbsenteeDto;
+  const allAbsenteeClasses = practitionerAbsentees?.filter(
+    (item) => item?.absentDate === currentAbsentee?.absentDate
+  );
+
+  const absenceIsToday = isSameDay(
+    new Date(),
+    new Date(currentAbsentee?.absentDate || '')
+  );
+
+  const isOnLeave =
+    isPast(new Date(currentAbsentee?.absentDate as string)) &&
+    !isPast(new Date(currentAbsentee?.absentDateEnd as string));
+
+  const handleReassignClass = useCallback(
+    (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
+      if (allAbsenteeClasses) {
+        history.push('practitioner-reassign-class', {
+          practitionerId,
+          allAbsenteeClasses,
+        });
+        return;
+      }
+      history.push('practitioner-reassign-class', {
+        practitionerId,
+      });
+    },
+    [history]
+  );
+
+  const handleAbsenceModal = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`What would you like to edit?`}
+          actionButtons={[
+            {
+              text: 'Edit this absence',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                handleReassignClass(practitionerId, allAbsenteeClasses);
+                onSubmit();
+              },
+              leadingIcon: 'PencilAltIcon',
+            },
+            {
+              text: 'Add a new leave/absence',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                handleReassignClass(practitionerId);
+                onSubmit();
+              },
+              leadingIcon: 'PlusIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerId]);
 
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -136,7 +239,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
     getTraineeTimeline();
     getTraineeVisitDate();
-  }, []);
+  }, [appDispatch, practitioner?.userId, traineeCurrentVisit?.id]);
 
   const classroomsDetailsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
@@ -238,7 +341,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     listItems?.splice(0, 1, {
       title: 'Trainee onboarding',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
-      subTitle: onboardingIncompleteAfter2Weeks
+      subTitle: onboardingIncompleteAfter4Weeks
+        ? 'Remove trainee'
+        : onboardingIncompleteAfter2Weeks
         ? 'Incomplete after 2 weeks'
         : `${completedSteps?.length + 1} of ${
             timelineStepsArray?.length + 1
@@ -296,7 +401,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       onActionClick: () =>
         history.push(
           ROUTES.COACH.PRACTITIONER_BUSINESS.BUSINESS.replace(
-            ':practitionerId',
+            ':userId',
             practitionerId
           )
         ),
@@ -358,9 +463,294 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     },
   ];
 
+  listItems?.push({
+    title: 'Club',
+    titleStyle: 'text-textDark font-semibold text-base leading-snug',
+    subTitle: isAssignedToAClub ? '{clubName}' : 'Not assigned to a club',
+    subTitleStyle:
+      'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+    menuIcon: 'UserGroupIcon',
+    menuIconClassName: 'text-white',
+    showIcon: true,
+    iconBackgroundColor: 'tertiary',
+    chipConfig: {
+      colorPalette: {
+        backgroundColour: 'alertMain',
+        borderColour: 'alertMain',
+        textColour: 'white',
+      },
+    },
+    text: '',
+    onActionClick: () =>
+      history.push(
+        ROUTES.COMMUNITY.CLUB.MEMBER[
+          isAssignedToAClub ? 'ROOT' : 'ADD'
+        ].replace(':practitionerId', practitionerId)
+      ),
+    classNames: 'bg-uiBg',
+  });
+
   const onCreatePractitionerNoteBack = () => {
     setCreatePractitionerdNoteVisible(false);
   };
+
+  const handleComebackDay = useCallback((date: Date) => {
+    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
+      return nextMonday(new Date(date));
+    }
+
+    return new Date(addDays(new Date(date), 1));
+  }, []);
+
+  const renderCardHeader = useMemo(() => {
+    if (absenceIsToday) {
+      return (
+        <>
+          <Typography
+            type={'h1'}
+            color="textDark"
+            text={`${practitioner?.user?.firstName} is absent today`}
+            className={'mt-6 ml-4'}
+          />
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`Reason:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${currentAbsentee?.reason}`}
+              className={'mt-4'}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`${practitioner?.user?.firstName} will be back on:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${format(
+                new Date(
+                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+                ),
+                'd MMM yyyy'
+              )}`}
+              className={'mt-4'}
+            />
+          </div>
+        </>
+      );
+    }
+
+    if (isOnLeave) {
+      return (
+        <>
+          <Typography
+            type={'h1'}
+            color="textDark"
+            text={`${practitioner?.user?.firstName} is on leave`}
+            className={'mt-6 ml-4'}
+          />
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`Start date:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${format(
+                new Date(
+                  handleComebackDay(currentAbsentee?.absentDate as Date)
+                ),
+                'd MMM yyyy'
+              )}`}
+              className={'mt-4'}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`End date:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${format(
+                new Date(
+                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+                ),
+                'd MMM yyyy'
+              )}`}
+              className={'mt-4'}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`Reason:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${currentAbsentee?.reason}`}
+              className={'mt-4'}
+            />
+          </div>
+        </>
+      );
+    }
+
+    if (
+      !isOnLeave &&
+      currentAbsentee?.absentDate === currentAbsentee?.absentDateEnd
+    ) {
+      return (
+        <>
+          <Typography
+            type={'h1'}
+            color="textDark"
+            text={`${practitioner?.user?.firstName} will be absent on ${
+              currentAbsentee?.absentDate &&
+              format(new Date(currentAbsentee?.absentDate as string), 'EEEE')
+            }, ${
+              currentAbsentee?.absentDate &&
+              format(new Date(currentAbsentee?.absentDate as string), 'd MMM')
+            }`}
+            className={'mt-6 ml-4'}
+          />
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`Reason:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${currentAbsentee?.reason}`}
+              className={'mt-4'}
+            />
+          </div>
+          <div className="flex items-center gap-2">
+            <Typography
+              type={'body'}
+              color="textMid"
+              weight="bold"
+              text={`${practitioner?.user?.firstName} will be back on:`}
+              className={'mt-4 ml-4'}
+            />
+            <Typography
+              type={'body'}
+              color="textMid"
+              text={`${
+                currentAbsentee?.absentDateEnd &&
+                format(
+                  new Date(
+                    handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+                  ),
+                  'd MMM yyyy'
+                )
+              }`}
+              className={'mt-4'}
+            />
+          </div>
+        </>
+      );
+    }
+
+    return (
+      <>
+        <Typography
+          type={'h1'}
+          color="textDark"
+          text={`${practitioner?.user?.firstName} will be on leave`}
+          className={'mt-4 ml-4'}
+        />
+        <div className="flex items-center gap-2">
+          <Typography
+            type={'body'}
+            color="textMid"
+            weight="bold"
+            text={`Start date:`}
+            className={'mt-4 ml-4'}
+          />
+          <Typography
+            type={'body'}
+            color="textMid"
+            text={`${format(
+              new Date(handleComebackDay(currentAbsentee?.absentDate as Date)),
+              'd MMM yyyy'
+            )}`}
+            className={'mt-4'}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Typography
+            type={'body'}
+            color="textMid"
+            weight="bold"
+            text={`End date:`}
+            className={'mt-4 ml-4'}
+          />
+          <Typography
+            type={'body'}
+            color="textMid"
+            text={`${format(
+              new Date(
+                handleComebackDay(currentAbsentee?.absentDateEnd as Date)
+              ),
+              'd MMM yyyy'
+            )}`}
+            className={'mt-4'}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Typography
+            type={'body'}
+            color="textMid"
+            weight="bold"
+            text={`Reason:`}
+            className={'mt-4 ml-4'}
+          />
+          <Typography
+            type={'body'}
+            color="textMid"
+            text={`${currentAbsentee?.reason}`}
+            className={'mt-4'}
+          />
+        </div>
+      </>
+    );
+  }, [
+    absenceIsToday,
+    currentAbsentee?.absentDate,
+    currentAbsentee?.absentDateEnd,
+    currentAbsentee?.reason,
+    handleComebackDay,
+    isOnLeave,
+    practitioner?.user?.firstName,
+  ]);
 
   return (
     <>
@@ -394,7 +784,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 canChangeImage={false}
                 dataUrl={practitioner?.user?.profileImageUrl || ''}
                 size={'header'}
-                // eslint-disable-next-line @typescript-eslint/no-empty-function
                 onPressed={() => {}}
               />
             </div>
@@ -444,6 +833,60 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 />
               </Button>
             </div>
+            {currentAbsentee && (
+              <div className="p-4">
+                <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
+                  <div className={'p-4'}>
+                    {renderCardHeader}
+                    {allAbsenteeClasses &&
+                      allAbsenteeClasses?.length > 0 &&
+                      allAbsenteeClasses?.map((item) => {
+                        return (
+                          <div>
+                            {item?.className && (
+                              <div className="flex items-center gap-2">
+                                <Typography
+                                  type={'body'}
+                                  color="textMid"
+                                  weight="bold"
+                                  text={`${item?.className} class reassigned to:`}
+                                  className={'mt-4 ml-4'}
+                                />
+                                <Typography
+                                  type={'body'}
+                                  color="textMid"
+                                  text={`${item?.reassignedToPerson}`}
+                                  className={'mt-4'}
+                                />
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+
+                    <div className="flex justify-center">
+                      <Button
+                        type="filled"
+                        color="primary"
+                        className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                        onClick={() => handleAbsenceModal()}
+                      >
+                        {renderIcon(
+                          'PencilAltIcon',
+                          'w-5 h-5 color-white text-white mr-1'
+                        )}
+                        <Typography
+                          type="body"
+                          className="mr-4"
+                          color="white"
+                          text={'Edit absence/leave'}
+                        ></Typography>
+                      </Button>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            )}
           </BannerWrapper>
           <div className="mt-4 flex justify-center">
             <div className="w-11/12">
@@ -543,23 +986,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             <div className={styles.infoWrapper}>
               <div>
                 <Typography
-                  text={'Smartstart club'}
-                  type="h5"
-                  color="textMid"
-                  className={'mt-1'}
-                />
-                <Typography
-                  text={'N/A'}
-                  type="h4"
-                  color="textDark"
-                  className={'mt-1'}
-                />
-              </div>
-            </div>
-            <Divider dividerType="dashed" className="my-4" />
-            <div className={styles.infoWrapper}>
-              <div>
-                <Typography
                   text={'Your notes'}
                   type="h5"
                   color="textMid"
@@ -635,23 +1061,49 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             <Divider dividerType="dashed" className="my-4" />
             <div className="flex w-full justify-center">
               <Button
-                type="outlined"
+                type="filled"
                 color="primary"
-                className={'mt-6 mb-6 w-11/12'}
+                className={`mt-6 w-11/12 ${
+                  !practitioner?.isPrincipal &&
+                  !practitioner?.isFundaAppAdmin &&
+                  'mb-6'
+                }`}
                 onClick={() => setRemovePractionerReasonsVisible(true)}
               >
-                {renderIcon(
-                  'TrashIcon',
-                  'w-5 h-5 color-primary text-primary mr-2'
-                )}
+                {renderIcon('TrashIcon', 'w-5 h-5 color-white text-white mr-2')}
                 <Typography
                   type="body"
                   className="mr-4"
-                  color="primary"
+                  color="white"
                   text={`Remove ${practitioner?.user?.firstName}`}
                 ></Typography>
               </Button>
             </div>
+            {(practitioner?.isPrincipal || practitioner?.isFundaAppAdmin) && (
+              <div className="flex w-full justify-center">
+                <Button
+                  type="outlined"
+                  color="primary"
+                  className={'mt-4 mb-6 w-11/12'}
+                  onClick={() =>
+                    history.push(ROUTES.COACH.PRACTITIONER_REASSIGN_CLASS, {
+                      practitionerId,
+                    })
+                  }
+                >
+                  {renderIcon(
+                    'PencilAltIcon',
+                    'w-5 h-5 color-primary text-primary mr-2'
+                  )}
+                  <Typography
+                    type="body"
+                    className="mr-4"
+                    color="primary"
+                    text={`Record leave`}
+                  ></Typography>
+                </Button>
+              </div>
+            )}
           </>
           <Dialog
             fullScreen
@@ -659,7 +1111,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             position={DialogPosition.Top}
           >
             <div className={styles.dialogContent}>
-              <CoachTraineeOnboarding practitioner={practitioner} />
+              <CoachTraineeOnboarding
+                practitioner={practitioner}
+                setShowTraineeDashboard={setShowTraineeDashboard}
+              />
             </div>
           </Dialog>
         </div>
