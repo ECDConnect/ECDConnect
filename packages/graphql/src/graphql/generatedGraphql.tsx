@@ -9165,6 +9165,7 @@ export type PointsLibrary = {
   maxPointsPrincipalYearly: Scalars['Int'];
   points: Scalars['Int'];
   subActivity?: Maybe<Scalars['String']>;
+  todoDescription?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -9186,6 +9187,7 @@ export type PointsLibraryFilterInput = {
   or?: InputMaybe<Array<PointsLibraryFilterInput>>;
   points?: InputMaybe<ComparableInt32OperationFilterInput>;
   subActivity?: InputMaybe<StringOperationFilterInput>;
+  todoDescription?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
@@ -9204,6 +9206,7 @@ export type PointsLibraryInput = {
   MaxPointsPrincipalYearly: Scalars['Int'];
   Points: Scalars['Int'];
   SubActivity?: InputMaybe<Scalars['String']>;
+  TodoDescription?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
@@ -9222,6 +9225,7 @@ export type PointsLibrarySortInput = {
   maxPointsPrincipalYearly?: InputMaybe<SortEnumType>;
   points?: InputMaybe<SortEnumType>;
   subActivity?: InputMaybe<SortEnumType>;
+  todoDescription?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
 };
