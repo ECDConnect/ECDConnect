@@ -113,9 +113,7 @@ namespace ECDLink.ContentManagement.Repositories
                     DisplayName = x.DisplayName,
                     AssemblyDataTypeName = x.FieldType.AssemblyDataType,
                     DataType = x.FieldType.DataType,
-                    GraphDataTypeName = GetFieldType(x),
-                    DisplayMainTable = x.DisplayMainTable,
-                    DisplayPage = x.DisplayPage,
+                    GraphDataTypeName = GetFieldType(x)
                 })
             };
         }

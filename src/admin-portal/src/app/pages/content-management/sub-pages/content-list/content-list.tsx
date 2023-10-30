@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useQuery } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
@@ -8,11 +8,14 @@ import {
   LanguageDto,
   NOTIFICATION,
   PermissionEnum,
+  useDialog,
   useNotifications,
   usePanel,
 } from '@ecdlink/core';
+import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
+import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import LanguageSelector from '../../../../components/language-selector/language-selector';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -43,17 +46,18 @@ export default function ContentList({
   const { hasPermission } = useUser();
 
   const [tableData, setTableData] = useState<any[]>([]);
+  const dialog = useDialog();
   const { setNotification } = useNotifications();
   const panel = usePanel();
   const type = contentType.description;
 
   const [languageId, setLanguageId] = useState<string>();
 
-  const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
+  const [displayFields, setDisplayFields] = useState<string[]>();
 
   useEffect(() => {
     if (contentType && contentType.fields) {
-      const displayFields: ContentTypeFieldDto[] = [];
+      const displayFields: string[] = [];
 
       const copy: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
 
@@ -62,8 +66,8 @@ export default function ContentList({
       });
 
       orderedList.forEach((x) => {
-        if (x.fieldType.dataType === FieldType.Text && !!x.displayMainTable)
-          displayFields.push(x);
+        if (x.fieldType.dataType === FieldType.Text)
+          displayFields.push(x.fieldName);
       });
 
       setDisplayFields(displayFields);
@@ -119,6 +123,7 @@ export default function ContentList({
         let postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'
         );
+        console.log(postNatalData);
         setTableData(postNatalData);
       } else if (selectedTab === 3) {
         let anteNatalData = moreInforItems.filter(
@@ -231,7 +236,7 @@ export default function ContentList({
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={displayFields.map((item) => {
-                    return { field: item.fieldName, use: item.displayName };
+                    return { field: item, use: item };
                   })}
                   rows={tableData}
                   component={'cms'}

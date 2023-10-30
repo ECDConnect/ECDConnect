@@ -10,7 +10,4 @@ export interface FieldDefinitionModelDto {
   fieldTypeId: number;
   graphDataTypeName: string;
   assemblyDataTypeName: string;
-  displayName: string;
-  displayMainTable: boolean;
-  displayPage: boolean;
 }
