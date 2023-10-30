@@ -103,7 +103,7 @@ export const PractitionerProfile: React.FC = () => {
         principalPractitioner: practitioner,
       });
     },
-    [history]
+    [history, practitioner]
   );
 
   const getStackedMenuList = (): MenuListDataItem[] => {

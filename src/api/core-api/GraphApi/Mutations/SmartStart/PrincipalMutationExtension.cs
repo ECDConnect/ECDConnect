@@ -26,11 +26,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     {
         public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
     [Service] UserManager<ApplicationUser> userManager,
+    [Service] PersonnelService personnelManager,
     IGenericRepositoryFactory repoFactory,
     string firstName,
     string lastName,
     string idNumber,
-    string userId)
+    string userId,
+    Guid? programmeTypeId)
         {
             //ensure only principals or FAAs can be assigned to be a parent of another practitioner, so they cannot be joined to themselves or unrelated users
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -60,19 +62,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                                                                    .ToList();
                         if (classroomGroups != null && classroomGroups.Count > 0)
                         {
+                            var classroomIds = new List<Guid>();
                             Classroom classroom = null;
+
                             foreach (var group in classroomGroups)
                             {
-                                classroom = classroomRepo.GetById(group.ClassroomId);
                                 if (principalClassRoom != null && principalClassRoom.Id != group.ClassroomId)
                                 {
+                                    classroom = classroomRepo.GetById(group.ClassroomId);
                                     group.ClassroomId = principalClassRoom.Id;
+                                    if (programmeTypeId != null) {
+                                        group.ProgrammeTypeId = programmeTypeId;
+                                    }    
                                     classroomGroupRepo.Update(group);
+                                    if (classroom != null) {
+                                        classroomIds.Add(classroom.Id);
+                                    }    
                                 }
                             }
-                            if (classroom != null && classroom.Id != principalClassRoom.Id)
+                            if (classroomIds != null && classroomIds.Count() > 0)
                             {
-                                classroomRepo.Delete(classroom.Id);
+                                personnelManager.RemovePractitionerClassrooms(classroomIds);
                             }
                         }
                         //update users nicknames
