@@ -129,6 +129,10 @@ export const getClassroomGroups = createAsyncThunk<
           return rejectWithValue('Error getting Classroom Groups');
         }
 
+        groups.sort((a, b) => {
+          return (a.name || '') > (b.name || '') ? 1 : -1;
+        });
+
         return groups;
       } catch (err) {
         return rejectWithValue(err);

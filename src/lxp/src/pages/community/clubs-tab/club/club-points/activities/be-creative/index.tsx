@@ -23,6 +23,8 @@ import {
 } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
+import { getAlertType } from '../0-components/alert-card/utils';
+import { ActivityBeCreativeDetail } from '@ecdlink/graphql';
 
 export const BeCreative: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -52,49 +54,15 @@ export const BeCreative: React.FC = () => {
 
   const activityId = 'be-creative';
 
-  // TODO: add real value (waiting for backend)
-  const items: Item[] = [
-    {
-      title: 'July',
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore e',
-      alert: {
-        title: 'Image uploaded, waiting for verification',
-        type: 'info',
-      },
+  const formatMonthlyRecord = (record: ActivityBeCreativeDetail): Item => ({
+    title: record.monthName ?? '',
+    description: record.description ?? '',
+    rightChip: `+ ${record.points}`,
+    alert: {
+      title: record.documentStatus ?? '',
+      type: getAlertType(record.documentStatusColor ?? ''),
     },
-    {
-      title: 'June',
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore e',
-      rightChip: '+ 100',
-      alert: {
-        title: 'Image verified',
-        type: 'success',
-      },
-    },
-    {
-      title: 'May',
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore e',
-      rightChip: '+ 40',
-      alert: {
-        title: 'Image incomplete',
-        type: 'warning',
-      },
-    },
-    {
-      title: 'April',
-      rightChip: '+ 0',
-      alert: {
-        title: 'Not completed',
-        type: 'error',
-      },
-    },
-  ];
-
-  // TODO: add real value
-  const hasItems = true;
+  });
 
   useEffect(() => {
     appDispatch(
@@ -149,10 +117,10 @@ export const BeCreative: React.FC = () => {
         bgColour="uiBg"
         textColour="black"
       />
-      {hasItems ? (
+      {details?.monthlyRecords?.length ? (
         <div className="mt-5">
-          {items.map((item) => (
-            <AlertCard item={item} />
+          {details.monthlyRecords.map((item) => (
+            <AlertCard item={formatMonthlyRecord(item!)} />
           ))}
         </div>
       ) : (
