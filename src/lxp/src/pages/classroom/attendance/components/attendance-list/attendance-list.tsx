@@ -111,7 +111,9 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
       const _allLearners = allLearners.filter(
         (x) =>
-          !Boolean(x.stoppedAttendance) && x.startedAttendance >= attendanceDate
+          !Boolean(x.stoppedAttendance) &&
+          new Date(attendanceDate).toDateString() >=
+            new Date(x.startedAttendance).toDateString()
       );
 
       const uniqueLearners = _allLearners.filter((object, index, array) => {
