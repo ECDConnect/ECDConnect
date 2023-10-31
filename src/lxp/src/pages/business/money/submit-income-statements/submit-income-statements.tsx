@@ -305,6 +305,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const celebrationCard = useMemo<JSX.Element>(() => {
     if (!isThisMonthSubmitted || pointsSubmitStatementsMessageDismissed) {
+      console.log('No message to display');
       return <></>;
     }
 
