@@ -198,7 +198,7 @@ export type ActivityMeetRegular = {
 
 export type ActivityMeetRegularDetail = {
   __typename?: 'ActivityMeetRegularDetail';
-  meetingAbsentees?: Maybe<Array<Maybe<ClubMeetingRegister>>>;
+  meetingAbsentees?: Maybe<Array<Maybe<ClubMember>>>;
   meetingAttendanceColor?: Maybe<Scalars['String']>;
   meetingAttendancePerc: Scalars['Float'];
   meetingDate: Scalars['DateTime'];
@@ -1735,7 +1735,10 @@ export type ClinicSortInput = {
 
 export type Club = {
   __typename?: 'Club';
+  clubLeaders?: Maybe<Array<Maybe<ClubLeader>>>;
+  clubMembers?: Maybe<Array<Maybe<ClubMember>>>;
   clubPoints?: Maybe<Array<Maybe<ClubPoints>>>;
+  clubSupport?: Maybe<Array<Maybe<ClubSupport>>>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -1826,7 +1829,10 @@ export type ClubActivityUploadSortInput = {
 
 export type ClubFilterInput = {
   and?: InputMaybe<Array<ClubFilterInput>>;
+  clubLeaders?: InputMaybe<ListFilterInputTypeOfClubLeaderFilterInput>;
+  clubMembers?: InputMaybe<ListFilterInputTypeOfClubMemberFilterInput>;
   clubPoints?: InputMaybe<ListFilterInputTypeOfClubPointsFilterInput>;
+  clubSupport?: InputMaybe<ListFilterInputTypeOfClubSupportFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -1842,7 +1848,10 @@ export type ClubFilterInput = {
 };
 
 export type ClubInput = {
+  ClubLeaders?: InputMaybe<Array<InputMaybe<ClubLeaderInput>>>;
+  ClubMembers?: InputMaybe<Array<InputMaybe<ClubMemberInput>>>;
   ClubPoints?: InputMaybe<Array<InputMaybe<ClubPointsInput>>>;
+  ClubSupport?: InputMaybe<Array<InputMaybe<ClubSupportInput>>>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   League?: InputMaybe<LeagueInput>;
@@ -1895,6 +1904,14 @@ export type ClubLeaderInput = {
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId: Scalars['UUID'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type ClubLeaderModel = {
+  __typename?: 'ClubLeaderModel';
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  name?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type ClubLeaderSortInput = {
@@ -2100,6 +2117,14 @@ export type ClubMemberInput = {
   WelcomeMessage?: InputMaybe<Scalars['String']>;
 };
 
+export type ClubMemberModel = {
+  __typename?: 'ClubMemberModel';
+  name?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
+  welcomeMessage?: Maybe<Scalars['String']>;
+};
+
 export type ClubMemberSortInput = {
   club?: InputMaybe<ClubSortInput>;
   clubId?: InputMaybe<SortEnumType>;
@@ -2117,6 +2142,10 @@ export type ClubMemberSortInput = {
 
 export type ClubModel = {
   __typename?: 'ClubModel';
+  clubLeader?: Maybe<ClubLeaderModel>;
+  clubMembers?: Maybe<Array<Maybe<ClubMemberModel>>>;
+  clubSupport?: Maybe<ClubSupportModel>;
+  coachUserId?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   league?: Maybe<LeagueModel>;
   leagueRanking: Scalars['Int'];
@@ -2318,6 +2347,14 @@ export type ClubSupportInput = {
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId: Scalars['UUID'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type ClubSupportModel = {
+  __typename?: 'ClubSupportModel';
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  name?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type ClubSupportSortInput = {
@@ -4705,6 +4742,13 @@ export type ListFilterInputTypeOfClassroomGroupFilterInput = {
   some?: InputMaybe<ClassroomGroupFilterInput>;
 };
 
+export type ListFilterInputTypeOfClubLeaderFilterInput = {
+  all?: InputMaybe<ClubLeaderFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClubLeaderFilterInput>;
+  some?: InputMaybe<ClubLeaderFilterInput>;
+};
+
 export type ListFilterInputTypeOfClubMeetingRegisterFilterInput = {
   all?: InputMaybe<ClubMeetingRegisterFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -4712,11 +4756,25 @@ export type ListFilterInputTypeOfClubMeetingRegisterFilterInput = {
   some?: InputMaybe<ClubMeetingRegisterFilterInput>;
 };
 
+export type ListFilterInputTypeOfClubMemberFilterInput = {
+  all?: InputMaybe<ClubMemberFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClubMemberFilterInput>;
+  some?: InputMaybe<ClubMemberFilterInput>;
+};
+
 export type ListFilterInputTypeOfClubPointsFilterInput = {
   all?: InputMaybe<ClubPointsFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
   none?: InputMaybe<ClubPointsFilterInput>;
   some?: InputMaybe<ClubPointsFilterInput>;
+};
+
+export type ListFilterInputTypeOfClubSupportFilterInput = {
+  all?: InputMaybe<ClubSupportFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClubSupportFilterInput>;
+  some?: InputMaybe<ClubSupportFilterInput>;
 };
 
 export type ListFilterInputTypeOfDailyProgrammeFilterInput = {
@@ -9577,6 +9635,7 @@ export type PractitionerModel = {
   isCompletedBusinessWalkThrough?: Maybe<Scalars['Boolean']>;
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
   isLeaving?: Maybe<Scalars['Boolean']>;
+  isNewInClub?: Maybe<Scalars['Boolean']>;
   isOnStipend?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;
   isRegistered?: Maybe<Scalars['Boolean']>;
