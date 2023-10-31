@@ -1,13 +1,18 @@
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
 
+// Practitioner
+export const getClubForPractitionerSelector = (state: RootState) =>
+  state.clubs?.clubForPractitioner;
+
+// Coach
 export const getAllClubsForCoachSelector = (state: RootState) =>
-  state.clubs?.allClubsForCoach;
+  Object.values(state.clubs.clubsForCoach).map((x) => x.club);
 
 export const getClubByIdSelector = (clubId: string) =>
   createSelector(
-    (state: RootState) => state.clubs?.allClubsForCoach,
-    (clubs) => clubs?.find((club) => club.id === clubId)
+    (state: RootState) => state.clubs.clubsForCoach,
+    (clubs) => clubs[clubId].club
   );
 
 export const getCurrentClubLeaderByClubIdSelector = (clubId: string) =>
@@ -24,8 +29,14 @@ export const getNextClubLeaderByClubIdSelector = (clubId: string) =>
       : club?.newClubLeader
   );
 
-export const getActivityMeetRegularDetailsSelector = (state: RootState) =>
-  state.clubs?.points?.meetRegularly;
+export const getActivityMeetRegularDetailsSelector = (clubId: string) =>
+  createSelector(
+    (state: RootState) => state.clubs.clubsForCoach,
+    (clubs) => clubs[clubId].points?.meetRegularly
+  );
 
-export const getActivityBeCreativeDetailsSelector = (state: RootState) =>
-  state.clubs?.points?.beCreative;
+export const getActivityBeCreativeDetailsSelector = (clubId: string) =>
+  createSelector(
+    (state: RootState) => state.clubs.clubsForCoach,
+    (clubs) => clubs[clubId].points?.beCreative
+  );
