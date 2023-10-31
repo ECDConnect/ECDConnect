@@ -561,11 +561,30 @@ class ClubService {
             pointsTotal
             maxPointsTotal
             leagueRanking
+            coachUserId
             league {
               id
               name
               leagueTypeId
               leagueTypeName
+            }
+            clubLeader {
+              userId
+              name
+              phoneNumber
+              dateAccepted
+            }
+            clubSupport {
+              userId
+              name
+              phoneNumber
+              dateAccepted
+            }
+            clubMembers {
+              userId
+              name
+              phoneNumber
+              welcomeMessage
             }
           }
         }`,

@@ -1349,11 +1349,28 @@ namespace EcdLink.Api.CoreApi.Services
 
             var club = _clubMemberRepo.GetAll()
                 .Where(x => x.PractitionerId == practitioner.Id && x.IsActive) // Do we need to check the club is active too?
+                //Points
                 .Include(x => x.Club)
                 .ThenInclude(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
+                //League
                 .Include(x => x.Club)
                 .ThenInclude(x => x.League)
                 .ThenInclude(x => x.LeagueType)
+                //Club Members
+                .Include(x => x.Club)
+                .ThenInclude(x => x.ClubMembers.Where(x => x.IsActive))
+                .ThenInclude(x => x.Practitioner)
+                .ThenInclude(x => x.User)
+                //Club leaders
+                .Include(x => x.Club)
+                .ThenInclude(x => x.ClubLeaders.Where(x => x.IsActive))
+                .ThenInclude(x => x.Practitioner)
+                .ThenInclude(x => x.User)
+                // Club Support
+                .Include(x => x.Club)
+                .ThenInclude(x => x.ClubSupport.Where(x => x.IsActive))
+                .ThenInclude(x => x.Practitioner)
+                .ThenInclude(x => x.User)
                 .Select(x => x.Club)
                 .FirstOrDefault();
 
@@ -1361,8 +1378,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Get points total for club
             var pointsTotal = club.ClubPoints.Select(x => x.Points).Sum();
-
-
 
             var maxPointsTotal = club.League == null
                 ? 0

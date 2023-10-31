@@ -14,21 +14,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string SecondaryText { get; set; }
         public string SecondaryTextColor { get; set; }
         public int SecondaryTextPriority { get; set; }
-        public virtual ICollection<ClubMeeting> ClubMeetings { get; set; }
-        public virtual ICollection<ClubMember> ClubMembers { get; set; }
+        public ICollection<ClubMeeting> ClubMeetings { get; set; }
+        public ICollection<ClubMember> ClubMembers { get; set; }
         // there can be 2 active club leaders.  One appointed and then a newly appointed one who has not accepted yet. 
         public ClubLeader CurrentClubLeader { get; set; }
         public ClubLeader NewClubLeader { get; set; }
-        public virtual ClubSupport ClubSupport { get; set; }
-        public virtual League League { get; set; }
-        public virtual Coach Coach { get; set; }
+        public ClubSupport ClubSupport { get; set; }
+        public League League { get; set; }
+        public Coach Coach { get; set; }
         public bool FirstInLeague { get; set; }
         public int LeagueRankNr { get; set; }
         public int TotalClubPoints { get; set; }
         public string TotalClubPointsColor { get; set; }
         public int MaxClubPoints { get; set; }
-        public virtual ICollection<ClubActivity> ClubActivities { get; set; }
-        public virtual ICollection<IssueTask> IssuesTasks { get; set; }
+        public ICollection<ClubActivity> ClubActivities { get; set; }
+        public ICollection<IssueTask> IssuesTasks { get; set; }
     }
 
     public class IssueTask
