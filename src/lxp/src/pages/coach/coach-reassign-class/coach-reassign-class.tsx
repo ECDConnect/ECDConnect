@@ -131,7 +131,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     practitioner,
     reason,
     practitioner2,
-    reassignedClass,
   } = useWatch({
     control: control,
   });
@@ -361,7 +360,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             }}
             dateFormat="EEE, dd MMM yyyy"
             minDate={new Date()}
-            disabled={hasAbsenteeClasses}
           />
           <>
             <label className="text-md text-textDark mt-2 mb-1 block w-full font-medium">
@@ -377,7 +375,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
               }}
               dateFormat="EEE, dd MMM yyyy"
               minDate={new Date(selectedDate as string)}
-              disabled={hasAbsenteeClasses}
             />
           </>
           <Dropdown
@@ -438,7 +435,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                         className={'mt-5 mb-3'}
                         title={`You are reassigning ${
                           practitionerAbsentName?.user?.fullName || ''
-                        } class ${item?.className} to ${
+                        }'s class ${item?.className} to ${
                           practitionerPresentName?.user?.fullName || ''
                         } for ${format(
                           new Date(selectedDate!),
@@ -486,7 +483,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                         )} to ${format(new Date(endDate!), 'EEEE, d LLLL')}.`}
                         list={[
                           `${principalOrFundaAppAdminPractitioner?.user?.firstName} will be the Funda App Admin for ${practitionerProgramme}`,
-                          `${practitionerAbsentName?.user?.firstName} will teach the ${item?.name}`,
+                          `${practitionerPresentName?.user?.firstName} will teach the ${item?.name} class`,
                         ]}
                         type={'info'}
                       />

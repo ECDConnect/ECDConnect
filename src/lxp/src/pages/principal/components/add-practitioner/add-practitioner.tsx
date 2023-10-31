@@ -29,6 +29,7 @@ import {
 } from './add-practitioner.types';
 import { userSelectors } from '@store/user';
 import { SearchIcon } from '@heroicons/react/solid';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -59,6 +60,7 @@ export const AddPractitioner = ({
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
   const userData = useSelector(userSelectors.getUser);
   const [addNote, setAddNote] = useState();
+  const programmeType = useSelector(classroomsSelectors.getProgrammeType());
 
   const { preferId, idNumber, passport } = useWatch({
     control,
@@ -143,6 +145,7 @@ export const AddPractitioner = ({
       idNumber: idNumber,
       firstName: newPractitioner?.firstName,
       lastName: newPractitioner?.surname,
+      programmeTypeId: programmeType?.id,
     };
     await new PractitionerService(
       userAuth?.auth_token!

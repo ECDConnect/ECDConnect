@@ -4,8 +4,8 @@ import { format } from 'date-fns';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { ReactComponent as EmojiYellowSmile } from '@ecdlink/ui/src/assets/emoji/emoji_yellow_smileEyes.svg';
 import { ReactComponent as EmojiYellowBigSmile } from '@/assets/ECD_Connect_emoji3.svg';
+import { ReactComponent as Logo } from '@/assets/logo.svg';
 import { ReactComponent as EmojiLightBulb } from '@ecdlink/ui/src/assets/emoji/emoji_lightbulb.svg';
-import { useMemo } from 'react';
 
 export type PointsShareProps = {
   viewMode: 'Month' | 'Year';
@@ -33,12 +33,7 @@ export const PointsShare: React.FC<PointsShareProps> = ({
   return (
     <>
       <div className="bg-primary flex h-24 flex-col items-center">
-        <Typography
-          className="mt-6"
-          type={'h1'}
-          color="white"
-          text={`SmartStart`}
-        />
+        <Logo className="mr-2 h-20 w-48" />
       </div>
       <div className="bg-uiBg flex flex-col items-center">
         <Typography

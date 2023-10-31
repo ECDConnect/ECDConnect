@@ -1879,16 +1879,36 @@ namespace EcdLink.Api.CoreApi.Services
         public bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today)
         {
             Club club = _clubRepo.GetById(clubId);
-            Guid clubPointsLibraryId = new Guid();
+            ClubPointsLibrary clubPointsLibrary = new ClubPointsLibrary();
             if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
             {
-                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type == Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+                clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type == Constants.ClubSettings.name_purple).FirstOrDefault();
             }
             else
             {
-                clubPointsLibraryId = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type != Constants.ClubSettings.name_purple).Select(x => x.Id).FirstOrDefault();
+                clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type != Constants.ClubSettings.name_purple).FirstOrDefault();
             }
 
+            int totalClubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == today.Year).Select(x => x.Points).Sum();
+            if (totalClubPoints < (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
+            {
+                totalClubPoints += clubPointsLibrary.Points;
+                _clubPointsRepo.Insert(new ClubPoints()
+                {
+                    Id = Guid.NewGuid(),
+                    ClubId = clubId,
+                    UserId = userId,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = _uId,
+                    IsActive = true,
+                    ClubPointsLibraryId = clubPointsLibrary.Id,
+                    Month = today.Month,
+                    Year = today.Year,
+                    Points = clubPointsLibrary.Points,
+                    PointsYTD = totalClubPoints
+                });
+            }
 
             return true;
         }

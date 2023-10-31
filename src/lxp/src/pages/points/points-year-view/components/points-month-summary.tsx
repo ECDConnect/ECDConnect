@@ -28,11 +28,11 @@ export const PointsMonthSummary: React.FC<PointsMonthSummaryProps> = ({
       <Typography type={'h2'} color="black" text={`${pointsTotal} points`} />
       {pointsEarnedForMonth.map((pointsLibraryScore) => {
         return (
-          <div key={pointsLibraryScore.pointsLibraryId}>
+          <div key={pointsLibraryScore.pointsLibraryId} className="mt-3">
             <PointsDetailsCard
               pointsEarned={pointsLibraryScore.pointsTotal}
               activityCount={pointsLibraryScore.timesScored}
-              title={pointsLibraryScore.subActivity || 'Unknown'}
+              title={pointsLibraryScore.description || 'Unknown'}
               size="large"
               badgeImage={
                 <Badge

@@ -1971,6 +1971,7 @@ export type ClubMeetingModelInput = {
   clubMeetingParticipants?: InputMaybe<
     Array<InputMaybe<ClubMeetingRegisterModelInput>>
   >;
+  coachAttend?: InputMaybe<Scalars['Boolean']>;
   contentValueId?: InputMaybe<Scalars['Int']>;
   meetingDate: Scalars['DateTime'];
   meetingNotes?: InputMaybe<Scalars['String']>;
@@ -5938,6 +5939,7 @@ export type MutationAddPractitionerToPrincipalArgs = {
   firstName?: InputMaybe<Scalars['String']>;
   idNumber?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
+  programmeTypeId?: InputMaybe<Scalars['UUID']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -9163,6 +9165,7 @@ export type PointsLibrary = {
   maxPointsPrincipalYearly: Scalars['Int'];
   points: Scalars['Int'];
   subActivity?: Maybe<Scalars['String']>;
+  todoDescription?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -9184,6 +9187,7 @@ export type PointsLibraryFilterInput = {
   or?: InputMaybe<Array<PointsLibraryFilterInput>>;
   points?: InputMaybe<ComparableInt32OperationFilterInput>;
   subActivity?: InputMaybe<StringOperationFilterInput>;
+  todoDescription?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
@@ -9202,6 +9206,7 @@ export type PointsLibraryInput = {
   MaxPointsPrincipalYearly: Scalars['Int'];
   Points: Scalars['Int'];
   SubActivity?: InputMaybe<Scalars['String']>;
+  TodoDescription?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
@@ -9220,6 +9225,7 @@ export type PointsLibrarySortInput = {
   maxPointsPrincipalYearly?: InputMaybe<SortEnumType>;
   points?: InputMaybe<SortEnumType>;
   subActivity?: InputMaybe<SortEnumType>;
+  todoDescription?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
 };
@@ -9841,12 +9847,16 @@ export type PrincipalFilterDocumentsByTypeArgs = {
 export type PrincipalClassroom = {
   __typename?: 'PrincipalClassroom';
   classSiteAddress?: Maybe<Scalars['String']>;
+  classSiteAddressId?: Maybe<Scalars['String']>;
   classroomGroupId?: Maybe<Scalars['String']>;
   classroomGroupName?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   insertedDate: Scalars['DateTime'];
   name?: Maybe<Scalars['String']>;
+  preschoolFeeAmount?: Maybe<Scalars['Float']>;
+  preschoolFeeAmountLastUpdateDate?: Maybe<Scalars['DateTime']>;
   principalName?: Maybe<Scalars['String']>;
+  programmeTypeId?: Maybe<Scalars['String']>;
   programmeTypeName?: Maybe<Scalars['String']>;
 };
 

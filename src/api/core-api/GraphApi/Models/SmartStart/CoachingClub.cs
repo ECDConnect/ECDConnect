@@ -99,7 +99,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string MeetingAttendanceColor { get; set; }
         public string MeetingNotes { get; set; }
         public virtual List<ClubMeetingRegister> MeetingParticipants { get; set; }
-        public virtual List<ClubMeetingRegister> MeetingAbsentees { get; set; }
+        public virtual List<ClubMember> MeetingAbsentees { get; set; }
         public int Points { get; set; }
     }
     public class ActivityBeCreative
