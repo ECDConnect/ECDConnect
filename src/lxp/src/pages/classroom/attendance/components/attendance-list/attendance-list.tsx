@@ -110,7 +110,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       setSelectedClassroomGroups(selectedGroups);
 
       const _allLearners = allLearners.filter(
-        (x) => !Boolean(x.stoppedAttendance)
+        (x) =>
+          !Boolean(x.stoppedAttendance) && x.startedAttendance >= attendanceDate
       );
 
       const uniqueLearners = _allLearners.filter((object, index, array) => {
