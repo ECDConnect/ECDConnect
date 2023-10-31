@@ -14,7 +14,14 @@ export type Points = {
 };
 
 export type ClubState = {
-  allClubsForCoach?: MergedCoachingClub[];
+  //allClubsForCoach?: MergedCoachingClub[];
   clubForPractitioner?: ClubModel;
-  points?: Points;
+  //points?: Points;
+  clubsForCoach: {
+    [clubId: string]: {
+      dateLoaded: string;
+      club: MergedCoachingClub;
+      points?: Points;
+    };
+  };
 };

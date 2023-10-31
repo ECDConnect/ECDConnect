@@ -19,7 +19,9 @@ import { ClubState, MergedCoachingClub } from './club.types';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
 
-const initialState: ClubState = {};
+const initialState: ClubState = {
+  clubsForCoach: {},
+};
 
 const clubSlice = createSlice({
   name: 'club',
@@ -39,10 +41,17 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, getActivityBeCreativeDetails);
     builder.addCase(getActivityBeCreativeDetails.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
+      const clubId = action.meta.arg.clubId;
 
-      state.points = {
-        ...state.points,
-        beCreative: action.payload,
+      state.clubsForCoach = {
+        ...state.clubsForCoach,
+        [clubId]: {
+          ...state.clubsForCoach[clubId],
+          points: {
+            ...state.clubsForCoach[clubId].points,
+            beCreative: action.payload,
+          },
+        },
       };
     });
     builder.addCase(
@@ -50,42 +59,46 @@ const clubSlice = createSlice({
       (state, action) => {
         setFulfilledThunkActionStatus(state, action);
 
-        state.points = {
-          ...state.points,
-          meetRegularly: action.payload,
+        const clubId = action.meta.arg.clubId;
+        state.clubsForCoach = {
+          ...state.clubsForCoach,
+          [clubId]: {
+            ...state.clubsForCoach[clubId],
+            points: {
+              ...state.clubsForCoach[clubId].points,
+              beCreative: action.payload,
+            },
+          },
         };
       }
     );
     builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
-      if (!state.allClubsForCoach) {
-        state.allClubsForCoach = [];
-      }
-
-      const newState = [...state.allClubsForCoach]; // Create a new array to avoid mutating the original state
-
-      const payloadAsMergedClubs = action.payload as MergedCoachingClub[];
-
-      payloadAsMergedClubs.forEach((newClub) => {
-        const existingClubIndex = newState.findIndex(
-          (club) => club.id === newClub.id
-        );
-
-        if (existingClubIndex !== -1) {
-          // If the club already exists in the state, merge the data
-          newState[existingClubIndex] = {
-            ...newState[existingClubIndex],
-            ...newClub,
+      state.clubsForCoach = action.payload.reduce((dictionary, item) => {
+        if (!!state.clubsForCoach[item.id]) {
+          return {
+            ...dictionary,
+            [item.id]: {
+              ...state.clubsForCoach[item.id],
+              club: {
+                ...state.clubsForCoach[item.id].club,
+                ...item,
+              },
+            },
           };
         } else {
-          // If the club doesn't exist in the state, add the new club
-          newState.push(newClub);
+          return {
+            ...dictionary,
+            [item.id]: {
+              club: item,
+            },
+          };
         }
-      });
-
-      state.allClubsForCoach = newState;
+      }, {});
+      console.log('state.clubsForCoach', state.clubsForCoach);
     });
+    // TODO -> Make all these add actions return the new data, so we can add it to state here
     builder.addCase(addNewClub.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -99,60 +112,83 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(changeClubName.fulfilled, (state, action) => {
-      state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
-        if (club.id === action.payload.id) {
-          return {
-            ...club,
-            name: action.payload.name,
-          };
-        }
-        return club;
-      });
+      state.clubsForCoach = {
+        ...state.clubsForCoach,
+        [action.payload.id]: {
+          ...state.clubsForCoach[action.payload.id],
+          name: action.payload.name,
+        },
+      };
+
       setFulfilledThunkActionStatus(state, action);
     });
+    // TODO: fix types, why is this returning multiple clubs at once???
     builder.addCase(getAllClubMembersForCoach.fulfilled, (state, action) => {
-      const updatedClubs = state.allClubsForCoach?.map((club) => {
-        const matchingPayload = action.payload.find(
-          (payloadItem) => payloadItem.id === club.id
-        );
-
-        if (matchingPayload) {
-          return {
-            ...club,
-            ...matchingPayload,
-          };
-        }
-
-        return club;
-      });
-
-      if (updatedClubs) {
-        state.allClubsForCoach = updatedClubs;
-      }
+      state.clubsForCoach = Object.keys(state.clubsForCoach).reduce(
+        (dictionary, clubId) => {
+          const clubMembers = action.payload.find((item) => item.id === clubId);
+          if (!!clubMembers) {
+            return {
+              ...dictionary,
+              [clubId]: {
+                ...state.clubsForCoach[clubId],
+                ...clubMembers,
+              },
+            };
+          } else {
+            return {
+              ...dictionary,
+              [clubId]: { ...state.clubsForCoach[clubId] },
+            };
+          }
+        },
+        {}
+      );
 
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getAllClubsDetailsForCoach.fulfilled, (state, action) => {
-      state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
-        const updatedClub = action.payload.find((item) => item.id === club.id);
-        if (!!updatedClub?.id) {
-          return updatedClub as MergedCoachingClub;
-        }
-        return club;
-      });
+      state.clubsForCoach = Object.keys(state.clubsForCoach).reduce(
+        (dictionary, clubId) => {
+          const updatedClub = action.payload.find((item) => item.id === clubId);
+          if (!!updatedClub) {
+            return {
+              ...dictionary,
+              [clubId]: {
+                ...state.clubsForCoach[clubId],
+                club: updatedClub as MergedCoachingClub,
+                dateLoaded: new Date(),
+              },
+            };
+          } else {
+            return {
+              ...dictionary,
+              [clubId]: { ...state.clubsForCoach[clubId] },
+            };
+          }
+        },
+        {}
+      );
+
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(updateCoachAboutInfo.fulfilled, (state, action) => {
       if (action.payload && action.payload.aboutInfo) {
-        state.allClubsForCoach = state.allClubsForCoach?.map((club) => {
-          return {
-            ...club,
-            coach: {
-              ...club.coach,
-              aboutInfo: action.payload.aboutInfo ?? '',
-            },
-          } as MergedCoachingClub;
-        });
+        state.clubsForCoach = Object.keys(state.clubsForCoach).reduce(
+          (dictionary, clubId) => {
+            return {
+              ...dictionary,
+              [clubId]: {
+                ...state.clubsForCoach[clubId],
+                club: {
+                  ...state.clubsForCoach[clubId].club,
+                  aboutInfo: action.payload.aboutInfo ?? '',
+                },
+              },
+            };
+          },
+          {}
+        );
       }
       setFulfilledThunkActionStatus(state, action);
     });
