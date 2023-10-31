@@ -276,7 +276,12 @@ export const Dashboard: React.FC = () => {
       hintClassName: 'mt-10',
       bgColour: 'successBg',
       textColour: 'black',
-      onClick: () => history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+      onClick: () =>
+        history.push(
+          ROUTES.PRACTITIONER.COMMUNITY[
+            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+          ]
+        ),
     };
   }, []);
 
