@@ -1244,7 +1244,7 @@ namespace EcdLink.Api.CoreApi.Services
                             ImageApproved = clubBeCreative?.ImageApproved,
                             DocumentStatusColor = (bool)clubBeCreative?.ImageApproved ? MetricsColorEnum.Warning.ToString() : MetricsColorEnum.Error.ToString(),
                             DocumentStatus = (bool)clubBeCreative?.ImageApproved ? Constants.ClubSettings.document_success : Constants.ClubSettings.document_no_success,
-                            Points = 0
+                            Points = 100
                         }
                     );
                 }
@@ -1424,8 +1424,7 @@ namespace EcdLink.Api.CoreApi.Services
                     Month = input.DateUploaded.Month,
                     Year = input.DateUploaded.Year
                 });
-                // Calculate points
-                return _pointsEngineService.CalculateBeCreative(input.ClubId, _applicationUserId, input.DateUploaded);
+                return true;
             }
 
             return false;
