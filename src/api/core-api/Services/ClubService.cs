@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
@@ -8,6 +9,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Clubs;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -43,19 +45,22 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<ClubPointsLibrary, Guid> _clubPointsLibraryRepo;
         private readonly IGenericRepository<ClubPoints, Guid> _clubPointsRepo;
         private readonly IGenericRepository<ClubActivityUpload, Guid> _clubActivityUploadRepo;
+        private readonly IGenericRepository<ClubActivityUploadType, Guid> _clubActivityUploadTypeRepo;
 
         private readonly string _applicationUserId;
 
         INotificationService _notificationService;
         UserManager<ApplicationUser> _userManager;
         IPointsEngineService _pointsEngineService;
+        DocumentManager _documentManager;
 
         public ClubService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] IPointsEngineService pointsEngineService
+            [Service] IPointsEngineService pointsEngineService,
+            [Service] DocumentManager documentManager
             )
         {
             _contextAccessor = contextAccessor;
@@ -75,10 +80,12 @@ namespace EcdLink.Api.CoreApi.Services
             _clubPointsLibraryRepo = _repositoryFactory.CreateGenericRepository<ClubPointsLibrary>(userContext: _applicationUserId);
             _clubPointsRepo = _repositoryFactory.CreateGenericRepository<ClubPoints>(userContext: _applicationUserId);
             _clubActivityUploadRepo = _repositoryFactory.CreateGenericRepository<ClubActivityUpload>(userContext: _applicationUserId);
+            _clubActivityUploadTypeRepo = _repositoryFactory.CreateGenericRepository<ClubActivityUploadType>(userContext: _applicationUserId);
 
             _notificationService = notificationService;
             _userManager = userManager;
             _pointsEngineService = pointsEngineService;
+            _documentManager = documentManager;
         }
 
         public ClubMeeting AddClubMeeting(ClubMeetingModel input, string meetingType)
@@ -1386,6 +1393,42 @@ namespace EcdLink.Api.CoreApi.Services
                     : Constants.ClubSettings.non_purple_club_max_points;
 
             return new ClubModel(club, pointsTotal, maxPointsTotal, GetClubLeagueRankPosition(club, DateTime.Now));
+        }
+
+        public bool AddBeCreativeActivity(BeCreativeUpload input)
+        {
+            string fileName = input.DateUploaded.Date.ToString("MMM_yyyy") + "_be_creative" + input.FileType;
+            DocumentModel documentModel = new DocumentModel()
+            {
+                Reference = input.ImageBase64,
+                FileName = fileName,
+                UserId = _applicationUserId,
+                CreatedUserId = _applicationUserId
+            };
+            Document document = _documentManager.SaveActivityUploadDocument(documentModel).Result;
+            if (document != null)
+            {
+                ClubActivityUploadType uploadType = _clubActivityUploadTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.upload_type_be_creative).FirstOrDefault();
+                _clubActivityUploadRepo.Insert(new ClubActivityUpload()
+                {
+                    Id = Guid.NewGuid(),
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedDate = DateTime.Now,
+                    UpdatedBy = _applicationUserId,
+                    ClubId = input.ClubId,
+                    Description = input.Description,
+                    DocumentId = document.Id,
+                    ClubActivityUploadTypeId = uploadType.Id,
+                    ImageApproved = false,
+                    Month = input.DateUploaded.Month,
+                    Year = input.DateUploaded.Year
+                });
+
+                return true;
+            }
+
+            return false;
         }
     }
 }

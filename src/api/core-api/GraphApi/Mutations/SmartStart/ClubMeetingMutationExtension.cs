@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ClubMeeting AddClubMeeting([Service] IClubService clubService, ClubMeetingModel input)
         {
-            input.Name = Constants.ClubSettings.meet_regularly;
+            input.Name = input.Name == "" ? Constants.ClubSettings.meet_regularly : input.Name;
             return clubService.AddClubMeeting(input, Constants.ClubSettings.meeting_type_club_meeting);
         }
 

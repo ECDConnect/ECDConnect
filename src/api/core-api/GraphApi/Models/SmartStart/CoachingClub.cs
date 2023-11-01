@@ -144,5 +144,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string PointsColor { get; set; }
     }
 
+    public class BeCreativeUpload
+    {
+        public Guid ClubId { get; set; }
+        public string Description { get; set; }
+        public string ImageBase64 { get; set; }
+        public string FileType { get; set; }
+        public DateTime DateUploaded { get; set; }
+    }
+
 
 }

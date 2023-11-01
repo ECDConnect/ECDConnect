@@ -723,7 +723,7 @@ namespace ECDLink.Core.Services
             byte[] pdf = pdfConvertor.Convert(doc);
             string Base64Result = Convert.ToBase64String(pdf);
 
-            PdfDocumentModel pdfDoc = new PdfDocumentModel();
+            DocumentModel pdfDoc = new DocumentModel();
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;

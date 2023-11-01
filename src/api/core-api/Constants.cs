@@ -877,6 +877,13 @@ namespace EcdLink.Api.CoreApi
             public const int success_start_800 = 600;
             public const int success_end_800 = 800;
 
+            public const string workflow_upload_type = "Document";
+            public const string workflow_status_upload_type = "Verified";
+            public const string activity_upload_type = "ClubActivityUpload";
+
+            public const string upload_type_be_creative = "BeCreative";
+
+
         }
 
     }
