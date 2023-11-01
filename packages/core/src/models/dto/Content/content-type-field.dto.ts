@@ -8,4 +8,5 @@ export interface ContentTypeFieldDto extends EntityBase {
   fieldType: FieldTypeDto;
   isActive: boolean;
   dataLinkName: string;
+  displayMainTable: boolean;
 }
