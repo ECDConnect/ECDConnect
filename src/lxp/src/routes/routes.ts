@@ -108,6 +108,7 @@ const ROUTES = {
     }),
     CONTACT_COACH: '/contact-coach',
     COMMUNITY: addPrefix('/community', {
+      WELCOME: '/welcome',
       ACCEPT_CLUB_LEADER_ROLE: '/accept-club-leader-role',
       CLUB: addPrefix('/club', {
         SUPPORT_ROLE: addPrefix('/support-role', {

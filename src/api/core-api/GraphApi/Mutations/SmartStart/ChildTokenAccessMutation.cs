@@ -88,6 +88,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 appUser.IsSouthAfricanCitizen = child.IsSouthAfricanCitizen;
                 appUser.RaceId = child.RaceId;
                 appUser.VerifiedByHomeAffairs = child.VerifiedByHomeAffairs;
+                await userManager.UpdateAsync(appUser);
 
                 if (registration != null)
                 {
@@ -100,6 +101,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 }
 
                 await tokenManager.RetractTokensAsync(appUser);
+                
                 scope.SaveChanges();
 
                 dbContextTransaction.Commit();
@@ -310,7 +312,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 FirstName = firstname,
                 Surname = surname,
                 UserName = $"External_Edit_{Guid.NewGuid()}",
-                IsImported = false
+                IsImported = false,
+                IsActive = true,
             };
             appUser.TenantId = tenantId;
             await userManager.CreateAsync(appUser);
@@ -338,7 +341,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = newChild.Id,
                 ChildUserId = appUser.Id
-            };
+            };         
 
             await userManager.AddToRoleAsync(appUser, "Child");
 

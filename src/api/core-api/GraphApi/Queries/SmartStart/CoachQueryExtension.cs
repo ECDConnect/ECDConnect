@@ -268,7 +268,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public List<ClubMember> GetClubsMembers([Service] IClubService clubService, Guid[] clubIds)
         {
             return clubService.GetClubsMembers(clubIds);
-        }
-       
+        }       
     }
 }

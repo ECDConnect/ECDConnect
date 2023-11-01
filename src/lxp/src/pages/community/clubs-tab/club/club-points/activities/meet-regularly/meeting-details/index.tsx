@@ -13,7 +13,7 @@ export const MeetingDetails: React.FC = () => {
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const details = useSelector(
-    clubSelectors.getActivityMeetRegularDetailsSelector
+    clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
   );
 
   const history = useHistory();
