@@ -198,7 +198,7 @@ export type ActivityMeetRegular = {
 
 export type ActivityMeetRegularDetail = {
   __typename?: 'ActivityMeetRegularDetail';
-  meetingAbsentees?: Maybe<Array<Maybe<ClubMeetingRegister>>>;
+  meetingAbsentees?: Maybe<Array<Maybe<ClubMember>>>;
   meetingAttendanceColor?: Maybe<Scalars['String']>;
   meetingAttendancePerc: Scalars['Float'];
   meetingDate: Scalars['DateTime'];
@@ -9429,6 +9429,42 @@ export type PractitionerAttendance = {
   totalPresent: Scalars['Int'];
 };
 
+export type PractitionerClassProgressReportCategorySummary = {
+  __typename?: 'PractitionerClassProgressReportCategorySummary';
+  id: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  subCategories?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSubCategorySummary>>
+  >;
+};
+
+export type PractitionerClassProgressReportSkillSummary = {
+  __typename?: 'PractitionerClassProgressReportSkillSummary';
+  childCount: Scalars['Int'];
+  id: Scalars['Int'];
+  skill?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerClassProgressReportSubCategorySummary = {
+  __typename?: 'PractitionerClassProgressReportSubCategorySummary';
+  childrenPerSkill?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSkillSummary>>
+  >;
+  id: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerClassProgressReportSummaryModel = {
+  __typename?: 'PractitionerClassProgressReportSummaryModel';
+  categories?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportCategorySummary>>
+  >;
+  childCount: Scalars['Int'];
+  className?: Maybe<Scalars['String']>;
+  practitionerFullName?: Maybe<Scalars['String']>;
+  practitionerUserId: Scalars['UUID'];
+};
+
 export type PractitionerClassroomName = {
   __typename?: 'PractitionerClassroomName';
   classRoomId: Scalars['UUID'];
@@ -9605,6 +9641,14 @@ export type PractitionerNotes = {
   answers?: Maybe<Array<Maybe<VisitData>>>;
   plannedVisitDate?: Maybe<Scalars['DateTime']>;
   visitName?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerProgressReportSummaryModel = {
+  __typename?: 'PractitionerProgressReportSummaryModel';
+  classSummaries?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSummaryModel>>
+  >;
+  reportingPeriod?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerRemovalHistory = {
@@ -10896,11 +10940,13 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  practitionerProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
   practitionerTimeline?: Maybe<PractitionerTimeline>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
   previousVisitInformationForInfant?: Maybe<Progress_VisitDataStatus>;
   previousVisitInformationForMother?: Maybe<Progress_VisitDataStatus>;
   principalByUserId?: Maybe<Practitioner>;
+  principalProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
@@ -13382,6 +13428,11 @@ export type QueryPractitionerNewSignupMetricArgs = {
   toDate: Scalars['DateTime'];
 };
 
+export type QueryPractitionerProgressReportSummaryArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  reportingPeriod?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryPractitionerTimelineArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -13400,6 +13451,11 @@ export type QueryPreviousVisitInformationForMotherArgs = {
 
 export type QueryPrincipalByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPrincipalProgressReportSummaryArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  reportingPeriod?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryReferralsForInfantArgs = {
