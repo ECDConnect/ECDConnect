@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;
@@ -30,10 +31,8 @@ namespace ECDLink.Core.Services.Interfaces
         bool CalculateChildrenRegistrationAdd(string userId, DateTime today);
         bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
         bool CalculateAttendanceSubmitted(string userId, DateTime today);
-        bool CalculateIncomeStatements(string userId, DateTime today);
-        bool CalculateIncomeStatementsSubmitted(string userId, DateTime today);
-        bool CalculateIncomeStatementPreSchoolFees(string userId, DateTime today);
-        bool CalculateThreeConsecutiveIncomeStatementsSubmitted(string userId, DateTime today);
+        bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);
+       
 
         // SS TODO: Pre-school fees on profile - development pending
         bool CalculatePreSchoolFees(string userId, DateTime today);

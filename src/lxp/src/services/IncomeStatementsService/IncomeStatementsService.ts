@@ -268,7 +268,6 @@ class IncomeStatementsService {
   ): Promise<IncomeStatementDto | undefined> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
 
-    console.log('submitting statement now');
     const response = await apiInstance.post<any>(``, {
       query: `mutation submitMonthlyStatement($input: SubmitStatementModelInput) {      
           submitMonthlyStatement(input: $input) {
