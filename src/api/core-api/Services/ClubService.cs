@@ -1424,8 +1424,8 @@ namespace EcdLink.Api.CoreApi.Services
                     Month = input.DateUploaded.Month,
                     Year = input.DateUploaded.Year
                 });
-
-                return true;
+                // Calculate points
+                return _pointsEngineService.CalculateBeCreative(input.ClubId, _applicationUserId, input.DateUploaded);
             }
 
             return false;
