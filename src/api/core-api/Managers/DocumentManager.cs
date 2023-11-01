@@ -279,7 +279,6 @@ namespace EcdLink.Api.CoreApi.Managers
 
         public async Task<Document> SaveActivityUploadDocument(DocumentModel input)
         {
-            Document doc = null;
             if (input != null && input.Reference != "")
             {
                 // Workflow info
@@ -290,7 +289,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 var docType = _documentTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.activity_upload_type).FirstOrDefault();
 
                 // First validate if document is already in db
-                doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+                Document doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
 
                 // Upload the document
                 try
@@ -323,7 +322,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 }
             }
 
-            return doc;
+            return null;
         }
     }
 }
