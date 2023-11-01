@@ -90,7 +90,6 @@ export const Club: React.FC = () => {
     !!club?.leagueRankNr && Number(club?.leagueRankNr) <= 3;
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
-  // TODO: check this rule
   const isPurpleLeague = club?.league?.leagueType?.name === LeagueType.Purple;
 
   const leader: UserAlertListDataItem = {

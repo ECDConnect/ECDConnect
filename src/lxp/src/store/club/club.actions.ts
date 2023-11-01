@@ -6,7 +6,6 @@ import {
   Club,
   ClubLeader,
   ClubMember,
-  ClubModel,
   Coach,
   CoachingClub,
   CoachingClubBase,
@@ -21,6 +20,7 @@ import {
 } from '@ecdlink/graphql';
 import { ClubService } from '@/services/ClubService';
 import { NewClubLeaderInput } from '@/services/ClubService/types';
+import { ClubDto } from '@/models/club/club.dto';
 
 export const ClubActions = {
   GET_ALL_CLUBS_FOR_COACH: 'getAllClubsForCoach',
@@ -340,7 +340,7 @@ export const getActivityBeCreativeDetails = createAsyncThunk<
 );
 
 export const getClubForUser = createAsyncThunk<
-  ClubModel,
+  ClubDto,
   QueryClubForUserArgs,
   ThunkApiType<RootState>
 >(
