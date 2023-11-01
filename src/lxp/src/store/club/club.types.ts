@@ -1,6 +1,7 @@
 import {
   ActivityBeCreative,
   ActivityMeetRegular,
+  ClubModel,
   CoachingClub,
   CoachingClubBase,
 } from '@ecdlink/graphql';
@@ -13,6 +14,14 @@ export type Points = {
 };
 
 export type ClubState = {
-  allClubsForCoach?: MergedCoachingClub[];
-  points?: Points;
+  //allClubsForCoach?: MergedCoachingClub[];
+  clubForPractitioner?: ClubModel;
+  //points?: Points;
+  clubsForCoach: {
+    [clubId: string]: {
+      dateLoaded: string;
+      club: MergedCoachingClub;
+      points?: Points;
+    };
+  };
 };

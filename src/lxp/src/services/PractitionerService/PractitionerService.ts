@@ -232,6 +232,7 @@ class PractitionerService {
           GetPractitionerById(id: $id) {
             id
             userId
+            isNewInClub
             user {
               gender {
                 description
@@ -310,6 +311,7 @@ class PractitionerService {
           practitionerByUserId(userId: $userId) {
             id
             userId
+            isNewInClub
             user {
               gender {
                 description

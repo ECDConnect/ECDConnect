@@ -58,6 +58,7 @@ import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
 import { pointsThunkActions } from './store/points';
+import { getClubForUser } from './store/club/club.actions';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -166,6 +167,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         const currentDate = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setMonth(currentDate.getMonth() - 12);
+
+        (async () =>
+          await appDispatch(
+            getClubForUser({ userId: userData?.id! })
+          ).unwrap())();
         (async () =>
           await appDispatch(
             pointsThunkActions.getPointsSummaryForUser({

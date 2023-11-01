@@ -177,7 +177,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.ClubName = clubMember?.Club?.Name;
             practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
             practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
-            practitionerRecord.IsNewInClub = clubMember.IsNewInClub;
+            practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
 
             List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
             if (absentees.Any())

@@ -69,6 +69,7 @@ namespace ECDLink.Core.Services
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
 
+
             _userManager = userManager;
             _documentManager = documentManager;
             _personnelService = personnelService;
@@ -411,19 +412,26 @@ namespace ECDLink.Core.Services
 
             if (!autoSubmitted)
             {
-                _pointsEngineService.CalculateIncomeStatements(userId, DateTime.Now);
+                _pointsEngineService.CalculateIncomeStatements(userId, submittedStatement);
             }
 
-            //try generating autosubmit doc
-            if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
+            // try generating autosubmit doc 
+            // TODO this sometimes fails unpredictably, most likely saving to blob store, investigate
+            try
             {
-                var pdfDoc = CreateIncomeStatementPDFDocument(userId, submittedStatement);
-                if (pdfDoc != null)
+                if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
                 {
-                    submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
+                    var pdfDoc = CreateIncomeStatementPDFDocument(userId, submittedStatement);
+                    if (pdfDoc != null)
+                    {
+                        submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
+                        _statementsRepo.Update(submittedStatement);
+                    }
                 }
-
-                _statementsRepo.Update(submittedStatement);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
 
             return submittedStatement;

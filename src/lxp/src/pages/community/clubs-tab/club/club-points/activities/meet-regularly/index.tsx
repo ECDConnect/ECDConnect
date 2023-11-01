@@ -40,7 +40,7 @@ export const MeetRegularly: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const details = useSelector(
-    clubSelectors.getActivityMeetRegularDetailsSelector
+    clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
   );
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
