@@ -228,7 +228,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       );
       setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
     }
-  }, [allAbsenteeClasses, endDate, setReassignClassValue]);
+  }, [allAbsenteeClasses, endDate, hasAbsenteeClasses, setReassignClassValue]);
 
   const submitReassignClass = async () => {
     if (
