@@ -236,24 +236,24 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     });
   }, [practitioner2, practitioners]);
 
-  // useEffect(() => {
-  //   const _list = practitioners
-  //     ?.filter((item) => item?.userId !== String(practitionerId))
-  //     ?.map((p) => {
-  //       if (p?.user?.firstName && p?.user?.surname) {
-  //         return {
-  //           label: `${p?.user?.firstName} ${p?.user?.surname}`,
-  //           value: p.userId,
-  //         };
-  //       }
-  //       return undefined;
-  //     })
-  //     .filter(Boolean) as { label: string; value: any }[];
+  useEffect(() => {
+    const _list = practitioners
+      ?.filter((item) => item?.userId !== String(practitionerId))
+      ?.map((p) => {
+        if (p?.user?.firstName && p?.user?.surname) {
+          return {
+            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            value: p.userId,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
 
-  //   setPractitionersList(_list);
-  //   setPractitionersTeachList(_list);
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, [practitioners]);
+    setPractitionersList(_list);
+    setPractitionersTeachList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitioners]);
 
   useEffect(() => {
     const _list = practitioners
@@ -340,14 +340,69 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   const submitReassignClass = async () => {
-    if (userAuth?.auth_token && selectedDate && userData?.id) {
-      reassignedClassroomGroups?.map(async (item) => {
-        setIsLoading(true);
-        if (item?.absenteeId) {
-          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
-            item?.absenteeId,
-            false,
+    if (
+      userAuth?.auth_token &&
+      selectedDate &&
+      userData?.id &&
+      reassignedClassroomGroups?.length > 0
+    ) {
+      if (reassignedClassroomGroups?.length > 0)
+        reassignedClassroomGroups?.map(async (item) => {
+          setIsLoading(true);
+          if (item?.absenteeId) {
+            await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
+              item?.absenteeId,
+              false,
+              item?.practitioner,
+              reason,
+              new Date(selectedDate),
+              endDate || new Date(selectedDate)
+            );
+
+            await refreshClassroom();
+            await appDispatch(
+              practitionerThunkActions.getAllPractitioners({})
+            ).unwrap();
+            setIsLoading(false);
+
+            if (principalPractitioner) {
+              history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+              return;
+            }
+            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+              practitionerId,
+            });
+
+            return;
+          }
+
+          setIsLoading(true);
+          await new ClassroomGroupService(
+            userAuth.auth_token
+          ).updateReassignClassroomGroup(
+            practitioner,
             item?.practitioner,
+            reason,
+            new Date(selectedDate),
+            userData?.id!,
+            item?.classroomId,
+            endDate || new Date(selectedDate)
+          );
+        });
+
+      await refreshClassroom();
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap();
+    } else {
+      if (userAuth?.auth_token && selectedDate && userData?.id) {
+        const absenteeId = allAbsenteeClasses?.[0].absenteeId;
+        setIsLoading(true);
+        if (absenteeId) {
+          await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
+            absenteeId,
+            false,
+            practitioner2,
             reason,
             new Date(selectedDate),
             endDate || new Date(selectedDate)
@@ -363,6 +418,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
             return;
           }
+
           history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
             practitionerId,
           });
@@ -374,19 +430,19 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           userAuth.auth_token
         ).updateReassignClassroomGroup(
           practitioner,
-          item?.practitioner,
+          practitioner2,
           reason,
           new Date(selectedDate),
           userData?.id!,
-          item?.classroomId,
+          '',
           endDate || new Date(selectedDate)
         );
-      });
 
-      await refreshClassroom();
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap();
+        await refreshClassroom();
+        await appDispatch(
+          practitionerThunkActions.getAllPractitioners({})
+        ).unwrap();
+      }
     }
     setIsLoading(false);
 
