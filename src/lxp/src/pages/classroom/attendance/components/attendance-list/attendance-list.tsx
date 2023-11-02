@@ -13,7 +13,7 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { format, getDay } from 'date-fns';
+import { format, getDay, getDayOfYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -112,8 +112,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       const _allLearners = allLearners.filter(
         (x) =>
           !Boolean(x.stoppedAttendance) &&
-          new Date(attendanceDate).getTime() >=
-            new Date(x.startedAttendance).getTime()
+          getDayOfYear(attendanceDate) >=
+            getDayOfYear(new Date(x.startedAttendance))
       );
 
       const uniqueLearners = _allLearners.filter((object, index, array) => {
