@@ -46,6 +46,7 @@ using System.Diagnostics;
 using ECDLink.AutomatedJobs.Services;
 using ECDLink.AutomatedJobs.Services.Interfaces;
 using EcdLink.Api.CoreApi.Managers.Integration;
+using ECDLink.SmartStart.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -150,6 +151,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<VisitBackReferralManager>();
             services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
+            services.AddTransient<IPersonnelService, PersonnelService>();
             services.AddTransient<ChildManager>();
             services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
             services.AddTransient<AttendanceService>();
