@@ -1234,7 +1234,8 @@ namespace EcdLink.Api.CoreApi.Services
                             MonthName = date.ToString("MMMM"),
                             DocumentStatusColor = MetricsColorEnum.Error.ToString(),
                             DocumentStatus = Constants.ClubSettings.document_no_success,
-                            Points = 0
+                            Points = 0,
+                            ImageRating = 0
                         }
                     );
                 } 
@@ -1249,7 +1250,8 @@ namespace EcdLink.Api.CoreApi.Services
                             ImageApproved = clubBeCreative?.ImageApproved,
                             DocumentStatusColor = (bool)clubBeCreative?.ImageApproved ? MetricsColorEnum.Warning.ToString() : MetricsColorEnum.Error.ToString(),
                             DocumentStatus = (bool)clubBeCreative?.ImageApproved ? Constants.ClubSettings.document_success : Constants.ClubSettings.document_no_success,
-                            Points = 100
+                            Points = 0, // pending - will implemented when integration is done
+                            ImageRating = clubBeCreative.ImageRating
                         }
                     );
                 }

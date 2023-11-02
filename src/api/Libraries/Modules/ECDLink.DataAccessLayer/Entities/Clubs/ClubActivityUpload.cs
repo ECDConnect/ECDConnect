@@ -27,6 +27,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public string Description { get; set; }
         public Guid ClubActivityUploadTypeId { get; set; }
         public bool ImageApproved { get; set; }
+        public double ImageRating { get; set; }
     }
 
     public interface ClubActivityUploadJoin<TKey>

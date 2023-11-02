@@ -23,3 +23,6 @@ VALUES('fbdb6ead-e88f-4cff-8743-f62c6f4ae939', true, current_timestamp, current_
 ALTER TABLE public."ClubActivityUpload" RENAME COLUMN "ActivityType" TO "ClubActivityUploadTypeId";
 ALTER TABLE public."ClubActivityUpload" ALTER COLUMN "ClubActivityUploadTypeId" TYPE uuid USING "ClubActivityUploadTypeId"::uuid::uuid;
 ALTER TABLE public."ClubActivityUpload" ADD CONSTRAINT "FK_ClubActivityUpload_ClubActivityUploadTypeId" FOREIGN KEY ("ClubActivityUploadTypeId") REFERENCES "ClubActivityUploadType"("Id");
+
+
+ALTER TABLE public."ClubActivityUpload" ADD "ImageRating" numeric NOT NULL DEFAULT '-100000000000'::bigint;

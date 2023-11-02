@@ -832,6 +832,7 @@ namespace EcdLink.Api.CoreApi
         public static class ClubSettings
         {
             public const string meeting_type_club_meeting = "club_meeting";
+            public const string meeting_type_family_days = "family_days";
 
             public const string no_club_leader = "No club leader";
             public const string contact_club_leader = "Contact club leader";
