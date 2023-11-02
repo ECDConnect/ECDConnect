@@ -55,6 +55,8 @@ namespace ECDLink.Abstractrions.Enums
         [Description("proof-ofaccount")]
         ProofOfAccount,
         [Description("calendar-event-type")]
-        CalendarEventType
+        CalendarEventType,
+        [Description("club-activity-upload")]
+        ClubActivityUpload
     }
 }

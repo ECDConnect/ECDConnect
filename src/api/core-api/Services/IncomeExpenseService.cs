@@ -731,7 +731,7 @@ namespace ECDLink.Core.Services
             byte[] pdf = pdfConvertor.Convert(doc);
             string Base64Result = Convert.ToBase64String(pdf);
 
-            PdfDocumentModel pdfDoc = new PdfDocumentModel();
+            DocumentModel pdfDoc = new DocumentModel();
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
@@ -957,7 +957,7 @@ namespace ECDLink.Core.Services
                 result.Date = income.DateReceived;
                 result.Amount = income.Amount;
                 result.PhotoProof = income.PhotoProof;
-                result.Child = childNamesById[income.ChildUserId];
+                result.Child = childNamesById.ContainsKey(income.ChildUserId) ? childNamesById[income.ChildUserId] : "Unknown";
                 results.Add(result);
             }
             return results;

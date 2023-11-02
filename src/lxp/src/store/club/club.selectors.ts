@@ -1,5 +1,6 @@
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
+import { MergedCoachingClub } from './club.types';
 
 // Practitioner
 export const getClubForPractitionerSelector = (state: RootState) =>
@@ -13,7 +14,7 @@ export const getClubByIdSelector = (clubId: string) =>
   createSelector(
     (state: RootState) => state.clubs.clubsForCoach,
     (clubs) => clubs[clubId].club
-  );
+  ) as (state: RootState) => MergedCoachingClub | undefined;
 
 export const getCurrentClubLeaderByClubIdSelector = (clubId: string) =>
   createSelector(getClubByIdSelector(clubId), (club) =>
