@@ -15,7 +15,7 @@ import DatePicker from 'react-datepicker';
 import { useHistory, useLocation } from 'react-router';
 import { ReassignClassPageState, yesNoOptions } from './reassign-class.types';
 import ROUTES from '@routes/routes';
-import { format, setDate } from 'date-fns';
+import { format } from 'date-fns';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import {
   ReassignClassModel,
@@ -107,6 +107,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const practitionersUsers = useSelector(
     practitionerSelectors.getPractitioners
   );
+  const practitionerUser = useSelector(practitionerSelectors?.getPractitioner);
   const [practitioners, setPractitioners] = useState(practitionersUsers);
   const principalPractitioner = routeState?.principalPractitioner;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -235,9 +236,27 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     });
   }, [practitioner2, practitioners]);
 
+  // useEffect(() => {
+  //   const _list = practitioners
+  //     ?.filter((item) => item?.userId !== String(practitionerId))
+  //     ?.map((p) => {
+  //       if (p?.user?.firstName && p?.user?.surname) {
+  //         return {
+  //           label: `${p?.user?.firstName} ${p?.user?.surname}`,
+  //           value: p.userId,
+  //         };
+  //       }
+  //       return undefined;
+  //     })
+  //     .filter(Boolean) as { label: string; value: any }[];
+
+  //   setPractitionersList(_list);
+  //   setPractitionersTeachList(_list);
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [practitioners]);
+
   useEffect(() => {
     const _list = practitioners
-      ?.filter((item) => item?.userId !== String(practitionerId))
       ?.map((p) => {
         if (p?.user?.firstName && p?.user?.surname) {
           return {
@@ -248,42 +267,40 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         return undefined;
       })
       .filter(Boolean) as { label: string; value: any }[];
+
+    const practitionersTeachListUpdated = practitioners && [
+      ...practitioners,
+      practitionerUser,
+    ];
+
+    const _list2 = practitionersTeachListUpdated
+      ?.filter(
+        (item) => item?.userId !== String(practitionerId || practitioner)
+      )
+      ?.map((p) => {
+        if (p?.user?.firstName && p?.user?.surname) {
+          return {
+            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            value: p.userId,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
+
+    const _list2Updated = _list2?.filter(
+      (a, i) => _list2.findIndex((s) => a.value === s.value) === i
+    );
 
     setPractitionersList(_list);
-    setPractitionersTeachList(_list);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitioners]);
-
-  useEffect(() => {
-    const _list = practitioners
-      ?.map((p) => {
-        if (p?.user?.firstName && p?.user?.surname) {
-          return {
-            label: `${p?.user?.firstName} ${p?.user?.surname}`,
-            value: p.userId,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
-
-    const _list2 = practitioners
-      ?.filter((item) => item?.userId !== String(practitionerId))
-      ?.map((p) => {
-        if (p?.user?.firstName && p?.user?.surname) {
-          return {
-            label: `${p?.user?.firstName} ${p?.user?.surname}`,
-            value: p.userId,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
-
-    setPractitionersList(_list);
-    setPractitionersTeachList(_list2);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitioners]);
+    setPractitionersTeachList(_list2Updated);
+  }, [
+    practitioner,
+    practitioner?.userId,
+    practitionerId,
+    practitionerUser,
+    practitioners,
+  ]);
 
   useEffect(() => {
     const _list = absentInfo?.map((item) => {
