@@ -10,14 +10,17 @@ import {
   CoachingClub,
   CoachingClubBase,
   MutationChangeClubNameArgs,
+  MutationSaveWelcomeMessageArgs,
   MutationUpdateCoachAboutInfoArgs,
   NewClubInput,
   NewClubMemberInput,
   QueryActivityBeCreativeDetailsArgs,
   QueryActivityMeetRegularDetailsArgs,
+  QueryClubForUserArgs,
 } from '@ecdlink/graphql';
 import { ClubService } from '@/services/ClubService';
 import { NewClubLeaderInput } from '@/services/ClubService/types';
+import { ClubDto } from '@/models/club/club.dto';
 
 export const ClubActions = {
   GET_ALL_CLUBS_FOR_COACH: 'getAllClubsForCoach',
@@ -32,6 +35,8 @@ export const ClubActions = {
   UPDATE_COACH_ABOUT_INFO: 'updateCoachAboutInfo',
   GET_ACTIVITY_MEET_REGULAR_DETAILS: 'getActivityMeetRegularDetails',
   GET_ACTIVITY_BE_CREATIVE_DETAILS: 'getActivityBeCreativeDetails',
+  GET_CLUB_FOR_USER: 'getClubForUser',
+  SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
 };
 
 export const getAllClubsForCoach = createAsyncThunk<
@@ -325,6 +330,56 @@ export const getActivityBeCreativeDetails = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).getActivityBeCreativeDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getClubForUser = createAsyncThunk<
+  ClubDto,
+  QueryClubForUserArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_CLUB_FOR_USER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).getClubForUser(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const saveWelcomeMessage = createAsyncThunk<
+  boolean,
+  MutationSaveWelcomeMessageArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.SAVE_WELCOME_MESSAGE,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).saveWelcomeMessage(
+          input
+        );
       } else {
         return rejectWithValue('no access token, profile check required');
       }

@@ -239,7 +239,7 @@ export const PointsSummary: React.FC = () => {
                       ? pointsLibraryScore.maxMonthlyPoints
                       : pointsLibraryScore.maxYearlyPoints
                   }
-                  description={pointsLibraryScore.subActivity || 'Unknown'}
+                  description={pointsLibraryScore.todoDescription || 'Unknown'}
                   badgeImage={
                     <Badge
                       style={{

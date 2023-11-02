@@ -19,7 +19,6 @@ import { UpdatePreschoolFeeModel } from '@/schemas/classroom/update-preschool-fe
 import { preschoolFeesSchema } from '@/schemas/income-statements/preschool-fees';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { moneyInputFormat } from '@/utils/statements/statements-utils';
-import ROUTES from '@/routes/routes';
 
 export const UpdatePreschoolFee: React.FC = () => {
   const history = useHistory();
@@ -31,8 +30,10 @@ export const UpdatePreschoolFee: React.FC = () => {
     ? location?.state.fromUpdateReminder
     : false;
 
-  const [askForFee, setAskForFee] = useState<boolean>(
-    !!classroom?.preschoolFeeAmount
+  const [askForFee, setAskForFee] = useState<boolean | undefined>(
+    classroom?.preschoolFeeAmount === null
+      ? undefined
+      : !!classroom?.preschoolFeeAmount
   );
   const [changeFee, setChangeFee] = useState<boolean | undefined>(undefined);
 
@@ -133,7 +134,7 @@ export const UpdatePreschoolFee: React.FC = () => {
             className={'mt-4 w-full'}
             multiple={false}
           />
-          {askForFee && (
+          {!!askForFee && (
             <FormInput<UpdatePreschoolFeeModel>
               label={'How much will you ask the caregivers to pay each month?'}
               visible={true}

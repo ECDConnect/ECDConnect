@@ -43,6 +43,7 @@ import {
   isFriday,
   isPast,
   isSameDay,
+  isToday,
   isWeekend,
   nextMonday,
 } from 'date-fns';
@@ -126,7 +127,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
   const practitionerAbsentees = practitioner?.absentees;
   const validAbsenteesDates = practitionerAbsentees?.filter(
-    (item) => !isPast(new Date(item?.absentDate as string))
+    (item) =>
+      !isPast(new Date(item?.absentDate as string)) ||
+      isToday(new Date(item?.absentDate as string))
   );
   const currentDates = validAbsenteesDates?.map((item) => {
     return item?.absentDate as string;

@@ -62,9 +62,9 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   const isCoachView = user?.roles?.some(
     (role) => role.name === UserTypeEnum.Coach
   );
-  const isPractitionerView = user?.roles?.some(
-    (role) => role.name === UserTypeEnum.Practitioner
-  );
+  const isPractitionerView =
+    user?.roles?.some((role) => role.name === UserTypeEnum.Practitioner) ||
+    isPrincipal;
   const hasAttendanceRoute = isPrincipal && practitioners?.length! > 0;
 
   const practitionerId = location?.state?.practitionerId;
