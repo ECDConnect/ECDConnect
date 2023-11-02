@@ -1,6 +1,6 @@
 ﻿namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
-    public class PdfDocumentModel
+    public class DocumentModel
     {
         public string Reference { get; set; } // base64 string
         public string FileName { get; set; }

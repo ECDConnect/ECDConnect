@@ -119,6 +119,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string DocumentStatus { get; set; }
         public string DocumentStatusColor { get; set; }
         public int Points { get; set; }
+        public double ImageRating { get; set; }
     }
     public class ActivityHostFamilyDays
     {
@@ -142,6 +143,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
+    }
+
+    public class BeCreativeUpload
+    {
+        public Guid ClubId { get; set; }
+        public string Description { get; set; }
+        public string ImageBase64 { get; set; }
+        public string FileType { get; set; }
+        public DateTime DateUploaded { get; set; }
     }
 
 

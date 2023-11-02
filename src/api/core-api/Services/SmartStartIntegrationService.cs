@@ -4119,10 +4119,10 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 valueToSend = newChild.User.IdNumber != null ? "true" : "false";
                                                 break;
                                             case "HasAllergy":
-                                                valueToSend = newChild.Allergies != null ? "true" : "false";
+                                                valueToSend = string.IsNullOrWhiteSpace(newChild.Allergies) ? "false" : "true";
                                                 break;
                                             case "HasDisability":
-                                                valueToSend = newChild.Disabilities != null ? "true" : "false";
+                                                valueToSend = string.IsNullOrWhiteSpace(newChild.Disabilities) ? "false" : "true";
                                                 break;
                                         }
                                         break;

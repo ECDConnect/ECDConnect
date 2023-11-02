@@ -183,7 +183,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   useEffect(() => {
     if (dobDay && dobMonth && dobYear) {
-      const dateOfBirth = new Date(dobYear, dobMonth, dobDay);
+      const dateOfBirth = new Date(dobYear, dobMonth - 1, dobDay);
       setChildInformationFormValue('dob', dateOfBirth);
       validateDateOfBirth();
     }
