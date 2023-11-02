@@ -32,6 +32,8 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         [ForeignKey(nameof(ClubId))]
         public virtual Club Club { get; set; }
         public bool CoachAttended { get; set; }
+        public string? OtherDescription { get; set; }
+        public int? TotalCaregiversAttended { get; set; }
     }
 
     public interface ClubMeetingJoin<TKey>
