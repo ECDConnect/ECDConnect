@@ -32,10 +32,6 @@ export const ChildEmergencyContactForm: React.FC<
 }) => {
   const [contactAllowedCustody, setContactAllowedCustody] = useState<boolean>();
 
-  useEffect(() => {
-    setContactAllowedCustody(!!childEmergencyContactForm?.isAllowedCustody);
-  }, [childEmergencyContactForm]);
-
   const {
     getValues: getChildEmergencyContactFormValues,
     setValue: setChildEmergencyContactFormValue,
