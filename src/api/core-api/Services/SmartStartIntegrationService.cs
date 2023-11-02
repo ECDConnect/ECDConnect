@@ -3190,7 +3190,10 @@ public class SmartStartIntegrationService : IIntegrationService
                                         if (prop.Name == "FirstName" || prop.Name == "SurName")
                                         {
                                             prop.SetValue(entityUser, newData);
-                                            entityUser.FullName = await UpdateFullName(currentValue, model.NewData, entityUser.FullName);
+                                            if (entityUser.FullName != null)
+                                                entityUser.FullName = await UpdateFullName(currentValue, model.NewData, entityUser.FullName);
+                                            else
+                                                entityUser.FullName = model.NewData;
                                         }
                                         else
                                         {
