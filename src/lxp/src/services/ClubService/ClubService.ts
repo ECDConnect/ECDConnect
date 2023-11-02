@@ -14,12 +14,12 @@ import {
   ActivityMeetRegular,
   ActivityBeCreative,
   QueryActivityBeCreativeDetailsArgs,
-  ClubModel,
   QueryClubForUserArgs,
   MutationSaveWelcomeMessageArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
+import { ClubDto } from '@/models/club/club.dto';
 
 class ClubService {
   _accessToken: string;
@@ -550,10 +550,10 @@ class ClubService {
     return response.data.data.activityBeCreativeDetails;
   }
 
-  async getClubForUser(input: QueryClubForUserArgs): Promise<ClubModel> {
+  async getClubForUser(input: QueryClubForUserArgs): Promise<ClubDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { clubForUser: ClubModel };
+      data: { clubForUser: ClubDto };
       errors?: {};
     }>(``, {
       query: `query clubForUser($userId: String) {

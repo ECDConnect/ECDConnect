@@ -15,6 +15,7 @@ import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neut
 import { useMemo } from 'react';
 import {
   ClubActivities,
+  LeagueType,
   MAX_MEMBERS_IN_CLUB,
   MIN_MEMBERS_IN_CLUB,
 } from '@/constants/club';
@@ -32,11 +33,13 @@ import { useSelector } from 'react-redux';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '@/pages/community/clubs-tab/club/individual-club-view';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { userSelectors } from '@/store/user';
+import { coachSelectors } from '@/store/coach';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
-
-  console.log('club', club);
+  const user = useSelector(userSelectors.getUser);
+  const coach = useSelector(coachSelectors.getCoach);
   const history = useHistory();
 
   const dialog = useDialog();
@@ -48,12 +51,12 @@ export const ClubTab: React.FC = () => {
 
   const clubId = club?.id ?? '';
   const isClubInALeague = !!club?.league;
+  const totalMembers = club?.clubMembers?.length ?? 0;
+  const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
+  const isLeader = club?.clubLeader?.userId === user?.id;
 
   // TODO: add integration
-  const totalMembers = 6;
-  const isPurpleLeague = false;
   const isLeaderRequest = false;
-  const isLeader = true;
 
   const onAddMeetingOrEvent = () => {
     return dialog({
@@ -65,27 +68,42 @@ export const ClubTab: React.FC = () => {
     });
   };
 
-  // TODO: add integration
-  const coach: UserAlertListDataItem = {
-    title: `{coachName}`,
+  const coachItem: UserAlertListDataItem = {
+    title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
     titleStyle: 'text-textDark',
     profileDataUrl: '',
-    profileText: `CN`,
+    profileText:
+      (coach?.user?.firstName?.charAt(0) || '') +
+      (coach?.user?.surname?.charAt(0) || ''),
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
-    onActionClick: () => {},
+    onActionClick: () => {
+      // TODO: update user profile to handle with coach view and practitioner view
+      // history.push(
+      //   ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH
+      //     .replace(':clubId', clubId)
+      //     .replace(':coachId', coacd?.user?.id ?? ''))
+    },
   };
 
   const clubSupportRole: UserAlertListDataItem = {
-    title: `{supportRoleName}`,
+    title: club?.clubSupport?.name ?? '',
     titleStyle: 'text-textDark',
     profileDataUrl: '',
-    profileText: `SN`,
+    profileText:
+      (club?.clubSupport?.name?.split(' ')?.[0]?.[0] || '') +
+      (club?.clubSupport?.name?.split(' ')?.[1]?.[0] || ''),
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
-    onActionClick: () => {},
+    onActionClick: () => {
+      // TODO: update user profile to handle with coach view and practitioner view
+      // history.push(
+      // ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER
+      //   .replace(':clubId', clubId)
+      //   .replace(':practitionerId', user?.id ?? ''))
+    },
   };
 
   const leaderAlert = useMemo(() => {
@@ -325,43 +343,47 @@ export const ClubTab: React.FC = () => {
           </div>
           {leaderAlert}
           {renderLeagueContent}
-          <Typography className="mb-2" type="h3" text="Coach" />
-          {true && (
-            <div>
+          {!!coach && (
+            <>
+              <Typography className="mb-2" type="h3" text="Coach" />
+              <div>
+                <StackedList
+                  isFullHeight={false}
+                  type={'UserAlertList' as StackedListType}
+                  listItems={[coachItem]}
+                />
+              </div>
+            </>
+          )}
+          {!!club?.clubSupport && (
+            <>
+              <div className="mb-2 mt-6 flex items-center justify-between">
+                <Typography type="h3" text="Club support role" />
+                <Button
+                  type="outlined"
+                  color="primary"
+                  textColor="primary"
+                  text={'Change'}
+                  icon="RefreshIcon"
+                  onClick={() =>
+                    history.push(
+                      ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
+                    )
+                  }
+                />
+              </div>
+              <Typography
+                className="mb-4"
+                type="body"
+                color="textMid"
+                text="This club member can take meeting attendance & add events."
+              />
               <StackedList
                 isFullHeight={false}
                 type={'UserAlertList' as StackedListType}
-                listItems={[coach]}
+                listItems={[clubSupportRole]}
               />
-            </div>
-          )}
-          <div className="mb-2 mt-6 flex items-center justify-between">
-            <Typography type="h3" text="Club support role" />
-            <Button
-              type="outlined"
-              color="primary"
-              textColor="primary"
-              text={'Change'}
-              icon="RefreshIcon"
-              onClick={() =>
-                history.push(
-                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
-                )
-              }
-            />
-          </div>
-          <Typography
-            className="mb-4"
-            type="body"
-            color="textMid"
-            text="This club member can take meeting attendance & add events."
-          />
-          {true && (
-            <StackedList
-              isFullHeight={false}
-              type={'UserAlertList' as StackedListType}
-              listItems={[clubSupportRole]}
-            />
+            </>
           )}
           {renderActivitiesContent}
           <div className="mt-auto flex flex-col">

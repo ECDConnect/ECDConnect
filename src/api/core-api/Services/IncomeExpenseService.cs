@@ -957,7 +957,7 @@ namespace ECDLink.Core.Services
                 result.Date = income.DateReceived;
                 result.Amount = income.Amount;
                 result.PhotoProof = income.PhotoProof;
-                result.Child = childNamesById[income.ChildUserId];
+                result.Child = childNamesById.ContainsKey(income.ChildUserId) ? childNamesById[income.ChildUserId] : "Unknown";
                 results.Add(result);
             }
             return results;
