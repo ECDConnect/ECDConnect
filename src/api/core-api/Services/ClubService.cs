@@ -112,6 +112,8 @@ namespace EcdLink.Api.CoreApi.Services
                 ContentValueId = input.ContentValueId,
                 MeetingTypeId = meetingTypeId,
                 MeetingNotes = input.MeetingNotes,
+                OtherDescription = input.OtherDescription,
+                TotalCaregiversAttended = input.TotalCaregiversAttended,
                 CoachAttended = input.CoachAttend == null ? false : true
             });
             
@@ -136,6 +138,51 @@ namespace EcdLink.Api.CoreApi.Services
                 if (clubMeeting.MeetingDate.HasValue && clubMeeting.MeetingDate.Value.Date <= DateTime.Now.Date)
                 {
                     _pointsEngineService.CalculateMeetRegularly(input.ClubId, _applicationUserId, DateTime.Now);
+                }
+            }
+
+            // family day uploads and points
+            if (meetingType == Constants.ClubSettings.meeting_type_play_day ||
+                meetingType == Constants.ClubSettings.meeting_type_story_day ||
+                meetingType == Constants.ClubSettings.meeting_type_end_of_year_celebration ||
+                meetingType == Constants.ClubSettings.meeting_type_open_day ||
+                meetingType == Constants.ClubSettings.meeting_type_other)
+            {
+                // upload the image
+                if (input.ImageBase64 != "") { 
+                    string fileName = input.MeetingDate.Date.ToString("MMM_yyyy") + "_" + meetingType + "_" + input.ClubId + input.FileType;
+                    DocumentModel documentModel = new DocumentModel()
+                    {
+                        Reference = input.ImageBase64,
+                        FileName = fileName,
+                        UserId = _applicationUserId,
+                        CreatedUserId = _applicationUserId
+                    };
+                    Document document = _documentManager.SaveActivityUploadDocument(documentModel).Result;
+                    if (document != null)
+                    {
+                        ClubActivityUploadType uploadType = _clubActivityUploadTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.upload_type_family_days).FirstOrDefault();
+                        ClubActivityUpload uploadedRecord = _clubActivityUploadRepo.Insert(new ClubActivityUpload()
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActive = true,
+                            InsertedDate = DateTime.Now,
+                            UpdatedDate = DateTime.Now,
+                            UpdatedBy = _applicationUserId,
+                            ClubId = input.ClubId,
+                            DocumentId = document.Id,
+                            ClubActivityUploadTypeId = uploadType.Id,
+                            ImageApproved = false,
+                            Month = input.MeetingDate.Month,
+                            Year = input.MeetingDate.Year
+                        });
+                    }
+                }
+
+                // Points
+                if (club.LeagueId != null)
+                {
+                    _pointsEngineService.CalculateHostFamilyDays(input.ClubId, _applicationUserId, input.MeetingDate.Date);
                 }
             }
             return clubMeeting;
@@ -1446,5 +1493,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             return false;
         }
+
+       
     }
 }

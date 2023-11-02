@@ -832,7 +832,11 @@ namespace EcdLink.Api.CoreApi
         public static class ClubSettings
         {
             public const string meeting_type_club_meeting = "club_meeting";
-            public const string meeting_type_family_days = "family_days";
+            public const string meeting_type_play_day = "play_day";
+            public const string meeting_type_story_day = "story_day";
+            public const string meeting_type_end_of_year_celebration = "end_of_year_celebration";
+            public const string meeting_type_open_day = "open_day";
+            public const string meeting_type_other = "other";
 
             public const string no_club_leader = "No club leader";
             public const string contact_club_leader = "Contact club leader";
@@ -883,6 +887,7 @@ namespace EcdLink.Api.CoreApi
             public const string activity_upload_type = "ClubActivityUpload";
 
             public const string upload_type_be_creative = "BeCreative";
+            public const string upload_type_family_days = "FamilyDays";
 
 
         }
