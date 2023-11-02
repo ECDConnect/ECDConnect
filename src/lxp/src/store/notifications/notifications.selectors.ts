@@ -8,17 +8,16 @@ export const getAllNotifications = createSelector(
     const currentDate = new Date();
     currentDate.setHours(0, 0, 0, 0);
 
-    return [...notifications];
-    // .filter((notification) => {
-    //   if (!notification.message.expiryDate) {
-    //     return true;
-    //   }
+    return [...notifications].filter((notification) => {
+      if (!notification.message.expiryDate) {
+        return true;
+      }
 
-    //   const expiryDate = new Date(notification.message.expiryDate);
-    //   expiryDate.setHours(0, 0, 0, 0);
+      const expiryDate = new Date(notification.message.expiryDate);
+      expiryDate.setHours(0, 0, 0, 0);
 
-    //   return expiryDate >= currentDate;
-    // });
+      return expiryDate >= currentDate;
+    });
   }
 );
 
