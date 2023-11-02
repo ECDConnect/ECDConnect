@@ -78,20 +78,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     ClassroomGroupDto[]
   >([]);
 
-  useEffect(() => {
-    if (!attendanceTracked) {
-      const trackAttendance = async () => {
-        return await appDispatch(
-          attendanceThunkActions.trackAttendanceSync({})
-        );
-      };
-      trackAttendance().then(() => {
-        setAttendanceTracked(true);
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const today = new Date();
 
   useEffect(() => {
@@ -142,6 +128,22 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     setAttendanceData(attendanceReport.reverse());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportData]);
+
+  useEffect(() => {
+    if (!attendanceTracked) {
+      if (isOnline) {
+        const trackAttendance = async () => {
+          return await appDispatch(
+            attendanceThunkActions.trackAttendanceSync({})
+          );
+        };
+        trackAttendance().then(() => {
+          setAttendanceTracked(true);
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">

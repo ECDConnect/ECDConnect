@@ -37,6 +37,7 @@ class PointsService {
               activity
               subActivity
               description
+              todoDescription
             }
           }
       }`,
@@ -67,6 +68,7 @@ class PointsService {
               activity
               subActivity
               description
+              todoDescription
               points
               maxPointsIndividualMonthly
               maxPointsNonPrincipalMonthly

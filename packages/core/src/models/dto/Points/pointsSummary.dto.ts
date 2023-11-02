@@ -7,6 +7,7 @@ export interface PointsSummaryDto {
   year: number;
   activity: string;
   description: string;
+  todoDescription: string;
   maxMonthlyPoints: number;
   maxYearlyPoints: number;
   pointsPerAward: number;

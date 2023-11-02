@@ -57,8 +57,16 @@ export const SubmitIncomeStatements: React.FC = () => {
     unSubmittedExpenseItems.length > 0 ||
     statements.length > 0;
 
-  const [isThisMonthSubmitted, setIsThisMonthSubmitted] =
-    useState<boolean>(false);
+  const isThisMonthSubmitted = useMemo<boolean>(
+    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
+    [statements]
+  );
+
+  const isLastMonthSubmitted = useMemo<boolean>(
+    () => !!statements?.find((x) => x.month === new Date().getMonth()),
+    [statements]
+  );
+
   const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
     useState<number>(0);
 
@@ -67,14 +75,21 @@ export const SubmitIncomeStatements: React.FC = () => {
     currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
     currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
+  const isStatementSubmitted =
+    new Date().getDate() <= IncomeStatementDates.SubmitEndDay
+      ? isLastMonthSubmitted
+      : isThisMonthSubmitted;
+
   useEffect(() => {
     const date = new Date();
     // Outside submit
-    if (!isSubmitWindowOpen) {
-      setIsThisMonthSubmitted(
-        !!statements?.find((x) => x.month === date.getMonth() + 1)
-      );
-
+    if (
+      date.getDate() <= IncomeStatementDates.SubmitEndDay &&
+      !isLastMonthSubmitted
+    ) {
+      const nextSubmit = new Date(date.getFullYear(), date.getMonth(), 7);
+      setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
+    } else {
       const nextMonth = getNextMonth(date);
       const nextSubmit = new Date(
         nextMonth.getFullYear(),
@@ -82,35 +97,8 @@ export const SubmitIncomeStatements: React.FC = () => {
         7
       );
       setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-    } else {
-      // In window and current month
-      if (date.getDate() >= IncomeStatementDates.SubmitStartDay) {
-        setIsThisMonthSubmitted(
-          !!statements?.find((x) => x.month === date.getMonth() + 1)
-        );
-
-        const nextMonth = getNextMonth(date);
-        const nextSubmit = new Date(
-          nextMonth.getFullYear(),
-          nextMonth.getMonth(),
-          7
-        );
-        setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-      } else {
-        setIsThisMonthSubmitted(
-          !!statements?.find((x) => x.month === date.getMonth())
-        );
-
-        const nextSubmit = new Date(date.getFullYear(), date.getMonth(), 7);
-        setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-      }
     }
-  }, [
-    statements,
-    isSubmitWindowOpen,
-    setIsThisMonthSubmitted,
-    setDaysUntilFinalSubmission,
-  ]);
+  }, [statements, isSubmitWindowOpen, setDaysUntilFinalSubmission]);
 
   const balanceNotifications = useMemo(() => {
     const lastMonthStatement = statements[statements.length - 1];
@@ -305,6 +293,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const celebrationCard = useMemo<JSX.Element>(() => {
     if (!isThisMonthSubmitted || pointsSubmitStatementsMessageDismissed) {
+      console.log('No message to display');
       return <></>;
     }
 
@@ -484,7 +473,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
             {isOnline &&
               isSubmitWindowOpen &&
-              !isThisMonthSubmitted &&
+              !isStatementSubmitted &&
               !isSubmittingStatement && (
                 <Button
                   shape="normal"

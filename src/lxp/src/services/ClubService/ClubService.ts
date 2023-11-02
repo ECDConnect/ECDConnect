@@ -14,6 +14,8 @@ import {
   ActivityMeetRegular,
   ActivityBeCreative,
   QueryActivityBeCreativeDetailsArgs,
+  QueryClubForUserArgs,
+  MutationSaveWelcomeMessageArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
@@ -548,7 +550,7 @@ class ClubService {
     return response.data.data.activityBeCreativeDetails;
   }
 
-  async getClubForUser(userId: string): Promise<ClubDto> {
+  async getClubForUser(input: QueryClubForUserArgs): Promise<ClubDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { clubForUser: ClubDto };
@@ -561,16 +563,35 @@ class ClubService {
             pointsTotal
             maxPointsTotal
             leagueRanking
+            coachUserId
             league {
               id
               name
               leagueTypeId
               leagueTypeName
             }
+            clubLeader {
+              userId
+              name
+              phoneNumber
+              dateAccepted
+            }
+            clubSupport {
+              userId
+              name
+              phoneNumber
+              dateAccepted
+            }
+            clubMembers {
+              userId
+              name
+              phoneNumber
+              welcomeMessage
+            }
           }
         }`,
       variables: {
-        userId,
+        ...input,
       },
     });
 
@@ -579,6 +600,32 @@ class ClubService {
     }
 
     return response.data.data.clubForUser;
+  }
+
+  async saveWelcomeMessage(
+    input: MutationSaveWelcomeMessageArgs
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { saveWelcomeMessage: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation SaveWelcomeMessage($clubId: UUID!, $practitionerId: UUID!, $welcomeMessage: String) {
+          saveWelcomeMessage(clubId: $clubId, practitionerId: $practitionerId, welcomeMessage: $welcomeMessage) {
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Save welcome message failed - Server connection error');
+    }
+
+    return response.data.data.saveWelcomeMessage;
   }
 }
 

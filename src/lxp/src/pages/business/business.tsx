@@ -39,7 +39,7 @@ export const Business: React.FC = () => {
 
   const practitioner = useSelector(getPractitioner);
   const [showInfo, setShowInfo] = useState(
-    !practitioner?.isCompletedBusinessWalkThrough || false
+    !!practitioner ? !practitioner.isCompletedBusinessWalkThrough : false
   );
 
   const updateWalkThroughStatus = useCallback(
@@ -95,10 +95,6 @@ export const Business: React.FC = () => {
     setSelectedTabIndex(tabIndex);
   };
 
-  const displayTutorial = (type?: string) => {
-    setShowInfo(true);
-  };
-
   const displayHelp =
     currentTab?.title === 'Money' || currentTab?.title === 'Programme';
 
@@ -118,7 +114,7 @@ export const Business: React.FC = () => {
           setState({ run: false });
         }}
         displayHelp={displayHelp}
-        onHelp={() => displayTutorial()}
+        onHelp={() => setShowInfo(true)}
         displayOffline={!isOnline}
       >
         <TabList

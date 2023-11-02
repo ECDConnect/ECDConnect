@@ -63,6 +63,8 @@ import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -87,6 +89,7 @@ export interface DashboardRouteState {
 }
 
 export const Dashboard: React.FC = () => {
+  const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
@@ -242,41 +245,49 @@ export const Dashboard: React.FC = () => {
   }, [completedSteps?.length]);
 
   const leagueCard = useMemo((): ScoreCardProps => {
-    // TODO: add integration
-    const mockedLeague = {
-      position: 4,
-      name: 'Lady Bugs',
-      currentPoints: 200,
-      maxPoints: 300,
-      isTop80Percent: true,
-    };
+    const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
+      club?.pointsTotal ?? 0,
+      club?.maxPointsTotal ?? 0
+    );
+    const mainColor =
+      !!club?.pointsTotal && isAtLeast80PercentOfTotal
+        ? 'successMain'
+        : 'secondary';
+    const bgColour =
+      !!club?.pointsTotal && isAtLeast80PercentOfTotal
+        ? 'successBg'
+        : 'secondaryAccent2';
+
     return {
       image: (
         <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
           <Badge
             className="absolute z-0 h-12 w-12"
-            fill={`var(--${
-              mockedLeague.isTop80Percent ? 'successMain' : 'secondary'
-            })`}
+            fill={`var(--${mainColor})`}
           />
           <Typography
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(mockedLeague.position)}
+            text={String(club?.leagueRanking)}
           />
         </div>
       ),
-      currentPoints: mockedLeague.currentPoints,
-      maxPoints: mockedLeague.maxPoints,
+      currentPoints: club?.pointsTotal ?? 0,
+      maxPoints: club?.maxPointsTotal ?? 0,
       barBgColour: 'white',
-      barColour: 'successMain',
-      hint: mockedLeague.name,
+      barColour: mainColor,
+      hint: club?.name ?? '',
       mainText: '',
       hintClassName: 'mt-10',
-      bgColour: 'successBg',
+      bgColour,
       textColour: 'black',
-      onClick: () => history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+      onClick: () =>
+        history.push(
+          ROUTES.PRACTITIONER.COMMUNITY[
+            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+          ]
+        ),
     };
   }, []);
 
@@ -964,7 +975,7 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && (
+        {isPractitioner && !!club && (
           <ScoreCard
             className="h-20"
             mainText={leagueCard.mainText}

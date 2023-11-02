@@ -6,6 +6,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -52,7 +53,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<Coach, Guid> _coachRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
-
+        private AuthenticationDbContext _dbContext;
         private IGenericRepository<CalendarEventParticipant, Guid> _calendarEventParticipantRepo;
         private IGenericRepository<StatementsStartupSupport, Guid> _statementStartupSupportRepo;
 
@@ -69,7 +70,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            
+            AuthenticationDbContext dbContext,
             VisitDataManager visitDataManager,
             VisitManager visitManager,
             UserLicenseManager userLicenseManager,
@@ -100,6 +101,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
             _calendarEventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>(userContext: _applicationUserId);
             _statementStartupSupportRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
+            _dbContext = dbContext;
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -139,8 +141,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             PractitionerModel practitionerRecord = new PractitionerModel();
 
-            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
-
             practitionerRecord.Id = practitioner.Id;
             practitionerRecord.UserId = practitioner.UserId;
             practitionerRecord.User = practitioner.User;
@@ -171,10 +171,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
             practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
             practitionerRecord.StipendType = practitioner.StipendType;
-            practitionerRecord.ClubId = clubMember?.Club?.Id;
-            practitionerRecord.ClubName = clubMember?.Club?.Name;
-            practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
-            practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+
+            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
+            if (clubMember != null)
+            {
+                practitionerRecord.ClubId = clubMember?.Club?.Id;
+                practitionerRecord.ClubName = clubMember?.Club?.Name;
+                practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
+                practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+                practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
+            }
 
             List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
             if (absentees.Any())
@@ -296,6 +302,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
                         ProgrammeType ptype = _programmeRepo.GetAll().Where(p => p.Id.Equals(classroomGroup.ProgrammeTypeId)).FirstOrDefault();
                         principalClassroom.ProgrammeTypeName = ptype!=null ? ptype.Description : "";
+                        principalClassroom.ProgrammeTypeId = classroomGroup.ProgrammeTypeId.ToString();
                     }
                     else
                     {
@@ -305,10 +312,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     principalClassroom.Name = classroom.Name;
                     principalClassroom.Id = classroom.Id.ToString();
                     principalClassroom.InsertedDate = classroom.InsertedDate;
+                    principalClassroom.PreschoolFeeAmount = classroom.PreschoolFeeAmount;
+                    principalClassroom.PreschoolFeeAmountLastUpdateDate = classroom.PreschoolFeeAmountLastUpdateDate;
+                    
                     if (classroom.SiteAddressId != null)
                     {
                         SiteAddress classAddress = _addressRepo.GetById((Guid)classroom.SiteAddressId);
                         principalClassroom.ClassSiteAddress = classAddress.Name + " " + classAddress.AddressLine1 + " " + classAddress.AddressLine2 + " " + classAddress.AddressLine3 + " " + (classAddress.Province != null ? classAddress.Province.Description : string.Empty) + " " + classAddress.PostalCode;
+                        principalClassroom.ClassSiteAddressId = classAddress.Id.ToString();
                     }
                 }
             }
@@ -1087,6 +1098,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return _siteAddress?.AddressLine1 ?? "" + _siteAddress?.AddressLine2 ?? "" + _siteAddress?.AddressLine3 ?? "" + _siteAddress?.PostalCode ?? "" + _siteAddress?.Province.Description ?? "";
         }
 
+        public bool RemovePractitionerClassrooms(List<Guid> classroomIds)
+        {
+            List<Classroom> classrooms = _classRepo.GetAll().Where(x => classroomIds.Contains(x.Id)).ToList();
+            _dbContext.Classrooms.RemoveRange(classrooms);
+            _dbContext.SaveChanges();
+            return true;
+        }
     }
 }
 

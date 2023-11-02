@@ -832,6 +832,7 @@ namespace EcdLink.Api.CoreApi
         public static class ClubSettings
         {
             public const string meeting_type_club_meeting = "club_meeting";
+            public const string meeting_type_family_days = "family_days";
 
             public const string no_club_leader = "No club leader";
             public const string contact_club_leader = "Contact club leader";
@@ -876,6 +877,13 @@ namespace EcdLink.Api.CoreApi
 
             public const int success_start_800 = 600;
             public const int success_end_800 = 800;
+
+            public const string workflow_upload_type = "Document";
+            public const string workflow_status_upload_type = "Verified";
+            public const string activity_upload_type = "ClubActivityUpload";
+
+            public const string upload_type_be_creative = "BeCreative";
+
 
         }
 

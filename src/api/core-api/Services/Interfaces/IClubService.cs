@@ -42,5 +42,6 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ActivityChildAttendance GetActivityChildAttendance(Guid clubId);
         public ActivityChildProgress GetActivityChildProgress(Guid clubId);
         ClubModel GetClubForUser(string userId);
+        public bool AddBeCreativeActivity(BeCreativeUpload input);
     }
 }

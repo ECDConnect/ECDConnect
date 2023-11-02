@@ -1,3 +1,4 @@
+import { ClubDto } from '@/models/club/club.dto';
 import {
   ActivityBeCreative,
   ActivityMeetRegular,
@@ -13,6 +14,14 @@ export type Points = {
 };
 
 export type ClubState = {
-  allClubsForCoach?: MergedCoachingClub[];
-  points?: Points;
+  //allClubsForCoach?: MergedCoachingClub[];
+  clubForPractitioner?: ClubDto;
+  //points?: Points;
+  clubsForCoach: {
+    [clubId: string]: {
+      dateLoaded: string;
+      club: MergedCoachingClub;
+      points?: Points;
+    };
+  };
 };

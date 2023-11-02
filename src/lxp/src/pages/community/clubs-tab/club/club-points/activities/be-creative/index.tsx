@@ -32,7 +32,7 @@ export const BeCreative: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const details = useSelector(
-    clubSelectors.getActivityBeCreativeDetailsSelector
+    clubSelectors.getActivityBeCreativeDetailsSelector(clubId)
   );
 
   const history = useHistory();
