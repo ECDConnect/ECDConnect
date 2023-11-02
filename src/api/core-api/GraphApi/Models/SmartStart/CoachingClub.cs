@@ -119,6 +119,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string DocumentStatus { get; set; }
         public string DocumentStatusColor { get; set; }
         public int Points { get; set; }
+        public double ImageRating { get; set; }
     }
     public class ActivityHostFamilyDays
     {

@@ -48,6 +48,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             return clubService.GetActivityChildProgress(clubId);
         }
-        
+
     }
 }

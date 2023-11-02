@@ -141,8 +141,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             PractitionerModel practitionerRecord = new PractitionerModel();
 
-            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
-
             practitionerRecord.Id = practitioner.Id;
             practitionerRecord.UserId = practitioner.UserId;
             practitionerRecord.User = practitioner.User;
@@ -173,11 +171,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
             practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
             practitionerRecord.StipendType = practitioner.StipendType;
-            practitionerRecord.ClubId = clubMember?.Club?.Id;
-            practitionerRecord.ClubName = clubMember?.Club?.Name;
-            practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
-            practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
-            practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
+
+            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
+            if (clubMember != null)
+            {
+                practitionerRecord.ClubId = clubMember?.Club?.Id;
+                practitionerRecord.ClubName = clubMember?.Club?.Name;
+                practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
+                practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+                practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
+            }
 
             List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
             if (absentees.Any())

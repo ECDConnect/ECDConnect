@@ -29,5 +29,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return clubService.AddClubMeeting(input, Constants.ClubSettings.meeting_type_club_meeting);
         }
 
+        //[Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        //public ClubMeeting AddFamilyDayMeeting([Service] IClubService clubService, ClubMeetingModel input)
+        //{
+            //return clubService.AddClubMeeting(input, Constants.ClubSettings.meeting_type_family_days);
+        //}
+
     }
 }
