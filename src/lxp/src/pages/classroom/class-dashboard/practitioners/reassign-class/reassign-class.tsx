@@ -217,8 +217,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           : ''
       );
       setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
+
+      setReassignClassValue('reason', allAbsenteeClasses?.[0]?.reason);
     }
-  }, [allAbsenteeClasses, endDate, hasAbsenteeClasses, setReassignClassValue]);
+  }, []);
 
   const practitionerAbsentName = useMemo(() => {
     return practitioners?.find((item) => {
