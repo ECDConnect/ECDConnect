@@ -588,94 +588,95 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 }}
               />
             )}
-            {allAbsenteeClasses && allAbsenteeClasses?.length > 0 ? (
-              allAbsenteeClasses?.map((item, index) => {
-                const classroomId =
-                  practitionerClassroomGroups?.find(
-                    (group) => group?.name === item?.className
-                  )?.classroomId || '';
-                const absenteeId = item?.absenteeId;
-                return (
-                  <>
-                    <Dropdown
-                      key={index}
-                      placeholder={'Select practitioner'}
-                      list={practitionersTeachList || []}
-                      fillType="clear"
-                      label={`Who will teach the ${item?.className} class instead?`}
-                      fullWidth
-                      className={'mt-3 w-full'}
-                      onChange={(practitioner: any) => {
-                        const reassignedData = {
-                          practitioner,
-                          classroomId,
-                          absenteeId,
-                        };
-                        setReassignClassValue('practitioner2', practitioner);
-                        handleReassignClassroomGroupPractitioner(
-                          reassignedData
-                        );
-                      }}
-                    />
-                    {practitionerPresentName?.user?.fullName && (
-                      <Alert
-                        className={'mt-5 mb-3'}
-                        title={`You are reassigning ${
-                          practitionerAbsentName?.user?.fullName || ''
-                        }'s class ${item?.className} to ${
-                          practitionerPresentName?.user?.fullName || ''
-                        } for ${format(
-                          new Date(selectedDate!),
-                          'EEEE, d LLLL'
-                        )}.`}
-                        type={'info'}
+            {allAbsenteeClasses && allAbsenteeClasses?.length > 0
+              ? allAbsenteeClasses?.map((item, index) => {
+                  const classroomId =
+                    practitionerClassroomGroups?.find(
+                      (group) => group?.name === item?.className
+                    )?.classroomId || '';
+                  const absenteeId = item?.absenteeId;
+                  return (
+                    <>
+                      <Dropdown
+                        key={index}
+                        placeholder={'Select practitioner'}
+                        list={practitionersTeachList || []}
+                        fillType="clear"
+                        label={`Who will teach the ${item?.className} class instead?`}
+                        fullWidth
+                        className={'mt-3 w-full'}
+                        onChange={(practitioner: any) => {
+                          const reassignedData = {
+                            practitioner,
+                            classroomId,
+                            absenteeId,
+                          };
+                          setReassignClassValue('practitioner2', practitioner);
+                          handleReassignClassroomGroupPractitioner(
+                            reassignedData
+                          );
+                        }}
                       />
-                    )}
-                  </>
-                );
-              })
-            ) : practitionerClassroomGroups.length > 0 ? (
-              practitionerClassroomGroups?.map((item, index) => {
-                const classroomId = item?.id!;
-                return (
-                  <>
-                    <Dropdown
-                      key={index}
-                      placeholder={'Select practitioner'}
-                      list={practitionersTeachList || []}
-                      fillType="clear"
-                      label={`Who will teach the ${item?.name} class instead?`}
-                      fullWidth
-                      className={'mt-3 w-full'}
-                      onChange={(practitioner: any) => {
-                        const reassignedData = {
-                          practitioner,
-                          classroomId,
-                        };
-                        setReassignClassValue('practitioner2', practitioner);
-                        handleReassignClassroomGroupPractitioner(
-                          reassignedData
-                        );
-                      }}
-                    />
-                    {practitionerPresentName?.user?.fullName && (
-                      <Alert
-                        className={'mt-5 mb-3'}
-                        title={`You are reassigning ${
-                          practitionerAbsentName?.user?.fullName || ''
-                        }'s class ${item?.name} to ${
-                          practitionerPresentName?.user?.fullName || ''
-                        } for ${format(
-                          new Date(selectedDate!),
-                          'EEEE, d LLLL'
-                        )}.`}
-                        type={'info'}
+                      {practitionerPresentName?.user?.fullName && (
+                        <Alert
+                          className={'mt-5 mb-3'}
+                          title={`You are reassigning ${
+                            practitionerAbsentName?.user?.fullName || ''
+                          }'s class ${item?.className} to ${
+                            practitionerPresentName?.user?.fullName || ''
+                          } for ${format(
+                            new Date(selectedDate!),
+                            'EEEE, d LLLL'
+                          )}.`}
+                          type={'info'}
+                        />
+                      )}
+                    </>
+                  );
+                })
+              : practitionerClassroomGroups.length > 0 &&
+                practitionersTeachList?.length > 0 &&
+                practitionerClassroomGroups?.map((item, index) => {
+                  const classroomId = item?.id!;
+                  return (
+                    <>
+                      <Dropdown
+                        key={index}
+                        placeholder={'Select practitioner'}
+                        list={practitionersTeachList || []}
+                        fillType="clear"
+                        label={`Who will teach the ${item?.name} class instead?`}
+                        fullWidth
+                        className={'mt-3 w-full'}
+                        onChange={(practitioner: any) => {
+                          const reassignedData = {
+                            practitioner,
+                            classroomId,
+                          };
+                          setReassignClassValue('practitioner2', practitioner);
+                          handleReassignClassroomGroupPractitioner(
+                            reassignedData
+                          );
+                        }}
                       />
-                    )}
-                  </>
-                );
-              })
-            ) : (
+                      {practitionerPresentName?.user?.fullName && (
+                        <Alert
+                          className={'mt-5 mb-3'}
+                          title={`You are reassigning ${
+                            practitionerAbsentName?.user?.fullName || ''
+                          }'s class ${item?.name} to ${
+                            practitionerPresentName?.user?.fullName || ''
+                          } for ${format(
+                            new Date(selectedDate!),
+                            'EEEE, d LLLL'
+                          )}.`}
+                          type={'info'}
+                        />
+                      )}
+                    </>
+                  );
+                })}
+            {practitionerClassroomGroups?.length === 0 && (
               <Alert
                 className={'mt-5 mb-3'}
                 title="No class reassignment needed."
