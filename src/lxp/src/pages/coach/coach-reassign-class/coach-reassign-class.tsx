@@ -227,8 +227,10 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           : ''
       );
       setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
+
+      setReassignClassValue('reason', allAbsenteeClasses?.[0]?.reason);
     }
-  }, [allAbsenteeClasses, endDate, hasAbsenteeClasses, setReassignClassValue]);
+  }, []);
 
   const submitReassignClass = async () => {
     if (
@@ -383,6 +385,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             fillType="clear"
             label={'Reason for absence'}
             fullWidth
+            selectedValue={reason}
             className={'mt-3 w-full'}
             onChange={(item: any) => {
               setReassignClassValue('reason', item);
