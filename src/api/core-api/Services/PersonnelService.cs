@@ -187,7 +187,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             if (absentees.Any())
             {
                 practitionerRecord.Absentees = absentees;
+                //check if currently on leave?
+                if (absentees.Where(x => x.AbsentDate.Date <= DateTime.Now.Date && x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date >= DateTime.Now.Date).Any() )
+                {
+                    practitionerRecord.IsOnLeave = true;
+                }
             }
+            practitionerRecord.DaysAbsentLastMonth = _absenteeService.GetAbsenteeCountByUser(practitioner.UserId);
 
             return practitionerRecord;
         }
