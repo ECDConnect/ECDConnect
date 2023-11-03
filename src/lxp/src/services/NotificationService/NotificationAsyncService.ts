@@ -28,7 +28,7 @@ class NotificationAsyncService {
     });
 
     if (response.status !== 200 || response.data.errors) {
-      throw new Error('Disable notification - Server connection error');
+      throw new Error('Disable notification failed - Server connection error');
     }
 
     return response.data.data.disableNotification;

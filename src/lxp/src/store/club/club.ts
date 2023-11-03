@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  acceptNewClubLeaderRole,
   addNewClub,
   addNewClubLeader,
   addNewClubMembers,
@@ -193,6 +194,7 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     // Practitioner
+    setThunkActionStatus(builder, acceptNewClubLeaderRole);
     setThunkActionStatus(builder, getClubForUser);
     setThunkActionStatus(builder, saveWelcomeMessage);
     builder.addCase(getClubForUser.fulfilled, (state, action) => {
@@ -201,6 +203,9 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(saveWelcomeMessage.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(acceptNewClubLeaderRole.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },

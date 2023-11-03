@@ -3,7 +3,7 @@ import localForage from 'localforage';
 import { Message } from '@models/messages/messages';
 import { NotificationsState, Notification } from './notifications.types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
-import { disableNotification } from './notifications.actions';
+import { disableBackendNotification } from './notifications.actions';
 
 const initialState: NotificationsState = {
   notifications: [],
@@ -57,8 +57,8 @@ const notificationsState = createSlice({
     },
   },
   extraReducers: (builder) => {
-    setThunkActionStatus(builder, disableNotification);
-    builder.addCase(disableNotification.fulfilled, (state, action) => {
+    setThunkActionStatus(builder, disableBackendNotification);
+    builder.addCase(disableBackendNotification.fulfilled, (state, action) => {
       const notificationId = action.meta.arg.notificationId;
 
       state.notifications = state.notifications.filter(
