@@ -3,7 +3,7 @@ import { useHistory, useParams } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useCallback, useEffect, useState } from 'react';
 import { Step1 } from './steps/step-1';
-import { PractitionerDto, useSnackbar } from '@ecdlink/core';
+import { useSnackbar } from '@ecdlink/core';
 import { Step2 } from '../club-add/steps/step-2';
 import { ClubsRouteState } from '../../index.types';
 import { NewClubMemberInput } from '@ecdlink/graphql';
@@ -11,7 +11,7 @@ import { useAppDispatch } from '@/store';
 import {
   ClubActions,
   addNewClubMembers,
-  getAllClubsDetailsForCoach,
+  getClubsForCoach,
   moveClubMembers,
 } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -19,7 +19,7 @@ import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { clubSelectors } from '@/store/club';
 
-export type Member = PractitionerDto | undefined;
+export type Member = { name: string; practitionerId: string };
 
 export interface ClubMembersAddProps {
   setSelectedMembers?: (selectedMembers: Member[]) => void;
@@ -60,7 +60,7 @@ export const ClubMembersAdd: React.FC = () => {
     wasLoading: wasLoadingClub,
     isRejected: isRejectedGetClub,
     error: errorGetClub,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH);
+  } = useThunkFetchCall('clubs', ClubActions.GET_CLUBS_FOR_COACH);
 
   const isLoading =
     isLoadingAddMembers || isLoadingMoveMembers || isLoadingClub;
@@ -101,7 +101,7 @@ export const ClubMembersAdd: React.FC = () => {
       const payload: NewClubMemberInput = {
         clubId,
         practitionerIds: selectedMembers?.map(
-          (member) => member?.id
+          (member) => member.practitionerId
         ) as string[],
       };
 
@@ -112,16 +112,15 @@ export const ClubMembersAdd: React.FC = () => {
       const payload: NewClubMemberInput = {
         clubId,
         practitionerIds: selectedMembersFromDifferentClub?.map(
-          (member) => member?.id
+          (member) => member.practitionerId
         ) as string[],
       };
 
+      // TODO update this call to return the new club members and set it in state
       await appDispatch(moveClubMembers({ input: payload }));
     }
 
-    await appDispatch(
-      getAllClubsDetailsForCoach({ userId: user?.id!, clubId })
-    );
+    await appDispatch(getClubsForCoach({ userId: user?.id! }));
   };
 
   const onSuccess = useCallback(async () => {

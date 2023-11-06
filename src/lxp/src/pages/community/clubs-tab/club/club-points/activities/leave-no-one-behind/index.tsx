@@ -22,6 +22,7 @@ import { ClubMember, Maybe } from '@ecdlink/graphql';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
 import { Roles } from '@/constants/roles';
+import { ClubMemberDto } from '@/models/club/club.dto';
 
 export const LeaveNoOneBehind: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -38,18 +39,14 @@ export const LeaveNoOneBehind: React.FC = () => {
 
   const mockedPoints = 20;
 
-  const mapMember = (member: Maybe<ClubMember>): UserAlertListDataItem => ({
-    title: `${member?.practitioner?.user?.firstName || ''} ${
-      member?.practitioner?.user?.surname || ''
-    }`,
-    profileText: `${member?.practitioner?.user?.firstName?.charAt(
-      0
-    )}${member?.practitioner?.user?.surname?.charAt(0)}`,
+  const mapMember = (member: ClubMemberDto): UserAlertListDataItem => ({
+    title: `${member.firstName || ''} ${member.surname || ''}`,
+    profileText: `${member.firstName.charAt(0)}${member.surname.charAt(0)}`,
     titleStyle: 'text-textDark',
     avatarColor: 'var(--primaryAccent2)',
     subTitle: member?.welcomeMessage || '',
     subTitleStyle: 'text-infoDark',
-    profileDataUrl: member?.practitioner?.user?.profileImageUrl || '',
+    profileDataUrl: member.profileImageUrl || '',
     alertSeverity: 'none',
     hideAlertSeverity: true,
     onActionClick: () =>
@@ -57,16 +54,16 @@ export const LeaveNoOneBehind: React.FC = () => {
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
           ':clubId',
           clubId
-        ).replace(':practitionerId', member?.practitioner?.id)
+        ).replace(':practitionerId', member?.practitionerId)
       ),
   });
 
-  const mappedMembers = club?.clubMembers?.map(mapMember) ?? [];
+  const mappedMembers = club?.clubMembers.map(mapMember) ?? [];
   // TODO: replace slice with real pqa data
-  const membersWithGreenPqa = mappedMembers?.slice(0, 1) ?? [];
-  const membersWithOrangePqa = mappedMembers?.slice(2, 3) ?? [];
-  const membersWithRedPqa = mappedMembers?.slice(4, 5) ?? [];
-  const membersWithPqaComingUp = mappedMembers?.slice(6, 8) ?? [];
+  const membersWithGreenPqa = mappedMembers.slice(0, 1) ?? [];
+  const membersWithOrangePqa = mappedMembers.slice(2, 3) ?? [];
+  const membersWithRedPqa = mappedMembers.slice(4, 5) ?? [];
+  const membersWithPqaComingUp = mappedMembers.slice(6, 8) ?? [];
 
   const hasItems = !!mappedMembers.length;
 
@@ -103,8 +100,8 @@ export const LeaveNoOneBehind: React.FC = () => {
         barBgColour="uiLight"
         barColour={
           isCurrentPointsAtLeast80PercentOfTotal(
-            club?.totalClubPoints || 0,
-            club?.maxClubPoints || 0
+            club.pointsTotal,
+            club.maxPointsTotal
           )
             ? 'successMain'
             : 'secondary'

@@ -60,8 +60,8 @@ export const AcceptClubLeaderRole: React.FC = () => {
 
   const membersOptions: DropDownOption<string>[] =
     club?.clubMembers.map((member) => ({
-      label: member?.name ?? '',
-      value: member?.userId ?? '',
+      label: `${member.firstName} ${member.surname}`,
+      value: member.userId,
     })) || [];
 
   const onSubmit = async () => {

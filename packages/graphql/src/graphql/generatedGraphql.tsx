@@ -1885,6 +1885,17 @@ export type ClubActivityUploadTypeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type ClubCoachModel = {
+  __typename?: 'ClubCoachModel';
+  aboutInfo?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
+};
+
 export type ClubFilterInput = {
   and?: InputMaybe<Array<ClubFilterInput>>;
   clubLeaders?: InputMaybe<ListFilterInputTypeOfClubLeaderFilterInput>;
@@ -1967,9 +1978,14 @@ export type ClubLeaderInput = {
 export type ClubLeaderModel = {
   __typename?: 'ClubLeaderModel';
   dateAccepted?: Maybe<Scalars['DateTime']>;
-  name?: Maybe<Scalars['String']>;
+  dateAssigned?: Maybe<Scalars['DateTime']>;
+  firstName?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
+  practitionerId: Scalars['UUID'];
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
 export type ClubLeaderSortInput = {
@@ -2189,10 +2205,14 @@ export type ClubMemberInput = {
 
 export type ClubMemberModel = {
   __typename?: 'ClubMemberModel';
-  name?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
+  practitionerId: Scalars['UUID'];
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;
   welcomeMessage?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
 export type ClubMemberSortInput = {
@@ -2212,10 +2232,10 @@ export type ClubMemberSortInput = {
 
 export type ClubModel = {
   __typename?: 'ClubModel';
+  clubCoach?: Maybe<ClubCoachModel>;
   clubLeader?: Maybe<ClubLeaderModel>;
   clubMembers?: Maybe<Array<Maybe<ClubMemberModel>>>;
   clubSupport?: Maybe<ClubSupportModel>;
-  coachUserId?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   league?: Maybe<LeagueModel>;
   leagueRanking: Scalars['Int'];
@@ -2421,10 +2441,14 @@ export type ClubSupportInput = {
 
 export type ClubSupportModel = {
   __typename?: 'ClubSupportModel';
-  dateAccepted?: Maybe<Scalars['DateTime']>;
-  name?: Maybe<Scalars['String']>;
+  dateAssigned?: Maybe<Scalars['DateTime']>;
+  firstName?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
+  practitionerId: Scalars['UUID'];
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
 export type ClubSupportSortInput = {
@@ -2552,30 +2576,6 @@ export type CoachingCircleTopicsInput = {
   startDate?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
   topicContent?: InputMaybe<Scalars['String']>;
-};
-
-export type CoachingClub = {
-  __typename?: 'CoachingClub';
-  clubActivities?: Maybe<Array<Maybe<ClubActivity>>>;
-  clubMeetings?: Maybe<Array<Maybe<ClubMeeting>>>;
-  clubMembers?: Maybe<Array<Maybe<ClubMember>>>;
-  clubSupport?: Maybe<ClubSupport>;
-  coach?: Maybe<Coach>;
-  currentClubLeader?: Maybe<ClubLeader>;
-  firstInLeague: Scalars['Boolean'];
-  id: Scalars['UUID'];
-  issuesTasks?: Maybe<Array<Maybe<IssueTask>>>;
-  league?: Maybe<League>;
-  leagueRankNr: Scalars['Int'];
-  maxClubPoints: Scalars['Int'];
-  name?: Maybe<Scalars['String']>;
-  newClubLeader?: Maybe<ClubLeader>;
-  secondaryText?: Maybe<Scalars['String']>;
-  secondaryTextColor?: Maybe<Scalars['String']>;
-  secondaryTextPriority: Scalars['Int'];
-  totalClubPoints: Scalars['Int'];
-  totalClubPointsColor?: Maybe<Scalars['String']>;
-  userId?: Maybe<Scalars['String']>;
 };
 
 export type CoachingClubBase = {
@@ -3036,6 +3036,23 @@ export type DailyProgrammeSortInput = {
   storyBookId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type DetailClubModel = {
+  __typename?: 'DetailClubModel';
+  clubActivities?: Maybe<Array<Maybe<ClubActivity>>>;
+  clubCoach?: Maybe<ClubCoachModel>;
+  clubLeader?: Maybe<ClubLeaderModel>;
+  clubMembers?: Maybe<Array<Maybe<ClubMemberModel>>>;
+  clubSupport?: Maybe<ClubSupportModel>;
+  id: Scalars['UUID'];
+  incomingClubLeader?: Maybe<ClubLeaderModel>;
+  issuesTasks?: Maybe<Array<Maybe<IssueTask>>>;
+  league?: Maybe<LeagueModel>;
+  leagueRanking: Scalars['Int'];
+  maxPointsTotal: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  pointsTotal: Scalars['Int'];
 };
 
 export type DisplaySet = {
@@ -10879,7 +10896,6 @@ export type Query = {
   allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
-  allClubsDetailsForCoach?: Maybe<Array<Maybe<CoachingClub>>>;
   allClubsForCoach?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allClubsForCoachSimple?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
@@ -10935,6 +10951,7 @@ export type Query = {
     Array<Maybe<PractitionerClassroomName>>
   >;
   clubForUser?: Maybe<ClubModel>;
+  clubsForCoach?: Maybe<Array<Maybe<DetailClubModel>>>;
   clubsMembers?: Maybe<Array<Maybe<ClubMember>>>;
   coachByCoachUserId?: Maybe<Coach>;
   coachByPractitionerId?: Maybe<Coach>;
@@ -12619,11 +12636,6 @@ export type QueryAllClassroomsForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryAllClubsDetailsForCoachArgs = {
-  clubId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryAllClubsForCoachArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -12833,6 +12845,10 @@ export type QueryClassroomNamesForPractitionerArgs = {
 
 export type QueryClubForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClubsForCoachArgs = {
+  coachUserId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryClubsMembersArgs = {
