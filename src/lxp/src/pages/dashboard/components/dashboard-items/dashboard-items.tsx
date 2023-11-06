@@ -52,7 +52,10 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
         notification.message.routeConfig.params
       );
     }
-    appDispatch(notificationActions.removeNotification(notification));
+
+    if (!notification.message?.isFromBackend) {
+      appDispatch(notificationActions.removeNotification(notification));
+    }
   };
 
   return (

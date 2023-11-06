@@ -1144,11 +1144,10 @@ public class SmartStartIntegrationService : IIntegrationService
         await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
         int historyDays = 2;
         bool returnOK = false;
+        RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays * -1), DateTime.Now);
         _mappedEntities = await GetMappedEntities(null, true, true);
         _mappedColumns = await GetMappedColumns();
-
-        RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays*-1), DateTime.Now);
-
+       
         if (changedColumns != null)
         {
             //run all inserts
@@ -3191,7 +3190,10 @@ public class SmartStartIntegrationService : IIntegrationService
                                         if (prop.Name == "FirstName" || prop.Name == "SurName")
                                         {
                                             prop.SetValue(entityUser, newData);
-                                            entityUser.FullName = await UpdateFullName(currentValue, model.NewData, entityUser.FullName);
+                                            if (entityUser.FullName != null)
+                                                entityUser.FullName = await UpdateFullName(currentValue, model.NewData, entityUser.FullName);
+                                            else
+                                                entityUser.FullName = model.NewData;
                                         }
                                         else
                                         {

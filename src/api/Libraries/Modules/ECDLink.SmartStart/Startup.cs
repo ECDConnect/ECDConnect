@@ -1,5 +1,5 @@
 using ECDLink.SmartStart.Reports;
-using ECDLink.SmartStart.Reports.ChildProgressReport;
+using ECDLink.SmartStart.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;

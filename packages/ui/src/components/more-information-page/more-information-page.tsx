@@ -32,7 +32,7 @@ export const MoreInformationPage = ({
 }) => {
   const { height } = useWindowSize();
 
-  const SELECTOR_HEIGHT = 64;
+  const SELECTOR_HEIGHT = 110;
 
   const renderContent = useMemo(() => {
     if (moreInformation) {

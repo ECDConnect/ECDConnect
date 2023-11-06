@@ -355,7 +355,7 @@ export const Dashboard: React.FC = () => {
       practitioner?.progress! >= 2 &&
       !practitioner?.isTrainee
     ) {
-      appDispatch(notificationActions.resetNotificationState());
+      appDispatch(notificationActions.resetFrontendNotificationState());
     }
   }, []);
 
