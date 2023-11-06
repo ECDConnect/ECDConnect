@@ -702,10 +702,12 @@ public class SmartStartIntegrationService : IIntegrationService
         _mappedEntities = await GetMappedEntities(null, true, true);
         int trackingDays = 2;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "9582f71b-87b4-4b9c-bc9d-06c10cf8e2fe"))
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
 
-        DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
-        DateTime followingWeekDate = DateTime.Now.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
+        DateTime trackingDate = DateTime.Now;
+
+        DateTime trackingWeekDate = trackingDate.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
+        DateTime followingWeekDate = trackingDate.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
 
         string absent = "Absent";
         string nosession = "No Session";
@@ -714,13 +716,13 @@ public class SmartStartIntegrationService : IIntegrationService
         string pholiday = "Public Holiday";
 
         var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
-
-        bool isMeetingDay = false;
-
-        DateTime nextDay = trackingWeekDate;
-
+        int trackingWeekOfYear = trackingWeekDate.GetWeekOfYear();        
+       
         foreach (var parent in attendancesDueList)
         {
+            bool isMeetingDay = false;
+            DateTime nextDay = trackingWeekDate;
+
             StringBuilder jsonAttendanceString = new StringBuilder();
             jsonAttendanceString.AppendLine("[");
             Dictionary<string, bool> meetingDays = new Dictionary<string, bool>();
@@ -814,7 +816,7 @@ public class SmartStartIntegrationService : IIntegrationService
             if (allLearners.Count > 0)
             {
                 //now get the actual attendances available and set that back to objkect aswell
-                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, null, null, trackingWeekOfYear);
                 if (weeklyAttendance.Any())
                 {
                     try
