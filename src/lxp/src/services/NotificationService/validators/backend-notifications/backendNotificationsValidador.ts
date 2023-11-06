@@ -43,6 +43,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
         title: notification?.subject ?? '',
         message: notification.message ?? '',
         dateCreated: notification.messageDate,
+        // TODO: get the correct priority from the backend
         priority: NotificationPriority.high,
         viewOnDashboard: true,
         actionText: notification.cTAText ?? '',

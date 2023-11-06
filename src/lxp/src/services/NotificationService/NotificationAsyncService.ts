@@ -23,7 +23,7 @@ class NotificationAsyncService {
         }
       `,
       variables: {
-        input,
+        ...input,
       },
     });
 
