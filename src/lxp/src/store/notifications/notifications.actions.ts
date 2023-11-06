@@ -6,7 +6,8 @@ import NotificationAsyncService from '@/services/NotificationService/Notificatio
 export const NotificationActions = {
   DISABLE_NOTIFICATION: 'disableNotification',
 };
-export const disableNotification = createAsyncThunk<
+
+export const disableBackendNotification = createAsyncThunk<
   undefined,
   MutationDisableNotificationArgs,
   ThunkApiType<RootState>

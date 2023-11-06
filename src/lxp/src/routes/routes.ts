@@ -37,6 +37,7 @@ const ROUTES = {
   }),
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
+    HELP: '/help/:activityId',
     WELCOME: '/welcome',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',

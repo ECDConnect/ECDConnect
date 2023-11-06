@@ -9,6 +9,7 @@ import {
   Coach,
   CoachingClub,
   CoachingClubBase,
+  MutationAcceptNewClubLeaderRoleArgs,
   MutationChangeClubNameArgs,
   MutationSaveWelcomeMessageArgs,
   MutationUpdateCoachAboutInfoArgs,
@@ -37,6 +38,7 @@ export const ClubActions = {
   GET_ACTIVITY_BE_CREATIVE_DETAILS: 'getActivityBeCreativeDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
+  ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
 };
 
 export const getAllClubsForCoach = createAsyncThunk<
@@ -380,6 +382,31 @@ export const saveWelcomeMessage = createAsyncThunk<
         return await new ClubService(userAuth?.auth_token).saveWelcomeMessage(
           input
         );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const acceptNewClubLeaderRole = createAsyncThunk<
+  boolean,
+  MutationAcceptNewClubLeaderRoleArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.ACCEPT_NEW_CLUB_LEADER_ROLE,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).acceptNewClubLeaderRole(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

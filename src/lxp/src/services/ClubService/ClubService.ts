@@ -16,6 +16,7 @@ import {
   QueryActivityBeCreativeDetailsArgs,
   QueryClubForUserArgs,
   MutationSaveWelcomeMessageArgs,
+  MutationAcceptNewClubLeaderRoleArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import { NewClubLeaderInput } from './types';
@@ -626,6 +627,33 @@ class ClubService {
     }
 
     return response.data.data.saveWelcomeMessage;
+  }
+
+  async acceptNewClubLeaderRole(
+    input: MutationAcceptNewClubLeaderRoleArgs
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { acceptNewClubLeaderRole: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AcceptNewClubLeaderRole($clubId: UUID!, $practitionerId: UUID!, $clubSupportPractitionerId: UUID!) {
+          acceptNewClubLeaderRole(clubId: $clubId, practitionerId: $practitionerId, clubSupportPractitionerId: $clubSupportPractitionerId) {}
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Accept new club leader role failed - Server connection error'
+      );
+    }
+
+    return response.data.data.acceptNewClubLeaderRole;
   }
 }
 
