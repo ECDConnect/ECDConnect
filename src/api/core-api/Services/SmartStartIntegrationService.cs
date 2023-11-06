@@ -816,7 +816,7 @@ public class SmartStartIntegrationService : IIntegrationService
             if (allLearners.Count > 0)
             {
                 //now get the actual attendances available and set that back to objkect aswell
-                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, null, null, trackingWeekOfYear);
+                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, null, trackingWeekOfYear);
                 if (weeklyAttendance.Any())
                 {
                     try
