@@ -234,7 +234,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(storyBookActions.resetStoryBookState());
     appDispatch(programmeThemeActions.resetProgrammeThemeState());
     appDispatch(contentConsentActions.resetContentConsentState());
-    appDispatch(notificationActions.resetNotificationState());
+    appDispatch(notificationActions.resetFrontendNotificationState());
     appDispatch(settingActions.resetSettingsState());
     appDispatch(analyticsActions.resetAnalyticsState());
     appDispatch(programmeActions.resetProgrammeState());
