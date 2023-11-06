@@ -117,7 +117,9 @@ export const Dashboard: React.FC = () => {
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   const a = useCallback(async () => {
-    appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+    if (isOnline) {
+      appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+    }
   }, []);
 
   useEffect(() => {
@@ -349,13 +351,15 @@ export const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    initStaticStoreSetup();
-    if (
-      dashboardNotification?.isNew &&
-      practitioner?.progress! >= 2 &&
-      !practitioner?.isTrainee
-    ) {
-      appDispatch(notificationActions.resetFrontendNotificationState());
+    if (isOnline) {
+      initStaticStoreSetup();
+      if (
+        dashboardNotification?.isNew &&
+        practitioner?.progress! >= 2 &&
+        !practitioner?.isTrainee
+      ) {
+        appDispatch(notificationActions.resetFrontendNotificationState());
+      }
     }
   }, []);
 

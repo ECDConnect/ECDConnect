@@ -1,6 +1,5 @@
 import {
   getYear,
-  getMonth,
   getWeek,
   subMonths,
   startOfQuarter,
@@ -303,6 +302,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         year: getYear(new Date()),
         monthOfYear: 0,
         weekOfYear: getWeek(new Date()),
+      })
+    ).unwrap();
+    await appDispatch(
+      attendanceThunkActions.getPreviousWeekAttendance({
+        year: getYear(new Date()),
+        monthOfYear: 0,
+        weekOfYear: getWeek(new Date()) - 1,
       })
     ).unwrap();
     await appDispatch(
