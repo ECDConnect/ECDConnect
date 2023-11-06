@@ -240,10 +240,6 @@ class AttendanceService {
     if (response.data.errors) {
       throw new Error('Update Attendance failed - please contact helpdesk');
     }
-    if (response.data.data.trackAttendance === false) {
-      throw new Error('Update Attendance failed - please contact helpdesk');
-    }
-
     return response.data.data.trackAttendance;
   }
 }
