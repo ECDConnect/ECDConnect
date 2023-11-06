@@ -25,7 +25,7 @@ export const ClubPoints: React.FC = () => {
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
-  const isPurpleLeague = club?.league?.leagueType?.name === LeagueType.Purple;
+  const isPurpleLeague = club.league.leagueTypeName === LeagueType.Purple;
 
   const history = useHistory();
 
@@ -151,12 +151,12 @@ export const ClubPoints: React.FC = () => {
       />
       <ScoreCard
         className="mt-5"
-        mainText={String(club?.totalClubPoints || 0)}
+        mainText={String(club.pointsTotal || 0)}
         hint="points"
-        currentPoints={club?.totalClubPoints ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)
-        maxPoints={club?.maxClubPoints ?? 0}
+        currentPoints={club.pointsTotal ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)
+        maxPoints={club.maxPointsTotal ?? 0}
         barBgColour="uiLight"
-        barColour={getScoreBarColor(club?.totalClubPoints ?? 0, 1500, 1499)}
+        barColour={getScoreBarColor(club.pointsTotal ?? 0, 1500, 1499)}
         bgColour="uiBg"
         textColour="black"
       />

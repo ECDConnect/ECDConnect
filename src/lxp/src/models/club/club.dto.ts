@@ -1,7 +1,13 @@
+export type DetailClubDto = ClubDto & {
+  incomingClubLeader: ClubLeaderDto;
+  issuesTasks: IssueTask[];
+  clubActivities: ClubActivity[];
+};
+
 export type ClubDto = {
   id: string;
   name: string;
-  coachUserId: string;
+  clubCoach: ClubCoachDto;
   pointsTotal: number;
   maxPointsTotal: number;
   leagueRanking: number;
@@ -20,21 +26,52 @@ export type LeagueDto = {
 
 export type ClubMemberDto = {
   userId: string;
-  name: string;
+  practitionerId: string;
+  firstName: string;
+  surname: string;
   phoneNumber: string;
+  whatsAppNumber: string;
+  profileImageUrl: string;
   welcomeMessage: string;
+};
+export type ClubCoachDto = {
+  userId: string;
+  practitionerId: string;
+  firstName: string;
+  surname: string;
+  phoneNumber: string;
+  profileImageUrl: string;
+  aboutInfo: string;
 };
 
 export type ClubLeaderDto = {
   userId: string;
-  name: string;
+  practitionerId: string;
+  firstName: string;
+  surname: string;
   phoneNumber: string;
+  profileImageUrl: string;
   dateAccepted: string;
+  dateAssigned: string;
 };
 
 export type ClubSupportDto = {
   userId: string;
-  name: string;
+  practitionerId: string;
+  firstName: string;
+  surname: string;
   phoneNumber: string;
-  dateAccepted: string;
+  profileImageUrl: string;
+  dateAssigned: string;
+};
+
+export type IssueTask = {
+  secondaryText: string;
+  secondaryTextColor: string;
+  secondaryDescription: string;
+};
+
+export type ClubActivity = {
+  name: string;
+  points: number;
 };

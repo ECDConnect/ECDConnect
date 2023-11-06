@@ -113,8 +113,8 @@ export const HostFamilyDays: React.FC = () => {
         barBgColour="uiLight"
         barColour={
           isCurrentPointsAtLeast80PercentOfTotal(
-            club?.totalClubPoints || 0,
-            club?.maxClubPoints || 0
+            club.pointsTotal,
+            club.maxPointsTotal
           )
             ? 'successMain'
             : 'secondary'

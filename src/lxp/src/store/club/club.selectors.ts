@@ -1,6 +1,5 @@
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
-import { MergedCoachingClub } from './club.types';
 
 // Practitioner
 export const getClubForPractitionerSelector = (state: RootState) =>
@@ -14,20 +13,16 @@ export const getClubByIdSelector = (clubId: string) =>
   createSelector(
     (state: RootState) => state.clubs.clubsForCoach,
     (clubs) => clubs[clubId].club
-  ) as (state: RootState) => MergedCoachingClub | undefined;
-
-export const getCurrentClubLeaderByClubIdSelector = (clubId: string) =>
-  createSelector(getClubByIdSelector(clubId), (club) =>
-    !!club?.currentClubLeader?.dateAccepted
-      ? club?.currentClubLeader
-      : undefined
   );
 
+//TODO figure out how to set return type for these so we can include undefined
+export const getCurrentClubLeaderByClubIdSelector = (clubId: string) =>
+  createSelector(getClubByIdSelector(clubId), (club) => club?.clubLeader);
+
 export const getNextClubLeaderByClubIdSelector = (clubId: string) =>
-  createSelector(getClubByIdSelector(clubId), (club) =>
-    !!club?.currentClubLeader && !club?.currentClubLeader?.dateAccepted
-      ? club?.currentClubLeader
-      : club?.newClubLeader
+  createSelector(
+    getClubByIdSelector(clubId),
+    (club) => club?.incomingClubLeader
   );
 
 export const getActivityMeetRegularDetailsSelector = (clubId: string) =>

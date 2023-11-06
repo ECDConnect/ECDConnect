@@ -12,6 +12,7 @@ import { useParams } from 'react-router';
 import { ClubsRouteState } from '../../../index.types';
 import { clubSelectors } from '@/store/club';
 import { ClubMember } from '@ecdlink/graphql';
+import { ClubMemberDto } from '@/models/club/club.dto';
 
 export const Step1 = ({
   setIsEnabledButton,
@@ -29,7 +30,7 @@ export const Step1 = ({
   );
 
   const onChange = (event: CheckboxChange) => {
-    const value = event.value as ClubMember | undefined;
+    const value = event.value as any as ClubMemberDto;
     if (event.checked) {
       const currentPractitioners = selectedMembers
         ? [...selectedMembers, value]
@@ -38,7 +39,7 @@ export const Step1 = ({
       return setSelectedMembers?.(currentPractitioners);
     }
     const currentPractitioners = selectedMembers?.filter(
-      (item) => item?.practitioner?.id !== value?.practitioner?.id
+      (item) => item.practitionerId !== value?.practitionerId
     );
 
     return setSelectedMembers?.(currentPractitioners || []);
@@ -59,39 +60,36 @@ export const Step1 = ({
         {club?.clubMembers
           ?.filter(
             (item) =>
-              item?.practitioner?.id !== currentLeader?.practitioner?.id &&
-              item?.practitioner?.id !== nextLeader?.practitioner?.id
+              item.practitionerId !== currentLeader?.practitionerId &&
+              item.practitionerId !== nextLeader?.practitionerId
           )
           ?.map((member) => (
-            <CheckboxGroup<ClubMember>
+            <CheckboxGroup<ClubMemberDto>
               className="mb-2"
-              key={member?.practitioner?.id}
-              title={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+              key={member.practitionerId}
+              title={`${member.firstName} ${member.surname}`}
               titleWeight="semibold"
               icon={
                 <div className="ml-4 mr-2">
-                  {member?.practitioner?.user?.profileImageUrl ? (
-                    <Avatar
-                      dataUrl={member?.practitioner?.user?.profileImageUrl}
-                    />
+                  {member.profileImageUrl ? (
+                    <Avatar dataUrl={member.profileImageUrl} />
                   ) : (
                     <UserAvatar
                       className="mr-4"
                       size="md"
                       avatarColor="var(--primaryAccent2)"
-                      text={`${member?.practitioner?.user?.firstName?.charAt(
+                      text={`${member.firstName?.charAt(
                         0
-                      )}${member?.practitioner?.user?.surname?.charAt(0)}`}
+                      )}${member.surname.charAt(0)}`}
                       displayBorder
                     />
                   )}
                 </div>
               }
               isIconFullWidth
-              value={member as ClubMember}
+              value={member}
               checked={selectedMembers?.some(
-                (option) =>
-                  member?.practitioner?.id === option?.practitioner?.id
+                (option) => member.practitionerId === option?.practitionerId
               )}
               onChange={onChange}
             />

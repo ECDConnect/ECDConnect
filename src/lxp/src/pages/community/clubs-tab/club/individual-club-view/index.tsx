@@ -51,12 +51,7 @@ export const Club: React.FC = () => {
 
   const { isLoading } = useThunkFetchCall(
     'clubs',
-    ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH
-  );
-
-  const { isLoading: isLoadingClubMembers } = useThunkFetchCall(
-    'clubs',
-    ClubActions.GET_ALL_CLUB_MEMBERS_FOR_COACH
+    ClubActions.GET_CLUBS_FOR_COACH
   );
 
   const { clubId } = useParams<ClubsRouteState>();
@@ -77,7 +72,7 @@ export const Club: React.FC = () => {
   const today = new Date().setHours(0, 0, 0, 0);
   const dueDateNextLeader = nextLeader
     ? addDays(
-        new Date(nextLeader?.dateAssigned),
+        new Date(nextLeader.dateAssigned),
         daysToAcceptBeingLeader
       ).setHours(0, 0, 0, 0)
     : undefined;
@@ -86,20 +81,18 @@ export const Club: React.FC = () => {
     dueDateNextLeader && dueDateNextLeader >= today;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isClubInALeague = !!club?.league?.id;
-  const isTop25Percent =
-    !!club?.leagueRankNr && Number(club?.leagueRankNr) <= 3;
+  const isTop25Percent = club.leagueRanking <= 3; // TODO
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
-  const isPurpleLeague = club?.league?.leagueType?.name === LeagueType.Purple;
+  // TODO: check this rule
+  const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
 
   const leader: UserAlertListDataItem = {
-    title: `${currentLeader?.practitioner?.user?.firstName ?? ''} ${
-      currentLeader?.practitioner?.user?.surname ?? ''
-    }`,
+    title: `${currentLeader?.firstName ?? ''} ${currentLeader?.surname ?? ''}`,
     titleStyle: 'text-textDark',
-    profileDataUrl: currentLeader?.practitioner?.user?.profileImageUrl ?? '',
-    profileText: `${currentLeader?.practitioner?.user?.firstName ?? ''} ${
-      currentLeader?.practitioner?.user?.surname ?? ''
+    profileDataUrl: currentLeader?.profileImageUrl ?? '',
+    profileText: `${currentLeader?.firstName ?? ''} ${
+      currentLeader?.surname ?? ''
     }`,
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
@@ -109,7 +102,7 @@ export const Club: React.FC = () => {
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
           ':clubId',
           clubId
-        ).replace(':leaderId', currentLeader?.practitioner?.id) // TODO: check if it's practitionerId or userId
+        ).replace(':leaderId', currentLeader?.practitionerId)
       ),
   };
 
@@ -127,7 +120,7 @@ export const Club: React.FC = () => {
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(club?.leagueRankNr || 0)}
+            text={String(club?.leagueRanking || 0)}
           />
         </div>
       ),
@@ -241,16 +234,12 @@ export const Club: React.FC = () => {
           {shouldShowPointsScreen() && (
             <ScoreCard
               className="mt-5"
-              mainText={String(club?.totalClubPoints || 0)}
+              mainText={String(club?.pointsTotal || 0)}
               hint="points"
-              currentPoints={club?.totalClubPoints}
-              maxPoints={club?.maxClubPoints}
+              currentPoints={club?.pointsTotal}
+              maxPoints={club?.maxPointsTotal}
               barBgColour="uiLight"
-              barColour={getScoreBarColor(
-                club?.totalClubPoints ?? 0,
-                1500,
-                1499
-              )}
+              barColour={getScoreBarColor(club?.pointsTotal ?? 0, 1500, 1499)}
               bgColour="uiBg"
               textColour="black"
               onClick={() =>
@@ -272,8 +261,8 @@ export const Club: React.FC = () => {
       />
     );
   }, [
-    club?.maxClubPoints,
-    club?.totalClubPoints,
+    club?.maxPointsTotal,
+    club?.pointsTotal,
     clubId,
     history,
     isClubInALeague,
@@ -335,7 +324,7 @@ export const Club: React.FC = () => {
         showIcon: true,
         menuIcon: 'ExclamationCircleIcon',
         title: 'Club leader has not accepted agreement',
-        subTitle: `Contact ${nextLeader.practitioner?.user?.firstName}`,
+        subTitle: `Contact ${nextLeader?.firstName}`,
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'errorMain',
@@ -345,7 +334,7 @@ export const Club: React.FC = () => {
             ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
               ':clubId',
               clubId
-            ).replace(':leaderId', nextLeader.practitioner?.id)
+            ).replace(':leaderId', nextLeader?.practitionerId)
           ),
       });
     }
@@ -390,7 +379,7 @@ export const Club: React.FC = () => {
         showIcon: true,
         menuIcon: 'ExclamationIcon',
         title: 'Choose a new club leader',
-        subTitle: `${currentLeader?.practitioner?.user?.firstName} has been a club leader for 6 or more months`,
+        subTitle: `${currentLeader?.firstName} has been a club leader for 6 or more months`,
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'alertMain',
@@ -435,7 +424,7 @@ export const Club: React.FC = () => {
       title={`${club?.name} club`}
       onBack={() => history.push(ROUTES.COMMUNITY.ROOT)}
     >
-      {isLoading || isLoadingClubMembers ? (
+      {isLoading ? (
         <LoadingSpinner
           className="mt-4"
           size="medium"
@@ -446,7 +435,7 @@ export const Club: React.FC = () => {
         <>
           <Typography type="h2" text={club?.name ?? ''} />
           <div className="mt-3 flex gap-2">
-            {club?.league?.leagueType?.name === LeagueType.Purple && (
+            {club?.league?.leagueTypeName === LeagueType.Purple && (
               <Tag icon="StarIcon" title="Purple" color="primary" />
             )}
             <Tag
