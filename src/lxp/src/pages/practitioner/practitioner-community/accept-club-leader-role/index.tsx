@@ -152,7 +152,6 @@ export const AcceptClubLeaderRole: React.FC = () => {
             I accept the{' '}
             <button
               className="text-secondary border-secondary border-b"
-              // TODO: add info page
               onClick={() =>
                 history.push(
                   ROUTES.COMMUNITY.HELP.replace(
@@ -192,7 +191,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
       )}
       <Button
         isLoading={isLoading}
-        disabled={!isAccepted || isLoading}
+        disabled={!isAccepted || !selectedMember || isLoading}
         className="mt-auto"
         icon="SaveIcon"
         type="filled"
