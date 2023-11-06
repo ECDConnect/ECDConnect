@@ -36,6 +36,8 @@ export class ChildProgressReportNotificationValidator
     this.interval = NotificationIntervals.hour;
     this.lastCheckTimestamp = 0;
     this.currentDate = currentDate;
+
+    console.log({ store });
   }
 
   private getReportingPeriod = () => {
@@ -135,7 +137,8 @@ export class ChildProgressReportNotificationValidator
   private notificationAlreadyDone = (reference: string): boolean => {
     const { notifications: notificationsState } = this.store.getState();
 
-    return notificationsState.notificationReferences.includes(reference);
+    // return notificationsState.notificationReferences.includes(reference);
+    return false;
   };
 
   private getNotificationsCompleteReportsAllChildren = (
@@ -143,12 +146,13 @@ export class ChildProgressReportNotificationValidator
   ): Message[] => {
     const { user: userState, practitioner: practitionerState } =
       this.store.getState();
-
+    console.log(!practitionerState || !practitionerState.practitioner);
     if (!practitionerState || !practitionerState.practitioner) return [];
 
     const currentUser = userState.user;
 
     const reference = `${currentUser?.id}-${reportingPeriod.period}-${reportingPeriod.year}-AllComplete`;
+    console.log(this.notificationAlreadyDone(reference));
     if (this.notificationAlreadyDone(reference)) return [];
 
     const practitioner = practitionerState.practitioner;
@@ -156,13 +160,17 @@ export class ChildProgressReportNotificationValidator
       reportingPeriod,
       practitioner?.userId || ''
     );
+    console.log(childrenReports.length === 0);
     if (childrenReports.length === 0) return [];
 
-    const expectedReportCount = childrenReports.length;
+    const expectedReportCount = 1;
     const completedReportCount = childrenReports.filter(
       (cr) => cr.report !== undefined
     ).length;
 
+    console.log({ completedReportCount });
+    console.log({ expectedReportCount });
+    console.log(completedReportCount < expectedReportCount);
     if (completedReportCount < expectedReportCount) return [];
 
     const notification: Message = {
@@ -358,7 +366,12 @@ export class ChildProgressReportNotificationValidator
     const reportingPeriod = this.getReportingPeriodWithDates();
     if (!reportingPeriod) return [];
 
+    console.log({ reportingPeriod });
+
     const newNotifications: Message[] = [];
+    console.log(
+      this.getNotificationsCompleteReportsAllChildren(reportingPeriod)
+    );
 
     newNotifications.push(
       ...this.getNotificationsCompleteReportsAllChildren(reportingPeriod)
@@ -369,7 +382,7 @@ export class ChildProgressReportNotificationValidator
     newNotifications.push(
       ...this.getNotificationsPrincipalAboutPractioners(reportingPeriod)
     );
-
+    console.log({ newNotifications });
     // don't add if added already ??
     const notifications = newNotifications.filter(
       (newNot) =>
@@ -377,7 +390,7 @@ export class ChildProgressReportNotificationValidator
           (curNot) => curNot.message.reference === newNot.reference
         )
     );
-
+    console.log({ notifications });
     return notifications;
   };
 }

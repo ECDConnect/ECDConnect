@@ -114,7 +114,7 @@ export const ChildProfile: React.FC = () => {
     WorkflowStatusEnum.DocumentPendingVerification
   );
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
-  const progressTrainingDone = practitioner?.attendedChildProgress || false;
+  const progressTrainingDone = true;
   const isPrincipal = practitioner?.isPrincipal;
   const childrenForPrincipal = useSelector(
     childrenForPractitionerSelectors?.getChildrenForPractitioner

@@ -1,5 +1,5 @@
 import { api } from '../axios.helper';
-import { Config } from '@ecdlink/core';
+import { Config, PractitionerProgressReportSummaryDto } from '@ecdlink/core';
 import {
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
@@ -137,6 +137,50 @@ class ProgressTrackingService {
     }
 
     return response.data.data.GetAllProgressTrackingLevel;
+  }
+
+  async practitionerProgressReportSummary(
+    reportingPeriod: string
+  ): Promise<PractitionerProgressReportSummaryDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query practitionerProgressReportSummary{
+        practitionerProgressReportSummary(reportingPeriod: "Nov 2023") {
+          reportingPeriod
+          classSummaries {
+              practitionerUserId
+              practitionerFullName
+              className
+              childCount
+              categories {
+                  id
+                  name
+                  subCategories {
+                      id
+                      name
+                      childrenPerSkill {
+                          childCount
+                          skill
+                      }
+                  }
+              }
+          }
+        }
+      }
+      `,
+      variables: {
+        reportingPeriod: reportingPeriod,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Progress Tracking Categories failed - Server connection error'
+      );
+    }
+
+    return response.data.data.practitionerProgressReportSummary;
   }
 }
 

@@ -36,23 +36,23 @@ export class BackendNotificationsValidator implements NotificationValidator {
     for (const notification of allNotifications) {
       const notificationConfig = this.getNotificationConfig(notification?.cTA);
 
-      notifications.push({
-        ...notificationConfig,
-        isFromBackend: true,
-        reference: notification.id,
-        title: notification?.subject ?? '',
-        message: notification.message ?? '',
-        dateCreated: notification.messageDate,
-        priority: NotificationPriority.high,
-        viewOnDashboard: true,
-        actionText: notification.cTAText ?? '',
-        cta: notification.cTA ?? '',
-        icon: notificationConfig?.icon || 'ArrowCircleRightIcon',
-        color: notificationConfig?.color || 'white',
-        viewType: this.getViewType(notification?.messageProtocol ?? ''),
-        area: notificationConfig?.area || this.getDefaultArea(this.user ?? {}),
-        expiryDate: notification.messageEndDate,
-      });
+      // notifications.push({
+      //   ...notificationConfig,
+      //   isFromBackend: true,
+      //   reference: notification.id,
+      //   title: notification?.subject ?? '',
+      //   message: notification.message ?? '',
+      //   dateCreated: notification.messageDate,
+      //   priority: NotificationPriority.high,
+      //   viewOnDashboard: true,
+      //   actionText: notification.cTAText ?? '',
+      //   cta: notification.cTA ?? '',
+      //   icon: notificationConfig?.icon || 'ArrowCircleRightIcon',
+      //   color: notificationConfig?.color || 'white',
+      //   viewType: this.getViewType(notification?.messageProtocol ?? ''),
+      //   area: notificationConfig?.area || this.getDefaultArea(this.user ?? {}),
+      //   expiryDate: notification.messageEndDate,
+      // });
     }
 
     return notifications;

@@ -66,6 +66,7 @@ export class NotificationService {
       if (Math.abs(differenceInMs) > validator.interval) {
         const validatorNotifications = validator.getNotifications();
         notifications.push(...validatorNotifications);
+        console.log({ notifications });
       }
 
       validator.lastCheckTimestamp = new Date().valueOf();

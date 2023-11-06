@@ -26,9 +26,9 @@ const logGraphQL = (
 const alertGraphQL = () => {
   // temporary alert message - to be replaced with nicer UI.
   if (!!disableGraphqlErrorAlert) return;
-  alert(
-    'Error communicating with the server.\nSee the browser console for more details.'
-  );
+  // alert(
+  //   'Error communicating with the server.\nSee the browser console for more details.'
+  // );
 };
 
 export const api = (baseUrl: string, token?: string): AxiosInstance => {
