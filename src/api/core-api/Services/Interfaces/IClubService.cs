@@ -29,7 +29,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ClubLeader AddNewClubLeader(Guid clubId, Guid practitionerId);
         public bool AddNewClubMembers(NewClubMember input);
         public bool MoveClubMembers(NewClubMember input);
-        public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, Guid clubSupportPractitionerId);
+        public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, string clubSupportPractitionerId);
         public bool RejectNewClubLeaderRole(Guid clubId, Guid practitionerId);
         public bool ChangeClubSupportRole(Guid clubId, Guid practitionerId);
         public Club AddNewClub(NewClubInput input);

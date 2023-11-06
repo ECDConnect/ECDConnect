@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return clubService.AddNewClubLeader(clubId, practitionerId);
         }
 
-        public bool AcceptNewClubLeaderRole([Service] IClubService clubService, Guid clubId, Guid practitionerId, Guid clubSupportPractitionerId)
+        public bool AcceptNewClubLeaderRole([Service] IClubService clubService, Guid clubId, Guid practitionerId, string clubSupportPractitionerId)
         {
             return clubService.AcceptNewClubLeaderRole(clubId, practitionerId, clubSupportPractitionerId);            
         }
