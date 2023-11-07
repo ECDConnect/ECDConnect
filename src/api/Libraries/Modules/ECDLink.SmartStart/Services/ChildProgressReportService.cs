@@ -10,22 +10,17 @@ using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.DataAccessLayer.Services;
 using ECDLink.PDFGenerator.Services.Interfaces;
 using ECDLink.SmartStart.Reports.ChildProgressReport;
 using ECDLink.SmartStart.Services.Interfaces;
-using GreenDonut;
 using HotChocolate;
-using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
-using static ECDLink.SmartStart.Services.ChildProgressReportService;
 
 namespace ECDLink.SmartStart.Services
 {
@@ -43,6 +38,8 @@ namespace ECDLink.SmartStart.Services
         {
             public int Id { get; set; }
             public string Name { get; set; }
+            public string ImageUrl { get; set; }
+            public string Color { get; set; }
             public int[] SubCategoryIds { get; set; }
             public List<SubCategory> SubCategories { get; set; }
         }
@@ -51,6 +48,7 @@ namespace ECDLink.SmartStart.Services
         {
             public int Id { get; set; }
             public string Name { get; set; }
+            public string ImageUrl { get; set; }
             public int[] SkillIds {  get; set; }
             public List<Skill> Skills { get; set; }
         }
@@ -250,11 +248,12 @@ namespace ECDLink.SmartStart.Services
             var languageId = GetLanguageId(locale);
             var pracRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);
             var cprRepo = _repoFactory.CreateGenericRepository<ChildProgressReport>(userContext: userId);
+            var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: userId);
             var reportingPeriodDate = GetDateFromReportingPeriod(reportingPeriod);
 
             var result = new PractitionerProgressReportSummaryModel();
             result.ReportingPeriod = reportingPeriodDate.ToString("MMMM yyyy");
-            result.ClassSummaries = GetPractitionerProgressReportSummary(pracRepo, cprRepo, reportingPeriodDate, userId, languageId);
+            result.ClassSummaries = GetPractitionerProgressReportSummary(pracRepo, cprRepo, childRepo, reportingPeriodDate, userId, languageId);
             return result;
         }
 
@@ -266,8 +265,8 @@ namespace ECDLink.SmartStart.Services
             var languageId = GetLanguageId(locale);
             var pracRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);
             var cprRepo = _repoFactory.CreateGenericRepository<ChildProgressReport>(userContext: userId);
+            var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: userId);
             var reportingPeriodDate = GetDateFromReportingPeriod(reportingPeriod);
-
 
             var result = new PractitionerProgressReportSummaryModel();
             result.ReportingPeriod = reportingPeriodDate.ToString("MMMM yyyy");
@@ -277,7 +276,7 @@ namespace ECDLink.SmartStart.Services
             foreach (var practitioner in practitioners)
             {
                 if (string.IsNullOrEmpty(practitioner.UserId)) continue;
-                var practitionerClassSummaries = GetPractitionerProgressReportSummary(pracRepo, cprRepo, reportingPeriodDate, practitioner.UserId, languageId);
+                var practitionerClassSummaries = GetPractitionerProgressReportSummary(pracRepo, cprRepo, childRepo, reportingPeriodDate, practitioner.UserId, languageId);
                 if (practitionerClassSummaries.Count > 0)
                 {
                     result.ClassSummaries.AddRange(practitionerClassSummaries);
@@ -289,6 +288,7 @@ namespace ECDLink.SmartStart.Services
         private List<PractitionerClassProgressReportSummaryModel> GetPractitionerProgressReportSummary(
                 IGenericRepository<Practitioner, Guid> pracRepo,
                 IGenericRepository<ChildProgressReport, Guid> cprRepo,
+                IGenericRepository<Child, Guid> childRepo,
                 DateTime reportingPeriodDate,
                 string userId,
                 Guid languageId
@@ -312,15 +312,19 @@ namespace ECDLink.SmartStart.Services
                 {
                     Id = x.Id,
                     Name = x.Name,
+                    ImageUrl = x.ImageUrl,
+                    Color = x.Color,
                     SubCategories = new List<PractitionerClassProgressReportSubCategorySummary>()
                 }).ToList();
 
                 var learners = _attendanceService.GetAllLearnerGroupInstances(classroomGroup.Id);
-                var learnerIds = learners.Select(x => x.Id).ToList();
-                classSummary.ChildCount = learnerIds.Count;
+                var learnerUserIds = learners.Select(x => x.UserId).ToList();
+                classSummary.ChildCount = learnerUserIds.Count;
+
+                var childIds = childRepo.GetAll().Where(x => learnerUserIds.Contains(x.UserId)).Select(x => x.Id).ToList();
 
                 var reportContents = cprRepo.GetAll()
-                    .Where(r => learnerIds.Contains(r.ChildId)
+                    .Where(r => childIds.Contains(r.ChildId)
                         && r.IsActive == true
                         && r.ReportDate >= reportingPeriodDate.AddDays(-1)
                         && r.ReportDate <= reportingPeriodDate.AddDays(1))
@@ -328,7 +332,7 @@ namespace ECDLink.SmartStart.Services
                     .ToList();
                 foreach (var reportContent in reportContents)
                 {
-                    var report = System.Text.Json.JsonSerializer.Deserialize<ChildProgressReportDetailedModel>(reportContent);
+                    var report = JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(reportContent);
                     if (string.IsNullOrEmpty(report.DateCompleted)) continue;
                     foreach (var reportCat in report.Categories)
                     {
@@ -343,6 +347,7 @@ namespace ECDLink.SmartStart.Services
                             {
                                 Id = skill.SubCateogry.Id,
                                 Name = skill.SubCateogry.Name,
+                                ImageUrl = skill.SubCateogry.ImageUrl,
                                 ChildrenPerSkill = new List<PractitionerClassProgressReportSkillSummary>()
                             };
                             cat.SubCategories.Add(subCat);
@@ -398,6 +403,8 @@ namespace ECDLink.SmartStart.Services
                 {
                     Id = int.Parse(cat.id),
                     Name = cat.name,
+                    ImageUrl = cat.imageUrl,
+                    Color = cat.color,
                     SubCategoryIds = (cat.subCategories as string).Split(",").Select(i => int.Parse(i)).ToArray()
                 };
                 category.SubCategories = GetSubCategories(category, languageId);
@@ -415,6 +422,7 @@ namespace ECDLink.SmartStart.Services
                 {
                     Id = int.Parse(subCat.id),
                     Name = subCat.name,
+                    ImageUrl = subCat.imageUrl,
                     SkillIds = (subCat.skills as string).Split(",").Select(i => int.Parse(i)).ToArray()
                 };
                 subCategory.Skills = GetSkills(category, subCategory, languageId);
