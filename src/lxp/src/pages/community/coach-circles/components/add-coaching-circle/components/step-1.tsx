@@ -88,7 +88,7 @@ export const Step1: React.FC<Step1Props> = ({
                 });
               }}
               dateFormat="EEE, dd MMM yyyy"
-              // showIcon
+              showIcon
               minDate={startQuarterDate}
               maxDate={endQuarterDate}
             />
