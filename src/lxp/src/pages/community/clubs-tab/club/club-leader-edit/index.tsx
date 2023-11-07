@@ -20,7 +20,7 @@ import { NewClubLeaderInput } from '@/services/ClubService/types';
 import {
   ClubActions,
   addNewClubLeader,
-  getAllClubsDetailsForCoach,
+  getClubById,
 } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { userSelectors } from '@/store/user';
@@ -39,16 +39,16 @@ export const ClubLeaderEdit: React.FC = () => {
 
   const isToChange = lastPathSegment?.includes('edit');
 
-  const previousClubLeader = club?.currentClubLeader;
+  const previousClubLeader = club.clubLeader;
 
-  const newLeader = club?.clubMembers?.find(
-    (member) => member?.practitioner?.id === newLeaderId
+  const newLeader = club.clubMembers.find(
+    (member) => member.practitionerId === newLeaderId
   );
-  const newLeaderFirstName = newLeader?.practitioner?.user?.firstName;
+  const newLeaderFirstName = newLeader?.firstName;
   const availableMembers = club?.clubMembers?.filter(
     (member) =>
-      member?.practitioner?.id !== previousClubLeader?.practitioner?.id &&
-      member?.practitioner?.id !== club.newClubLeader?.practitioner?.id
+      member.practitionerId !== previousClubLeader?.practitionerId &&
+      member.practitionerId !== club.incomingClubLeader?.practitionerId
   );
 
   const {
@@ -61,7 +61,7 @@ export const ClubLeaderEdit: React.FC = () => {
     wasLoading: wasLoadingClub,
     isRejected: isRejectedGetClub,
     error: errorGetClub,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH);
+  } = useThunkFetchCall('clubs', ClubActions.GET_CLUB_BY_ID);
 
   const isLoading = isLoadingAddLeader || isLoadingClub;
   const isRejected = isRejectedAddLeader || isRejectedGetClub;
@@ -77,10 +77,10 @@ export const ClubLeaderEdit: React.FC = () => {
       practitionerId: newLeaderId,
     };
 
+    // TODO update this call to return the new club leader and set it in state
     await appDispatch(addNewClubLeader(payload));
-    await appDispatch(
-      getAllClubsDetailsForCoach({ userId: user?.id!, clubId })
-    );
+
+    await appDispatch(getClubById({ clubId: clubId }));
   };
 
   useEffect(() => {
@@ -124,27 +124,25 @@ export const ClubLeaderEdit: React.FC = () => {
       <fieldset className="mb-4 flex flex-col gap-2">
         {availableMembers?.map((member) => (
           <Radio
-            key={member?.practitioner?.id}
-            description={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
-            value={member?.practitioner?.id}
-            checked={newLeaderId === member?.practitioner?.id}
-            onChange={() => setNewLeaderId(member?.practitioner?.id ?? '')}
+            key={member.practitionerId}
+            description={`${member.firstName} ${member.surname}`}
+            value={member.practitionerId}
+            checked={newLeaderId === member.practitionerId}
+            onChange={() => setNewLeaderId(member.practitionerId)}
             className="mb-4"
             variant="slim"
             customIcon={
               <div className="mx-2">
-                {member?.practitioner?.user?.profileImageUrl ? (
-                  <Avatar
-                    dataUrl={member?.practitioner?.user?.profileImageUrl}
-                  />
+                {!!member.profileImageUrl ? (
+                  <Avatar dataUrl={member.profileImageUrl} />
                 ) : (
                   <UserAvatar
                     className="mr-4"
                     size="md"
                     avatarColor="var(--primaryAccent2)"
-                    text={`${member?.practitioner?.user?.firstName?.charAt(
+                    text={`${member.firstName.charAt(0)}${member.surname.charAt(
                       0
-                    )}${member?.practitioner?.user?.surname?.charAt(0)}`}
+                    )}`}
                     displayBorder
                   />
                 )}
@@ -166,7 +164,7 @@ export const ClubLeaderEdit: React.FC = () => {
             type="info"
             title={
               isToChange
-                ? `The previous club leader (${previousClubLeader?.practitioner?.user?.firstName}) and the new club leader (${newLeaderFirstName}) chosen above will be notified immediately.`
+                ? `The previous club leader (${previousClubLeader.firstName}) and the new club leader (${newLeaderFirstName}) chosen above will be notified immediately.`
                 : `${newLeaderFirstName} will be notified immediately and asked to complete the club leader agreement.`
             }
             list={

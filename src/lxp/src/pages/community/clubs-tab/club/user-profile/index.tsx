@@ -17,6 +17,7 @@ import { clubSelectors } from '@/store/club';
 import { userSelectors } from '@/store/user';
 import { useMemo, useState } from 'react';
 import { AboutYourselfDialog } from './about-yourself-dialog';
+import { coachSelectors } from '@/store/coach';
 
 export const UserProfile: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,19 +40,19 @@ export const UserProfile: React.FC = () => {
   // TODO: The support role is not implemented yet; it will be added in the C3 functionality
   const isSupportRole = false;
 
-  const practitioner = club?.clubMembers?.find(
-    (member) =>
-      member?.practitioner?.id === (isMember ? practitionerId : leaderId)
+  const clubMember = club?.clubMembers.find(
+    (member) => member.practitionerId === (isMember ? practitionerId : leaderId)
   );
+  console.log('clubMember', clubMember);
+  console.log('practitionerId', practitionerId);
   const name = isCoach
     ? `${user?.firstName} ${user?.surname}`
-    : `${practitioner?.practitioner?.user?.firstName} ${practitioner?.practitioner?.user?.surname}`;
+    : `${clubMember?.firstName} ${clubMember?.surname}`;
+
   const whatsAppNumber = isCoach
     ? user?.whatsappNumber
-    : practitioner?.practitioner?.user?.whatsAppNumber;
-  const phoneNumber = isCoach
-    ? user?.phoneNumber
-    : practitioner?.practitioner?.user?.phoneNumber;
+    : clubMember?.whatsAppNumber;
+  const phoneNumber = isCoach ? user?.phoneNumber : clubMember?.phoneNumber;
 
   const headerHeight = isMember ? 254 : 300;
   const userRole = useMemo(() => {
@@ -106,9 +107,7 @@ export const UserProfile: React.FC = () => {
           hasConsent={true}
           canChangeImage={false}
           dataUrl={
-            isCoach
-              ? user?.profileImageUrl
-              : practitioner?.practitioner?.user?.profileImageUrl ?? ''
+            isCoach ? user?.profileImageUrl : clubMember?.profileImageUrl ?? ''
           }
           size={'header'}
         />
@@ -126,8 +125,8 @@ export const UserProfile: React.FC = () => {
           type="h4"
           text={
             isCoach
-              ? club?.coach?.aboutInfo ?? ''
-              : practitioner?.welcomeMessage ?? ''
+              ? club?.clubCoach.aboutInfo ?? ''
+              : clubMember?.welcomeMessage ?? ''
           }
         />
       </div>

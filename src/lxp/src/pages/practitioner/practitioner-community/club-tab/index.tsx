@@ -88,12 +88,12 @@ export const ClubTab: React.FC = () => {
   };
 
   const clubSupportRole: UserAlertListDataItem = {
-    title: club?.clubSupport?.name ?? '',
+    title: `${club?.clubSupport?.firstName} ${club?.clubSupport?.surname}`,
     titleStyle: 'text-textDark',
     profileDataUrl: '',
     profileText:
-      (club?.clubSupport?.name?.split(' ')?.[0]?.[0] || '') +
-      (club?.clubSupport?.name?.split(' ')?.[1]?.[0] || ''),
+      (club?.clubSupport?.firstName[0] || '') +
+      (club?.clubSupport?.surname[0] || ''),
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,

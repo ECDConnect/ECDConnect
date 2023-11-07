@@ -702,10 +702,12 @@ public class SmartStartIntegrationService : IIntegrationService
         _mappedEntities = await GetMappedEntities(null, true, true);
         int trackingDays = 2;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "9582f71b-87b4-4b9c-bc9d-06c10cf8e2fe"))
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
 
-        DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
-        DateTime followingWeekDate = DateTime.Now.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
+        DateTime trackingDate = DateTime.Now;
+
+        DateTime trackingWeekDate = trackingDate.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
+        DateTime followingWeekDate = trackingDate.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
 
         string absent = "Absent";
         string nosession = "No Session";
@@ -714,13 +716,13 @@ public class SmartStartIntegrationService : IIntegrationService
         string pholiday = "Public Holiday";
 
         var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
-
-        bool isMeetingDay = false;
-
-        DateTime nextDay = trackingWeekDate;
-
+        int trackingWeekOfYear = trackingWeekDate.GetWeekOfYear();        
+       
         foreach (var parent in attendancesDueList)
         {
+            bool isMeetingDay = false;
+            DateTime nextDay = trackingWeekDate;
+
             StringBuilder jsonAttendanceString = new StringBuilder();
             jsonAttendanceString.AppendLine("[");
             Dictionary<string, bool> meetingDays = new Dictionary<string, bool>();
@@ -814,7 +816,7 @@ public class SmartStartIntegrationService : IIntegrationService
             if (allLearners.Count > 0)
             {
                 //now get the actual attendances available and set that back to objkect aswell
-                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, null, trackingWeekOfYear);
                 if (weeklyAttendance.Any())
                 {
                     try
@@ -831,7 +833,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             int daysPresent = 0;
                             int daysAbsent = 0;
 
-                            var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+                            var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child)).OrderBy(x => x.AttendanceDate).ToList();
 
                             foreach (var attendance in childAttendances)
                             {
@@ -939,205 +941,7 @@ public class SmartStartIntegrationService : IIntegrationService
     }
 
 
-    public async Task<bool> IntegrationAttendanceData()
-    {
-        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
-        int attendancesSent = 0;
-        bool isComplete = false;
-
-        _mappedEntities = await GetMappedEntities();
-        int trackingDays = 2;
-        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays)) ).ToList(); 
-
-         DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
-        DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
-
-        foreach (var parent in attendancesDueList)
-        {
-            IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
-            var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
-            if (attendanceData.Any())
-            {
-                try
-                {
-                    bool validAttendance = false;
-                    string absent = "Absent";
-                    string nosession = "No Session";
-                    string unknown = "Unknown";
-                    string present = "Present";
-                    string pholiday = "Public Holiday";
-                    StringBuilder jsonAttendanceString = new StringBuilder();
-                    jsonAttendanceString.AppendLine("[");
-                    //get list of children
-                    List<string> children = attendanceData.Select(x => x.UserId).Distinct().ToList();
-                    foreach (var child in children)
-                    {
-                        int daysPresent = 0;
-                        int daysAbsent = 0;
-                        //set everything to nosession and override as teh days are iterated through - whether absent or present or a holiday
-                        string mondayPresent = unknown;
-                        string tuesdayPresent = unknown;
-                        string wednesdayPresent = unknown;
-                        string thursdayPresent = unknown;
-                        string fridayPresent = unknown;
-                        string defaultState = unknown;
-                        //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
-                        if (mappedChild != null)
-                        {                           
-                            var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
-                            //mark public holidays off first
-                            if (holidays.Count>0)
-                            {
-                                foreach(var publicholiday in holidays)
-                                {
-                                    switch (publicholiday.Day.ToString("dddd"))
-                                    {
-                                        case "Monday":
-                                        mondayPresent = pholiday;
-                                        break;
-                                    case "Tuesday":
-                                        tuesdayPresent = pholiday;
-                                        break;
-                                    case "Wednesday":
-                                        wednesdayPresent = pholiday;
-                                        break;
-                                    case "Thursday":
-                                        thursdayPresent = pholiday;
-                                        break;
-                                    case "Friday":
-                                        fridayPresent = pholiday;
-                                        break;
-
-                                    }
-                                }
-                            }                            
-                            foreach (var attendance in childAttendances)
-                            {
-                                switch (attendance.AttendanceDate.ToString("dddd"))
-                                {
-                                    case "Monday":
-                                        if (attendance.Attended)
-                                        {
-                                            mondayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            mondayPresent = absent;
-                                        }
-                                        break;
-                                    case "Tuesday":
-                                        if (attendance.Attended)
-                                        {
-                                            tuesdayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            tuesdayPresent = absent;
-                                        }
-                                        break;
-                                    case "Wednesday":
-                                        if (attendance.Attended)
-                                        {
-                                            wednesdayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            wednesdayPresent = absent;
-                                        }
-                                        break;
-                                    case "Thursday":
-                                        if (attendance.Attended)
-                                        {
-                                            thursdayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            thursdayPresent = absent;
-                                        }
-                                        break;
-                                    case "Friday":
-                                        if (attendance.Attended)
-                                        {
-                                            fridayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            fridayPresent = absent;
-                                        }
-                                        break;
-                                }
-                                validAttendance = true;
-                            }
-                            //[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
-
-                            jsonAttendanceString.AppendLine("{");
-                            jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + daysPresent + ",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + daysAbsent + ",");
-                            jsonAttendanceString.AppendLine("\"Monday\":\"" + mondayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Tuesday\":\"" + tuesdayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Wednesday\":\"" + wednesdayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Thursday\":\"" + thursdayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Friday\":\"" + fridayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + parent.RemoteId + "\"},");
-                            jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + mappedChild.RemoteId + "\"}");
-                            jsonAttendanceString.AppendLine("},");
-                        }
-                    }
-                    jsonAttendanceString.AppendLine("]");
-
-                    try
-                    {
-                        if (validAttendance)
-                        {
-                            //now send to API call <entity type>/Multiple
-                            var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
-                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
-                            {
-                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
-                                if (returnObj != null)
-                                {
-                                    var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                    isComplete = true;
-                                    //mark mapped parent practitioner of last date attendance was sent
-                                    parent.LastAttendanceSubmittedDate = DateTime.Now;
-                                    _mapperRepo.Update(parent);
-
-                                    attendancesSent++;
-                                }
-                                else //error empty response received
-                                {
-                                    await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
-                    }
-                }
-                catch (Exception e)
-                {
-                    await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
-                }
-            }
-        }
-        await _logManager.IntegrationLog($"IntegrationAttendanceData Completed at {DateTime.Now}", $"Attendances sent {attendancesSent}", null, LogRelatedType.Log, "IntegrationAttendanceData");
-        return isComplete;
-    }
+    
 
     public async Task<bool> IntegrationUpdates()
     {
@@ -4269,6 +4073,206 @@ public class SmartStartIntegrationService : IIntegrationService
     #endregion
 
     #region Decommisioned Code
+
+    public async Task<bool> IntegrationAttendanceDataDecommissioned()
+    {
+        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
+        int attendancesSent = 0;
+        bool isComplete = false;
+
+        _mappedEntities = await GetMappedEntities();
+        int trackingDays = 2;
+        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();
+
+        DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
+        DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
+
+        foreach (var parent in attendancesDueList)
+        {
+            IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+            var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
+            if (attendanceData.Any())
+            {
+                try
+                {
+                    bool validAttendance = false;
+                    string absent = "Absent";
+                    string nosession = "No Session";
+                    string unknown = "Unknown";
+                    string present = "Present";
+                    string pholiday = "Public Holiday";
+                    StringBuilder jsonAttendanceString = new StringBuilder();
+                    jsonAttendanceString.AppendLine("[");
+                    //get list of children
+                    List<string> children = attendanceData.Select(x => x.UserId).Distinct().ToList();
+                    foreach (var child in children)
+                    {
+                        int daysPresent = 0;
+                        int daysAbsent = 0;
+                        //set everything to nosession and override as teh days are iterated through - whether absent or present or a holiday
+                        string mondayPresent = unknown;
+                        string tuesdayPresent = unknown;
+                        string wednesdayPresent = unknown;
+                        string thursdayPresent = unknown;
+                        string fridayPresent = unknown;
+                        string defaultState = unknown;
+                        //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
+                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
+                        if (mappedChild != null)
+                        {
+                            var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+                            //mark public holidays off first
+                            if (holidays.Count > 0)
+                            {
+                                foreach (var publicholiday in holidays)
+                                {
+                                    switch (publicholiday.Day.ToString("dddd"))
+                                    {
+                                        case "Monday":
+                                            mondayPresent = pholiday;
+                                            break;
+                                        case "Tuesday":
+                                            tuesdayPresent = pholiday;
+                                            break;
+                                        case "Wednesday":
+                                            wednesdayPresent = pholiday;
+                                            break;
+                                        case "Thursday":
+                                            thursdayPresent = pholiday;
+                                            break;
+                                        case "Friday":
+                                            fridayPresent = pholiday;
+                                            break;
+
+                                    }
+                                }
+                            }
+                            foreach (var attendance in childAttendances)
+                            {
+                                switch (attendance.AttendanceDate.ToString("dddd"))
+                                {
+                                    case "Monday":
+                                        if (attendance.Attended)
+                                        {
+                                            mondayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            mondayPresent = absent;
+                                        }
+                                        break;
+                                    case "Tuesday":
+                                        if (attendance.Attended)
+                                        {
+                                            tuesdayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            tuesdayPresent = absent;
+                                        }
+                                        break;
+                                    case "Wednesday":
+                                        if (attendance.Attended)
+                                        {
+                                            wednesdayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            wednesdayPresent = absent;
+                                        }
+                                        break;
+                                    case "Thursday":
+                                        if (attendance.Attended)
+                                        {
+                                            thursdayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            thursdayPresent = absent;
+                                        }
+                                        break;
+                                    case "Friday":
+                                        if (attendance.Attended)
+                                        {
+                                            fridayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            fridayPresent = absent;
+                                        }
+                                        break;
+                                }
+                                validAttendance = true;
+                            }
+                            //[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
+
+                            jsonAttendanceString.AppendLine("{");
+                            jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                            jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + daysPresent + ",");
+                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + daysAbsent + ",");
+                            jsonAttendanceString.AppendLine("\"Monday\":\"" + mondayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Tuesday\":\"" + tuesdayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Wednesday\":\"" + wednesdayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Thursday\":\"" + thursdayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Friday\":\"" + fridayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + parent.RemoteId + "\"},");
+                            jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + mappedChild.RemoteId + "\"}");
+                            jsonAttendanceString.AppendLine("},");
+                        }
+                    }
+                    jsonAttendanceString.AppendLine("]");
+
+                    try
+                    {
+                        if (validAttendance)
+                        {
+                            //now send to API call <entity type>/Multiple
+                            var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
+                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
+                            {
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
+                                if (returnObj != null)
+                                {
+                                    var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                    isComplete = true;
+                                    //mark mapped parent practitioner of last date attendance was sent
+                                    parent.LastAttendanceSubmittedDate = DateTime.Now;
+                                    _mapperRepo.Update(parent);
+
+                                    attendancesSent++;
+                                }
+                                else //error empty response received
+                                {
+                                    await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
+                }
+            }
+        }
+        await _logManager.IntegrationLog($"IntegrationAttendanceData Completed at {DateTime.Now}", $"Attendances sent {attendancesSent}", null, LogRelatedType.Log, "IntegrationAttendanceData");
+        return isComplete;
+    }
 
     //private async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
     //{

@@ -73,9 +73,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
     int? weekOfYear)
         {
             var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
-              .Where(x => x.Year == year);
+                .Where(x => x.Year == year);
 
-            if (monthOfYear != null)
+            if (monthOfYear != null && monthOfYear > 0)
             {
                 attendance = attendance.Where(x => x.MonthOfYear == monthOfYear);
             }
