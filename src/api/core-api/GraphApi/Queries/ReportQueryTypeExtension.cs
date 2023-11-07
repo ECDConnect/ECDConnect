@@ -32,6 +32,7 @@ using ECDLink.SmartStart.Reports.ChildProgressReport;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
 using HotChocolate;
+using HotChocolate.Data.Filters.Expressions;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -216,6 +217,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 foreach (var group in classroomGroups)
                 {
                     var learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
+                    var children = attendanceService.GetChildrenForUser(userId);
+
 
                     int childCount = learners.Count;
                     int month = fromDate.Month;
@@ -843,7 +846,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var percentOfChildrenOutsideAgeGroup = childrenOutsideAgeGroupCount ?? 1 / (children?.Count ?? 1) * 100;
             return percentOfChildrenOutsideAgeGroup;
         }
-        private static int GetIncompleteChildRegistrations(List<Child> children, IQueryable<Learner> learners)
+        private static int GetIncompleteChildRegistrations(List<Child> children, IQueryable<Learner> learners, IQueryable<Document> documents)
         {
             var incompleteRegistrations = 0;
             if (children != null && children.Count() > 0)
@@ -861,7 +864,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             }
                             else
                             {
-                                if (child.CaregiverId is null || child.Documents is null || child.Documents.Count() == 0)
+                                var existingDocument = documents.Where(d => d.UserId == child.UserId).FirstOrDefault();
+                                if (child.CaregiverId is null || (existingDocument == null && child.InsertedDate < DateTime.Now.AddDays(-14)))
                                 {
                                     incompleteRegistrations += 1;
                                 }
@@ -1251,6 +1255,7 @@ string practitionerId)
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
             var pqaRatingRepo = repoFactory.CreateGenericRepository<PQARating>(userContext: uId);
+            var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
 
             var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
             var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
@@ -1333,25 +1338,26 @@ string practitionerId)
                 #endregion
 
                 #region INCOMPLETE CHILD REGISTRATIONS
-                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
-                                        .Include(c => c.User)
-                                        .ThenInclude(x => x.Documents)
-                                        .ToListAsync().Result;
-                var childUserIds = children.Select(c => c.UserId);
-                var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true);
+                 var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
+                                         .Include(c => c.User)
+                                         .ToListAsync().Result;
+                 var childUserIds = children.Select(c => c.UserId);
+                 var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true);
+                 var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true 
+                 && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate));
 
-                var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners);
-                if (incompleteRegistrations > 0)
-                {
-                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "Child Registrations";
-                    yield return notification;
-                    continue;
-                }
+                 var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
+                 if (incompleteRegistrations > 0)
+                 {
+                     notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
+                     notification.Icon = MetricsIconEnum.Error.ToString();
+                     notification.Color = MetricsColorEnum.Error.ToString();
+                     notification.Message = "";
+                     notification.Notes = "";
+                     notification.GroupingName = "Child Registrations";
+                     yield return notification;
+                     continue;
+                 }
                 #endregion
 
                 #region ON LEAVE

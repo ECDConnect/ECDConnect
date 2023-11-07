@@ -1,21 +1,21 @@
 import { createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  acceptNewClubLeaderRole,
   addNewClub,
   addNewClubLeader,
   addNewClubMembers,
   changeClubName,
   getActivityBeCreativeDetails,
   getActivityMeetRegularDetails,
-  getAllClubMembersForCoach,
-  getAllClubsDetailsForCoach,
-  getAllClubsForCoach,
+  getClubById,
   getClubForUser,
+  getClubsForCoach,
   moveClubMembers,
   saveWelcomeMessage,
   updateCoachAboutInfo,
 } from './club.actions';
-import { ClubState, MergedCoachingClub } from './club.types';
+import { ClubState } from './club.types';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
 
@@ -29,14 +29,13 @@ const clubSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     // Coach
-    setThunkActionStatus(builder, getAllClubsForCoach);
+    setThunkActionStatus(builder, getClubById);
+    setThunkActionStatus(builder, getClubsForCoach);
     setThunkActionStatus(builder, addNewClub);
     setThunkActionStatus(builder, addNewClubLeader);
-    setThunkActionStatus(builder, addNewClubMembers);
     setThunkActionStatus(builder, moveClubMembers);
     setThunkActionStatus(builder, changeClubName);
     setThunkActionStatus(builder, updateCoachAboutInfo);
-    setThunkActionStatus(builder, getAllClubsDetailsForCoach);
     setThunkActionStatus(builder, getActivityMeetRegularDetails);
     setThunkActionStatus(builder, getActivityBeCreativeDetails);
     builder.addCase(getActivityBeCreativeDetails.fulfilled, (state, action) => {
@@ -72,7 +71,8 @@ const clubSlice = createSlice({
         };
       }
     );
-    builder.addCase(getAllClubsForCoach.fulfilled, (state, action) => {
+
+    builder.addCase(getClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
       state.clubsForCoach = action.payload.reduce((dictionary, item) => {
@@ -81,10 +81,7 @@ const clubSlice = createSlice({
             ...dictionary,
             [item.id]: {
               ...state.clubsForCoach[item.id],
-              club: {
-                ...state.clubsForCoach[item.id].club,
-                ...item,
-              },
+              club: item,
             },
           };
         } else {
@@ -96,7 +93,18 @@ const clubSlice = createSlice({
           };
         }
       }, {});
-      console.log('state.clubsForCoach', state.clubsForCoach);
+    });
+    builder.addCase(getClubById.fulfilled, (state, action) => {
+      if (!!action.payload) {
+        state.clubsForCoach = {
+          ...state.clubsForCoach,
+          [action.payload.id]: {
+            ...state.clubsForCoach[action.payload.id],
+            club: action.payload,
+          },
+        };
+      }
+      setFulfilledThunkActionStatus(state, action);
     });
     // TODO -> Make all these add actions return the new data, so we can add it to state here
     builder.addCase(addNewClub.fulfilled, (state, action) => {
@@ -122,56 +130,6 @@ const clubSlice = createSlice({
 
       setFulfilledThunkActionStatus(state, action);
     });
-    // TODO: fix types, why is this returning multiple clubs at once???
-    builder.addCase(getAllClubMembersForCoach.fulfilled, (state, action) => {
-      state.clubsForCoach = Object.keys(state.clubsForCoach).reduce(
-        (dictionary, clubId) => {
-          const clubMembers = action.payload.find((item) => item.id === clubId);
-          if (!!clubMembers) {
-            return {
-              ...dictionary,
-              [clubId]: {
-                ...state.clubsForCoach[clubId],
-                ...clubMembers,
-              },
-            };
-          } else {
-            return {
-              ...dictionary,
-              [clubId]: { ...state.clubsForCoach[clubId] },
-            };
-          }
-        },
-        {}
-      );
-
-      setFulfilledThunkActionStatus(state, action);
-    });
-    builder.addCase(getAllClubsDetailsForCoach.fulfilled, (state, action) => {
-      state.clubsForCoach = Object.keys(state.clubsForCoach).reduce(
-        (dictionary, clubId) => {
-          const updatedClub = action.payload.find((item) => item.id === clubId);
-          if (!!updatedClub) {
-            return {
-              ...dictionary,
-              [clubId]: {
-                ...state.clubsForCoach[clubId],
-                club: updatedClub as MergedCoachingClub,
-                dateLoaded: new Date(),
-              },
-            };
-          } else {
-            return {
-              ...dictionary,
-              [clubId]: { ...state.clubsForCoach[clubId] },
-            };
-          }
-        },
-        {}
-      );
-
-      setFulfilledThunkActionStatus(state, action);
-    });
     builder.addCase(updateCoachAboutInfo.fulfilled, (state, action) => {
       if (action.payload && action.payload.aboutInfo) {
         state.clubsForCoach = Object.keys(state.clubsForCoach).reduce(
@@ -182,7 +140,10 @@ const clubSlice = createSlice({
                 ...state.clubsForCoach[clubId],
                 club: {
                   ...state.clubsForCoach[clubId].club,
-                  aboutInfo: action.payload.aboutInfo ?? '',
+                  clubCoach: {
+                    ...state.clubsForCoach[clubId].club.clubCoach,
+                    aboutInfo: action.payload.aboutInfo ?? '',
+                  },
                 },
               },
             };
@@ -193,6 +154,7 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     // Practitioner
+    setThunkActionStatus(builder, acceptNewClubLeaderRole);
     setThunkActionStatus(builder, getClubForUser);
     setThunkActionStatus(builder, saveWelcomeMessage);
     builder.addCase(getClubForUser.fulfilled, (state, action) => {
@@ -201,6 +163,9 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(saveWelcomeMessage.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(acceptNewClubLeaderRole.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },

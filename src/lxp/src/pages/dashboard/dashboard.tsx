@@ -117,7 +117,9 @@ export const Dashboard: React.FC = () => {
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   const a = useCallback(async () => {
-    appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+    if (isOnline) {
+      appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+    }
   }, []);
 
   useEffect(() => {
@@ -349,13 +351,15 @@ export const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    initStaticStoreSetup();
-    if (
-      dashboardNotification?.isNew &&
-      practitioner?.progress! >= 2 &&
-      !practitioner?.isTrainee
-    ) {
-      appDispatch(notificationActions.resetNotificationState());
+    if (isOnline) {
+      initStaticStoreSetup();
+      if (
+        dashboardNotification?.isNew &&
+        practitioner?.progress! >= 2 &&
+        !practitioner?.isTrainee
+      ) {
+        appDispatch(notificationActions.resetFrontendNotificationState());
+      }
     }
   }, []);
 
@@ -674,15 +678,16 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
-    dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.icon,
-      classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
-    });
+    //EC-1909 - Suppress ticket
+    // dashboardItems.push({
+    //   title: 'Calendar',
+    //   titleIcon: 'CalendarIcon',
+    //   titleIconClassName: styles.icon,
+    //   classNames: 'bg-uiBg',
+    //   onActionClick: () => {
+    //     goToCalendar();
+    //   },
+    // });
   }
 
   if (!isCoach) {
@@ -695,15 +700,16 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
-    dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.calendarIcon,
-      classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
-    });
+    //EC-1909 - Suppress ticket
+    // dashboardItems.push({
+    //   title: 'Calendar',
+    //   titleIcon: 'CalendarIcon',
+    //   titleIconClassName: styles.calendarIcon,
+    //   classNames: 'bg-uiBg',
+    //   onActionClick: () => {
+    //     goToCalendar();
+    //   },
+    // });
   }
 
   if (!isTrainee) {
@@ -958,7 +964,8 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {/* EC-1909 - Suppress ticket */}
+        {/* {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
@@ -991,7 +998,7 @@ export const Dashboard: React.FC = () => {
             image={leagueCard.image}
             textColour={leagueCard.textColour}
           />
-        )}
+        )} */}
       </div>
     </BannerWrapper>
   );

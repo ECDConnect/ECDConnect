@@ -227,8 +227,10 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           : ''
       );
       setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
+
+      setReassignClassValue('reason', allAbsenteeClasses?.[0]?.reason);
     }
-  }, [allAbsenteeClasses, endDate, setReassignClassValue]);
+  }, []);
 
   const submitReassignClass = async () => {
     if (
@@ -383,6 +385,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             fillType="clear"
             label={'Reason for absence'}
             fullWidth
+            selectedValue={reason}
             className={'mt-3 w-full'}
             onChange={(item: any) => {
               setReassignClassValue('reason', item);
@@ -398,29 +401,73 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             />
           )}
 
-          {allAbsenteeClasses && allAbsenteeClasses?.length > 0 ? (
-            allAbsenteeClasses?.map((item, index) => {
-              const classroomId =
-                practitionerClassroomGroups?.find(
-                  (group) => group?.name === item?.className
-                )?.classroomId || '';
-              const absenteeId = item?.absenteeId;
-              return (
-                <>
-                  {item?.className && (
+          {allAbsenteeClasses && allAbsenteeClasses?.length > 0
+            ? allAbsenteeClasses?.map((item, index) => {
+                const classroomId =
+                  practitionerClassroomGroups?.find(
+                    (group) => group?.name === item?.className
+                  )?.classroomId || '';
+                const absenteeId = item?.absenteeId;
+                return (
+                  <>
+                    {item?.className && (
+                      <Dropdown
+                        key={index}
+                        placeholder={'Select practitioner'}
+                        list={practitionersTeachList || []}
+                        fillType="clear"
+                        label={`Who will teach the ${item?.className} class instead?`}
+                        fullWidth
+                        className={'mt-3 w-full'}
+                        onChange={(practitioner: any) => {
+                          const reassignedData = {
+                            practitioner,
+                            classroomId,
+                            absenteeId,
+                          };
+                          setReassignClassValue('practitioner2', practitioner);
+                          handleReassignClassroomGroupPractitioner(
+                            reassignedData
+                          );
+                        }}
+                      />
+                    )}
+                    {practitionerPresentName?.user?.fullName &&
+                      item?.className && (
+                        <Alert
+                          className={'mt-5 mb-3'}
+                          title={`You are reassigning ${
+                            practitionerAbsentName?.user?.fullName || ''
+                          }'s class ${item?.className} to ${
+                            practitionerPresentName?.user?.fullName || ''
+                          } for ${format(
+                            new Date(selectedDate!),
+                            'EEEE, d LLLL'
+                          )}.`}
+                          type={'info'}
+                        />
+                      )}
+                  </>
+                );
+              })
+            : practitionerClassroomGroups.length > 0 &&
+              practitionersTeachList?.length > 0 &&
+              practitionerClassroomGroups?.map((item, index) => {
+                const classroomId = item?.id!;
+                return (
+                  <>
                     <Dropdown
                       key={index}
                       placeholder={'Select practitioner'}
                       list={practitionersTeachList || []}
                       fillType="clear"
-                      label={`Who will teach the ${item?.className} class instead?`}
+                      label={`Who will teach the ${item?.name} class instead?`}
                       fullWidth
                       className={'mt-3 w-full'}
                       onChange={(practitioner: any) => {
                         const reassignedData = {
                           practitioner,
                           classroomId,
-                          absenteeId,
                         };
                         setReassignClassValue('practitioner2', practitioner);
                         handleReassignClassroomGroupPractitioner(
@@ -428,70 +475,29 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
                         );
                       }}
                     />
-                  )}
-                  {practitionerPresentName?.user?.fullName &&
-                    item?.className && (
-                      <Alert
-                        className={'mt-5 mb-3'}
-                        title={`You are reassigning ${
-                          practitionerAbsentName?.user?.fullName || ''
-                        }'s class ${item?.className} to ${
-                          practitionerPresentName?.user?.fullName || ''
-                        } for ${format(
-                          new Date(selectedDate!),
-                          'EEEE, d LLLL'
-                        )}.`}
-                        type={'info'}
-                      />
-                    )}
-                </>
-              );
-            })
-          ) : practitionerClassroomGroups.length > 0 ? (
-            practitionerClassroomGroups?.map((item, index) => {
-              const classroomId = item?.id!;
-              return (
-                <>
-                  <Dropdown
-                    key={index}
-                    placeholder={'Select practitioner'}
-                    list={practitionersTeachList || []}
-                    fillType="clear"
-                    label={`Who will teach the ${item?.name} class instead?`}
-                    fullWidth
-                    className={'mt-3 w-full'}
-                    onChange={(practitioner: any) => {
-                      const reassignedData = {
-                        practitioner,
-                        classroomId,
-                      };
-                      setReassignClassValue('practitioner2', practitioner);
-                      handleReassignClassroomGroupPractitioner(reassignedData);
-                    }}
-                  />
-                  {practitionerPresentName?.user?.fullName &&
-                    principalOrFundaAppAdmin &&
-                    selectedDate &&
-                    endDate && (
-                      <Alert
-                        className={'mt-5 mb-3'}
-                        title={`You are reassigning ${
-                          practitionerAbsentName?.user?.fullName || ''
-                        }'s programme and class from ${format(
-                          new Date(selectedDate!),
-                          'EEEE, d LLLL'
-                        )} to ${format(new Date(endDate!), 'EEEE, d LLLL')}.`}
-                        list={[
-                          `${principalOrFundaAppAdminPractitioner?.user?.firstName} will be the Funda App Admin for ${practitionerProgramme}`,
-                          `${practitionerPresentName?.user?.firstName} will teach the ${item?.name} class`,
-                        ]}
-                        type={'info'}
-                      />
-                    )}
-                </>
-              );
-            })
-          ) : (
+                    {practitionerPresentName?.user?.fullName &&
+                      principalOrFundaAppAdmin &&
+                      selectedDate &&
+                      endDate && (
+                        <Alert
+                          className={'mt-5 mb-3'}
+                          title={`You are reassigning ${
+                            practitionerAbsentName?.user?.fullName || ''
+                          }'s programme and class from ${format(
+                            new Date(selectedDate!),
+                            'EEEE, d LLLL'
+                          )} to ${format(new Date(endDate!), 'EEEE, d LLLL')}.`}
+                          list={[
+                            `${principalOrFundaAppAdminPractitioner?.user?.firstName} will be the Funda App Admin for ${practitionerProgramme}`,
+                            `${practitionerPresentName?.user?.firstName} will teach the ${item?.name} class`,
+                          ]}
+                          type={'info'}
+                        />
+                      )}
+                  </>
+                );
+              })}
+          {practitionerClassroomGroups?.length === 0 && (
             <Alert
               className={'mt-5 mb-3'}
               title="No class reassignment needed."

@@ -314,7 +314,11 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
-        path={[ROUTES.COMMUNITY.CLUB.POINTS.HELP, ROUTES.COMMUNITY.LEAGUE.HELP]}
+        path={[
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP,
+          ROUTES.COMMUNITY.LEAGUE.HELP,
+          ROUTES.COMMUNITY.HELP,
+        ]}
         component={ActivityHelp}
         exact
       />
