@@ -22,6 +22,7 @@ using DinkToPdf;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
+using System.Threading.Tasks;
 
 namespace ECDLink.Core.Services
 {
@@ -421,11 +422,20 @@ namespace ECDLink.Core.Services
             {
                 if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
                 {
-                    var pdfDoc = CreateIncomeStatementPDFDocument(userId, submittedStatement);
-                    if (pdfDoc != null)
+                    var task = Task.Run(() => CreateIncomeStatementPDFDocument(userId, submittedStatement));
+
+                    // Force a timeout on the PDF creation which sometimes gets stuck
+                    if (task.Wait(TimeSpan.FromSeconds(10)))
                     {
-                        submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
-                        _statementsRepo.Update(submittedStatement);
+                        if (task.Result != null)
+                        {
+                            submittedStatement.RelatedDocumentId = task.Result.Id.ToString();
+                            _statementsRepo.Update(submittedStatement);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("PDF creation timed out");
                     }
                 }
             }

@@ -24,6 +24,7 @@ import {
   LocalStorageKeys,
   SmartStartPointsLibrary,
   getNextMonth,
+  getPreviousMonth,
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -184,9 +185,21 @@ export const SubmitIncomeStatements: React.FC = () => {
     ? lastMonthStatement.balance
     : 0;
 
-  const currentMonthRecord = isThisMonthSubmitted
-    ? format(getNextMonth(currentDate), 'MMM yyyy')
-    : format(currentDate, 'MMM yyyy');
+  const currentMonthRecord = useMemo(() => {
+    var date = new Date();
+    if (
+      !isLastMonthSubmitted &&
+      date.getDate() <= IncomeStatementDates.SubmitEndDay
+    ) {
+      return format(getPreviousMonth(date), 'MMM yyyy');
+    }
+
+    if (isThisMonthSubmitted) {
+      format(getNextMonth(date), 'MMM yyyy');
+    }
+
+    return format(date, 'MMM yyyy');
+  }, [isThisMonthSubmitted, isLastMonthSubmitted]);
 
   const currentMonthTotalIncome = unSubmittedIncomeItems.reduce(
     (total, item) => {
