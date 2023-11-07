@@ -23,6 +23,8 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string ImageUrl { get; set; }
+        public string Color { get; set; }
         public List<PractitionerClassProgressReportSubCategorySummary> SubCategories { get; set; }
     }
 
@@ -30,6 +32,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
     {
         public int Id { get; set; }
         public string Name { get; set; }
+        public string ImageUrl { get; set; }
         public List<PractitionerClassProgressReportSkillSummary> ChildrenPerSkill { get; set; }
     }
 
