@@ -359,18 +359,23 @@ class ClubService {
             }
             clubLeader {
               userId
+              practitionerId
               firstName
               surname
               phoneNumber
               whatsAppNumber
+              profileImageUrl
               dateAccepted
+              dateAssigned
             }
             clubSupport {
               userId
+              practitionerId
               firstName
               surname
               phoneNumber
               whatsAppNumber
+              profileImageUrl
               dateAssigned
             }
             clubMembers {
@@ -380,6 +385,7 @@ class ClubService {
               surname
               phoneNumber
               whatsAppNumber
+              profileImageUrl
               welcomeMessage
             }
           }
@@ -432,6 +438,7 @@ class ClubService {
               phoneNumber
               whatsAppNumber
               profileImageUrl
+              dateAssigned
               dateAccepted
             }
             incomingClubLeader {

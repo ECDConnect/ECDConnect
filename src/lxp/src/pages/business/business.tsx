@@ -38,9 +38,15 @@ export const Business: React.FC = () => {
   };
 
   const practitioner = useSelector(getPractitioner);
-  const [showInfo, setShowInfo] = useState(
-    !!practitioner ? !practitioner.isCompletedBusinessWalkThrough : false
-  );
+  const [showInfo, setShowInfo] = useState(false);
+
+  useEffect(() => {
+    if (practitioner?.isCompletedBusinessWalkThrough) {
+      setShowInfo(false);
+    } else {
+      setShowInfo(true);
+    }
+  }, [practitioner?.isCompletedBusinessWalkThrough]);
 
   const updateWalkThroughStatus = useCallback(
     (status: boolean) => {

@@ -23,13 +23,11 @@ export const formatCurrency = (value: number) => {
   return numberWithSpaces(value.toFixed(2));
 };
 
-export const getChildName = (childId: string, children: ChildDto[]) => {
-  const childName: ChildDto =
-    children?.find((item) => item?.id === childId) || {};
-  return (
-    childName?.user?.fullName ||
-    `${childName?.user?.firstName} ${childName?.user?.surname}`
-  );
+export const getChildName = (childUserId: string, children: ChildDto[]) => {
+  const child = children?.find((item) => item?.userId === childUserId);
+  return !!child
+    ? `${child?.user?.firstName} ${child?.user?.surname}`
+    : 'Unknown';
 };
 
 export const formatCurrentValue = (value: number) => {

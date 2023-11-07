@@ -14,6 +14,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string ProfileImageUrl { get; set; }
         public DateTime? DateAssigned { get; set; }
 
+         public DateTime? DateAccepted { get; set; }
+
         public ClubSupportModel(ClubSupport clubSupport)
         {
             UserId = clubSupport.Practitioner.User.Id;
@@ -23,6 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             PhoneNumber = clubSupport.Practitioner.User.PhoneNumber;
             WhatsAppNumber = clubSupport.Practitioner.User.WhatsAppNumber;
             DateAssigned = clubSupport.DateAssigned;
+            DateAccepted = clubSupport.DateAccepted;
         }
     }
 }

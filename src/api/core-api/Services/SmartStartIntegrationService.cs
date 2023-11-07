@@ -702,10 +702,12 @@ public class SmartStartIntegrationService : IIntegrationService
         _mappedEntities = await GetMappedEntities(null, true, true);
         int trackingDays = 2;
         string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "9582f71b-87b4-4b9c-bc9d-06c10cf8e2fe"))
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
 
-        DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
-        DateTime followingWeekDate = DateTime.Now.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
+        DateTime trackingDate = DateTime.Now;
+
+        DateTime trackingWeekDate = trackingDate.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
+        DateTime followingWeekDate = trackingDate.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
 
         string absent = "Absent";
         string nosession = "No Session";
@@ -714,13 +716,13 @@ public class SmartStartIntegrationService : IIntegrationService
         string pholiday = "Public Holiday";
 
         var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
-
-        bool isMeetingDay = false;
-
-        DateTime nextDay = trackingWeekDate;
-
+        int trackingWeekOfYear = trackingWeekDate.GetWeekOfYear();        
+       
         foreach (var parent in attendancesDueList)
         {
+            bool isMeetingDay = false;
+            DateTime nextDay = trackingWeekDate;
+
             StringBuilder jsonAttendanceString = new StringBuilder();
             jsonAttendanceString.AppendLine("[");
             Dictionary<string, bool> meetingDays = new Dictionary<string, bool>();
@@ -814,7 +816,7 @@ public class SmartStartIntegrationService : IIntegrationService
             if (allLearners.Count > 0)
             {
                 //now get the actual attendances available and set that back to objkect aswell
-                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, null, trackingWeekOfYear);
                 if (weeklyAttendance.Any())
                 {
                     try
@@ -831,7 +833,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             int daysPresent = 0;
                             int daysAbsent = 0;
 
-                            var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+                            var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child)).OrderBy(x => x.AttendanceDate).ToList();
 
                             foreach (var attendance in childAttendances)
                             {
@@ -939,210 +941,12 @@ public class SmartStartIntegrationService : IIntegrationService
     }
 
 
-    public async Task<bool> IntegrationAttendanceData()
-    {
-        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
-        int attendancesSent = 0;
-        bool isComplete = false;
-
-        _mappedEntities = await GetMappedEntities();
-        int trackingDays = 2;
-        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays)) ).ToList(); 
-
-         DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
-        DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
-
-        foreach (var parent in attendancesDueList)
-        {
-            IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
-            var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
-            if (attendanceData.Any())
-            {
-                try
-                {
-                    bool validAttendance = false;
-                    string absent = "Absent";
-                    string nosession = "No Session";
-                    string unknown = "Unknown";
-                    string present = "Present";
-                    string pholiday = "Public Holiday";
-                    StringBuilder jsonAttendanceString = new StringBuilder();
-                    jsonAttendanceString.AppendLine("[");
-                    //get list of children
-                    List<string> children = attendanceData.Select(x => x.UserId).Distinct().ToList();
-                    foreach (var child in children)
-                    {
-                        int daysPresent = 0;
-                        int daysAbsent = 0;
-                        //set everything to nosession and override as teh days are iterated through - whether absent or present or a holiday
-                        string mondayPresent = unknown;
-                        string tuesdayPresent = unknown;
-                        string wednesdayPresent = unknown;
-                        string thursdayPresent = unknown;
-                        string fridayPresent = unknown;
-                        string defaultState = unknown;
-                        //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
-                        if (mappedChild != null)
-                        {                           
-                            var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
-                            //mark public holidays off first
-                            if (holidays.Count>0)
-                            {
-                                foreach(var publicholiday in holidays)
-                                {
-                                    switch (publicholiday.Day.ToString("dddd"))
-                                    {
-                                        case "Monday":
-                                        mondayPresent = pholiday;
-                                        break;
-                                    case "Tuesday":
-                                        tuesdayPresent = pholiday;
-                                        break;
-                                    case "Wednesday":
-                                        wednesdayPresent = pholiday;
-                                        break;
-                                    case "Thursday":
-                                        thursdayPresent = pholiday;
-                                        break;
-                                    case "Friday":
-                                        fridayPresent = pholiday;
-                                        break;
-
-                                    }
-                                }
-                            }                            
-                            foreach (var attendance in childAttendances)
-                            {
-                                switch (attendance.AttendanceDate.ToString("dddd"))
-                                {
-                                    case "Monday":
-                                        if (attendance.Attended)
-                                        {
-                                            mondayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            mondayPresent = absent;
-                                        }
-                                        break;
-                                    case "Tuesday":
-                                        if (attendance.Attended)
-                                        {
-                                            tuesdayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            tuesdayPresent = absent;
-                                        }
-                                        break;
-                                    case "Wednesday":
-                                        if (attendance.Attended)
-                                        {
-                                            wednesdayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            wednesdayPresent = absent;
-                                        }
-                                        break;
-                                    case "Thursday":
-                                        if (attendance.Attended)
-                                        {
-                                            thursdayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            thursdayPresent = absent;
-                                        }
-                                        break;
-                                    case "Friday":
-                                        if (attendance.Attended)
-                                        {
-                                            fridayPresent = present;
-                                            daysPresent++;
-                                        }
-                                        else if (!attendance.Attended)
-                                        {
-                                            daysAbsent++;
-                                            fridayPresent = absent;
-                                        }
-                                        break;
-                                }
-                                validAttendance = true;
-                            }
-                            //[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
-
-                            jsonAttendanceString.AppendLine("{");
-                            jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + daysPresent + ",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + daysAbsent + ",");
-                            jsonAttendanceString.AppendLine("\"Monday\":\"" + mondayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Tuesday\":\"" + tuesdayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Wednesday\":\"" + wednesdayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Thursday\":\"" + thursdayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Friday\":\"" + fridayPresent + "\",");
-                            jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + parent.RemoteId + "\"},");
-                            jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + mappedChild.RemoteId + "\"}");
-                            jsonAttendanceString.AppendLine("},");
-                        }
-                    }
-                    jsonAttendanceString.AppendLine("]");
-
-                    try
-                    {
-                        if (validAttendance)
-                        {
-                            //now send to API call <entity type>/Multiple
-                            var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
-                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
-                            {
-                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
-                                if (returnObj != null)
-                                {
-                                    var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                    isComplete = true;
-                                    //mark mapped parent practitioner of last date attendance was sent
-                                    parent.LastAttendanceSubmittedDate = DateTime.Now;
-                                    _mapperRepo.Update(parent);
-
-                                    attendancesSent++;
-                                }
-                                else //error empty response received
-                                {
-                                    await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
-                                }
-                            }
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
-                    }
-                }
-                catch (Exception e)
-                {
-                    await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
-                }
-            }
-        }
-        await _logManager.IntegrationLog($"IntegrationAttendanceData Completed at {DateTime.Now}", $"Attendances sent {attendancesSent}", null, LogRelatedType.Log, "IntegrationAttendanceData");
-        return isComplete;
-    }
+    
 
     public async Task<bool> IntegrationUpdates()
     {
         await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
-        int historyDays = 2;
+        int historyDays = 2; //TODO: change this to look for last successfull run and do incremental calls to SL only, the overlap is extra data and gets mostly discarded anyways, plus making the payloads bigger, more room for error
         bool returnOK = false;
         RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays * -1), DateTime.Now);
         _mappedEntities = await GetMappedEntities(null, true, true);
@@ -3140,9 +2944,8 @@ public class SmartStartIntegrationService : IIntegrationService
                 case Constants.SSIntegrationSettings.SLTrainee:
                     //TODO:
                     MappedTrainee trainee = await _apiManager.GetTraineesById(model.Guid);
-
-
                     break;
+
             }
 
             //}
@@ -3681,12 +3484,12 @@ public class SmartStartIntegrationService : IIntegrationService
         var inserts = _audits.Where(x => x.ChangeType.Equals("Insert") && x.Submitted == null).ToList();
         List<IntegrationAudit> completedAudits = new List<IntegrationAudit>();
 
-        //Child user entities push
+        //Child user entities push with caregivers, finish first
         var childrenInserted = inserts.Where(a => string.Equals(a.Entity,"Child"));
         foreach (var childAudit in childrenInserted)
         {
             var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
-            if (newChild != null)
+            if (newChild != null && newChild.CaregiverId != null) //only pick children up that has valid caregivers at the time of running due to the consent
             {
                 //final check if the child hasnt already been created to avoid duplicates
                 var existingChild = _mappedEntities.Where(x => x.UserId == newChild.UserId && x.LocalEntity.Equals("Child")).FirstOrDefault();
@@ -3705,14 +3508,17 @@ public class SmartStartIntegrationService : IIntegrationService
                             {
                                 string remoteChildEntityId = await PushNewChild(newChild, mappedPractitioner.RemoteId);
                                 //write back that these have been processed
-                                List<IntegrationAudit> caregiverAudits = _audits.Where(a => a.Entity.Equals("Caregiver") && a.RelatedId.ToString() == newChild.CaregiverId.ToString()).ToList();
-                                if (caregiverAudits != null)
+                                if (newChild.CaregiverId != null) //if no caregiver has been created at this point, dont fail, it iwll be picked up next time
                                 {
-                                    completedAudits.AddRange(caregiverAudits);
-                                    foreach (var cgAudits in caregiverAudits)
+                                    List<IntegrationAudit> caregiverAudits = _audits.Where(a => a.Entity.Equals(Constants.SSIntegrationSettings.SSCaregiver) && a.RelatedId.ToString() == newChild.CaregiverId.ToString()).ToList();
+                                    if (caregiverAudits != null)
                                     {
-                                        //remove from overhanging audit lines
-                                        _audits.Remove(cgAudits);
+                                        completedAudits.AddRange(caregiverAudits);
+                                        foreach (var cgAudits in caregiverAudits)
+                                        {
+                                            //remove from overhanging audit lines
+                                            _audits.Remove(cgAudits);
+                                        }
                                     }
                                 }
                                 var childAudits = _audits.Where(a => (a.Entity.Equals("Child") && a.RelatedId.ToString() == newChild.Id.ToString()) || (a.Entity.Equals("ApplicationUser") && a.RelatedId.ToString() == newChild.UserId.ToString())).ToList();
@@ -3746,18 +3552,60 @@ public class SmartStartIntegrationService : IIntegrationService
             }
         }
 
+        //removed as caregivers coming in later means the child is not valid until caregiver is in system and consent can be sent
+        ////refresh audit entries
+        //_audits = await GetAudits(null, auditUserId, historyDays);
+        //var updatedInserts = _audits.Where(x => x.ChangeType.Equals("Insert") && x.Submitted == null).ToList();
+        ////any caregivers created/updated thats not part of the initial inserts that got missed due to timing
+        //var caregiversInserted = updatedInserts.Where(a => string.Equals(a.Entity, Constants.SSIntegrationSettings.SSCaregiver));
+        //foreach (var caregiverAudit in caregiversInserted)
+        //{
+        //    //check if the link has already been made in the mapping, ie sent to SL, if not create  the SL JSON make the link and update the child and then audits
+        //    Caregiver newCG = _caregiverRepo.GetById(Guid.Parse(caregiverAudit.RelatedId));
+        //    var existingCaregiver = _mappedEntities.Where(x => x.LocalId == newCG.Id.ToString() && string.Equals(x.LocalEntity,Constants.SSIntegrationSettings.SSCaregiver)).FirstOrDefault();
+        //    if (existingCaregiver != null)
+        //    {
+        //        //checked that everything is set and update the logs
+        //        List<IntegrationAudit> caregiverAudits = _audits.Where(a => string.Equals(a.Entity,Constants.SSIntegrationSettings.SSCaregiver) && a.RelatedId.ToString() == existingCaregiver.LocalId.ToString()).ToList();
+        //        if (caregiverAudits != null)
+        //        {
+        //            completedAudits.AddRange(caregiverAudits);
+        //            foreach (var cgAudits in caregiverAudits)
+        //            {
+        //                //remove from overhanging audit lines
+        //                _audits.Remove(cgAudits);
+        //            }
+        //        }
+        //    } else
+        //    {
+        //        List<IntegrationAudit> caregiverAudits = _audits.Where(a => a.Entity.Equals(Constants.SSIntegrationSettings.SSCaregiver) && a.RelatedId.ToString() == newCG.Id.ToString()).ToList();
+        //        //map caregiver and create SL link and update child
+        //        string remoteCaregiverEntityId = await PushNewCaregiverUpdateChild(newCG);
+        //        if (!string.IsNullOrWhiteSpace(remoteCaregiverEntityId))
+        //        {
+        //            completedAudits.AddRange(caregiverAudits);
+        //            foreach (var cgAudits in caregiverAudits)
+        //            {
+        //                //remove from overhanging audit lines
+        //                _audits.Remove(cgAudits);
+        //            }
+        //        }
+        //    }
+        //}
+
+
         //insert documents
-        var docsInserted = inserts.Where(a => a.Entity.Equals("Document"));
+        var docsInserted = inserts.Where(a => a.Entity.Equals(Constants.SSIntegrationSettings.SSDocument));
         foreach (var docAudit in docsInserted)
         {
             //TODO: Complete
             Document newDoc = _docRepo.GetById(Guid.Parse(docAudit.RelatedId));
-            var existingDoc = _mappedEntities.Where(x => x.LocalId == newDoc.Id.ToString() && x.LocalEntity.Equals("Document")).FirstOrDefault();
+            var existingDoc = _mappedEntities.Where(x => x.LocalId == newDoc.Id.ToString() && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSDocument)).FirstOrDefault();
             if (existingDoc == null)
             {
                 string remoteId = await PushNewDocument(newDoc);
             }
-            List<IntegrationAudit> allDocAudits = _auditRepo.GetAll().Where(x => x.Entity.Equals("Document") && x.RelatedId == docAudit.RelatedId && x.Submitted == null).ToList();
+            List<IntegrationAudit> allDocAudits = _auditRepo.GetAll().Where(x => x.Entity.Equals(Constants.SSIntegrationSettings.SSDocument) && x.RelatedId == docAudit.RelatedId && x.Submitted == null).ToList();
             if (allDocAudits.Any())
                 completedAudits.AddRange(allDocAudits);
         }
@@ -4022,6 +3870,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > CreateCaregiver");
                             }
                         }
+
                         jsonCaregiverString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"}");
                     }
                     jsonCaregiverString.AppendLine("}");
@@ -4256,6 +4105,192 @@ public class SmartStartIntegrationService : IIntegrationService
         return childRemoteId;
     }
 
+    private async Task<string> PushNewCaregiverUpdateChild(Caregiver newCG)
+    {
+        string cgRemoteId = "";
+        string childRemoteId = "";
+        IntegrationEntityMapping mappedPractitioner = new IntegrationEntityMapping();
+        IntegrationAPIManager.APIHandleResponse apiResponse = null;
+        if (newCG != null)
+        {
+            //retrieve the child this CG is linked to
+            Child cgChild = _childGenericRepo.GetAll().Where(x => x.CaregiverId != null && string.Equals(x.CaregiverId, newCG.Id)).FirstOrDefault();
+            if (cgChild != null)
+            {
+                //retrieve teh mapped child
+                IntegrationEntityMapping childMapping = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSChild) && x.UserId == cgChild.UserId).FirstOrDefault();
+                if (childMapping != null)
+                {
+                    childRemoteId = childMapping.RemoteId;
+                    try
+                    {
+                        var practitioner = GetPractitionerForChild(childMapping.UserId);
+                        if (practitioner != null)
+                        {
+                            //get remoteId
+                            mappedPractitioner = _mappedEntities.Where(x => x.UserId == practitioner.UserId && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+
+                            //insert caregiver and map
+                            StringBuilder jsonCaregiverString = new StringBuilder();
+                            string cgUrl = "";
+                            var caregiverColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals(Constants.SSIntegrationSettings.SSCaregiver) && c.IsActive == true).ToList();
+
+                            cgUrl = Constants.SSIntegrationSettings.SLCaregiver + Constants.SSIntegrationSettings.CreateMultiple;
+                            jsonCaregiverString.AppendLine("[{");
+                            if (caregiverColumns.Count() > 0)
+                            {
+                                foreach (var changeLine in caregiverColumns)
+                                {
+                                    try
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(changeLine.LocalColumn))
+                                        {
+                                            if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                            {
+                                                string valueToSend = "";
+                                                switch (changeLine.LocalEntity)
+                                                {
+                                                    case "SiteAddress":
+                                                        if (newCG.SiteAddress != null && typeof(SiteAddress).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                                        {
+                                                            valueToSend = typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newCG.SiteAddress) != null ? typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newCG.SiteAddress).ToString() : null;
+                                                        }
+                                                        break;
+                                                    case "Caregiver":
+                                                        if (typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                                        {
+                                                            valueToSend = typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newCG) != null ? typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newCG).ToString() : null;
+                                                        }
+                                                        break;
+                                                }
+                                                if (changeLine.RemapToString)
+                                                {
+                                                    if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                                    {
+                                                        valueToSend = await _integrationHelperManager.RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                                    }
+                                                }
+                                                if (!string.IsNullOrEmpty(valueToSend))
+                                                {
+                                                    switch (changeLine.EntityDataType)
+                                                    {
+                                                        case "bool":
+                                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                                            break;
+                                                        case "integer":
+                                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                            break;
+                                                        case "datetime":
+                                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                            break;
+                                                        default:
+                                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushInserts > PushNewCaregiverUpdateChild");
+                                    }
+                                }
+
+                                jsonCaregiverString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitioner.RemoteId + "\"}");
+                            }
+                            jsonCaregiverString.AppendLine("}");
+                            jsonCaregiverString.AppendLine("]");
+                            //create caregiver
+                            try
+                            {
+                                //now send to API call <entity type>/Multiple
+                                apiResponse = await _apiManager.GetAPIHandlerResponse(cgUrl, null, null, null, false, false, jsonCaregiverString.ToString());
+                                if (!string.IsNullOrEmpty(apiResponse.ResponseString))
+                                {
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
+                                    if (returnObj != null)
+                                    {
+                                        cgRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                        IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                        cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSCaregiver;
+                                        cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLCaregiver;
+                                        cgMapping.LocalId = newCG.ToString();
+                                        cgMapping.RemoteId = cgRemoteId;
+                                        //cgMapping.UserId = newChild.UserId;
+                                        cgMapping.UpdatedBy = _uId;
+                                        cgMapping.UpdatedDate = DateTime.Now;
+                                        cgMapping.IsComplete = true;
+                                        cgMapping.BeforeJSON = jsonCaregiverString.ToString();
+                                        _mapperRepo.Insert(cgMapping);
+                                    }
+                                    else //error empty response received
+                                    {
+                                        await _logManager.IntegrationLog("Caregiver not created", jsonCaregiverString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushNewCaregiverUpdateChild > Create Caregiver");
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewCaregiverUpdateChild > CreateCaregiver > GetAPIHandlerResponse");
+                            }
+
+                            //update the child and map
+                            StringBuilder jsonChildString = new StringBuilder();
+                            string childUrl = "";
+                            childUrl = Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.UpdateMultiple;
+                            jsonChildString.AppendLine("[{");
+                            jsonChildString.AppendLine("\"Guid\": \"" + childMapping.RemoteId + "\",");
+                            if (!string.IsNullOrEmpty(cgRemoteId))
+                                jsonChildString.AppendLine("\"Caregiver\":{\"Guid\": \"" + cgRemoteId + "\"},");
+
+                            jsonChildString.AppendLine("}");
+                            jsonChildString.AppendLine("]");
+                            //update child
+                            try
+                            {
+                                //now send to API call <entity type>/Multiple
+                                apiResponse = await _apiManager.GetAPIHandlerResponse(childUrl, null, null, null, false, false, jsonChildString.ToString());
+                                if (!string.IsNullOrEmpty(apiResponse.ResponseString))
+                                {
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
+                                    if (returnObj != null)
+                                    {
+                                        childRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                    }
+                                    else //error empty response received
+                                    {
+                                        await _logManager.IntegrationLog("Child not updated", jsonChildString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushInserts > Update Child");
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushInserts > Update Child > GetAPIHandlerResponse");
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushInserts > Update Child > GetAPIHandlerResponse");
+                    }
+
+                } else
+                {
+                    //child doesnt exist yet or didnt map properly, and needs remapping
+                    await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver no mapping exist" + cgChild.UserId.ToString(), cgChild.UserId.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver > Missing Child mapping in mappings");
+                    await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver");
+                }
+            } else
+            {
+                //end child check, if no child exists for this caregiver then dont need to send to SL, but a caregiver shouldnt exist without a child, so a different issue
+                await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString() , null, LogRelatedType.Error, "PushInserts > Create Caregiver");
+            }
+        }
+        return cgRemoteId;
+    }
+
     public Practitioner GetPractitionerForChild(string childUserId)
     {
         if (childUserId != null)
@@ -4269,6 +4304,206 @@ public class SmartStartIntegrationService : IIntegrationService
     #endregion
 
     #region Decommisioned Code
+
+    public async Task<bool> IntegrationAttendanceDataDecommissioned()
+    {
+        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
+        int attendancesSent = 0;
+        bool isComplete = false;
+
+        _mappedEntities = await GetMappedEntities();
+        int trackingDays = 2;
+        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
+        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();
+
+        DateTime trackingWeekDate = DateTime.Now.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
+        DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
+
+        foreach (var parent in attendancesDueList)
+        {
+            IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
+            var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
+            if (attendanceData.Any())
+            {
+                try
+                {
+                    bool validAttendance = false;
+                    string absent = "Absent";
+                    string nosession = "No Session";
+                    string unknown = "Unknown";
+                    string present = "Present";
+                    string pholiday = "Public Holiday";
+                    StringBuilder jsonAttendanceString = new StringBuilder();
+                    jsonAttendanceString.AppendLine("[");
+                    //get list of children
+                    List<string> children = attendanceData.Select(x => x.UserId).Distinct().ToList();
+                    foreach (var child in children)
+                    {
+                        int daysPresent = 0;
+                        int daysAbsent = 0;
+                        //set everything to nosession and override as teh days are iterated through - whether absent or present or a holiday
+                        string mondayPresent = unknown;
+                        string tuesdayPresent = unknown;
+                        string wednesdayPresent = unknown;
+                        string thursdayPresent = unknown;
+                        string fridayPresent = unknown;
+                        string defaultState = unknown;
+                        //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
+                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
+                        if (mappedChild != null)
+                        {
+                            var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+                            //mark public holidays off first
+                            if (holidays.Count > 0)
+                            {
+                                foreach (var publicholiday in holidays)
+                                {
+                                    switch (publicholiday.Day.ToString("dddd"))
+                                    {
+                                        case "Monday":
+                                            mondayPresent = pholiday;
+                                            break;
+                                        case "Tuesday":
+                                            tuesdayPresent = pholiday;
+                                            break;
+                                        case "Wednesday":
+                                            wednesdayPresent = pholiday;
+                                            break;
+                                        case "Thursday":
+                                            thursdayPresent = pholiday;
+                                            break;
+                                        case "Friday":
+                                            fridayPresent = pholiday;
+                                            break;
+
+                                    }
+                                }
+                            }
+                            foreach (var attendance in childAttendances)
+                            {
+                                switch (attendance.AttendanceDate.ToString("dddd"))
+                                {
+                                    case "Monday":
+                                        if (attendance.Attended)
+                                        {
+                                            mondayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            mondayPresent = absent;
+                                        }
+                                        break;
+                                    case "Tuesday":
+                                        if (attendance.Attended)
+                                        {
+                                            tuesdayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            tuesdayPresent = absent;
+                                        }
+                                        break;
+                                    case "Wednesday":
+                                        if (attendance.Attended)
+                                        {
+                                            wednesdayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            wednesdayPresent = absent;
+                                        }
+                                        break;
+                                    case "Thursday":
+                                        if (attendance.Attended)
+                                        {
+                                            thursdayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            thursdayPresent = absent;
+                                        }
+                                        break;
+                                    case "Friday":
+                                        if (attendance.Attended)
+                                        {
+                                            fridayPresent = present;
+                                            daysPresent++;
+                                        }
+                                        else if (!attendance.Attended)
+                                        {
+                                            daysAbsent++;
+                                            fridayPresent = absent;
+                                        }
+                                        break;
+                                }
+                                validAttendance = true;
+                            }
+                            //[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
+
+                            jsonAttendanceString.AppendLine("{");
+                            jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                            jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + daysPresent + ",");
+                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + daysAbsent + ",");
+                            jsonAttendanceString.AppendLine("\"Monday\":\"" + mondayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Tuesday\":\"" + tuesdayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Wednesday\":\"" + wednesdayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Thursday\":\"" + thursdayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Friday\":\"" + fridayPresent + "\",");
+                            jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + parent.RemoteId + "\"},");
+                            jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + mappedChild.RemoteId + "\"}");
+                            jsonAttendanceString.AppendLine("},");
+                        }
+                    }
+                    jsonAttendanceString.AppendLine("]");
+
+                    try
+                    {
+                        if (validAttendance)
+                        {
+                            //now send to API call <entity type>/Multiple
+                            var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
+                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
+                            {
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
+                                if (returnObj != null)
+                                {
+                                    var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                    isComplete = true;
+                                    //mark mapped parent practitioner of last date attendance was sent
+                                    parent.LastAttendanceSubmittedDate = DateTime.Now;
+                                    _mapperRepo.Update(parent);
+
+                                    attendancesSent++;
+                                }
+                                else //error empty response received
+                                {
+                                    await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
+                                }
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
+                }
+            }
+        }
+        await _logManager.IntegrationLog($"IntegrationAttendanceData Completed at {DateTime.Now}", $"Attendances sent {attendancesSent}", null, LogRelatedType.Log, "IntegrationAttendanceData");
+        return isComplete;
+    }
 
     //private async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
     //{

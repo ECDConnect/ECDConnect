@@ -2441,6 +2441,7 @@ export type ClubSupportInput = {
 
 export type ClubSupportModel = {
   __typename?: 'ClubSupportModel';
+  dateAccepted?: Maybe<Scalars['DateTime']>;
   dateAssigned?: Maybe<Scalars['DateTime']>;
   firstName?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
@@ -5979,7 +5980,7 @@ export type Mutation = {
 
 export type MutationAcceptNewClubLeaderRoleArgs = {
   clubId: Scalars['UUID'];
-  clubSupportPractitionerId: Scalars['UUID'];
+  clubSupportPractitionerId?: InputMaybe<Scalars['String']>;
   practitionerId: Scalars['UUID'];
 };
 
@@ -9778,6 +9779,7 @@ export type PractitionerModel = {
   dateAccepted?: Maybe<Scalars['DateTime']>;
   dateLinked?: Maybe<Scalars['DateTime']>;
   dateToBeRemoved?: Maybe<Scalars['DateTime']>;
+  daysAbsentLastMonth: Scalars['Int'];
   id: Scalars['UUID'];
   isActive: Scalars['Boolean'];
   isClubLeader?: Maybe<Scalars['Boolean']>;
@@ -9786,6 +9788,7 @@ export type PractitionerModel = {
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
   isLeaving?: Maybe<Scalars['Boolean']>;
   isNewInClub?: Maybe<Scalars['Boolean']>;
+  isOnLeave: Scalars['Boolean'];
   isOnStipend?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;
   isRegistered?: Maybe<Scalars['Boolean']>;

@@ -712,7 +712,8 @@ export const CoachPractitionerJourney = () => {
               listItems={[currentVisit]}
             />
           )}
-          <ScoreCard
+          {/* EC-1909 - Suppress ticket */}
+          {/* <ScoreCard
             className="mt-5"
             mainText={`${userPointsTotalForYear}`}
             hint={`points earned so far in ${new Date().getFullYear()}`}
@@ -728,7 +729,7 @@ export const CoachPractitionerJourney = () => {
             }
             bgColour="uiBg"
             textColour="black"
-          />
+          /> */}
           {renderAlert()}
           <Typography
             className="mt-4 mb-2"

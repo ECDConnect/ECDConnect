@@ -91,7 +91,8 @@ export const LeaveNoOneBehind: React.FC = () => {
         imageUrl={inclusiveIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
+      {/* EC-1909 - Suppress ticket */}
+      {/* <ScoreCard
         className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
@@ -108,7 +109,7 @@ export const LeaveNoOneBehind: React.FC = () => {
         }
         bgColour="uiBg"
         textColour="black"
-      />
+      /> */}
       {hasItems ? (
         <div className="my-5">
           {['green', 'orange', 'red', 'comingUp'].map((item, index) => {

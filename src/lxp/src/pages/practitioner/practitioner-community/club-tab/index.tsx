@@ -264,7 +264,8 @@ export const ClubTab: React.FC = () => {
             type={'MenuList' as StackedListType}
             listItems={[leagueCard]}
           />
-          <ScoreCard
+          {/* EC-1909 - Suppress ticket */}
+          {/* <ScoreCard
             className="mt-2"
             mainText={String(club?.pointsTotal ?? 0)}
             hint="points"
@@ -282,7 +283,7 @@ export const ClubTab: React.FC = () => {
             bgColour="uiBg"
             textColour="black"
             onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
-          />
+          /> */}
         </div>
       );
     }

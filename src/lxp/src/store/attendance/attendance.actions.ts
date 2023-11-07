@@ -52,6 +52,36 @@ export const getAttendance = createAsyncThunk<
   }
 );
 
+export const getPreviousWeekAttendance = createAsyncThunk<
+  AttendanceDto[],
+  AttendanceQueryParams,
+  ThunkApiType<RootState>
+>(
+  'getPreviousWeekAttendance',
+  async ({ year, monthOfYear, weekOfYear }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let attendance: AttendanceDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        attendance = await new AttendanceService(
+          userAuth?.auth_token
+        ).getAttendance(year, monthOfYear, weekOfYear);
+      }
+
+      if (!attendance) {
+        return rejectWithValue('Error getting Attendance Records');
+      }
+
+      return attendance;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 export const getMonthlyAttendanceReport = createAsyncThunk<
   MonthlyAttendanceRecord[],
   MonthlyAttendanceReportQueryParams,
