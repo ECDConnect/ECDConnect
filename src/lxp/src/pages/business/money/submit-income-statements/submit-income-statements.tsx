@@ -215,18 +215,12 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const {
     setState,
-    state: { stepIndex },
+    state: { stepIndex, tourActive },
   } = useAppContext();
 
   const nextStep = () => {
     setState({ stepIndex: 1 });
   };
-
-  const walkthroughSteps = useMemo(() => {
-    return (
-      stepIndex === 7 || stepIndex === 8 || stepIndex === 9 || stepIndex === 10
-    );
-  }, [stepIndex]);
 
   useEffect(() => {
     if (stepIndex === 7) {
@@ -410,7 +404,7 @@ export const SubmitIncomeStatements: React.FC = () => {
   return (
     <>
       <StatementsWrapper />
-      <div className="pb-180 flex flex-col justify-center p-4">
+      <div className="pb-180 flex flex-col justify-center p-4" id="lastStep">
         {!hasIncomeStatements && (
           <div className="mt-2 flex flex-wrap justify-center p-8">
             <div className="">
@@ -435,19 +429,12 @@ export const SubmitIncomeStatements: React.FC = () => {
           </div>
         )}
         {hasIncomeStatements && (
-          <>
+          <div id="statementsDashboard">
             {isOnline &&
               !isThisMonthSubmitted &&
               isSubmitWindowOpen &&
               !isSubmittingStatement && (
-                <div
-                  className={
-                    walkthroughSteps
-                      ? 'mt-2 flex items-center pt-4'
-                      : 'flex items-center'
-                  }
-                  id="howMayDaysToSubmit"
-                >
+                <div className="flex items-center" id="howMayDaysToSubmit">
                   <StatusChip
                     backgroundColour={
                       daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
@@ -471,27 +458,29 @@ export const SubmitIncomeStatements: React.FC = () => {
 
             {!!celebrationCard && celebrationCard}
 
-            {isOnline &&
+            {((isOnline &&
               isSubmitWindowOpen &&
               !isStatementSubmitted &&
-              !isSubmittingStatement && (
-                <Button
-                  shape="normal"
-                  color="primary"
-                  type="filled"
-                  icon="ArrowCircleRightIcon"
-                  onClick={() =>
-                    history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
-                  }
-                  className="mt-6 rounded-2xl"
-                >
-                  <Typography
-                    type="help"
-                    color="white"
-                    text="Submit income statement"
-                  />
-                </Button>
-              )}
+              !isSubmittingStatement) ||
+              (tourActive && stepIndex === 9)) && (
+              <Button
+                shape="normal"
+                color="primary"
+                type="filled"
+                icon="ArrowCircleRightIcon"
+                onClick={() =>
+                  history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
+                }
+                className="mt-6 w-full rounded-2xl"
+                id="submitIncomeButton"
+              >
+                <Typography
+                  type="help"
+                  color="white"
+                  text="Submit income statement"
+                />
+              </Button>
+            )}
             <Card
               className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
               borderRaduis={'xl'}
@@ -514,7 +503,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                 className="w-8/12 text-right"
               />
             </Card>
-            <table className="mt-4">
+            <table className="mt-4 w-full">
               <tbody>
                 <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
                   <th className="w-1/3"></th>
@@ -634,14 +623,14 @@ export const SubmitIncomeStatements: React.FC = () => {
               onClick={() =>
                 history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)
               }
-              className={`mt-6 mb-8 rounded-2xl ${
+              className={`mt-6 mb-8 w-full rounded-2xl ${
                 stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
               }`}
               id="seeAllStatements"
             >
               <Typography type="help" color="white" text="See all statements" />
             </Button>
-          </>
+          </div>
         )}
 
         <FADButton

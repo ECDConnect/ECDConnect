@@ -758,9 +758,8 @@ namespace ECDLink.Core.Services
             var expenseTypes = _statementsExpenseTypeRepo.GetAll().ToList();
             var incomeTypes = _statementsIncomeTypeRepo.GetAll().ToList();
             var contributionTypes = _statementsContributionTypeRepo.GetAll().ToList();
-            var childUserIds = statement.IncomeItems.Where(x => !string.IsNullOrWhiteSpace(x.ChildUserId)).Select(x => x.ChildUserId);
+            var childUserIds = statement.IncomeItems.Where(x => !string.IsNullOrWhiteSpace(x.ChildUserId)).Select(x => x.ChildUserId).Distinct().ToList();
             var childNamesById = _childRepo.GetAll()
-                .Include(x => x.User)
                 .Where(x => childUserIds.Contains(x.UserId))
                 .Select(x => new { x.UserId, Name = $"{x.User.FirstName} {x.User.Surname}" })
                 .ToDictionary(x => x.UserId, x => x.Name);
@@ -957,7 +956,9 @@ namespace ECDLink.Core.Services
                 result.Date = income.DateReceived;
                 result.Amount = income.Amount;
                 result.PhotoProof = income.PhotoProof;
-                result.Child = childNamesById.ContainsKey(income.ChildUserId) ? childNamesById[income.ChildUserId] : "Unknown";
+                result.Child = !string.IsNullOrEmpty(income.ChildUserId) && childNamesById.ContainsKey(income.ChildUserId) 
+                    ? childNamesById[income.ChildUserId] 
+                    : "Unknown";
                 results.Add(result);
             }
             return results;
