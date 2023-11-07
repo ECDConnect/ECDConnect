@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using ECDLink.Security.Extensions;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.Core.Extensions;
 
 namespace ECDLink.Api.CoreApi.Services
 {
@@ -214,6 +215,20 @@ namespace ECDLink.Api.CoreApi.Services
 
             return absenteeDetails;
 
+        }
+
+        public int GetAbsenteeCountByUser(string userId)
+        {
+            var startCount = DateTime.Now.GetStartOfPreviousMonth();
+            var endCount = DateTime.Now.GetStartOfMonth();
+            var absentees = _absenteeRepo.GetAll()
+                .Where(a => a.UserId.Equals(userId))
+                .Where(a => a.AbsentDate < endCount && a.AbsentDate >= startCount)
+                .Where(a => a.AbsentDateEnd.HasValue == false || (a.AbsentDateEnd.HasValue && (a.AbsentDate.Date == a.AbsentDateEnd.Value.Date)))
+                .ToList();
+
+
+            return absentees.Count;
         }
     }
 }

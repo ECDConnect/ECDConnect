@@ -48,14 +48,12 @@ export const LeagueLeaderBoard: React.FC = () => {
         />
         <Tag title={league?.type ?? ''} color="infoMain" />
       </div>
-      {clubs?.map((club, index) => (
+      {clubs.map((club, index) => (
         <PointsDetailsCard
-          pointsEarned={800 - index} // TODO - replace with actual value once available
-          activityCount={index + 1} // TODO - replace with actual value once available
-          title={club?.name ?? ''}
-          description={`Coach: ${club?.coach?.user?.firstName ?? ''} ${
-            club?.coach?.user?.surname ?? ''
-          }`}
+          pointsEarned={club.pointsTotal}
+          activityCount={club.clubActivities.length}
+          title={club.name}
+          description={`Coach: ${club.clubCoach.firstName} ${club.clubCoach.surname}`}
           size="medium"
           className="mb-1"
           colour={index < 3 ? 'successBg' : 'uiBg'}

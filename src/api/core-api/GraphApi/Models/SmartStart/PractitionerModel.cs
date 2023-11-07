@@ -44,6 +44,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public int? MonthSinceFranchisee { get; set; }
         public bool? SetupTraineeInitiated { get; set; }
         public string StipendType { get; set; }
+        public int DaysAbsentLastMonth { get; set; } = 0;
+        public bool IsOnLeave { get; set; } = false;
 
         public List<AbsenteeDetail> Absentees { get; set; }
     }

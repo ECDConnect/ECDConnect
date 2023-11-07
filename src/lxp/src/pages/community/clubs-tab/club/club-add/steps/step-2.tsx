@@ -40,27 +40,24 @@ export const Step2 = ({
   const clubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
 
   const leadersAndNextLeaders = clubs?.map((item) => ({
-    ...item.currentClubLeader,
-    ...item.newClubLeader,
+    ...item.clubLeader,
+    ...item.incomingClubLeader,
   }));
 
   const otherClubs = clubs?.filter((item) => item?.id !== club?.id);
-  const mergedMembers = otherClubs
-    ?.map((club) => club.clubMembers)
-    .flat()
-    .map((item) => item?.practitioner);
+  const mergedMembers = otherClubs?.map((club) => club.clubMembers).flat();
 
   // filteredMembers contains the members from mergedMembers that are not in leadersAndNextLeaders
   const filteredMembers = mergedMembers?.filter((member) => {
-    const memberId = member?.user?.id;
+    const memberId = member.userId;
 
     return !leadersAndNextLeaders?.some(
-      (leader) => leader?.practitioner?.user?.id === memberId
+      (leader) => leader?.userId === memberId
     );
   });
 
   const availableMembers = filteredMembers?.filter(
-    (member) => !selectedIds.includes(member?.id ?? '')
+    (member) => !selectedIds.includes(member.practitionerId)
   );
 
   const isToShowDropdown =
@@ -107,11 +104,16 @@ export const Step2 = ({
   const onChange = (selectedValue: string, index: number) => {
     const newValues = [...selectedIds];
     newValues[index] = selectedValue;
-    setStep2?.(
-      (mergedMembers?.filter((member) =>
-        newValues.includes(member?.id ?? '')
-      ) as Member[]) ?? []
-    );
+
+    var newMembers = mergedMembers
+      .filter((member) => newValues.includes(member.practitionerId))
+      .map((x) => ({
+        practitionerId: x.practitionerId,
+        name: `${x.firstName} ${x.surname}`,
+      }));
+
+    setStep2?.(newMembers);
+
     setSelectedIds(newValues);
   };
 
@@ -183,20 +185,20 @@ export const Step2 = ({
               />
               {Array.from(Array(smartStartersCount)).map((_, index) => {
                 const selectedMember = mergedMembers?.find(
-                  (item) => item?.id === selectedIds[index]
+                  (item) => item?.practitionerId === selectedIds[index]
                 );
                 return (
                   <Dropdown<string>
                     placeholder={
                       selectedMember
-                        ? `${selectedMember?.user?.firstName} ${selectedMember?.user?.surname}`
+                        ? `${selectedMember.firstName} ${selectedMember.surname}`
                         : 'Tap to choose SmartStarter'
                     }
                     selectedValue={selectedIds[index]}
                     list={
                       availableMembers?.map((item) => ({
-                        label: `${item?.user?.firstName} ${item?.user?.surname}`,
-                        value: item?.id,
+                        label: `${item.firstName} ${item.surname}`,
+                        value: item.practitionerId,
                       })) ?? []
                     }
                     onChange={(id) => onChange(id, index)}
