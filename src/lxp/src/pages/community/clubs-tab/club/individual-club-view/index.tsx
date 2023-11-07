@@ -231,7 +231,8 @@ export const Club: React.FC = () => {
             type={'MenuList' as StackedListType}
             listItems={[leagueCard]}
           />
-          {shouldShowPointsScreen() && (
+          {/* EC-1909 - Suppress ticket */}
+          {/* {shouldShowPointsScreen() && (
             <ScoreCard
               className="mt-5"
               mainText={String(club?.pointsTotal || 0)}
@@ -248,7 +249,7 @@ export const Club: React.FC = () => {
                 )
               }
             />
-          )}
+          )} */}
         </div>
       );
     }

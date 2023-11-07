@@ -110,13 +110,14 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>
-        <PointsSuccessCard
+        {/* EC-1909 - Suppress ticket */}
+        {/* <PointsSuccessCard
           visible={!successStatus ?? successMessageVisible}
           onClose={() => closeNotification()}
           className={'mb-4'}
           message={'Your attendance registers are up to date this week!'}
           icon={'SparklesIcon'}
-        />
+        /> */}
         <AttendanceMonthlyReport
           attendanceSummary={attendanceData}
           classroomId={classroom?.id || classroom?.id!}

@@ -84,7 +84,8 @@ export const CompleteChildProgressReports: React.FC = () => {
         icon="DocumentReportIcon"
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
+      {/* EC-1909 - Suppress ticket */}
+      {/* <ScoreCard
         className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
@@ -101,7 +102,7 @@ export const CompleteChildProgressReports: React.FC = () => {
         }
         bgColour="uiBg"
         textColour="black"
-      />
+      /> */}
       {hasItems ? (
         <div className="mt-5">
           {items.map((item) => (
