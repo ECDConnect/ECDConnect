@@ -228,7 +228,7 @@ export const getChildAttendancePercentageAtPlaygroup = (
   const currentDate = new Date();
   const currentYear = currentDate.getFullYear();
 
-  const lastWeek = getWeek(currentDate) - 2;
+  const lastWeek = getWeek(currentDate) - 1;
   const lastMonth = getMonth(currentDate);
 
   const firstDayOfLastMonth = new Date(`${currentYear}-${lastMonth}-1`);

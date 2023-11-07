@@ -27,5 +27,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             string reason = null,
             DateTime? absentDate = null,
             DateTime? absentDateEnd = null);
+
+        public int GetAbsenteeCountByUser(string userId);
     }
 }

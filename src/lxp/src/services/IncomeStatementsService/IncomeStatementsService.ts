@@ -281,7 +281,8 @@ class IncomeStatementsService {
               incomeTypeId
               id
               dateReceived
-              amount
+              amount              
+              childUserId
             } 
             expenseItems {
               expenseTypeId
@@ -411,6 +412,7 @@ class IncomeStatementsService {
               id
               dateReceived
               amount
+              childUserId
             } 
             expenseItems {
               expenseTypeId

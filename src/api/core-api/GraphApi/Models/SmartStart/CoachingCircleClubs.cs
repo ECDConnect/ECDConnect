@@ -15,6 +15,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public Guid ClubId { get; set; }
         public virtual ICollection<ClubMeetingRegisterModel> ClubMeetingParticipants { get; set; }
         public bool? CoachAttend { get; set; }
+        public string? ImageBase64 { get; set; }
+        public string? FileType { get; set; }
+        public string? OtherDescription { get; set; }
+        public int? TotalCaregiversAttended { get; set; }
+
     }
 
     public class ClubMeetingRegisterModel

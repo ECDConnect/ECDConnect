@@ -123,7 +123,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({
             label: p?.user?.fullName
               ? `${p?.user?.fullName}`
               : `${p?.user?.firstName}`,
-            value: p.id,
+            value: p.userId,
           };
         }
         return undefined;

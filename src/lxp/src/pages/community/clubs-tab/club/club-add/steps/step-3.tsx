@@ -29,8 +29,8 @@ export const Step3 = ({
         placeholder="Tap to choose..."
         list={
           availableMembers?.map((member) => ({
-            label: `${member?.user?.firstName} ${member?.user?.surname}`,
-            value: member?.id,
+            label: member.name,
+            value: member.practitionerId,
           })) ?? []
         }
         selectedValue={selectedId}

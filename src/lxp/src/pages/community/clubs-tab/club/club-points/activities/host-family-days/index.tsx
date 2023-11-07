@@ -104,7 +104,8 @@ export const HostFamilyDays: React.FC = () => {
         imageUrl={familyIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
+      {/* EC-1909 - Suppress ticket */}
+      {/* <ScoreCard
         className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
@@ -113,15 +114,15 @@ export const HostFamilyDays: React.FC = () => {
         barBgColour="uiLight"
         barColour={
           isCurrentPointsAtLeast80PercentOfTotal(
-            club?.totalClubPoints || 0,
-            club?.maxClubPoints || 0
+            club.pointsTotal,
+            club.maxPointsTotal
           )
             ? 'successMain'
             : 'secondary'
         }
         bgColour="uiBg"
         textColour="black"
-      />
+      /> */}
       {hasItems ? (
         <div className="mt-5">
           {items.map((item, index) => (

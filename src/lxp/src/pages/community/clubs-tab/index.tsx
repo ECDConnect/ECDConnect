@@ -14,12 +14,7 @@ import {
 import { useHistory, useLocation } from 'react-router';
 import { useAppDispatch } from '@/store';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  ClubActions,
-  getAllClubMembersForCoach,
-  getAllClubsDetailsForCoach,
-  getAllClubsForCoach,
-} from '@/store/club/club.actions';
+import { ClubActions, getClubsForCoach } from '@/store/club/club.actions';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { clubSelectors } from '@/store/club';
@@ -53,13 +48,13 @@ export const ClubsTab = () => {
     wasLoading: wasLoadingGetClubs,
     isRejected: isRejectedGetClubs,
     error: errorGetClubs,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_FOR_COACH);
+  } = useThunkFetchCall('clubs', ClubActions.GET_CLUB_BY_ID);
   const {
     isLoading: isLoadingClubMembers,
     wasLoading: wasLoadingClubMembers,
     isRejected: isRejectedClubMembers,
     error: errorClubMembers,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUB_MEMBERS_FOR_COACH);
+  } = useThunkFetchCall('clubs', ClubActions.GET_CLUBS_FOR_COACH);
 
   const isLoading = isLoadingGetClubs || isLoadingClubMembers;
   const wasLoading = wasLoadingGetClubs || wasLoadingClubMembers;
@@ -87,18 +82,12 @@ export const ClubsTab = () => {
       avatarColor: 'var(--primaryAccent2)',
       iconColor: 'primary',
       alertSeverity:
-        (club?.secondaryTextColor?.toLocaleLowerCase() as AlertSeverityType) ??
+        (club.issuesTasks[0]?.secondaryTextColor?.toLocaleLowerCase() as AlertSeverityType) ??
         'none',
       title: club?.name ?? '',
       profileText: club?.name ?? '',
-      subTitle: club?.secondaryText ?? '',
+      subTitle: club.issuesTasks[0]?.secondaryText ?? '',
       onActionClick() {
-        appDispatch(
-          getAllClubsDetailsForCoach({
-            userId: user?.id ?? '',
-            clubId: club?.id,
-          })
-        ).unwrap();
         history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', club?.id));
       },
     })) ?? [];
@@ -107,8 +96,7 @@ export const ClubsTab = () => {
 
   useEffect(() => {
     if (user?.id && location?.state?.isFromDashboard) {
-      appDispatch(getAllClubsForCoach({ userId: user?.id }));
-      appDispatch(getAllClubMembersForCoach({ userId: user?.id }));
+      appDispatch(getClubsForCoach({ userId: user?.id }));
     }
   }, [appDispatch, location?.state?.isFromDashboard, user?.id]);
 

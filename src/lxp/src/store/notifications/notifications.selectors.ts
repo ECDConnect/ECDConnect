@@ -4,7 +4,21 @@ import { Notification } from './notifications.types';
 
 export const getAllNotifications = createSelector(
   (state: RootState) => state.notifications.notifications,
-  (notifications: Notification[]) => notifications
+  (notifications: Notification[]) => {
+    const currentDate = new Date();
+    currentDate.setHours(0, 0, 0, 0);
+
+    return [...notifications]?.filter((notification) => {
+      if (!notification?.message?.expiryDate) {
+        return true;
+      }
+
+      const expiryDate = new Date(notification?.message?.expiryDate);
+      expiryDate.setHours(0, 0, 0, 0);
+
+      return expiryDate >= currentDate;
+    });
+  }
 );
 
 export const getAllNotificationReferences = createSelector(
@@ -13,21 +27,22 @@ export const getAllNotificationReferences = createSelector(
 );
 
 export const getMessageBoardNotifications = createSelector(
-  (state: RootState) => state.notifications.notifications,
+  getAllNotifications,
   (notifications: Notification[]) =>
     notifications.filter((n) => n.message.viewType !== 'Hub')
 );
 
 export const getNewNotificationCount = createSelector(
-  (state: RootState) => state.notifications.notifications,
+  getAllNotifications,
   (notifications: Notification[]) =>
     notifications.filter((n) => n.isNew && n.message.viewType !== 'Hub').length
 );
 
 export const getDashboardNotification = createSelector(
-  (state: RootState) => state.notifications.notifications,
-  (notifications: Notification[]) =>
-    [...notifications]
+  getAllNotifications,
+  (notifications: Notification[]) => {
+    return [...notifications]
       .sort((a, b) => (a.message.priority > b.message.priority ? 1 : -1))
-      .find((n) => n.message.viewType !== 'Messages')
+      .find((n) => n.message.viewType !== 'Messages');
+  }
 );

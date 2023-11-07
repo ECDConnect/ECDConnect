@@ -16,19 +16,6 @@ import { getMonthName } from '@/utils/classroom/attendance/track-attendance-util
 import GeneratePdfReportButton from '@/components/download-pdf-button/download-pdf-button';
 import { childrenSelectors } from '@/store/children';
 
-interface ReportDetailsForPractitionerData {
-  classroomGroupName: string;
-  name: string;
-  principalName: string;
-  classroomGroupId: string;
-  programmeTypeName: string;
-  idNumber: string;
-  insertedDate: string;
-  programmeDays: string;
-  phone: string;
-  classSiteAddress: null | string;
-}
-
 export interface MonthStatementsDetailsState {
   statementId: string;
 }
@@ -44,9 +31,6 @@ export const MonthStatements: React.FC = () => {
   const statementId = location.state.statementId;
   const children = useSelector(childrenSelectors.getChildren);
 
-  // const [reportDetails, setReportDetails] =
-  //   useState<ReportDetailsForPractitionerData>();
-
   const [pdfReportData, setPdfReportData] = useState<
     ReportTableDataDto[] | undefined
   >(undefined);
@@ -58,21 +42,6 @@ export const MonthStatements: React.FC = () => {
   const onBack = () => {
     history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST);
   };
-
-  // // // TODO check what we are using this for, can we get from state
-  // useEffect(() => {
-  //   const getClassroomDetails = async () => {
-  //     const res = await new PractitionerService(
-  //       userAuth?.auth_token || ''
-  //     ).getReportDetailsForPractitioner(userAuth?.id || '');
-  //     return res;
-  //   };
-
-  //   getClassroomDetails().then((data) => {
-  //     setReportDetails(data);
-  //   });
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
 
   useEffect(() => {
     if (!isOnline || !statementId) {
