@@ -149,7 +149,8 @@ export const ClubPoints: React.FC = () => {
         color="textMid"
         text={format(new Date(), 'MMMM yyyy')}
       />
-      <ScoreCard
+      {/* EC-1909 - Suppress ticket */}
+      {/* <ScoreCard
         className="mt-5"
         mainText={String(club.pointsTotal || 0)}
         hint="points"
@@ -159,7 +160,7 @@ export const ClubPoints: React.FC = () => {
         barColour={getScoreBarColor(club.pointsTotal ?? 0, 1500, 1499)}
         bgColour="uiBg"
         textColour="black"
-      />
+      /> */}
       <div className="mt-7 mb-5">
         <Typography className="mb-2" type="h3" text="Activities:" />
         <StackedList
