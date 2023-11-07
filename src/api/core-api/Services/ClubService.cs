@@ -514,7 +514,7 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, string clubSupportPractitionerId)
+        public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, Guid clubSupportPractitionerId)
         {
             List<ClubLeader> clubLeaders = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId).OrderBy(x => x.InsertedDate).ToList();
             ClubLeader newClubLeader = clubLeaders.Where(x => x.ClubId == clubId && x.IsActive == true && x.PractitionerId == practitionerId && !x.DateAccepted.HasValue).FirstOrDefault();
@@ -540,9 +540,9 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Assistant update
-            if (clubSupportPractitionerId != "")
+            if (clubSupportPractitionerId != Guid.Empty)
             {
-                ChangeClubSupportRole(clubId, new Guid(clubSupportPractitionerId));
+                ChangeClubSupportRole(clubId, clubSupportPractitionerId);
             }
 
             return newClubLeader != null;

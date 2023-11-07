@@ -17,6 +17,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public List<ClubMember> GetClubsMembers(Guid[] clubId);
         public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId); 
         public List<CoachingClubBase> GetAllClubsForCoach(string userId);
+        public List<CoachingClub> GetAllClubsDetailsForCoach(string userId, string clubId = null);
         public List<LeagueClub> GetAllLeagues(string userId);
         public List<ClubLeader> GetLeadersForClub(Guid clubId);
         public ClubSupport GetSupportForClub(Guid clubId);
@@ -28,7 +29,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ClubLeader AddNewClubLeader(Guid clubId, Guid practitionerId);
         public bool AddNewClubMembers(NewClubMember input);
         public bool MoveClubMembers(NewClubMember input);
-        public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, string clubSupportPractitionerId);
+        public bool AcceptNewClubLeaderRole(Guid clubId, Guid practitionerId, Guid clubSupportPractitionerId);
         public bool RejectNewClubLeaderRole(Guid clubId, Guid practitionerId);
         public bool ChangeClubSupportRole(Guid clubId, Guid practitionerId);
         public Club AddNewClub(NewClubInput input);
@@ -41,8 +42,6 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ActivityChildAttendance GetActivityChildAttendance(Guid clubId);
         public ActivityChildProgress GetActivityChildProgress(Guid clubId);
         ClubModel GetClubForUser(string userId);
-        IEnumerable<DetailClubModel> GetClubsForCoach(string coachUserId);
-        DetailClubModel GetClubById(Guid clubId);
         public bool AddBeCreativeActivity(BeCreativeUpload input);
     }
 }
