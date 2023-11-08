@@ -123,7 +123,7 @@ namespace ECDLink.Core.Services
         private DateTime? GetLastSubmittedDate(string userId)
         {
             var row = _statementsRepo.GetAll() //get all rows for year to date
-                    .Where(x => string.Equals(x.UserId, userId))
+                    .Where(x => string.Equals(x.UserId, userId) && x.Submitted == true)
                     .OrderByDescending(y => y.SubmittedDate)
                     .Select(y => y.SubmittedDate)
                     .FirstOrDefault();
@@ -528,7 +528,6 @@ namespace ECDLink.Core.Services
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);
 
-            var uId = _contextAccessor.HttpContext.GetUser().Id;
             var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
             nfi.NumberGroupSeparator = " ";
 
@@ -745,7 +744,7 @@ namespace ECDLink.Core.Services
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
-            pdfDoc.CreatedUserId = uId;
+            pdfDoc.CreatedUserId = _applicationUserId;
 
             return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
         }
