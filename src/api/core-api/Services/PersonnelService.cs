@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -183,7 +184,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
             }
 
-            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
+            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth(), DateTime.Now.AddDays(30).Date);
             if (absentees.Any())
             {
                 practitionerRecord.Absentees = absentees;
