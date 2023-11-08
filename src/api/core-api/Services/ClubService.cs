@@ -263,12 +263,6 @@ namespace EcdLink.Api.CoreApi.Services
             return Math.Round( (double)clubPoints / (double)maxPoints * 100, 0);
         }
 
-        private int GetClubEarningsForYear(Guid clubId, DateTime date)
-        {
-            return _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == date.Year).Select(x => x.Points).Sum();
-            
-        }
-
         private int GetClubLeagueRankPosition(Club club, DateTime date)
         {
             int rank = 0;
@@ -729,22 +723,6 @@ namespace EcdLink.Api.CoreApi.Services
             return leagueClubs;
         }
         
-        public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId)
-        {
-            return _clubRepo
-                .GetAll()
-                .Where(x => x.UserId == userId && x.IsActive == true)
-                .OrderBy(x => x.Name)
-                .Select(club => new CoachingClubBase
-                {
-                    Id = club.Id,
-                    Name = club.Name,
-                    UserId = club.UserId,
-                })
-                .ToList();
-        }
-
-
         /// <summary>
         /// To be replaced with mroe efficient call below GetClubsForCoach 
         /// Still fetched and added to coach store, but then not used from there...

@@ -1,4 +1,5 @@
 ﻿using ECDLink.AutomatedJobs.Anonymise;
+using ECDLink.AutomatedJobs.BiannualRunners;
 using ECDLink.AutomatedJobs.Configuration;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.DailyRunners;
@@ -85,6 +86,18 @@ namespace EcdLink.Api.CoreApi
                 c.CronExpression = CronTags.FirstOfEveryMonth;
             });
 
+            //// Club Points - twice a year
+            services.AddCronJob<ClubPointsCalculation>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.EndOfJuly;
+            });
+
+            services.AddCronJob<ClubPointsCalculation>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.EndOfNovember;
+            });
 
         }
     }

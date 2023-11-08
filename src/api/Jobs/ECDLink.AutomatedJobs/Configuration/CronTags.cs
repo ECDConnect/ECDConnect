@@ -23,5 +23,8 @@
         public const string EighthOfEveryMonth = "0 0 */8 * *";
         public const string FirstOfEveryMonth = "0 0 */1 * *";
         public const string FirstDayofEveryYear = "0 0 1 1 *";
+
+        public const string EndOfJuly = "0 0 31 7 *";
+        public const string EndOfNovember = "0 0 30 11 *";
     }
 }

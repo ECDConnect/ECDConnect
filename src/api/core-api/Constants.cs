@@ -870,6 +870,8 @@ namespace EcdLink.Api.CoreApi
             public const string capture_child_attendance = "Capture child attendance";
             public const string meet_regularly = "Meet regularly";
             public const string be_creative = "Be creative";
+            public const string sub_caregiver_meeting = "Caregiver meeting";
+            public const string sub_progress_tracking = "Progress tracking";
 
             public const string document_success = "Image completed";
             public const string document_no_success = "Image incompleted";
@@ -889,6 +891,7 @@ namespace EcdLink.Api.CoreApi
             public const string upload_type_be_creative = "BeCreative";
             public const string upload_type_family_days = "FamilyDays";
 
+            public const string first_reporting_period = "\"reportingPeriod\":\"First\"";
 
         }
 
