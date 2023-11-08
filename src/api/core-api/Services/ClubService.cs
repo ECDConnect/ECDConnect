@@ -24,7 +24,9 @@ using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -956,27 +958,40 @@ namespace EcdLink.Api.CoreApi.Services
         {
             ActivityMeetRegular activityMeetRegular = new ActivityMeetRegular();
             List<ActivityMeetRegularDetail> pastMeetings = new List<ActivityMeetRegularDetail>();
-            List<ClubPoints> clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
-                                                                         x.Year == year &&
-                                                                         x.ClubPointsLibrary.Activity == Constants.ClubSettings.meet_regularly).ToList();
-            List<ClubMeeting> allMeetings = _clubMeetingRepo.GetAll().Where(x => x.ClubId == clubId &&
-                                                                            x.IsActive && x.MeetingDate.HasValue &&
-                                                                            x.MeetingDate.Value.Year == year &&
-                                                                            x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting).ToList();
-            List<ClubMember> clubMembers = _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive == true).ToList();
-            List<Guid> clubMeetingIds = allMeetings.Select(x => x.Id).ToList();
-            List<ClubMeetingRegister> clubMeetingRegister = _clubMeetingRegisterRepo.GetAll().Where(x => x.ClubMeeting.MeetingDate.Value.Year == year &&
-                                                                                                    clubMeetingIds.Contains(x.ClubMeetingId) && x.IsActive == true).ToList();
-            List<Guid> participantIds = clubMeetingRegister.Select(x => (Guid)x.PractitionerId).ToList();
-            List<ClubMember> absentees = clubMembers.Where(x => !participantIds.Contains(x.PractitionerId)).ToList();
+            List<ClubMeetingRegister> absentees = new List<ClubMeetingRegister>();
+            List<ClubMeetingRegister> meetingParticipants = new List<ClubMeetingRegister>();
+
+            ClubPointsLibrary libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly).FirstOrDefault();
+            Club club = _clubRepo.GetAll()
+                .Where(x => x.Id == clubId)
+                .Include(x => x.ClubPoints.Where(x => x.Year == year && x.ClubPointsLibraryId == libraryItem.Id))
+                .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
+                .Include(x => x.ClubLeaders.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
+                .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
+                .FirstOrDefault();
+
+            List<Guid> allMembers = new List<Guid>();
+            allMembers.AddRange(club.ClubMembers.Select(x => x.PractitionerId).Distinct().ToList());
+            allMembers.AddRange(club.ClubLeaders.Select(x => x.PractitionerId).Distinct().ToList());
+            allMembers.AddRange(club.ClubSupport.Select(x => x.PractitionerId).Distinct().ToList());
+            allMembers = allMembers.Distinct().ToList();
+
+            var clubPoints = club.ClubPoints.Select(x => x.Points).Sum();
+
+            List<ClubMeeting> allMeetings = _clubMeetingRepo.GetAll().
+                Where(x => x.ClubId == clubId && x.IsActive && x.MeetingDate.HasValue &&
+                      x.MeetingDate.Value.Year == year &&
+                      x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting)
+                .Include(x => x.ClubMeetingRegister.Where(x => x.IsActive))
+                .ToList();
 
             if (month != 0)
             {
-                clubPoints = clubPoints.Where(x => x.Month == month).ToList();
+                clubPoints = club.ClubPoints.Where(x => x.Month == month).Select(x => x.Points).Sum();
                 allMeetings = allMeetings.Where(x => x.MeetingDate.Value.Month <= month).ToList();
-            } 
-
-            activityMeetRegular.Points = clubPoints.Select(x => x.Points).Sum();
+            }
+            
+            activityMeetRegular.Points = clubPoints;
             activityMeetRegular.PointsColor = MetricsColorEnum.Error.ToString();
             
             // set the color for points
@@ -992,12 +1007,12 @@ namespace EcdLink.Api.CoreApi.Services
             // set meetings
             foreach (var item in allMeetings)
             {
-                int totalAttended = clubMeetingRegister.Where(x => x.ClubMeeting.MeetingDate == item.MeetingDate && x.Attended && x.IsActive).Count();
+                int totalAttended = item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive).Count();
                 double meetingAttendancePerc = 0.0;
                 string meetingAttendanceColor = MetricsColorEnum.Error.ToString();
-                if (clubMembers.Count > 0)
+                if (allMembers.Count > 0)
                 {
-                    meetingAttendancePerc = ((double)totalAttended / (double)clubMembers.Count) * 100;
+                    meetingAttendancePerc = ((double)totalAttended / (double)allMembers.Count) * 100;
                 }
 
                 if (meetingAttendancePerc >= 80)
@@ -1007,21 +1022,24 @@ namespace EcdLink.Api.CoreApi.Services
                     meetingAttendanceColor = MetricsColorEnum.Warning.ToString();
                 }
 
+                meetingParticipants = item.ClubMeetingRegister.Where(x => x.Attended).OrderBy(x => x.Practitioner.User.FirstName).ToList();
+                absentees = item.ClubMeetingRegister.Where(x => !x.Attended).OrderBy(x => x.Practitioner.User.FirstName).ToList();
+
                 pastMeetings.Add(new ActivityMeetRegularDetail()
                 {
                     MeetingDate = (DateTime)item.MeetingDate,
                     MeetingAttendancePerc = meetingAttendancePerc,
                     MeetingAttendanceColor = meetingAttendanceColor,
                     MeetingNotes = item.MeetingNotes,
-                    MeetingParticipants = clubMeetingRegister.Where(x => x.Attended).OrderBy(x => x.Practitioner.User.FirstName).ToList(),
-                    MeetingAbsentees = absentees.OrderBy(x => x.Practitioner.User.FirstName).ToList(),
-                    Points = clubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.Year == item.MeetingDate.Value.Year).Select(x => x.Points).Sum()
+                    MeetingParticipants = meetingParticipants,
+                    MeetingAbsentees = absentees,
+                    Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.Year == item.MeetingDate.Value.Year).Select(x => x.Points).Sum()
                 });
             }
 
             activityMeetRegular.PastMeetings = pastMeetings;
             activityMeetRegular.UpcomingMeetings = allMeetings.Where(x => x.MeetingDate.HasValue && x.MeetingDate.Value.Date > DateTime.Now.Date).ToList();
-
+            
             return activityMeetRegular;
         }
 
