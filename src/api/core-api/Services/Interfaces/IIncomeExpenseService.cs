@@ -16,8 +16,7 @@ namespace ECDLink.Core.Services.Interfaces
         StatementsStartupSupport UpdateStartupSupport(StatementsStartupSupport model);
         StatementsIncomeStatement SubmitMonthlyStatement(int month, int year, string userId, IEnumerable<Guid> incomeItemIds, IEnumerable<Guid> expenseItemIds, bool autoSubmitted = false);
         bool AutoSubmitStatement(string userId, int year, int month);
-        Dictionary<string, DateTime> GetUnsubmittedStatements();        
-        List<Practitioner> GetPractitionersDueStatements();
+        Dictionary<string, DateTime> GetUnsubmittedStatements();
         Document CreateIncomeStatementPDFDocument(string userId, StatementsIncomeStatement statement);
         List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(Guid statementId);
         List<IncomeExpensePDFTableModel> GetStatementsIncomeExpensesPDFData(StatementsIncomeStatement statement);

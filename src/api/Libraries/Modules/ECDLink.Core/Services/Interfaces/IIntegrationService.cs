@@ -13,7 +13,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> IntegrationAttendanceByDueData();
         Task<bool> IntegrationUpdates();
         Task<bool> IntegrationByTrainees();
-        Task<bool> AutoSubmitStatements();
+        Task AutoSubmitStatements();
         Task<bool> IntegrationByNewCoach(string remoteCoachId);
     }
 }

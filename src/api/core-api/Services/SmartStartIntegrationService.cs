@@ -1015,20 +1015,26 @@ public class SmartStartIntegrationService : IIntegrationService
         return returnOK;
     }
 
-    public async Task<bool> AutoSubmitStatements()
+    public async Task AutoSubmitStatements()
     {
-        bool returnOK = false;
-        StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
-        var pracsDueSubmits = _incomeManager.GetUnsubmittedStatements();
+        await _logManager.IntegrationLog($"AutoSubmitStatements started at {DateTime.Now}", null, null, LogRelatedType.Log, "AutoSubmitStatements");
 
-        foreach (var pracData in pracsDueSubmits)
+        try
         {
-            DateTime duePeriod = pracData.Value;
-            _incomeManager.AutoSubmitStatement(pracData.Key, duePeriod.Year, duePeriod.Month);
-            returnOK = true;
+            var pracsDueSubmits = _incomeManager.GetUnsubmittedStatements();
+
+            foreach (var pracData in pracsDueSubmits)
+            {
+                DateTime duePeriod = pracData.Value;
+                _incomeManager.AutoSubmitStatement(pracData.Key, duePeriod.Year, duePeriod.Month);
+            }
+        }
+        catch (Exception ex)
+        {
+            await _logManager.IntegrationLog($"AutoSubmitStatements ERROR at {DateTime.Now}", ex.Message, null, LogRelatedType.Log, "AutoSubmitStatements");
         }
 
-        return returnOK;
+        await _logManager.IntegrationLog($"AutoSubmitStatements Completed at {DateTime.Now}", null, null, LogRelatedType.Log, "AutoSubmitStatements");
     }
 
     public async Task<bool> IntegrationByTrainees()
