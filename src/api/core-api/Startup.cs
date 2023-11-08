@@ -173,9 +173,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<DocumentManager>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
-            if (!Environment.IsDevelopment()) { //dont look at any jobs for development
             ConfigureJobs(services);
-            }            
             services.AddControllers();
         }
 

@@ -18,7 +18,7 @@ public class ExpireInvitations : CronJobService
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
     public ExpireInvitations(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }

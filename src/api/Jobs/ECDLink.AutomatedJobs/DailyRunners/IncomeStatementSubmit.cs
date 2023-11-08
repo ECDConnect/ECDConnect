@@ -17,7 +17,7 @@ public class IncomeStatementSubmit : CronJobService
     public IncomeStatementSubmit(IServiceScopeFactory scopeFactory, 
         IScheduleConfig<IncomeStatementSubmit> config//,  [Service] SchedulerService scheduler
         )
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }
