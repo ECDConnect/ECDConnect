@@ -27,9 +27,13 @@ export class BackendNotificationsValidator implements NotificationValidator {
   getNotifications = async () => {
     const notifications: Message[] = [];
 
-    const allNotifications = await this.getAllNotifications({
-      userId: this.user?.id,
-    });
+    // EC-1909 - Suppress ticket
+    // const allNotifications = await this.getAllNotifications({
+    //   userId: this.user?.id,
+    // });
+    // EC-1909 - Suppress ticket
+    // delete next line when unsuppressing
+    const allNotifications: Notification[] = [];
 
     if (!allNotifications.length) return;
 

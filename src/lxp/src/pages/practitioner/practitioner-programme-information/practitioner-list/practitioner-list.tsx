@@ -140,28 +140,29 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
             actionIcon: 'PencilIcon',
             buttonType:
               !!practitioners && practitioners.length ? 'filled' : 'ghost',
-            onActionClick: () => {
-              const userId = item?.userId || '';
-              if (item?.isPrincipal && userId === practitioner?.userId) {
-                if (!!practitioners && practitioners.length) {
-                  history.push(ROUTES.PRINCIPAL.SWAP_PRINCIPAL);
-                }
-              } else {
-                const existingRemoval = existingRemovals?.find(
-                  (x) => x.userId === userId
-                );
-                if (existingRemoval) {
-                  setRemovingPractitionerId(userId);
-                } else {
-                  history.push(
-                    ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
-                    {
-                      practitionerId: userId,
-                    }
-                  );
-                }
-              }
-            }, // Disabled the editPractitioner view state
+            // EC-1909 - Suppress ticket
+            // onActionClick: () => {
+            //   const userId = item?.userId || '';
+            //   if (item?.isPrincipal && userId === practitioner?.userId) {
+            //     if (!!practitioners && practitioners.length) {
+            //       history.push(ROUTES.PRINCIPAL.SWAP_PRINCIPAL);
+            //     }
+            //   } else {
+            //     const existingRemoval = existingRemovals?.find(
+            //       (x) => x.userId === userId
+            //     );
+            //     if (existingRemoval) {
+            //       setRemovingPractitionerId(userId);
+            //     } else {
+            //       history.push(
+            //         ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
+            //         {
+            //           practitionerId: userId,
+            //         }
+            //       );
+            //     }
+            //   }
+            // }, // Disabled the editPractitioner view state
           };
         })
       : otherColleaguesFiltered?.map((item: any) => {

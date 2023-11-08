@@ -106,7 +106,8 @@ export const BeCreative: React.FC = () => {
         imageUrl={paintPaletteIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
+      {/* EC-1909 - Suppress ticket */}
+      {/* <ScoreCard
         className="mt-5"
         mainText={String(details?.points ?? 0)}
         hint="points"
@@ -116,7 +117,7 @@ export const BeCreative: React.FC = () => {
         barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
         bgColour="uiBg"
         textColour="black"
-      />
+      /> */}
       {details?.monthlyRecords?.length ? (
         <div className="mt-5">
           {details.monthlyRecords.map((item) => (
