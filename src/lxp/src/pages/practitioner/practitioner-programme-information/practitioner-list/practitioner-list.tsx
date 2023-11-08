@@ -136,7 +136,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
               ? item?.user?.roles[0]?.name
               : '',
             switchTextStyles: true,
-            actionName: 'Remove',
+            actionName: !!practitioners && practitioners.length ? 'Remove' : '',
             actionIcon: 'PencilIcon',
             buttonType:
               !!practitioners && practitioners.length ? 'filled' : 'ghost',
