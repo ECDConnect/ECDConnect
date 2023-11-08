@@ -135,8 +135,7 @@ export class ChildProgressReportNotificationValidator
   private notificationAlreadyDone = (reference: string): boolean => {
     const { notifications: notificationsState } = this.store.getState();
 
-    // return notificationsState.notificationReferences.includes(reference);
-    return false;
+    return notificationsState.notificationReferences.includes(reference);
   };
 
   private getNotificationsCompleteReportsAllChildren = (
