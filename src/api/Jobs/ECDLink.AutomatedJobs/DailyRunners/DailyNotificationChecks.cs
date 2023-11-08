@@ -12,7 +12,7 @@ public class DailyNotificationChecks : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     public DailyNotificationChecks(IServiceScopeFactory scopeFactory, IScheduleConfig<DailyNotificationChecks> config)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }

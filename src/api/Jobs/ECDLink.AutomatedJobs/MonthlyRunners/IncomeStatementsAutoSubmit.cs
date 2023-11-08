@@ -15,7 +15,7 @@ public class IncomeStatementsAutoSubmit : CronJobService
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
     public IncomeStatementsAutoSubmit(IServiceScopeFactory scopeFactory, IScheduleConfig<IncomeStatementsAutoSubmit> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }

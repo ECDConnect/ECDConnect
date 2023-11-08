@@ -14,7 +14,7 @@ public class WeeklyNotificationChecks : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     public WeeklyNotificationChecks(IServiceScopeFactory scopeFactory, IScheduleConfig<WeeklyNotificationChecks> config)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }
