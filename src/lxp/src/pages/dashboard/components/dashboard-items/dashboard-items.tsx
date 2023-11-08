@@ -53,9 +53,9 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       );
     }
 
-    // if (!notification.message?.isFromBackend) {
-    //   appDispatch(notificationActions.removeNotification(notification));
-    // }
+    if (!notification.message?.isFromBackend) {
+      appDispatch(notificationActions.removeNotification(notification));
+    }
   };
 
   return (

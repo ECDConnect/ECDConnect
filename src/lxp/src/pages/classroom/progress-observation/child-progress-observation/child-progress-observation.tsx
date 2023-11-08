@@ -149,8 +149,6 @@ export const ChildProgressObservationPage: React.FC = () => {
   const { notStartedCategories, inProgressCategories, completedCategories } =
     seperateCategoriesByStatus(categories, report);
 
-  console.log({ notStartedCategories });
-
   const isComplete = completedCategories.length === categories.length;
 
   const isReturningUser =

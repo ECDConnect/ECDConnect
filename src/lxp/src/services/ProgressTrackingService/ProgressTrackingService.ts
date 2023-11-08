@@ -156,9 +156,12 @@ class ProgressTrackingService {
               categories {
                   id
                   name
+                  imageUrl
+                  color
                   subCategories {
-                      id
-                      name
+                    id
+                    name
+                    imageUrl
                       childrenPerSkill {
                           childCount
                           skill
