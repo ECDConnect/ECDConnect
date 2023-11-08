@@ -77,7 +77,7 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<IncomeStatementsAutoSubmit>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EighthOfEveryMonthNoon;
+                c.CronExpression = CronTags.EighthOfEveryMonth_11AM;
             });
             services.AddCronJob<MonthlyNotificationChecks>(c =>
             {

@@ -25,6 +25,6 @@
         public const string FirstDayofEveryYear = "0 0 1 1 *";
 
 
-        public const string EighthOfEveryMonthNoon = "0 12 */8 * *";
+        public const string EighthOfEveryMonth_11AM = "0 11 */8 * *";
     }
 }
