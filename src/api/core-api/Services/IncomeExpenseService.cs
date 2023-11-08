@@ -506,7 +506,7 @@ namespace ECDLink.Core.Services
             //find all users that are principal and/or FAA that were created before the start of the  submission period, as they would be due statements for stipends
             StatementsSubmitPeriod submitPeriod = GetStatementPeriod();
             var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date && x.UserId == "4a715da0-b50a-4246-9f0a-5a99fb7e13ab").ToList();
+            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).ToList();
         }
 
         #endregion
