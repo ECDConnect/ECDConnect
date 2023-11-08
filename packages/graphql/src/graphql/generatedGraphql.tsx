@@ -199,7 +199,7 @@ export type ActivityMeetRegular = {
 
 export type ActivityMeetRegularDetail = {
   __typename?: 'ActivityMeetRegularDetail';
-  meetingAbsentees?: Maybe<Array<Maybe<ClubMember>>>;
+  meetingAbsentees?: Maybe<Array<Maybe<ClubMeetingRegister>>>;
   meetingAttendanceColor?: Maybe<Scalars['String']>;
   meetingAttendancePerc: Scalars['Float'];
   meetingDate: Scalars['DateTime'];
@@ -5127,6 +5127,7 @@ export type MessageTemplate = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   message?: Maybe<Scalars['String']>;
+  ordering: Scalars['Int'];
   protocol?: Maybe<Scalars['String']>;
   subject?: Maybe<Scalars['String']>;
   templateType?: Maybe<Scalars['String']>;
@@ -5144,6 +5145,7 @@ export type MessageTemplateFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   message?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<MessageTemplateFilterInput>>;
+  ordering?: InputMaybe<ComparableInt32OperationFilterInput>;
   protocol?: InputMaybe<StringOperationFilterInput>;
   subject?: InputMaybe<StringOperationFilterInput>;
   templateType?: InputMaybe<StringOperationFilterInput>;
@@ -5158,6 +5160,7 @@ export type MessageTemplateInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Message?: InputMaybe<Scalars['String']>;
+  Ordering: Scalars['Int'];
   Protocol?: InputMaybe<Scalars['String']>;
   Subject?: InputMaybe<Scalars['String']>;
   TemplateType?: InputMaybe<Scalars['String']>;
@@ -5172,6 +5175,7 @@ export type MessageTemplateSortInput = {
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   message?: InputMaybe<SortEnumType>;
+  ordering?: InputMaybe<SortEnumType>;
   protocol?: InputMaybe<SortEnumType>;
   subject?: InputMaybe<SortEnumType>;
   templateType?: InputMaybe<SortEnumType>;
@@ -5424,7 +5428,6 @@ export type Mutation = {
   addVisitBackReferral?: Maybe<VisitBackReferral>;
   addVisitData: Scalars['Boolean'];
   autoSubmitStatement?: Maybe<ResultReturnObject>;
-  autoSubmitStatements: Scalars['Boolean'];
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   cancelRemovalFromProgramme: Scalars['Boolean'];
@@ -5980,7 +5983,7 @@ export type Mutation = {
 
 export type MutationAcceptNewClubLeaderRoleArgs = {
   clubId: Scalars['UUID'];
-  clubSupportPractitionerId?: InputMaybe<Scalars['String']>;
+  clubSupportPractitionerId: Scalars['UUID'];
   practitionerId: Scalars['UUID'];
 };
 
@@ -9003,6 +9006,7 @@ export type Notification = {
   messageProtocol?: Maybe<Scalars['String']>;
   messageTemplate?: Maybe<MessageTemplate>;
   messageTemplateType?: Maybe<Scalars['String']>;
+  ordering: Scalars['Int'];
   readDate?: Maybe<Scalars['DateTime']>;
   sentByUserId: Scalars['UUID'];
   status?: Maybe<Scalars['String']>;
@@ -9035,6 +9039,7 @@ export type NotificationSortInput = {
   messageProtocol?: InputMaybe<SortEnumType>;
   messageTemplate?: InputMaybe<MessageTemplateSortInput>;
   messageTemplateType?: InputMaybe<SortEnumType>;
+  ordering?: InputMaybe<SortEnumType>;
   readDate?: InputMaybe<SortEnumType>;
   sentByUserId?: InputMaybe<SortEnumType>;
   status?: InputMaybe<SortEnumType>;
@@ -9604,7 +9609,9 @@ export type PractitionerAttendance = {
 
 export type PractitionerClassProgressReportCategorySummary = {
   __typename?: 'PractitionerClassProgressReportCategorySummary';
+  color?: Maybe<Scalars['String']>;
   id: Scalars['Int'];
+  imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
   subCategories?: Maybe<
     Array<Maybe<PractitionerClassProgressReportSubCategorySummary>>
@@ -9624,6 +9631,7 @@ export type PractitionerClassProgressReportSubCategorySummary = {
     Array<Maybe<PractitionerClassProgressReportSkillSummary>>
   >;
   id: Scalars['Int'];
+  imageUrl?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
 };
 
