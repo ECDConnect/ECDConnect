@@ -106,6 +106,20 @@ export const PractitionerProfile: React.FC = () => {
     [history, practitioner]
   );
 
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return (
+          <OnlineOnlyModal
+            overrideText={'You need to go online to use this feature.'}
+            onSubmit={onSubmit}
+          ></OnlineOnlyModal>
+        );
+      },
+    });
+  };
+
   const getStackedMenuList = (): MenuListDataItem[] => {
     const titleStyle = 'text-textDark font-semibold text-base leading-snug';
     const subTitleStyle = 'text-sm font-h1 font-normal text-textMid';
@@ -209,7 +223,11 @@ export const PractitionerProfile: React.FC = () => {
         showIcon: classroomImage?.file === undefined,
         onActionClick: () => {
           if ((classroom && classroom.id) || classroomGroups) {
-            history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
+            if (isOnline) {
+              history.push(ROUTES.PRACTITIONER.PROGRAMME_INFORMATION);
+            } else {
+              showOnlineOnly();
+            }
           } else {
             dialog({
               render: (onSubmit, onCancel) => {

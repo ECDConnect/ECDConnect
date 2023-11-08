@@ -229,6 +229,8 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                 onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
               />
             </div>
+            {/* EC-1909 - Suppress ticket */}
+            {/*
             <div className="mb-8 flex justify-center">
               <Button
                 type="outlined"
@@ -250,6 +252,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                 ></Typography>
               </Button>
             </div>
+              */}
           </div>
         )}
       </div>
