@@ -37,7 +37,10 @@ import {
 } from '../classroomForCoach/classroomForCoach';
 import { activityReducer } from '../content/activity';
 import { activityPersistConfig } from '../content/activity/activity';
-import { contentConsentReducer } from '../content/consent/consent';
+import {
+  contentConsentPersistConfig,
+  contentConsentReducer,
+} from '../content/consent/consent';
 import {
   programmeRoutinePersistConfig,
   programmeRoutineReducer,
@@ -114,7 +117,10 @@ const persistedReducers = {
   ),
   clubs: persistReducer(clubPersistConfig, clubReducer),
   coach: persistReducer(coachPersistConfig, coachReducer),
-  contentConsentData: contentConsentReducer,
+  contentConsentData: persistReducer(
+    contentConsentPersistConfig,
+    contentConsentReducer
+  ),
   contentReportData: persistReducer(
     contentReportPersistConfig,
     contentReportReducer

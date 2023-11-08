@@ -136,32 +136,33 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
               ? item?.user?.roles[0]?.name
               : '',
             switchTextStyles: true,
-            actionName: 'Remove',
+            actionName: !!practitioners && practitioners.length ? 'Remove' : '',
             actionIcon: 'PencilIcon',
             buttonType:
               !!practitioners && practitioners.length ? 'filled' : 'ghost',
-            onActionClick: () => {
-              const userId = item?.userId || '';
-              if (item?.isPrincipal && userId === practitioner?.userId) {
-                if (!!practitioners && practitioners.length) {
-                  history.push(ROUTES.PRINCIPAL.SWAP_PRINCIPAL);
-                }
-              } else {
-                const existingRemoval = existingRemovals?.find(
-                  (x) => x.userId === userId
-                );
-                if (existingRemoval) {
-                  setRemovingPractitionerId(userId);
-                } else {
-                  history.push(
-                    ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
-                    {
-                      practitionerId: userId,
-                    }
-                  );
-                }
-              }
-            }, // Disabled the editPractitioner view state
+            // EC-1909 - Suppress ticket
+            // onActionClick: () => {
+            //   const userId = item?.userId || '';
+            //   if (item?.isPrincipal && userId === practitioner?.userId) {
+            //     if (!!practitioners && practitioners.length) {
+            //       history.push(ROUTES.PRINCIPAL.SWAP_PRINCIPAL);
+            //     }
+            //   } else {
+            //     const existingRemoval = existingRemovals?.find(
+            //       (x) => x.userId === userId
+            //     );
+            //     if (existingRemoval) {
+            //       setRemovingPractitionerId(userId);
+            //     } else {
+            //       history.push(
+            //         ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
+            //         {
+            //           practitionerId: userId,
+            //         }
+            //       );
+            //     }
+            //   }
+            // }, // Disabled the editPractitioner view state
           };
         })
       : otherColleaguesFiltered?.map((item: any) => {
@@ -186,7 +187,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         });
 
   return (
-    <div className="scroll-auto mb-8 h-screen">
+    <>
       <BannerWrapper
         // showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
@@ -199,21 +200,23 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         onBack={history.goBack}
         displayOffline={!isOnline}
       />
-      <div className="ml-4 mt-4">
+      <div className="h-screen overflow-y-scroll p-4">
         <Typography
           type={'h2'}
           text={isPrincipal ? 'Edit Practitioners' : 'View Practitioners'}
           color={'textDark'}
         />
         {stackedListItems && (
-          <StackedList
-            className="pr-4"
-            listItems={stackedListItems}
-            type={'ActionList'}
-          ></StackedList>
+          <div>
+            <StackedList
+              className="pr-4"
+              listItems={stackedListItems}
+              type={'ActionList'}
+            ></StackedList>
+          </div>
         )}
         {isPrincipal && (
-          <div className="mb-8 h-full">
+          <div className="mb-24">
             <div>
               <Button
                 size="small"
@@ -297,6 +300,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
           }}
         />
       </Dialog>
-    </div>
+    </>
   );
 };

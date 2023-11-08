@@ -21,5 +21,12 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ProgrammeTypeName { get; set; }
 
         public string ClassSiteAddress { get; set; }
+
+        public double? PreschoolFeeAmount { get; set; }
+        public DateTime? PreschoolFeeAmountLastUpdateDate { get; set; }
+
+        public string ClassSiteAddressId { get; set; }
+
+        public string ProgrammeTypeId { get; set; }
     }
 }

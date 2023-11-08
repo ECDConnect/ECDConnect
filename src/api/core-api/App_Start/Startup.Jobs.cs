@@ -45,7 +45,7 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<IntegrationChanges>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryTwentyMinutes;
+                c.CronExpression = CronTags.EveryHour;
             });
 
             services.AddCronJob<RemovePractitioners>(c =>
@@ -77,7 +77,7 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<IncomeStatementsAutoSubmit>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EighthOfEveryMonth;
+                c.CronExpression = CronTags.EighthOfEveryMonthNoon;
             });
             services.AddCronJob<MonthlyNotificationChecks>(c =>
             {

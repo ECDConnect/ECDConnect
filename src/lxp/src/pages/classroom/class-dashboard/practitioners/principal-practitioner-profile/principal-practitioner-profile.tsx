@@ -146,7 +146,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         }
         history.push('practitioner-reassign-class', {
           practitionerId,
-          principalPractitioner: practitionerUser,
+          // principalPractitioner: practitionerUser,
         });
 
         return;

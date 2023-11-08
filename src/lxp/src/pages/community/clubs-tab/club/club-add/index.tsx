@@ -14,12 +14,15 @@ import {
   ClubActions,
   addNewClub,
   addNewClubLeader,
-  getAllClubsForCoach,
+  getClubById,
 } from '@/store/club/club.actions';
 import { NewClubLeaderInput } from '@/services/ClubService/types';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
-export type Member = PractitionerDto | undefined;
+export type Member = {
+  practitionerId: string;
+  name: string;
+};
 interface Step1Data {
   clubName: string;
   members: Member[];
@@ -70,7 +73,7 @@ export const ClubAdd: React.FC = () => {
     wasLoading: wasLoadingAllClubs,
     isRejected: isRejectedGetAllClubs,
     error: errorGetAllClubs,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_FOR_COACH);
+  } = useThunkFetchCall('clubs', ClubActions.GET_CLUB_BY_ID);
   const isLoading = isLoadingAddClub || isLoadingAddLeader || isLoadingClubs;
   const isRejected =
     isRejectedAddClub || isRejectedAddLeader || isRejectedGetAllClubs;
@@ -83,15 +86,14 @@ export const ClubAdd: React.FC = () => {
   const onSubmit = async () => {
     const payloadAddClub: NewClubInput = {
       name: step1?.clubName,
-      newClubMembers: step1?.members?.map((member) => member?.id) as string[],
-      transferredClubMembers:
-        (step2?.map((member) => member?.id) as string[]) || [],
+      newClubMembers: step1?.members?.map((x) => x.practitionerId) || [],
+      transferredClubMembers: step2?.map((x) => x.practitionerId) || [],
       userId: user?.id,
     };
 
     const response = await appDispatch(addNewClub({ input: payloadAddClub }));
 
-    const clubId = (response.payload as ClubLeader | undefined)?.id;
+    const clubId = (response.payload as ClubLeader | undefined)?.clubId;
 
     if (clubId) {
       const payloadAddClubLeader: NewClubLeaderInput = {
@@ -101,7 +103,7 @@ export const ClubAdd: React.FC = () => {
 
       await appDispatch(addNewClubLeader(payloadAddClubLeader));
 
-      await appDispatch(getAllClubsForCoach({ userId: user?.id! }));
+      await appDispatch(getClubById({ clubId: clubId })); // TODO remove need for this by updating state from response
     }
   };
 

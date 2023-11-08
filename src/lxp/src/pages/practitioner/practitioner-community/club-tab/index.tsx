@@ -15,6 +15,7 @@ import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neut
 import { useMemo } from 'react';
 import {
   ClubActivities,
+  LeagueType,
   MAX_MEMBERS_IN_CLUB,
   MIN_MEMBERS_IN_CLUB,
 } from '@/constants/club';
@@ -27,54 +28,82 @@ import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
 import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
 import partnershipIcon from '@/assets/icon/partnership.svg';
+import { ClubActions } from '@/store/club/club.actions';
+import { useSelector } from 'react-redux';
+import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '@/pages/community/clubs-tab/club/individual-club-view';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { userSelectors } from '@/store/user';
+import { coachSelectors } from '@/store/coach';
 
 export const ClubTab: React.FC = () => {
+  const club = useSelector(getClubForPractitionerSelector);
+  const user = useSelector(userSelectors.getUser);
+  const coach = useSelector(coachSelectors.getCoach);
   const history = useHistory();
 
   const dialog = useDialog();
 
-  // TODO: add integration
-  const isLoading = false;
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_CLUB_FOR_USER
+  );
+
+  const clubId = club?.id ?? '';
+  const isClubInALeague = !!club?.league;
+  const totalMembers = club?.clubMembers?.length ?? 0;
+  const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
+  const isLeader = club?.clubLeader?.userId === user?.id;
 
   // TODO: add integration
-  const clubId = '1';
-  const totalMembers = 6;
-  const isClubInALeague = true;
-  const isPurpleLeague = false;
   const isLeaderRequest = false;
-  const isLeader = true;
 
   const onAddMeetingOrEvent = () => {
     return dialog({
       position: DialogPosition.Middle,
-      blocking: true,
+      blocking: false,
       render: (onClose) => {
         return <AddEventOrMeetingDialog onClose={onClose} />;
       },
     });
   };
 
-  // TODO: add integration
-  const coach: UserAlertListDataItem = {
-    title: `{coachName}`,
+  const coachItem: UserAlertListDataItem = {
+    title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
     titleStyle: 'text-textDark',
     profileDataUrl: '',
-    profileText: `CN`,
+    profileText:
+      (coach?.user?.firstName?.charAt(0) || '') +
+      (coach?.user?.surname?.charAt(0) || ''),
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
-    onActionClick: () => {},
+    onActionClick: () => {
+      // TODO: update user profile to handle with coach view and practitioner view
+      // history.push(
+      //   ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH
+      //     .replace(':clubId', clubId)
+      //     .replace(':coachId', coacd?.user?.id ?? ''))
+    },
   };
 
   const clubSupportRole: UserAlertListDataItem = {
-    title: `{supportRoleName}`,
+    title: `${club?.clubSupport?.firstName} ${club?.clubSupport?.surname}`,
     titleStyle: 'text-textDark',
     profileDataUrl: '',
-    profileText: `SN`,
+    profileText:
+      (club?.clubSupport?.firstName[0] || '') +
+      (club?.clubSupport?.surname[0] || ''),
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
-    onActionClick: () => {},
+    onActionClick: () => {
+      // TODO: update user profile to handle with coach view and practitioner view
+      // history.push(
+      // ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER
+      //   .replace(':clubId', clubId)
+      //   .replace(':practitionerId', user?.id ?? ''))
+    },
   };
 
   const leaderAlert = useMemo(() => {
@@ -120,11 +149,11 @@ export const ClubTab: React.FC = () => {
     return <></>;
   }, [isLeader, isLeaderRequest]);
 
-  // TODO: add integration
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: `{leagueName}`,
+      title: club?.league?.name ?? '',
       titleStyle: 'text-textDark',
+      onActionClick: () => {}, // TODO: add integration
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
@@ -135,13 +164,13 @@ export const ClubTab: React.FC = () => {
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(1)}
+            text={String(club?.leagueRanking ?? 0)}
           />
         </div>
       ),
       backgroundColor: true ? 'successBg' : 'infoBb',
     }),
-    []
+    [club?.league?.name, club?.leagueRanking]
   );
 
   const activities: MenuListDataItem[] = [
@@ -231,21 +260,26 @@ export const ClubTab: React.FC = () => {
             type={'MenuList' as StackedListType}
             listItems={[leagueCard]}
           />
-          {/* TODO: add integration */}
-          {true && (
-            <ScoreCard
-              className="mt-2"
-              mainText={String(1150 || 0)}
-              hint="points"
-              currentPoints={1150}
-              maxPoints={2000}
-              barBgColour="uiLight"
-              barColour="successMain"
-              bgColour="uiBg"
-              textColour="black"
-              onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
-            />
-          )}
+          {/* EC-1909 - Suppress ticket */}
+          {/* <ScoreCard
+            className="mt-2"
+            mainText={String(club?.pointsTotal ?? 0)}
+            hint="points"
+            currentPoints={club?.pointsTotal || 18}
+            maxPoints={club?.maxPointsTotal ?? 0}
+            barBgColour="uiLight"
+            barColour={
+              isCurrentPointsAtLeast80PercentOfTotal(
+                club?.pointsTotal || 0,
+                club?.maxPointsTotal || 0
+              )
+                ? 'successMain'
+                : 'secondary'
+            }
+            bgColour="uiBg"
+            textColour="black"
+            onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
+          /> */}
         </div>
       );
     }
@@ -257,7 +291,13 @@ export const ClubTab: React.FC = () => {
         title="This club is not in a league."
       />
     );
-  }, [history, isClubInALeague, leagueCard]);
+  }, [
+    club?.maxPointsTotal,
+    club?.pointsTotal,
+    history,
+    isClubInALeague,
+    leagueCard,
+  ]);
 
   const renderActivitiesContent = useMemo(() => {
     if (isClubInALeague) return <></>;
@@ -285,7 +325,7 @@ export const ClubTab: React.FC = () => {
         />
       ) : (
         <>
-          <Typography type="h2" text={'LadyBugs'} />
+          <Typography type="h2" text={club?.name ?? ''} />
           <div className="mt-4 flex gap-2">
             {isPurpleLeague && (
               <Tag icon="StarIcon" title="Purple" color="primary" />
@@ -304,43 +344,47 @@ export const ClubTab: React.FC = () => {
           </div>
           {leaderAlert}
           {renderLeagueContent}
-          <Typography className="mb-2" type="h3" text="Coach" />
-          {true && (
-            <div>
+          {!!coach && (
+            <>
+              <Typography className="mb-2" type="h3" text="Coach" />
+              <div>
+                <StackedList
+                  isFullHeight={false}
+                  type={'UserAlertList' as StackedListType}
+                  listItems={[coachItem]}
+                />
+              </div>
+            </>
+          )}
+          {!!club?.clubSupport && (
+            <>
+              <div className="mb-2 mt-6 flex items-center justify-between">
+                <Typography type="h3" text="Club support role" />
+                <Button
+                  type="outlined"
+                  color="primary"
+                  textColor="primary"
+                  text={'Change'}
+                  icon="RefreshIcon"
+                  onClick={() =>
+                    history.push(
+                      ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
+                    )
+                  }
+                />
+              </div>
+              <Typography
+                className="mb-4"
+                type="body"
+                color="textMid"
+                text="This club member can take meeting attendance & add events."
+              />
               <StackedList
                 isFullHeight={false}
                 type={'UserAlertList' as StackedListType}
-                listItems={[coach]}
+                listItems={[clubSupportRole]}
               />
-            </div>
-          )}
-          <div className="mb-2 mt-6 flex items-center justify-between">
-            <Typography type="h3" text="Club support role" />
-            <Button
-              type="outlined"
-              color="primary"
-              textColor="primary"
-              text={'Change'}
-              icon="RefreshIcon"
-              onClick={() =>
-                history.push(
-                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
-                )
-              }
-            />
-          </div>
-          <Typography
-            className="mb-4"
-            type="body"
-            color="textMid"
-            text="This club member can take meeting attendance & add events."
-          />
-          {true && (
-            <StackedList
-              isFullHeight={false}
-              type={'UserAlertList' as StackedListType}
-              listItems={[clubSupportRole]}
-            />
+            </>
           )}
           {renderActivitiesContent}
           <div className="mt-auto flex flex-col">

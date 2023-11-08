@@ -40,7 +40,7 @@ export const MeetRegularly: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const details = useSelector(
-    clubSelectors.getActivityMeetRegularDetailsSelector
+    clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
   );
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
@@ -157,7 +157,8 @@ export const MeetRegularly: React.FC = () => {
             title={formatStringWithFirstLetterCapitalized(activityId)}
             date={new Date()}
           />
-          <ScoreCard
+          {/* EC-1909 - Suppress ticket */}
+          {/* <ScoreCard
             className="mt-5"
             mainText={String(details?.points ?? 0)}
             hint="points"
@@ -167,7 +168,7 @@ export const MeetRegularly: React.FC = () => {
             barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
             bgColour="uiBg"
             textColour="black"
-          />
+          /> */}
           {upcomingMeetings.length && (
             <div className="mt-7">
               <Typography

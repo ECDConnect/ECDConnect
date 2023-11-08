@@ -201,7 +201,8 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMM yyyy')}
           />
-          <ScoreCard
+          {/* EC-1909 - Suppress ticket */}
+          {/* <ScoreCard
             className="mt-5"
             mainText={`${pointsTotal} points`}
             currentPoints={pointsTotal}
@@ -216,7 +217,7 @@ export const PointsSummary: React.FC = () => {
             }
             bgColour="uiBg"
             textColour="black"
-          />
+          /> */}
           {celebrationCard}
           {!!pointsTodoList && !!pointsTodoList.length && (
             <Typography
@@ -239,7 +240,7 @@ export const PointsSummary: React.FC = () => {
                       ? pointsLibraryScore.maxMonthlyPoints
                       : pointsLibraryScore.maxYearlyPoints
                   }
-                  description={pointsLibraryScore.subActivity || 'Unknown'}
+                  description={pointsLibraryScore.todoDescription || 'Unknown'}
                   badgeImage={
                     <Badge
                       style={{

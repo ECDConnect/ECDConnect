@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { getConsent /* , getOpenConsent */ } from './consent.actions';
 import { ContentConsentState } from './consent.types';
+import localForage from 'localforage';
 
 const initialState: ContentConsentState = {
   consent: undefined,
@@ -24,4 +25,14 @@ const contentConsentSlice = createSlice({
 const { reducer: contentConsentReducer, actions: contentConsentActions } =
   contentConsentSlice;
 
-export { contentConsentReducer, contentConsentActions };
+const contentConsentPersistConfig = {
+  key: 'contentConsent',
+  storage: localForage,
+  blacklist: [],
+};
+
+export {
+  contentConsentPersistConfig,
+  contentConsentReducer,
+  contentConsentActions,
+};

@@ -14,7 +14,7 @@ public class AttendanceWeekly : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public AttendanceWeekly(IServiceScopeFactory scopeFactory, IScheduleConfig<AttendanceWeekly> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
+    public AttendanceWeekly(IServiceScopeFactory scopeFactory, IScheduleConfig<AttendanceWeekly> config)
         : base(config.CronExpression, config.TimeZoneInfo)
     {
         _scopeFactory = scopeFactory;
@@ -27,7 +27,7 @@ public class AttendanceWeekly : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
-            await service.IntegrationAttendanceByDueData();
+          await service.IntegrationAttendanceByDueData();
         }
     }
 }

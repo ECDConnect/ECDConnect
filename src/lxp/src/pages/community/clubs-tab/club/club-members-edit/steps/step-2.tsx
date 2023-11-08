@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { useParams } from 'react-router';
 import { ClubsRouteState } from '../../../index.types';
-import { CoachingClub } from '@ecdlink/graphql';
+import { DetailClubDto } from '@/models/club/club.dto';
 
 export const Step2 = ({
   setIsEnabledButton,
@@ -34,7 +34,7 @@ export const Step2 = ({
         type="h4"
         text="You can only move SmartStarters to an existing club."
       />
-      <Dropdown<CoachingClub>
+      <Dropdown<DetailClubDto>
         label="Choose a club"
         placeholder="Tap to choose a club"
         list={
@@ -59,7 +59,7 @@ export const Step2 = ({
         title={`The SmartStarter${
           selectedMembers?.length > 1 ? 's' : ''
         } (${selectedMembers
-          .map((item) => item?.practitioner?.user?.firstName)
+          .map((item) => item.firstName)
           .join(', ')}) will be moved to the new club immediately.`}
         list={['They will receive a notification about their new club.']}
       />

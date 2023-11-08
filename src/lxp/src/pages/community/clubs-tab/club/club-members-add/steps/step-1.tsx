@@ -35,28 +35,38 @@ export const Step1 = ({
     )
   );
 
-  const mergedMembers = clubs
-    ?.map((club) => club.clubMembers)
-    .flat()
-    .map((item) => item?.practitioner);
+  const mergedMembers = clubs?.map((club) => club.clubMembers).flat();
   const practitionersNotInClub = filteredPractitioners?.filter(
     (practitioner) =>
-      !mergedMembers?.find((member) => practitioner.id === member?.id)
+      !mergedMembers?.find(
+        (member) => practitioner.id === member.practitionerId
+      )
   );
 
   const onCheckboxChange = (event: CheckboxChange) => {
-    const value = event.value as PractitionerDto | undefined;
+    const value = event.value as PractitionerDto;
     if (event.checked) {
       const currentPractitioners = selectedPractitioners
-        ? [...selectedPractitioners, value]
-        : [value];
+        ? [
+            ...selectedPractitioners,
+            {
+              practitionerId: value.id!,
+              name: `${value.user?.firstName} ${value.user?.surname}`,
+            },
+          ]
+        : [
+            {
+              practitionerId: value.id!,
+              name: `${value.user?.firstName} ${value.user?.surname}`,
+            },
+          ];
 
       setSelectedMembers?.(currentPractitioners);
       return setSelectedPractitioners(currentPractitioners);
     }
 
     const currentPractitioners = selectedPractitioners?.filter(
-      (item) => item?.id !== value?.id
+      (item) => item.practitionerId !== value?.id
     );
 
     setSelectedMembers?.(currentPractitioners || []);
@@ -89,7 +99,7 @@ export const Step1 = ({
             title={`${practitioner.user?.firstName} ${practitioner.user?.surname}`}
             titleWeight="semibold"
             checked={selectedPractitioners?.some(
-              (option) => practitioner.id === option?.id
+              (option) => practitioner.id === option.practitionerId
             )}
             value={practitioner}
             icon={

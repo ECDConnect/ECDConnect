@@ -124,6 +124,7 @@ import { SupportRoleEdit } from '@/pages/practitioner/practitioner-community/clu
 import { AddMeeting } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-meeting';
 import { AddAFamilyDayEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-family-day-event';
 import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-collage-event';
+import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-community/welcome';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -313,8 +314,17 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
-        path={[ROUTES.COMMUNITY.CLUB.POINTS.HELP, ROUTES.COMMUNITY.LEAGUE.HELP]}
+        path={[
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP,
+          ROUTES.COMMUNITY.LEAGUE.HELP,
+          ROUTES.COMMUNITY.HELP,
+        ]}
         component={ActivityHelp}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.COMMUNITY.WELCOME}
+        component={PractitionerCommunityWelcome}
         exact
       />
       <Route
