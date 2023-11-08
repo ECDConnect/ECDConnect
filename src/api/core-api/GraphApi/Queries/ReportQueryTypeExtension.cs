@@ -37,6 +37,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -974,7 +975,7 @@ string practitionerId)
             var progressHistory = new Dictionary<Guid, List<(DateTime, int)>>();
             foreach (var childReportContent in childProgressReportContents)
             {
-                var childReportObject = JsonSerializer.Deserialize<ChildProgressReportDetailedModel>(childReportContent);
+                var childReportObject = JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(childReportContent);
                 // TODO: Use childReportObject.DateCompleted or ReportingDate?
                 var childId = Guid.Parse(childReportObject.ChildId);
                 if (progressHistory.TryGetValue(childId, out var childHistory))
