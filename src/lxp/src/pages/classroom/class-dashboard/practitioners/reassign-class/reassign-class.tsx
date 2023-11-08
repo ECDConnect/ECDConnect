@@ -158,6 +158,19 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const [isLoading, setIsLoading] = useState(false);
   const handleReassignClassroomGroupPractitioner = useCallback(
     (classroomGroup: reassignedClassroomGroupProps) => {
+      const duplicatedClass = reassignedClassroomGroups?.find(
+        (item) => item?.classroomId === classroomGroup?.classroomId
+      );
+      if (duplicatedClass) {
+        const newArray = reassignedClassroomGroups;
+        const key = 'classroomId';
+        const duplicatedIndex = reassignedClassroomGroups.findIndex(
+          (elem) => elem[key] === duplicatedClass?.classroomId
+        );
+        newArray[duplicatedIndex] = classroomGroup;
+        setReassignedClassroomGroups(newArray);
+        return;
+      }
       setReassignedClassroomGroups([
         ...reassignedClassroomGroups,
         classroomGroup,
