@@ -1,0 +1,1 @@
+ALTER TABLE public."MessageTemplate" ADD "Ordering" numeric NULL DEFAULT 0;
