@@ -122,7 +122,7 @@ namespace ECDLink.Core.Services
         private DateTime? GetLastSubmittedDate(string userId)
         {
             var row = _statementsRepo.GetAll() //get all rows for year to date
-                    .Where(x => string.Equals(x.UserId, userId))
+                    .Where(x => string.Equals(x.UserId, userId) && x.Submitted == true)
                     .OrderByDescending(y => y.SubmittedDate)
                     .Select(y => y.SubmittedDate)
                     .FirstOrDefault();
@@ -506,7 +506,7 @@ namespace ECDLink.Core.Services
             //find all users that are principal and/or FAA that were created before the start of the  submission period, as they would be due statements for stipends
             StatementsSubmitPeriod submitPeriod = GetStatementPeriod();
             var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).ToList();
+            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date && x.UserId == "4a715da0-b50a-4246-9f0a-5a99fb7e13ab").ToList();
         }
 
         #endregion
@@ -518,7 +518,6 @@ namespace ECDLink.Core.Services
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);
 
-            var uId = _contextAccessor.HttpContext.GetUser().Id;
             var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
             nfi.NumberGroupSeparator = " ";
 
@@ -735,7 +734,7 @@ namespace ECDLink.Core.Services
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
-            pdfDoc.CreatedUserId = uId;
+            pdfDoc.CreatedUserId = _applicationUserId;
 
             return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
         }
