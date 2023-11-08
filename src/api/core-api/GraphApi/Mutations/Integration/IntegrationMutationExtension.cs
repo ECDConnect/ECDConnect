@@ -50,9 +50,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         {
             return await integrationService.IntegrationByTrainees();
         }
-        public async Task<bool> AutoSubmitStatements([Service] IIntegrationService integrationService)
+        public async Task AutoSubmitStatements([Service] IIntegrationService integrationService)
         {
-            return await integrationService.AutoSubmitStatements();
+            await integrationService.AutoSubmitStatements();
         }
 
         public async Task<bool> IntegrationByNewCoach([Service] IIntegrationService integrationService, string remoteCoachId)

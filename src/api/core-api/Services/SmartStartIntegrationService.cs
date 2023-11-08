@@ -949,7 +949,7 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<bool> IntegrationUpdates()
     {
         await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
-        int historyDays = 2;
+        int historyDays = 2; //TODO: change this to look for last successfull run and do incremental calls to SL only, the overlap is extra data and gets mostly discarded anyways, plus making the payloads bigger, more room for error
         bool returnOK = false;
         RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays * -1), DateTime.Now);
         _mappedEntities = await GetMappedEntities(null, true, true);
@@ -1018,20 +1018,26 @@ public class SmartStartIntegrationService : IIntegrationService
         return returnOK;
     }
 
-    public async Task<bool> AutoSubmitStatements()
+    public async Task AutoSubmitStatements()
     {
-        bool returnOK = false;
-        StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
-        var pracsDueSubmits = _incomeManager.GetUnsubmittedStatements();
+        await _logManager.IntegrationLog($"AutoSubmitStatements started at {DateTime.Now}", null, null, LogRelatedType.Log, "AutoSubmitStatements");
 
-        foreach (var pracData in pracsDueSubmits)
+        try
         {
-            DateTime duePeriod = pracData.Value;
-            _incomeManager.AutoSubmitStatement(pracData.Key, duePeriod.Year, duePeriod.Month);
-            returnOK = true;
+            var pracsDueSubmits = _incomeManager.GetUnsubmittedStatements();
+
+            foreach (var pracData in pracsDueSubmits)
+            {
+                DateTime duePeriod = pracData.Value;
+                _incomeManager.AutoSubmitStatement(pracData.Key, duePeriod.Year, duePeriod.Month);
+            }
+        }
+        catch (Exception ex)
+        {
+            await _logManager.IntegrationLog($"AutoSubmitStatements ERROR at {DateTime.Now}", ex.Message, null, LogRelatedType.Log, "AutoSubmitStatements");
         }
 
-        return returnOK;
+        await _logManager.IntegrationLog($"AutoSubmitStatements Completed at {DateTime.Now}", null, null, LogRelatedType.Log, "AutoSubmitStatements");
     }
 
     public async Task<bool> IntegrationByTrainees()
@@ -2947,9 +2953,8 @@ public class SmartStartIntegrationService : IIntegrationService
                 case Constants.SSIntegrationSettings.SLTrainee:
                     //TODO:
                     MappedTrainee trainee = await _apiManager.GetTraineesById(model.Guid);
-
-
                     break;
+
             }
 
             //}
@@ -3488,12 +3493,12 @@ public class SmartStartIntegrationService : IIntegrationService
         var inserts = _audits.Where(x => x.ChangeType.Equals("Insert") && x.Submitted == null).ToList();
         List<IntegrationAudit> completedAudits = new List<IntegrationAudit>();
 
-        //Child user entities push
+        //Child user entities push with caregivers, finish first
         var childrenInserted = inserts.Where(a => string.Equals(a.Entity,"Child"));
         foreach (var childAudit in childrenInserted)
         {
             var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
-            if (newChild != null)
+            if (newChild != null && newChild.CaregiverId != null) //only pick children up that has valid caregivers at the time of running due to the consent
             {
                 //final check if the child hasnt already been created to avoid duplicates
                 var existingChild = _mappedEntities.Where(x => x.UserId == newChild.UserId && x.LocalEntity.Equals("Child")).FirstOrDefault();
@@ -3512,14 +3517,17 @@ public class SmartStartIntegrationService : IIntegrationService
                             {
                                 string remoteChildEntityId = await PushNewChild(newChild, mappedPractitioner.RemoteId);
                                 //write back that these have been processed
-                                List<IntegrationAudit> caregiverAudits = _audits.Where(a => a.Entity.Equals("Caregiver") && a.RelatedId.ToString() == newChild.CaregiverId.ToString()).ToList();
-                                if (caregiverAudits != null)
+                                if (newChild.CaregiverId != null) //if no caregiver has been created at this point, dont fail, it iwll be picked up next time
                                 {
-                                    completedAudits.AddRange(caregiverAudits);
-                                    foreach (var cgAudits in caregiverAudits)
+                                    List<IntegrationAudit> caregiverAudits = _audits.Where(a => a.Entity.Equals(Constants.SSIntegrationSettings.SSCaregiver) && a.RelatedId.ToString() == newChild.CaregiverId.ToString()).ToList();
+                                    if (caregiverAudits != null)
                                     {
-                                        //remove from overhanging audit lines
-                                        _audits.Remove(cgAudits);
+                                        completedAudits.AddRange(caregiverAudits);
+                                        foreach (var cgAudits in caregiverAudits)
+                                        {
+                                            //remove from overhanging audit lines
+                                            _audits.Remove(cgAudits);
+                                        }
                                     }
                                 }
                                 var childAudits = _audits.Where(a => (a.Entity.Equals("Child") && a.RelatedId.ToString() == newChild.Id.ToString()) || (a.Entity.Equals("ApplicationUser") && a.RelatedId.ToString() == newChild.UserId.ToString())).ToList();
@@ -3553,18 +3561,60 @@ public class SmartStartIntegrationService : IIntegrationService
             }
         }
 
+        //removed as caregivers coming in later means the child is not valid until caregiver is in system and consent can be sent
+        ////refresh audit entries
+        //_audits = await GetAudits(null, auditUserId, historyDays);
+        //var updatedInserts = _audits.Where(x => x.ChangeType.Equals("Insert") && x.Submitted == null).ToList();
+        ////any caregivers created/updated thats not part of the initial inserts that got missed due to timing
+        //var caregiversInserted = updatedInserts.Where(a => string.Equals(a.Entity, Constants.SSIntegrationSettings.SSCaregiver));
+        //foreach (var caregiverAudit in caregiversInserted)
+        //{
+        //    //check if the link has already been made in the mapping, ie sent to SL, if not create  the SL JSON make the link and update the child and then audits
+        //    Caregiver newCG = _caregiverRepo.GetById(Guid.Parse(caregiverAudit.RelatedId));
+        //    var existingCaregiver = _mappedEntities.Where(x => x.LocalId == newCG.Id.ToString() && string.Equals(x.LocalEntity,Constants.SSIntegrationSettings.SSCaregiver)).FirstOrDefault();
+        //    if (existingCaregiver != null)
+        //    {
+        //        //checked that everything is set and update the logs
+        //        List<IntegrationAudit> caregiverAudits = _audits.Where(a => string.Equals(a.Entity,Constants.SSIntegrationSettings.SSCaregiver) && a.RelatedId.ToString() == existingCaregiver.LocalId.ToString()).ToList();
+        //        if (caregiverAudits != null)
+        //        {
+        //            completedAudits.AddRange(caregiverAudits);
+        //            foreach (var cgAudits in caregiverAudits)
+        //            {
+        //                //remove from overhanging audit lines
+        //                _audits.Remove(cgAudits);
+        //            }
+        //        }
+        //    } else
+        //    {
+        //        List<IntegrationAudit> caregiverAudits = _audits.Where(a => a.Entity.Equals(Constants.SSIntegrationSettings.SSCaregiver) && a.RelatedId.ToString() == newCG.Id.ToString()).ToList();
+        //        //map caregiver and create SL link and update child
+        //        string remoteCaregiverEntityId = await PushNewCaregiverUpdateChild(newCG);
+        //        if (!string.IsNullOrWhiteSpace(remoteCaregiverEntityId))
+        //        {
+        //            completedAudits.AddRange(caregiverAudits);
+        //            foreach (var cgAudits in caregiverAudits)
+        //            {
+        //                //remove from overhanging audit lines
+        //                _audits.Remove(cgAudits);
+        //            }
+        //        }
+        //    }
+        //}
+
+
         //insert documents
-        var docsInserted = inserts.Where(a => a.Entity.Equals("Document"));
+        var docsInserted = inserts.Where(a => a.Entity.Equals(Constants.SSIntegrationSettings.SSDocument));
         foreach (var docAudit in docsInserted)
         {
             //TODO: Complete
             Document newDoc = _docRepo.GetById(Guid.Parse(docAudit.RelatedId));
-            var existingDoc = _mappedEntities.Where(x => x.LocalId == newDoc.Id.ToString() && x.LocalEntity.Equals("Document")).FirstOrDefault();
+            var existingDoc = _mappedEntities.Where(x => x.LocalId == newDoc.Id.ToString() && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSDocument)).FirstOrDefault();
             if (existingDoc == null)
             {
                 string remoteId = await PushNewDocument(newDoc);
             }
-            List<IntegrationAudit> allDocAudits = _auditRepo.GetAll().Where(x => x.Entity.Equals("Document") && x.RelatedId == docAudit.RelatedId && x.Submitted == null).ToList();
+            List<IntegrationAudit> allDocAudits = _auditRepo.GetAll().Where(x => x.Entity.Equals(Constants.SSIntegrationSettings.SSDocument) && x.RelatedId == docAudit.RelatedId && x.Submitted == null).ToList();
             if (allDocAudits.Any())
                 completedAudits.AddRange(allDocAudits);
         }
@@ -3829,6 +3879,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > CreateCaregiver");
                             }
                         }
+
                         jsonCaregiverString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"}");
                     }
                     jsonCaregiverString.AppendLine("}");
@@ -4061,6 +4112,192 @@ public class SmartStartIntegrationService : IIntegrationService
             }
         }
         return childRemoteId;
+    }
+
+    private async Task<string> PushNewCaregiverUpdateChild(Caregiver newCG)
+    {
+        string cgRemoteId = "";
+        string childRemoteId = "";
+        IntegrationEntityMapping mappedPractitioner = new IntegrationEntityMapping();
+        IntegrationAPIManager.APIHandleResponse apiResponse = null;
+        if (newCG != null)
+        {
+            //retrieve the child this CG is linked to
+            Child cgChild = _childGenericRepo.GetAll().Where(x => x.CaregiverId != null && string.Equals(x.CaregiverId, newCG.Id)).FirstOrDefault();
+            if (cgChild != null)
+            {
+                //retrieve teh mapped child
+                IntegrationEntityMapping childMapping = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSChild) && x.UserId == cgChild.UserId).FirstOrDefault();
+                if (childMapping != null)
+                {
+                    childRemoteId = childMapping.RemoteId;
+                    try
+                    {
+                        var practitioner = GetPractitionerForChild(childMapping.UserId);
+                        if (practitioner != null)
+                        {
+                            //get remoteId
+                            mappedPractitioner = _mappedEntities.Where(x => x.UserId == practitioner.UserId && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+
+                            //insert caregiver and map
+                            StringBuilder jsonCaregiverString = new StringBuilder();
+                            string cgUrl = "";
+                            var caregiverColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals(Constants.SSIntegrationSettings.SSCaregiver) && c.IsActive == true).ToList();
+
+                            cgUrl = Constants.SSIntegrationSettings.SLCaregiver + Constants.SSIntegrationSettings.CreateMultiple;
+                            jsonCaregiverString.AppendLine("[{");
+                            if (caregiverColumns.Count() > 0)
+                            {
+                                foreach (var changeLine in caregiverColumns)
+                                {
+                                    try
+                                    {
+                                        if (!string.IsNullOrWhiteSpace(changeLine.LocalColumn))
+                                        {
+                                            if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                            {
+                                                string valueToSend = "";
+                                                switch (changeLine.LocalEntity)
+                                                {
+                                                    case "SiteAddress":
+                                                        if (newCG.SiteAddress != null && typeof(SiteAddress).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                                        {
+                                                            valueToSend = typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newCG.SiteAddress) != null ? typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newCG.SiteAddress).ToString() : null;
+                                                        }
+                                                        break;
+                                                    case "Caregiver":
+                                                        if (typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                                        {
+                                                            valueToSend = typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newCG) != null ? typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newCG).ToString() : null;
+                                                        }
+                                                        break;
+                                                }
+                                                if (changeLine.RemapToString)
+                                                {
+                                                    if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                                    {
+                                                        valueToSend = await _integrationHelperManager.RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                                    }
+                                                }
+                                                if (!string.IsNullOrEmpty(valueToSend))
+                                                {
+                                                    switch (changeLine.EntityDataType)
+                                                    {
+                                                        case "bool":
+                                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                                            break;
+                                                        case "integer":
+                                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                            break;
+                                                        case "datetime":
+                                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                            break;
+                                                        default:
+                                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                            break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushInserts > PushNewCaregiverUpdateChild");
+                                    }
+                                }
+
+                                jsonCaregiverString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitioner.RemoteId + "\"}");
+                            }
+                            jsonCaregiverString.AppendLine("}");
+                            jsonCaregiverString.AppendLine("]");
+                            //create caregiver
+                            try
+                            {
+                                //now send to API call <entity type>/Multiple
+                                apiResponse = await _apiManager.GetAPIHandlerResponse(cgUrl, null, null, null, false, false, jsonCaregiverString.ToString());
+                                if (!string.IsNullOrEmpty(apiResponse.ResponseString))
+                                {
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
+                                    if (returnObj != null)
+                                    {
+                                        cgRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                        IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                        cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSCaregiver;
+                                        cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLCaregiver;
+                                        cgMapping.LocalId = newCG.ToString();
+                                        cgMapping.RemoteId = cgRemoteId;
+                                        //cgMapping.UserId = newChild.UserId;
+                                        cgMapping.UpdatedBy = _uId;
+                                        cgMapping.UpdatedDate = DateTime.Now;
+                                        cgMapping.IsComplete = true;
+                                        cgMapping.BeforeJSON = jsonCaregiverString.ToString();
+                                        _mapperRepo.Insert(cgMapping);
+                                    }
+                                    else //error empty response received
+                                    {
+                                        await _logManager.IntegrationLog("Caregiver not created", jsonCaregiverString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushNewCaregiverUpdateChild > Create Caregiver");
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewCaregiverUpdateChild > CreateCaregiver > GetAPIHandlerResponse");
+                            }
+
+                            //update the child and map
+                            StringBuilder jsonChildString = new StringBuilder();
+                            string childUrl = "";
+                            childUrl = Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.UpdateMultiple;
+                            jsonChildString.AppendLine("[{");
+                            jsonChildString.AppendLine("\"Guid\": \"" + childMapping.RemoteId + "\",");
+                            if (!string.IsNullOrEmpty(cgRemoteId))
+                                jsonChildString.AppendLine("\"Caregiver\":{\"Guid\": \"" + cgRemoteId + "\"},");
+
+                            jsonChildString.AppendLine("}");
+                            jsonChildString.AppendLine("]");
+                            //update child
+                            try
+                            {
+                                //now send to API call <entity type>/Multiple
+                                apiResponse = await _apiManager.GetAPIHandlerResponse(childUrl, null, null, null, false, false, jsonChildString.ToString());
+                                if (!string.IsNullOrEmpty(apiResponse.ResponseString))
+                                {
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
+                                    if (returnObj != null)
+                                    {
+                                        childRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                    }
+                                    else //error empty response received
+                                    {
+                                        await _logManager.IntegrationLog("Child not updated", jsonChildString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushInserts > Update Child");
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushInserts > Update Child > GetAPIHandlerResponse");
+                            }
+                        }
+
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushInserts > Update Child > GetAPIHandlerResponse");
+                    }
+
+                } else
+                {
+                    //child doesnt exist yet or didnt map properly, and needs remapping
+                    await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver no mapping exist" + cgChild.UserId.ToString(), cgChild.UserId.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver > Missing Child mapping in mappings");
+                    await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver");
+                }
+            } else
+            {
+                //end child check, if no child exists for this caregiver then dont need to send to SL, but a caregiver shouldnt exist without a child, so a different issue
+                await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString() , null, LogRelatedType.Error, "PushInserts > Create Caregiver");
+            }
+        }
+        return cgRemoteId;
     }
 
     public Practitioner GetPractitionerForChild(string childUserId)
