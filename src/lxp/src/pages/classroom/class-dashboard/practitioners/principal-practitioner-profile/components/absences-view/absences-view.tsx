@@ -30,7 +30,7 @@ export const AbsencesView: React.FC<AbsencesViewProps> = ({
       item?.absentDate === item?.absentDateEnd &&
       isSameMonth(new Date(item?.absentDate as string), new Date(lastMonth))
   );
-  console.log({ practitioner });
+
   const history = useHistory();
   return (
     <BannerWrapper

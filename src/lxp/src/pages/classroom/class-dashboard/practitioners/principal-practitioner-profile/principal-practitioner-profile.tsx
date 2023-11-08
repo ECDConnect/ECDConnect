@@ -438,16 +438,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Card>
             )}
-            {!currentAbsentee && daysAbsentLastMonth === undefined && (
-              <div className="my-4 flex w-11/12 justify-center">
-                <StackedList
-                  isFullHeight={false}
-                  className={'flex w-11/12 flex-col gap-2'}
-                  listItems={notificationItem}
-                  type={'MenuList'}
-                />
-              </div>
-            )}
+            {!currentAbsentee &&
+              daysAbsentLastMonth &&
+              Number(daysAbsentLastMonth) > 0 && (
+                <div className="my-4 flex w-11/12 justify-center">
+                  <StackedList
+                    isFullHeight={false}
+                    className={'flex w-11/12 flex-col gap-2'}
+                    listItems={notificationItem}
+                    type={'MenuList'}
+                  />
+                </div>
+              )}
             <AbsenceCard
               absenceIsToday={absenceIsToday}
               currentAbsentee={currentAbsentee}
