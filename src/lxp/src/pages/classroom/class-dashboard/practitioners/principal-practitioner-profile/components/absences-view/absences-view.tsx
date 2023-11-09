@@ -47,7 +47,12 @@ export const AbsencesView: React.FC<AbsencesViewProps> = ({
             className={`text-14 bg-alertMain )} flex h-8 w-8
           items-center justify-center rounded-full font-bold text-white`}
           >
-            <Typography type={'h2'} text={'5'} color={'white'} weight="bold" />
+            <Typography
+              type={'h2'}
+              text={`${practitioner?.daysAbsentLastMonth}`}
+              color={'white'}
+              weight="bold"
+            />
           </div>
           <Typography
             type={'h2'}

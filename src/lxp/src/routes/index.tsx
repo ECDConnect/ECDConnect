@@ -125,6 +125,7 @@ import { AddMeeting } from '@/pages/practitioner/practitioner-community/club-tab
 import { AddAFamilyDayEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-family-day-event';
 import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-collage-event';
 import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-community/welcome';
+import { PractitionerPdfSummaryReport } from '@/pages/classroom/progress-observation/practitioner-pdf-summary-report/practitioner-pdf-summary-report';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -603,6 +604,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_CLASSROOM}
         component={CoachPractitionerClassroom}
+      />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER_PROGRESS_REPORT_SUMMARY}
+        component={PractitionerPdfSummaryReport}
       />
       <Route path={ROUTES.COACH.NOTES} component={CoachNotes} />
       <Route
