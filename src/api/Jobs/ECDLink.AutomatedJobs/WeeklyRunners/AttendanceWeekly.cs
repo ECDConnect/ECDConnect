@@ -15,7 +15,7 @@ public class AttendanceWeekly : CronJobService
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
     public AttendanceWeekly(IServiceScopeFactory scopeFactory, IScheduleConfig<AttendanceWeekly> config)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }

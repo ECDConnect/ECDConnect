@@ -15,7 +15,7 @@ public class RemovePractitioners : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
 
     public RemovePractitioners(IServiceScopeFactory scopeFactory, IScheduleConfig<RemovePractitioners> config)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }

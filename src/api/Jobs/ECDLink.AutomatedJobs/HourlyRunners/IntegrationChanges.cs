@@ -15,7 +15,7 @@ public class IntegrationChanges : CronJobService
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
     public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<IntegrationChanges> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }

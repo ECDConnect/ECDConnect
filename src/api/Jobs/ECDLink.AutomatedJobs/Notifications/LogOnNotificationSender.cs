@@ -21,7 +21,7 @@ namespace ECDLink.AutomatedJobs.Notifications
         private readonly IServiceScopeFactory _scopeFactory;
 
         public LogOnNotificationSender(IServiceScopeFactory scopeFactory, IScheduleConfig<LogOnNotificationSender> config)
-            : base(config.CronExpression, config.TimeZoneInfo)
+            : base(config)
         {
             _scopeFactory = scopeFactory;
         }

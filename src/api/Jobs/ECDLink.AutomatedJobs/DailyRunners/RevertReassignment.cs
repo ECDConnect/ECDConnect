@@ -17,7 +17,7 @@ public class RevertReassignment : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
 
     public RevertReassignment(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }

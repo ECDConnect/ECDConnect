@@ -98,10 +98,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public double MeetingAttendancePerc { get; set; }
         public string MeetingAttendanceColor { get; set; }
         public string MeetingNotes { get; set; }
-        public virtual List<ClubMeetingRegister> MeetingParticipants { get; set; }
-        public virtual List<ClubMember> MeetingAbsentees { get; set; }
+        public List<MeetingParticipant> MeetingParticipants { get; set; }
+        public List<MeetingParticipant> MeetingAbsentees { get; set; }
         public int Points { get; set; }
     }
+
+    public class MeetingParticipant
+    {
+        public string FirstName { get; set; }
+        public string Surname { get; set; }
+    }
+
     public class ActivityBeCreative
     {
         public int Points { get; set; }
