@@ -2313,6 +2313,7 @@ export type ClubPointsLibrary = {
   isActive: Scalars['Boolean'];
   maxPointsYearly: Scalars['Int'];
   points: Scalars['Int'];
+  subActivity?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -2330,6 +2331,7 @@ export type ClubPointsLibraryFilterInput = {
   maxPointsYearly?: InputMaybe<ComparableInt32OperationFilterInput>;
   or?: InputMaybe<Array<ClubPointsLibraryFilterInput>>;
   points?: InputMaybe<ComparableInt32OperationFilterInput>;
+  subActivity?: InputMaybe<StringOperationFilterInput>;
   type?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -2344,6 +2346,7 @@ export type ClubPointsLibraryInput = {
   IsActive: Scalars['Boolean'];
   MaxPointsYearly: Scalars['Int'];
   Points: Scalars['Int'];
+  SubActivity?: InputMaybe<Scalars['String']>;
   Type?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
@@ -2358,6 +2361,7 @@ export type ClubPointsLibrarySortInput = {
   isActive?: InputMaybe<SortEnumType>;
   maxPointsYearly?: InputMaybe<SortEnumType>;
   points?: InputMaybe<SortEnumType>;
+  subActivity?: InputMaybe<SortEnumType>;
   type?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
@@ -10908,7 +10912,6 @@ export type Query = {
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
   allClubsForCoach?: Maybe<Array<Maybe<CoachingClubBase>>>;
-  allClubsForCoachSimple?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allCoachingCircleClubsForCoach?: Maybe<CircleTabClubs>;
   allContentLanguages?: Maybe<Array<Maybe<Language>>>;
@@ -12648,10 +12651,6 @@ export type QueryAllClassroomsForPrincipalArgs = {
 };
 
 export type QueryAllClubsForCoachArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryAllClubsForCoachSimpleArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
