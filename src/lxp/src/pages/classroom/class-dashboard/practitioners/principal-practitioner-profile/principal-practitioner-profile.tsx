@@ -112,8 +112,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   });
   const [showAbsences, setShowAbsences] = useState(false);
 
-  console.log({ lastMonth });
-
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
     return item?.userId === practitionerUserId;
   });
