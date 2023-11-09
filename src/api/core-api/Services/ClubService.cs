@@ -1195,7 +1195,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
                 else if (item.MeetingDate >= term3Start && item.MeetingDate <= term3End)
                 {
-                    term = terms.GetItemByIndex(3);
+                    term = terms.GetItemByIndex(2);
                     term.EventName = item.MeetingType.NormalizedName;
                     term.Description = item.MeetingNotes;
                     term.Points = termPoints;
