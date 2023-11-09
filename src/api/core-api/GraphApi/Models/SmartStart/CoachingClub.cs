@@ -106,6 +106,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
 
     public class MeetingParticipant
     {
+        public string Id { get; set; }
         public string FirstName { get; set; }
         public string Surname { get; set; }
     }

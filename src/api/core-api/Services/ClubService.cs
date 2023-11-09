@@ -996,7 +996,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
                 meetingParticipants = item.ClubMeetingRegister
                     .Where(x => x.Attended)
-                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname})
+                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname})
                     .OrderBy(x => x.FirstName).ToList();
 
                 // get participant ids for absentees list
@@ -1006,17 +1006,17 @@ namespace EcdLink.Api.CoreApi.Services
                 // Build absentees list for meeting
                 absentees.AddRange(club.ClubMembers
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
                     .OrderBy(x => x.FirstName).ToList());
 
                 absentees.AddRange(club.ClubLeaders
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
                     .OrderBy(x => x.FirstName).ToList());
 
                 absentees.AddRange(club.ClubSupport
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
                     .OrderBy(x => x.FirstName).ToList());
 
                 pastMeetings.Add(new ActivityMeetRegularDetail()
