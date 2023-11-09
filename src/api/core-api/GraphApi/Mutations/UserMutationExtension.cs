@@ -440,6 +440,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public async Task<BulkDeactivateResult> BulkDeleteUser(
           [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] ILogger<UserMutationExtension> _logger,
           IGenericRepositoryFactory repoFactory,
           [Service] IPointsEngineService pointsEngineService,
           UserManager<ApplicationUser> userManager,
@@ -495,6 +496,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var roles = userManager.GetRolesAsync(user).Result;
                     foreach (var role in roles)
                     {
+                        _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserMutationExtension.BulkDeleteUser]", role, user.Id, currentUserId);
                         var result = userManager.RemoveFromRoleAsync(user, role).Result;
                     }
 

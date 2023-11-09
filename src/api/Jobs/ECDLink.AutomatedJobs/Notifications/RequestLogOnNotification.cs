@@ -1,10 +1,12 @@
 ﻿using ECDLink.Abstractrions.Enums;
+using ECDLink.AutomatedJobs.Anonymise;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Jobs;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
 using System.Threading;
@@ -16,8 +18,8 @@ namespace ECDLink.AutomatedJobs.Notifications
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public RequestLogOnNotification(IServiceScopeFactory scopeFactory, IScheduleConfig<RequestLogOnNotification> config)
-            : base(config)
+        public RequestLogOnNotification(IServiceScopeFactory scopeFactory, IScheduleConfig<RequestLogOnNotification> config, ILogger<RequestLogOnNotification> logger)
+            : base(config, logger)
         {
             _scopeFactory = scopeFactory;
         }
