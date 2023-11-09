@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.AutomatedJobs.Services;
 using HotChocolate;
+using ECDLink.AutomatedJobs.Anonymise;
+using Microsoft.Extensions.Logging;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
@@ -15,9 +17,8 @@ public class IncomeStatementSubmit : CronJobService
     private SchedulerService _scheduler;
     private string _jobId = "IntegrationStatementsData";
     public IncomeStatementSubmit(IServiceScopeFactory scopeFactory, 
-        IScheduleConfig<IncomeStatementSubmit> config//,  [Service] SchedulerService scheduler
-        )
-        : base(config)
+        IScheduleConfig<IncomeStatementSubmit> config, ILogger<IncomeStatementSubmit> logger)
+            : base(config, logger)
     {
         _scopeFactory = scopeFactory;
     }
