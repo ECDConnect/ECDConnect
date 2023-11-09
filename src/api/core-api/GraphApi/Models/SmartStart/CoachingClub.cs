@@ -1,4 +1,5 @@
-﻿using ECDLink.DataAccessLayer.Entities.Clubs;
+﻿using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Users;
 using System;
@@ -132,6 +133,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
+        public virtual List<ActivityHostFamilyDaysDetail> Terms { get; set; }
+    }
+
+    public class ActivityHostFamilyDaysDetail
+    {
+        public int TermNr { get; set; }
+        public string TermName { get; set; }
+        public string EventName { get; set; }
+        public string Description { get; set; }
+        public string DocumentStatus { get; set; } = "Not completed";
+        public string DocumentStatusColor { get; set; } = MetricsColorEnum.Error.ToString();
+        public int Points { get; set; } = 0;
     }
 
     public class ActivityLeaveNoOneBehind
