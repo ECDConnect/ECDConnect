@@ -405,6 +405,7 @@ class PractitionerService {
             dateLinked
             dateAccepted
             dateToBeRemoved
+            daysAbsentLastMonth
             siteAddress {
               addressLine1
               addressLine2

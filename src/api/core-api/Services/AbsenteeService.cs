@@ -166,15 +166,22 @@ namespace ECDLink.Api.CoreApi.Services
             return null;
         }
 
-            public List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? endDate = null)
+            public List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? startDate = null, DateTime? endDate = null)
         {
             var classRoomRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             List<AbsenteeDetail> absenteeDetails = new List<AbsenteeDetail>();
 
             var absentees = _absenteeRepo.GetAll().Where(a => a.UserId.Equals(userId)).ToList();
+            if (startDate != null)
+            {
+                absentees = absentees.Where(a => a.AbsentDate >= startDate).ToList();
+            } else
+            {
+                absentees = absentees.Where(a => a.AbsentDate >= DateTime.Now.Date).ToList();
+            }
             if (endDate != null)
             {
-                absentees = absentees.Where(a => a.AbsentDate <= endDate && a.AbsentDate >= DateTime.Now.Date).ToList();
+                absentees = absentees.Where(a => a.AbsentDate <= endDate).ToList();
             }
 
             if (absentees.Any() )
@@ -226,7 +233,6 @@ namespace ECDLink.Api.CoreApi.Services
                 .Where(a => a.AbsentDate < endCount && a.AbsentDate >= startCount)
                 .Where(a => a.AbsentDateEnd.HasValue == false || (a.AbsentDateEnd.HasValue && (a.AbsentDate.Date == a.AbsentDateEnd.Value.Date)))
                 .ToList();
-
 
             return absentees.Count;
         }
