@@ -63,7 +63,7 @@ namespace ECDLink.Api.CoreApi.Services
                 reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
                 var absent = new Absentees
                 {
-                    UserId = practitionerId,
+                    UserId = Guid.Parse(practitionerId),
                     Reason = reason,
                     AbsentDate = absentDate,
                     AbsentDateEnd = absentDateEnd,

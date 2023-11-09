@@ -21,7 +21,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notes
         [ForeignKey(nameof(NoteTypeId))]
         public virtual NoteType NoteType { get; set; }
 
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
 

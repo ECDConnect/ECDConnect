@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using System.Threading.Tasks;
 using ECDLink.AutomatedJobs.Util;
-using ECDLink.AutomatedJobs.Services;
 using HotChocolate;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
@@ -12,7 +11,6 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 public class IncomeStatementSubmit : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private SchedulerService _scheduler;
     private string _jobId = "IntegrationStatementsData";
     public IncomeStatementSubmit(IServiceScopeFactory scopeFactory, 
         IScheduleConfig<IncomeStatementSubmit> config//,  [Service] SchedulerService scheduler

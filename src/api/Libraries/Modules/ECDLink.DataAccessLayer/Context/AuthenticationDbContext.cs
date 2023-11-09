@@ -118,10 +118,6 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<IntegrationAudit> IntegrationAudits { get; set; }
         public DbSet<IntegrationLog> IntegrationLogs { get; set; }
 
-
-        // Service Scheduling
-        public DbSet<ServiceScheduler> ServiceScheduler { get; set; }
-
         // Income Statements
         public DbSet<StatementsContributionType> StatementsContributionTypes { get; set; }
         public DbSet<StatementsExpenses> StatementsExpenses { get; set; }

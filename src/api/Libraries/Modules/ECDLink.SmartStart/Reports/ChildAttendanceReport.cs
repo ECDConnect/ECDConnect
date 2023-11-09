@@ -155,7 +155,7 @@ namespace ECDLink.SmartStart.Reports
 
                                     classReports.Add(new ClassroomGroupChildAttendanceReportModel()
                                     {
-                                        ChildUserId = learner.UserId,
+                                        ChildUserId = learner.UserId.ToString(),
                                         ClassgroupId = classroomGroup.Id,
                                         ChildFullName = learner.User.FirstName + " " + learner.User.Surname,
                                         ChildIdNumber = learner.User.IdNumber,

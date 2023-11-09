@@ -8,7 +8,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     public class PractitionerModel
     {
         public Guid Id { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         public bool? IsPrincipal { get; set; }
         public bool? IsFundaAppAdmin { get; set; }
         public bool? IsTrainee { get; set; }

@@ -43,8 +43,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
-using ECDLink.AutomatedJobs.Services;
-using ECDLink.AutomatedJobs.Services.Interfaces;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.SmartStart.Services.Interfaces;
 
@@ -163,7 +161,6 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IAutomatedProcessService, AutomatedProcessService>();
             services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
-            services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IClubService, ClubService>();

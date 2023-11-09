@@ -1062,13 +1062,13 @@ string practitionerId)
             // Get attendance reports submitted for period
             if (practitioner?.IsPrincipal == true)
             {
-                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId.ToString()).Select(cg => cg.Id).ToListAsync();
+                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId.Equals(practitioner.UserId)).Select(cg => cg.Id).ToListAsync();
 
             }
             else
             {
                 classroomGroupIds = await classroomGroupRepo.GetAll()
-                    .Where(cg => cg.UserId.ToString() == practitioner.UserId)
+                    .Where(cg => cg.UserId.Equals(practitioner.UserId))
                     .Select(cg => cg.Id)
                     .ToListAsync();
             }
@@ -1093,7 +1093,7 @@ string practitionerId)
                 if (practitioner.IsPrincipal == true)
                 {
                     allAttendanceForPeriod = await attendanceRepo.GetAllByDateRange(reportingPeriodStart, reportingPeriodEnd)
-                        .Where(c => c.ParentRecordId == practitioner.UserId)
+                        .Where(c => c.ParentRecordId == practitioner.UserId.ToString())
                         .ToListAsync();
                 }
                 else

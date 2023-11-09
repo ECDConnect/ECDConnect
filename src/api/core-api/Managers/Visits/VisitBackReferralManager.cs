@@ -84,7 +84,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == referralCompleted && x.BackReferralCompleted == backReferralCompleted && x.Type == Constants.GGSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
                     join visitBackReferralData in _visitBackReferralRepo.GetAll() on visitStatusData.Id equals visitBackReferralData.VisitDataStatusId
@@ -93,7 +93,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == referralCompleted && x.BackReferralCompleted == backReferralCompleted && x.Type == Constants.GGSettings.visit_data_client_referral) on visitData.Id equals visitStatusData.VisitDataId
                     join visitBackReferralData in _visitBackReferralRepo.GetAll() on visitStatusData.Id equals visitBackReferralData.VisitDataStatusId

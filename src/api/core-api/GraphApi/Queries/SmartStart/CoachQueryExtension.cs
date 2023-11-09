@@ -53,10 +53,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 };
 
                 // let's make sure that the default visits are added when the smartSpace license is available
-                var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId);
+                var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId.ToString());
                 if (isAdded)
                 {
-                    coachPractitioner.timeline = personnelService.GetPractitionerTimeline(practitioner.UserId);
+                    coachPractitioner.timeline = personnelService.GetPractitionerTimeline(practitioner.UserId.ToString());
                 }
                 coachPractitioners.Add(coachPractitioner);
             }
@@ -156,7 +156,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
             foreach (var practioner in practitioners)
             {
-                List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Contains(practioner.UserId)).ToList();
+                List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Contains(practioner.UserId.ToString())).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;
@@ -177,8 +177,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.Equals(userIdGuid)).ToList();
             foreach (var practioner in practitioners)
             {
-                var practinionerUserIdGuid = new Guid(practioner.UserId);
-                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Equals(practinionerUserIdGuid)).ToList();
+                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Equals(practioner.UserId)).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;

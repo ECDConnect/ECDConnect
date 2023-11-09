@@ -304,7 +304,7 @@ namespace ECDLink.Core.Services
             var allRequiredAttendance =
             (
                 from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
-                join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId.ToString() equals practitionerData.UserId
+                join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId equals practitionerData.UserId
                 join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= inDate && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
                 select new { classroomGroupData, practitionerData }
             ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
@@ -377,7 +377,7 @@ namespace ECDLink.Core.Services
                 var allRequiredAttendance =
                 (
                     from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
-                    join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId.ToString() equals practitionerData.UserId
+                    join practitionerData in practitionerRepo.GetAll().Where(p => p.IsActive.Equals(true)) on classroomGroupData.UserId equals practitionerData.UserId
                     join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= inDate && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
                     select new { classroomGroupData, practitionerData }
                 ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
@@ -419,7 +419,7 @@ namespace ECDLink.Core.Services
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var trainee in newTrainee)
             {
-                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
+                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId.ToString());
                 var userToSend = await _userManager.FindByIdAsync(parentUserId);
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(2));
             }

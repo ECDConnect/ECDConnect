@@ -30,6 +30,7 @@ namespace ECDLink.DataAccessLayer.Entities
 
         [GraphIgnoreInput]
         public override string Id { get => base.Id; set => base.Id = value; }
+        public Guid UserId { get; set; }
         public override string UserName { get => base.UserName; set => base.UserName = value; }
         public override string NormalizedUserName { get => base.NormalizedUserName; set => base.NormalizedUserName = value; }
         public override string Email { get => base.Email; set => base.Email = value; }
@@ -122,6 +123,6 @@ namespace ECDLink.DataAccessLayer.Entities
     {
         [ForeignKey(nameof(UserId))]
         public ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
     }
 }

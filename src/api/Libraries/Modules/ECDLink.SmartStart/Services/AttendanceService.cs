@@ -95,7 +95,7 @@ namespace ECDLink.SmartStart.Services
             var classroom = _dbContext.Classrooms
                                 .Include(x => x.ClassroomGroups)
                                 .ThenInclude(c => c.ClassProgrammes)
-                                .Where(x => x.UserId == userId)
+                                .Where(x => x.UserId.ToString() == userId)
                                 .FirstOrDefault();
 
             if (classroom == default(Classroom) || classroomId != default(Guid))
@@ -118,7 +118,7 @@ namespace ECDLink.SmartStart.Services
                     classroom = _dbContext.Classrooms
                     .Include(x => x.ClassroomGroups)
                     .ThenInclude(c => c.ClassProgrammes)
-                    .FirstOrDefault(c => c.UserId.Contains(practi.PrincipalHierarchy.ToString()));// c.Id == classroomId &&
+                    .FirstOrDefault(c => c.UserId.ToString().Contains(practi.PrincipalHierarchy.ToString()));// c.Id == classroomId &&
                 }
 
                 if (classroom == default(Classroom))
@@ -161,7 +161,7 @@ namespace ECDLink.SmartStart.Services
         {
             var programmeIds = learner.ClassroomGroup.ClassProgrammes.Select(x => x.Id).ToList();
 
-            return GetAttendanceRecordsForPeriod(programmeIds, learner.UserId, startMonth, endMonth);
+            return GetAttendanceRecordsForPeriod(programmeIds, learner.UserId.ToString(), startMonth, endMonth);
         }
 
 

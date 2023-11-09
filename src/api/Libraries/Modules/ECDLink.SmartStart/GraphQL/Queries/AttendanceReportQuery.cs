@@ -49,11 +49,11 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
 
             var classroomsActiveDuringPeriod = report.GetActiveClassrooms(startOfMonth, endOfMonth).ToList();
 
-            var filteredList = classroomsActiveDuringPeriod.Where(x => x.UserId == ownerId);
+            var filteredList = classroomsActiveDuringPeriod.Where(x => x.UserId.ToString() == ownerId);
 
             foreach (var classroom in filteredList)
             {
-                var monthReport = report.GenerateMonthlyAttendanceReport(classroom.UserId, classroom.Id, startOfMonth, endOfMonth).FirstOrDefault();
+                var monthReport = report.GenerateMonthlyAttendanceReport(classroom.UserId.ToString(), classroom.Id, startOfMonth, endOfMonth).FirstOrDefault();
 
                 if (monthReport == default(MonthlyAttendanceReportModel))
                 {

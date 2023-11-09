@@ -56,11 +56,11 @@ namespace EcdLink.Api.CoreApi.Services
                             childRepo.Delete(child.Id);
                         }
                         //remove learners from allocated classes
-                        var learnerRow = learnerRepo.GetByUserId(child.UserId);
+                        var learnerRow = learnerRepo.GetByUserId(child.UserId.ToString());
                         if (learnerRow != null)
                             learnerRepo.Delete(learnerRow.Id);
 
-                        _hierarchyEngine.DeleteHierarchy(child.UserId);
+                        _hierarchyEngine.DeleteHierarchy(child.UserId.ToString());
 
                         RemoveChildDocuments(child, adminId);
 
@@ -68,7 +68,7 @@ namespace EcdLink.Api.CoreApi.Services
                     } else
                     {
                         //remove user - find it first
-                        ApplicationUser childUser = _userManager.FindByIdAsync(child.UserId).Result;
+                        ApplicationUser childUser = _userManager.FindByIdAsync(child.UserId.ToString()).Result;
                         if (childUser != null)
                         {
                             var result = _userManager.DeleteAsync(childUser).Result;

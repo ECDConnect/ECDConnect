@@ -473,8 +473,8 @@ namespace ECDLink.Core.Services
             var submitPeriod = GetStatementPeriod();
             var statementMonth = submitPeriod.Start.Month;
 
-            var eligablePractitioners = _practitionerRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).Select(x => x.UserId).ToList();
-            var usersWithSubmittedStatement = _statementsRepo.GetAll().Where(x => x.Month == statementMonth).Select(x => x.UserId).ToList();
+            var eligablePractitioners = _practitionerRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).Select(x => x.UserId.ToString()).ToList();
+            var usersWithSubmittedStatement = _statementsRepo.GetAll().Where(x => x.Month == statementMonth).Select(x => x.UserId.ToString()).ToList();
 
             var allDuePractitioners = new Dictionary<string, DateTime>();
             foreach (var userId in eligablePractitioners)
@@ -738,9 +738,9 @@ namespace ECDLink.Core.Services
             var contributionTypes = _statementsContributionTypeRepo.GetAll().ToList();
             var childUserIds = statement.IncomeItems.Where(x => !string.IsNullOrWhiteSpace(x.ChildUserId)).Select(x => x.ChildUserId).Distinct().ToList();
             var childNamesById = _childRepo.GetAll()
-                .Where(x => childUserIds.Contains(x.UserId))
+                .Where(x => childUserIds.Contains(x.UserId.ToString()))
                 .Select(x => new { x.UserId, Name = $"{x.User.FirstName} {x.User.Surname}" })
-                .ToDictionary(x => x.UserId, x => x.Name);
+                .ToDictionary(x => x.UserId.ToString(), x => x.Name);
 
             //
             //  EXPENSES

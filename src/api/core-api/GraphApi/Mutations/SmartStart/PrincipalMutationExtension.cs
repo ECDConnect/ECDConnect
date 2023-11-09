@@ -50,14 +50,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (practitioner != null && practitioner.CoachHierarchy == principalUser.CoachHierarchy && principalUser.UserId != practitioner.UserId) //only allow the same coach line sto be added to each other,a nd the user ids are different
                     {
                         practitioner.DateLinked = DateTime.Now;
-                        practitioner.PrincipalHierarchy = Guid.Parse(principalUser.UserId);
+                        practitioner.PrincipalHierarchy = principalUser.UserId;
                         practitioner.IsFundaAppAdmin = false;
                         practitioner.IsPrincipal = false;
                         practitionerRepo.Update(practitioner);
 
                         //link the practitioners classroom groups to the correct classroom
                         Classroom principalClassRoom = classroomRepo.GetAll().Where(x => x.UserId.Equals(principalUser.UserId)).OrderBy(x => x.Id).FirstOrDefault();
-                        List<ClassroomGroup> classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == practitioner.UserId))
+                        List<ClassroomGroup> classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && (x.UserId.HasValue && x.UserId == practitioner.UserId))
                                                                                    .OrderBy(x => x.Id)
                                                                                    .ToList();
                         if (classroomGroups != null && classroomGroups.Count > 0)
@@ -86,7 +86,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             }
                         }
                         //update users nicknames
-                        var user = userManager.FindByIdAsync(practitioner.UserId).Result;
+                        var user = userManager.FindByIdAsync(practitioner.UserId.ToString()).Result;
                         user.NickFirstName = firstName;
                         user.NickSurname = lastName;
                         user.NickFullName = firstName + " " + lastName;
@@ -157,7 +157,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     foreach (var practi in allPrincipalPractitioners)
                     {
-                        practi.PrincipalHierarchy = Guid.Parse(newPrincipal.UserId);
+                        practi.PrincipalHierarchy = newPrincipal.UserId;
                         practi.ShareInfo = true;
                         practitionerRepo.Update(practi);
                     }
@@ -214,7 +214,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (principal.UserId != null && practitioner.UserId != null)
                     {
                         //Reassign all classes and programmes back to principal
-                        reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                        reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                     }
 
                     status.AcceptedDate = null;
@@ -239,7 +239,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (principal.UserId != null && practitioner.UserId != null)
                         {
                             //Reassign all classes and programmes back to principal
-                            reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                            reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                         }
 
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);

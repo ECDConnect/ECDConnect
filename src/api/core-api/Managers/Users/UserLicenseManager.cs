@@ -41,17 +41,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users
 
         public List<License> GetLicensesForUser(string userId)
         {
-            return _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).ToList();
+            return _licenseRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.IsActive == true).ToList();
         }
 
         public License GetLicenseForUserForType(string userId, string type)
         {
-            return _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true && x.LicenseType.Name == type).FirstOrDefault();
+            return _licenseRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.IsActive == true && x.LicenseType.Name == type).FirstOrDefault();
         }
 
         public bool DelicenseUser(LicenseModel input)
         {
-            List<License> license1 = _licenseRepo.GetAll().Where(x => x.UserId == input.UserId).ToList();
+            List<License> license1 = _licenseRepo.GetAll().Where(x => x.UserId.ToString() == input.UserId).ToList();
 
             foreach (License license in license1)
             {
@@ -77,7 +77,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 LicenseType licenseType = _licenseTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
                 License input = new License() 
                 { 
-                    UserId = userId,
+                    UserId = Guid.Parse(userId),
                     LicenseType = licenseType,
                     LicenseDate = dateAwarded,
                     InsertedDate = DateTime.UtcNow,
@@ -103,7 +103,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 
                 License input = new License()
                 {
-                    UserId = userId,
+                    UserId = Guid.Parse(userId),
                     LicenseType = licenseType,
                     InsertedDate = DateTime.UtcNow,
                     IsActive = true,

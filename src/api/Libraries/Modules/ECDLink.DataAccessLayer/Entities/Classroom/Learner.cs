@@ -15,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
     [PrimaryKey(nameof(UserId), nameof(Id), nameof(ClassroomGroupId))]
     public class Learner : EntityBase<Guid>, IUserScoped, ApplicationUserJoin, ClassroomGroupJoin<Guid>, ProgrammeAttendanceReasonJoin<Guid?>, ITrackableType
     {
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [GraphIgnoreInput]
         [ForeignKey(nameof(UserId))]

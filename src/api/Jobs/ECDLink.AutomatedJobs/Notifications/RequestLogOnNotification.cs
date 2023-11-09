@@ -56,7 +56,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                     {
                         dbContext.JobNotifications.Add(new JobNotification
                         {
-                            UserId = user.Id,
+                            UserId = user.UserId,
                             UserLastSeen = user.LastSeen,
                             Protocol = user.ContactPreference,
                             TemplateType = TemplateTypeEnum.FourWeekNotLoggedOn,
@@ -76,7 +76,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                     if (user.LastSeen.Date <= twoOne) { 
                         dbContext.JobNotifications.Add(new JobNotification
                         {
-                            UserId = user.Id,
+                            UserId = user.UserId,
                             UserLastSeen = user.LastSeen,
                             Protocol = user.ContactPreference,
                             TemplateType = TemplateTypeEnum.ThreeWeekNotLoggedOn,

@@ -19,7 +19,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     {
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         public string Reason { get; set; }
         public string LoggedBy { get; set; }
 

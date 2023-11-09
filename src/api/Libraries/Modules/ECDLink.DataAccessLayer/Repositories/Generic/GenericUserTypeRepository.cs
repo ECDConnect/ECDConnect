@@ -55,7 +55,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             context.SaveChanges();
 
-            _hierarchyEngine.RemoveHierarchy(((IUserType)entity).UserId);
+            _hierarchyEngine.RemoveHierarchy(((IUserType)entity).UserId.ToString());
 
 
             //Populate Audit records
@@ -122,7 +122,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 return default;
             }
 
-            var user = _userManager.FindByIdAsync(castRecord.UserId).Result;
+            var user = _userManager.FindByIdAsync(castRecord.UserId.ToString()).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
 
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
@@ -156,7 +156,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 return default;
             }
 
-            var user = await _userManager.FindByIdAsync(castRecord.UserId);
+            var user = await _userManager.FindByIdAsync(castRecord.UserId.ToString());
             var roles = await _userManager.GetRolesAsync(user);
 
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
@@ -280,7 +280,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var typedEntity = entity as IUserType;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId, typedEntity.UserId);
+            var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId, typedEntity.UserId.ToString());
 
             typedEntity.Hierarchy = HierarchyHelper.AppendHierarchy(Hierarchy, hierarchyEntity.Key.ToString());
 

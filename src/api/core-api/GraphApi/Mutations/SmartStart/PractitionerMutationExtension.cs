@@ -106,7 +106,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if ((bool)input.IsTrainee)
                         {
                             var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
-                            var trainee = traineeRepo.GetByUserId(input.UserId);
+                            var trainee = traineeRepo.GetByUserId(input.UserId.ToString());
                             if (trainee == null)
                             {
                                 //create Trainee record
@@ -285,7 +285,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 if (reassignment.ClassroomGroupId != null || reassignment.PractitionerId != null)
                 {
-                    reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
+                    reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
                 }               
             }
 
@@ -314,7 +314,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             // Save the removal history
             var history = new PractitionerRemovalHistory
             {
-                UserId = practitionerUserId,
+                UserId = Guid.Parse(practitionerUserId),
                 ClassroomId = Guid.Parse(classroomId),
                 RemovedByUserId = uId,
                 ReasonForPractitionerLeavingProgrammeId = Guid.Parse(reasonForPractitionerLeavingProgrammeId),
@@ -364,7 +364,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 if(reassignment.Id == null)
                 {
-                    absenteeService.AddAbsenteeForPractitioner(uId, removal.UserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, removal.Id);
+                    absenteeService.AddAbsenteeForPractitioner(uId, removal.UserId.ToString(), reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, removal.Id);
                 }
                 else
                 {

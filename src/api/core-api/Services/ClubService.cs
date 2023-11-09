@@ -383,7 +383,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Notification information
             Practitioner practitioner = _practitionerRepo.GetById(practitionerId);
-            var userToSend = _userManager.FindByIdAsync(practitioner.UserId).Result;
+            var userToSend = _userManager.FindByIdAsync(practitioner.UserId.ToString()).Result;
             Club club = _clubRepo.GetById(clubId);
 
             List<TagsReplacements> replacements = new List<TagsReplacements>
@@ -507,10 +507,10 @@ namespace EcdLink.Api.CoreApi.Services
             foreach(ClubMember clubMember in clubMembers)
             {
                 // Expire notification for user if exist
-                _notificationService.ExpireNotificationsTypesForUser(clubMember.Practitioner.UserId, TemplateTypeConstants.UserAddedToClub);
+                _notificationService.ExpireNotificationsTypesForUser(clubMember.Practitioner.UserId.ToString(), TemplateTypeConstants.UserAddedToClub);
 
                 // Add notification to show user is new to club
-                user = _userManager.FindByIdAsync(clubMember.Practitioner.UserId).Result;
+                user = _userManager.FindByIdAsync(clubMember.Practitioner.UserId.ToString()).Result;
                 _notificationService.SendNotificationAsync(null, TemplateTypeConstants.UserAddedToClub, DateTime.Now, user, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(14));
             }
 
@@ -1265,7 +1265,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (club == null) return null;
 
-            var coach = _coachRepo.GetAll().Include(x => x.User).First(x => x.UserId == club.UserId);
+            var coach = _coachRepo.GetAll().Include(x => x.User).First(x => x.UserId.Equals(club.UserId));
 
             // Get points total for club
             var pointsTotal = club.ClubPoints.Select(x => x.Points).Sum();
@@ -1304,7 +1304,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (club == null) return null;
 
-            var coach = _coachRepo.GetAll().Include(x => x.User).First(x => x.UserId == club.UserId);
+            var coach = _coachRepo.GetAll().Include(x => x.User).First(x => x.UserId.Equals(club.UserId));
 
             // Get points total for club
             var pointsTotal = club.ClubPoints.Select(x => x.Points).Sum();
@@ -1349,7 +1349,7 @@ namespace EcdLink.Api.CoreApi.Services
                 .ThenInclude(x => x.User)
                 .ToList();
 
-            var coach = _coachRepo.GetAll().Include(x => x.User).First(x => x.UserId == coachUserId);
+            var coach = _coachRepo.GetAll().Include(x => x.User).First(x => x.UserId.Equals(coachUserId));
 
             foreach (var club in clubs)
             {

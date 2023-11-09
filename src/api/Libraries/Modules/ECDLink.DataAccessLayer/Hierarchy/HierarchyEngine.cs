@@ -205,7 +205,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             var coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: userIdGuid.ToString());
             List<Guid> franchisorCoachIds = coachRepo.GetAll()
                 .Where(c => c.FranchisorId == userIdGuid)
-                .Select(f => Guid.Parse(f.UserId))
+                .Select(f => f.UserId)
                 .ToList();
 
             List<string> userIdsToFetch = new List<string>();
@@ -221,7 +221,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             if (franchisorsPractitioners?.Count > 0)
             {
-                userIdsToFetch.AddRange(franchisorsPractitioners.Select(f => f.UserId));
+                userIdsToFetch.AddRange(franchisorsPractitioners.Select(f => f.UserId.ToString()));
             }
 
             return userIdsToFetch;
@@ -231,7 +231,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         {
             var coachPractitioners = practRepo.GetAll()
                 .Where(c => c.CoachHierarchy.HasValue == true && c.CoachHierarchy == userIdGuid)?
-                .Select(p => p.UserId)?
+                .Select(p => p.UserId.ToString())?
                 .ToList();
 
             return coachPractitioners ?? new List<string>();
@@ -241,7 +241,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         {
             // some practitioners can be principal as owner with only themselves as owner
             var principalPractitioners = practitionerRepo.GetAll()
-                .Where(c => (c.PrincipalHierarchy.HasValue && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId == userIdGuid.ToString()))
+                .Where(c => (c.PrincipalHierarchy.HasValue && c.PrincipalHierarchy == userIdGuid) || (c.IsPrincipal == true && c.UserId.Equals(userIdGuid)))
                 .Select(p => p.UserId.ToString())
                 .ToList();
 

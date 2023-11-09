@@ -184,7 +184,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
             }
 
-            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth(), DateTime.Now.AddDays(30).Date);
+            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId.ToString(), DateTime.Now.GetStartOfPreviousMonth(), DateTime.Now.AddDays(30).Date);
             if (absentees.Any())
             {
                 practitionerRecord.Absentees = absentees;
@@ -194,7 +194,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     practitionerRecord.IsOnLeave = true;
                 }
             }
-            practitionerRecord.DaysAbsentLastMonth = _absenteeService.GetAbsenteeCountByUser(practitioner.UserId);
+            practitionerRecord.DaysAbsentLastMonth = _absenteeService.GetAbsenteeCountByUser(practitioner.UserId.ToString());
 
             return practitionerRecord;
         }
@@ -315,7 +315,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     else
                     {
                         //if no classroomgroup is available to look at, use the classroom for principal
-                        classroom = _classRepo.GetByUserId(principal.UserId);
+                        classroom = _classRepo.GetByUserId(principal.UserId.ToString());
                     }
                     principalClassroom.Name = classroom.Name;
                     principalClassroom.Id = classroom.Id.ToString();
@@ -378,7 +378,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 if (isRolePrincipal) { practitionerToDemote.IsPrincipal = false; }
                 if (isRoleFAA) { practitionerToDemote.IsFundaAppAdmin = false; }
-                practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
+                practitionerToDemote.PrincipalHierarchy = practitionerToPromote.UserId;
                 practitionerToDemote.ShareInfo = true;
                 practitionerToDemote.DateLinked = DateTime.Now;
                 practitionerToDemote.DateAccepted = DateTime.Now;
@@ -391,13 +391,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 {
                     foreach (var practi in allPrincipalPractitioners)
                     {
-                        practi.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
+                        practi.PrincipalHierarchy = practitionerToPromote.UserId;
                         _practiGenericRepo.Update(practi);
                     }
                 }
 
                 //Classrooms swap
-                var classroom = _classRepo.GetByUserId(practitionerToDemote.UserId);
+                var classroom = _classRepo.GetByUserId(practitionerToDemote.UserId.ToString());
                 if (classroom!=null)
                 {
                     classroom.UserId = practitionerToPromote.UserId;
@@ -405,10 +405,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
 
                 //Swap the unsure class if there is one
-                var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId).Where(x => x.Name == "Unsure").FirstOrDefault();
+                var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId.ToString()).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
                 {
-                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId, practitionerToPromote.UserId, "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
+                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId.ToString(), practitionerToPromote.UserId.ToString(), "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
@@ -447,7 +447,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     ReplacementValue = "Principal"
                 });
                 //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
-                var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
+                var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId.ToString());
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",
@@ -493,7 +493,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     ReplacementValue = "Principal"
                 });
 
-                var classroom = GetClassroomDetailsForPractitioner(practitionerToDemote.UserId);
+                var classroom = GetClassroomDetailsForPractitioner(practitionerToDemote.UserId.ToString());
                 replacements.Add(new TagsReplacements()
                 {
                     FindValue = "ProgrammeName",
@@ -1045,7 +1045,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // Startup Support
-            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == trainee.UserId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
+            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId.Equals(trainee.UserId) && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
             if (startupSupport != null)
             {
                 timeline.StartUpSupportStartDate = startupSupport?.StartDate;
