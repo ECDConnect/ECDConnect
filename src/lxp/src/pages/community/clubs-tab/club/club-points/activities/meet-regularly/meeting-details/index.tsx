@@ -80,8 +80,8 @@ export const MeetingDetails: React.FC = () => {
           {(meeting as ActivityMeetRegularDetail)?.meetingParticipants?.map(
             (member) => (
               <Item
-                key={member?.practitioner?.user?.id}
-                name={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+                key={member?.id}
+                name={`${member?.firstName} ${member?.surname}`}
               />
             )
           )}
@@ -93,8 +93,8 @@ export const MeetingDetails: React.FC = () => {
           {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.map(
             (member) => (
               <Item
-                key={member?.practitioner?.user?.id}
-                name={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+                key={member?.id}
+                name={`${member?.firstName} ${member?.surname}`}
               />
             )
           )}

@@ -107,6 +107,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
   }, [onCallback]);
 
   // TODO: Add a rule to redirect to the dashboard if the user has no invitation
+  // TODO: Add an alert if the user is offline and redirect to the previous screen
 
   return (
     <BannerWrapper
@@ -117,7 +118,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
       subTitle={club?.name}
       color="primary"
       className="flex flex-col p-4 pt-6"
-      onBack={() => history.push(ROUTES.DASHBOARD)}
+      onBack={() => history.goBack()}
       displayOffline={!isOnline}
     >
       <Typography type="h2" text="Accept the club leader agreement" />
@@ -152,7 +153,6 @@ export const AcceptClubLeaderRole: React.FC = () => {
             I accept the{' '}
             <button
               className="text-secondary border-secondary border-b"
-              // TODO: add info page
               onClick={() =>
                 history.push(
                   ROUTES.COMMUNITY.HELP.replace(
@@ -192,7 +192,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
       )}
       <Button
         isLoading={isLoading}
-        disabled={!isAccepted || isLoading}
+        disabled={!isAccepted || !selectedMember || isLoading}
         className="mt-auto"
         icon="SaveIcon"
         type="filled"

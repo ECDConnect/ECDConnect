@@ -197,8 +197,12 @@ export type ActivityInput = {
 
 export type ActivityLeaveNoOneBehind = {
   __typename?: 'ActivityLeaveNoOneBehind';
+  blueResults: Scalars['Int'];
+  greenResults: Scalars['Int'];
+  orangeResults: Scalars['Int'];
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
+  redResults: Scalars['Int'];
 };
 
 export type ActivityMeetRegular = {
@@ -5000,6 +5004,7 @@ export type LogRelatedTypeOperationFilterInput = {
 export type MeetingParticipant = {
   __typename?: 'MeetingParticipant';
   firstName?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
   surname?: Maybe<Scalars['String']>;
 };
 

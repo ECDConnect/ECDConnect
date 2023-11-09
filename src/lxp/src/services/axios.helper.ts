@@ -17,10 +17,10 @@ const logGraphQL = (
   result: any
 ) => {
   if (!!disableGraphqlLogging) return;
-  logFunc(`GRAPHQL: ${statusText}[${status}] `, {
-    query: query,
-    result: result,
-  });
+  // logFunc(`GRAPHQL: ${statusText}[${status}] `, {
+  //   query: query,
+  //   result: result,
+  // });
 };
 
 const alertGraphQL = () => {

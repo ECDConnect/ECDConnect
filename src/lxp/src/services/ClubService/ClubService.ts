@@ -17,7 +17,7 @@ import {
   MutationAcceptNewClubLeaderRoleArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
-import { NewClubLeaderInput } from './types';
+import { ChangeClubSupportRoleInput, NewClubLeaderInput } from './types';
 import { ClubDto, DetailClubDto } from '@/models/club/club.dto';
 
 class ClubService {
@@ -640,6 +640,34 @@ class ClubService {
     }
 
     return response.data.data.acceptNewClubLeaderRole;
+  }
+
+  async changeClubSupportRole(
+    input: ChangeClubSupportRoleInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { changeClubSupportRole: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation ChangeClubSupportRole($clubId: UUID!, $practitionerId: UUID!) {
+          changeClubSupportRole(clubId: $clubId, practitionerId: $practitionerId) {
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Change club support role failed - Server connection error'
+      );
+    }
+
+    return response.data.data.changeClubSupportRole;
   }
 }
 

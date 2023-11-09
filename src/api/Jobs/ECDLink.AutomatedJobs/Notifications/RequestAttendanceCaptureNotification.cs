@@ -1,6 +1,7 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
+using ECDLink.AutomatedJobs.Anonymise;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Extensions;
@@ -14,6 +15,7 @@ using ECDLink.SmartStart.Reports.Models;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,8 +28,8 @@ namespace ECDLink.AutomatedJobs.Notifications
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public RequestAttendanceCaptureNotification(IServiceScopeFactory scopeFactory, IScheduleConfig<RequestAttendanceCaptureNotification> config)
-                : base(config)
+        public RequestAttendanceCaptureNotification(IServiceScopeFactory scopeFactory, IScheduleConfig<RequestAttendanceCaptureNotification> config, ILogger<RequestAttendanceCaptureNotification> logger)
+            : base(config, logger)
         {
             _scopeFactory = scopeFactory;
         }

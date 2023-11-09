@@ -21,7 +21,6 @@ namespace ECDLink.AutomatedJobs.Cron
             {
                 throw new ArgumentNullException(nameof(ScheduleConfig<T>.CronExpression), @"Empty Cron Expression is not allowed.");
             }
-            Console.WriteLine("CronJobs: {0} Registered '{1}' TZ='{2}' [{3}]", config.Name, config.CronExpression, config.TimeZoneInfo.DisplayName, typeof(T).AssemblyQualifiedName);
 
             services.AddSingleton<IScheduleConfig<T>>(config);
             services.AddHostedService<T>();
