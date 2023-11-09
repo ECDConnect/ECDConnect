@@ -79,6 +79,7 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
+  PRACTITIONER_PROGRESS_REPORT_SUMMARY: '/progress-summary-report',
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
   PRINCIPAL: addPrefix('/principal', {
