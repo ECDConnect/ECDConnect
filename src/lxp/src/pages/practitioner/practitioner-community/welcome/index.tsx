@@ -35,15 +35,13 @@ export const PractitionerCommunityWelcome: React.FC = () => {
   );
 
   const onSave = async () => {
-    if (value) {
-      await appDispatch(
-        clubThunkActions.saveWelcomeMessage({
-          clubId: club?.id ?? '',
-          practitionerId: user?.id ?? '',
-          welcomeMessage: value,
-        })
-      );
-    }
+    await appDispatch(
+      clubThunkActions.saveWelcomeMessage({
+        clubId: club?.id ?? '',
+        practitionerId: user?.id ?? '',
+        welcomeMessage: value ?? '',
+      })
+    );
 
     history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT);
   };
