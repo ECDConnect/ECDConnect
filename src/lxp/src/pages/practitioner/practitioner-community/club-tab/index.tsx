@@ -54,9 +54,7 @@ export const ClubTab: React.FC = () => {
   const totalMembers = club?.clubMembers?.length ?? 0;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
   const isLeader = club?.clubLeader?.userId === user?.id;
-
-  // TODO: add integration
-  const isLeaderRequest = false;
+  const isLeaderRequest = isLeader && !club?.clubLeader?.dateAssigned;
 
   const onAddMeetingOrEvent = () => {
     return dialog({
@@ -88,7 +86,9 @@ export const ClubTab: React.FC = () => {
   };
 
   const clubSupportRole: UserAlertListDataItem = {
-    title: `${club?.clubSupport?.firstName} ${club?.clubSupport?.surname}`,
+    title: `${club?.clubSupport?.firstName ?? ''} ${
+      club?.clubSupport?.surname ?? ''
+    }`,
     titleStyle: 'text-textDark',
     profileDataUrl: '',
     profileText:
@@ -124,7 +124,11 @@ export const ClubTab: React.FC = () => {
               textColor="white"
               icon="ClipboardCheckIcon"
               text="Accept agreement"
-              onClick={() => {}}
+              onClick={() =>
+                history.push(
+                  ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+                )
+              }
             />
           }
         />
@@ -147,7 +151,7 @@ export const ClubTab: React.FC = () => {
     }
 
     return <></>;
-  }, [isLeader, isLeaderRequest]);
+  }, [history, isLeader, isLeaderRequest]);
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
@@ -356,36 +360,32 @@ export const ClubTab: React.FC = () => {
               </div>
             </>
           )}
-          {!!club?.clubSupport && (
-            <>
-              <div className="mb-2 mt-6 flex items-center justify-between">
-                <Typography type="h3" text="Club support role" />
-                <Button
-                  type="outlined"
-                  color="primary"
-                  textColor="primary"
-                  text={'Change'}
-                  icon="RefreshIcon"
-                  onClick={() =>
-                    history.push(
-                      ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
-                    )
-                  }
-                />
-              </div>
-              <Typography
-                className="mb-4"
-                type="body"
-                color="textMid"
-                text="This club member can take meeting attendance & add events."
-              />
-              <StackedList
-                isFullHeight={false}
-                type={'UserAlertList' as StackedListType}
-                listItems={[clubSupportRole]}
-              />
-            </>
-          )}
+          <div className="mb-2 mt-6 flex items-center justify-between">
+            <Typography type="h3" text="Club support role" />
+            <Button
+              type="outlined"
+              color="primary"
+              textColor="primary"
+              text="Change"
+              icon="RefreshIcon"
+              onClick={() =>
+                history.push(
+                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
+                )
+              }
+            />
+          </div>
+          <Typography
+            className="mb-4"
+            type="body"
+            color="textMid"
+            text="This club member can take meeting attendance & add events."
+          />
+          <StackedList
+            isFullHeight={false}
+            type={'UserAlertList' as StackedListType}
+            listItems={[clubSupportRole]}
+          />
           {renderActivitiesContent}
           <div className="mt-auto flex flex-col">
             <Button
