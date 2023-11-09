@@ -45,6 +45,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.SmartStart.Services;
+using Microsoft.Extensions.Logging;
 
 namespace EcdLink.Api.CoreApi.Services;
 public class SmartStartIntegrationService : IIntegrationService
@@ -98,6 +99,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private AttendanceService _attendanceService;
     private IntegrationHelperManager _integrationHelperManager;
     private AttendanceTrackingRepository _attendanceTrackingRepository;
+    private Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> _logger;
 
     private MappingMode _apiMode;
     private MappingMaskDataMode _maskMode;
@@ -133,9 +135,11 @@ public class SmartStartIntegrationService : IIntegrationService
          IHolidayService<Holiday> holidayService,
          [Service] INotificationService notificationService,
          VisitManager visitManager,
-         [Service] AttendanceService attendanceService
+         [Service] AttendanceService attendanceService,
+         Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> logger
         )
     {
+        _logger = logger;
         _repositoryFactory = repositoryFactory;
         _integrationDelay = integrationDelay;
         _options = options;
@@ -1815,6 +1819,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             newPractitioner.IsFundaAppAdmin = true;
                             newPractitioner.IsPrincipal = false;
 
+                            _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapFranchisee(1)]", Roles.PRACTITIONER, newUser.Id);
                             await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                         }
                         else if (!(bool)entity.IsPrincipal && entity.Principal != null)
@@ -1841,6 +1846,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             //newPractitioner.DateLinked = DateTime.Now;
                             //newPractitioner.DateAccepted = DateTime.Now; -- do not accept the link until business clears this - Practitioners need to approve the process
 
+                            _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapFranchisee(2)]", Roles.PRACTITIONER, newUser.Id);
                             await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                         }
                         else if ((bool)entity.IsPrincipal)
@@ -1848,6 +1854,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             newPractitioner.IsPrincipal = true;
                             newPractitioner.IsFundaAppAdmin = false;
 
+                            _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapFranchisee(3)]", Roles.PRINCIPAL, newUser.Id);
                             await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
                         }
 
@@ -2576,6 +2583,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 var userCreatedResult = await _userManager.CreateAsync(newUser);
                                 if (userCreatedResult.Succeeded)
                                 {
+                                    _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapTrainee(1)]", Roles.PRACTITIONER, newUser.Id);
                                     await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                                     pracCreated = true;
                                 }
@@ -2736,6 +2744,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     var userCreatedResult = await _userManager.CreateAsync(newUser);
                     if (userCreatedResult.Succeeded)
                     {
+                        _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapFranchisor(1)]", Roles.FRANCHISOR, newUser.Id);
                         await _userManager.AddToRoleAsync(newUser, Roles.FRANCHISOR);
                     }
 
@@ -2825,6 +2834,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     var userCreatedResult = await _userManager.CreateAsync(newUser);
                     if (userCreatedResult.Succeeded)
                     {
+                        _logger.LogInformation("Roles: Add {0} to user {1} [SmartStartIntegrationService.MapCoach(1)]", Roles.COACH, newUser.Id);
                         await _userManager.AddToRoleAsync(newUser, Roles.COACH);
                     }
 

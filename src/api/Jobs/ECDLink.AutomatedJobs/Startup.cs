@@ -10,7 +10,7 @@ namespace ECDLink.AutomatedJobs
 {
     public static class AutomatedJobsStartup
     {
-        public static void ConfigureAutomatedJobs(IServiceCollection services, IConfiguration config)
+        public static void ConfigureServices(IServiceCollection services, IConfiguration config)
         {
             var automatedJobsSection = config.GetSection<AutomatedJobsSection>(AutomatedJobsSection.Name);
             if (automatedJobsSection.Enabled == 0)
