@@ -29,6 +29,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -958,25 +959,24 @@ namespace EcdLink.Api.CoreApi.Services
         {
             ActivityMeetRegular activityMeetRegular = new ActivityMeetRegular();
             List<ActivityMeetRegularDetail> pastMeetings = new List<ActivityMeetRegularDetail>();
-            List<ClubMeetingRegister> absentees = new List<ClubMeetingRegister>();
-            List<ClubMeetingRegister> meetingParticipants = new List<ClubMeetingRegister>();
+            List<MeetingParticipant> meetingParticipants = new List<MeetingParticipant>();
+            List<MeetingParticipant> absentees = new List<MeetingParticipant>();
 
             ClubPointsLibrary libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly).FirstOrDefault();
             Club club = _clubRepo.GetAll()
                 .Where(x => x.Id == clubId)
                 .Include(x => x.ClubPoints.Where(x => x.Year == year && x.ClubPointsLibraryId == libraryItem.Id))
                 .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
-                .Include(x => x.ClubLeaders.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
+                .Include(x => x.ClubLeaders.Where(x => x.IsActive && x.DateAccepted.HasValue)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
                 .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
                 .FirstOrDefault();
 
-            List<Guid> allMembers = new List<Guid>();
-            allMembers.AddRange(club.ClubMembers.Select(x => x.PractitionerId).Distinct().ToList());
-            allMembers.AddRange(club.ClubLeaders.Select(x => x.PractitionerId).Distinct().ToList());
-            allMembers.AddRange(club.ClubSupport.Select(x => x.PractitionerId).Distinct().ToList());
-            allMembers = allMembers.Distinct().ToList();
-
-            var clubPoints = club.ClubPoints.Select(x => x.Points).Sum();
+            // get all member ids so that we can find absentees
+            List<string> allMemberIds = new List<string>();
+            allMemberIds.AddRange(club.ClubMembers.Select(x => x.PractitionerId.ToString()).ToList());
+            allMemberIds.AddRange(club.ClubLeaders.Select(x => x.PractitionerId.ToString()).ToList());
+            allMemberIds.AddRange(club.ClubSupport.Select(x => x.PractitionerId.ToString()).ToList());
+            allMemberIds = allMemberIds.Distinct().ToList();
 
             List<ClubMeeting> allMeetings = _clubMeetingRepo.GetAll().
                 Where(x => x.ClubId == clubId && x.IsActive && x.MeetingDate.HasValue &&
@@ -984,6 +984,8 @@ namespace EcdLink.Api.CoreApi.Services
                       x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting)
                 .Include(x => x.ClubMeetingRegister.Where(x => x.IsActive))
                 .ToList();
+
+            var clubPoints = club.ClubPoints.Select(x => x.Points).Sum();
 
             if (month != 0)
             {
@@ -1008,12 +1010,8 @@ namespace EcdLink.Api.CoreApi.Services
             foreach (var item in allMeetings)
             {
                 int totalAttended = item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive).Count();
-                double meetingAttendancePerc = 0.0;
                 string meetingAttendanceColor = MetricsColorEnum.Error.ToString();
-                if (allMembers.Count > 0)
-                {
-                    meetingAttendancePerc = ((double)totalAttended / (double)allMembers.Count) * 100;
-                }
+                double meetingAttendancePerc = allMemberIds.Count == 0.0 ? 0 :((double)totalAttended / (double)allMemberIds.Count) * 100;
 
                 if (meetingAttendancePerc >= 80)
                 {
@@ -1021,9 +1019,30 @@ namespace EcdLink.Api.CoreApi.Services
                 } else if (meetingAttendancePerc > 60 && meetingAttendancePerc <= 79) {
                     meetingAttendanceColor = MetricsColorEnum.Warning.ToString();
                 }
+                meetingParticipants = item.ClubMeetingRegister
+                    .Where(x => x.Attended)
+                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname})
+                    .OrderBy(x => x.FirstName).ToList();
 
-                meetingParticipants = item.ClubMeetingRegister.Where(x => x.Attended).OrderBy(x => x.Practitioner.User.FirstName).ToList();
-                absentees = item.ClubMeetingRegister.Where(x => !x.Attended).OrderBy(x => x.Practitioner.User.FirstName).ToList();
+                // get participant ids for absentees list
+                List<string> participantIds = item.ClubMeetingRegister.Select(x => x.PractitionerId.ToString()).ToList();
+                List<string> absentIds = allMemberIds.Except(participantIds).ToList();
+
+                // Build absentees list for meeting
+                absentees.AddRange(club.ClubMembers
+                    .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
+                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .OrderBy(x => x.FirstName).ToList());
+
+                absentees.AddRange(club.ClubLeaders
+                    .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
+                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .OrderBy(x => x.FirstName).ToList());
+
+                absentees.AddRange(club.ClubSupport
+                    .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
+                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .OrderBy(x => x.FirstName).ToList());
 
                 pastMeetings.Add(new ActivityMeetRegularDetail()
                 {
