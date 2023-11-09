@@ -863,26 +863,27 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                           </div>
                         );
                       })}
-
-                    <div className="flex justify-center">
-                      <Button
-                        type="filled"
-                        color="primary"
-                        className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                        onClick={() => handleAbsenceModal()}
-                      >
-                        {renderIcon(
-                          'PencilAltIcon',
-                          'w-5 h-5 color-white text-white mr-1'
-                        )}
-                        <Typography
-                          type="body"
-                          className="mr-4"
-                          color="white"
-                          text={'Edit absence/leave'}
-                        ></Typography>
-                      </Button>
-                    </div>
+                    {isPrincipal && (
+                      <div className="flex justify-center">
+                        <Button
+                          type="filled"
+                          color="primary"
+                          className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                          onClick={() => handleAbsenceModal()}
+                        >
+                          {renderIcon(
+                            'PencilAltIcon',
+                            'w-5 h-5 color-white text-white mr-1'
+                          )}
+                          <Typography
+                            type="body"
+                            className="mr-4"
+                            color="white"
+                            text={'Edit absence/leave'}
+                          ></Typography>
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 </Card>
               </div>
