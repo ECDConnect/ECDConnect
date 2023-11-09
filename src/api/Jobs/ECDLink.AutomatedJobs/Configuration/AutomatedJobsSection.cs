@@ -14,7 +14,8 @@ namespace ECDLink.AutomatedJobs.Configuration
         }
 
         public static string Name = "AutomatedJobs";
+        public static string JobsName = "AutomatedJobs:Jobs";
+        public static string JobNamePrefix = "AutomatedJobs:Jobs:";
         public int Enabled { get; set; }
-        public List<Job> Jobs { get; set; }
     }
 }
