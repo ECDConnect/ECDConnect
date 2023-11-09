@@ -1614,10 +1614,10 @@ namespace EcdLink.Api.CoreApi.Services
         #region Clubs
 
         // Yearly, calculate by 30 November and will be triggered by a cron job
-        public bool CalculateLeaveNoOneBehind(DateTime today) 
+        public bool CalculateLeaveNoOneBehind() 
         {
             // Twice a year: by 30 November
-            var startDate = today.GetStartOfYear();
+            var startDate = DateTime.Now.GetStartOfYear();
 
             // Get all active purple clubs
             List<Club> allClubs = _clubRepo.GetAll()
@@ -1661,7 +1661,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         
                         allVisits = _visitManager.GetReAccreditationVisitsForPractitioner(practitionerUserId);
-                        pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Where(x => x.PlannedVisitDate.Year == today.Year).Select(y => y.Id).Contains(x.VisitId)).ToList();
+                        pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Where(x => x.PlannedVisitDate.Year == DateTime.Now.Year).Select(y => y.Id).Contains(x.VisitId)).ToList();
                         greenRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
                         orangeRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
                         redRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
@@ -1673,7 +1673,7 @@ namespace EcdLink.Api.CoreApi.Services
                     foreach (var practitionerUserId in practitioners)
                     {
                         allVisits = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId);
-                        pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Where(x => x.PlannedVisitDate.Year == today.Year).Select(y => y.Id).Contains(x.VisitId)).ToList();
+                        pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Where(x => x.PlannedVisitDate.Year == DateTime.Now.Year).Select(y => y.Id).Contains(x.VisitId)).ToList();
                         greenRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
                         orangeRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
                         redRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
@@ -1694,8 +1694,8 @@ namespace EcdLink.Api.CoreApi.Services
                         UpdatedBy = _uId,
                         IsActive = true,
                         ClubPointsLibraryId = clubPointsLibrary.Id,
-                        Month = today.Month,
-                        Year = today.Year,
+                        Month = DateTime.Now.Month,
+                        Year = DateTime.Now.Year,
                         Points = (int)finalRating,
                         PointsYTD = (int)finalRating
                     });
@@ -1742,19 +1742,19 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public bool CalculateCompleteChildProgressReports(DateTime today)
+        public bool CalculateCompleteChildProgressReports()
         {
             List<ClubPointsLibrary> libraryItems = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.child_progress_reports && x.Type == Constants.ClubSettings.name_purple).ToList();
             ClubPointsLibrary cplCaregiver = libraryItems.Where(x => x.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).FirstOrDefault();
             ClubPointsLibrary cplProgress = libraryItems.Where(x => x.SubActivity == Constants.ClubSettings.sub_progress_tracking).FirstOrDefault();
 
             // Twice a year: by 31 July and 30 November
-            var startDate = today.Month == 7 ? today.GetStartOfYear() : today.GetStartOfYear().AddMonths(7);
+            var startDate = DateTime.Now.Month == 7 ? DateTime.Now.GetStartOfYear() : DateTime.Now.GetStartOfYear().AddMonths(7);
 
             // Get all active purple clubs
             List<Club> purpleClubs = _clubRepo.GetAll()
                 .Where(x => x.IsActive && x.League.LeagueType.Name == Constants.ClubSettings.name_purple)
-                .Include(x => x.ClubPoints.Where(x => x.Year == today.Year && x.ClubPointsLibraryId == cplProgress.Id))
+                .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year && x.ClubPointsLibraryId == cplProgress.Id))
                 .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
                 .Include(x => x.ClubLeaders.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
                 .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
@@ -1782,7 +1782,7 @@ namespace EcdLink.Api.CoreApi.Services
                         HasClassrooms = _classRepo.GetListByUserId(item.Practitioner.UserId).Count() != 0,
                         TotalChildren = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(item.Practitioner.Hierarchy) && x.IsActive).Count(),
                         TotalReports = _childProgressReportRepo.GetAll().Where(x => x.Hierarchy == item.Practitioner.Hierarchy &&
-                                                                                    x.ReportDate >= startDate.Date && x.ReportDate <= today.Date &&
+                                                                                    x.ReportDate >= startDate.Date && x.ReportDate <= DateTime.Now.Date &&
                                                                                     x.IsActive && !x.ReportContent.Contains(Constants.ClubSettings.first_reporting_period))
                                                                                     .Select(x => x.ChildId).Distinct().Count()
                     }) ;
@@ -1796,7 +1796,7 @@ namespace EcdLink.Api.CoreApi.Services
                         HasClassrooms = _classRepo.GetListByUserId(item.Practitioner.UserId).Count() != 0,
                         TotalChildren = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(item.Practitioner.Hierarchy) && x.IsActive).Count(),
                         TotalReports = _childProgressReportRepo.GetAll().Where(x => x.Hierarchy == item.Practitioner.Hierarchy &&
-                                                                                    x.ReportDate >= startDate.Date && x.ReportDate <= today.Date &&
+                                                                                    x.ReportDate >= startDate.Date && x.ReportDate <= DateTime.Now.Date &&
                                                                                     x.IsActive && !x.ReportContent.Contains(Constants.ClubSettings.first_reporting_period))
                                                                                     .Select(x => x.ChildId).Distinct().Count()
                     });
@@ -1810,7 +1810,7 @@ namespace EcdLink.Api.CoreApi.Services
                         HasClassrooms = _classRepo.GetListByUserId(item.Practitioner.UserId).Where(x => x.IsActive).Count() != 0,
                         TotalChildren = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(item.Practitioner.Hierarchy) && x.IsActive).Count(),
                         TotalReports = _childProgressReportRepo.GetAll().Where(x => x.Hierarchy == item.Practitioner.Hierarchy &&
-                                                                                    x.ReportDate >= startDate.Date && x.ReportDate <= today.Date &&
+                                                                                    x.ReportDate >= startDate.Date && x.ReportDate <= DateTime.Now.Date &&
                                                                                     x.IsActive && !x.ReportContent.Contains(Constants.ClubSettings.first_reporting_period))
                                                                                     .Select(x => x.ChildId).Distinct().Count()
                     });
@@ -1829,9 +1829,7 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
 
-                totalPerc = (totalComplete == 0 ? 0 :
-                     totalPractitioners == 0 ? 0 : (double)totalComplete / (double)totalPractitioners * 50);
-
+                totalPerc = (totalComplete == 0 || totalPractitioners == 0 ? 0 : (double)totalComplete / (double)totalPractitioners * 50);
                 if (totalPerc > 0)
                 {
                     var points = (int)Math.Round(totalPerc, 0);
@@ -1849,8 +1847,8 @@ namespace EcdLink.Api.CoreApi.Services
                             UpdatedBy = _uId,
                             IsActive = true,
                             ClubPointsLibraryId = cplProgress.Id,
-                            Month = today.Month,
-                            Year = today.Year,
+                            Month = DateTime.Now.Month,
+                            Year = DateTime.Now.Year,
                             Points = points,
                             PointsYTD = totalClubPoints
                         });

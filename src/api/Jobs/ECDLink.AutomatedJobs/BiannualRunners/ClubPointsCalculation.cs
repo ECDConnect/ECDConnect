@@ -12,7 +12,7 @@ public class ClubPointsCalculation : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
     public ClubPointsCalculation(IServiceScopeFactory scopeFactory, IScheduleConfig<ClubPointsCalculation> config)
-        : base(config.CronExpression, config.TimeZoneInfo)
+        : base(config)
     {
         _scopeFactory = scopeFactory;
     }
@@ -26,11 +26,11 @@ public class ClubPointsCalculation : CronJobService
 
             if (DateTime.Now.Month == 7 && DateTime.Now.Day == 31)
             {
-                service.CalculateCompleteChildProgressReports(DateTime.Now);
+                service.CalculateCompleteChildProgressReports();
             } else if (DateTime.Now.Month == 11 && DateTime.Now.Day == 30)
             {
-                service.CalculateCompleteChildProgressReports(DateTime.Now);
-                service.CalculateLeaveNoOneBehind(DateTime.Now);
+                service.CalculateCompleteChildProgressReports();
+                service.CalculateLeaveNoOneBehind();
             }
            
         }

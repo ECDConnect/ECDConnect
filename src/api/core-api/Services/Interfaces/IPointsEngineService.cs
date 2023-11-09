@@ -44,9 +44,9 @@ namespace ECDLink.Core.Services.Interfaces
         /// <returns></returns>
         UserClubStandingModel GetUserClubStanding(string userId);
         // Clubs
-        bool CalculateLeaveNoOneBehind(DateTime today); // called from cron
+        bool CalculateLeaveNoOneBehind(); // called from cron 30 Nov
         bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
-        bool CalculateCompleteChildProgressReports(DateTime today); // called from cron 31 July and 30 Nov
+        bool CalculateCompleteChildProgressReports(); // called from cron 31 July and 30 Nov
         bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today);
         bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
 
