@@ -24,12 +24,9 @@ using HotChocolate.Utilities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using NPOI.SS.Formula.Functions;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -999,7 +996,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
                 meetingParticipants = item.ClubMeetingRegister
                     .Where(x => x.Attended)
-                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname})
+                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname})
                     .OrderBy(x => x.FirstName).ToList();
 
                 // get participant ids for absentees list
@@ -1009,17 +1006,17 @@ namespace EcdLink.Api.CoreApi.Services
                 // Build absentees list for meeting
                 absentees.AddRange(club.ClubMembers
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
                     .OrderBy(x => x.FirstName).ToList());
 
                 absentees.AddRange(club.ClubLeaders
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
                     .OrderBy(x => x.FirstName).ToList());
 
                 absentees.AddRange(club.ClubSupport
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
                     .OrderBy(x => x.FirstName).ToList());
 
                 pastMeetings.Add(new ActivityMeetRegularDetail()
@@ -1116,7 +1113,24 @@ namespace EcdLink.Api.CoreApi.Services
         public ActivityHostFamilyDays GetActivityHostFamilyDetails(Guid clubId)
         {
             DateTime today = DateTime.Now;
+            
+            DateTime term1Start = new DateTime(today.Year, 01, 01);
+            DateTime term1End = new DateTime(today.Year, 04, 30);
+
+            DateTime term2Start = new DateTime(today.Year, 05, 01);
+            DateTime term2End = new DateTime(today.Year, 07, 31);
+
+            DateTime term3Start = new DateTime(today.Year, 08, 01);
+            DateTime term3End = new DateTime(today.Year, 10, 31);
+
             ActivityHostFamilyDays activityHostFamilyDays = new ActivityHostFamilyDays();
+            List<ActivityHostFamilyDaysDetail> terms = new List<ActivityHostFamilyDaysDetail>
+            {
+                new ActivityHostFamilyDaysDetail() { TermNr = 1, TermName = "Term 1: January to April" },
+                new ActivityHostFamilyDaysDetail() { TermNr = 2, TermName = "Term 2: May to July" },
+                new ActivityHostFamilyDaysDetail() { TermNr = 3, TermName = "Term 3: August to October" }
+            };
+
             int points = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
                                                         x.Year == today.Year &&
                                                         x.Month == today.Month &&
@@ -1134,6 +1148,62 @@ namespace EcdLink.Api.CoreApi.Services
                 activityHostFamilyDays.PointsColor = MetricsColorEnum.Success.ToString();
             }
 
+            List<ClubMeeting> clubMeetings = _clubMeetingRepo.GetAll()
+                .Where(x => x.ClubId == clubId && x.IsActive && x.MeetingDate.Value.Year == today.Year &&
+                      (x.MeetingType.Name == Constants.ClubSettings.meeting_type_play_day ||
+                      x.MeetingType.Name == Constants.ClubSettings.meeting_type_story_day ||
+                      x.MeetingType.Name == Constants.ClubSettings.meeting_type_end_of_year_celebration ||
+                      x.MeetingType.Name == Constants.ClubSettings.meeting_type_open_day ||
+                      x.MeetingType.Name == Constants.ClubSettings.meeting_type_other))
+                .OrderBy(x => x.MeetingDate).ToList();
+
+            List<ClubActivityUpload> clubUploads = _clubActivityUploadRepo.GetAll()
+               .Where(x => x.IsActive && x.ClubId == clubId &&
+                      x.ClubActivityUploadType.Name == Constants.ClubSettings.upload_type_family_days &&
+                      x.Year == today.Year).ToList();
+
+            ActivityHostFamilyDaysDetail term = new ActivityHostFamilyDaysDetail();
+            ClubActivityUpload clubActivityUpload;
+            var documentStatus = "";
+            var documentStatusColor = "";
+            var termPoints = 0;
+            foreach (var item in clubMeetings)
+            {
+                clubActivityUpload = clubUploads.Where(x => x.Month == item.MeetingDate.Value.Month && x.Year == item.MeetingDate.Value.Year).FirstOrDefault();
+                documentStatus = clubActivityUpload != null ? "Attendance register uploaded" : "Not completed";
+                documentStatusColor = clubActivityUpload != null ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Error.ToString();
+                termPoints = clubActivityUpload != null ? 100 : 0;
+
+                if (item.MeetingDate >= term1Start && item.MeetingDate <= term1End)
+                {
+                    term = terms.GetItemByIndex(0);
+                    term.EventName = item.MeetingType.NormalizedName;
+                    term.Description = item.MeetingNotes;
+                    term.Points = termPoints;
+                    term.DocumentStatus = documentStatus;
+                    term.DocumentStatusColor = documentStatusColor;
+
+                } 
+                else if (item.MeetingDate >= term2Start && item.MeetingDate <= term2End)
+                {
+                    term = terms.GetItemByIndex(1);
+                    term.EventName = item.MeetingType.NormalizedName;
+                    term.Description = item.MeetingNotes;
+                    term.Points = termPoints;
+                    term.DocumentStatus = documentStatus;
+                    term.DocumentStatusColor = documentStatusColor;
+                }
+                else if (item.MeetingDate >= term3Start && item.MeetingDate <= term3End)
+                {
+                    term = terms.GetItemByIndex(2);
+                    term.EventName = item.MeetingType.NormalizedName;
+                    term.Description = item.MeetingNotes;
+                    term.Points = termPoints;
+                    term.DocumentStatus = documentStatus;
+                    term.DocumentStatusColor = documentStatusColor;
+                }
+            }
+            activityHostFamilyDays.Terms = terms;
             return activityHostFamilyDays;
         }
 
