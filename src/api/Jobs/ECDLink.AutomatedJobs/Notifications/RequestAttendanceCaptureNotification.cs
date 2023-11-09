@@ -27,7 +27,7 @@ namespace ECDLink.AutomatedJobs.Notifications
         private readonly IServiceScopeFactory _scopeFactory;
 
         public RequestAttendanceCaptureNotification(IServiceScopeFactory scopeFactory, IScheduleConfig<RequestAttendanceCaptureNotification> config)
-                : base(config.CronExpression, config.TimeZoneInfo)
+                : base(config)
         {
             _scopeFactory = scopeFactory;
         }
