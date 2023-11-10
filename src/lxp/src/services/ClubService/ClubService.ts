@@ -256,22 +256,15 @@ class ClubService {
                   meetingAttendanceColor
                   points
                   meetingParticipants {
-                    practitioner {
-                      user {
-                        id
-                        firstName
-                        surname
-                      }
+                      userId
+                      firstName
+                      surname
                   }
                   meetingAbsentees {
-                    practitioner {
-                        user {
-                            id
-                            firstName
-                            surname
-                          }
-                        }
-                    }
+                    userId
+                    firstName
+                    surname
+                  }
                 } 
               }     
           }

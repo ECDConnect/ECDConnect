@@ -197,12 +197,20 @@ export type ActivityInput = {
 
 export type ActivityLeaveNoOneBehind = {
   __typename?: 'ActivityLeaveNoOneBehind';
-  blueResults: Scalars['Int'];
-  greenResults: Scalars['Int'];
-  orangeResults: Scalars['Int'];
+  bluePerc: Scalars['Float'];
+  blueText?: Maybe<Scalars['String']>;
+  blueUsers?: Maybe<Array<Maybe<ClubUser>>>;
+  greenPerc: Scalars['Float'];
+  greenText?: Maybe<Scalars['String']>;
+  greenUsers?: Maybe<Array<Maybe<ClubUser>>>;
+  orangePerc: Scalars['Float'];
+  orangeText?: Maybe<Scalars['String']>;
+  orangeUsers?: Maybe<Array<Maybe<ClubUser>>>;
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
-  redResults: Scalars['Int'];
+  redPerc: Scalars['Float'];
+  redText?: Maybe<Scalars['String']>;
+  redUsers?: Maybe<Array<Maybe<ClubUser>>>;
 };
 
 export type ActivityMeetRegular = {
@@ -215,12 +223,12 @@ export type ActivityMeetRegular = {
 
 export type ActivityMeetRegularDetail = {
   __typename?: 'ActivityMeetRegularDetail';
-  meetingAbsentees?: Maybe<Array<Maybe<MeetingParticipant>>>;
+  meetingAbsentees?: Maybe<Array<Maybe<ClubUser>>>;
   meetingAttendanceColor?: Maybe<Scalars['String']>;
   meetingAttendancePerc: Scalars['Float'];
   meetingDate: Scalars['DateTime'];
   meetingNotes?: Maybe<Scalars['String']>;
-  meetingParticipants?: Maybe<Array<Maybe<MeetingParticipant>>>;
+  meetingParticipants?: Maybe<Array<Maybe<ClubUser>>>;
   points: Scalars['Int'];
 };
 
@@ -2488,6 +2496,14 @@ export type ClubSupportSortInput = {
   practitionerId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type ClubUser = {
+  __typename?: 'ClubUser';
+  firstName?: Maybe<Scalars['String']>;
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type Coach = {
@@ -5001,13 +5017,6 @@ export type LogRelatedTypeOperationFilterInput = {
   nin?: InputMaybe<Array<LogRelatedType>>;
 };
 
-export type MeetingParticipant = {
-  __typename?: 'MeetingParticipant';
-  firstName?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
-  surname?: Maybe<Scalars['String']>;
-};
-
 export type MeetingType = {
   __typename?: 'MeetingType';
   description?: Maybe<Scalars['String']>;
@@ -5742,7 +5751,6 @@ export type Mutation = {
   integrationByTrainees: Scalars['Boolean'];
   integrationClubsData: Scalars['Boolean'];
   integrationPQASmartSpaceVisitsData: Scalars['Boolean'];
-  integrationStatementsData: Scalars['Boolean'];
   integrationUpdates: Scalars['Boolean'];
   moveClubMembers: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
@@ -15852,6 +15860,7 @@ export type Visit = {
   motherId?: Maybe<Scalars['UUID']>;
   orderDate?: Maybe<Scalars['DateTime']>;
   overallRatingColor?: Maybe<Scalars['String']>;
+  pQARating?: Maybe<PqaRating>;
   plannedVisitDate: Scalars['DateTime'];
   practitioner?: Maybe<Practitioner>;
   practitionerId?: Maybe<Scalars['UUID']>;
@@ -16107,6 +16116,7 @@ export type VisitFilterInput = {
   or?: InputMaybe<Array<VisitFilterInput>>;
   orderDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   overallRatingColor?: InputMaybe<StringOperationFilterInput>;
+  pQARating?: InputMaybe<PqaRatingFilterInput>;
   plannedVisitDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
   practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -16261,6 +16271,7 @@ export type VisitInput = {
   MotherId?: InputMaybe<Scalars['UUID']>;
   OrderDate?: InputMaybe<Scalars['DateTime']>;
   OverallRatingColor?: InputMaybe<Scalars['String']>;
+  PQARating?: InputMaybe<PqaRatingInput>;
   PlannedVisitDate: Scalars['DateTime'];
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId?: InputMaybe<Scalars['UUID']>;
@@ -16314,6 +16325,7 @@ export type VisitSortInput = {
   motherId?: InputMaybe<SortEnumType>;
   orderDate?: InputMaybe<SortEnumType>;
   overallRatingColor?: InputMaybe<SortEnumType>;
+  pQARating?: InputMaybe<PqaRatingSortInput>;
   plannedVisitDate?: InputMaybe<SortEnumType>;
   practitioner?: InputMaybe<PractitionerSortInput>;
   practitionerId?: InputMaybe<SortEnumType>;

@@ -15,6 +15,7 @@ using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -50,6 +51,8 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<ClubActivityUpload, Guid> _clubActivityUploadRepo;
         private readonly IGenericRepository<ClubActivityUploadType, Guid> _clubActivityUploadTypeRepo;
         private readonly IGenericRepository<IntegrationAudit, Guid> _integrationAuditRepo;
+        private readonly IGenericRepository<Visit, Guid> _visitRepo;
+        
 
         private readonly string _applicationUserId;
 
@@ -86,6 +89,7 @@ namespace EcdLink.Api.CoreApi.Services
             _clubActivityUploadRepo = _repositoryFactory.CreateGenericRepository<ClubActivityUpload>(userContext: _applicationUserId);
             _clubActivityUploadTypeRepo = _repositoryFactory.CreateGenericRepository<ClubActivityUploadType>(userContext: _applicationUserId);
             _integrationAuditRepo = _repositoryFactory.CreateRepository<IntegrationAudit>(userContext: _applicationUserId);
+            _visitRepo = _repositoryFactory.CreateRepository<Visit>(userContext: _applicationUserId);
 
             _notificationService = notificationService;
             _userManager = userManager;
@@ -112,8 +116,8 @@ namespace EcdLink.Api.CoreApi.Services
                 ContentValueId = input.ContentValueId,
                 MeetingTypeId = meetingTypeId,
                 MeetingNotes = input.MeetingNotes,
-                OtherDescription = input.OtherDescription,
-                TotalCaregiversAttended = input.TotalCaregiversAttended,
+                OtherDescription = input.OtherDescription == null ? "": input.OtherDescription,
+                TotalCaregiversAttended = input.TotalCaregiversAttended == null ? 0 : input.TotalCaregiversAttended,
                 CoachAttended = input.CoachAttend == null ? false : true
             });
             
@@ -934,8 +938,8 @@ namespace EcdLink.Api.CoreApi.Services
         {
             ActivityMeetRegular activityMeetRegular = new ActivityMeetRegular();
             List<ActivityMeetRegularDetail> pastMeetings = new List<ActivityMeetRegularDetail>();
-            List<MeetingParticipant> meetingParticipants = new List<MeetingParticipant>();
-            List<MeetingParticipant> absentees = new List<MeetingParticipant>();
+            List<ClubUser> meetingParticipants = new List<ClubUser>();
+            List<ClubUser> absentees = new List<ClubUser>();
 
             ClubPointsLibrary libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly).FirstOrDefault();
             Club club = _clubRepo.GetAll()
@@ -996,7 +1000,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
                 meetingParticipants = item.ClubMeetingRegister
                     .Where(x => x.Attended)
-                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname})
+                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl})
                     .OrderBy(x => x.FirstName).ToList();
 
                 // get participant ids for absentees list
@@ -1006,17 +1010,17 @@ namespace EcdLink.Api.CoreApi.Services
                 // Build absentees list for meeting
                 absentees.AddRange(club.ClubMembers
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
                     .OrderBy(x => x.FirstName).ToList());
 
                 absentees.AddRange(club.ClubLeaders
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
                     .OrderBy(x => x.FirstName).ToList());
 
                 absentees.AddRange(club.ClubSupport
                     .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new MeetingParticipant { Id = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname })
+                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
                     .OrderBy(x => x.FirstName).ToList());
 
                 pastMeetings.Add(new ActivityMeetRegularDetail()
@@ -1210,22 +1214,172 @@ namespace EcdLink.Api.CoreApi.Services
         public ActivityLeaveNoOneBehind GetActivityLeaveNoOneBehindDetails(Guid clubId)
         {
             DateTime today = DateTime.Now;
-            ActivityLeaveNoOneBehind activityLeaveNoOneBehind = new ActivityLeaveNoOneBehind();
-            int points = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
-                                                        x.Year == today.Year &&
-                                                        x.Month == today.Month &&
-                                                        x.ClubPointsLibrary.Activity == Constants.ClubSettings.leave_no_one_behind).Select(x => x.Points).Sum();
+            DateTime startDecember = new DateTime(today.Year, 12, 1);
+            DateTime endDecember = new DateTime(today.Year, 12, 31);
 
-            activityLeaveNoOneBehind.Points = points;
+            ActivityLeaveNoOneBehind activityLeaveNoOneBehind = new ActivityLeaveNoOneBehind();
+            activityLeaveNoOneBehind.GreenUsers = new List<ClubUser>();
+            activityLeaveNoOneBehind.RedUsers = new List<ClubUser>();
+            activityLeaveNoOneBehind.OrangeUsers = new List<ClubUser>();
+            activityLeaveNoOneBehind.BlueUsers = new List<ClubUser>();
+
+            Club club = _clubRepo.GetAll()
+                .Where(x => x.Id == clubId)
+                .Include(x => x.ClubPoints.Where(x => x.Year == today.Year && x.Month == today.Month && x.ClubPointsLibrary.Activity == Constants.ClubSettings.leave_no_one_behind))
+                .Include(x => x.ClubMembers.Where(x => x.IsActive))
+                .Include(x => x.ClubLeaders.Where(x => x.IsActive && x.DateAccepted.HasValue))
+                .Include(x => x.ClubSupport.Where(x => x.IsActive))
+                .FirstOrDefault();
+
+            // get all ids for pqa calculations
+            List<Guid> allPractitionerIds = new List<Guid>();
+            allPractitionerIds.AddRange(club.ClubMembers.Select(x => x.PractitionerId).ToList());
+            allPractitionerIds.AddRange(club.ClubLeaders.Select(x => x.PractitionerId).ToList());
+            allPractitionerIds.AddRange(club.ClubSupport.Select(x => x.PractitionerId).ToList());
+            allPractitionerIds = allPractitionerIds.Distinct().ToList();
+
+            List<Visit> allVisits = _visitRepo.GetAll()
+                            .Where(x => allPractitionerIds.Contains((Guid)x.PractitionerId) &&
+                                    x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                    (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1) &&
+                                    x.DueDate.Value.Year == today.Year &&
+                                    x.IsActive)
+                            .Include(x => x.PQARating)
+                            .OrderByDescending(x => x.DueDate)
+                            .ToList();
+
+
+            activityLeaveNoOneBehind.Points = club.ClubPoints.Select(x => x.Points).Sum();
             activityLeaveNoOneBehind.PointsColor = MetricsColorEnum.Error.ToString();
+
             // set the color for points
-            if (points > 0 && points <= 74)
+            if (activityLeaveNoOneBehind.Points > 0 && activityLeaveNoOneBehind.Points <= 74)
             {
                 activityLeaveNoOneBehind.PointsColor = MetricsColorEnum.Warning.ToString();
             }
-            else if (points > 75 && points <= 100)
+            else if (activityLeaveNoOneBehind.Points > 75 && activityLeaveNoOneBehind.Points <= 100)
             {
                 activityLeaveNoOneBehind.PointsColor = MetricsColorEnum.Success.ToString();
+            }
+
+            var greenCount = 0;
+            var orangeCount = 0;
+            var redCount = 0;
+            var blueCount = 0;
+            int totalPractitioners = allPractitionerIds.Count;
+            var attended_visit = new Visit();
+            var pending_visit = new Visit();
+
+            var greenText = "";
+            var orangeText = "";
+            var redText = "";
+            var blueText = "";
+            ClubUser clubUser = new ClubUser();
+
+            foreach (var Id in allPractitionerIds)
+            {
+                if (!club.LeagueId.HasValue)
+                {
+                    attended_visit = allVisits.Where(x => x.Attended && x.PractitionerId == Id).OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
+                    pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id && x.DueDate <= endDecember).OrderByDescending(x => x.DueDate).FirstOrDefault();
+
+                } else
+                {
+                    if (club.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+                    {
+                        attended_visit = allVisits.Where(x => x.Attended && x.PractitionerId == Id &&
+                                                                                 x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 &&
+                                                                                 x.PQARating != null && x.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                                                                          .OrderByDescending(x => x.ActualVisitDate)
+                                                                          .FirstOrDefault();
+                        pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id &&
+                                                        x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 &&
+                                                        x.DueDate.Value.Date < startDecember.Date).OrderByDescending(x => x.DueDate).FirstOrDefault();
+                    } else
+                    {
+                        attended_visit = allVisits.Where(x => x.Attended && x.PractitionerId == Id &&
+                                                         x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 &&
+                                                         x.PQARating != null && x.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                                                  .OrderByDescending(x => x.ActualVisitDate)
+                                                  .FirstOrDefault();
+                        pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id &&
+                                                       x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 &&
+                                                       x.DueDate.Value.Date < startDecember.Date).OrderByDescending(x => x.DueDate).FirstOrDefault();
+                    }
+                }
+
+
+                if (attended_visit != null && attended_visit.PQARating != null)
+                {
+                    clubUser = new ClubUser { UserId = attended_visit.Practitioner.UserId, 
+                                              FirstName = attended_visit.Practitioner.User.FirstName, 
+                                              Surname = attended_visit.Practitioner.User.Surname, 
+                                              ProfileImageUrl = attended_visit.Practitioner.User.ProfileImageUrl };
+
+                    if (attended_visit.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                    {
+                        greenCount++;
+                        activityLeaveNoOneBehind.GreenUsers.Add(clubUser);
+                    }
+                    else if (attended_visit.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString())
+                    {
+                        orangeCount++;
+                        activityLeaveNoOneBehind.OrangeUsers.Add(clubUser);
+                    }
+                    else if (attended_visit.PQARating.OverallRatingColor == MetricsColorEnum.Error.ToString())
+                    {
+                        redCount++;
+                        activityLeaveNoOneBehind.RedUsers.Add(clubUser);
+                    }
+                }
+                if (pending_visit != null)
+                {
+                    clubUser = new ClubUser
+                    {
+                        UserId = pending_visit.Practitioner.UserId,
+                        FirstName = pending_visit.Practitioner.User.FirstName,
+                        Surname = pending_visit.Practitioner.User.Surname,
+                        ProfileImageUrl = pending_visit.Practitioner.User.ProfileImageUrl
+                    };
+                    blueCount++;
+                    activityLeaveNoOneBehind.BlueUsers.Add(clubUser);
+                }
+            }
+
+
+            if (!club.LeagueId.HasValue)
+            {
+                greenText = "club members have green PQA or re-accreditation";
+                orangeText = "club members have orange PQA or re-accreditation";
+                redText = "club members have red PQA or re-accreditation";
+                blueText = "club members have PQA or re-accreditation coming up later this year";
+            } else
+            {
+                if (club.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+                {
+                    greenText = "club members have green re-accreditation ratings";
+                    orangeText = "club members have orange re-accreditation ratings";
+                    redText = "club members have red re-accreditation ratings";
+                    blueText = "club members have re-accreditation ratings coming up later this year";
+                } else
+                {
+                    greenText = "club members have green PQAs";
+                    orangeText = "club members have orange PQAs";
+                    redText = "club members have red PQAs";
+                    blueText = "club members have PQAs coming up later this year";
+                }
+            }
+
+            if (totalPractitioners != 0)
+            {
+                activityLeaveNoOneBehind.GreenPerc = Math.Round((double)greenCount / (double)totalPractitioners * 100);
+                activityLeaveNoOneBehind.RedPerc = Math.Round((double)orangeCount / (double)totalPractitioners * 100);
+                activityLeaveNoOneBehind.OrangePerc = Math.Round((double)redCount / (double)totalPractitioners * 100);
+                activityLeaveNoOneBehind.BluePerc = Math.Round((double)blueCount / (double)totalPractitioners * 100);
+                activityLeaveNoOneBehind.GreenText = greenText;
+                activityLeaveNoOneBehind.RedText = redText;
+                activityLeaveNoOneBehind.OrangeText = orangeText;
+                activityLeaveNoOneBehind.BlueText = blueText;
             }
 
             return activityLeaveNoOneBehind;

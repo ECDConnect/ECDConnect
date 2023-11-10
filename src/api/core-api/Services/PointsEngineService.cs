@@ -1682,7 +1682,14 @@ namespace EcdLink.Api.CoreApi.Services
 
                 if (greenRatings + orangeRatings + redRatings != 0)
                 {
-                    finalRating = (double)greenRatings / (double)(greenRatings + orangeRatings + redRatings) * 100;
+
+                    if (greenRatings == practitioners.Count)
+                    {
+                        finalRating = clubPointsLibrary.Points;
+                    } else
+                    {
+                        finalRating = (double)greenRatings / (double)(greenRatings + orangeRatings + redRatings) * 100;
+                    }
 
                     _clubPointsRepo.Insert(new ClubPoints()
                     {
