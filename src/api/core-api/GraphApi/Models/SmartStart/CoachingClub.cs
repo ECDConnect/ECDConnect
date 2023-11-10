@@ -99,16 +99,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public double MeetingAttendancePerc { get; set; }
         public string MeetingAttendanceColor { get; set; }
         public string MeetingNotes { get; set; }
-        public List<MeetingParticipant> MeetingParticipants { get; set; }
-        public List<MeetingParticipant> MeetingAbsentees { get; set; }
+        public List<ClubUser> MeetingParticipants { get; set; }
+        public List<ClubUser> MeetingAbsentees { get; set; }
         public int Points { get; set; }
     }
 
-    public class MeetingParticipant
+    public class ClubUser
     {
-        public string Id { get; set; }
+        public string UserId { get; set; }
         public string FirstName { get; set; }
         public string Surname { get; set; }
+        public string ProfileImageUrl { get; set; }
     }
 
     public class ActivityBeCreative
@@ -152,9 +153,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
+        public double GreenPerc { get; set; } = 0.0;
+        public double RedPerc { get; set; } = 0.0;
+        public double OrangePerc { get; set; } = 0.0;
+        public double BluePerc { get; set; } = 0.0;
+        public string GreenText { get; set; }
+        public string RedText { get; set; }
+        public string OrangeText { get; set; }
+        public string BlueText { get; set; }
+        public List<ClubUser> GreenUsers { get; set; }
+        public List<ClubUser> RedUsers { get; set; }
+        public List<ClubUser> OrangeUsers { get; set; }
+        public List<ClubUser> BlueUsers { get; set; }
     }
 
-    public class ActivityChildAttendance
+
+        public class ActivityChildAttendance
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }

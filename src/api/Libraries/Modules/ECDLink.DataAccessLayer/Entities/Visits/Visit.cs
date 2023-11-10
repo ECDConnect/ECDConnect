@@ -43,6 +43,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         [NotMapped]
         public bool HasAnswerData { get; set; }
         public string Rating { get; set; }
+        public virtual PQARating PQARating { get; set; }
     }
 
     public interface VisitJoin<TKey>
