@@ -172,6 +172,13 @@ ALTER TABLE public."UserGrants" ALTER COLUMN "UserId" TYPE uuid USING "UserId"::
 delete from "UserGrants" ug where "UserId" not in (select "Id"::UUID from "AspNetUsers" anu);
 ALTER TABLE ONLY public."UserGrants"
 ADD CONSTRAINT "FK_UserGrants_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES public."AspNetUsers"("UserId") ON DELETE RESTRICT;
+
+ALTER TABLE public."UserConsent" ALTER COLUMN "UserId" TYPE uuid USING "UserId"::uuid::uuid; 
+  select * from "UserConsent" ug where "UserId" not in (select "Id"::UUID from "AspNetUsers" anu);
+ --delete usergrants that do not exist in userstable anymore - OLD DATA
+delete from "UserConsent" ug where "UserId" not in (select "Id"::UUID from "AspNetUsers" anu);
+ALTER TABLE ONLY public."UserConsent"
+ADD CONSTRAINT "FK_UserConsent_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES public."AspNetUsers"("UserId") ON DELETE RESTRICT;
    
 ALTER TABLE public."License" ALTER COLUMN "UserId" TYPE uuid USING "UserId"::uuid::uuid; 
   select * from "License" ug where "UserId" not in (select "Id"::UUID from "AspNetUsers" anu);
@@ -239,8 +246,6 @@ ADD CONSTRAINT "StatementsStartupSupport_User_FK" FOREIGN KEY ("UserId") REFEREN
 --Columns  
 ALTER TABLE ONLY public."Trainee" drop column "PractitionerId";
    
-   
-
 -- make Ids the same as UserIds
 
 --on a case by case basis, need to find and fix the duplicate UserIds that will cause duplication issue
@@ -257,39 +262,6 @@ update "Practitioner" set "Id" = "UserId";
 
 update "Visit" v set "PractitionerId" = (select 'UserId' from "Practitioner" p where p."Id" = v."PractitionerId");
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-SELECT version();
-
-
 update "Practitioner" set "Id" = "UserId";
 UPDATE "Visit" v set "TraineeId" = (select t."UserId"::UUID from "Trainee" t where t."Id" = v."TraineeId");
 update "Trainee" set "Id" = "UserId"::UUID;
-
-
---get all constraints in schema
-SELECT con.*
-    FROM pg_catalog.pg_constraint con
-        INNER JOIN pg_catalog.pg_class rel ON rel.oid = con.conrelid
-        INNER JOIN pg_catalog.pg_namespace nsp ON nsp.oid = connamespace
-        WHERE nsp.nspname = 'public';
-
-
-
---ALTER TABLE public."AspNetUsers" 
---  DROP CONSTRAINT "PK_AspNetUsers";
-
