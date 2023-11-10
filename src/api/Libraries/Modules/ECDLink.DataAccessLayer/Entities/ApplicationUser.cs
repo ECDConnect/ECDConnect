@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using HotChocolate;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
@@ -30,6 +31,7 @@ namespace ECDLink.DataAccessLayer.Entities
 
         [GraphIgnoreInput]
         public override string Id { get => base.Id; set => base.Id = value; }
+        [Key]
         public Guid UserId { get; set; }
         public override string UserName { get => base.UserName; set => base.UserName = value; }
         public override string NormalizedUserName { get => base.NormalizedUserName; set => base.NormalizedUserName = value; }

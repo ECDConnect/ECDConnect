@@ -29,6 +29,7 @@ using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Security.JwtSecurity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ECDLink.DataAccessLayer.Context
 {
@@ -231,10 +232,9 @@ namespace ECDLink.DataAccessLayer.Context
             {
                 x.HasKey(e => new { e.GrantId, e.Id });
             });
-
             builder.Entity<Attendance>(x =>
             {
-                x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear });
+                x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear }).;
             });
 
             builder.Entity<AuditLog>(x =>
