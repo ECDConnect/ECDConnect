@@ -79,6 +79,7 @@ export const EditChildInformation: React.FC = () => {
   const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
+  const practitionerIsOnLeave = location.state.practitionerIsOnLeave;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some((role) => role.name === 'Coach');
@@ -357,7 +358,7 @@ export const EditChildInformation: React.FC = () => {
         title: 'Class',
         subTitle: learnerClassroomGroup?.name || 'No class',
         switchTextStyles: true,
-        actionName: isCoach ? undefined : 'Edit',
+        actionName: isCoach || practitionerIsOnLeave ? undefined : 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
           openChildConfirmEditClassPrompt();
