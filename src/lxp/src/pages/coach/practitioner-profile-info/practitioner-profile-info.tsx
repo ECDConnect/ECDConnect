@@ -48,6 +48,7 @@ import {
   nextMonday,
 } from 'date-fns';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
+import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -254,6 +255,20 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return (
+          <OnlineOnlyModal
+            overrideText={'You need to go online to use this feature.'}
+            onSubmit={onSubmit}
+          ></OnlineOnlyModal>
+        );
+      },
+    });
+  };
+
   const listItems = [
     {
       title: 'SmartStarter journey',
@@ -329,11 +344,16 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         },
       },
       text: '1',
-      onActionClick: () =>
-        history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
-          practitionerId,
-        }),
       classNames: 'bg-uiBg',
+      onActionClick: () => {
+        if (isOnline) {
+          history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+            practitionerId,
+          });
+        } else {
+          showOnlineOnly();
+        }
+      },
     });
   }
 
@@ -455,10 +475,15 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         },
       },
       text: '1',
-      onActionClick: () =>
-        history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
-          practitionerId,
-        }),
+      onActionClick: () => {
+        if (isOnline) {
+          history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+            practitionerId,
+          });
+        } else {
+          showOnlineOnly();
+        }
+      },
       classNames: 'bg-uiBg',
     },
   ];

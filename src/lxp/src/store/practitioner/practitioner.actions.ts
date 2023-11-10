@@ -1,9 +1,4 @@
-import {
-  BalanceSheetDto,
-  ExpensesStatementsDto,
-  IncomeStatementsDto,
-  PractitionerDto,
-} from '@ecdlink/core';
+import { PractitionerDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
@@ -15,7 +10,6 @@ import {
   LicenseModelInput,
   NotificationDisplay,
 } from '@ecdlink/graphql';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
