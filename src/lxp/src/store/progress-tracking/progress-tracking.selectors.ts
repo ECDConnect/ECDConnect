@@ -1,5 +1,6 @@
 import {
   ActivityDto,
+  PractitionerProgressReportSummaryDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
@@ -206,3 +207,8 @@ export const getActivityCategories = (activity: ActivityDto) =>
       );
     }
   );
+
+export const getPractitionerProgressReportSummary = (
+  state: RootState
+): PractitionerProgressReportSummaryDto | undefined =>
+  state.progressTracking.practitionerProgressReportSummary || undefined;

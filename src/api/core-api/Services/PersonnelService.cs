@@ -1,6 +1,7 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
@@ -28,6 +29,7 @@ using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -68,6 +70,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private INotificationService _notificationService;
         private IClubService _clubService;
         private IAbsenteeService _absenteeService;
+        private ILogger<UserMutationExtension> _logger;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -81,7 +84,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             [Service] IClubService clubService,
             [Service] IAbsenteeService absenteeService,
             UserManager<ApplicationUser> userManager,
-            [Service] HierarchyEngine hierarchyEngine)
+            [Service] HierarchyEngine hierarchyEngine,
+            [Service] ILogger<UserMutationExtension> logger)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -114,6 +118,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _notificationService = notificationService;
             _clubService = clubService;
             _absenteeService = absenteeService;
+            _logger = logger;
         }
 
 
@@ -414,13 +419,31 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 //now add user to principal
                 var userToPromote = _userManager.FindByIdAsync(newPrincipalUserId).Result;
                 IdentityResult result = null;
+                _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.PRACTITIONER, userToPromote.Id, _applicationUserId);
                 result = _userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
-                if (isRolePrincipal) { result = _userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; }
-                if (isRoleFAA) { result = _userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; }
+                if (isRolePrincipal) 
+                {
+                    _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.PRINCIPAL, userToPromote.Id, _applicationUserId); 
+                    result = _userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; 
+                }
+                if (isRoleFAA) 
+                {
+                    _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.ADMINISTRATOR, userToPromote.Id, _applicationUserId);
+                    result = _userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; 
+                }
 
                 var userToDemote = _userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                if (isRolePrincipal) { result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; }
-                if (isRoleFAA) { result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; }
+                if (isRolePrincipal) 
+                {
+                    _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.PRINCIPAL, userToDemote.Id, _applicationUserId);
+                    result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; 
+                }
+                if (isRoleFAA) 
+                {
+                    _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.ADMINISTRATOR, userToDemote.Id, _applicationUserId);
+                    result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; 
+                }
+                _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.PRACTITIONER, userToDemote.Id, _applicationUserId);
                 result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;
@@ -437,7 +460,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user to principal
                 var user = _userManager.FindByIdAsync(userId).Result;
+                _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.PromotePractitionerToPrincipal]", Roles.PRACTITIONER, user.Id, _applicationUserId);
                 var remove = _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER).Result;
+                _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.PromotePractitionerToPrincipal]", Roles.PRINCIPAL, user.Id, _applicationUserId);
                 var add = _userManager.AddToRoleAsync(user, Roles.PRINCIPAL).Result;
 
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -482,7 +507,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user back to practitioner
                 var user = _userManager.FindByIdAsync(userId).Result;
+                _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.DemotePractitionerAsPrincipal]", Roles.PRINCIPAL, user.Id, _applicationUserId);
                 _userManager.RemoveFromRoleAsync(user, Roles.PRINCIPAL);
+                _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.DemotePractitionerAsPrincipal]", Roles.PRACTITIONER, user.Id, _applicationUserId);
                 _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
 
                 //send notifications that user has been demoted
@@ -784,6 +811,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var roles = _userManager.GetRolesAsync(user).Result;
                 foreach (var role in roles)
                 {
+                    _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.DeActivatePractitionerAsync]", role, user.Id, _applicationUserId);
                     var result = _userManager.RemoveFromRoleAsync(user, role).Result;
                 }
 

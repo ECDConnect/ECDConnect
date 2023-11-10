@@ -18,7 +18,10 @@ import {
   QueryClubForUserArgs,
 } from '@ecdlink/graphql';
 import { ClubService } from '@/services/ClubService';
-import { NewClubLeaderInput } from '@/services/ClubService/types';
+import {
+  ChangeClubSupportRoleInput,
+  NewClubLeaderInput,
+} from '@/services/ClubService/types';
 import { ClubDto, DetailClubDto } from '@/models/club/club.dto';
 
 export const ClubActions = {
@@ -36,6 +39,7 @@ export const ClubActions = {
   GET_CLUB_FOR_USER: 'getClubForUser',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
   ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
+  CHANGE_CLUB_SUPPORT_ROLE: 'changeClubSupportRole',
 };
 
 export const getClubById = createAsyncThunk<
@@ -377,6 +381,43 @@ export const acceptNewClubLeaderRole = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).acceptNewClubLeaderRole(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const changeClubSupportRole = createAsyncThunk<
+  any,
+  ChangeClubSupportRoleInput | undefined,
+  ThunkApiType<RootState>
+>(
+  ClubActions.CHANGE_CLUB_SUPPORT_ROLE,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      clubs: { clubForPractitioner },
+    } = getState();
+
+    let payload = input as ChangeClubSupportRoleInput;
+
+    if (!input?.clubId) {
+      payload = {
+        clubId: clubForPractitioner?.id ?? '',
+        practitionerId: clubForPractitioner?.clubSupport?.practitionerId ?? '',
+      } as ChangeClubSupportRoleInput;
+    }
+
+    if (!payload?.practitionerId) return;
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).changeClubSupportRole(payload);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

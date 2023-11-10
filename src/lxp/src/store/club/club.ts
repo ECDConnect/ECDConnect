@@ -1,4 +1,4 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   acceptNewClubLeaderRole,
@@ -6,6 +6,7 @@ import {
   addNewClubLeader,
   addNewClubMembers,
   changeClubName,
+  changeClubSupportRole,
   getActivityBeCreativeDetails,
   getActivityMeetRegularDetails,
   getClubById,
@@ -18,6 +19,7 @@ import {
 import { ClubState } from './club.types';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
+import { ClubDto } from '@/models/club/club.dto';
 
 const initialState: ClubState = {
   clubsForCoach: {},
@@ -26,7 +28,19 @@ const initialState: ClubState = {
 const clubSlice = createSlice({
   name: 'club',
   initialState,
-  reducers: {},
+  reducers: {
+    changeClubSupportRole: (
+      state,
+      action: PayloadAction<ClubDto['clubSupport']>
+    ) => {
+      if (!state.clubForPractitioner) return;
+
+      state.clubForPractitioner = {
+        ...state.clubForPractitioner,
+        clubSupport: action.payload,
+      };
+    },
+  },
   extraReducers: (builder) => {
     // Coach
     setThunkActionStatus(builder, getClubById);
@@ -157,6 +171,7 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, acceptNewClubLeaderRole);
     setThunkActionStatus(builder, getClubForUser);
     setThunkActionStatus(builder, saveWelcomeMessage);
+    setThunkActionStatus(builder, changeClubSupportRole);
     builder.addCase(getClubForUser.fulfilled, (state, action) => {
       state.clubForPractitioner = action.payload;
 
@@ -166,6 +181,9 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(acceptNewClubLeaderRole.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(changeClubSupportRole.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },
