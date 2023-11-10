@@ -257,7 +257,6 @@ export const getMissedClassAttendanceForLearner = (
   if (classProgrammesUpToCurrentDay)
     for (const programme of classProgrammesUpToCurrentDay) {
       const missedDayDate = addDays(startOfWeekDate, programme.meetingDay - 1);
-
       const isValidDay =
         isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
         missedDayDate.getTime() >=
