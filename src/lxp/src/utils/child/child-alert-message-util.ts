@@ -114,34 +114,34 @@ export const getChildAlertModel = (
     }
   }
 
-  if (classroomGroups && attendance) {
-    const classroomGroup = classroomGroups.find(
-      (x) => x.id === learner?.classroomGroupId
-    );
+  // if (classroomGroups && attendance) {
+  //   const classroomGroup = classroomGroups.find(
+  //     (x) => x.id === learner?.classroomGroupId
+  //   );
 
-    const childAttendancePercentage = getChildAttendancePercentageAtPlaygroup(
-      child?.userId ?? '',
-      attendance,
-      classroomGroup?.id ?? '',
-      classProgrammes || [],
-      userRole
-    );
+  //   const childAttendancePercentage = getChildAttendancePercentageAtPlaygroup(
+  //     child?.userId ?? '',
+  //     attendance,
+  //     classroomGroup?.id ?? '',
+  //     classProgrammes || [],
+  //     userRole
+  //   );
 
-    const daysSinceInsertedDate = differenceInDays(
-      new Date(),
-      new Date(learner?.startedAttendance)
-    );
+  //   const daysSinceInsertedDate = differenceInDays(
+  //     new Date(),
+  //     new Date(learner?.startedAttendance)
+  //   );
 
-    if (childAttendancePercentage && daysSinceInsertedDate >= 7) {
-      if (childAttendancePercentage.percentage < 50) {
-        alert = 'warning';
-      }
+  //   if (childAttendancePercentage && daysSinceInsertedDate >= 7) {
+  //     if (childAttendancePercentage.percentage < 50) {
+  //       alert = 'warning';
+  //     }
 
-      alertMessage = `Attended ${childAttendancePercentage.daysAttended} of ${
-        childAttendancePercentage.daysExpected
-      } days last ${userRole === 'coach' ? 'month' : 'week'}`;
-    }
-  }
+  //     alertMessage = `Attended ${childAttendancePercentage.daysAttended} of ${
+  //       childAttendancePercentage.daysExpected
+  //     } days last ${userRole === 'coach' ? 'month' : 'week'}`;
+  //   }
+  // }
 
   if (child?.workflowStatusId === pendingStatusId) {
     alert = 'warning';

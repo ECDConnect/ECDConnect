@@ -304,7 +304,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         weekOfYear: getWeek(new Date()),
       })
     ).unwrap();
-
     await appDispatch(
       calendarThunkActions.getCalendarEvents({
         start: subMonths(
