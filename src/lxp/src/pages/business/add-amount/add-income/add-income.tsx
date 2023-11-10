@@ -20,13 +20,11 @@ import DsdSubsidy from './components/dsd-subsidy/dsd-subsidy';
 import OtherIncome from './components/other-income/other-income';
 import StatementsWrapper from '../../money/submit-income-statements/components/statements-wrapper/StatementsWrapper';
 import { useAppContext } from '@/walkthrougContext';
-import { IncomeStatementsDto } from '@ecdlink/core';
+
 import { StatementsIncomeInput } from '@ecdlink/graphql';
-import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { statementsActions, statementsThunkActions } from '@/store/statements';
-import { newGuid } from '@/utils/common/uuid.utils';
+import { statementsThunkActions } from '@/store/statements';
 
 export const AddIncome: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -50,12 +48,14 @@ export const AddIncome: React.FC = () => {
 
   const onSubmit = useCallback(
     (incomeItem: StatementsIncomeInput) => {
-      appDispatch(
-        statementsThunkActions.addIncomeItem({
-          input: incomeItem,
-          firstAttempt: true,
-        })
-      );
+      if (isOnline) {
+        appDispatch(
+          statementsThunkActions.addIncomeItem({
+            input: incomeItem,
+            firstAttempt: true,
+          })
+        );
+      }
     },
     [userAuth]
   );
