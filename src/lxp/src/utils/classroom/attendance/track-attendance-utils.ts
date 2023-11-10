@@ -247,9 +247,23 @@ export const getMissedClassAttendanceForLearner = (
     return x.userId === learner.userId;
   });
 
+  const meetingDays = getClassroomGroupSchoolDays(
+    classProgrammesUpToCurrentDay
+  );
+  const startOfWeekDate = startOfWeek(new Date().setHours(23, 59, 59, 999), {
+    weekStartsOn: 1,
+  });
+
   if (classProgrammesUpToCurrentDay)
     for (const programme of classProgrammesUpToCurrentDay) {
+      const missedDayDate = addDays(startOfWeekDate, programme.meetingDay - 1);
+      const isValidDay =
+        isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
+        missedDayDate.getTime() >=
+          new Date(learner.startedAttendance).getTime();
+
       if (
+        isValidDay &&
         !learnerAttendance.some(
           (att) => att.classroomProgrammeId === programme.id
         )
