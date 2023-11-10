@@ -18,9 +18,21 @@ export const getProgrammeType = () =>
   createSelector(
     (state: RootState) => state,
     (rootState: RootState): ProgrammeTypeDto | undefined => {
-      return rootState.staticData.programmeTypes?.find(
-        (x) => x.id === rootState.classroomData.programmeType
-      );
+      if (!!rootState.classroomData.programmeType) {
+        return rootState.staticData.programmeTypes?.find(
+          (x) => x.id === rootState.classroomData.programmeType
+        );
+      } else {
+        const groups =
+          rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
+          [];
+
+        if (groups?.length > 0) {
+          return groups[0].programmeType;
+        }
+
+        return;
+      }
     }
   );
 
