@@ -28,9 +28,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         {
             return await integrationService.PullPQAData();
         }
-        public async Task<bool> IntegrationStatementsData([Service] IIntegrationService integrationService)//IIntegrationService
+        public async Task IntegrationStatementsData([Service] IIntegrationService integrationService)//IIntegrationService
         {
-            return await integrationService.IntegrationStatementsData();
+            await integrationService.IntegrationStatementsData();
         }
         public async Task<bool> IntegrationAttendanceData([Service] IIntegrationService integrationService)//IIntegrationService
         {

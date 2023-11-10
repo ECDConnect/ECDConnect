@@ -23,6 +23,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
 using System.Threading.Tasks;
+using DinkToPdf.Contracts;
 
 namespace ECDLink.Core.Services
 {
@@ -46,6 +47,8 @@ namespace ECDLink.Core.Services
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
+
+        private IConverter _pdfConverter;
 
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
@@ -71,6 +74,8 @@ namespace ECDLink.Core.Services
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+
+            _pdfConverter = new SynchronizedConverter(new PdfTools());
 
 
             _userManager = userManager;
@@ -705,8 +710,7 @@ namespace ECDLink.Core.Services
             // discard result
             Console.WriteLine($"HTML FOR DOCUMENT = {html.Length}");
             var doc = _documentManager.GetPdfSettings(html, filename, "portrait");
-            var pdfConvertor = new SynchronizedConverter(new PdfTools());
-            byte[] pdf = pdfConvertor.Convert(doc);
+            byte[] pdf = _pdfConverter.Convert(doc);
             string Base64Result = Convert.ToBase64String(pdf);
 
             DocumentModel pdfDoc = new DocumentModel();
