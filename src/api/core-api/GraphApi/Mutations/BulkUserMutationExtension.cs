@@ -231,7 +231,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var teamLeadSAIdNum = hcwToTeamLeadMap[user.UserName];
                     var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
                     hcw.TeamLeadId = teamLeadSaIdToIdsMap.First(teamLead => teamLead.Value == teamLeadSAIdNum).Key;
-                    hcw.UserId = user.Id;
+                    hcw.UserId = user.UserId;
 
                     communityHealthWorkerRepo.Insert(hcw);
                 }
@@ -523,7 +523,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var newTl = teamLeadUsers.First(tl => tl.Key == user.UserName).Value;
 
                     // Assign newly created user
-                    newTl.UserId = user.Id;
+                    newTl.UserId = user.UserId;
 
                     if (userClinicNames.TryGetValue(user.UserName, out string clinicName))
                     {

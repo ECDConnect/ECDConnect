@@ -37,8 +37,8 @@ namespace EcdLink.Api.CoreApi.Services
 
             foreach (var removal in removals)
             {
-                var practitioner = _practitionerRepo.GetByUserId(removal.UserId);
-                var user = _userManager.FindByIdAsync(removal.UserId).Result;
+                var practitioner = _practitionerRepo.GetByUserId(removal.UserId.ToString());
+                var user = _userManager.FindByIdAsync(removal.UserId.ToString()).Result;
 
                 if (practitioner != null && user != null)
                 {

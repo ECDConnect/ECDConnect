@@ -275,8 +275,8 @@ namespace ECDLink.SmartStart.Services
             var practitioners = _personnelService.GetAllPractitionersForPrincipal(userId);
             foreach (var practitioner in practitioners)
             {
-                if (string.IsNullOrEmpty(practitioner.UserId)) continue;
-                var practitionerClassSummaries = GetPractitionerProgressReportSummary(pracRepo, cprRepo, childRepo, reportingPeriodDate, practitioner.UserId, languageId);
+                if (practitioner.UserId==Guid.Empty) continue;
+                var practitionerClassSummaries = GetPractitionerProgressReportSummary(pracRepo, cprRepo, childRepo, reportingPeriodDate, practitioner.UserId.ToString(), languageId);
                 if (practitionerClassSummaries.Count > 0)
                 {
                     result.ClassSummaries.AddRange(practitionerClassSummaries);

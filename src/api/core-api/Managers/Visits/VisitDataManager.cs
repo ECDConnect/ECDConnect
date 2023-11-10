@@ -312,10 +312,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 // when the smart space checklist is completed, we activate the smartspace license
                 Trainee trainee = _traineeRepo.GetByUserId(input.TraineeId);
-                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId, Constants.SSSettings.ss_smart_space_licence);
+                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId.ToString(), Constants.SSSettings.ss_smart_space_licence);
                 if (smartSpaceLicense == null)
                 {
-                    _userLicenseManager.AddSmartSpaceLicense(trainee.UserId, DateTime.Now);
+                    _userLicenseManager.AddSmartSpaceLicense(trainee.UserId.ToString(), DateTime.Now);
                 }
 
                 // update the visit record to show attended/completed 
@@ -453,7 +453,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public List<VisitData> GetGrowthDataForInfant(string id) {
 
-            return _visitDataRepo.GetAll().Where(x => x.Visit.Infant.UserId == id && x.QuestionAnswer != "undefined" &&
+            return _visitDataRepo.GetAll().Where(x => x.Visit.Infant.UserId.ToString() == id && x.QuestionAnswer != "undefined" &&
                                                 (x.Question == Constants.GGSettings.q_weight || x.Question == Constants.GGSettings.q_length || x.Question == Constants.GGSettings.q_muac))
                 .OrderBy(x => x.Visit.PlannedVisitDate).ToList();
         }
@@ -473,7 +473,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             return (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == id)
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == id)
                 join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || y.Question == Constants.GGSettings.q_length || y.Question == Constants.GGSettings.q_muac && y.InsertedDate.Date >= monday.Date && y.InsertedDate.Date <= next7Days.Date) on visit.Id equals visitData.VisitId
                 select visit.InfantId
             ).Distinct().Count();
@@ -484,7 +484,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var status = "";
 
             List<VisitData> vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
                 join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_birth_certificate || y.Question == Constants.GGSettings.q_csg_receiving)
                                                         .OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
                 select visitData
@@ -518,7 +518,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var status = "";
 
             VisitData vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
                 join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_csg_applied && y.QuestionAnswer == "false")
                                                         .OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
                 select visitData
@@ -1116,7 +1116,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             // visits
             types =  (
-                from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId == userId).OrderBy(x => x.PlannedVisitDate)
+                from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == userId).OrderBy(x => x.PlannedVisitDate)
                 join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && 
                                                                 y.Name == Constants.SSSettings.visitType_practitioner_call && 
                                                                 y.Name == Constants.SSSettings.visitType_practitioner_visit &&
@@ -1131,19 +1131,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var _note = new PractitionerNotes();
                 _note.VisitName = item.Description;
                 
-                var _visit = _visitRepo.GetAll().Where(x => x.Practitioner.UserId == userId && x.VisitTypeId == item.Id).FirstOrDefault();
+                var _visit = _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == userId && x.VisitTypeId == item.Id).FirstOrDefault();
                 _note.ActualVisitDate = _visit.ActualVisitDate;
                 _note.PlannedVisitDate = _visit.PlannedVisitDate;
 
                 if (item.Name == Constants.SSSettings.visitType_pre_pqa_visit_1 && item.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
                 {
-                    _note.Answers = (from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId == userId && x.VisitTypeId == item.Id).OrderBy(x => x.PlannedVisitDate)
+                    _note.Answers = (from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == userId && x.VisitTypeId == item.Id).OrderBy(x => x.PlannedVisitDate)
                                      join visitData in _visitDataRepo.GetAll().Where(y => y.VisitSection == Constants.SSSettings.section_discussion && 
                                                                                           y.Question == Constants.SSSettings.question_next_steps_step4) on visit.Id equals visitData.VisitId
                                      select visitData).ToList();
                 } else
                 {
-                    _note.Answers = (from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId == userId && x.VisitTypeId == item.Id).OrderBy(x => x.PlannedVisitDate)
+                    _note.Answers = (from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == userId && x.VisitTypeId == item.Id).OrderBy(x => x.PlannedVisitDate)
                                      join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.SSSettings.question_next_steps) on visit.Id equals visitData.VisitId
                                      select visitData).ToList();
                 }

@@ -88,7 +88,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         {
             if (expectedDateOfDelivery != null || expectedDateOfDelivery != default(DateTime))
             {
-                var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId == id).FirstOrDefault();
+                var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId.ToString() == id).FirstOrDefault();
                 entityToUpdate.UpdatedDate = DateTime.Now;
                 entityToUpdate.UpdatedBy = _applicationUserId;
                 entityToUpdate.ExpectedDateOfDelivery = Convert.ToDateTime(expectedDateOfDelivery, CultureInfo.InvariantCulture); ;
@@ -104,7 +104,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Mother UpdateMother(string id, MotherModel input)
         {
-            var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId == id).FirstOrDefault();
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId.ToString() == id).FirstOrDefault();
             var motherUser = GetUserFromInputModel(input);
 
             entityToUpdate.UpdatedDate = DateTime.Now;
@@ -112,7 +112,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             if (input.UserId != null)
             {
-                entityToUpdate.UserId = input.UserId;
+                entityToUpdate.UserId = new Guid(input.UserId);
                 entityToUpdate.User = motherUser;
             }
             if (input.WhatsAppNumber != null) { 
@@ -187,7 +187,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             entityToUpdate.UpdatedBy = _applicationUserId;
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
-            entityToUpdate.UserId = user.Id;
+            entityToUpdate.UserId = new Guid(user.Id);
             entityToUpdate.User = user;
             return _motherRepo.Update(entityToUpdate);
         }
@@ -209,8 +209,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 return null;
             }
             // EC-797 - if this infant is not the first client, we set the tab values to true;
-            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
-                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
+            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.ToString() == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
+                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.ToString() == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
 
 
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId);
@@ -231,7 +231,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = _applicationUserId,
-                UserId = input.UserId,
+                UserId = new Guid(input.UserId),
                 User = motherUser,
                 Age = input.Age,
                 WhatsAppNumber = input.WhatsAppNumber,
@@ -544,7 +544,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
 
             // 4 clinicReferral
-            var clinicReferral = _visitDataStatusManager.GetClinicReferralForUser(mother.UserId, Constants.GGSettings.client_mother) ;
+            var clinicReferral = _visitDataStatusManager.GetClinicReferralForUser(mother.UserId.ToString(), Constants.GGSettings.client_mother) ;
             if (clinicReferral != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -553,7 +553,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             // 3 homeAffairsReferral
-            var homeAffairsReferral = _visitDataStatusManager.GetHomeAffairsReferralForUser(mother.UserId, Constants.GGSettings.client_mother) ;
+            var homeAffairsReferral = _visitDataStatusManager.GetHomeAffairsReferralForUser(mother.UserId.ToString(), Constants.GGSettings.client_mother) ;
             if (homeAffairsReferral != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -562,7 +562,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             // 2 sassaReferral
-            var sassaReferral = _visitDataStatusManager.GetSassaReferralForUser(mother.UserId, Constants.GGSettings.client_mother);
+            var sassaReferral = _visitDataStatusManager.GetSassaReferralForUser(mother.UserId.ToString(), Constants.GGSettings.client_mother);
             if (sassaReferral != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -593,7 +593,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             // 2. Upload maternal case record
-            if (!GetMaternalCaseRecordStatus(mother.UserId))
+            if (!GetMaternalCaseRecordStatus(mother.UserId.ToString()))
             {
                 statusInfo.Icon = MetricsIconEnum.Error.ToString();
                 statusInfo.Color = MetricsColorEnum.Error.ToString();
@@ -602,7 +602,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
 
             // 1. Refer to the clinic urgently
-            var redAlert = _visitDataStatusManager.GetRedAlertsForUser(mother.UserId, Constants.GGSettings.client_mother);
+            var redAlert = _visitDataStatusManager.GetRedAlertsForUser(mother.UserId.ToString(), Constants.GGSettings.client_mother);
             if (redAlert != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Error.ToString();
@@ -653,7 +653,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public int GetTotalNewClientsForPeriod(string id, DateTime startDate, DateTime endDate)
         {
             var motherCount = _motherRepo.GetAll()
-                .Where(m => m.HealthCareWorker.UserId == id
+                .Where(m => m.HealthCareWorker.UserId.ToString() == id
                 && m.IsActive.Equals(true) 
                 && m.InsertedDate >= startDate
                 && m.InsertedDate <= endDate)
@@ -662,7 +662,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     .Count();
 
             var infantCount = _infantRepo.GetAll()
-                .Where(i => i.Caregiver.HealthCareWorker.UserId == id
+                .Where(i => i.Caregiver.HealthCareWorker.UserId.ToString() == id
                 && i.IsActive.Equals(true)
                 && i.InsertedDate >= startDate
                 && i.InsertedDate <= endDate)
@@ -682,7 +682,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var motherRepo = _repoFactory.CreateGenericRepository<Mother>();
             var mothers = motherRepo.GetAll()
                 .Where(m => m.IsActive == true
-                && m.HealthCareWorker.UserId == heathCareWorkerUserId);
+                && m.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId);
 
             if (startDate is not null)
                 mothers = mothers.Where(m => m.InsertedDate >= startDate);

@@ -426,7 +426,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
             var result = removalRepo.GetAll()
-                .Where(x => x.IsActive && userIds.Contains(x.UserId))
+                .Where(x => x.IsActive && userIds.Contains(x.UserId.ToString()))
                 .ToList();
 
             return result;

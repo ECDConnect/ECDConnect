@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Child> children = new List<Child>();
             foreach (var c in coaches)
             {
-                var coachChild = new CoachQueryExtension().GetAllChildrenForCoach(contextAccessor, repoFactory, c.UserId);
+                var coachChild = new CoachQueryExtension().GetAllChildrenForCoach(contextAccessor, repoFactory, c.UserId.ToString());
                 children.AddRange(coachChild);
             }
 

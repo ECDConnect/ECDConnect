@@ -68,7 +68,7 @@ namespace ECDLink.AutomatedJobs.Notifications
 
                     foreach (var classroom in classrooms)
                     {
-                        var report = reportService.GenerateMonthlyAttendanceReport(practitioner.UserId, classroom.Id, startOfWeek, DateTime.UtcNow).FirstOrDefault();
+                        var report = reportService.GenerateMonthlyAttendanceReport(practitioner.UserId.ToString(), classroom.Id, startOfWeek, DateTime.UtcNow).FirstOrDefault();
 
                         if (report != default)
                         {

@@ -50,7 +50,7 @@ string classroomId)
                 {
                     foreach (var item in groupItem.Learners)
                     {
-                        List<Child> learnerChildren = dbRepo.GetAll().Where(x => x.UserId.Contains(item.UserId)).ToList();
+                        List<Child> learnerChildren = dbRepo.GetAll().Where(x => x.UserId.ToString().Contains(item.UserId.ToString())).ToList();
                         children.AddRange(learnerChildren);
                     }
                 }
@@ -79,17 +79,17 @@ string classroomId)
                         foreach (var practitioner in practitioners)
                         {
                             bool childExists = false;
-                            var pracChildren = personnelManager.GetAllChildrenForPractitioner(practitioner.UserId).ToList();
+                            var pracChildren = personnelManager.GetAllChildrenForPractitioner(practitioner.UserId.ToString()).ToList();
                             if (pracChildren.Count > 0)
                             {
                                 childExists = pracChildren.Where(x => x.Equals(child)).Any();
                             }
                             if (childExists)
                             {
-                                var programmeName = personnelManager.GetSiteNameForPractitioner(practitioner.UserId);
+                                var programmeName = personnelManager.GetSiteNameForPractitioner(practitioner.UserId.ToString());
                                 return new ChildCreatedByDetail()
                                 {
-                                    ChildUserId = child.UserId,
+                                    ChildUserId = child.UserId.ToString(),
                                     FullName = child.User.FirstName + " " + child.User.Surname,
                                     CreatedByName = child.InsertedBy,
                                     CreatedById = child.UpdatedBy,
@@ -98,7 +98,7 @@ string classroomId)
                                     DateOfBirth = child.User.DateOfBirth,
                                     ProfileImageUrl = child.User.ProfileImageUrl,
                                     ProgrammeName = (!string.IsNullOrWhiteSpace(programmeName) ? programmeName : "N/A"),
-                                    PractitionerUserId = practitioner.UserId
+                                    PractitionerUserId = practitioner.UserId.ToString()
                                 };
                             }
                         }

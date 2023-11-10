@@ -64,7 +64,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 .GetAll()
                 .Where(p => p.IsActive
                     && p.ClassroomGroupId != null
-                    && p.ClassroomGroup.UserId == Guid.ParseExact(targetPractitioner.UserId, "D"))
+                    && p.ClassroomGroup.UserId == targetPractitioner.UserId)
                 .Include(c => c.DailyProgrammes)
                 .Include(p => p.ClassroomGroup)
                 .OrderBy(c => c.StartDate)

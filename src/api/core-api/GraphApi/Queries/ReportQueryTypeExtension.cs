@@ -189,7 +189,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
+                var metric = GetClassAttendanceMetricsByUser(attendanceRepo, attendanceService, practitioner.UserId.ToString(), startMonth.Date, endMonth.GetEndOfDay());
                 if (metric.Any())
                 {
                     metrics.AddRange(metric);
@@ -233,7 +233,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         foreach (Learner learner in learners)
                         {
-                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId);
+                            var attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId.ToString());
                             if (attendanceData.Any())
                             {
                                 var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
@@ -674,7 +674,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var classroomGroups = await classroomGroupRepo
                 .GetAll()
                 .Where(c => c.UserId == practitionerIdGuid
-                    || c.Classroom.UserId == practitionerId)
+                    || c.Classroom.UserId.ToString() == practitionerId)
                 .ToListAsync();
 
             // TODO: use this to apply:
@@ -1226,7 +1226,7 @@ string practitionerId)
                     Color = MetricsColorEnum.Error.ToString(),
                     Message = "",
                     Notes = "",
-                    UserId = Guid.Parse(user.UserId),
+                    UserId = user.UserId,
                     UserType = "child"
                 };
 
@@ -1277,18 +1277,18 @@ string practitionerId)
                     break;
             }
 
-            var pracitionerUserIds = practitioners.Select(y => y.UserId);
+            var pracitionerUserIds = practitioners.Select(y => y.UserId.ToString());
             var classrooms = classroomRepo.GetAll().ToList();
-            var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId) && x.AbsentDate >= previousMonthStart).ToList();
-            var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId)).ToList();
-            var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId)).ToList();
+            var absenteeDays = absenteeRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString()) && x.AbsentDate >= previousMonthStart).ToList();
+            var licenses = licenseRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
+            var visits = visitRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.Practitioner.UserId.ToString())).ToList();
             var classroomGroups = classroomGroupRepo.GetAll().Where(x => pracitionerUserIds.Contains(x.UserId.ToString())).ToList();
 
             foreach (var practitioner in practitioners)
             {
                 var notification = new NotificationDisplay()
                 {
-                    UserId = Guid.Parse(practitioner.UserId),
+                    UserId = practitioner.UserId,
                     UserType = "practitioner"
                 };
 
@@ -1321,7 +1321,7 @@ string practitionerId)
                     repoFactory,
                     uId,
                     practitioner.Hierarchy,
-                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList(),
+                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == practitioner.UserId).Select(x => x.Id).ToList(),
                     DateTime.Now);
 
                     if (missedReports.overdueReportsSubmitted > 0)
@@ -1394,7 +1394,7 @@ string practitionerId)
                     #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
                     if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
                     {
-                        var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId);
+                        var traineeTimeline = personnelService.GetOnBoardTraineeTimeline(practitioner.UserId.ToString());
 
                         var warningCount = 0;
                         var warningString = MetricsColorEnum.Warning.ToString();
@@ -1471,7 +1471,7 @@ string practitionerId)
                     {
                         var redFlagVisit =
                         (
-                            from visit in visitRepo.GetAll().Where(x => x.Practitioner.User.Id == practitioner.UserId)
+                            from visit in visitRepo.GetAll().Where(x => x.Practitioner.User.UserId.Equals(practitioner.UserId))
                             join visitData in visitDataRepo.GetAll().Where(y => y.Question == Constants.SSSettings.step16_q1 && y.QuestionAnswer == Constants.SSSettings.answer_yes) on visit.Id equals visitData.VisitId
                             select visitData
                         ).OrderByDescending(y => y.InsertedDate).Any();
@@ -1680,7 +1680,7 @@ string practitionerId)
                 }
 
                 #region REMOVED FROM PROGRAMME
-                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId)
+                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId.ToString())
                     .Where(x => x.IsActive)
                     .OrderByDescending(x => x.InsertedDate)
                     .FirstOrDefault();
@@ -1713,7 +1713,7 @@ string practitionerId)
                 #endregion
 
                 #region MISSING INCOME STATEMENT
-                var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId, previousMonthStart, previousMonthEnd).FirstOrDefault();
+                var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd).FirstOrDefault();
                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
                 {
                     if (lastMonthStatement == null || lastMonthStatement.AutoSubmitted)
@@ -1755,7 +1755,7 @@ string practitionerId)
 
                 #region PROGRAMME LOST R300 IN LAST 2 MONTHS
                 var secondLastMonth = previousMonthStart.AddMonths(-1);
-                var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId, secondLastMonth, secondLastMonth).FirstOrDefault();
+                var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId.ToString(), secondLastMonth, secondLastMonth).FirstOrDefault();
                 if (lastMonthStatement != null && secondLastMonthStatement != null)
                 {
                     var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
@@ -1774,7 +1774,7 @@ string practitionerId)
                 #endregion
 
                 #region 50% CHILD ATTENDANCE
-                var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId, previousMonthStart, previousMonthEnd);
+                var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId.ToString(), previousMonthStart, previousMonthEnd);
                 if (attendancePercentage < 60)
                 {
                     notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
@@ -1795,7 +1795,7 @@ string practitionerId)
                 // MISSED 3 CLUB MEETINGS
 
                 #region LESS THAN 5 CHILDREN REGISTERED                
-                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
+                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId.ToString() == practitioner.PrincipalHierarchy.ToString()).ToList();
                 var classroom = practitionerClassrooms.FirstOrDefault();
 
                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))

@@ -183,7 +183,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             Guid.TryParse(healthCareWorkerId, out Guid hcwId);
             var communityHealthWorker = healthCareWorkerRepo.GetById(hcwId);
 
-            var healthCareWorkerUserId = communityHealthWorker?.UserId ?? userId;
+            var healthCareWorkerUserId = communityHealthWorker?.UserId.ToString() ?? userId;
 
             if (healthCareWorkerUserId is null)
                 throw new QueryException("User does not exist.");

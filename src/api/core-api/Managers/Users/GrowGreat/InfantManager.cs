@@ -76,8 +76,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var infant = new Infant();
 
             // EC-797 - if this infant is not the first client, we set the tab values to true;
-            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
-                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
+            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.ToString() == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
+                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.ToString() == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
 
             // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
             Caregiver caregiver = input.CaregiverId.HasValue ? _caregiverRepo.GetById(input.CaregiverId.Value) : null;
@@ -95,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _applicationUserId,
-                    UserId = input.UserId,
+                    UserId = new Guid(input.UserId),
                     User = infantUser,
                     CaregiverId = caregiver.Id,
                     Caregiver = caregiver,
@@ -120,7 +120,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
                         UpdatedBy = _applicationUserId,
-                        UserId = input.UserId,
+                        UserId = new Guid(input.UserId),
                         User = infantUser,
                         MotherCaregiverId = mother.Id,
                         Mother = mother,
@@ -143,7 +143,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
                         UpdatedBy = _applicationUserId,
-                        UserId = input.UserId,
+                        UserId = new Guid(input.UserId),
                         User = infantUser,
                         CaregiverId = caregiver.Id,
                         Caregiver = caregiver,
@@ -180,7 +180,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             infantToUpdate.UpdatedDate = DateTime.Now;
             infantToUpdate.UpdatedBy = _applicationUserId;
-            infantToUpdate.UserId = infantUser.Id;
+            infantToUpdate.UserId = infantUser.UserId;
             infantToUpdate.User = infantUser;
             infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits == null ? false : input.Completed24MonthVisits;
             infantToUpdate.ClickedVisitTab = input.ClickedVisitTab == null ? false : input.ClickedVisitTab;
@@ -240,7 +240,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         {
             // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
             Caregiver caregiver = _caregiverRepo.GetAll().Where(x => x.Id == input.CaregiverId).OrderBy(x => x.Id).FirstOrDefault();
-            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == input.CaregiverId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
+            Mother mother = _motherRepo.GetAll().Where(x => x.UserId.ToString() == input.CaregiverId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
 
             var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == infantId).FirstOrDefault();
             infantToUpdate.UpdatedDate = DateTime.Now;
@@ -691,7 +691,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         }
         public Guid? GetInfantIdByUserId(string userId)
         {
-            var infant = _infantRepo.GetAll().Where(x => x.UserId == userId).OrderBy(x => x.Id).FirstOrDefault();
+            var infant = _infantRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).FirstOrDefault();
             if (infant != null)
             {
                 return infant.Id;
@@ -722,7 +722,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public int GetTotalInfantCountForPeriod(string healthCareWorkerUserId, DateTime? startDate = null, DateTime? endDate = null)
         {
             var infants = _infantRepo.GetAll().Where(
-                i => i.Caregiver.HealthCareWorker.UserId == healthCareWorkerUserId
+                i => i.Caregiver.HealthCareWorker.UserId.ToString() == healthCareWorkerUserId
                     && i.IsActive == true);
 
             if (startDate is not null)

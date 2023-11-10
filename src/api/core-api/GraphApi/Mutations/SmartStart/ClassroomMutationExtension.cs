@@ -97,7 +97,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         newReassignment.ReassignedClassroomGroups = id.ToString() + ";";
                         newReassignment.ReassignedToDate = DateTime.Now;
                         newReassignment.ReassignedToUser = input.UserId.ToString();
-                        newReassignment.UserId = input.UserId.ToString();
+                        newReassignment.UserId = (Guid)input.UserId;
                         newReassignment.ReassignedBackToUserId = uId;
                         newReassignment.ReassignedBackToDate = DateTime.Now;
                        
@@ -277,7 +277,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     {
                         learner.Hierarchy = newHierarchy;
                         learnerRepo.Update(learner);
-                        learnersReassigned.Add(learner.UserId);
+                        learnersReassigned.Add(learner.UserId.ToString());
                     }
                 }   
             }
@@ -315,7 +315,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             childHierarchy.ParentId = newUserId;
                             staticHierarchyRepo.Update(childHierarchy);
                             //uppdate child record Hierarchy
-                            Child updatedChild = childRepo.GetByUserId(children.UserId);
+                            Child updatedChild = childRepo.GetByUserId(children.UserId.ToString());
                             updatedChild.Hierarchy = childNewHierarchy;
                             childRepo.Update(updatedChild);
                         }

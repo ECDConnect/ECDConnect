@@ -41,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
             var grantsToAdd = grantIds.Select(x => new UserGrant
             {
                 GrantId = x,
-                UserId = parent.UserId
+                UserId = Guid.Parse(parent.UserId)
             });
 
             var existingGrants = context.UserGrants

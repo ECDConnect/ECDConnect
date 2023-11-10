@@ -39,7 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             if (practitioner?.IsPrincipal == true)
             {
                 List<Caregiver> caregivers = new List<Caregiver>();
-                var practitioners = personnelManager.GetPractitionerPeers(practitioner.UserId);
+                var practitioners = personnelManager.GetPractitionerPeers(practitioner.UserId.ToString());
                 if (practitioners != null)
                 {
                     foreach (var practi in practitioners)
@@ -157,7 +157,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] AuthenticationDbContext context,
             Guid careGiverId)
         {
-            return context.UserGrants.Where(x => x.UserId == careGiverId.ToString()).ToList();
+            return context.UserGrants.Where(x => x.UserId.Equals(careGiverId)).ToList();
         }
 
 

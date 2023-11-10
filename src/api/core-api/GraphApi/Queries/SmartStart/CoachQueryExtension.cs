@@ -156,7 +156,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
             foreach (var practioner in practitioners)
             {
-                List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Contains(practioner.UserId.ToString())).ToList();
+                List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.ToString().Contains(practioner.UserId.ToString())).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;

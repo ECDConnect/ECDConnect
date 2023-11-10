@@ -414,22 +414,22 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             List<Visit> allVisits = new List<Visit>();
             if (type == Constants.GGSettings.client_mother)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.VisitType.Type == Constants.GGSettings.client_mother).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id && x.VisitType.Type == Constants.GGSettings.client_mother).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.GGSettings.client_child)
             {
                 // returning visits only applicable after infant was registered
-                var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                var child_visits = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                       x.VisitType.Type == Constants.GGSettings.client_child &&
                                                       x.VisitType.Name != Constants.GGSettings.additional_visits &&
                                                      (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                                                      OrderBy(y => y.PlannedVisitDate).ToList();
-                var other_visits_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                var other_visits_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                                  x.VisitType.Type == Constants.GGSettings.client_child &&
                                                                  x.VisitType.Name == Constants.GGSettings.additional_visits &&
                                                                 (x.DueDate.HasValue && x.DueDate.Value.Date.AddDays(1).Date >= x.Infant.InsertedDate.Date)).
                                                                 OrderBy(y => y.PlannedVisitDate).ToList();
-                var other_visits_no_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId == id &&
+                var other_visits_no_due_date = _visitRepo.GetAll().Where(x => x.Infant.UserId.ToString() == id &&
                                                                  x.VisitType.Type == Constants.GGSettings.client_child &&
                                                                  x.VisitType.Name == Constants.GGSettings.additional_visits && x.DueDate.HasValue == false &&
                                                                 (x.PlannedVisitDate.Date >= x.Infant.InsertedDate.Date)).
@@ -441,15 +441,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else if (type == Constants.SSSettings.client_practitioner)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Practitioner.UserId == id && x.VisitType.Type == Constants.SSSettings.client_practitioner).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == id && x.VisitType.Type == Constants.SSSettings.client_practitioner).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_trainee)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId.ToString() == id && x.CoachId == null && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
             }
             else if (type == Constants.SSSettings.client_coach)
             {
-                allVisits = _visitRepo.GetAll().Where(x => x.Coach.UserId == id && x.VisitType.Type == Constants.SSSettings.client_coach).OrderBy(y => y.PlannedVisitDate).ToList();
+                allVisits = _visitRepo.GetAll().Where(x => x.Coach.UserId.ToString() == id && x.VisitType.Type == Constants.SSSettings.client_coach).OrderBy(y => y.PlannedVisitDate).ToList();
             }
 
             foreach (var _visit in allVisits)
@@ -514,11 +514,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                totalVisits = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == id && x.Mother.IsActive && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= monday.Date && x.ActualVisitDate.Value.Date <= next7Days.Date).OrderBy(x => x.ActualVisitDate).Distinct().Count();
+                totalVisits = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.ToString() == id && x.Mother.IsActive && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= monday.Date && x.ActualVisitDate.Value.Date <= next7Days.Date).OrderBy(x => x.ActualVisitDate).Distinct().Count();
             }
             else
             {
-                totalVisits = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == id && x.Infant.IsActive && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= monday.Date && x.ActualVisitDate.Value.Date <= next7Days.Date).OrderBy(x => x.ActualVisitDate).Distinct().Count();
+                totalVisits = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == id && x.Infant.IsActive && x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= monday.Date && x.ActualVisitDate.Value.Date <= next7Days.Date).OrderBy(x => x.ActualVisitDate).Distinct().Count();
             }
             return totalVisits;
         }
@@ -538,19 +538,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 totalPlannedVisits = totalPlannedVisits.Where(x => x.Mother.IsActive
                     // TODO: Performance impact of multiple joins:     
-                    && x.Mother.HealthCareWorker.UserId == heathCareWorkerId);
+                    && x.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else if (clientType == Constants.GGSettings.client_child)
             {
                 totalPlannedVisits = totalPlannedVisits.Where(i => i.Infant.IsActive
                     // TODO: Performance impact of multiple joins:
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else
             {
                 totalPlannedVisits = totalPlannedVisits.Where(i => i.IsActive
                     // TODO: Performance impact of multiple joins:
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
 
             return totalPlannedVisits.Count(); ;
@@ -577,9 +577,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             totalVisitsCompleted = totalVisitsCompleted.Where(x =>
                 (x.Mother.IsActive
-                    && x.Mother.HealthCareWorker.UserId == heathCareWorkerId)
+                    && x.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId)
                 || (x.Infant.IsActive
-                    && x.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId));
+                    && x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId));
 
             return totalVisitsCompleted.Count();
         }
@@ -605,7 +605,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     && m.IsActive == true
                     && m.Mother.IsActive == true
                     // TODO: Performance impact of multiple joins:     
-                    && m.Mother.HealthCareWorker.UserId == heathCareWorkerId);
+                    && m.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else if (type == Constants.GGSettings.client_child)
             {
@@ -614,7 +614,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     && i.IsActive == true
                     && i.Infant.IsActive == true
                     // TODO: Performance impact of multiple joins:     
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else
             {
@@ -622,7 +622,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     i.VisitType.Type == type
                     && i.IsActive == true
                     // TODO: Performance impact of multiple joins:     
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             return totalVisitsMissed.Count();
         }
@@ -644,7 +644,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     m.VisitType.Type == type
                     && m.IsActive == true
                     && m.Mother.IsActive == true
-                    && m.Mother.HealthCareWorker.UserId == heathCareWorkerId);
+                    && m.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else if (type == Constants.GGSettings.client_child)
             {
@@ -652,15 +652,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     i.VisitType.Type == type
                     && i.IsActive == true
                     && i.Infant.IsActive == true
-                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+                    && i.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId);
             }
             else
             {
                 totalVisitsOverdue = totalVisitsOverdue.Where(v =>
                     v.VisitType.Type == type
                     && v.IsActive == true
-                    && ((v.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId)
-                        || (v.Mother.HealthCareWorker.UserId == heathCareWorkerId))
+                    && ((v.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerId)
+                        || (v.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerId))
                     );
             }
 
@@ -678,7 +678,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     .ThenInclude(vd => vd.Visit.Mother)
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.Color == MetricsColorEnum.Error.ToString()
                     && vsd.IsActive
@@ -709,7 +709,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     .ThenInclude(vd => vd.Visit.Mother)
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.Color == MetricsColorEnum.Error.ToString()
                     && vsd.IsActive
@@ -734,7 +734,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
                     && !allUrgentMotherIds.Contains(vsd.VisitData.Visit.MotherId ?? Guid.Empty)
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.Color == MetricsColorEnum.Warning.ToString()
                     && vsd.IsActive
@@ -764,7 +764,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     .ThenInclude(vd => vd.Visit.Mother)
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd => vsd.IsActive == true
-                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.IsActive
                     && vsd.VisitData.IsActive
@@ -804,7 +804,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.Caregiver)
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
-                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
                     && vsd.Color == MetricsColorEnum.Error.ToString()
@@ -838,7 +838,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.Caregiver)
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
-                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
                     && vsd.Color == MetricsColorEnum.Error.ToString()
@@ -861,7 +861,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.Caregiver)
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
-                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && !urgentInfantIds.Contains(vsd.VisitData.Visit.InfantId)
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
@@ -893,7 +893,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.Caregiver)
                             .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
-                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerUserId
+                    vsd.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == heathCareWorkerUserId
                     && vsd.Type == Constants.GGSettings.visit_data_client_progress
                     && vsd.VisitData.Visit.Attended == true
                     && vsd.InsertedDate >= startDate
@@ -962,14 +962,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public List<Visit> GetPQAVisitsForPractitioner(string userId)
         {
-           return _visitRepo.GetAll().Where(x => x.Practitioner.UserId == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.Attended == true &&
+           return _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.Attended == true &&
                                                 (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 ||
                                                 x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)).OrderByDescending(x => x.PlannedVisitDate).ToList();
         }
 
         public List<Visit> GetReAccreditationVisitsForPractitioner(string userId)
         {
-            return _visitRepo.GetAll().Where(x => x.Practitioner.UserId == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.Attended == true &&
+            return _visitRepo.GetAll().Where(x => x.Practitioner.UserId.ToString() == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.Attended == true &&
                                                  (x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 ||
                                                  x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)).OrderByDescending(x => x.PlannedVisitDate).ToList();
         }
@@ -1531,7 +1531,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (smartSpaceLic != null)
             {
-                Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
+                Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.UserId.ToString() == userId).FirstOrDefault();
                 List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner)).OrderBy(x => x.Order).ToList();
 
                 var input = new VisitModel();

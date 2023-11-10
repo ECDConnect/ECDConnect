@@ -1021,7 +1021,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 
 
             // SignFranchiseeAgreement
-            UserConsent franchiseeAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_franchisee).FirstOrDefault();
+            UserConsent franchiseeAgreement = _userConsentRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.ConsentType == Constants.SSSettings.consent_type_franchisee).FirstOrDefault();
             if (franchiseeAgreement != null)
             {
                 timeline.SignFranchiseeAgreementStatus = Constants.SSSettings.franchisee_signed;

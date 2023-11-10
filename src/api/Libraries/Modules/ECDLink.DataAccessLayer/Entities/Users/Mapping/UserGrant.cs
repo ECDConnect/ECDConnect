@@ -5,7 +5,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
 {
     public class UserGrant
     {
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [ForeignKey(nameof(GrantId))]
         public virtual Grant Grant { get; set; }

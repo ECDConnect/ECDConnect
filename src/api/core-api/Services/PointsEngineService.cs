@@ -122,13 +122,13 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<PointsUser> GetIndividualUserPoints(Guid pointsLibraryId, string userId, int month, int year)
         {
-            return _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == pointsLibraryId && x.UserId == userId && x.Month == month && x.Year == year).ToList();
+            return _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == pointsLibraryId && x.UserId.ToString() == userId && x.Month == month && x.Year == year).ToList();
         }
 
         public List<PointsUserSummary> GetSummaryUserPoints(string userId, DateTime startDate, DateTime? endDate = null)
         {
             return _pointsUserSummaryRepo.GetAll().Where(
-                x => x.UserId == userId &&
+                x => x.UserId.ToString() == userId &&
                 // After the start
                 (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)) &&
                 // Before the end or no end date
@@ -165,7 +165,7 @@ namespace EcdLink.Api.CoreApi.Services
             PointsLibrary activity3 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac3).FirstOrDefault();
             PointsLibrary activity4 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac4).FirstOrDefault();
 
-            var mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == userId &&
+            var mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.ToString() == userId &&
                                           x.IsActive == true &&
                                           x.InsertedDate.Year == today.Year &&
                                           x.InsertedDate.Month == today.Month &&
@@ -189,7 +189,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity2.Points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity2.Id,
                                 Comment = "Total: " + mothers.Count
                             }
@@ -225,7 +225,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Month = today.Month,
                             Year = today.Year,
                             Points = activity3.Points,
-                            UserId = userId,
+                            UserId = new Guid(userId),
                             PointsLibraryId = activity3.Id,
                             Comment = "Total: " + lessThan20Weeks
                         }
@@ -248,7 +248,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Month = today.Month,
                             Year = today.Year,
                             Points = activity4.Points,
-                            UserId = userId,
+                            UserId = new Guid(userId),
                             PointsLibraryId = activity4.Id,
                             Comment = "Total: " + lessThan20Weeks
                         }
@@ -289,7 +289,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Month = today.Month,
                             Year = today.Year,
                             Points = activity1.Points,
-                            UserId = userId,
+                            UserId = new Guid(userId),
                             PointsLibraryId = activity1.Id,
                             Comment = "Total: " + childrenCount
                         }
@@ -307,7 +307,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool CalculatePregnantMomVisits(string userId, DateTime today)
         {
-            bool hasMothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == userId && x.IsActive == true).Count() != 0;
+            bool hasMothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.ToString() == userId && x.IsActive == true).Count() != 0;
 
             if (hasMothers)
             {
@@ -323,7 +323,7 @@ namespace EcdLink.Api.CoreApi.Services
                 //"Monthly total (capped at 50) Calculated at the end of the month."
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
-                    int monthVisits = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId == userId && 
+                    int monthVisits = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.ToString() == userId && 
                                                                 x.Attended == false && 
                                                                 x.DueDate.HasValue &&
                                                                 x.DueDate.Value.Year == today.Year &&
@@ -344,7 +344,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity1.Points,
-                                    UserId = userId,
+                                    UserId = new Guid(userId),
                                     PointsLibraryId = activity1.Id,
                                     Comment = "Total: " + monthVisits
                                 }
@@ -358,7 +358,7 @@ namespace EcdLink.Api.CoreApi.Services
                 //-Lethabo had thoughts and plans to harm herself or commit suicide
                 //-Lethabo was experiencing maternal distress user earns 20 points." - flag
                 // "Monthly total (capped at 20) Points added as soon as goal reached within the month"
-                int maternal_referrals = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Mother.HealthCareWorker.UserId == userId &&
+                int maternal_referrals = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == userId &&
                                                                     x.VisitData.VisitSection == Constants.GGSettings.maternal_distress_screening &&
                                                                     x.Type == Constants.GGSettings.visit_data_client_referral &&
                                                                     x.InsertedDate.Year == today.Year &&
@@ -379,7 +379,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity2.Points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity2.Id,
                                 Comment = "Total: " + maternal_referrals
                             }
@@ -394,7 +394,7 @@ namespace EcdLink.Api.CoreApi.Services
                 //"Monthly total (capped at 50)  Calculated at the end of the month."
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
-                    int visit1_count = _visitDataRepo.GetAll().Where(x => x.Visit.Mother.HealthCareWorker.UserId == userId &&
+                    int visit1_count = _visitDataRepo.GetAll().Where(x => x.Visit.Mother.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.Visit.Attended == false &&
                                                                 x.Visit.VisitType.Name == Constants.GGSettings.visit1 &&
                                                                 x.InsertedDate.Year == today.Year &&
@@ -414,7 +414,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity3.Points,
-                                    UserId = userId,
+                                    UserId = new Guid(userId),
                                     PointsLibraryId = activity3.Id,
                                     Comment = "Total: " + visit1_count
                                 }
@@ -429,7 +429,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // -May be underweight -MUAC less than 22cm"
                 //"Monthly total (capped at 20) Points added as soon as goal reached within the month"
 
-                int muac_referrals = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Mother.HealthCareWorker.UserId == userId &&
+                int muac_referrals = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Mother.HealthCareWorker.UserId.ToString() == userId &&
                                                                     x.VisitData.VisitSection == Constants.GGSettings.mother_growth &&
                                                                     x.Type == Constants.GGSettings.visit_data_client_referral &&
                                                                     x.InsertedDate.Year == today.Year &&
@@ -449,7 +449,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity4.Points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity4.Id,
                                 Comment = "Total: " + muac_referrals
                             }
@@ -463,7 +463,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // "Monthly total (capped at 50) Calculated at the end of the month."
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
-                    int abuseVisits = _visitDataRepo.GetAll().Where(x => x.Visit.Mother.HealthCareWorker.UserId == userId &&
+                    int abuseVisits = _visitDataRepo.GetAll().Where(x => x.Visit.Mother.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.Visit.DueDate.HasValue && 
                                                                 x.Visit.DueDate.Value.Year == today.Year &&
                                                                 x.Visit.DueDate.Value.Month == today.Month).Select(x => x.Id).Distinct().Count();
@@ -482,7 +482,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity5.Points,
-                                    UserId = userId,
+                                    UserId = new Guid(userId),
                                     PointsLibraryId = activity5.Id,
                                     Comment = "Total: " + abuseVisits
                                 }
@@ -501,7 +501,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool CalculateInfantVisits(string userId, DateTime today)
         {
-            bool hasChildren = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == userId && x.IsActive == true).Count() != 0;
+            bool hasChildren = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.ToString() == userId && x.IsActive == true).Count() != 0;
 
             if (hasChildren)
             {
@@ -530,7 +530,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // the CHW does not receive points for this item.
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
-                    List<VisitData> ac1 = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                    List<VisitData> ac1 = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 (x.Question == Constants.GGSettings.q_csg_receiving && x.QuestionAnswer == Constants.GGSettings.answer_yes) &&
                                                                 (x.InsertedDate.Year == today.Year &&
                                                                 x.InsertedDate.Month == today.Month)).ToList();
@@ -553,7 +553,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity1.Points,
-                                    UserId = userId,
+                                    UserId = new Guid(userId),
                                     PointsLibraryId = activity1.Id,
                                     Comment = comment
                                 }
@@ -568,13 +568,13 @@ namespace EcdLink.Api.CoreApi.Services
                 // 14 week; 6 month; 9 month; 12 month; 18 month
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
-                    List<VisitData> completed_pillar2Data = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                    List<VisitData> completed_pillar2Data = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitName == Constants.GGSettings.pillar2_db &&
                                                                 (x.InsertedDate.Year == today.Year &&
                                                                 x.InsertedDate.Month == today.Month)
                                                                 ).ToList();
                     
-                    List<Visit> due_pillar2Data = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == userId && x.InfantId != null && x.Attended == false && 
+                    List<Visit> due_pillar2Data = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId && x.InfantId != null && x.Attended == false && 
                                                                 (x.DueDate.HasValue && x.DueDate.Value.Year == today.Year &&  x.DueDate.Value.Month == today.Month)).ToList();
 
 
@@ -609,7 +609,7 @@ namespace EcdLink.Api.CoreApi.Services
                                          Month = today.Month,
                                          Year = today.Year,
                                          Points = activity2.Points,
-                                         UserId = userId,
+                                         UserId = new Guid(userId),
                                          PointsLibraryId = activity2.Id,
                                          Comment = comment
                                      }
@@ -631,7 +631,7 @@ namespace EcdLink.Api.CoreApi.Services
                                         Month = today.Month,
                                         Year = today.Year,
                                         Points = activity2.Points,
-                                        UserId = userId,
+                                        UserId = new Guid(userId),
                                         PointsLibraryId = activity2.Id,
                                         Comment = comment
                                     }
@@ -645,7 +645,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Measuring childrens' growth length - normal measure count for month
                 // no cap
 
-                List<VisitDataStatus> ac3 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac3 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_length &&
                                                                 x.VisitData.VisitSection != Constants.GGSettings.child_road_to_health &&
                                                                 x.Comment == Constants.GGSettings.normal_comment &&
@@ -672,7 +672,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity3_points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity3.Id,
                                 Comment = comment
                             }
@@ -690,7 +690,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // 4 
                 // Measuring childrens' growth length - referral not required
                 // no cap
-                List<VisitDataStatus> ac4 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac4 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_length &&
                                                                 x.VisitData.VisitSection != Constants.GGSettings.child_road_to_health &&
                                                                 x.Comment != Constants.GGSettings.stunted &&
@@ -719,7 +719,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity4_points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity4.Id,
                                 Comment = comment
                             }
@@ -738,7 +738,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // 5
                 // Measuring childrens' growth length - referral required
                 // no cap
-                List<VisitDataStatus> ac5 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac5 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_length &&
                                                                 x.Comment == Constants.GGSettings.stunted &&
                                                                 x.Comment == Constants.GGSettings.severely_stunted &&
@@ -767,7 +767,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity5_points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity5.Id,
                                 Comment = comment
                             }
@@ -786,7 +786,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // 6
                 // Measuring childrens' growth weight - normal measure count for month
                 // no cap
-                List<VisitDataStatus> ac6 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac6 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_weight &&
                                                                 x.VisitData.VisitSection != Constants.GGSettings.child_road_to_health &&
                                                                 x.Comment == Constants.GGSettings.normal_comment &&
@@ -813,7 +813,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity6_points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity6.Id,
                                 Comment = comment
                             }
@@ -832,7 +832,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // 7 
                 // Measuring childrens' growth weight - referral not required
                 // no cap
-                List<VisitDataStatus> ac7 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac7 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_weight &&
                                                                 x.Comment != Constants.GGSettings.severely_underweight &&
                                                                 x.Comment != Constants.GGSettings.growth_faltering &&
@@ -862,7 +862,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity7_points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity7.Id,
                                 Comment = comment
                             }
@@ -881,7 +881,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // 8 
                 // Measuring childrens' growth weight - referral required
                 // no cap
-                List<VisitDataStatus> ac8 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac8 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_weight &&
                                                                 x.Comment == Constants.GGSettings.severely_underweight &&
                                                                 x.Comment == Constants.GGSettings.growth_faltering &&
@@ -911,7 +911,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity8_points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity8.Id,
                                 Comment = comment
                             }
@@ -930,7 +930,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // 9
                 // Measuring childrens' growth MUAC - normal
                 // no cap
-                List<VisitDataStatus> ac9 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac9 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_muac &&
                                                                 x.Comment == Constants.GGSettings.normal_comment &&
                                                                 (x.VisitData.InsertedDate.Year == today.Year &&
@@ -956,7 +956,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity9_points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity9.Id,
                                 Comment = comment
                             }
@@ -975,7 +975,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // 10
                 // Measuring childrens' growth MUAC - referral not required
                 // no cap
-                List<VisitDataStatus> ac10 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac10 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_muac &&
                                                                 x.Comment != Constants.GGSettings.severe_acute_malnutrition &&
                                                                 x.Comment != Constants.GGSettings.moderate_acute_malnutrition &&
@@ -1002,7 +1002,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Month = today.Month,
                             Year = today.Year,
                             Points = activity10_points,
-                            UserId = userId,
+                            UserId = new Guid(userId),
                             PointsLibraryId = activity10.Id,
                             Comment = comment
                         }
@@ -1021,7 +1021,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // 11
                 // Measuring childrens' growth MUAC - referral required
                 // no cap
-                List<VisitDataStatus> ac11 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                List<VisitDataStatus> ac11 = _visitDataStatusRepo.GetAll().Where(x => x.VisitData.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 x.VisitData.Question == Constants.GGSettings.q_muac &&
                                                                 x.Comment == Constants.GGSettings.severe_acute_malnutrition &&
                                                                 x.Comment == Constants.GGSettings.moderate_acute_malnutrition &&
@@ -1048,7 +1048,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity11_points,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity11.Id,
                                 Comment = comment
                             }
@@ -1068,7 +1068,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Vitamin A
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
-                    List<VisitData> ac12 = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                    List<VisitData> ac12 = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 (x.Question == Constants.GGSettings.q_vitamin_a && x.Question == Constants.GGSettings.answer_no) &&
                                                                 (x.InsertedDate.Year == today.Year &&
                                                                 x.InsertedDate.Month == today.Month)).ToList();
@@ -1090,7 +1090,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity12.Points,
-                                    UserId = userId,
+                                    UserId = new Guid(userId),
                                     PointsLibraryId = activity12.Id,
                                     Comment = comment
                                 }
@@ -1103,7 +1103,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Deworming
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
-                    List<VisitData> ac13 = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                    List<VisitData> ac13 = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                 (x.Question == Constants.GGSettings.q_deworming && x.Question == Constants.GGSettings.answer_no) &&
                                                                 (x.InsertedDate.Year == today.Year &&
                                                                 x.InsertedDate.Month == today.Month)).ToList();
@@ -1125,7 +1125,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity13.Points,
-                                    UserId = userId,
+                                    UserId = new Guid(userId),
                                     PointsLibraryId = activity13.Id,
                                     Comment = comment
                                 }
@@ -1138,7 +1138,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Immunisations
                 if (today.Date == today.GetEndOfMonth().Date)
                 {
-                    List<VisitData> ac14 = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId == userId &&
+                    List<VisitData> ac14 = _visitDataRepo.GetAll().Where(x => x.Visit.Infant.Caregiver.HealthCareWorker.UserId.ToString() == userId &&
                                                                             (x.Question == Constants.GGSettings.q_immunisation && x.Question == Constants.GGSettings.answer_no) &&
                                                                             (x.InsertedDate.Year == today.Year &&
                                                                             x.InsertedDate.Month == today.Month)).ToList();
@@ -1160,7 +1160,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity14.Points,
-                                    UserId = userId,
+                                    UserId = new Guid(userId),
                                     PointsLibraryId = activity14.Id,
                                     Comment = comment
                                 }
@@ -1190,7 +1190,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin = false)
         {
-            var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
+            var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
             
             // Get new totals, sum of current month or year, plus one more score
             int monthTotal = pointsScoredThisYear.Where(x => x.Month == today.Month).Select(x => x.PointsTotal).Sum() + activity.Points;
@@ -1221,7 +1221,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (monthTotal > 0 && ytdTotal > 0)
             {
-                var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
+                var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == activity.Id).FirstOrDefault();
                 if (record == null)
                 {
                     InsertIndividualSummaryUserPoints(
@@ -1233,7 +1233,7 @@ namespace EcdLink.Api.CoreApi.Services
                             UpdatedBy = _uId,
                             Month = today.Month,
                             Year = today.Year,
-                            UserId = userId,
+                            UserId = new Guid(userId),
                             PointsLibraryId = activity.Id,
                             PointsTotal = monthTotal,
                             PointsYTD = ytdTotal,
@@ -1284,7 +1284,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Month = today.Month,
                             Year = today.Year,
                             Points = activityPoints,
-                            UserId = userId,
+                            UserId = new Guid(userId),
                             PointsLibraryId = activity.Id,
                             Comment = "Total: " + childCount
                         }
@@ -1342,7 +1342,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activityPoints,
-                                UserId = userId,
+                                UserId = new Guid(userId),
                                 PointsLibraryId = activity.Id,
                                 Comment = "Total: " + childCount
                             }
@@ -1412,7 +1412,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Month = today.Month,
                             Year = today.Year,
                             Points = (int)perc,
-                            UserId = userId,
+                            UserId = new Guid(userId),
                             PointsLibraryId = activity.Id,
                             Comment = "Total: " + perc
                         }
@@ -1470,7 +1470,7 @@ namespace EcdLink.Api.CoreApi.Services
                 .ToList();
 
             // Check preschool fees exist for all children
-            var allChildrenHaveFees = practitionerChildrenUserIds.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x));
+            var allChildrenHaveFees = practitionerChildrenUserIds.All(x => lastStatement.IncomeItems.Any(y => y.ChildUserId == x.ToString()));
 
             if (allChildrenHaveFees)
             {
@@ -1487,7 +1487,7 @@ namespace EcdLink.Api.CoreApi.Services
             var consecutiveBonusActivity = statementPointsActivities.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac4).FirstOrDefault();
 
             var lastBonus = _pointsUserSummaryRepo.GetAll()
-                .Where(x => x.PointsLibraryId == consecutiveBonusActivity.Id && x.UserId == userId)
+                .Where(x => x.PointsLibraryId == consecutiveBonusActivity.Id && x.UserId.ToString() == userId)
                 .OrderByDescending(x => x.InsertedDate)
                 .FirstOrDefault();
 
@@ -1524,7 +1524,7 @@ namespace EcdLink.Api.CoreApi.Services
         public bool CalculatePreSchoolFees(string userId, DateTime today)
         {
             PointsLibrary activity = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement).Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac1).FirstOrDefault();
-            PointsUser activity_record = _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == activity.Id && x.UserId == userId && x.Year == today.Year).FirstOrDefault();
+            PointsUser activity_record = _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == activity.Id && x.UserId.ToString() == userId && x.Year == today.Year).FirstOrDefault();
 
             if (activity_record == null)
             {
@@ -1538,7 +1538,7 @@ namespace EcdLink.Api.CoreApi.Services
                         Month = today.Month,
                         Year = today.Year,
                         Points = activity.Points,
-                        UserId = userId,
+                        UserId = new Guid(userId),
                         PointsLibraryId = activity.Id
                     }
                 );
@@ -1579,8 +1579,8 @@ namespace EcdLink.Api.CoreApi.Services
             var usersByMonth = usersPoints.Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Where(y => y.Month == DateTime.Now.Month).Sum(z => z.PointsTotal) }).ToList();
             var usersByYear = usersPoints.Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Sum(y => y.PointsTotal) }).ToList();
 
-            var userMonthPosition = usersByMonth.FindIndex(x => x.UserId == userId);
-            var userYearPosition = usersByYear.FindIndex(x => x.UserId == userId);
+            var userMonthPosition = usersByMonth.FindIndex(x => x.UserId.ToString() == userId);
+            var userYearPosition = usersByYear.FindIndex(x => x.UserId.ToString() == userId);
 
             var standing = new UserClubStandingModel();
 
@@ -1610,13 +1610,13 @@ namespace EcdLink.Api.CoreApi.Services
             List<string> practitioners = new List<string>();
             
             // get all participants linked to this club, to calculate PQA ratings
-            List<string> clubMembers = _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).ToList();
+            List<string> clubMembers = _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId.ToString()).ToList();
             practitioners.AddRange(clubMembers);
 
-            List<string> clubLeaders = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).ToList();
+            List<string> clubLeaders = _clubLeaderRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId.ToString()).ToList();
             practitioners.AddRange(clubLeaders);
 
-            string clubSupport = _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId).FirstOrDefault();
+            string clubSupport = _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).Select(x => x.Practitioner.UserId.ToString()).FirstOrDefault();
             practitioners.Add(clubSupport);
 
             // ensure we don't have any duplicate user Ids

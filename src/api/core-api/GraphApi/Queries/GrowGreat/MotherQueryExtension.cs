@@ -112,7 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == id &&
+            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.ToString() == id &&
                                                                   x.IsActive.Equals(true) &&
                                                                   x.InsertedDate.Month == today.Month &&
                                                                   x.InsertedDate.Year == today.Year).ToList();
@@ -185,7 +185,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             List<VisitDataSummary> sumData = new List<VisitDataSummary>();
             List<String> visitSections = new List<String>();
             visitSections = (
-                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id).OrderBy(x => x.PlannedVisitDate)
                     join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
@@ -198,7 +198,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
                 List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
                 visitDataStatus = (
-                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                    from visit in visitRepo.GetAll().Where(x => x.Mother.UserId.ToString() == id).OrderBy(x => x.PlannedVisitDate)
                     join visitData in visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in visitDataStatusRepo.GetAll().Where(x => x.Type == Constants.GGSettings.visit_data_client_summary) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData

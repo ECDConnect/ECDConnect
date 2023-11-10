@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var principalRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var principal = principalRepo.GetAll().Where(x => x.UserId.Contains(userId)).OrderBy(x => x.Id).FirstOrDefault();
+            var principal = principalRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).OrderBy(x => x.Id).FirstOrDefault();
             if (principal == null) principal = new Practitioner();
             return principal;
         }
@@ -197,7 +197,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
                 foreach (Learner learner in learnerList)
                 {
-                    var child = childRepo.GetByUserId(learner.UserId);
+                    var child = childRepo.GetByUserId(learner.UserId.ToString());
                     children.Add(child);
                 }
             }

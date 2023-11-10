@@ -40,8 +40,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var docsQuery = docRepo.GetAll();
 
             if (!string.IsNullOrWhiteSpace(userId))
-                docsQuery = docsQuery.Where(x => x.UserId == userId);
-
+                docsQuery = docsQuery.Where(x => x.UserId.ToString() == userId);
+                
             if (showOnlyTypes is not null && showOnlyTypes.Length > 0)
                 docsQuery = docsQuery
                     .Include(d => d.DocumentType)

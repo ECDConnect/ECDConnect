@@ -164,7 +164,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 var docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.income_statement_pdf_type).FirstOrDefault();
 
                 // First validate if document is already in db
-                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId.ToString() == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
 
                 if (doc != null)
                 {
@@ -187,7 +187,7 @@ namespace EcdLink.Api.CoreApi.Managers
                             UpdatedBy = input.CreatedUserId,
                             InsertedDate = DateTime.Now,
                             Reference = document.Url.TrimEnd('/'),
-                            UserId = input.UserId,
+                            UserId = new Guid(input.UserId),
                             DocumentTypeId = docType.Id,
                             WorkflowStatusId = ws.Id,
                             TenantId = TenantExecutionContext.Tenant.Id
@@ -199,7 +199,7 @@ namespace EcdLink.Api.CoreApi.Managers
                         doc.Name = input.FileName;
                         doc.UpdatedBy = input.CreatedUserId;
                         doc.Reference = document.Url.TrimEnd('/');
-                        doc.UserId = input.UserId;
+                        doc.UserId = new Guid(input.UserId);
                         doc.UpdatedDate = DateTime.Now;
                         var result = documentRepo.Update(doc);
                     }
@@ -231,7 +231,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 DocumentType docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.attendance_pdf_type).FirstOrDefault();
 
                 // First validate if document is already in db
-                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId.ToString() == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
                 
                 // Upload the document
                 var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
@@ -247,7 +247,7 @@ namespace EcdLink.Api.CoreApi.Managers
                             UpdatedBy = input.CreatedUserId,
                             InsertedDate = DateTime.Now,
                             Reference = document.Url.TrimEnd('/'),
-                            UserId = input.UserId,
+                            UserId = new Guid(input.UserId),
                             DocumentTypeId = docType.Id,
                             WorkflowStatusId = ws.Id,
                             TenantId = TenantExecutionContext.Tenant.Id
@@ -262,7 +262,7 @@ namespace EcdLink.Api.CoreApi.Managers
                         doc.Name = input.FileName;
                         doc.UpdatedBy = input.CreatedUserId;
                         doc.Reference = document.Url.TrimEnd('/');
-                        doc.UserId = input.UserId;
+                        doc.UserId = new Guid(input.UserId);
                         doc.UpdatedDate = DateTime.Now;
                         return documentRepo.Update(doc);
                     }
@@ -289,7 +289,7 @@ namespace EcdLink.Api.CoreApi.Managers
                 var docType = _documentTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.activity_upload_type).FirstOrDefault();
 
                 // First validate if document is already in db
-                Document doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+                Document doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId.ToString() == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
 
                 // Upload the document
                 try
@@ -306,7 +306,7 @@ namespace EcdLink.Api.CoreApi.Managers
                             UpdatedBy = input.CreatedUserId,
                             InsertedDate = DateTime.Now,
                             Reference = document.Url.TrimEnd('/'),
-                            UserId = input.UserId,
+                            UserId = new Guid(input.UserId),
                             DocumentTypeId = docType.Id,
                             WorkflowStatusId = ws.Id,
                             TenantId = TenantExecutionContext.Tenant.Id

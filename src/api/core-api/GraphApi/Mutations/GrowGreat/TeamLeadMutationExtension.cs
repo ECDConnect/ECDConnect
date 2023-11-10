@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = applicationUserId,
-                UserId = input.UserId,
+                UserId = new Guid(input.UserId),
                 ClinicId = input.ClinicId,
                 JobTitle = input.JobTitle
             };
