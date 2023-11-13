@@ -8,7 +8,7 @@ import {
 } from '@ecdlink/core';
 import { DeleteRole, RoleList } from '@ecdlink/graphql';
 import { DialogPosition } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
 import UiTable from '../../components/old-ui-table';
@@ -24,6 +24,7 @@ export default function Roles() {
   const { setNotification } = useNotifications();
   const [deleteRole] = useMutation(DeleteRole);
   const [tableData, setTableData] = useState<any[]>([]);
+
   const panel = usePanel();
 
   useEffect(() => {
