@@ -55,6 +55,13 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   const [error, setError] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [isVideo, setIsVideo] = useState(false);
+  const accepetedFormatsWithoutLastItem = acceptedFormats?.slice(0, -1);
+  const accepetedFormatsFormatted = accepetedFormatsWithoutLastItem?.map(
+    (item) => {
+      return item + ' ';
+    }
+  );
+  const lastAcceptedFormat = acceptedFormats[acceptedFormats?.length - 1];
 
   const handleChange = (event: any) => {
     if (event && event.target && event.target.files) {
@@ -62,7 +69,6 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
       if (!firstFile) return;
 
       setLoading(true);
-
       handleFile(firstFile);
       setFileName(firstFile?.name);
     } else {
@@ -88,22 +94,27 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   };
 
   const handleFile = async (file: any) => {
-    setFile('');
+    // setFile('');
 
     const fileExtension = file?.name ? file?.name?.split('.').pop() : undefined;
-
     const isVideoExtension = videoExtensions.includes(fileExtension);
 
     setIsVideo(isVideoExtension);
 
     const compressedFile =
-      isImage && !isVideoExtension && !byPassCompression
+      isImage &&
+      !isVideoExtension &&
+      !byPassCompression &&
+      acceptedFormats.filter((x) => x === fileExtension).length > 0
         ? await getCompressedImage(file)
         : file;
 
     if (fileExtension) {
       if (acceptedFormats.length > 0) {
-        if (acceptedFormats.filter((x) => x === fileExtension).length > 0) {
+        if (
+          acceptedFormats.filter((x) => x === fileExtension).length > 0 &&
+          compressedFile?.size < 350000
+        ) {
           setError('');
 
           const reader = new FileReader();
@@ -125,6 +136,17 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             setLoading(false);
           };
         } else {
+          if (acceptedFormats.filter((x) => x === fileExtension).length === 0) {
+            setError('Invalid File type');
+            setLoading(false);
+            return;
+          }
+
+          if (compressedFile?.size > 350000) {
+            setError('The file is too big');
+            setLoading(false);
+            return;
+          }
           setError('Invalid File type');
           setLoading(false);
         }
@@ -284,7 +306,17 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           </div>
         )}
       </label>
-      {fileName && <p className="pb-4">{fileName}</p>}
+      {error ? (
+        <p className="text-errorMain pb-4">{`${error}. ${
+          error === 'The file is too big'
+            ? 'Upload a file less than 13MB'
+            : `You can only upload a ${accepetedFormatsFormatted.join(
+                ', '
+              )} or ${lastAcceptedFormat} file`
+        }`}</p>
+      ) : (
+        fileName && <p className="pb-4">{fileName}</p>
+      )}
 
       {contentUrl && !fileName && (
         <Alert

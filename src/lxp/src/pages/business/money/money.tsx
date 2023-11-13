@@ -7,7 +7,6 @@ import {
   Button,
   renderIcon,
 } from '@ecdlink/ui';
-import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
 import React, { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
@@ -26,6 +25,8 @@ import { LocalStorageKeys, SmartStartPointsLibrary } from '@ecdlink/core';
 import { ReactComponent as EmojiYellowSmile } from '@/assets/ECD_Connect_emoji3.svg';
 import { pointsSelectors } from '@/store/points';
 import { practitionerSelectors } from '@/store/practitioner';
+import { useAppContext } from '@/walkthrougContext';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const Money: React.FC = () => {
   const history = useHistory();
@@ -34,14 +35,6 @@ export const Money: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
 
-  const statements = useSelector(statementsSelectors.getIncomeStatements);
-  const incomeItems = useSelector(
-    statementsSelectors.getUnsubmittedIncomeItems
-  );
-  const expenseItems = useSelector(
-    statementsSelectors.getUnsubmittedExpenseItems
-  );
-
   const unsyncedIncome = useSelector(
     statementsSelectors.getUnsyncedIncomeItems
   );
@@ -49,8 +42,10 @@ export const Money: React.FC = () => {
     statementsSelectors.getUnsyncedExpenseItems
   );
 
-  const hasIncomeStatements =
-    incomeItems.length > 0 || expenseItems.length > 0 || statements.length > 0;
+  const { isLoading: isSubmittingStatement } = useThunkFetchCall(
+    'statements',
+    'submitIncomeStatement'
+  );
 
   useEffect(() => {
     if (isOnline) {
@@ -146,9 +141,13 @@ export const Money: React.FC = () => {
     )
   );
 
+  const {
+    state: { tourActive },
+  } = useAppContext();
+
   return (
     <>
-      {isLoading && (
+      {(isLoading || isSubmittingStatement) && (
         <LoadingSpinner
           size="big"
           spinnerColor="white"
@@ -156,49 +155,12 @@ export const Money: React.FC = () => {
           className="mb-7"
         />
       )}
-      {!isLoading && (
+      {!isLoading && !isSubmittingStatement && (
         <>
-          {hasIncomeStatements ? (
-            <SubmitIncomeStatements />
-          ) : (
-            <div className="h-full px-4 py-2 pt-7">
-              <div className="mt-2 flex flex-wrap justify-center p-8">
-                <div className="">
-                  <MoneyIcon />
-                </div>
-                <div>
-                  <Typography
-                    className="mt-4 text-center"
-                    color="textDark"
-                    text="You don't have any income statements yet!"
-                    type={'h3'}
-                  />
-                </div>
-                <div>
-                  <Typography
-                    className="mt-2 text-center"
-                    color="textMid"
-                    text="Tap “Add income or expense” to get started"
-                    type={'body'}
-                  />
-                </div>
-              </div>
-
-              <FADButton
-                title={'Add income or expense'}
-                icon={'PlusIcon'}
-                iconDirection={'left'}
-                textToggle={true}
-                type={'filled'}
-                color={'primary'}
-                shape={'round'}
-                className={styles.fadButton}
-                click={() => history.push(ROUTES.BUSINESS_ADD_AMOUNT)}
-              />
-            </div>
-          )}
-          <Dialog
-            visible={showUpdatePreschoolFeeReminder}
+          <SubmitIncomeStatements />
+          {/* EC-1909 - Suppress ticket */}
+          {/* <Dialog
+            visible={showUpdatePreschoolFeeReminder && !tourActive}
             position={DialogPosition.Middle}
           >
             <div className={'flex flex-col items-center p-4'}>
@@ -257,7 +219,7 @@ export const Money: React.FC = () => {
                 />
               </Button>
             </div>
-          </Dialog>
+          </Dialog> */}
         </>
       )}
     </>

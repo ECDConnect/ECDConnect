@@ -9,14 +9,20 @@ import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import { userSelectors } from '@/store/user';
+import { Roles } from '@/constants/roles';
 
 export const CompleteChildProgressReports: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
+  const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const history = useHistory();
 
+  const isPractitioner = user?.roles?.some(
+    (item) => item?.name === Roles.PRACTITIONER
+  );
   const activityId = 'complete-child-progress-reports';
 
   const mockedPoints = 110;
@@ -78,7 +84,9 @@ export const CompleteChildProgressReports: React.FC = () => {
         icon="DocumentReportIcon"
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
+      {/* EC-1909 - Suppress ticket */}
+      {/* <ScoreCard
+        className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
         currentPoints={mockedPoints}
@@ -86,15 +94,15 @@ export const CompleteChildProgressReports: React.FC = () => {
         barBgColour="uiLight"
         barColour={
           isCurrentPointsAtLeast80PercentOfTotal(
-            club?.totalClubPoints || 0,
-            club?.maxClubPoints || 0
+            club.pointsTotal,
+            club.maxPointsTotal
           )
             ? 'successMain'
             : 'secondary'
         }
         bgColour="uiBg"
         textColour="black"
-      />
+      /> */}
       {hasItems ? (
         <div className="mt-5">
           {items.map((item) => (
@@ -116,7 +124,11 @@ export const CompleteChildProgressReports: React.FC = () => {
         color="primary"
         text="Back to club"
         onClick={() =>
-          history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+          history.push(
+            isPractitioner
+              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
+              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+          )
         }
       />
     </BannerWrapper>

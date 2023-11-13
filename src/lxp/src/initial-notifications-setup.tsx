@@ -1,6 +1,5 @@
-import React, { useCallback, useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useStoreSetup } from './hooks/useStoreSetup';
 import { Message } from './models/messages/messages';
 import { NotificationService } from './services/NotificationService/NotificationService';
 import { store, useAppDispatch } from './store';
@@ -9,6 +8,9 @@ import {
   notificationsSelectors,
 } from './store/notifications';
 import { settingSelectors } from './store/settings';
+import { userSelectors } from './store/user';
+import { authSelectors } from './store/auth';
+import Loader from './components/loader/loader';
 
 type IntialNotificationSetupContextValues = {
   startService: () => void;
@@ -21,14 +23,20 @@ export const IntialNotificationSetupContext =
   );
 
 const InitialNotificationSetup: React.FC = ({ children }) => {
+  const [isLoading, setIsLoading] = useState(true);
+
   const dispatch = useAppDispatch();
+
+  const user = useSelector(userSelectors.getUser);
+  const auth = useSelector(authSelectors.getAuthUser);
+
   const notificationReferences = useSelector(
     notificationsSelectors.getAllNotificationReferences
   );
   const notificationPollInterval = useSelector(
     settingSelectors.getNotificationPollInterval
   );
-  const { initloading } = useStoreSetup();
+  // const { initloading: initLoading } = useStoreSetup();
   const notificationServiceRef = useRef<NotificationService | undefined>(
     undefined
   );
@@ -46,6 +54,7 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
       const newMessages = messages.filter(
         (message) => !notificationReferences.includes(message.reference)
       );
+
       if (newMessages.length > 0) {
         dispatch(notificationActions.addNotifications(newMessages));
       }
@@ -56,25 +65,35 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   const initializeServices = useCallback(() => {
     if (!notificationServiceRef.current) {
       notificationServiceRef.current = new NotificationService(
-        notificationPollInterval
+        notificationPollInterval,
+        auth?.auth_token,
+        user
       );
     }
     notificationServiceRef.current.registerValidators(store);
+
+    setIsLoading(true);
+
     notificationServiceRef.current.onNotificationsReceived = (
       messages: Message[]
     ) => {
-      if (!initloading) {
-        onNotificationsRecieved(messages);
-      }
+      setIsLoading(false);
+
+      onNotificationsRecieved(messages);
     };
     notificationServiceRef.current.initialEvaluate();
     notificationServiceRef.current.start();
-  }, [initloading, notificationPollInterval, onNotificationsRecieved]);
+  }, [
+    auth?.auth_token,
+    notificationPollInterval,
+    onNotificationsRecieved,
+    user,
+  ]);
 
   const stopService = () => {
     if (notificationServiceRef.current) {
       notificationServiceRef.current.stop();
-      dispatch(notificationActions.resetNotificationState());
+      dispatch(notificationActions.resetFrontendNotificationState());
     }
   };
 
@@ -88,7 +107,8 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
     <IntialNotificationSetupContext.Provider
       value={{ stopService, startService }}
     >
-      {children}
+      {!isLoading && children}
+      {isLoading && <Loader loadingMessage="Loading notifications ..." />}
     </IntialNotificationSetupContext.Provider>
   );
 };

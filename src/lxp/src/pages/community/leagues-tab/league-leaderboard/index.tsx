@@ -1,13 +1,13 @@
 import { Tag } from '@/components/tag';
 import ROUTES from '@/routes/routes';
-import { BannerWrapper, Typography } from '@ecdlink/ui';
+import { BannerWrapper, PointsDetailsCard, Typography } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { LeagueRouteState } from '../index.types';
 import { mockedLeagues } from '..';
 import { useSelector } from 'react-redux';
 import { getAllClubsForCoachSelector } from '@/store/club/club.selectors';
-import { PointsDetailsCard } from '@/pages/dashboard/components/points-details-card/points-details-card';
 import { CommunityRouteState } from '../../community.types';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 
 export const LeagueLeaderBoard: React.FC = () => {
   const history = useHistory();
@@ -48,18 +48,21 @@ export const LeagueLeaderBoard: React.FC = () => {
         />
         <Tag title={league?.type ?? ''} color="infoMain" />
       </div>
-      {clubs?.map((club, index) => (
+      {clubs.map((club, index) => (
         <PointsDetailsCard
-          pointsEarned={800 - index} // TODO - replace with actual value once available
-          activityCount={index + 1} // TODO - replace with actual value once available
-          title={club?.name ?? ''}
-          description={`Coach: ${club?.coach?.user?.firstName ?? ''} ${
-            club?.coach?.user?.surname ?? ''
-          }`}
+          pointsEarned={club.pointsTotal}
+          activityCount={club.clubActivities.length}
+          title={club.name}
+          description={`Coach: ${club.clubCoach.firstName} ${club.clubCoach.surname}`}
           size="medium"
           className="mb-1"
-          badgeColour={index < 3 ? 'successMain' : 'primary'}
           colour={index < 3 ? 'successBg' : 'uiBg'}
+          badgeImage={
+            <Badge
+              className="absolute z-0 h-full w-full"
+              fill={index < 3 ? 'var(--successMain)' : 'var(--primary)'}
+            />
+          }
         />
       ))}
     </BannerWrapper>

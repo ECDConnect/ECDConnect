@@ -78,20 +78,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     ClassroomGroupDto[]
   >([]);
 
-  useEffect(() => {
-    if (!attendanceTracked) {
-      const trackAttendance = async () => {
-        return await appDispatch(
-          attendanceThunkActions.trackAttendanceSync({})
-        );
-      };
-      trackAttendance().then(() => {
-        setAttendanceTracked(true);
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const today = new Date();
 
   useEffect(() => {
@@ -143,15 +129,32 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportData]);
 
+  useEffect(() => {
+    if (!attendanceTracked) {
+      if (isOnline) {
+        const trackAttendance = async () => {
+          return await appDispatch(
+            attendanceThunkActions.trackAttendanceSync({})
+          );
+        };
+        trackAttendance().then(() => {
+          setAttendanceTracked(true);
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>
-        <PointsSuccessCard
+        {/* EC-1909 - Suppress ticket */}
+        {/* <PointsSuccessCard
           visible={successMessageVisible}
           className={'mb-4'}
           message={`Good job! All your attendance registers are up to date!`}
           icon={'SparklesIcon'}
-        />
+        /> */}
         <AttendanceMonthlyReport
           attendanceSummary={attendanceData}
           classroomId={classroomID || classroomID!}

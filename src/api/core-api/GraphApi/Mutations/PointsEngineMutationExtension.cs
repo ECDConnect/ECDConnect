@@ -45,10 +45,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              {
                  return pointsEngineService.CalculateAttendanceSubmitted(userId, today);
              }
-             else if (type == "CalculateIncomeStatements")
-             {
-                 return pointsEngineService.CalculateIncomeStatements(userId, today);
-             }
 
              return false;
          }

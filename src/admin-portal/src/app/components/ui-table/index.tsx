@@ -183,7 +183,7 @@ export default function UiTable({
 
   const makeRows = () => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
-      return [{ [columns[0].field]: 'No entries found' }];
+      return [{ [columns[0]?.field]: 'No entries found' }];
     }
 
     return ((searchRows as any[]) || []).map((row: any) => {

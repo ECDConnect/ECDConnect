@@ -4,6 +4,7 @@ import {
   CalendarViewEventProps,
 } from './calendar-view-event.types';
 import {
+  ActionModal,
   BannerWrapper,
   Button,
   DialogPosition,
@@ -19,10 +20,13 @@ import { userSelectors } from '@/store/user';
 import { useHistory } from 'react-router-dom';
 import { useCalendarEditEvent } from '../calendar-add-event/calendar-add-event';
 import { getEventAction } from '../calendar.utils';
+import { pqaSelectors } from '@/store/pqa';
+import { Visit } from '@ecdlink/graphql';
 
 export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
+  const dialog = useDialog();
   const calendarEditEvent = useCalendarEditEvent();
 
   const eventById = useSelector(
@@ -32,12 +36,41 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   );
   const event = !!eventById ? eventById : (props.event as CalendarEventModel);
   const eventAction = getEventAction(event);
-  console.log('eventAction', eventAction);
   const startDate = new Date(event.start);
   const endDate = new Date(event.end);
   const user = useSelector(userSelectors.getUser);
   const canEdit = !!props.canEdit ? props.canEdit : user?.id === event.userId;
   const canAction = user?.id === event.userId;
+  const visit = useSelector(pqaSelectors.getCalendarEventLinkedVisit(event.id));
+
+  const getVisitForEvent = (eventId: string): Visit | null => {
+    return visit;
+  };
+
+  const displayCannotStartVisit = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <ActionModal
+          icon="ExclamationCircleIcon"
+          importantText={`You cannot start this visit`}
+          detailText={`This visit has been completed or the start date has not arrived yet. Please go to the SmartStarter's journey to see which visit to complete next.`}
+          actionButtons={[
+            {
+              text: 'Close',
+              textColour: 'primary',
+              colour: 'white',
+              type: 'outlined',
+              onClick: () => {
+                onSubmit();
+              },
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
 
   const onEdit = () => {
     props.onClose();
@@ -48,6 +81,16 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
 
   const onAction = () => {
     props.onClose();
+    if (!!visit) {
+      const now = new Date();
+      if (
+        new Date(visit.plannedVisitDate).getTime() > now.getTime() ||
+        !!visit.actualVisitDate
+      ) {
+        displayCannotStartVisit();
+        return;
+      }
+    }
     if (!!eventAction) {
       history.push(eventAction.url, eventAction.state);
     }

@@ -20,30 +20,33 @@ import { Header } from '../0-components/header';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
 import { ClubMember, Maybe } from '@ecdlink/graphql';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import { userSelectors } from '@/store/user';
+import { Roles } from '@/constants/roles';
+import { ClubMemberDto } from '@/models/club/club.dto';
 
 export const LeaveNoOneBehind: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
+  const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
   const history = useHistory();
 
+  const isPractitioner = user?.roles?.some(
+    (item) => item?.name === Roles.PRACTITIONER
+  );
   const activityId = 'leave-no-one-behind';
 
   const mockedPoints = 20;
 
-  const mapMember = (member: Maybe<ClubMember>): UserAlertListDataItem => ({
-    title: `${member?.practitioner?.user?.firstName || ''} ${
-      member?.practitioner?.user?.surname || ''
-    }`,
-    profileText: `${member?.practitioner?.user?.firstName?.charAt(
-      0
-    )}${member?.practitioner?.user?.surname?.charAt(0)}`,
+  const mapMember = (member: ClubMemberDto): UserAlertListDataItem => ({
+    title: `${member.firstName || ''} ${member.surname || ''}`,
+    profileText: `${member.firstName.charAt(0)}${member.surname.charAt(0)}`,
     titleStyle: 'text-textDark',
     avatarColor: 'var(--primaryAccent2)',
     subTitle: member?.welcomeMessage || '',
     subTitleStyle: 'text-infoDark',
-    profileDataUrl: member?.practitioner?.user?.profileImageUrl || '',
+    profileDataUrl: member.profileImageUrl || '',
     alertSeverity: 'none',
     hideAlertSeverity: true,
     onActionClick: () =>
@@ -51,16 +54,16 @@ export const LeaveNoOneBehind: React.FC = () => {
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
           ':clubId',
           clubId
-        ).replace(':practitionerId', member?.practitioner?.id)
+        ).replace(':practitionerId', member?.practitionerId)
       ),
   });
 
-  const mappedMembers = club?.clubMembers?.map(mapMember) ?? [];
+  const mappedMembers = club?.clubMembers.map(mapMember) ?? [];
   // TODO: replace slice with real pqa data
-  const membersWithGreenPqa = mappedMembers?.slice(0, 1) ?? [];
-  const membersWithOrangePqa = mappedMembers?.slice(2, 3) ?? [];
-  const membersWithRedPqa = mappedMembers?.slice(4, 5) ?? [];
-  const membersWithPqaComingUp = mappedMembers?.slice(6, 8) ?? [];
+  const membersWithGreenPqa = mappedMembers.slice(0, 1) ?? [];
+  const membersWithOrangePqa = mappedMembers.slice(2, 3) ?? [];
+  const membersWithRedPqa = mappedMembers.slice(4, 5) ?? [];
+  const membersWithPqaComingUp = mappedMembers.slice(6, 8) ?? [];
 
   const hasItems = !!mappedMembers.length;
 
@@ -88,7 +91,9 @@ export const LeaveNoOneBehind: React.FC = () => {
         imageUrl={inclusiveIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
+      {/* EC-1909 - Suppress ticket */}
+      {/* <ScoreCard
+        className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
         currentPoints={mockedPoints}
@@ -96,15 +101,15 @@ export const LeaveNoOneBehind: React.FC = () => {
         barBgColour="uiLight"
         barColour={
           isCurrentPointsAtLeast80PercentOfTotal(
-            club?.totalClubPoints || 0,
-            club?.maxClubPoints || 0
+            club.pointsTotal,
+            club.maxPointsTotal
           )
             ? 'successMain'
             : 'secondary'
         }
         bgColour="uiBg"
         textColour="black"
-      />
+      /> */}
       {hasItems ? (
         <div className="my-5">
           {['green', 'orange', 'red', 'comingUp'].map((item, index) => {
@@ -171,7 +176,11 @@ export const LeaveNoOneBehind: React.FC = () => {
         color="primary"
         text="Back to club"
         onClick={() =>
-          history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+          history.push(
+            isPractitioner
+              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
+              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+          )
         }
       />
     </BannerWrapper>

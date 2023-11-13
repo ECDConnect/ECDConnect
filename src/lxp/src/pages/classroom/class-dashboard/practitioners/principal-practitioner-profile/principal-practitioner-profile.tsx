@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
-import { useEffect, useState } from 'react';
-import { useTheme } from '@ecdlink/core';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useDialog, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -12,6 +12,7 @@ import {
   StatusChip,
   Typography,
   Card,
+  ActionModal,
 } from '@ecdlink/ui';
 import {
   ClassroomMetricReport,
@@ -35,12 +36,24 @@ import { authSelectors } from '@/store/auth';
 import { PractitionerNotRegistered } from './practitioner-not-registered/practitioner-not-registered';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
-import { getMonth } from 'date-fns';
+import {
+  addDays,
+  getMonth,
+  isFriday,
+  isPast,
+  isSameDay,
+  isToday,
+  isWeekend,
+  nextMonday,
+} from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
+import { AbsenceCard } from './components/absence-card/absence-card';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
+  const dialog = useDialog();
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -51,6 +64,42 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
+  );
+  const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
+
+  const practitionerAbsentees = practitioner?.absentees;
+  const validAbsenteesDates = practitionerAbsentees?.filter(
+    (item) =>
+      !isPast(new Date(item?.absentDateEnd as string)) ||
+      isToday(new Date(item?.absentDate as string))
+  );
+
+  const currentDates = validAbsenteesDates?.map((item) => {
+    return item?.absentDate as string;
+  });
+
+  const orderedDates = currentDates?.sort(function (a, b) {
+    return Date.parse(a) - Date.parse(b);
+  });
+
+  const currentAbsentee = validAbsenteesDates?.find(
+    (item) => item?.absentDate === orderedDates?.[0]
+  ) as AbsenteeDto;
+  const allAbsenteeClasses = practitionerAbsentees?.filter(
+    (item) => item?.absentDate === currentAbsentee?.absentDate
+  );
+
+  const isOnLeave =
+    isPast(new Date(currentAbsentee?.absentDate as string)) &&
+    !isPast(new Date(currentAbsentee?.absentDateEnd as string));
+
+  const absenceIsToday = isSameDay(
+    new Date(),
+    new Date(currentAbsentee?.absentDate || '')
+  );
+  const isLeave = useMemo(
+    () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
 
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
@@ -70,11 +119,87 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const [childrenCount, setChildrenCount] = useState(0);
   const [classMetrics, setClassMetrics] = useState<ClassroomMetricReport[]>([]);
 
-  const handleReassignClass = (practitionerId: string) => {
-    history.push('practitioner-reassign-class', {
-      practitionerId,
+  const handleReassignClass = useCallback(
+    (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
+      const isPrincipal = practitionerUser?.isPrincipal;
+
+      if (isPrincipal) {
+        if (allAbsenteeClasses) {
+          history.push('practitioner-reassign-class', {
+            practitionerId,
+            allAbsenteeClasses,
+            principalPractitioner: practitionerUser,
+          });
+          return;
+        }
+        history.push('practitioner-reassign-class', {
+          practitionerId,
+          // principalPractitioner: practitionerUser,
+        });
+
+        return;
+      }
+
+      if (allAbsenteeClasses) {
+        history.push('practitioner-reassign-class', {
+          practitionerId,
+          allAbsenteeClasses,
+        });
+        return;
+      }
+
+      history.push('practitioner-reassign-class', {
+        practitionerId,
+      });
+    },
+    [history]
+  );
+
+  const handleComebackDay = useCallback((date: Date) => {
+    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
+      return nextMonday(new Date(date));
+    }
+
+    return new Date(addDays(new Date(date), 1));
+  }, []);
+
+  const handleAbsenceModal = useCallback(() => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`What would you like to edit?`}
+          actionButtons={[
+            {
+              text: 'Edit this absence',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                handleReassignClass(practitionerUserId, allAbsenteeClasses);
+                onSubmit();
+              },
+              leadingIcon: 'PencilAltIcon',
+            },
+            {
+              text: 'Add a new leave/absence',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                handleReassignClass(practitionerUserId);
+                onSubmit();
+              },
+              leadingIcon: 'PlusIcon',
+            },
+          ]}
+        />
+      ),
     });
-  };
+  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerUserId]);
 
   useEffect(() => {
     if (!!classMetrics && !!classMetrics?.length) {
@@ -283,41 +408,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Card>
             )}
-            <Card className={styles.absentCard}>
-              <div className={styles.absentCardTitle}>
-                <Typography
-                  type={'h1'}
-                  color="textDark"
-                  text={`Mark ${practitioner?.user?.firstName} absent`}
-                  className={styles.absentCardTitle}
-                />
-                <Typography
-                  type={'body'}
-                  color="textMid"
-                  text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
-                  className={styles.absentCardSubTitle}
-                />
-                <div className="flex justify-center">
-                  <Button
-                    type="filled"
-                    color="primary"
-                    className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                    onClick={() => handleReassignClass(practitionerUserId)}
-                  >
-                    {renderIcon(
-                      'PencilAltIcon',
-                      'w-5 h-5 color-white text-white mr-1'
-                    )}
-                    <Typography
-                      type="body"
-                      className="mr-4"
-                      color="white"
-                      text={'Record absence/leave'}
-                    ></Typography>
-                  </Button>
-                </div>
-              </div>
-            </Card>
+            <AbsenceCard
+              absenceIsToday={absenceIsToday}
+              currentAbsentee={currentAbsentee}
+              handleComebackDay={handleComebackDay}
+              practitioner={practitioner!}
+              isOnLeave={isOnLeave}
+              handleReassignClass={handleReassignClass}
+              handleAbsenceModal={handleAbsenceModal}
+              isLeave={isLeave}
+              allAbsenteeClasses={allAbsenteeClasses}
+              practitionerUserId={practitionerUserId}
+            />
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
                   const classroomGroup = practitionerClassroomGroups?.find(

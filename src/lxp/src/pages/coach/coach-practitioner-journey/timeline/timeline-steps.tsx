@@ -266,7 +266,10 @@ export const timelineSteps = ({
     });
   }
 
-  if (!!timeline.supportVisits?.length) {
+  if (
+    !!timeline.supportVisits?.length ||
+    !!timeline?.requestedCoachVisits?.length
+  ) {
     const mergedVisits = [
       ...(timeline?.supportVisits ?? []),
       ...(timeline?.requestedCoachVisits ?? []),

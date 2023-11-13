@@ -1,4 +1,8 @@
-import { getArrayRange, ProgrammeAttendanceReasonDto } from '@ecdlink/core';
+import {
+  ClassroomGroupDto,
+  getArrayRange,
+  ProgrammeAttendanceReasonDto,
+} from '@ecdlink/core';
 import {
   Alert,
   AlertProps,
@@ -43,6 +47,8 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useLocation } from 'react-router';
 import { PractitionerChildRegisterState } from '../../practitioner-child-registration/types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
+import { filterUniqueClassrooms } from '@/utils/classroom/classroom';
+import { UNSURE_CLASS } from '@/constants/classroom';
 
 export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   childInformation,
@@ -177,13 +183,14 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   useEffect(() => {
     if (dobDay && dobMonth && dobYear) {
-      const dateOfBirth = new Date(dobYear, dobMonth, dobDay);
+      const dateOfBirth = new Date(dobYear, dobMonth - 1, dobDay);
       setChildInformationFormValue('dob', dateOfBirth);
       validateDateOfBirth();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dobDay, dobMonth, dobYear]);
 
+  // Practitioners who are not principals OR FAAs should not be able to see the “Unsure” class or add children to the unsure class
   useEffect(() => {
     if (
       !practitionerIdFromCoachView &&
@@ -192,7 +199,13 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
     ) {
       const groupedItems: DropDownOption<string>[] = [];
 
-      classroomsForPractitionerAnyType.forEach((groupedItem: any) => {
+      filterUniqueClassrooms(
+        classroomsForPractitionerAnyType.filter(
+          (item: ClassroomGroupDto) =>
+            (practitioner?.isTrainee && item) ||
+            (!practitioner?.isTrainee && item.name !== UNSURE_CLASS)
+        )
+      ).forEach((groupedItem: any) => {
         groupedItems.push({
           label: groupedItem.name,
           value: groupedItem.id ?? '',
@@ -208,7 +221,13 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
           ? classroomsForPrincipal
           : classroomsForPractitioner;
 
-      currentClassroomGroups.forEach((groupedItem) => {
+      filterUniqueClassrooms(
+        currentClassroomGroups.filter(
+          (item) =>
+            ((practitioner?.isTrainee || practitioner?.isPrincipal) && item) ||
+            (!practitioner?.isTrainee && item.name !== UNSURE_CLASS)
+        )
+      ).forEach((groupedItem) => {
         groupedItems.push({
           label: groupedItem.name,
           value: groupedItem.id ?? '',

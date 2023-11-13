@@ -63,6 +63,10 @@ export const RemovePractitionerFromProgramme: React.FC<
   );
   const classroom = useSelector(classroomsSelectors?.getClassroom);
 
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
   //Get list of practitioners for classroom
   const practitionersForClass = useMemo(
     () =>
@@ -305,7 +309,7 @@ export const RemovePractitionerFromProgramme: React.FC<
                 );
                 triggerRemovePractionerForm();
               }}
-              minDate={new Date()}
+              minDate={tomorrow}
               dateFormat="EEE, dd MMM yyyy"
             />
           </div>
@@ -408,7 +412,7 @@ export const RemovePractitionerFromProgramme: React.FC<
               type={'error'}
               title={`${practitioner?.user?.firstName} will be removed from the programme on this date`}
               list={[
-                `${practitioner?.user?.firstName} now, they will no longer be able to see child information.`,
+                `${practitioner?.user?.firstName} will no longer be able to see child information.`,
               ]}
             />
           </div>

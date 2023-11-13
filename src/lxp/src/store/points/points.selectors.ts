@@ -1,7 +1,11 @@
 import { createSelector } from 'reselect';
 import { RootState } from '../types';
 import { PointsLibrary, PointsUserSummary } from '@ecdlink/graphql';
-import { PointsSummaryDto, PractitionerDto } from '@ecdlink/core';
+import {
+  PointsSummaryDto,
+  PractitionerDto,
+  getPreviousMonth,
+} from '@ecdlink/core';
 
 export const getPointsSummary = createSelector(
   (state: RootState) => state.points.pointsSummary,
@@ -41,10 +45,12 @@ export const getPointsSummaryWithLibrary = (date: Date) =>
 
             pointsTotal: pointsSummaryForMonth?.pointsTotal || 0,
             pointsYTD: pointsSummaryForMonth?.pointsYTD || 0,
+            timesScored: pointsSummaryForMonth?.timesScored || 0,
 
             activity: pointsLibrary.activity || '',
             subActivity: pointsLibrary.subActivity || '',
             description: pointsLibrary.description || '',
+            todoDescription: pointsLibrary.todoDescription || '',
             maxMonthlyPoints:
               practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
                 ? pointsLibrary.maxPointsPrincipalMonthly
@@ -81,7 +87,6 @@ export const getPointsSummariesForActivity = (id: string) =>
       pointsLibrary: PointsLibrary[],
       practitioner: PractitionerDto | undefined
     ) => {
-      const currentDate = new Date();
       const activity = pointsLibrary.find((x) => x.id === id);
       const pointsSummaries: PointsSummaryDto[] = [];
 
@@ -89,9 +94,9 @@ export const getPointsSummariesForActivity = (id: string) =>
         return [];
       }
 
+      let currentDate = new Date();
       for (let i = 0; i < 12; i++) {
-        currentDate.setMonth(currentDate.getMonth() - i);
-        const month = currentDate.getMonth();
+        const month = currentDate.getMonth() + 1; // 0 indexing
         const year = currentDate.getFullYear();
 
         const pointsSummaryForMonth = pointsSummary.find(
@@ -106,10 +111,12 @@ export const getPointsSummariesForActivity = (id: string) =>
 
           pointsTotal: pointsSummaryForMonth?.pointsTotal || 0,
           pointsYTD: pointsSummaryForMonth?.pointsYTD || 0,
+          timesScored: pointsSummaryForMonth?.timesScored || 0,
 
           activity: activity.activity || '',
           subActivity: activity.subActivity || '',
           description: activity.description || '',
+          todoDescription: activity.todoDescription || '',
           maxMonthlyPoints:
             practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
               ? activity.maxPointsPrincipalMonthly
@@ -120,8 +127,40 @@ export const getPointsSummariesForActivity = (id: string) =>
               : activity.maxPointsNonPrincipalYearly,
           pointsPerAward: activity.points,
         });
+
+        currentDate = getPreviousMonth(currentDate);
       }
 
       return pointsSummaries;
+    }
+  );
+
+export const getPointsTotalForYear = () =>
+  createSelector(
+    (state: RootState) => state.points.pointsSummary,
+    (pointsSummary: PointsUserSummary[]) => {
+      return pointsSummary
+        .filter((x) => x.year === new Date().getFullYear())
+        .reduce((total, current) => (total += current.pointsTotal), 0);
+    }
+  );
+
+export const getCurrentPercentileClubStandingForMonth = () =>
+  createSelector(
+    (state: RootState) => state.points.userClubStanding,
+    (userClubStanding) => {
+      return !!userClubStanding
+        ? userClubStanding.standing.percentileStandingForCurrentMonth
+        : 0;
+    }
+  );
+
+export const getCurrentClubPercentileStandingForYear = () =>
+  createSelector(
+    (state: RootState) => state.points.userClubStanding,
+    (userClubStanding) => {
+      return !!userClubStanding
+        ? userClubStanding.standing.percentileStandingForCurrentYear
+        : 0;
     }
   );

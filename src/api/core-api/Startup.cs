@@ -46,6 +46,8 @@ using System.Diagnostics;
 using ECDLink.AutomatedJobs.Services;
 using ECDLink.AutomatedJobs.Services.Interfaces;
 using EcdLink.Api.CoreApi.Managers.Integration;
+using ECDLink.SmartStart.Services.Interfaces;
+using Castle.Core.Logging;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -208,6 +210,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<VisitBackReferralManager>();
             services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
+            services.AddTransient<IPersonnelService, PersonnelService>();
             services.AddTransient<ChildManager>();
             services.AddTransient<IIncomeExpenseService, IncomeExpenseService>();
             services.AddTransient<AttendanceService>();
@@ -229,14 +232,13 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<DocumentManager>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
-            if (!Environment.IsDevelopment()) { //dont look at any jobs for development
-            ConfigureJobs(services);
-            }            
             services.AddControllers();
+
+            ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider, Microsoft.Extensions.Logging.ILogger<Startup> logger)
         {
             if (env.IsDevelopment())
             {

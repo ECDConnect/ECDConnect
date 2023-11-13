@@ -15,6 +15,8 @@ import { traineeSelectors } from '@/store/trainee';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import { coachSelectors } from '@/store/coach';
+import { authSelectors } from '@/store/auth';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -23,6 +25,7 @@ interface SmartSpaceCheck1Props {
   handleNextSection: any;
   saveSmartSpaceCheckData: () => void;
   onSubmit: () => void;
+  setNotificationStep: any;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -44,8 +47,12 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
   handleNextSection,
   saveSmartSpaceCheckData,
   onSubmit,
+  setNotificationStep,
 }) => {
   const history = useHistory();
+  const coach = useSelector(coachSelectors.getCoach);
+  const user = useSelector(authSelectors.getAuthUser);
+  const isCoach = coach?.user?.id === user?.id;
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const [questions, setAnswers] = useState([
     {
@@ -62,6 +69,37 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
   }, [questions]);
 
   useEffect(() => {
+    if (!isCoach) {
+      const previousData = questions.map((item) => {
+        const previousAnswer = visitData?.find((item: any) => {
+          const sectionData = item?.visitSection === visitSection;
+          return sectionData;
+        });
+
+        const previousHasTrueAnswer =
+          Boolean(previousAnswer?.questionAnswer) === true ||
+          previousAnswer?.questionAnswer === 'true';
+
+        if (previousAnswer) {
+          return {
+            ...item,
+            answer: previousHasTrueAnswer!,
+          };
+        }
+
+        return item;
+      });
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: previousData,
+        },
+      ]);
+
+      setAnswers(previousData);
+      return;
+    }
+
     const previousData = questions.map((item) => {
       const visitDataWithoutTypo = visitData as any;
       const previousAnswer = visitDataWithoutTypo
@@ -69,7 +107,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
           const sectionData = item?.visitSection === visitSection;
           return sectionData;
         })
-        ?.questions.filter((obj: any) => {
+        ?.questions?.filter((obj: any) => {
           return obj.question === item.question;
         });
 
@@ -150,6 +188,13 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
           </div>
         </div>
       </div>
+      {!isCoach && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Typography
         className={'my-2 w-full p-2'}
         type={'h4'}
@@ -169,6 +214,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
           value={item.question}
           onChange={() => onOptionSelected(!item.answer, index)}
           className="mb-1"
+          disabled={!isCoach}
         />
       ))}
 
@@ -187,14 +233,18 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
               type="filled"
               color="primary"
               className="mt-1 mb-2 w-full"
-              onClick={() => {
-                handleNextSection();
-                saveSmartSpaceCheckData();
-                onSubmit();
-                history.push(ROUTES.COACH_FRANCHISE_AGREEMENT, {
-                  practitioner: practitioner,
-                });
-              }}
+              onClick={
+                !isCoach
+                  ? setNotificationStep('')
+                  : () => {
+                      handleNextSection();
+                      saveSmartSpaceCheckData();
+                      onSubmit();
+                      history.push(ROUTES.COACH_FRANCHISE_AGREEMENT, {
+                        practitioner: practitioner,
+                      });
+                    }
+              }
               disabled={!trueAnswers}
             >
               {renderIcon('DownloadIcon', 'mr-2 text-white w-5')}

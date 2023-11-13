@@ -244,23 +244,22 @@ const visitSlice = createSlice({
     builder.addCase(getVisitAnswersForMother.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
-      const mergedDate = !!state.visitAnswersForMother?.length
-        ? [...state.visitAnswersForMother, ...action.payload]
-        : [];
+      const visitId = action.meta.arg.visitId;
+      const newData = {
+        ...action.payload?.[0],
+        visitId: action.meta.arg.visitId,
+      };
 
-      state.visitAnswersForMother = !!mergedDate.length
-        ? mergedDate.filter((item, index) => {
-            return (
-              index ===
-              mergedDate.findIndex(
-                (obj) =>
-                  obj.visitSection === item.visitSection &&
-                  obj.visitId === item.visitId &&
-                  obj.visitName === item.visitName
-              )
-            );
-          })
-        : action.payload;
+      const mergedDate = !!state.visitAnswersForMother?.length
+        ? [
+            ...state.visitAnswersForMother.filter(
+              (item) => item.visitId !== visitId
+            ),
+            newData,
+          ]
+        : [newData];
+
+      state.visitAnswersForMother = mergedDate;
     });
     builder.addCase(
       getHealthCareWorkerHighlights.fulfilled,

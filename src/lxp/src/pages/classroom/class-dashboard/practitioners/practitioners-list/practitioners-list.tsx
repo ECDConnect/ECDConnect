@@ -205,6 +205,8 @@ export const PractitionersList: React.FC = () => {
                   type={'UserAlertList'}
                 ></StackedList>
               </div>
+              {/* EC-1909 - Suppress ticket */}
+              {/*
               <Card className={styles.absentCard}>
                 <div className={styles.absentCardTitle}>
                   <Typography
@@ -216,9 +218,7 @@ export const PractitionersList: React.FC = () => {
                   <Typography
                     type={'body'}
                     color="textMid"
-                    text={
-                      'Keep track of practitioner absenteeism and leave, and record your own leave.'
-                    }
+                    text={'Keep track of practitioner absenteeism and leave.'}
                     className={styles.absentCardSubTitle}
                   />
                   <div className="flex justify-center">
@@ -242,6 +242,7 @@ export const PractitionersList: React.FC = () => {
                   </div>
                 </div>
               </Card>
+              */}
               <div className="flex w-11/12 justify-center">
                 <Button
                   type="outlined"

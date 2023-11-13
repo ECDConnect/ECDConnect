@@ -33,6 +33,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public Guid? SiteAddressId { get; set; }
 
         public string SigningSignature { get; set; }
+
+        public string ContactPerson { get; set; }
+        public string ContactPersonNumber { get; set; }
     }
 
     public interface FranchisorJoin<TKey>

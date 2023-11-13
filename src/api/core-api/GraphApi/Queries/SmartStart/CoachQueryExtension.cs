@@ -228,6 +228,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                     {
                         circleClub.CCMeetingStatus = Constants.CoachingCircleSettings.circle_meetings_held + latest_meeting_inside_quarter.MeetingDate;
                         circleClub.CCMeetingStatusColor = MetricsColorEnum.Success.ToString();
+                        haveMeetings.Add(circleClub);
                     }
                     else
                     {
@@ -235,9 +236,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         {
                             circleClub.CCMeetingStatus = Constants.CoachingCircleSettings.no_circle_meetings_held + latest_meeting_outside_quarter.MeetingDate;
                             circleClub.CCMeetingStatusColor = MetricsColorEnum.Error.ToString();
+                            noMeetings.Add(circleClub);
                         }
                     }
-                    haveMeetings.Add(circleClub);
+                   
                 }
             }
 
@@ -253,19 +255,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return clubService.GetAllClubsForCoachSimple(userId);
         }
 
+        // TODO this is used on the coach redux store, but then not anywhere else. Investigate and remove
         public List<CoachingClubBase> GetAllClubsForCoach([Service] IClubService clubService, string userId)
         {
             return clubService.GetAllClubsForCoach(userId);
         }
 
-        public List<CoachingClub> GetAllClubsDetailsForCoach([Service] IClubService clubService, string userId, string clubId = null)
-        {
-            return clubService.GetAllClubsDetailsForCoach(userId, clubId);
-        }
-
         public List<ClubMember> GetClubsMembers([Service] IClubService clubService, Guid[] clubIds)
         {
             return clubService.GetClubsMembers(clubIds);
-        }
+        }       
     }
 }

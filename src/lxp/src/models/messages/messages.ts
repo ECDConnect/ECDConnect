@@ -8,6 +8,8 @@ export type Message = {
   priority: number;
   viewOnDashboard: boolean;
   actionText: string;
+  isFromBackend?: boolean;
+  cta?: string;
   icon: string;
   color: Colours;
   routeConfig?: MessageRouteConfig;
@@ -29,4 +31,4 @@ export type MessageRouteConfig = {
   params?: any;
 };
 
-export type MessageViewType = 'Messages' | 'Hub' | 'Both';
+export type MessageViewType = 'Messages' | 'Hub' | 'Both' | 'None';

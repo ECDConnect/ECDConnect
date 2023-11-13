@@ -56,7 +56,7 @@ export const TraineeFranchisorAgreement: React.FC<
       color={'primary'}
       onBack={() => setNotificationStep('')}
       displayOffline={!isOnline}
-      renderOverflow={true}
+      className="pb-16"
     >
       <div className="h-screen">{renderStep(agreementStep)}</div>
     </BannerWrapper>

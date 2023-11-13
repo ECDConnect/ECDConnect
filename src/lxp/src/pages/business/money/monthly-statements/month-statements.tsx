@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 import { authSelectors } from '@/store/auth';
 import { MonthStatementsDetails } from '../../components/month-statements-details';
-import { PractitionerService } from '@/services/PractitionerService';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { ReportTableDataDto } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
@@ -15,19 +14,7 @@ import { UserOptions } from 'jspdf-autotable';
 import { BannerWrapper, Typography } from '@ecdlink/ui';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '@/components/download-pdf-button/download-pdf-button';
-
-interface ReportDetailsForPractitionerData {
-  classroomGroupName: string;
-  name: string;
-  principalName: string;
-  classroomGroupId: string;
-  programmeTypeName: string;
-  idNumber: string;
-  insertedDate: string;
-  programmeDays: string;
-  phone: string;
-  classSiteAddress: null | string;
-}
+import { childrenSelectors } from '@/store/children';
 
 export interface MonthStatementsDetailsState {
   statementId: string;
@@ -42,9 +29,7 @@ export const MonthStatements: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const location = useLocation<MonthStatementsDetailsState>();
   const statementId = location.state.statementId;
-
-  const [reportDetails, setReportDetails] =
-    useState<ReportDetailsForPractitionerData>();
+  const children = useSelector(childrenSelectors.getChildren);
 
   const [pdfReportData, setPdfReportData] = useState<
     ReportTableDataDto[] | undefined
@@ -58,39 +43,20 @@ export const MonthStatements: React.FC = () => {
     history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST);
   };
 
-  // TODO check what we are using this for, can we get from state
   useEffect(() => {
-    const getClassroomDetails = async () => {
-      const res = await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).getReportDetailsForPractitioner(userAuth?.id || '');
-      return res;
-    };
-
-    getClassroomDetails().then((data) => {
-      setReportDetails(data);
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
-    if (!isOnline || !statement) {
+    if (!isOnline || !statementId) {
       return;
     }
 
     const monthlyDetailsdata = async () => {
       const report = await new IncomeStatementsService(
         userAuth?.auth_token || ''
-      ).getMonthsIncomeExpensesReport(
-        userAuth?.id!,
-        statement.month,
-        statement.year
-      );
+      ).getMonthsIncomeExpensesReport(statementId);
       setPdfReportData(report);
     };
 
     monthlyDetailsdata();
-  }, [appDispatch, userAuth, isOnline, statement]);
+  }, [appDispatch, userAuth, isOnline, statementId]);
 
   const footer = [
     'Total',
@@ -99,13 +65,14 @@ export const MonthStatements: React.FC = () => {
 
   const signature = practitioner?.signingSignature ?? '';
 
+  console.log('practitioner', practitioner);
   const tableTopContent = {
     pageTitle: `Income Statement`,
     subtitle: '',
     //column2 with 3 rows of text
-    text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_column_two_row_two: `ID: ${reportDetails?.idNumber}`,
-    text_column_two_row_three: `Phone: ${reportDetails?.phone}`,
+    text_column_two_row_one: `Name: ${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
+    text_column_two_row_two: `ID: ${practitioner?.user?.idNumber}`,
+    text_column_two_row_three: `Phone: ${practitioner?.user?.phoneNumber}`,
   };
 
   const tableHeadStyles: UserOptions['headStyles'] = {
@@ -132,7 +99,9 @@ export const MonthStatements: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={`View ${getMonthName(statement?.month || 0)} statement`}
+      title={`View ${getMonthName(
+        !!statement ? statement.month - 1 : 0
+      )} statement`}
       color={'primary'}
       onBack={onBack}
       displayOffline={!isOnline}
@@ -141,7 +110,7 @@ export const MonthStatements: React.FC = () => {
         <MonthStatementsDetails
           incomeItems={statement.incomeItems}
           expenseItems={statement.expenseItems}
-          month={statement.month}
+          month={statement.month - 1} // -1 for zero indexed javascript dates :(
           year={statement.year}
         />
       ) : (
@@ -168,7 +137,8 @@ export const MonthStatements: React.FC = () => {
             tableStyles={tableStyles}
             pageOriantations={'portrait'}
             signature={signature}
-            downloadDate={new Date().toDateString()}
+            numberOfChildren={children?.length || 0}
+            downloadDate={new Date().toDateString()} // TODO: Should this be the date the statement was submitted?
           />
         )}
       </div>

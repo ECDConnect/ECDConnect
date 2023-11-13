@@ -1,35 +1,41 @@
-import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
+import { MoreInformationPage } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { ActivityHelpRouteState } from './index.types';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
-// import LanguageSelector from "@/components/language-selector/language-selector";
+import { useSelector } from 'react-redux';
+import { useEffect, useState } from 'react';
+import { MoreInformation } from '@ecdlink/graphql';
+import { authSelectors } from '@/store/auth';
+import { staticDataSelectors } from '@/store/static-data';
+import InfoService from '@/services/InfoService/InfoService';
 
 export const ActivityHelp: React.FC = () => {
-  // const [language, setLanguage] = useState({ locale: 'en-za' });
+  const [data, setData] = useState<MoreInformation[]>();
+  const [selectedLanguage, setSelectedLanguage] = useState('en-za');
+
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const languages = useSelector(staticDataSelectors.getLanguages);
 
   const history = useHistory();
 
   const { activityId } = useParams<ActivityHelpRouteState>();
 
+  useEffect(() => {
+    new InfoService()
+      .getMoreInformation(activityId, selectedLanguage)
+      .then((info) => setData(info));
+  }, [activityId, selectedLanguage, userAuth]);
+
   return (
-    <BannerWrapper
-      showBackground={false}
-      className="flex flex-col p-4 pt-6"
-      size="small"
+    <MoreInformationPage
+      languages={languages.map((x) => ({
+        value: x.locale,
+        label: x.description,
+      }))}
+      moreInformation={!!data ? data[0] : {}}
       title={formatStringWithFirstLetterCapitalized(activityId)}
-      onBack={() => history.goBack()}
-    >
-      {/* <LanguageSelector currentLocale={language.locale} selectLanguage={setLanguage} /> */}
-      <Typography className="mb-5" type="h3" text="Coming soon" />
-      <Button
-        className="mt-auto"
-        icon="XIcon"
-        type="filled"
-        textColor="white"
-        color="primary"
-        text="Close"
-        onClick={() => history.goBack()}
-      />
-    </BannerWrapper>
+      onClose={() => history.goBack()}
+      setSelectedLanguage={setSelectedLanguage}
+    />
   );
 };

@@ -33,6 +33,7 @@ export const CareGiverContributionForm: React.FC<
     getValues: getCareGiverContributionFormValues,
     setValue: setCareGiverContributionFormValue,
     control: careGiverContributionFormControl,
+    trigger: careGiverContributionFormTrigger,
   } = useForm<CareGiverContributionFormModel>({
     resolver: yupResolver(careGiverContributionFormSchema),
     mode: 'onBlur',
@@ -82,7 +83,7 @@ export const CareGiverContributionForm: React.FC<
         )}
         {variation === 'caregiver' && (
           <CaregiverForm
-            amount={classroom?.preschoolFeeAmount || 0}
+            amount={childDetails?.child.groupFeeAmount || 0}
             playgroupName={childDetails?.child?.groupName || ''}
           />
         )}
@@ -95,6 +96,7 @@ export const CareGiverContributionForm: React.FC<
                 value as boolean
               );
               setCommitedToContributing(value as boolean);
+              careGiverContributionFormTrigger();
             }}
             selectedOptions={commitedToContributing}
             color="secondary"
@@ -132,9 +134,15 @@ export const CareGiverContributionForm: React.FC<
 const PractitionerForm: React.FC<{ amount: number }> = ({ amount }) => {
   return (
     <>
-      <label className={classNames(styles.label, 'mt-4')}>
-        {`Did the caregiver commit to contributing R${amount} to the programme each month?`}
-      </label>
+      {!!amount ? (
+        <label className={classNames(styles.label, 'mt-4')}>
+          {`Did the caregiver commit to contributing R${amount} to the programme each month?`}
+        </label>
+      ) : (
+        <label className={classNames(styles.label, 'mt-4')}>
+          {`Did the caregiver commit to contributing a monthly amount to the programme each month?`}
+        </label>
+      )}
     </>
   );
 };
@@ -150,12 +158,18 @@ const CaregiverForm: React.FC<{ playgroupName: string; amount: number }> = ({
         type="unspecified"
         fontSize="14"
       />
-      <Typography
-        className="mt-4"
-        text={`Do you commit to contributing a monthly amount of R${amount} towards ${playgroupName}?`}
-        type="unspecified"
-        fontSize="14"
-      />
+      {!!amount ? (
+        <Typography
+          className="mt-4"
+          text={`Do you commit to contributing a monthly amount of R${amount} towards ${playgroupName}?`}
+          type="unspecified"
+          fontSize="14"
+        />
+      ) : (
+        <label className={classNames(styles.label, 'mt-4')}>
+          {`Do you commit to contributing a monthly amount towards ${playgroupName} each month?`}
+        </label>
+      )}
     </>
   );
 };

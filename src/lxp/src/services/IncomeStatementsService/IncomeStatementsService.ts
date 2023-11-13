@@ -144,36 +144,32 @@ class IncomeStatementsService {
   // Used to generate the PDF, can we refactor to fetch a link to the backend PDF,
   // or to use the income statement to create the pdf? Then it could work offline?
   async getMonthsIncomeExpensesReport(
-    userId: string,
-    month: Number,
-    year: Number
+    statementId: string
   ): Promise<ReportTableDataDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: `query GetStatementsIncomeExpensesPDFData($userId: String, $month: Int!, $year: Int!) {
-                statementsIncomeExpensesPDFData(userId: $userId, month: $month, year: $year) {
-                tableName
-                type
-                total
-                headers {
-                    header
-                    dataKey
-                }
-                data {
-                    child
-                    date
-                    description
-                    amount
-                    invoiceNr
-                    photoProof
-                    type
-                }
-            }
-    }`,
+      query: `query GetStatementsIncomeExpensesPDFData($statementId: UUID!) {
+          statementsIncomeExpensesPDFData(statementId: $statementId) {
+          tableName
+          type
+          total
+          headers {
+              header
+              dataKey
+          }
+          data {
+              child
+              date
+              description
+              amount
+              invoiceNr
+              photoProof
+              type
+          }
+        }
+      }`,
       variables: {
-        userId,
-        month,
-        year,
+        statementId,
       },
     });
 
@@ -271,6 +267,7 @@ class IncomeStatementsService {
     input: SubmitStatementModelInput
   ): Promise<IncomeStatementDto | undefined> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
+
     const response = await apiInstance.post<any>(``, {
       query: `mutation submitMonthlyStatement($input: SubmitStatementModelInput) {      
           submitMonthlyStatement(input: $input) {
@@ -284,7 +281,8 @@ class IncomeStatementsService {
               incomeTypeId
               id
               dateReceived
-              amount
+              amount              
+              childUserId
             } 
             expenseItems {
               expenseTypeId
@@ -414,6 +412,7 @@ class IncomeStatementsService {
               id
               dateReceived
               amount
+              childUserId
             } 
             expenseItems {
               expenseTypeId
@@ -468,7 +467,6 @@ class IncomeStatementsService {
       );
     }
 
-    console.log('response.data.data.unsubmittedIncomeItems', response);
     return response.data.data.unsubmittedIncomeItems;
   }
 
@@ -497,7 +495,6 @@ class IncomeStatementsService {
       );
     }
 
-    console.log('response.data.data.unsubmittedExpenseItems', response);
     return response.data.data.unsubmittedExpenseItems;
   }
 

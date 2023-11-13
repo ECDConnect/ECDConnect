@@ -88,7 +88,7 @@ class AttendanceService {
         totalAttendanceStatsReport {
         totalSessions
         totalMonthlyAttendance
-        totalChildrenAttendedSessions
+        totalChildrenAttendedAllSessions
         }
     }
     }
@@ -101,6 +101,10 @@ class AttendanceService {
       },
     });
 
+    console.log(
+      'response.data.data.classroomAttendanceOverviewReport',
+      response
+    );
     if (response.status !== 200) {
       throw new Error(
         'Get Monthly Attendance Report failed - Server connection error'
@@ -216,7 +220,10 @@ class AttendanceService {
     attendance: TrackAttendanceModelInput[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { trackAttendance: boolean };
+      errors?: {};
+    }>(``, {
       query: `
         mutation trackAttendance($attendance: [TrackAttendanceModelInput]) {
           trackAttendance(attendance: $attendance)
@@ -230,8 +237,10 @@ class AttendanceService {
     if (response.status !== 200) {
       throw new Error('Tracking Attendance failed - Server connection error');
     }
-
-    return true;
+    if (response.data.errors) {
+      throw new Error('Update Attendance failed - please contact helpdesk');
+    }
+    return response.data.data.trackAttendance;
   }
 }
 

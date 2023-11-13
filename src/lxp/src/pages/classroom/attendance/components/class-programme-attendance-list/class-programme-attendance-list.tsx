@@ -6,11 +6,11 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { attendanceSelectors } from '@store/attendance';
 import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
+import { getDayOfYear } from 'date-fns';
 
 export const ClassProgrammeAttendanceList: React.FC<
   ClassProgrammeAttendanceListProps
@@ -30,18 +30,24 @@ export const ClassProgrammeAttendanceList: React.FC<
   const allLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
-  const attendance = useSelector(
-    attendanceSelectors.getClassroomProgrammeAttendanceFor(attendanceDate)
-  );
 
   useEffect(() => {
     if (!classroomGroup) return;
     const filteredLearners = [];
     const _allLearners = allLearners.filter(
-      (x) => !Boolean(x.stoppedAttendance)
+      (x) =>
+        !Boolean(x.stoppedAttendance) &&
+        getDayOfYear(attendanceDate) >=
+          getDayOfYear(new Date(x.startedAttendance))
     );
 
-    for (const learner of _allLearners) {
+    const uniqueLearners = _allLearners.filter((object, index, array) => {
+      return (
+        index ===
+        array.findIndex((newObject) => newObject.userId === object.userId)
+      );
+    });
+    for (const learner of uniqueLearners) {
       if (learner.classroomGroupId !== classroomGroup.id) continue;
 
       const child = children?.find(
@@ -65,9 +71,6 @@ export const ClassProgrammeAttendanceList: React.FC<
     const attendanceStackList: AttendanceListDataItem[] = learners.map(
       (learner, index) => {
         const childUser = childUsers?.find((x) => x.id === learner.userId);
-        const existingAttendanceRecord = attendance.find(
-          (att) => att.userId === learner.userId
-        );
         const profileTextString =
           childUser?.firstName![0] ?? '' + childUser?.surname![0] ?? '';
 
@@ -76,11 +79,7 @@ export const ClassProgrammeAttendanceList: React.FC<
           profileText: profileTextString.toLocaleUpperCase(),
           attenendeeId: childUser?.id || index.toString(),
           avatarColor: getAvatarColor(),
-          status: existingAttendanceRecord
-            ? existingAttendanceRecord.attended
-              ? 1
-              : 2
-            : 1,
+          status: 1,
         };
       }
     );

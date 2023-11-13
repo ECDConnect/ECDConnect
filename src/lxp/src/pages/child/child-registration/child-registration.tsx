@@ -66,6 +66,11 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { CaregiverMultipleChildrenModal } from '../components/caregiver-multiple-children-modal';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { pointsSelectors } from '@/store/points';
+import { ClassDashboardRouteState } from '@/pages/business/business.types';
+import {
+  TabsItems,
+  TabsItemsWithAttendance,
+} from '@/pages/classroom/class-dashboard/class-dashboard.types';
 
 export const ChildRegistration: React.FC = () => {
   const history = useHistory();
@@ -79,6 +84,7 @@ export const ChildRegistration: React.FC = () => {
   const practitionerId = location?.state?.practitionerId;
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const consentList = useSelector(contentConsentSelectors.getConsent);
   const existingChild = useSelector(childrenSelectors.getChildById(childId));
   const authUser = useSelector(authSelectors.getAuthUser);
@@ -87,7 +93,8 @@ export const ChildRegistration: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal === true;
   const isTrainee = practitioner?.isTrainee;
   const isFromPqa = !!practitionerId;
-
+  const isPractitioner = !!practitioner;
+  const hasAttendanceRoute = isPrincipal && practitioners?.length! > 0;
   const dialog = useDialog();
 
   const pointsLibraryRegisterChild = useSelector(
@@ -101,6 +108,41 @@ export const ChildRegistration: React.FC = () => {
   );
   const existingChildUser = useSelector(
     childrenSelectors.getChildUserById(existingChild?.userId)
+  );
+
+  const existingPhotoConsent = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.PhotoPermissions
+    )
+  );
+
+  const existingCommitmentConsent = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.CommitmentAgreement
+    )
+  );
+
+  const existingConsent = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.ConsentAgreement
+    )
+  );
+
+  const existingIndemnity = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.IndemnityAgreement
+    )
+  );
+
+  const existingInformation = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.PersonalInformationAgreement
+    )
   );
 
   const { goToStep, canGoBack, goBackOneStep, activeStepKey } =
@@ -175,75 +217,99 @@ export const ChildRegistration: React.FC = () => {
 
     // CONSENT
     if (formState.childRegistrationFormModel?.childPhotoConsentAccepted) {
-      const consent = consentList?.find(
+      const photoPermissionConsent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.PhotoPermissions
       );
 
-      if (consent) {
+      if (photoPermissionConsent) {
         const childPhotoConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          photoPermissionConsent,
+          existingPhotoConsent?.id
         );
         appDispatch(userActions.createUserConsent(childPhotoConsent));
+        if (isOnline) {
+          appDispatch(userThunkActions.upsertUserConsents(childPhotoConsent));
+        }
       }
     }
     if (formState.childRegistrationFormModel?.commitmentAgreementAccepted) {
-      const consent = consentList?.find(
+      const commitmentAgreementConsent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.CommitmentAgreement
       );
-
-      if (consent) {
-        const childPhotoConsent = mapUserConsentDto(
+      if (commitmentAgreementConsent) {
+        const childCommitmentConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          commitmentAgreementConsent,
+          existingCommitmentConsent?.id
         );
-        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        appDispatch(userActions.createUserConsent(childCommitmentConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childCommitmentConsent)
+          );
+        }
       }
     }
     if (formState.childRegistrationFormModel?.consentAgreementAccepted) {
-      const consent = consentList?.find(
+      const consentAgreement = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.ConsentAgreement
       );
-
-      if (consent) {
-        const childPhotoConsent = mapUserConsentDto(
+      if (consentAgreement) {
+        const childAgreementConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          consentAgreement,
+          existingConsent?.id
         );
-        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        appDispatch(userActions.createUserConsent(childAgreementConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childAgreementConsent)
+          );
+        }
       }
     }
     if (formState.childRegistrationFormModel?.indemnityAgreementAccepted) {
-      const consent = consentList?.find(
+      const indemnityAgreementconsent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.IndemnityAgreement
       );
-
-      if (consent) {
-        const childPhotoConsent = mapUserConsentDto(
+      if (indemnityAgreementconsent) {
+        const childIndemnityConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          indemnityAgreementconsent,
+          existingIndemnity?.id
         );
-        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        appDispatch(userActions.createUserConsent(childIndemnityConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childIndemnityConsent)
+          );
+        }
       }
     }
     if (
       formState.childRegistrationFormModel?.personalInformationAgreementAccepted
     ) {
-      const consent = consentList?.find(
+      const personalConsent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.PersonalInformationAgreement
       );
-
-      if (consent) {
-        const childPhotoConsent = mapUserConsentDto(
+      if (personalConsent) {
+        const childPersonalConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          personalConsent,
+          existingInformation?.id
         );
-        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        appDispatch(userActions.createUserConsent(childPersonalConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childPersonalConsent)
+          );
+        }
       }
     }
     // END CONSENT
@@ -388,7 +454,13 @@ export const ChildRegistration: React.FC = () => {
                 onClose();
               }}
               onCancel={() => {
-                history.push(ROUTES.COACH.PRACTITIONERS);
+                isPractitioner
+                  ? history.push(ROUTES.CLASSROOM.ROOT, {
+                      activeTabIndex: hasAttendanceRoute
+                        ? TabsItemsWithAttendance.CHILDREN
+                        : TabsItems.CHILDREN,
+                    } as ClassDashboardRouteState)
+                  : history.push(ROUTES.COACH.PRACTITIONERS);
                 onClose();
               }}
             />
@@ -403,7 +475,13 @@ export const ChildRegistration: React.FC = () => {
           return (
             <ActionModal
               customIcon={<Emoji3 className="mb-2" />}
-              title={`${childDetails?.firstName}'s registration is complete, great job!`}
+              title={
+                childDetails
+                  ? `${childDetails?.firstName}'s registration is complete, great job!`
+                  : existingChild
+                  ? `${existingChild?.user?.firstName}'s registration is complete, great job!`
+                  : `This child's registration is complete, great job!`
+              }
               detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
               actionButtons={[
                 {

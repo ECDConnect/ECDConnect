@@ -30,7 +30,6 @@ export const Business: React.FC = () => {
   const appDispatch = useAppDispatch();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
-  const [showInfo, setShowInfo] = useState(false);
   const [isFromAutomaticallyStart, setIsFromAutomaticallyStart] =
     useState(false);
 
@@ -39,6 +38,15 @@ export const Business: React.FC = () => {
   };
 
   const practitioner = useSelector(getPractitioner);
+  const [showInfo, setShowInfo] = useState(false);
+
+  useEffect(() => {
+    if (practitioner?.isCompletedBusinessWalkThrough) {
+      setShowInfo(false);
+    } else {
+      setShowInfo(true);
+    }
+  }, [practitioner?.isCompletedBusinessWalkThrough]);
 
   const updateWalkThroughStatus = useCallback(
     (status: boolean) => {
@@ -52,14 +60,6 @@ export const Business: React.FC = () => {
     },
     [appDispatch, practitioner?.userId]
   );
-
-  useEffect(() => {
-    if (practitioner?.isCompletedBusinessWalkThrough) {
-      setShowInfo(false);
-    } else {
-      setShowInfo(true);
-    }
-  }, [practitioner?.isCompletedBusinessWalkThrough]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -101,10 +101,6 @@ export const Business: React.FC = () => {
     setSelectedTabIndex(tabIndex);
   };
 
-  const displayTutorial = (type?: string) => {
-    setShowInfo(true);
-  };
-
   const displayHelp =
     currentTab?.title === 'Money' || currentTab?.title === 'Programme';
 
@@ -124,7 +120,7 @@ export const Business: React.FC = () => {
           setState({ run: false });
         }}
         displayHelp={displayHelp}
-        onHelp={() => displayTutorial()}
+        onHelp={() => setShowInfo(true)}
         displayOffline={!isOnline}
       >
         <TabList
