@@ -11,6 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DataAccess\ECDLink.ContentManagement\ECDLink.ContentManagement.csproj" />
     <ProjectReference Include="..\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
     <ProjectReference Include="..\ECDLink.GraphQL\ECDLink.EGraphQL.csproj" />
     <ProjectReference Include="..\ECDLink.PDFGenerator\ECDLink.PDFGenerator.csproj" />

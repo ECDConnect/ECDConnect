@@ -39,6 +39,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
         public IntegrationHelperManager(
             IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, IntegrationLogManager logManager, ISystemSetting<IntegrationApiOptions> options, IntegrationAPIManager apiManager, HierarchyEngine hierarchyEngine)
         {
+            _uId = hierarchyEngine.GetIntegrationUserId();
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _logManager = logManager;
@@ -55,8 +56,6 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
             _staticEducationRepo = repoFactory.CreateGenericRepository<Education>(userContext: _uId); ;
             _staticGrantRepo = repoFactory.CreateGenericRepository<Grant>(userContext: _uId);
             _docTypeRepo = repoFactory.CreateGenericRepository<DocumentType>(userContext: _uId);
-
-            _uId = hierarchyEngine.GetIntegrationUserId();
         }
 
         public async Task<IntegrationEntityMapping> GetMappedEntity(string localUserId, string entityType)
@@ -81,7 +80,6 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
             var mappedColumns = await GetMappedColumnsForUpdate(entityType);
             var updateLogs = await GetRelatedAudits(localUserId);
             List<IntegrationAudit> completedList = new List<IntegrationAudit>();
-            var responseString = "";
 
             if (entity != null && mappedColumns.Count > 0 && updateLogs.Count > 0)
             {
@@ -167,27 +165,23 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
                 }
 
                 jsonString.AppendLine("]");
-                try
+            IntegrationAPIManager.APIHandleResponse apiResponse = null;
+            try
                 {
                     if (validUpdate)
                     {
                         //now send to API call <entity type>/Multiple
-                        responseString = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
-                        if (!string.IsNullOrEmpty(responseString))
+                        apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
+                    if (apiResponse != null)
+                    {
+                        if (!apiResponse.Success)
                         {
-                            if (responseString == "1") //success
+                                await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
+                            }
+                            else
                             {
-
                                 await _logManager.UpdateAuditSubmitted(completedList);
                                 await _logManager.IntegrationLog("Data Push Success: ", jsonString.ToString(), null, LogRelatedType.Log, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
-                            }
-                            else if (responseString == "0")
-                            {
-                                await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
-                            }
-                            else //error
-                            {
-                                await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
                             }
                         }
                     }
@@ -199,7 +193,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
                 }
                 catch (Exception e)
                 {
-                    await _logManager.IntegrationLog("SmartLink API Error: " + e.Message + " - " + responseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
+                    await _logManager.IntegrationLog("SmartLink API Error: " + e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationHelper > UpdateRemoteEntity > GetAPIHandlerResponse");
                 }
                 return validUpdate;
             }

@@ -1,20 +1,21 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using System;
+using static ECDLink.AutomatedJobs.Configuration.AutomatedJobsSection;
 
 namespace ECDLink.AutomatedJobs.Cron
 {
     public static class CronServiceExtensions
     {
-        public static IServiceCollection AddCronJob<T>(this IServiceCollection services, Action<IScheduleConfig<T>> options)
+        public static IServiceCollection AddCronJob<T>(this IServiceCollection services, string name, string cronExpression, string timeZone, bool testMode)
             where T : CronJobService
         {
-            if (options == null)
+            var config = new ScheduleConfig<T>()
             {
-                throw new ArgumentNullException(nameof(options), @"Please provide Schedule Configurations.");
-            }
-
-            var config = new ScheduleConfig<T>();
-            options.Invoke(config);
+                Name = name,
+                CronExpression = cronExpression,
+                TimeZoneInfo = timeZone.ToLower() == "utc" ? TimeZoneInfo.Utc : TimeZoneInfo.Local,
+                TestMode  = testMode
+            };
 
             if (string.IsNullOrWhiteSpace(config.CronExpression))
             {

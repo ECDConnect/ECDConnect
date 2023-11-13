@@ -47,7 +47,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
               .Where(x => x.Year == year);
 
-            if (monthOfYear != null)
+            if (monthOfYear != null && monthOfYear > 0)
             {
                 attendance = attendance.Where(x => x.MonthOfYear == monthOfYear);
             }
@@ -73,9 +73,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
     int? weekOfYear)
         {
             var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
-              .Where(x => x.Year == year);
+                .Where(x => x.Year == year);
 
-            if (monthOfYear != null)
+            if (monthOfYear != null && monthOfYear > 0)
             {
                 attendance = attendance.Where(x => x.MonthOfYear == monthOfYear);
             }
@@ -245,7 +245,7 @@ DateTime attendanceDate)
             byte[] pdf = _pdfConverter.Convert(doc);
             string Base64Result = Convert.ToBase64String(pdf);
 
-            PdfDocumentModel pdfDoc = new PdfDocumentModel();
+            DocumentModel pdfDoc = new DocumentModel();
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = _header.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;

@@ -17,7 +17,7 @@ export interface ImageInputProps<T extends FieldValues>
   acceptedFormats: string[];
   disabled?: boolean;
   onValueChange?: (imageString: string) => void;
-  register: UseFormRegister<T>;
+  register?: UseFormRegister<T>;
   currentImageString?: string;
   overrideOnClick?: () => void;
 }
@@ -39,7 +39,7 @@ export const ImageInput = <T extends FieldValues>({
 }: ImageInputProps<T>) => {
   const [fileName, setFileName] = useState('');
   const [error, setError] = useState('');
-  const test = register(nameProp);
+  const test = register?.(nameProp);
   const [currentImage, setCurrentImage] = useState<string>('');
   const handleChange = (event: any) => {
     if (event && event.target && event.target.files) {

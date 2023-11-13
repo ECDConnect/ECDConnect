@@ -64,6 +64,9 @@ export const setStep = (
   const consolidationMeetingAttended = 'Consolidation meeting attended';
   const licenceNotAwarded = 'SmartSpace Licence not awarded';
   const licenceAwarded = 'SmartSpace Licence received';
+  const smartSpaceChecklist = 'Fill in the SmartSpace checklist';
+  const signStartUpSupport = 'Sign start-up support agreement';
+
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
@@ -78,7 +81,17 @@ export const setStep = (
       status !== communitySupport2 &&
       status !== franchisorAgreement &&
       status !== franchisorAgreement2 &&
-      status === 'Consolidation meeting attended');
+      status !== consolidationMeetingAttended &&
+      status !== smartSpaceVisitFromCoach);
+
+  const calendarViewRules =
+    stepCompleted ||
+    status === lincenceReceveid ||
+    status === licenceNotAwarded ||
+    status === licenceAwarded ||
+    status === smartSpaceChecklist ||
+    status === signStartUpSupport;
+
   if (!!status) {
     return {
       title: status,
@@ -107,44 +120,25 @@ export const setStep = (
         status !== register3Children
           ? true
           : false,
-      actionButtonText:
-        stepCompleted ||
-        status === licenceNotAwarded ||
-        status === licenceAwarded
-          ? 'View'
-          : !!visitEventId
-          ? 'Start'
-          : 'Schedule',
-      actionButtonTextColor:
-        stepCompleted ||
-        status === licenceNotAwarded ||
-        status === licenceAwarded
-          ? 'secondary'
-          : !!visitEventId
-          ? 'white'
-          : 'primary',
-      actionButtonColor:
-        stepCompleted ||
-        status === licenceNotAwarded ||
-        status === licenceAwarded
-          ? 'secondaryAccent2'
-          : 'primary',
-      actionButtonIcon:
-        stepCompleted ||
-        status === licenceNotAwarded ||
-        status === licenceAwarded
-          ? ''
-          : !!visitEventId
-          ? 'ArrowCircleRightIcon'
-          : 'CalendarIcon',
+      actionButtonText: calendarViewRules
+        ? 'View'
+        : !!visitEventId
+        ? 'Start'
+        : 'Schedule',
+      actionButtonTextColor: calendarViewRules
+        ? 'secondary'
+        : !!visitEventId
+        ? 'white'
+        : 'primary',
+      actionButtonColor: calendarViewRules ? 'secondaryAccent2' : 'primary',
+      actionButtonIcon: calendarViewRules
+        ? ''
+        : !!visitEventId
+        ? 'ArrowCircleRightIcon'
+        : 'CalendarIcon',
       actionButtonOnClick: onView,
       actionButtonType:
-        stepCompleted ||
-        status === licenceNotAwarded ||
-        status === licenceAwarded ||
-        !!visitEventId
-          ? 'filled'
-          : 'outlined',
+        calendarViewRules || !!visitEventId ? 'filled' : 'outlined',
       actionButtonIconStartPosition:
         stepCompleted || !!visitEventId ? false : true,
       actionButtonClassName: stepCompleted
@@ -187,15 +181,32 @@ export const timelineSteps = (
       nextStep
     )
   );
-  steps.push(
-    setStep(
-      timeline?.consolidationMeetingStatus || 'Consolidation meeting scheduled',
-      timeline?.consolidationMeetingDate || timeline?.consolidationDeadlineDate,
-      timeline?.consolidationMeetingColor,
-      () => onView('Consolidation meeting scheduled'),
-      nextStep
-    )
-  );
+  if (
+    timeline?.consolidationDeadlineDate < new Date() &&
+    timeline?.consolidationMeetingDate == null
+  ) {
+    steps.push(
+      setStep(
+        'Consolidation meeting overdue',
+        timeline?.consolidationDeadlineDate,
+        'error',
+        () => onView('Consolidation meeting overdue'),
+        nextStep
+      )
+    );
+  } else {
+    steps.push(
+      setStep(
+        timeline?.consolidationMeetingStatus ||
+          'Consolidation meeting scheduled',
+        timeline?.consolidationMeetingDate ||
+          timeline?.consolidationDeadlineDate,
+        timeline?.consolidationMeetingColor,
+        () => onView('Consolidation meeting scheduled'),
+        nextStep
+      )
+    );
+  }
   steps.push(
     setStep(
       timeline?.smartSpaceChecklistStatus || 'Fill in the SmartSpace checklist',
@@ -250,21 +261,23 @@ export const timelineSteps = (
     );
   }
 
-  steps.push(
-    setStep(
-      timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',
-      timeline?.sSCoachVisitDate || timeline?.sSCoachVisitDeadlineDate,
-      timeline?.sSCoachVisitColor,
-      () =>
-        onView('SmartSpace visit from coach', {
-          visitEventId: (timeline.sSCoachVisitEventId as string) || '',
-          plannedVisitDate: (timeline.sSCoachVisitDate as string) || '',
-          visitId: (timeline.sSCoachVisitId as string) || '',
-        }),
-      nextStep,
-      timeline?.sSCoachVisitEventId
-    )
-  );
+  if (timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received') {
+    steps.push(
+      setStep(
+        timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',
+        timeline?.sSCoachVisitDate || timeline?.sSCoachVisitDeadlineDate,
+        timeline?.sSCoachVisitColor,
+        () =>
+          onView('SmartSpace visit from coach', {
+            visitEventId: (timeline.sSCoachVisitEventId as string) || '',
+            plannedVisitDate: (timeline.sSCoachVisitDate as string) || '',
+            visitId: (timeline.sSCoachVisitId as string) || '',
+          }),
+        nextStep,
+        timeline?.sSCoachVisitEventId || timeline?.sSCoachVisitId
+      )
+    );
+  }
   steps.push(
     setStep(
       timeline?.signFranchiseeAgreementStatus || 'Sign franchisee agreement',

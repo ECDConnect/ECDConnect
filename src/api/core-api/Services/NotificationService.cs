@@ -172,25 +172,28 @@ namespace EcdLink.Api.CoreApi.Services
         {
             try
             {
-                return _messageRepo.Insert(new MessageLog()
+                if (notification.To != null)
                 {
-                    Id = Guid.NewGuid(),
-                    From = notification.FromUserId.ToString(),
-                    FromUserId = notification.FromUserId,
-                    To = notification.To,
-                    InsertedDate = DateTime.Now,
-                    IsActive = true,
-                    MessageProtocol = notification.MessageProtocol,
-                    MessageTemplateType = notification.MessageTemplate.TemplateType,
-                    Message = notification.Message,
-                    Subject = notification.Subject,
-                    MessageDate = notification.MessageDate,
-                    MessageEndDate = notification.MessageEndDate,
-                    Status = notification.Status,
-                    SentByUserId = notification.FromUserId,
-                    CTA = notification.CTA,
-                    CTAText = notification.CTAText
-                });
+                    return _messageRepo.Insert(new MessageLog()
+                    {
+                        Id = Guid.NewGuid(),
+                        From = notification.FromUserId.ToString(),
+                        FromUserId = notification.FromUserId,
+                        To = notification.To,
+                        InsertedDate = DateTime.Now,
+                        IsActive = true,
+                        MessageProtocol = notification.MessageProtocol,
+                        MessageTemplateType = notification.MessageTemplate.TemplateType,
+                        Message = notification.Message,
+                        Subject = notification.Subject,
+                        MessageDate = notification.MessageDate,
+                        MessageEndDate = notification.MessageEndDate,
+                        Status = notification.Status,
+                        SentByUserId = notification.FromUserId,
+                        CTA = notification.CTA,
+                        CTAText = notification.CTAText
+                    });
+                } else return null;
             } catch (Exception ex)
             {
                 throw ex;                
@@ -266,6 +269,8 @@ namespace EcdLink.Api.CoreApi.Services
 
         public MessageTemplateText RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements)
         {
+            if (replacements == null)
+                replacements = new List<TagsReplacements>();
             //iterate through all placeholders, figure out which one it is and replace it based on the the placeholder name in 
             //setup some basics on all messages
             string subject = template.Subject;

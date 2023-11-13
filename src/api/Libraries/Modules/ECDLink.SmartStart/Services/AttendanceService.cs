@@ -81,23 +81,35 @@ namespace ECDLink.SmartStart.Services
         public List<Learner> GetAllLearnerGroupInstances(Guid classgroupId = default(Guid))
         {
             var learners = _dbContext.Learners
+                            .Include(x => x.User)
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
-                            .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId && l.User.IsActive);
+                            .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId);
             return learners.ToList();
         }
 
-        public Classroom GetUserClassroom(string userId, string classroomId = null)
+        public Classroom GetUserClassroom(string userId, Guid classroomId = default(Guid))
         {
             Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId));
 
             var classroom = _dbContext.Classrooms
                                 .Include(x => x.ClassroomGroups)
                                 .ThenInclude(c => c.ClassProgrammes)
-                                .FirstOrDefault(c => string.Equals(userId, c.UserId));// c.Id == classroomId &&
+                                .Where(x => x.UserId == userId)
+                                .FirstOrDefault();
 
-            if (classroom == default(Classroom))
+            if (classroom == default(Classroom) || classroomId != default(Guid))
             {
+                classroom = (Classroom)_dbContext.Classrooms
+                                .Include(x => x.ClassroomGroups)
+                                .ThenInclude(c => c.ClassProgrammes)
+                                .Where(x => x.Id == classroomId)
+                                .FirstOrDefault(); 
+            }
+
+                if (classroom == default(Classroom))
+            {
+
                 //a practitioner may call here on a classroom that only the principal has access to, since practitioners are assigned to classroomgroups, and principals to classrooms.
                 //So get the parent of the practitioner and if that matches the classroom id by their principal id to the classroom id, then allow the request
                 if (practi != null && practi.PrincipalHierarchy.HasValue)
@@ -291,9 +303,9 @@ namespace ECDLink.SmartStart.Services
 
             foreach (var item in monthlyAttendance)
             {
-                var totalAttendance = item.Value.Sum(x => x.Item1);
+                var expectedAttendance = item.Value.Sum(x => x.Item1);
                 var actualAttendance = item.Value.Sum(x => x.Item2);
-                var attendancePercentage = (totalAttendance > 0 && actualAttendance > 0 ? (int)Math.Round(((double)actualAttendance / totalAttendance) * 100) : 0);
+                var attendancePercentage = (expectedAttendance > 0 && actualAttendance > 0 ? (int)Math.Round(((double)actualAttendance / expectedAttendance) * 100) : 0);
 
                 report.Add(new ChildAttendanceMonthlyReportModel
                 {
@@ -301,7 +313,7 @@ namespace ECDLink.SmartStart.Services
                     Year = item.Key.Year,
                     MonthNumber = item.Key.Month,
                     ActualAttendance = actualAttendance,
-                    ExpectedAttendance = totalAttendance,
+                    ExpectedAttendance = expectedAttendance,
                     AttendancePercentage = (attendancePercentage > 0 ? (attendancePercentage > 100 ? 100 : attendancePercentage) : 0)
                 });
             }

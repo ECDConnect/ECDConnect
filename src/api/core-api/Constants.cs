@@ -354,6 +354,7 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_visit = "PQA Visit 1";
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
+            public const string coach_smartspace_check = "Coach smartspace check";
             public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
             public const string pqa_follow_up = "Is {client} ready for a follow-up PQA observation visit?";
             public const string step12 = "Step 12";
@@ -823,7 +824,7 @@ namespace EcdLink.Api.CoreApi
 
         public static class CoachingCircleSettings
         {
-            public const string no_circle_meetings_held = "No coaching circles held yet";
+            public const string no_circle_meetings_held = "No coaching circles held yet ";
             public const string circle_meetings_held = "Last coaching circle held: ";
 
             public const string meeting_type_coach_circle = "coaching_circle";
@@ -831,11 +832,24 @@ namespace EcdLink.Api.CoreApi
         public static class ClubSettings
         {
             public const string meeting_type_club_meeting = "club_meeting";
+            public const string meeting_type_play_day = "play_day";
+            public const string meeting_type_story_day = "story_day";
+            public const string meeting_type_end_of_year_celebration = "end_of_year_celebration";
+            public const string meeting_type_open_day = "open_day";
+            public const string meeting_type_other = "other";
 
             public const string no_club_leader = "No club leader";
-            public const string not_enough_club_members = "Not enough club members";
-            public const string too_many_club_members = "Too many club members";
+            public const string contact_club_leader = "Contact club leader";
+            public const string contact_club_leader_name = "Contact ";
             public const string choose_club_leader = "Choose a new club leader";
+            public const string assign_club_leader = "Assign club leader";
+            public const string not_accepted_club_leader = "Club leader has not accepted agreement";
+            public const string not_enough_club_members = "Not enough club members";
+            public const string contact_club_members = "Contact club members";
+            public const string add_members = "Add members";
+            public const string too_many_club_members = "Too many club members";
+            public const string create_club = "Create an additional club";
+            public const string club_leader_months = " has been a club leader for 6 or more months";
             public const string missing_register = "Missing club meeting register";
             public const string missing_register_for_month = " club meeting register";
             public const string club_attendance = "% club attendance in ";
@@ -845,6 +859,37 @@ namespace EcdLink.Api.CoreApi
             public const string club_not_in_league = "Club not in league";
             public const string name_new_stars = "New Stars";
             public const string name_rising_stars = "Rising Stars";
+            public const string top_of_the_league = "Top of the league";
+            public const string points_earned = " points earned in ";
+            public const int purple_club_max_points = 2200;
+            public const int non_purple_club_max_points = 2000;
+
+            public const string leave_no_one_behind = "Leave no one behind";
+            public const string host_family_days = "Host family days";
+            public const string child_progress_reports = "Complete child progress reports";
+            public const string capture_child_attendance = "Capture child attendance";
+            public const string meet_regularly = "Meet regularly";
+            public const string be_creative = "Be creative";
+
+            public const string document_success = "Image completed";
+            public const string document_no_success = "Image incompleted";
+
+            public static readonly int[] allowed_months = { 4,5,6,7,8,9,10,11 };
+
+            public const int warning_start_800 = 1;
+            public const int warning_end_800 = 599;
+
+            public const int success_start_800 = 600;
+            public const int success_end_800 = 800;
+
+            public const string workflow_upload_type = "Document";
+            public const string workflow_status_upload_type = "Verified";
+            public const string activity_upload_type = "ClubActivityUpload";
+
+            public const string upload_type_be_creative = "BeCreative";
+            public const string upload_type_family_days = "FamilyDays";
+
+
         }
 
     }

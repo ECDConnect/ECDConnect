@@ -66,8 +66,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
                 }
                 var result = await trackingRepository.TrackAttendance(dbEntities);
-                var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-                pointsEngineService.CalculateAttendanceSubmitted(applicationUserId, DateTime.UtcNow);
+                if (result == true)
+                {
+                    var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+                    pointsEngineService.CalculateAttendanceSubmitted(applicationUserId, DateTime.UtcNow);
+                }
                 return result;
             }
             return false;

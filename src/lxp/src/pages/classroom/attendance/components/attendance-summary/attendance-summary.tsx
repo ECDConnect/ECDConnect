@@ -10,7 +10,6 @@ import {
   Alert,
   Dialog,
   DialogPosition,
-  MessageModal,
   StackedList,
   Typography,
 } from '@ecdlink/ui';
@@ -68,10 +67,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   >([]);
 
   const userData = useSelector(userSelectors.getUser);
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner: any = practitioners?.find(
-    (item) => item?.userId === userData?.id
-  );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [attendanceEditDay, setAttendanceEditDay] = useState<Date>();
   const [missedAttendanceGroups, setMissedAttendanceGroups] = useState<
     MissedAttendanceGroups[]
@@ -429,15 +425,17 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     <>
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
-          <PointsSuccessCard
-            visible={successMessageVisible}
-            isSmartStartUser={isSmartStartUser}
-            points={100}
-            onClose={() => closeNotification()}
-            message={getPointsMessage(isSmartStartUser)}
-            icon={''}
-          />
+          <div></div>
         ) : (
+          // EC-1909 - Suppress ticket
+          // <PointsSuccessCard
+          //   visible={successMessageVisible}
+          //   isSmartStartUser={isSmartStartUser}
+          //   points={100}
+          //   onClose={() => closeNotification()}
+          //   message={getPointsMessage(isSmartStartUser)}
+          //   icon={''}
+          // />
           <div>
             <Alert
               title={'Today is not a school day.'}

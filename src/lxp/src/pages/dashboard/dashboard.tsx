@@ -13,7 +13,8 @@ import {
   UserAvatar,
   ScoreCard,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
@@ -61,6 +62,9 @@ import { ReactComponent as EmojiOrangeSmile } from '@ecdlink/ui/src/assets/emoji
 import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card.types';
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -85,6 +89,7 @@ export interface DashboardRouteState {
 }
 
 export const Dashboard: React.FC = () => {
+  const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
@@ -101,6 +106,7 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+  const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
@@ -109,6 +115,16 @@ export const Dashboard: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+
+  const a = useCallback(async () => {
+    if (isOnline) {
+      appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+    }
+  }, []);
+
+  useEffect(() => {
+    a();
+  }, []);
 
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 
@@ -143,46 +159,58 @@ export const Dashboard: React.FC = () => {
       }
       return total;
     }, 0);
-    const pointsMax =
+
+    let pointsMax =
       isPrincipal || isFundaAppAdmin
         ? pointsConstants.principalOrAdminMonthlyMax
         : pointsConstants.practitionerMonthlyMax;
 
     const percentageScore = (pointsTotal / pointsMax) * 100;
 
+    // without this rule the progress bar goes beyond the component
+    if (pointsTotal > pointsMax) {
+      pointsMax = pointsTotal;
+    }
+
     if (percentageScore < 60) {
       setPointsScoreProps({
-        mainText: `${pointsTotal} points`,
-        barBgColour: 'uiBg',
+        mainText: `${pointsTotal}`,
+        hint: 'points',
+        barBgColour: 'white',
+        textPosition: 'left',
         barColour: 'errorMain',
         bgColour: 'errorBg',
         currentPoints: pointsTotal,
         maxPoints: pointsMax,
-        textColour: 'errorMain',
+        textColour: 'textDark',
         onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
         image: <EmojiOrangeSmile className="mr-2 h-16 w-16" />,
       });
     } else if (percentageScore < 80) {
       setPointsScoreProps({
-        mainText: `${pointsTotal} points`,
-        barBgColour: 'uiBg',
+        mainText: `${pointsTotal}`,
+        barBgColour: 'white',
+        hint: 'points',
+        textPosition: 'left',
         barColour: 'secondary',
         bgColour: 'infoBb',
         currentPoints: pointsTotal,
         maxPoints: pointsMax,
-        textColour: 'secondary',
+        textColour: 'textDark',
         onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
         image: <EmojiBlueSmile className="mr-2 h-16 w-16" />,
       });
     } else {
       setPointsScoreProps({
-        mainText: `${pointsTotal} points`,
-        barBgColour: 'uiBg',
+        mainText: `${pointsTotal}`,
+        barBgColour: 'white',
+        hint: 'points',
+        textPosition: 'left',
         barColour: 'successMain',
         bgColour: 'successBg',
         currentPoints: pointsTotal,
         maxPoints: pointsMax,
-        textColour: 'successMain',
+        textColour: 'textDark',
         onClick: () => history.push(ROUTES.PRACTITIONER.POINTS.SUMMARY),
         image: <EmojiGreenSmile className="mr-2 h-16 w-16" />,
       });
@@ -217,6 +245,53 @@ export const Dashboard: React.FC = () => {
       appDispatch(practitionerThunkActions.updatePractitioner(input));
     }
   }, [completedSteps?.length]);
+
+  const leagueCard = useMemo((): ScoreCardProps => {
+    const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
+      club?.pointsTotal ?? 0,
+      club?.maxPointsTotal ?? 0
+    );
+    const mainColor =
+      !!club?.pointsTotal && isAtLeast80PercentOfTotal
+        ? 'successMain'
+        : 'secondary';
+    const bgColour =
+      !!club?.pointsTotal && isAtLeast80PercentOfTotal
+        ? 'successBg'
+        : 'secondaryAccent2';
+
+    return {
+      image: (
+        <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
+          <Badge
+            className="absolute z-0 h-12 w-12"
+            fill={`var(--${mainColor})`}
+          />
+          <Typography
+            className="relative z-10"
+            color="white"
+            type="h1"
+            text={String(club?.leagueRanking)}
+          />
+        </div>
+      ),
+      currentPoints: club?.pointsTotal ?? 0,
+      maxPoints: club?.maxPointsTotal ?? 0,
+      barBgColour: 'white',
+      barColour: mainColor,
+      hint: club?.name ?? '',
+      mainText: '',
+      hintClassName: 'mt-10',
+      bgColour,
+      textColour: 'black',
+      onClick: () =>
+        history.push(
+          ROUTES.PRACTITIONER.COMMUNITY[
+            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+          ]
+        ),
+    };
+  }, []);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -276,16 +351,15 @@ export const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    initStaticStoreSetup();
-  }, []);
-
-  useEffect(() => {
-    if (
-      dashboardNotification?.isNew &&
-      practitioner?.progress! >= 2 &&
-      !practitioner?.isTrainee
-    ) {
-      appDispatch(notificationActions.resetNotificationState());
+    if (isOnline) {
+      initStaticStoreSetup();
+      if (
+        dashboardNotification?.isNew &&
+        practitioner?.progress! >= 2 &&
+        !practitioner?.isTrainee
+      ) {
+        appDispatch(notificationActions.resetFrontendNotificationState());
+      }
     }
   }, []);
 
@@ -350,6 +424,13 @@ export const Dashboard: React.FC = () => {
         (async () =>
           await appDispatch(
             pointsThunkActions.getPointsLibrary({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getUserClubStanding({
               userId: userData?.id!,
             })
           ).unwrap())();
@@ -492,7 +573,7 @@ export const Dashboard: React.FC = () => {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
-      icon: 'BellIcon',
+      icon: 'PresentationChartBarIcon',
       current: false,
       showDivider: true,
     });
@@ -597,15 +678,16 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
-    dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.icon,
-      classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
-    });
+    //EC-1909 - Suppress ticket
+    // dashboardItems.push({
+    //   title: 'Calendar',
+    //   titleIcon: 'CalendarIcon',
+    //   titleIconClassName: styles.icon,
+    //   classNames: 'bg-uiBg',
+    //   onActionClick: () => {
+    //     goToCalendar();
+    //   },
+    // });
   }
 
   if (!isCoach) {
@@ -618,14 +700,27 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
-    dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.calendarIcon,
-      classNames: 'bg-uiBg',
+    //EC-1909 - Suppress ticket
+    // dashboardItems.push({
+    //   title: 'Calendar',
+    //   titleIcon: 'CalendarIcon',
+    //   titleIconClassName: styles.calendarIcon,
+    //   classNames: 'bg-uiBg',
+    //   onActionClick: () => {
+    //     goToCalendar();
+    //   },
+    // });
+  }
+
+  if (!isTrainee) {
+    dashboardItems.splice(1, 0, {
+      title: NavigationTypes.Training,
+      titleIcon: 'PresentationChartBarIcon',
+      titleIconClassName: styles.trainingIcon,
       onActionClick: () => {
-        goToCalendar();
+        goToTraining();
       },
+      classNames: 'bg-uiBg',
     });
   }
 
@@ -724,6 +819,10 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const goToTraining = () => {
+    history.push(ROUTES.TRAINING);
+  };
+
   const onNavigation = (navItem: any) => {
     if (
       (classroom && classroom.id && navItem.href.includes('classroom')) ||
@@ -734,6 +833,24 @@ export const Dashboard: React.FC = () => {
       showCompleteProfileBlockingDialog();
     } else {
       history.push(navItem.href, navItem.params);
+    }
+  };
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  const handleOnlineCallback = (callback: () => void) => {
+    if (isOnline) {
+      callback();
+    } else {
+      showOnlineOnly();
     }
   };
 
@@ -762,11 +879,15 @@ export const Dashboard: React.FC = () => {
                 onClick: isTrainee
                   ? async () => {
                       onSubmit();
-                      history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
+                      );
                     }
                   : async () => {
                       onSubmit();
-                      history.push(ROUTES.PRACTITIONER.PROFILE.EDIT);
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                      );
                     },
               },
               {
@@ -843,9 +964,13 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {/* EC-1909 - Suppress ticket */}
+        {/* {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
+            className="mt-5 mb-1 h-20"
+            progressBarClassName="flex pt-2"
             mainText={pointsScoreProps.mainText}
+            hint={pointsScoreProps?.hint}
             currentPoints={pointsScoreProps.currentPoints}
             maxPoints={pointsScoreProps.maxPoints}
             onClick={pointsScoreProps.onClick}
@@ -854,8 +979,26 @@ export const Dashboard: React.FC = () => {
             bgColour={pointsScoreProps.bgColour}
             image={pointsScoreProps.image}
             textColour={pointsScoreProps.textColour}
+            textPosition={pointsScoreProps.textPosition}
           />
         )}
+        {isPractitioner && !!club && (
+          <ScoreCard
+            className="h-20"
+            mainText={leagueCard.mainText}
+            hint={leagueCard.hint}
+            hintClassName={leagueCard.hintClassName}
+            textPosition="left"
+            currentPoints={leagueCard.currentPoints}
+            maxPoints={leagueCard.maxPoints}
+            onClick={leagueCard.onClick}
+            barBgColour={leagueCard.barBgColour}
+            barColour={leagueCard.barColour}
+            bgColour={leagueCard.bgColour}
+            image={leagueCard.image}
+            textColour={leagueCard.textColour}
+          />
+        )} */}
       </div>
     </BannerWrapper>
   );
