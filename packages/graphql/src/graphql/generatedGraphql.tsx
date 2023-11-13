@@ -363,6 +363,7 @@ export type ApplicationUser = {
   raceId?: Maybe<Scalars['UUID']>;
   reasonForLeaving?: Maybe<Scalars['String']>;
   reasonForLeavingComments?: Maybe<Scalars['String']>;
+  resetData?: Maybe<Scalars['Boolean']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   surname?: Maybe<Scalars['String']>;
   tenantId?: Maybe<Scalars['UUID']>;
@@ -424,6 +425,7 @@ export type ApplicationUserFilterInput = {
   raceId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   reasonForLeaving?: InputMaybe<StringOperationFilterInput>;
   reasonForLeavingComments?: InputMaybe<StringOperationFilterInput>;
+  resetData?: InputMaybe<BooleanOperationFilterInput>;
   surname?: InputMaybe<StringOperationFilterInput>;
   tenantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   traineeObjectData?: InputMaybe<TraineeFilterInput>;
@@ -482,6 +484,7 @@ export type ApplicationUserInput = {
   raceId?: InputMaybe<Scalars['UUID']>;
   reasonForLeaving?: InputMaybe<Scalars['String']>;
   reasonForLeavingComments?: InputMaybe<Scalars['String']>;
+  resetData?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;
   tenantId?: InputMaybe<Scalars['UUID']>;
   traineeObjectData?: InputMaybe<TraineeInput>;
@@ -538,6 +541,7 @@ export type ApplicationUserSortInput = {
   raceId?: InputMaybe<SortEnumType>;
   reasonForLeaving?: InputMaybe<SortEnumType>;
   reasonForLeavingComments?: InputMaybe<SortEnumType>;
+  resetData?: InputMaybe<SortEnumType>;
   surname?: InputMaybe<SortEnumType>;
   tenantId?: InputMaybe<SortEnumType>;
   traineeObjectData?: InputMaybe<TraineeSortInput>;
