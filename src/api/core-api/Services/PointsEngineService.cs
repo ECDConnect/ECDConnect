@@ -1264,7 +1264,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         #endregion
 
-            #region SS_Children
+        #region SS_Children
 
         public bool CalculateChildrenRegistrationAdd(string userId, DateTime today)
         {
@@ -1321,16 +1321,15 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
                 // Reading from audit table to retrieve data for practitioner 
-                var childCount = (from integrationAudit in _integrationAuditRepo.GetAll().Where(x => x.Entity == "Child" &&
-                                                                                              x.Property == "IsActive" &&
-                                                                                              x.ValueBefore == "True" &&
-                                                                                              x.ValueAfter == "False" &&
-                                                                                              x.UpdatedDate.Year == today.Year &&
-                                                                                              x.UpdatedDate.Month == today.Month).OrderBy(x => x.InsertedDate)
-                                  join child in _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)) on integrationAudit.RelatedId equals child.Id.ToString()
-                                  select child
-                                ).Select(x => x.Id).Distinct().Count();
-
+                var childCount = _integrationAuditRepo.GetAll().Where(x => x.Entity == "Child" &&
+                                                                           x.Property == "IsActive" &&
+                                                                           x.ValueBefore == "True" &&
+                                                                           x.ValueAfter == "False" &&
+                                                                           x.UserId == userId &&
+                                                                           x.UpdatedDate.Year == today.Year &&
+                                                                           x.UpdatedDate.Month == today.Month)
+                                                                .OrderBy(x => x.InsertedDate)
+                                                                .Count();
                 if (childCount > 0)
                 {
                     List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
