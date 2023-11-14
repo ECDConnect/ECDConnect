@@ -201,13 +201,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
 
     }
 
-    public class ActivityChildProgressDetailChild
-    {
-        public string MonthText { get; set; }
-        public int Points { get; set; }
-        public string PointsColor { get; set; }
-    }
-
     public class BeCreativeUpload
     {
         public Guid ClubId { get; set; }

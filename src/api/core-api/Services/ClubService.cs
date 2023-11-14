@@ -29,7 +29,6 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -1052,7 +1051,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             int points = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
                                                         x.Year == today.Year &&
-                                                        //x.Month == today.Month &&
                                                         x.ClubPointsLibrary.Activity == Constants.ClubSettings.be_creative).Select(x => x.Points).Sum();
 
             activityBeCreative.Points = points;

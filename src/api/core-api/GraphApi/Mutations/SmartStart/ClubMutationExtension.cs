@@ -1,7 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -28,17 +27,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Club AddNewClub([Service] IClubService clubService, NewClubInput input)
         {
             return clubService.AddNewClub(input);
-        }
-
-        public bool CalculateClubChildAttendance([Service] IPointsEngineService clubService)
-        {
-            return clubService.CalculateClubChildAttendance();
-        }
-
-        
-        public bool CalculateCompleteChildProgressReports([Service] IPointsEngineService clubService)
-        {
-            return clubService.CalculateCompleteChildProgressReports();
         }
 
     }

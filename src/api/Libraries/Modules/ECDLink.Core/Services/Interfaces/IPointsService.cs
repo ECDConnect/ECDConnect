@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace ECDLink.Core.Services.Interfaces
+﻿namespace ECDLink.Core.Services.Interfaces
 {
     public interface IPointsService
     {
