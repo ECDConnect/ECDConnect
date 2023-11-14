@@ -114,17 +114,23 @@ export default function ContentList({
           (item: { type: string }) =>
             item.type === 'client profile' || item.type === 'Info Page'
         );
-        setTableData(clientProfileData);
+        setTableData(
+          clientProfileData?.length > 0 ? clientProfileData : moreInforItems
+        );
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'
         );
-        setTableData(postNatalData);
+        setTableData(
+          postNatalData?.length > 0 ? postNatalData : moreInforItems
+        );
       } else if (selectedTab === 3) {
         let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
-        setTableData(anteNatalData);
+        setTableData(
+          anteNatalData?.length > 0 ? anteNatalData : moreInforItems
+        );
       } else {
         const copyItems = contentData[getAllCall].map((item: any) => ({
           ...item,
