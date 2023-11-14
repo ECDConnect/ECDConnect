@@ -25,6 +25,7 @@ export interface UserPanelProps {
 
 export interface UserPanelCreateProps {
   closeDialog: (value: boolean) => void;
+  setFormIsDirty?: (value: boolean) => void;
 }
 
 export interface UserPanelSaveProps {
