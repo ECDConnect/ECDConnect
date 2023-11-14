@@ -1321,7 +1321,7 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
                 // Reading from audit table to retrieve data for practitioner 
-                var children = _integrationAuditRepo.GetAll().Where(x => x.Entity == "Child" &&
+                var childCount = _integrationAuditRepo.GetAll().Where(x => x.Entity == "Child" &&
                                                                            x.Property == "IsActive" &&
                                                                            x.ValueBefore == "True" &&
                                                                            x.ValueAfter == "False" &&
@@ -1329,8 +1329,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                            x.UpdatedDate.Year == today.Year &&
                                                                            x.UpdatedDate.Month == today.Month)
                                                                 .OrderBy(x => x.InsertedDate)
-                                                                .ToList();
-                var childCount = children.Count;
+                                                                .Count();
                 if (childCount > 0)
                 {
                     List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
