@@ -8,13 +8,13 @@ import {
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
-import { CoachingClub } from '@ecdlink/graphql';
 import { useHistory, useParams } from 'react-router';
 import { ClubsRouteState } from '../../index.types';
 import { practitionerSelectors } from '@/store/practitioner';
+import { DetailClubDto } from '@/models/club/club.dto';
 
 export const ClubMemberAdd: React.FC = () => {
-  const [selectedClub, setSelectedClub] = useState<CoachingClub>();
+  const [selectedClub, setSelectedClub] = useState<DetailClubDto>();
 
   const allClubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
 
@@ -37,15 +37,13 @@ export const ClubMemberAdd: React.FC = () => {
       onBack={() => history.goBack()}
     >
       <Typography type="h2" text={`Add ${firstName} to a club`} />
-      <Dropdown<CoachingClub>
+      <Dropdown<DetailClubDto>
         label="Which club would you like to add Bulelwa Mahlangu to?"
         placeholder="Tap to select club..."
-        list={
-          allClubs?.map((item) => ({
-            label: item?.name ?? '',
-            value: item,
-          })) ?? []
-        }
+        list={allClubs.map((item) => ({
+          label: item.name,
+          value: item,
+        }))}
         selectedValue={selectedClub}
         onChange={(club) => setSelectedClub?.(club)}
         className="my-4"

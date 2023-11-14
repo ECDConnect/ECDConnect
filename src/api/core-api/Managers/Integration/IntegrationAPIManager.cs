@@ -141,7 +141,7 @@ public class IntegrationAPIManager
 
         try
         {
-            string[] columns = new[] { "Guid", "Column", "DateTimeStamp", "RecordChange", "NewValue" };
+            string[] columns = new[] { "Guid", "Column", "DateTimeStamp", "RecordChange", "NewValue", "Entity", "Status" };
             
             var relatedConditions = new List<IntegrationOptionRelatedEntity>
             {

@@ -24,6 +24,7 @@ import {
   LocalStorageKeys,
   SmartStartPointsLibrary,
   getNextMonth,
+  getPreviousMonth,
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -57,8 +58,16 @@ export const SubmitIncomeStatements: React.FC = () => {
     unSubmittedExpenseItems.length > 0 ||
     statements.length > 0;
 
-  const [isThisMonthSubmitted, setIsThisMonthSubmitted] =
-    useState<boolean>(false);
+  const isThisMonthSubmitted = useMemo<boolean>(
+    () => !!statements?.find((x) => x.month === new Date().getMonth() + 1),
+    [statements]
+  );
+
+  const isLastMonthSubmitted = useMemo<boolean>(
+    () => !!statements?.find((x) => x.month === new Date().getMonth()),
+    [statements]
+  );
+
   const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
     useState<number>(0);
 
@@ -67,14 +76,21 @@ export const SubmitIncomeStatements: React.FC = () => {
     currentDate.getDate() >= IncomeStatementDates.SubmitStartDay ||
     currentDate.getDate() <= IncomeStatementDates.SubmitEndDay;
 
+  const isStatementSubmitted =
+    new Date().getDate() <= IncomeStatementDates.SubmitEndDay
+      ? isLastMonthSubmitted
+      : isThisMonthSubmitted;
+
   useEffect(() => {
     const date = new Date();
     // Outside submit
-    if (!isSubmitWindowOpen) {
-      setIsThisMonthSubmitted(
-        !!statements?.find((x) => x.month === date.getMonth() + 1)
-      );
-
+    if (
+      date.getDate() <= IncomeStatementDates.SubmitEndDay &&
+      !isLastMonthSubmitted
+    ) {
+      const nextSubmit = new Date(date.getFullYear(), date.getMonth(), 7);
+      setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
+    } else {
       const nextMonth = getNextMonth(date);
       const nextSubmit = new Date(
         nextMonth.getFullYear(),
@@ -82,35 +98,8 @@ export const SubmitIncomeStatements: React.FC = () => {
         7
       );
       setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-    } else {
-      // In window and current month
-      if (date.getDate() >= IncomeStatementDates.SubmitStartDay) {
-        setIsThisMonthSubmitted(
-          !!statements?.find((x) => x.month === date.getMonth() + 1)
-        );
-
-        const nextMonth = getNextMonth(date);
-        const nextSubmit = new Date(
-          nextMonth.getFullYear(),
-          nextMonth.getMonth(),
-          7
-        );
-        setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-      } else {
-        setIsThisMonthSubmitted(
-          !!statements?.find((x) => x.month === date.getMonth())
-        );
-
-        const nextSubmit = new Date(date.getFullYear(), date.getMonth(), 7);
-        setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
-      }
     }
-  }, [
-    statements,
-    isSubmitWindowOpen,
-    setIsThisMonthSubmitted,
-    setDaysUntilFinalSubmission,
-  ]);
+  }, [statements, isSubmitWindowOpen, setDaysUntilFinalSubmission]);
 
   const balanceNotifications = useMemo(() => {
     const lastMonthStatement = statements[statements.length - 1];
@@ -196,9 +185,21 @@ export const SubmitIncomeStatements: React.FC = () => {
     ? lastMonthStatement.balance
     : 0;
 
-  const currentMonthRecord = isThisMonthSubmitted
-    ? format(getNextMonth(currentDate), 'MMM yyyy')
-    : format(currentDate, 'MMM yyyy');
+  const currentMonthRecord = useMemo(() => {
+    var date = new Date();
+    if (
+      !isLastMonthSubmitted &&
+      date.getDate() <= IncomeStatementDates.SubmitEndDay
+    ) {
+      return format(getPreviousMonth(date), 'MMM yyyy');
+    }
+
+    if (isThisMonthSubmitted) {
+      format(getNextMonth(date), 'MMM yyyy');
+    }
+
+    return format(date, 'MMM yyyy');
+  }, [isThisMonthSubmitted, isLastMonthSubmitted]);
 
   const currentMonthTotalIncome = unSubmittedIncomeItems.reduce(
     (total, item) => {
@@ -227,18 +228,12 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const {
     setState,
-    state: { stepIndex },
+    state: { stepIndex, tourActive },
   } = useAppContext();
 
   const nextStep = () => {
     setState({ stepIndex: 1 });
   };
-
-  const walkthroughSteps = useMemo(() => {
-    return (
-      stepIndex === 7 || stepIndex === 8 || stepIndex === 9 || stepIndex === 10
-    );
-  }, [stepIndex]);
 
   useEffect(() => {
     if (stepIndex === 7) {
@@ -305,6 +300,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const celebrationCard = useMemo<JSX.Element>(() => {
     if (!isThisMonthSubmitted || pointsSubmitStatementsMessageDismissed) {
+      console.log('No message to display');
       return <></>;
     }
 
@@ -421,7 +417,7 @@ export const SubmitIncomeStatements: React.FC = () => {
   return (
     <>
       <StatementsWrapper />
-      <div className="pb-180 flex flex-col justify-center p-4">
+      <div className="pb-180 flex flex-col justify-center p-4" id="lastStep">
         {!hasIncomeStatements && (
           <div className="mt-2 flex flex-wrap justify-center p-8">
             <div className="">
@@ -446,19 +442,12 @@ export const SubmitIncomeStatements: React.FC = () => {
           </div>
         )}
         {hasIncomeStatements && (
-          <>
+          <div id="statementsDashboard">
             {isOnline &&
               !isThisMonthSubmitted &&
               isSubmitWindowOpen &&
               !isSubmittingStatement && (
-                <div
-                  className={
-                    walkthroughSteps
-                      ? 'mt-2 flex items-center pt-4'
-                      : 'flex items-center'
-                  }
-                  id="howMayDaysToSubmit"
-                >
+                <div className="flex items-center" id="howMayDaysToSubmit">
                   <StatusChip
                     backgroundColour={
                       daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
@@ -482,27 +471,29 @@ export const SubmitIncomeStatements: React.FC = () => {
 
             {!!celebrationCard && celebrationCard}
 
-            {isOnline &&
+            {((isOnline &&
               isSubmitWindowOpen &&
-              !isThisMonthSubmitted &&
-              !isSubmittingStatement && (
-                <Button
-                  shape="normal"
-                  color="primary"
-                  type="filled"
-                  icon="ArrowCircleRightIcon"
-                  onClick={() =>
-                    history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
-                  }
-                  className="mt-6 rounded-2xl"
-                >
-                  <Typography
-                    type="help"
-                    color="white"
-                    text="Submit income statement"
-                  />
-                </Button>
-              )}
+              !isStatementSubmitted &&
+              !isSubmittingStatement) ||
+              (tourActive && stepIndex === 9)) && (
+              <Button
+                shape="normal"
+                color="primary"
+                type="filled"
+                icon="ArrowCircleRightIcon"
+                onClick={() =>
+                  history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
+                }
+                className="mt-6 w-full rounded-2xl"
+                id="submitIncomeButton"
+              >
+                <Typography
+                  type="help"
+                  color="white"
+                  text="Submit income statement"
+                />
+              </Button>
+            )}
             <Card
               className="bg-primaryAccent1 mt-4 flex items-center justify-around p-4"
               borderRaduis={'xl'}
@@ -525,7 +516,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                 className="w-8/12 text-right"
               />
             </Card>
-            <table className="mt-4">
+            <table className="mt-4 w-full">
               <tbody>
                 <tr className="bg-uiBg text-textDark font-body border-secondary h-12 w-1/3 border-b px-6 py-3">
                   <th className="w-1/3"></th>
@@ -645,14 +636,14 @@ export const SubmitIncomeStatements: React.FC = () => {
               onClick={() =>
                 history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)
               }
-              className={`mt-6 mb-8 rounded-2xl ${
+              className={`mt-6 mb-8 w-full rounded-2xl ${
                 stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
               }`}
               id="seeAllStatements"
             >
               <Typography type="help" color="white" text="See all statements" />
             </Button>
-          </>
+          </div>
         )}
 
         <FADButton

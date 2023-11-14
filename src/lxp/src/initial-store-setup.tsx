@@ -1,6 +1,5 @@
 import {
   getYear,
-  getMonth,
   getWeek,
   subMonths,
   startOfQuarter,
@@ -58,6 +57,7 @@ import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
 import { pointsThunkActions } from './store/points';
+import { getClubForUser } from './store/club/club.actions';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -166,6 +166,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         const currentDate = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setMonth(currentDate.getMonth() - 12);
+
+        (async () =>
+          await appDispatch(
+            getClubForUser({ userId: userData?.id! })
+          ).unwrap())();
         (async () =>
           await appDispatch(
             pointsThunkActions.getPointsSummaryForUser({
@@ -228,7 +233,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(storyBookActions.resetStoryBookState());
     appDispatch(programmeThemeActions.resetProgrammeThemeState());
     appDispatch(contentConsentActions.resetContentConsentState());
-    appDispatch(notificationActions.resetNotificationState());
+    appDispatch(notificationActions.resetFrontendNotificationState());
     appDispatch(settingActions.resetSettingsState());
     appDispatch(analyticsActions.resetAnalyticsState());
     appDispatch(programmeActions.resetProgrammeState());
@@ -295,7 +300,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
-        monthOfYear: getMonth(new Date()) + 1,
+        monthOfYear: 0,
         weekOfYear: getWeek(new Date()),
       })
     ).unwrap();

@@ -1,7 +1,9 @@
-﻿using ECDLink.AutomatedJobs.Cron;
+﻿using ECDLink.AutomatedJobs.Anonymise;
+using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,8 +16,8 @@ public class RemovePractitioners : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public RemovePractitioners(IServiceScopeFactory scopeFactory, IScheduleConfig<RemovePractitioners> config)
-        : base(config.CronExpression, config.TimeZoneInfo)
+    public RemovePractitioners(IServiceScopeFactory scopeFactory, IScheduleConfig<RemovePractitioners> config, ILogger<RemovePractitioners> logger)
+            : base(config, logger)
     {
         _scopeFactory = scopeFactory;
     }

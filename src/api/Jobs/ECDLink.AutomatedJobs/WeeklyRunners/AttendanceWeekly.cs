@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using System.Threading.Tasks;
 using ECDLink.AutomatedJobs.Util;
+using ECDLink.AutomatedJobs.Anonymise;
+using Microsoft.Extensions.Logging;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
@@ -14,8 +16,8 @@ public class AttendanceWeekly : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public AttendanceWeekly(IServiceScopeFactory scopeFactory, IScheduleConfig<AttendanceWeekly> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
-        : base(config.CronExpression, config.TimeZoneInfo)
+    public AttendanceWeekly(IServiceScopeFactory scopeFactory, IScheduleConfig<AttendanceWeekly> config, ILogger<AttendanceWeekly> logger)
+            : base(config, logger)
     {
         _scopeFactory = scopeFactory;
     }
@@ -27,7 +29,7 @@ public class AttendanceWeekly : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
-            await service.IntegrationAttendanceByDueData();
+          await service.IntegrationAttendanceByDueData();
         }
     }
 }

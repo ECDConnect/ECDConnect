@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using System.Threading.Tasks;
 using ECDLink.AutomatedJobs.Util;
+using ECDLink.AutomatedJobs.Anonymise;
+using Microsoft.Extensions.Logging;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
@@ -14,8 +16,8 @@ public class IntegrationChanges : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<IntegrationChanges> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
-        : base(config.CronExpression, config.TimeZoneInfo)
+    public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<IntegrationChanges> config, ILogger<IntegrationChanges> logger)
+            : base(config, logger)
     {
         _scopeFactory = scopeFactory;
     }

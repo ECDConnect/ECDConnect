@@ -1,11 +1,6 @@
-import {
-  ActivityBeCreative,
-  ActivityMeetRegular,
-  CoachingClub,
-  CoachingClubBase,
-} from '@ecdlink/graphql';
-
-export type MergedCoachingClub = CoachingClubBase & CoachingClub;
+import { DetailClubDto } from '@/models/club/club.dto';
+import { ClubMeetingInput } from '@/services/ClubService/types';
+import { ActivityBeCreative, ActivityMeetRegular } from '@ecdlink/graphql';
 
 export type Points = {
   meetRegularly?: ActivityMeetRegular;
@@ -13,6 +8,17 @@ export type Points = {
 };
 
 export type ClubState = {
-  allClubsForCoach?: MergedCoachingClub[];
-  points?: Points;
+  clubForPractitioner: {
+    dateLoaded?: string;
+    club?: DetailClubDto;
+    points?: Points;
+  };
+  clubsForCoach: {
+    [clubId: string]: {
+      dateLoaded: string;
+      club: DetailClubDto;
+      points?: Points;
+    };
+  };
+  addClubMeetingSyncInputs?: ClubMeetingInput[];
 };

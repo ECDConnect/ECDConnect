@@ -37,6 +37,7 @@ const ROUTES = {
   }),
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
+    HELP: '/help/:activityId',
     WELCOME: '/welcome',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
@@ -78,6 +79,7 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
+  PRACTITIONER_PROGRESS_REPORT_SUMMARY: '/progress-summary-report',
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
   PRINCIPAL: addPrefix('/principal', {
@@ -108,6 +110,7 @@ const ROUTES = {
     }),
     CONTACT_COACH: '/contact-coach',
     COMMUNITY: addPrefix('/community', {
+      WELCOME: '/welcome',
       ACCEPT_CLUB_LEADER_ROLE: '/accept-club-leader-role',
       CLUB: addPrefix('/club', {
         SUPPORT_ROLE: addPrefix('/support-role', {

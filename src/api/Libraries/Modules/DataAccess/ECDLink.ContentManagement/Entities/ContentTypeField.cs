@@ -11,7 +11,10 @@ namespace ECDLink.ContentManagement.Entities
     {
         public int FieldOrder { get; set; }
         public string FieldName { get; set; }
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
         public int FieldTypeId { get; set; }
         
 
@@ -27,7 +30,10 @@ namespace ECDLink.ContentManagement.Entities
         public string DataLinkName { get; set; }
 
         public string DisplayName { get; set; }
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
         public bool DisplayMainTable { get; set; }
         public bool DisplayPage { get; set; }
     }

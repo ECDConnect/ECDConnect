@@ -148,26 +148,59 @@ export type ActivityBeCreativeDetail = {
   documentStatus?: Maybe<Scalars['String']>;
   documentStatusColor?: Maybe<Scalars['String']>;
   imageApproved?: Maybe<Scalars['Boolean']>;
+  imageRating: Scalars['Float'];
   monthName?: Maybe<Scalars['String']>;
   points: Scalars['Int'];
 };
 
 export type ActivityChildAttendance = {
   __typename?: 'ActivityChildAttendance';
+  monthlyRecords?: Maybe<Array<Maybe<ActivityChildAttendanceDetail>>>;
+  points: Scalars['Int'];
+  pointsColor?: Maybe<Scalars['String']>;
+};
+
+export type ActivityChildAttendanceDetail = {
+  __typename?: 'ActivityChildAttendanceDetail';
+  monthName?: Maybe<Scalars['String']>;
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
 };
 
 export type ActivityChildProgress = {
   __typename?: 'ActivityChildProgress';
+  monthlyRecords?: Maybe<Array<Maybe<ActivityChildProgressDetail>>>;
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
+};
+
+export type ActivityChildProgressDetail = {
+  __typename?: 'ActivityChildProgressDetail';
+  caregiverPerc: Scalars['Int'];
+  caregiverPoints: Scalars['Int'];
+  caregiverPointsColor?: Maybe<Scalars['String']>;
+  monthName?: Maybe<Scalars['String']>;
+  progressPerc: Scalars['Int'];
+  progressPoints: Scalars['Int'];
+  progressPointsColor?: Maybe<Scalars['String']>;
 };
 
 export type ActivityHostFamilyDays = {
   __typename?: 'ActivityHostFamilyDays';
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
+  terms?: Maybe<Array<Maybe<ActivityHostFamilyDaysDetail>>>;
+};
+
+export type ActivityHostFamilyDaysDetail = {
+  __typename?: 'ActivityHostFamilyDaysDetail';
+  description?: Maybe<Scalars['String']>;
+  documentStatus?: Maybe<Scalars['String']>;
+  documentStatusColor?: Maybe<Scalars['String']>;
+  eventName?: Maybe<Scalars['String']>;
+  points: Scalars['Int'];
+  termName?: Maybe<Scalars['String']>;
+  termNr: Scalars['Int'];
 };
 
 export type ActivityInput = {
@@ -184,8 +217,20 @@ export type ActivityInput = {
 
 export type ActivityLeaveNoOneBehind = {
   __typename?: 'ActivityLeaveNoOneBehind';
+  bluePerc: Scalars['Float'];
+  blueText?: Maybe<Scalars['String']>;
+  blueUsers?: Maybe<Array<Maybe<ClubUser>>>;
+  greenPerc: Scalars['Float'];
+  greenText?: Maybe<Scalars['String']>;
+  greenUsers?: Maybe<Array<Maybe<ClubUser>>>;
+  orangePerc: Scalars['Float'];
+  orangeText?: Maybe<Scalars['String']>;
+  orangeUsers?: Maybe<Array<Maybe<ClubUser>>>;
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
+  redPerc: Scalars['Float'];
+  redText?: Maybe<Scalars['String']>;
+  redUsers?: Maybe<Array<Maybe<ClubUser>>>;
 };
 
 export type ActivityMeetRegular = {
@@ -198,12 +243,12 @@ export type ActivityMeetRegular = {
 
 export type ActivityMeetRegularDetail = {
   __typename?: 'ActivityMeetRegularDetail';
-  meetingAbsentees?: Maybe<Array<Maybe<ClubMember>>>;
+  meetingAbsentees?: Maybe<Array<Maybe<ClubUser>>>;
   meetingAttendanceColor?: Maybe<Scalars['String']>;
   meetingAttendancePerc: Scalars['Float'];
   meetingDate: Scalars['DateTime'];
   meetingNotes?: Maybe<Scalars['String']>;
-  meetingParticipants?: Maybe<Array<Maybe<ClubMeetingRegister>>>;
+  meetingParticipants?: Maybe<Array<Maybe<ClubUser>>>;
   points: Scalars['Int'];
 };
 
@@ -338,6 +383,7 @@ export type ApplicationUser = {
   raceId?: Maybe<Scalars['UUID']>;
   reasonForLeaving?: Maybe<Scalars['String']>;
   reasonForLeavingComments?: Maybe<Scalars['String']>;
+  resetData?: Maybe<Scalars['Boolean']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   surname?: Maybe<Scalars['String']>;
   tenantId?: Maybe<Scalars['UUID']>;
@@ -399,6 +445,7 @@ export type ApplicationUserFilterInput = {
   raceId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   reasonForLeaving?: InputMaybe<StringOperationFilterInput>;
   reasonForLeavingComments?: InputMaybe<StringOperationFilterInput>;
+  resetData?: InputMaybe<BooleanOperationFilterInput>;
   surname?: InputMaybe<StringOperationFilterInput>;
   tenantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   traineeObjectData?: InputMaybe<TraineeFilterInput>;
@@ -457,6 +504,7 @@ export type ApplicationUserInput = {
   raceId?: InputMaybe<Scalars['UUID']>;
   reasonForLeaving?: InputMaybe<Scalars['String']>;
   reasonForLeavingComments?: InputMaybe<Scalars['String']>;
+  resetData?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;
   tenantId?: InputMaybe<Scalars['UUID']>;
   traineeObjectData?: InputMaybe<TraineeInput>;
@@ -513,6 +561,7 @@ export type ApplicationUserSortInput = {
   raceId?: InputMaybe<SortEnumType>;
   reasonForLeaving?: InputMaybe<SortEnumType>;
   reasonForLeavingComments?: InputMaybe<SortEnumType>;
+  resetData?: InputMaybe<SortEnumType>;
   surname?: InputMaybe<SortEnumType>;
   tenantId?: InputMaybe<SortEnumType>;
   traineeObjectData?: InputMaybe<TraineeSortInput>;
@@ -610,6 +659,14 @@ export type AuditLogTypeSortInput = {
   isActive?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type BeCreativeUploadInput = {
+  clubId: Scalars['UUID'];
+  dateUploaded: Scalars['DateTime'];
+  description?: InputMaybe<Scalars['String']>;
+  fileType?: InputMaybe<Scalars['String']>;
+  imageBase64?: InputMaybe<Scalars['String']>;
 };
 
 export type BooleanOperationFilterInput = {
@@ -1735,7 +1792,10 @@ export type ClinicSortInput = {
 
 export type Club = {
   __typename?: 'Club';
+  clubLeaders?: Maybe<Array<Maybe<ClubLeader>>>;
+  clubMembers?: Maybe<Array<Maybe<ClubMember>>>;
   clubPoints?: Maybe<Array<Maybe<ClubPoints>>>;
+  clubSupport?: Maybe<Array<Maybe<ClubSupport>>>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -1757,14 +1817,16 @@ export type ClubActivity = {
 
 export type ClubActivityUpload = {
   __typename?: 'ClubActivityUpload';
-  activityType?: Maybe<Scalars['String']>;
   club?: Maybe<Club>;
+  clubActivityUploadType?: Maybe<ClubActivityUploadType>;
+  clubActivityUploadTypeId: Scalars['UUID'];
   clubId: Scalars['UUID'];
   description?: Maybe<Scalars['String']>;
   document?: Maybe<Document>;
   documentId: Scalars['UUID'];
   id: Scalars['UUID'];
   imageApproved: Scalars['Boolean'];
+  imageRating: Scalars['Float'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   month: Scalars['Int'];
@@ -1774,15 +1836,17 @@ export type ClubActivityUpload = {
 };
 
 export type ClubActivityUploadFilterInput = {
-  activityType?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<ClubActivityUploadFilterInput>>;
   club?: InputMaybe<ClubFilterInput>;
+  clubActivityUploadType?: InputMaybe<ClubActivityUploadTypeFilterInput>;
+  clubActivityUploadTypeId?: InputMaybe<ComparableGuidOperationFilterInput>;
   clubId?: InputMaybe<ComparableGuidOperationFilterInput>;
   description?: InputMaybe<StringOperationFilterInput>;
   document?: InputMaybe<DocumentFilterInput>;
   documentId?: InputMaybe<ComparableGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   imageApproved?: InputMaybe<BooleanOperationFilterInput>;
+  imageRating?: InputMaybe<ComparableDoubleOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   month?: InputMaybe<ComparableInt32OperationFilterInput>;
@@ -1793,14 +1857,16 @@ export type ClubActivityUploadFilterInput = {
 };
 
 export type ClubActivityUploadInput = {
-  ActivityType?: InputMaybe<Scalars['String']>;
   Club?: InputMaybe<ClubInput>;
+  ClubActivityUploadType?: InputMaybe<ClubActivityUploadTypeInput>;
+  ClubActivityUploadTypeId: Scalars['UUID'];
   ClubId: Scalars['UUID'];
   Description?: InputMaybe<Scalars['String']>;
   Document?: InputMaybe<DocumentInput>;
   DocumentId: Scalars['UUID'];
   Id?: InputMaybe<Scalars['UUID']>;
   ImageApproved: Scalars['Boolean'];
+  ImageRating: Scalars['Float'];
   IsActive: Scalars['Boolean'];
   Month: Scalars['Int'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -1808,14 +1874,16 @@ export type ClubActivityUploadInput = {
 };
 
 export type ClubActivityUploadSortInput = {
-  activityType?: InputMaybe<SortEnumType>;
   club?: InputMaybe<ClubSortInput>;
+  clubActivityUploadType?: InputMaybe<ClubActivityUploadTypeSortInput>;
+  clubActivityUploadTypeId?: InputMaybe<SortEnumType>;
   clubId?: InputMaybe<SortEnumType>;
   description?: InputMaybe<SortEnumType>;
   document?: InputMaybe<DocumentSortInput>;
   documentId?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   imageApproved?: InputMaybe<SortEnumType>;
+  imageRating?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   month?: InputMaybe<SortEnumType>;
@@ -1824,9 +1892,68 @@ export type ClubActivityUploadSortInput = {
   year?: InputMaybe<SortEnumType>;
 };
 
+export type ClubActivityUploadType = {
+  __typename?: 'ClubActivityUploadType';
+  description?: Maybe<Scalars['String']>;
+  enumId: FileTypeEnum;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type ClubActivityUploadTypeFilterInput = {
+  and?: InputMaybe<Array<ClubActivityUploadTypeFilterInput>>;
+  description?: InputMaybe<StringOperationFilterInput>;
+  enumId?: InputMaybe<FileTypeEnumOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<ClubActivityUploadTypeFilterInput>>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type ClubActivityUploadTypeInput = {
+  Description?: InputMaybe<Scalars['String']>;
+  EnumId: FileTypeEnum;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Name?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type ClubActivityUploadTypeSortInput = {
+  description?: InputMaybe<SortEnumType>;
+  enumId?: InputMaybe<SortEnumType>;
+  id?: InputMaybe<SortEnumType>;
+  insertedDate?: InputMaybe<SortEnumType>;
+  isActive?: InputMaybe<SortEnumType>;
+  name?: InputMaybe<SortEnumType>;
+  updatedBy?: InputMaybe<SortEnumType>;
+  updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type ClubCoachModel = {
+  __typename?: 'ClubCoachModel';
+  aboutInfo?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
+};
+
 export type ClubFilterInput = {
   and?: InputMaybe<Array<ClubFilterInput>>;
+  clubLeaders?: InputMaybe<ListFilterInputTypeOfClubLeaderFilterInput>;
+  clubMembers?: InputMaybe<ListFilterInputTypeOfClubMemberFilterInput>;
   clubPoints?: InputMaybe<ListFilterInputTypeOfClubPointsFilterInput>;
+  clubSupport?: InputMaybe<ListFilterInputTypeOfClubSupportFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -1842,7 +1969,10 @@ export type ClubFilterInput = {
 };
 
 export type ClubInput = {
+  ClubLeaders?: InputMaybe<Array<InputMaybe<ClubLeaderInput>>>;
+  ClubMembers?: InputMaybe<Array<InputMaybe<ClubMemberInput>>>;
   ClubPoints?: InputMaybe<Array<InputMaybe<ClubPointsInput>>>;
+  ClubSupport?: InputMaybe<Array<InputMaybe<ClubSupportInput>>>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   League?: InputMaybe<LeagueInput>;
@@ -1897,6 +2027,19 @@ export type ClubLeaderInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type ClubLeaderModel = {
+  __typename?: 'ClubLeaderModel';
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  dateAssigned?: Maybe<Scalars['DateTime']>;
+  firstName?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  practitionerId: Scalars['UUID'];
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
+};
+
 export type ClubLeaderSortInput = {
   club?: InputMaybe<ClubSortInput>;
   clubId?: InputMaybe<SortEnumType>;
@@ -1926,6 +2069,8 @@ export type ClubMeeting = {
   meetingType?: Maybe<MeetingType>;
   meetingTypeId?: Maybe<Scalars['UUID']>;
   name?: Maybe<Scalars['String']>;
+  otherDescription?: Maybe<Scalars['String']>;
+  totalCaregiversAttended?: Maybe<Scalars['Int']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -1946,6 +2091,8 @@ export type ClubMeetingFilterInput = {
   meetingTypeId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<ClubMeetingFilterInput>>;
+  otherDescription?: InputMaybe<StringOperationFilterInput>;
+  totalCaregiversAttended?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
@@ -1963,6 +2110,8 @@ export type ClubMeetingInput = {
   MeetingType?: InputMaybe<MeetingTypeInput>;
   MeetingTypeId?: InputMaybe<Scalars['UUID']>;
   Name?: InputMaybe<Scalars['String']>;
+  OtherDescription?: InputMaybe<Scalars['String']>;
+  TotalCaregiversAttended?: InputMaybe<Scalars['Int']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
@@ -1973,10 +2122,14 @@ export type ClubMeetingModelInput = {
   >;
   coachAttend?: InputMaybe<Scalars['Boolean']>;
   contentValueId?: InputMaybe<Scalars['Int']>;
+  fileType?: InputMaybe<Scalars['String']>;
+  imageBase64?: InputMaybe<Scalars['String']>;
   meetingDate: Scalars['DateTime'];
   meetingNotes?: InputMaybe<Scalars['String']>;
   meetingType?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  otherDescription?: InputMaybe<Scalars['String']>;
+  totalCaregiversAttended?: InputMaybe<Scalars['Int']>;
 };
 
 export type ClubMeetingRegister = {
@@ -2050,6 +2203,8 @@ export type ClubMeetingSortInput = {
   meetingType?: InputMaybe<MeetingTypeSortInput>;
   meetingTypeId?: InputMaybe<SortEnumType>;
   name?: InputMaybe<SortEnumType>;
+  otherDescription?: InputMaybe<SortEnumType>;
+  totalCaregiversAttended?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
 };
@@ -2100,6 +2255,18 @@ export type ClubMemberInput = {
   WelcomeMessage?: InputMaybe<Scalars['String']>;
 };
 
+export type ClubMemberModel = {
+  __typename?: 'ClubMemberModel';
+  firstName?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  practitionerId: Scalars['UUID'];
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
+  welcomeMessage?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
+};
+
 export type ClubMemberSortInput = {
   club?: InputMaybe<ClubSortInput>;
   clubId?: InputMaybe<SortEnumType>;
@@ -2117,6 +2284,10 @@ export type ClubMemberSortInput = {
 
 export type ClubModel = {
   __typename?: 'ClubModel';
+  clubCoach?: Maybe<ClubCoachModel>;
+  clubLeader?: Maybe<ClubLeaderModel>;
+  clubMembers?: Maybe<Array<Maybe<ClubMemberModel>>>;
+  clubSupport?: Maybe<ClubSupportModel>;
   id: Scalars['UUID'];
   league?: Maybe<LeagueModel>;
   leagueRanking: Scalars['Int'];
@@ -2194,6 +2365,7 @@ export type ClubPointsLibrary = {
   isActive: Scalars['Boolean'];
   maxPointsYearly: Scalars['Int'];
   points: Scalars['Int'];
+  subActivity?: Maybe<Scalars['String']>;
   type?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -2211,6 +2383,7 @@ export type ClubPointsLibraryFilterInput = {
   maxPointsYearly?: InputMaybe<ComparableInt32OperationFilterInput>;
   or?: InputMaybe<Array<ClubPointsLibraryFilterInput>>;
   points?: InputMaybe<ComparableInt32OperationFilterInput>;
+  subActivity?: InputMaybe<StringOperationFilterInput>;
   type?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -2225,6 +2398,7 @@ export type ClubPointsLibraryInput = {
   IsActive: Scalars['Boolean'];
   MaxPointsYearly: Scalars['Int'];
   Points: Scalars['Int'];
+  SubActivity?: InputMaybe<Scalars['String']>;
   Type?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
@@ -2239,6 +2413,7 @@ export type ClubPointsLibrarySortInput = {
   isActive?: InputMaybe<SortEnumType>;
   maxPointsYearly?: InputMaybe<SortEnumType>;
   points?: InputMaybe<SortEnumType>;
+  subActivity?: InputMaybe<SortEnumType>;
   type?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
@@ -2320,6 +2495,19 @@ export type ClubSupportInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type ClubSupportModel = {
+  __typename?: 'ClubSupportModel';
+  dateAccepted?: Maybe<Scalars['DateTime']>;
+  dateAssigned?: Maybe<Scalars['DateTime']>;
+  firstName?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  practitionerId: Scalars['UUID'];
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
+};
+
 export type ClubSupportSortInput = {
   club?: InputMaybe<ClubSortInput>;
   clubId?: InputMaybe<SortEnumType>;
@@ -2332,6 +2520,14 @@ export type ClubSupportSortInput = {
   practitionerId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
+};
+
+export type ClubUser = {
+  __typename?: 'ClubUser';
+  firstName?: Maybe<Scalars['String']>;
+  profileImageUrl?: Maybe<Scalars['String']>;
+  surname?: Maybe<Scalars['String']>;
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type Coach = {
@@ -2445,30 +2641,6 @@ export type CoachingCircleTopicsInput = {
   startDate?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
   topicContent?: InputMaybe<Scalars['String']>;
-};
-
-export type CoachingClub = {
-  __typename?: 'CoachingClub';
-  clubActivities?: Maybe<Array<Maybe<ClubActivity>>>;
-  clubMeetings?: Maybe<Array<Maybe<ClubMeeting>>>;
-  clubMembers?: Maybe<Array<Maybe<ClubMember>>>;
-  clubSupport?: Maybe<ClubSupport>;
-  coach?: Maybe<Coach>;
-  currentClubLeader?: Maybe<ClubLeader>;
-  firstInLeague: Scalars['Boolean'];
-  id: Scalars['UUID'];
-  issuesTasks?: Maybe<Array<Maybe<IssueTask>>>;
-  league?: Maybe<League>;
-  leagueRankNr: Scalars['Int'];
-  maxClubPoints: Scalars['Int'];
-  name?: Maybe<Scalars['String']>;
-  newClubLeader?: Maybe<ClubLeader>;
-  secondaryText?: Maybe<Scalars['String']>;
-  secondaryTextColor?: Maybe<Scalars['String']>;
-  secondaryTextPriority: Scalars['Int'];
-  totalClubPoints: Scalars['Int'];
-  totalClubPointsColor?: Maybe<Scalars['String']>;
-  userId?: Maybe<Scalars['String']>;
 };
 
 export type CoachingClubBase = {
@@ -2933,6 +3105,23 @@ export type DailyProgrammeSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
+export type DetailClubModel = {
+  __typename?: 'DetailClubModel';
+  clubActivities?: Maybe<Array<Maybe<ClubActivity>>>;
+  clubCoach?: Maybe<ClubCoachModel>;
+  clubLeader?: Maybe<ClubLeaderModel>;
+  clubMembers?: Maybe<Array<Maybe<ClubMemberModel>>>;
+  clubSupport?: Maybe<ClubSupportModel>;
+  id: Scalars['UUID'];
+  incomingClubLeader?: Maybe<ClubLeaderModel>;
+  issuesTasks?: Maybe<Array<Maybe<IssueTask>>>;
+  league?: Maybe<LeagueModel>;
+  leagueRanking: Scalars['Int'];
+  maxPointsTotal: Scalars['Int'];
+  name?: Maybe<Scalars['String']>;
+  pointsTotal: Scalars['Int'];
+};
+
 export type DisplaySet = {
   __typename?: 'DisplaySet';
   color?: Maybe<Scalars['String']>;
@@ -3318,6 +3507,7 @@ export enum FileTypeEnum {
   ChildClinicCard = 'CHILD_CLINIC_CARD',
   ChildRegistrationForm = 'CHILD_REGISTRATION_FORM',
   ClassroomProfile = 'CLASSROOM_PROFILE',
+  ClubActivityUpload = 'CLUB_ACTIVITY_UPLOAD',
   Coach = 'COACH',
   ContentImage = 'CONTENT_IMAGE',
   IdentityDocument = 'IDENTITY_DOCUMENT',
@@ -4709,6 +4899,13 @@ export type ListFilterInputTypeOfClassroomGroupFilterInput = {
   some?: InputMaybe<ClassroomGroupFilterInput>;
 };
 
+export type ListFilterInputTypeOfClubLeaderFilterInput = {
+  all?: InputMaybe<ClubLeaderFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClubLeaderFilterInput>;
+  some?: InputMaybe<ClubLeaderFilterInput>;
+};
+
 export type ListFilterInputTypeOfClubMeetingRegisterFilterInput = {
   all?: InputMaybe<ClubMeetingRegisterFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -4716,11 +4913,25 @@ export type ListFilterInputTypeOfClubMeetingRegisterFilterInput = {
   some?: InputMaybe<ClubMeetingRegisterFilterInput>;
 };
 
+export type ListFilterInputTypeOfClubMemberFilterInput = {
+  all?: InputMaybe<ClubMemberFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClubMemberFilterInput>;
+  some?: InputMaybe<ClubMemberFilterInput>;
+};
+
 export type ListFilterInputTypeOfClubPointsFilterInput = {
   all?: InputMaybe<ClubPointsFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
   none?: InputMaybe<ClubPointsFilterInput>;
   some?: InputMaybe<ClubPointsFilterInput>;
+};
+
+export type ListFilterInputTypeOfClubSupportFilterInput = {
+  all?: InputMaybe<ClubSupportFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClubSupportFilterInput>;
+  some?: InputMaybe<ClubSupportFilterInput>;
 };
 
 export type ListFilterInputTypeOfDailyProgrammeFilterInput = {
@@ -4984,6 +5195,7 @@ export type MessageTemplate = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   message?: Maybe<Scalars['String']>;
+  ordering: Scalars['Int'];
   protocol?: Maybe<Scalars['String']>;
   subject?: Maybe<Scalars['String']>;
   templateType?: Maybe<Scalars['String']>;
@@ -5001,6 +5213,7 @@ export type MessageTemplateFilterInput = {
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   message?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<MessageTemplateFilterInput>>;
+  ordering?: InputMaybe<ComparableInt32OperationFilterInput>;
   protocol?: InputMaybe<StringOperationFilterInput>;
   subject?: InputMaybe<StringOperationFilterInput>;
   templateType?: InputMaybe<StringOperationFilterInput>;
@@ -5015,6 +5228,7 @@ export type MessageTemplateInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Message?: InputMaybe<Scalars['String']>;
+  Ordering: Scalars['Int'];
   Protocol?: InputMaybe<Scalars['String']>;
   Subject?: InputMaybe<Scalars['String']>;
   TemplateType?: InputMaybe<Scalars['String']>;
@@ -5029,6 +5243,7 @@ export type MessageTemplateSortInput = {
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   message?: InputMaybe<SortEnumType>;
+  ordering?: InputMaybe<SortEnumType>;
   protocol?: InputMaybe<SortEnumType>;
   subject?: InputMaybe<SortEnumType>;
   templateType?: InputMaybe<SortEnumType>;
@@ -5242,6 +5457,7 @@ export type Mutation = {
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
+  addBeCreativeActivity: Scalars['Boolean'];
   addClinic?: Maybe<Clinic>;
   addClubMeeting?: Maybe<ClubMeeting>;
   addCoachCircleMeeting?: Maybe<ClubMeeting>;
@@ -5252,6 +5468,7 @@ export type Mutation = {
   addCoachVisitInviteForTrainee?: Maybe<Visit>;
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
+  addFamilyDayMeeting?: Maybe<ClubMeeting>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
@@ -5279,7 +5496,6 @@ export type Mutation = {
   addVisitBackReferral?: Maybe<VisitBackReferral>;
   addVisitData: Scalars['Boolean'];
   autoSubmitStatement?: Maybe<ResultReturnObject>;
-  autoSubmitStatements: Scalars['Boolean'];
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   cancelRemovalFromProgramme: Scalars['Boolean'];
@@ -5303,6 +5519,7 @@ export type Mutation = {
   createClinic?: Maybe<Clinic>;
   createClub?: Maybe<Club>;
   createClubActivityUpload?: Maybe<ClubActivityUpload>;
+  createClubActivityUploadType?: Maybe<ClubActivityUploadType>;
   createClubLeader?: Maybe<ClubLeader>;
   createClubMeeting?: Maybe<ClubMeeting>;
   createClubMeetingRegister?: Maybe<ClubMeetingRegister>;
@@ -5428,6 +5645,7 @@ export type Mutation = {
   deleteClinic?: Maybe<Scalars['Boolean']>;
   deleteClub?: Maybe<Scalars['Boolean']>;
   deleteClubActivityUpload?: Maybe<Scalars['Boolean']>;
+  deleteClubActivityUploadType?: Maybe<Scalars['Boolean']>;
   deleteClubLeader?: Maybe<Scalars['Boolean']>;
   deleteClubMeeting?: Maybe<Scalars['Boolean']>;
   deleteClubMeetingRegister?: Maybe<Scalars['Boolean']>;
@@ -5561,7 +5779,6 @@ export type Mutation = {
   integrationByTrainees: Scalars['Boolean'];
   integrationClubsData: Scalars['Boolean'];
   integrationPQASmartSpaceVisitsData: Scalars['Boolean'];
-  integrationStatementsData: Scalars['Boolean'];
   integrationUpdates: Scalars['Boolean'];
   moveClubMembers: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
@@ -5688,6 +5905,7 @@ export type Mutation = {
   updateClinic?: Maybe<Clinic>;
   updateClub?: Maybe<Club>;
   updateClubActivityUpload?: Maybe<ClubActivityUpload>;
+  updateClubActivityUploadType?: Maybe<ClubActivityUploadType>;
   updateClubLeader?: Maybe<ClubLeader>;
   updateClubMeeting?: Maybe<ClubMeeting>;
   updateClubMeetingRegister?: Maybe<ClubMeetingRegister>;
@@ -5854,6 +6072,10 @@ export type MutationAddAdditionalVisitForMotherArgs = {
   input?: InputMaybe<VisitModelInput>;
 };
 
+export type MutationAddBeCreativeActivityArgs = {
+  input?: InputMaybe<BeCreativeUploadInput>;
+};
+
 export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
 };
@@ -5893,6 +6115,10 @@ export type MutationAddEventRecordArgs = {
 
 export type MutationAddEventRecordTypeArgs = {
   input?: InputMaybe<EventRecordTypeModelInput>;
+};
+
+export type MutationAddFamilyDayMeetingArgs = {
+  input?: InputMaybe<ClubMeetingModelInput>;
 };
 
 export type MutationAddFollowUpVisitForPractitionerArgs = {
@@ -6110,6 +6336,10 @@ export type MutationCreateClubArgs = {
 
 export type MutationCreateClubActivityUploadArgs = {
   input?: InputMaybe<ClubActivityUploadInput>;
+};
+
+export type MutationCreateClubActivityUploadTypeArgs = {
+  input?: InputMaybe<ClubActivityUploadTypeInput>;
 };
 
 export type MutationCreateClubLeaderArgs = {
@@ -6664,6 +6894,10 @@ export type MutationDeleteClubArgs = {
 };
 
 export type MutationDeleteClubActivityUploadArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteClubActivityUploadTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -7885,6 +8119,11 @@ export type MutationUpdateClubActivityUploadArgs = {
   input?: InputMaybe<ClubActivityUploadInput>;
 };
 
+export type MutationUpdateClubActivityUploadTypeArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<ClubActivityUploadTypeInput>;
+};
+
 export type MutationUpdateClubLeaderArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ClubLeaderInput>;
@@ -8834,6 +9073,7 @@ export type Notification = {
   messageProtocol?: Maybe<Scalars['String']>;
   messageTemplate?: Maybe<MessageTemplate>;
   messageTemplateType?: Maybe<Scalars['String']>;
+  ordering: Scalars['Int'];
   readDate?: Maybe<Scalars['DateTime']>;
   sentByUserId: Scalars['UUID'];
   status?: Maybe<Scalars['String']>;
@@ -8866,6 +9106,7 @@ export type NotificationSortInput = {
   messageProtocol?: InputMaybe<SortEnumType>;
   messageTemplate?: InputMaybe<MessageTemplateSortInput>;
   messageTemplateType?: InputMaybe<SortEnumType>;
+  ordering?: InputMaybe<SortEnumType>;
   readDate?: InputMaybe<SortEnumType>;
   sentByUserId?: InputMaybe<SortEnumType>;
   status?: InputMaybe<SortEnumType>;
@@ -9169,6 +9410,7 @@ export type PointsLibrary = {
   maxPointsPrincipalYearly: Scalars['Int'];
   points: Scalars['Int'];
   subActivity?: Maybe<Scalars['String']>;
+  todoDescription?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -9190,6 +9432,7 @@ export type PointsLibraryFilterInput = {
   or?: InputMaybe<Array<PointsLibraryFilterInput>>;
   points?: InputMaybe<ComparableInt32OperationFilterInput>;
   subActivity?: InputMaybe<StringOperationFilterInput>;
+  todoDescription?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
@@ -9208,6 +9451,7 @@ export type PointsLibraryInput = {
   MaxPointsPrincipalYearly: Scalars['Int'];
   Points: Scalars['Int'];
   SubActivity?: InputMaybe<Scalars['String']>;
+  TodoDescription?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
@@ -9226,6 +9470,7 @@ export type PointsLibrarySortInput = {
   maxPointsPrincipalYearly?: InputMaybe<SortEnumType>;
   points?: InputMaybe<SortEnumType>;
   subActivity?: InputMaybe<SortEnumType>;
+  todoDescription?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
 };
@@ -9370,6 +9615,9 @@ export type Practitioner = {
   attendedBusinessSkills?: Maybe<Scalars['Boolean']>;
   attendedChildProgress?: Maybe<Scalars['Boolean']>;
   attendedFirstAidCourse?: Maybe<Scalars['Boolean']>;
+  clubLeader?: Maybe<ClubLeader>;
+  clubMember?: Maybe<ClubMember>;
+  clubSupport?: Maybe<ClubSupport>;
   coach?: Maybe<Coach>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
@@ -9429,6 +9677,45 @@ export type PractitionerAttendance = {
   totalPresent: Scalars['Int'];
 };
 
+export type PractitionerClassProgressReportCategorySummary = {
+  __typename?: 'PractitionerClassProgressReportCategorySummary';
+  color?: Maybe<Scalars['String']>;
+  id: Scalars['Int'];
+  imageUrl?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+  subCategories?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSubCategorySummary>>
+  >;
+};
+
+export type PractitionerClassProgressReportSkillSummary = {
+  __typename?: 'PractitionerClassProgressReportSkillSummary';
+  childCount: Scalars['Int'];
+  id: Scalars['Int'];
+  skill?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerClassProgressReportSubCategorySummary = {
+  __typename?: 'PractitionerClassProgressReportSubCategorySummary';
+  childrenPerSkill?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSkillSummary>>
+  >;
+  id: Scalars['Int'];
+  imageUrl?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerClassProgressReportSummaryModel = {
+  __typename?: 'PractitionerClassProgressReportSummaryModel';
+  categories?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportCategorySummary>>
+  >;
+  childCount: Scalars['Int'];
+  className?: Maybe<Scalars['String']>;
+  practitionerFullName?: Maybe<Scalars['String']>;
+  practitionerUserId: Scalars['UUID'];
+};
+
 export type PractitionerClassroomName = {
   __typename?: 'PractitionerClassroomName';
   classRoomId: Scalars['UUID'];
@@ -9454,6 +9741,9 @@ export type PractitionerFilterInput = {
   attendedBusinessSkills?: InputMaybe<BooleanOperationFilterInput>;
   attendedChildProgress?: InputMaybe<BooleanOperationFilterInput>;
   attendedFirstAidCourse?: InputMaybe<BooleanOperationFilterInput>;
+  clubLeader?: InputMaybe<ClubLeaderFilterInput>;
+  clubMember?: InputMaybe<ClubMemberFilterInput>;
+  clubSupport?: InputMaybe<ClubSupportFilterInput>;
   coach?: InputMaybe<CoachFilterInput>;
   coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
@@ -9504,6 +9794,9 @@ export type PractitionerInput = {
   AttendedBusinessSkills?: InputMaybe<Scalars['Boolean']>;
   AttendedChildProgress?: InputMaybe<Scalars['Boolean']>;
   AttendedFirstAidCourse?: InputMaybe<Scalars['Boolean']>;
+  ClubLeader?: InputMaybe<ClubLeaderInput>;
+  ClubMember?: InputMaybe<ClubMemberInput>;
+  ClubSupport?: InputMaybe<ClubSupportInput>;
   Coach?: InputMaybe<CoachInput>;
   CoachHierarchy?: InputMaybe<Scalars['UUID']>;
   ConsentForPhoto?: InputMaybe<Scalars['Boolean']>;
@@ -9570,6 +9863,7 @@ export type PractitionerModel = {
   dateAccepted?: Maybe<Scalars['DateTime']>;
   dateLinked?: Maybe<Scalars['DateTime']>;
   dateToBeRemoved?: Maybe<Scalars['DateTime']>;
+  daysAbsentLastMonth: Scalars['Int'];
   id: Scalars['UUID'];
   isActive: Scalars['Boolean'];
   isClubLeader?: Maybe<Scalars['Boolean']>;
@@ -9577,6 +9871,8 @@ export type PractitionerModel = {
   isCompletedBusinessWalkThrough?: Maybe<Scalars['Boolean']>;
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
   isLeaving?: Maybe<Scalars['Boolean']>;
+  isNewInClub?: Maybe<Scalars['Boolean']>;
+  isOnLeave: Scalars['Boolean'];
   isOnStipend?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;
   isRegistered?: Maybe<Scalars['Boolean']>;
@@ -9605,6 +9901,14 @@ export type PractitionerNotes = {
   answers?: Maybe<Array<Maybe<VisitData>>>;
   plannedVisitDate?: Maybe<Scalars['DateTime']>;
   visitName?: Maybe<Scalars['String']>;
+};
+
+export type PractitionerProgressReportSummaryModel = {
+  __typename?: 'PractitionerProgressReportSummaryModel';
+  classSummaries?: Maybe<
+    Array<Maybe<PractitionerClassProgressReportSummaryModel>>
+  >;
+  reportingPeriod?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerRemovalHistory = {
@@ -9691,6 +9995,9 @@ export type PractitionerSortInput = {
   attendedBusinessSkills?: InputMaybe<SortEnumType>;
   attendedChildProgress?: InputMaybe<SortEnumType>;
   attendedFirstAidCourse?: InputMaybe<SortEnumType>;
+  clubLeader?: InputMaybe<ClubLeaderSortInput>;
+  clubMember?: InputMaybe<ClubMemberSortInput>;
+  clubSupport?: InputMaybe<ClubSupportSortInput>;
   coach?: InputMaybe<CoachSortInput>;
   coachHierarchy?: InputMaybe<SortEnumType>;
   consentForPhoto?: InputMaybe<SortEnumType>;
@@ -9795,6 +10102,9 @@ export type Principal = {
   attendedBusinessSkills?: Maybe<Scalars['Boolean']>;
   attendedChildProgress?: Maybe<Scalars['Boolean']>;
   attendedFirstAidCourse?: Maybe<Scalars['Boolean']>;
+  clubLeader?: Maybe<ClubLeader>;
+  clubMember?: Maybe<ClubMember>;
+  clubSupport?: Maybe<ClubSupport>;
   coach?: Maybe<Coach>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
@@ -9866,6 +10176,9 @@ export type PrincipalFilterInput = {
   attendedBusinessSkills?: InputMaybe<BooleanOperationFilterInput>;
   attendedChildProgress?: InputMaybe<BooleanOperationFilterInput>;
   attendedFirstAidCourse?: InputMaybe<BooleanOperationFilterInput>;
+  clubLeader?: InputMaybe<ClubLeaderFilterInput>;
+  clubMember?: InputMaybe<ClubMemberFilterInput>;
+  clubSupport?: InputMaybe<ClubSupportFilterInput>;
   coach?: InputMaybe<CoachFilterInput>;
   coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
@@ -9916,6 +10229,9 @@ export type PrincipalInput = {
   AttendedBusinessSkills?: InputMaybe<Scalars['Boolean']>;
   AttendedChildProgress?: InputMaybe<Scalars['Boolean']>;
   AttendedFirstAidCourse?: InputMaybe<Scalars['Boolean']>;
+  ClubLeader?: InputMaybe<ClubLeaderInput>;
+  ClubMember?: InputMaybe<ClubMemberInput>;
+  ClubSupport?: InputMaybe<ClubSupportInput>;
   Coach?: InputMaybe<CoachInput>;
   CoachHierarchy?: InputMaybe<Scalars['UUID']>;
   ConsentForPhoto?: InputMaybe<Scalars['Boolean']>;
@@ -9971,6 +10287,9 @@ export type PrincipalSortInput = {
   attendedBusinessSkills?: InputMaybe<SortEnumType>;
   attendedChildProgress?: InputMaybe<SortEnumType>;
   attendedFirstAidCourse?: InputMaybe<SortEnumType>;
+  clubLeader?: InputMaybe<ClubLeaderSortInput>;
+  clubMember?: InputMaybe<ClubMemberSortInput>;
+  clubSupport?: InputMaybe<ClubSupportSortInput>;
   coach?: InputMaybe<CoachSortInput>;
   coachHierarchy?: InputMaybe<SortEnumType>;
   consentForPhoto?: InputMaybe<SortEnumType>;
@@ -10401,6 +10720,7 @@ export type Query = {
   GetAllClinic?: Maybe<Array<Maybe<Clinic>>>;
   GetAllClub?: Maybe<Array<Maybe<Club>>>;
   GetAllClubActivityUpload?: Maybe<Array<Maybe<ClubActivityUpload>>>;
+  GetAllClubActivityUploadType?: Maybe<Array<Maybe<ClubActivityUploadType>>>;
   GetAllClubLeader?: Maybe<Array<Maybe<ClubLeader>>>;
   GetAllClubMeeting?: Maybe<Array<Maybe<ClubMeeting>>>;
   GetAllClubMeetingRegister?: Maybe<Array<Maybe<ClubMeetingRegister>>>;
@@ -10538,6 +10858,7 @@ export type Query = {
   GetClassroomGroupById?: Maybe<ClassroomGroup>;
   GetClinicById?: Maybe<Clinic>;
   GetClubActivityUploadById?: Maybe<ClubActivityUpload>;
+  GetClubActivityUploadTypeById?: Maybe<ClubActivityUploadType>;
   GetClubById?: Maybe<Club>;
   GetClubLeaderById?: Maybe<ClubLeader>;
   GetClubMeetingById?: Maybe<ClubMeeting>;
@@ -10677,9 +10998,7 @@ export type Query = {
   allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
-  allClubsDetailsForCoach?: Maybe<Array<Maybe<CoachingClub>>>;
   allClubsForCoach?: Maybe<Array<Maybe<CoachingClubBase>>>;
-  allClubsForCoachSimple?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allCoachingCircleClubsForCoach?: Maybe<CircleTabClubs>;
   allContentLanguages?: Maybe<Array<Maybe<Language>>>;
@@ -10733,6 +11052,7 @@ export type Query = {
     Array<Maybe<PractitionerClassroomName>>
   >;
   clubForUser?: Maybe<ClubModel>;
+  clubsForCoach?: Maybe<Array<Maybe<DetailClubModel>>>;
   clubsMembers?: Maybe<Array<Maybe<ClubMember>>>;
   coachByCoachUserId?: Maybe<Coach>;
   coachByPractitionerId?: Maybe<Coach>;
@@ -10759,6 +11079,7 @@ export type Query = {
   countClinic?: Maybe<Scalars['Int']>;
   countClub?: Maybe<Scalars['Int']>;
   countClubActivityUpload?: Maybe<Scalars['Int']>;
+  countClubActivityUploadType?: Maybe<Scalars['Int']>;
   countClubLeader?: Maybe<Scalars['Int']>;
   countClubMeeting?: Maybe<Scalars['Int']>;
   countClubMeetingRegister?: Maybe<Scalars['Int']>;
@@ -10896,11 +11217,13 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  practitionerProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
   practitionerTimeline?: Maybe<PractitionerTimeline>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
   previousVisitInformationForInfant?: Maybe<Progress_VisitDataStatus>;
   previousVisitInformationForMother?: Maybe<Progress_VisitDataStatus>;
   principalByUserId?: Maybe<Practitioner>;
+  principalProgressReportSummary?: Maybe<PractitionerProgressReportSummaryModel>;
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
@@ -11046,6 +11369,12 @@ export type QueryGetAllClubActivityUploadArgs = {
   order?: InputMaybe<Array<ClubActivityUploadSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClubActivityUploadFilterInput>;
+};
+
+export type QueryGetAllClubActivityUploadTypeArgs = {
+  order?: InputMaybe<Array<ClubActivityUploadTypeSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ClubActivityUploadTypeFilterInput>;
 };
 
 export type QueryGetAllClubLeaderArgs = {
@@ -11727,6 +12056,11 @@ export type QueryGetClubActivityUploadByIdArgs = {
   where?: InputMaybe<ClubActivityUploadFilterInput>;
 };
 
+export type QueryGetClubActivityUploadTypeByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<ClubActivityUploadTypeFilterInput>;
+};
+
 export type QueryGetClubByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<ClubFilterInput>;
@@ -12403,16 +12737,7 @@ export type QueryAllClassroomsForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryAllClubsDetailsForCoachArgs = {
-  clubId?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryAllClubsForCoachArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryAllClubsForCoachSimpleArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -12619,6 +12944,10 @@ export type QueryClubForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryClubsForCoachArgs = {
+  coachUserId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryClubsMembersArgs = {
   clubIds?: InputMaybe<Array<Scalars['UUID']>>;
 };
@@ -12744,6 +13073,11 @@ export type QueryCountClubArgs = {
 };
 
 export type QueryCountClubActivityUploadArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClubActivityUploadTypeArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ComparableInt32OperationFilterInput>;
 };
@@ -13382,6 +13716,11 @@ export type QueryPractitionerNewSignupMetricArgs = {
   toDate: Scalars['DateTime'];
 };
 
+export type QueryPractitionerProgressReportSummaryArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  reportingPeriod?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryPractitionerTimelineArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -13400,6 +13739,11 @@ export type QueryPreviousVisitInformationForMotherArgs = {
 
 export type QueryPrincipalByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryPrincipalProgressReportSummaryArgs = {
+  locale?: InputMaybe<Scalars['String']>;
+  reportingPeriod?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryReferralsForInfantArgs = {
@@ -15568,6 +15912,7 @@ export type Visit = {
   motherId?: Maybe<Scalars['UUID']>;
   orderDate?: Maybe<Scalars['DateTime']>;
   overallRatingColor?: Maybe<Scalars['String']>;
+  pQARating?: Maybe<PqaRating>;
   plannedVisitDate: Scalars['DateTime'];
   practitioner?: Maybe<Practitioner>;
   practitionerId?: Maybe<Scalars['UUID']>;
@@ -15823,6 +16168,7 @@ export type VisitFilterInput = {
   or?: InputMaybe<Array<VisitFilterInput>>;
   orderDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   overallRatingColor?: InputMaybe<StringOperationFilterInput>;
+  pQARating?: InputMaybe<PqaRatingFilterInput>;
   plannedVisitDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
   practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -15977,6 +16323,7 @@ export type VisitInput = {
   MotherId?: InputMaybe<Scalars['UUID']>;
   OrderDate?: InputMaybe<Scalars['DateTime']>;
   OverallRatingColor?: InputMaybe<Scalars['String']>;
+  PQARating?: InputMaybe<PqaRatingInput>;
   PlannedVisitDate: Scalars['DateTime'];
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId?: InputMaybe<Scalars['UUID']>;
@@ -16030,6 +16377,7 @@ export type VisitSortInput = {
   motherId?: InputMaybe<SortEnumType>;
   orderDate?: InputMaybe<SortEnumType>;
   overallRatingColor?: InputMaybe<SortEnumType>;
+  pQARating?: InputMaybe<PqaRatingSortInput>;
   plannedVisitDate?: InputMaybe<SortEnumType>;
   practitioner?: InputMaybe<PractitionerSortInput>;
   practitionerId?: InputMaybe<SortEnumType>;

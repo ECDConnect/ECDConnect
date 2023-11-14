@@ -6,30 +6,29 @@ import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { useSnackbar } from '@ecdlink/core';
 import { ClubsRouteState } from '../../index.types';
-import { ClubMember, CoachingClub, NewClubMemberInput } from '@ecdlink/graphql';
+import { NewClubMemberInput } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import {
   ClubActions,
   moveClubMembers,
-  getAllClubsDetailsForCoach,
+  getClubsForCoach,
 } from '@/store/club/club.actions';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ClubMemberDto, DetailClubDto } from '@/models/club/club.dto';
 
 export interface ClubMembersEditProps {
-  selectedMembers: (ClubMember | undefined)[];
-  selectedClub?: CoachingClub;
-  setSelectedMembers?: (selectedMembers: (ClubMember | undefined)[]) => void;
-  setSelectedClub?: (selectedClub: CoachingClub) => void;
+  selectedMembers: ClubMemberDto[];
+  selectedClub?: DetailClubDto;
+  setSelectedMembers?: (selectedMembers: ClubMemberDto[]) => void;
+  setSelectedClub?: (selectedClub: DetailClubDto) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
 }
 
 export const ClubMembersEdit: React.FC = () => {
-  const [selectedMembers, setSelectedMembers] = useState<
-    (ClubMember | undefined)[]
-  >([]);
-  const [selectedClub, setSelectedClub] = useState<CoachingClub>();
+  const [selectedMembers, setSelectedMembers] = useState<ClubMemberDto[]>([]);
+  const [selectedClub, setSelectedClub] = useState<DetailClubDto>();
 
   const [step, setStep] = useState(0);
   const [isEnabledButton, setIsEnabledButton] = useState(false);
@@ -53,7 +52,7 @@ export const ClubMembersEdit: React.FC = () => {
     wasLoading: wasLoadingClub,
     isRejected: isRejectedGetClub,
     error: errorGetClub,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_DETAILS_FOR_COACH);
+  } = useThunkFetchCall('clubs', ClubActions.GET_CLUBS_FOR_COACH);
 
   const onClose = useCallback(() => {
     history.push(ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', clubId));
@@ -62,15 +61,14 @@ export const ClubMembersEdit: React.FC = () => {
   const onSubmit = async () => {
     const payload: NewClubMemberInput = {
       clubId: selectedClub?.id,
-      practitionerIds: selectedMembers?.map(
-        (member) => member?.practitioner?.id
+      practitionerIds: selectedMembers.map(
+        (member) => member.practitionerId
       ) as string[],
     };
 
+    // TODO update this call to return the new club members and set it in state
     await appDispatch(moveClubMembers({ input: payload }));
-    await appDispatch(
-      getAllClubsDetailsForCoach({ userId: user?.id!, clubId })
-    );
+    await appDispatch(getClubsForCoach({ userId: user?.id! }));
   };
 
   const onSuccess = useCallback(async () => {

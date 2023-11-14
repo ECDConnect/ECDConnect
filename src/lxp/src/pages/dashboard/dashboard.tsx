@@ -63,6 +63,8 @@ import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -87,6 +89,7 @@ export interface DashboardRouteState {
 }
 
 export const Dashboard: React.FC = () => {
+  const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
@@ -103,6 +106,7 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
@@ -114,7 +118,9 @@ export const Dashboard: React.FC = () => {
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   const a = useCallback(async () => {
-    appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+    if (isOnline) {
+      appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
+    }
   }, []);
 
   useEffect(() => {
@@ -242,41 +248,49 @@ export const Dashboard: React.FC = () => {
   }, [completedSteps?.length]);
 
   const leagueCard = useMemo((): ScoreCardProps => {
-    // TODO: add integration
-    const mockedLeague = {
-      position: 4,
-      name: 'Lady Bugs',
-      currentPoints: 200,
-      maxPoints: 300,
-      isTop80Percent: true,
-    };
+    const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
+      club?.pointsTotal ?? 0,
+      club?.maxPointsTotal ?? 0
+    );
+    const mainColor =
+      !!club?.pointsTotal && isAtLeast80PercentOfTotal
+        ? 'successMain'
+        : 'secondary';
+    const bgColour =
+      !!club?.pointsTotal && isAtLeast80PercentOfTotal
+        ? 'successBg'
+        : 'secondaryAccent2';
+
     return {
       image: (
         <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
           <Badge
             className="absolute z-0 h-12 w-12"
-            fill={`var(--${
-              mockedLeague.isTop80Percent ? 'successMain' : 'secondary'
-            })`}
+            fill={`var(--${mainColor})`}
           />
           <Typography
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(mockedLeague.position)}
+            text={String(club?.leagueRanking)}
           />
         </div>
       ),
-      currentPoints: mockedLeague.currentPoints,
-      maxPoints: mockedLeague.maxPoints,
+      currentPoints: club?.pointsTotal ?? 0,
+      maxPoints: club?.maxPointsTotal ?? 0,
       barBgColour: 'white',
-      barColour: 'successMain',
-      hint: mockedLeague.name,
+      barColour: mainColor,
+      hint: club?.name ?? '',
       mainText: '',
       hintClassName: 'mt-10',
-      bgColour: 'successBg',
+      bgColour,
       textColour: 'black',
-      onClick: () => history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+      onClick: () =>
+        history.push(
+          ROUTES.PRACTITIONER.COMMUNITY[
+            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+          ]
+        ),
     };
   }, []);
 
@@ -338,13 +352,15 @@ export const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    initStaticStoreSetup();
-    if (
-      dashboardNotification?.isNew &&
-      practitioner?.progress! >= 2 &&
-      !practitioner?.isTrainee
-    ) {
-      appDispatch(notificationActions.resetNotificationState());
+    if (isOnline) {
+      initStaticStoreSetup();
+      if (
+        dashboardNotification?.isNew &&
+        practitioner?.progress! >= 2 &&
+        !practitioner?.isTrainee
+      ) {
+        appDispatch(notificationActions.resetFrontendNotificationState());
+      }
     }
   }, []);
 
@@ -663,15 +679,16 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
-    dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.icon,
-      classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
-    });
+    //EC-1909 - Suppress ticket
+    // dashboardItems.push({
+    //   title: 'Calendar',
+    //   titleIcon: 'CalendarIcon',
+    //   titleIconClassName: styles.icon,
+    //   classNames: 'bg-uiBg',
+    //   onActionClick: () => {
+    //     goToCalendar();
+    //   },
+    // });
   }
 
   if (!isCoach) {
@@ -684,15 +701,16 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
-    dashboardItems.push({
-      title: 'Calendar',
-      titleIcon: 'CalendarIcon',
-      titleIconClassName: styles.calendarIcon,
-      classNames: 'bg-uiBg',
-      onActionClick: () => {
-        goToCalendar();
-      },
-    });
+    //EC-1909 - Suppress ticket
+    // dashboardItems.push({
+    //   title: 'Calendar',
+    //   titleIcon: 'CalendarIcon',
+    //   titleIconClassName: styles.calendarIcon,
+    //   classNames: 'bg-uiBg',
+    //   onActionClick: () => {
+    //     goToCalendar();
+    //   },
+    // });
   }
 
   if (!isTrainee) {
@@ -947,7 +965,8 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {/* EC-1909 - Suppress ticket */}
+        {/* {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
@@ -964,7 +983,7 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && (
+        {isPractitioner && !!club && (
           <ScoreCard
             className="h-20"
             mainText={leagueCard.mainText}
@@ -980,7 +999,7 @@ export const Dashboard: React.FC = () => {
             image={leagueCard.image}
             textColour={leagueCard.textColour}
           />
-        )}
+        )} */}
       </div>
     </BannerWrapper>
   );

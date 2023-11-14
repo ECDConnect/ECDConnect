@@ -21,7 +21,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string CTA { get; set; }
         public string CTAText { get; set; }
         public int? TypeCode { get; set; }
-
+        public int Ordering { get; set; }
 
     }
 

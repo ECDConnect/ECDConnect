@@ -10,7 +10,10 @@ namespace ECDLink.Core.Models.ContentManagement
         public string DisplayName { get; set; }
         public bool DisplayMainTable { get; set; }
         public bool DisplayPage { get; set; }
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
         public string AssemblyDataTypeName { get; set; }
 
         public string GraphDataTypeName { get; set; }

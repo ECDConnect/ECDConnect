@@ -40,8 +40,10 @@ export const MeetRegularly: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const details = useSelector(
-    clubSelectors.getActivityMeetRegularDetailsSelector
+    clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
   );
+  const isLeader = club?.clubLeader?.userId === user?.id;
+  const isSupportRole = club?.clubSupport.userId === user?.id;
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
@@ -157,7 +159,8 @@ export const MeetRegularly: React.FC = () => {
             title={formatStringWithFirstLetterCapitalized(activityId)}
             date={new Date()}
           />
-          <ScoreCard
+          {/* EC-1909 - Suppress ticket */}
+          {/* <ScoreCard
             className="mt-5"
             mainText={String(details?.points ?? 0)}
             hint="points"
@@ -167,7 +170,7 @@ export const MeetRegularly: React.FC = () => {
             barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
             bgColour="uiBg"
             textColour="black"
-          />
+          /> */}
           {upcomingMeetings.length && (
             <div className="mt-7">
               <Typography
@@ -192,8 +195,23 @@ export const MeetRegularly: React.FC = () => {
               />
             </div>
           )}
+          {(isLeader || isSupportRole) && (
+            <Button
+              className="mt-auto"
+              icon="PlusCircleIcon"
+              type="filled"
+              textColor="white"
+              color="primary"
+              text="Add a meeting"
+              onClick={() =>
+                history.push(
+                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+                )
+              }
+            />
+          )}
           <Button
-            className="mt-auto"
+            className="mt-4"
             icon="ArrowCircleLeftIcon"
             type="outlined"
             textColor="primary"

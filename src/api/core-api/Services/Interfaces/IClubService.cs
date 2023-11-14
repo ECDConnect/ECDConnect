@@ -15,9 +15,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public bool HasAttendanceRegisterForMonth(Guid clubId, DateTime date);
         public List<ClubMember> GetClubMembers(Guid clubId);
         public List<ClubMember> GetClubsMembers(Guid[] clubId);
-        public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId); 
         public List<CoachingClubBase> GetAllClubsForCoach(string userId);
-        public List<CoachingClub> GetAllClubsDetailsForCoach(string userId, string clubId = null);
         public List<LeagueClub> GetAllLeagues(string userId);
         public List<ClubLeader> GetLeadersForClub(Guid clubId);
         public ClubSupport GetSupportForClub(Guid clubId);
@@ -42,5 +40,9 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ActivityChildAttendance GetActivityChildAttendance(Guid clubId);
         public ActivityChildProgress GetActivityChildProgress(Guid clubId);
         ClubModel GetClubForUser(string userId);
+        IEnumerable<DetailClubModel> GetClubsForCoach(string coachUserId);
+        DetailClubModel GetClubById(Guid clubId);
+        public bool AddBeCreativeActivity(BeCreativeUpload input);
+        public bool ArchiveClubUser(Guid practitionerId);
     }
 }

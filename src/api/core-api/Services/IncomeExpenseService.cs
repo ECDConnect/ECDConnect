@@ -22,6 +22,8 @@ using DinkToPdf;
 using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
+using System.Threading.Tasks;
+using DinkToPdf.Contracts;
 
 namespace ECDLink.Core.Services
 {
@@ -37,6 +39,7 @@ namespace ECDLink.Core.Services
         private IGenericRepository<StatementsContributionType, Guid> _statementsContributionTypeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
         private IPointsEngineService _pointsEngineService;
 
@@ -45,15 +48,17 @@ namespace ECDLink.Core.Services
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
 
+        private IConverter _pdfConverter;
+
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] DocumentManager documentManager,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] PersonnelService personnelService,
-            ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate, 
             IPointsEngineService pointsEngineService,
-            HierarchyEngine hierarchyEngine
+            HierarchyEngine hierarchyEngine,
+            IConverter pdfConverter
             )
         {
             _contextAccessor = contextAccessor;
@@ -68,6 +73,9 @@ namespace ECDLink.Core.Services
             _statementsContributionTypeRepo = _repoFactory.CreateGenericRepository<StatementsContributionType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
+            _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+
+            _pdfConverter = pdfConverter;
 
             _userManager = userManager;
             _documentManager = documentManager;
@@ -102,31 +110,6 @@ namespace ECDLink.Core.Services
                     return statements;
             }
             else return new List<StatementsIncomeStatement>();
-        }
-
-        private bool IsSubmitted(string userId, int year, int month)
-        {
-            var statementSubmitted = _statementsRepo.GetAll() //get all rows for year to date
-                    .Where(x => 
-                        string.Equals(x.UserId, userId) && 
-                        x.Year == year &&
-                        x.Month == month &&
-                        x.Submitted == true && 
-                        x.IsActive == true)
-                    .Any();
-            
-            return statementSubmitted;
-        }
-
-        private DateTime? GetLastSubmittedDate(string userId)
-        {
-            var row = _statementsRepo.GetAll() //get all rows for year to date
-                    .Where(x => string.Equals(x.UserId, userId))
-                    .OrderByDescending(y => y.SubmittedDate)
-                    .Select(y => y.SubmittedDate)
-                    .FirstOrDefault();
-
-            return row;            
         }
 
         public List<StatementReport> GetStatementLinesToReport(string userId, int year, int month)
@@ -411,19 +394,35 @@ namespace ECDLink.Core.Services
 
             if (!autoSubmitted)
             {
-                _pointsEngineService.CalculateIncomeStatements(userId, DateTime.Now);
+                _pointsEngineService.CalculateIncomeStatements(userId, submittedStatement);
             }
 
-            //try generating autosubmit doc
-            if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
+            // try generating autosubmit doc 
+            // TODO this sometimes fails unpredictably, most likely saving to blob store, investigate
+            try
             {
-                var pdfDoc = CreateIncomeStatementPDFDocument(userId, submittedStatement);
-                if (pdfDoc != null)
+                if (incomeItems.Any() || expenseItems.Any()) //dont create or send empty docs
                 {
-                    submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
-                }
+                    var task = Task.Run(() => CreateIncomeStatementPDFDocument(userId, submittedStatement));
 
-                _statementsRepo.Update(submittedStatement);
+                    // Force a timeout on the PDF creation which sometimes gets stuck
+                    if (task.Wait(TimeSpan.FromSeconds(10)))
+                    {
+                        if (task.Result != null)
+                        {
+                            submittedStatement.RelatedDocumentId = task.Result.Id.ToString();
+                            _statementsRepo.Update(submittedStatement);
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("PDF creation timed out");
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
             }
 
             return submittedStatement;
@@ -443,62 +442,29 @@ namespace ECDLink.Core.Services
             }
         }
 
+        /// <summary>
+        /// TODO - we can update this to take in a year/month and check users have submitted that statement
+        /// We don't really need to return a date (just a userId list) since we are only checking the last period
+        /// </summary>
+        /// <returns>List of users who have not submitted a statement for the last submit window</returns>
         public Dictionary<string, DateTime> GetUnsubmittedStatements()
         {
-            StatementsSubmitPeriod submitPeriod = GetStatementPeriod();
+            var submitPeriod = GetStatementPeriod();
+            var statementMonth = submitPeriod.Start.Month;
 
-            //find statements that have not been submitted for the previous month, assuming the SW runs the <<forceSubmitDay>> of the following month,
-            //not having a statement for any users but have income/expenses mean they have not submitted and needs to be auto submit.
-            List<Practitioner> allPractitionersToCheck = GetPractitionersDueStatements();
-            Dictionary<string, DateTime> allDuePractitioners = new Dictionary<string, DateTime>();
-            foreach (var practitioner in allPractitionersToCheck)
+            var eligablePractitioners = _practitionerRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).Select(x => x.UserId).ToList();
+            var usersWithSubmittedStatement = _statementsRepo.GetAll().Where(x => x.Month == statementMonth).Select(x => x.UserId).ToList();
+
+            var allDuePractitioners = new Dictionary<string, DateTime>();
+            foreach (var userId in eligablePractitioners)
             {
-                if (!IsSubmitted(practitioner.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month))
+                if (!usersWithSubmittedStatement.Any(x => x == userId))
                 {
-                    allDuePractitioners.Add(practitioner.UserId, submitPeriod.Start);
-                } 
-                else
-                {
-                    //get last submitted date
-                    DateTime? lastDate = GetLastSubmittedDate(practitioner.UserId);
-
-                    if (!lastDate.HasValue)
-                    {
-                        allDuePractitioners.Add(practitioner.UserId, submitPeriod.Start);
-                    } 
-                    else
-                    {
-                        DateTime dateperiodToSubmit = lastDate.Value;
-
-                        int calcMonths = 0;
-                        //check how many months to go back to catch up autosubmits to start of year
-                        for (int i = dateperiodToSubmit.Month; i <= submitPeriod.Start.Month; i++)
-                        {
-                            dateperiodToSubmit = dateperiodToSubmit.AddMonths(calcMonths);
-                            if (dateperiodToSubmit.Month == submitPeriod.Start.Month && dateperiodToSubmit.Year == submitPeriod.Start.Year)
-                            {
-                                allDuePractitioners.Add(practitioner.UserId, dateperiodToSubmit);
-                                break;
-                            } 
-                            else 
-                            {
-                                allDuePractitioners.Add(practitioner.UserId, dateperiodToSubmit);
-                            }
-                            calcMonths++;
-                        }
-                        //allDuePractitioners.Add(practitioner.UserId, dateperiodToSubmit.AddMonths(1));
-                    }
+                    allDuePractitioners.Add(userId, submitPeriod.Start);
                 }
             }
-            return allDuePractitioners;
-        }
 
-        public List<Practitioner> GetPractitionersDueStatements()
-        {
-            //find all users that are principal and/or FAA that were created before the start of the  submission period, as they would be due statements for stipends
-            StatementsSubmitPeriod submitPeriod = GetStatementPeriod();
-            var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-            return pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date).ToList();
+            return allDuePractitioners;
         }
 
         #endregion
@@ -510,7 +476,6 @@ namespace ECDLink.Core.Services
             // Data for pdf
             var htmlData = GetStatementsIncomeExpensesPDFData(statement);
 
-            var uId = _contextAccessor.HttpContext.GetUser().Id;
             var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
             nfi.NumberGroupSeparator = " ";
 
@@ -719,15 +684,14 @@ namespace ECDLink.Core.Services
             // discard result
             Console.WriteLine($"HTML FOR DOCUMENT = {html.Length}");
             var doc = _documentManager.GetPdfSettings(html, filename, "portrait");
-            var pdfConvertor = new SynchronizedConverter(new PdfTools());
-            byte[] pdf = pdfConvertor.Convert(doc);
+            byte[] pdf = _pdfConverter.Convert(doc);
             string Base64Result = Convert.ToBase64String(pdf);
 
-            PdfDocumentModel pdfDoc = new PdfDocumentModel();
+            DocumentModel pdfDoc = new DocumentModel();
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
-            pdfDoc.CreatedUserId = uId;
+            pdfDoc.CreatedUserId = _applicationUserId;
 
             return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
         }
@@ -750,9 +714,8 @@ namespace ECDLink.Core.Services
             var expenseTypes = _statementsExpenseTypeRepo.GetAll().ToList();
             var incomeTypes = _statementsIncomeTypeRepo.GetAll().ToList();
             var contributionTypes = _statementsContributionTypeRepo.GetAll().ToList();
-            var childUserIds = statement.IncomeItems.Where(x => !string.IsNullOrWhiteSpace(x.ChildUserId)).Select(x => x.ChildUserId);
+            var childUserIds = statement.IncomeItems.Where(x => !string.IsNullOrWhiteSpace(x.ChildUserId)).Select(x => x.ChildUserId).Distinct().ToList();
             var childNamesById = _childRepo.GetAll()
-                .Include(x => x.User)
                 .Where(x => childUserIds.Contains(x.UserId))
                 .Select(x => new { x.UserId, Name = $"{x.User.FirstName} {x.User.Surname}" })
                 .ToDictionary(x => x.UserId, x => x.Name);
@@ -949,7 +912,9 @@ namespace ECDLink.Core.Services
                 result.Date = income.DateReceived;
                 result.Amount = income.Amount;
                 result.PhotoProof = income.PhotoProof;
-                result.Child = childNamesById[income.ChildUserId];
+                result.Child = !string.IsNullOrEmpty(income.ChildUserId) && childNamesById.ContainsKey(income.ChildUserId) 
+                    ? childNamesById[income.ChildUserId] 
+                    : "Unknown";
                 results.Add(result);
             }
             return results;

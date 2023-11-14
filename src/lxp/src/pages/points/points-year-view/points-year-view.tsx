@@ -187,7 +187,8 @@ export const PointsYearView: React.FC = () => {
           color="black"
           text={format(new Date(), 'MMM yyyy')}
         />
-        <ScoreCard
+        {/* EC-1909 - Suppress ticket */}
+        {/* <ScoreCard
           className="mt-5"
           mainText={`${pointsTotalForYear}`}
           secondaryText="points"
@@ -208,7 +209,7 @@ export const PointsYearView: React.FC = () => {
           }
           bgColour="uiBg"
           textColour="black"
-        />
+        /> */}
         {celebrationCard}
         {pointsTotalForYear > 0 && (
           <>

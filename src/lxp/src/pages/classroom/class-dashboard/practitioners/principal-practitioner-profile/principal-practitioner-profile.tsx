@@ -13,6 +13,8 @@ import {
   Typography,
   Card,
   ActionModal,
+  MenuListDataItem,
+  StackedList,
 } from '@ecdlink/ui';
 import {
   ClassroomMetricReport,
@@ -38,6 +40,7 @@ import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   addDays,
+  format,
   getMonth,
   isFriday,
   isPast,
@@ -45,12 +48,14 @@ import {
   isToday,
   isWeekend,
   nextMonday,
+  sub,
 } from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
+import { AbsencesView } from './components/absences-view/absences-view';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -65,6 +70,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
+  const daysAbsentLastMonth = practitioner?.daysAbsentLastMonth;
   const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
 
   const practitionerAbsentees = practitioner?.absentees;
@@ -101,6 +107,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
     [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
+  const lastMonth = sub(new Date(), {
+    months: 1,
+  });
+  const [showAbsences, setShowAbsences] = useState(false);
 
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
     return item?.userId === practitionerUserId;
@@ -134,7 +144,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         }
         history.push('practitioner-reassign-class', {
           practitionerId,
-          principalPractitioner: practitionerUser,
+          // principalPractitioner: practitionerUser,
         });
 
         return;
@@ -269,6 +279,24 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
     setExisitingRemoval(undefined);
   };
+
+  const notificationItem: MenuListDataItem[] = [
+    {
+      showIcon: true,
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'border-0',
+      iconColor: 'white',
+      title: `${daysAbsentLastMonth} ${
+        daysAbsentLastMonth && Number(daysAbsentLastMonth) > 1 ? 'days' : 'day'
+      } absent last month`,
+      titleStyle: 'text-textDark semibold whitespace-normal',
+      subTitle: format(lastMonth, 'MMMM yyyy'),
+      subTitleStyle: 'text-textMid',
+      iconBackgroundColor: 'alertMain',
+      backgroundColor: 'alertBg',
+      onActionClick: () => setShowAbsences(true),
+    },
+  ];
 
   return (
     <>
@@ -408,6 +436,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Card>
             )}
+            {!currentAbsentee &&
+              daysAbsentLastMonth &&
+              Number(daysAbsentLastMonth) > 0 && (
+                <div className="my-4 flex w-11/12 justify-center">
+                  <StackedList
+                    isFullHeight={false}
+                    className={'flex w-11/12 flex-col gap-2'}
+                    listItems={notificationItem}
+                    type={'MenuList'}
+                  />
+                </div>
+              )}
             <AbsenceCard
               absenceIsToday={absenceIsToday}
               currentAbsentee={currentAbsentee}
@@ -777,6 +817,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           </>
         </div>
       )}
+      <Dialog
+        stretch={true}
+        visible={showAbsences}
+        position={DialogPosition.Full}
+      >
+        <AbsencesView
+          practitioner={practitioner!}
+          setShowAbsences={setShowAbsences}
+          lastMonth={lastMonth}
+          absences={practitionerAbsentees}
+        />
+      </Dialog>
       <Dialog
         className={'mb-16 px-4'}
         stretch={true}

@@ -18,7 +18,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             Guid? practitionerRemovalHistory = null);
 
 
-        List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? endDate = null);
+        List<AbsenteeDetail> GetAbsenteeByUser(string userId, DateTime? startDate = null, DateTime ? endDate = null);
 
         public Absentees EditAbsentee(
             string absenteeId,
@@ -27,5 +27,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             string reason = null,
             DateTime? absentDate = null,
             DateTime? absentDateEnd = null);
+
+        public int GetAbsenteeCountByUser(string userId);
     }
 }

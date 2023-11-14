@@ -25,7 +25,7 @@ import {
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import PasswordForm from '../../../../components/password-form/password-form';
 import PractitionerForm from '../../../../components/practitioner-form/practitioner-form';
@@ -33,6 +33,8 @@ import SiteAddressForm from '../../../../components/site-address-form/site-addre
 import UserDetailsForm from '../../../../components/user-details-form/user-details-form';
 import UserPanelSave from '../../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../../components/users';
+import { XIcon } from '@heroicons/react/solid';
+import { ActionModal, Dialog, DialogPosition } from '@ecdlink/ui';
 
 export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -55,6 +57,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
 
@@ -71,8 +74,11 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
-    userDetailFormState;
+  const {
+    errors: userDetailFormErrors,
+    isValid: isUserDetailValid,
+    isDirty: userDetailsIsDirty,
+  } = userDetailFormState;
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -94,8 +100,11 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
     defaultValues: { ...initialPractitionerValues, sendInvite: false },
     mode: 'onBlur',
   });
-  const { errors: practitionerFormErrors, isValid: isPractitionerValid } =
-    practitionerFormState;
+  const {
+    errors: practitionerFormErrors,
+    isValid: isPractitionerValid,
+    isDirty,
+  } = practitionerFormState;
 
   // SITE ADDRESS FORMS
   const { register: siteAddressRegister, getValues: siteAddressGetValues } =
@@ -287,8 +296,6 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   };
 
   const getIsValid = () => {
-    console.log(userDetailFormErrors);
-    console.log(practitionerFormErrors);
     let isValid = isUserDetailValid;
     if (!isPractitionerValid) isValid = false;
     return isValid ? true : false;
@@ -297,6 +304,17 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
+        {(isDirty || userDetailsIsDirty) && (
+          <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+            <button
+              className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+              onClick={() => setDisplayFormIsDirty(true)}
+            >
+              <span className="sr-only">Close panel</span>
+              <XIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+        )}
         <div className=" rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
@@ -354,6 +372,40 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
             errors={passwordFormErrors}
           />
         </div>
+        <Dialog
+          className={'mb-16 px-4'}
+          stretch
+          visible={displayFormIsDirty}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Discard unsaved changes?`}
+            detailText={'If you leave now, you will lose all of your changes.'}
+            actionButtons={[
+              {
+                text: 'Keep editing',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => setDisplayFormIsDirty(false),
+                leadingIcon: 'PencilIcon',
+              },
+              {
+                text: 'Discard changes',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  emitCloseDialog(false);
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        </Dialog>
       </>
     );
   };

@@ -13,7 +13,7 @@ export const MeetingDetails: React.FC = () => {
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const details = useSelector(
-    clubSelectors.getActivityMeetRegularDetailsSelector
+    clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
   );
 
   const history = useHistory();
@@ -80,23 +80,27 @@ export const MeetingDetails: React.FC = () => {
           {(meeting as ActivityMeetRegularDetail)?.meetingParticipants?.map(
             (member) => (
               <Item
-                key={member?.practitioner?.user?.id}
-                name={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+                key={member?.userId}
+                name={`${member?.firstName} ${member?.surname}`}
               />
             )
           )}
-          <Typography
-            type="h4"
-            text="These practitioners were absent:"
-            className="mt-5 mb-2"
-          />
-          {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.map(
-            (member) => (
-              <Item
-                key={member?.practitioner?.user?.id}
-                name={`${member?.practitioner?.user?.firstName} ${member?.practitioner?.user?.surname}`}
+          {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.length && (
+            <>
+              <Typography
+                type="h4"
+                text="These practitioners were absent:"
+                className="mt-5 mb-2"
               />
-            )
+              {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.map(
+                (member) => (
+                  <Item
+                    key={member?.userId}
+                    name={`${member?.firstName} ${member?.surname}`}
+                  />
+                )
+              )}
+            </>
           )}
         </>
       )}

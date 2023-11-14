@@ -1,10 +1,12 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.GraphApi.Mutations;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -23,9 +25,11 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,7 +38,7 @@ using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 {
-    public class PersonnelService
+    public class PersonnelService : IPersonnelService
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
@@ -66,6 +70,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private INotificationService _notificationService;
         private IClubService _clubService;
         private IAbsenteeService _absenteeService;
+        private ILogger<UserMutationExtension> _logger;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -79,7 +84,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             [Service] IClubService clubService,
             [Service] IAbsenteeService absenteeService,
             UserManager<ApplicationUser> userManager,
-            [Service] HierarchyEngine hierarchyEngine)
+            [Service] HierarchyEngine hierarchyEngine,
+            [Service] ILogger<UserMutationExtension> logger)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -112,6 +118,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _notificationService = notificationService;
             _clubService = clubService;
             _absenteeService = absenteeService;
+            _logger = logger;
         }
 
 
@@ -140,8 +147,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
         {
             PractitionerModel practitionerRecord = new PractitionerModel();
-
-            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
 
             practitionerRecord.Id = practitioner.Id;
             practitionerRecord.UserId = practitioner.UserId;
@@ -173,16 +178,28 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.SetupTraineeInitiated = practitioner.SetupTraineeInitiated;
             practitionerRecord.IsOnStipend = practitioner.IsOnStipend;
             practitionerRecord.StipendType = practitioner.StipendType;
-            practitionerRecord.ClubId = clubMember?.Club?.Id;
-            practitionerRecord.ClubName = clubMember?.Club?.Name;
-            practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
-            practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
 
-            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
+            ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
+            if (clubMember != null)
+            {
+                practitionerRecord.ClubId = clubMember?.Club?.Id;
+                practitionerRecord.ClubName = clubMember?.Club?.Name;
+                practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
+                practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
+                practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
+            }
+
+            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth(), DateTime.Now.AddDays(30).Date);
             if (absentees.Any())
             {
                 practitionerRecord.Absentees = absentees;
+                //check if currently on leave?
+                if (absentees.Where(x => x.AbsentDate.Date <= DateTime.Now.Date && x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date >= DateTime.Now.Date).Any() )
+                {
+                    practitionerRecord.IsOnLeave = true;
+                }
             }
+            practitionerRecord.DaysAbsentLastMonth = _absenteeService.GetAbsenteeCountByUser(practitioner.UserId);
 
             return practitionerRecord;
         }
@@ -323,8 +340,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         }
 
         public List<Practitioner> GetAllPractitionersForPrincipal(string userId)
-        {            
-            List<Practitioner> practitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
+        {
+            List<Practitioner> practitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(Guid.Parse(userId))).ToList();
 
             return practitioners;
         }
@@ -402,13 +419,31 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 //now add user to principal
                 var userToPromote = _userManager.FindByIdAsync(newPrincipalUserId).Result;
                 IdentityResult result = null;
+                _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.PRACTITIONER, userToPromote.Id, _applicationUserId);
                 result = _userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
-                if (isRolePrincipal) { result = _userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; }
-                if (isRoleFAA) { result = _userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; }
+                if (isRolePrincipal) 
+                {
+                    _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.PRINCIPAL, userToPromote.Id, _applicationUserId); 
+                    result = _userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result; 
+                }
+                if (isRoleFAA) 
+                {
+                    _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(1)]", Roles.ADMINISTRATOR, userToPromote.Id, _applicationUserId);
+                    result = _userManager.AddToRoleAsync(userToPromote, Roles.ADMINISTRATOR).Result; 
+                }
 
                 var userToDemote = _userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                if (isRolePrincipal) { result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; }
-                if (isRoleFAA) { result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; }
+                if (isRolePrincipal) 
+                {
+                    _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.PRINCIPAL, userToDemote.Id, _applicationUserId);
+                    result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result; 
+                }
+                if (isRoleFAA) 
+                {
+                    _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.ADMINISTRATOR, userToDemote.Id, _applicationUserId);
+                    result = _userManager.RemoveFromRoleAsync(userToDemote, Roles.ADMINISTRATOR).Result; 
+                }
+                _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.SwitchPrincipal(2)]", Roles.PRACTITIONER, userToDemote.Id, _applicationUserId);
                 result = _userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;
@@ -425,7 +460,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user to principal
                 var user = _userManager.FindByIdAsync(userId).Result;
+                _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.PromotePractitionerToPrincipal]", Roles.PRACTITIONER, user.Id, _applicationUserId);
                 var remove = _userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER).Result;
+                _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.PromotePractitionerToPrincipal]", Roles.PRINCIPAL, user.Id, _applicationUserId);
                 var add = _userManager.AddToRoleAsync(user, Roles.PRINCIPAL).Result;
 
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -457,7 +494,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies
-                List<Practitioner> allPrincipalPractitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
+                List<Practitioner> allPrincipalPractitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(Guid.Parse(userId))).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     foreach (var practi in allPrincipalPractitioners)
@@ -470,7 +507,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user back to practitioner
                 var user = _userManager.FindByIdAsync(userId).Result;
+                _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.DemotePractitionerAsPrincipal]", Roles.PRINCIPAL, user.Id, _applicationUserId);
                 _userManager.RemoveFromRoleAsync(user, Roles.PRINCIPAL);
+                _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.DemotePractitionerAsPrincipal]", Roles.PRACTITIONER, user.Id, _applicationUserId);
                 _userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
 
                 //send notifications that user has been demoted
@@ -768,10 +807,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 user.LockoutEnd = DateTime.MaxValue;
                 var userResult = await _userManager.UpdateAsync(user);
 
+                // Archive club member/leader/support
+                _clubService.ArchiveClubUser(practitioner.Id);
+
                 // Remove any roles
                 var roles = _userManager.GetRolesAsync(user).Result;
                 foreach (var role in roles)
                 {
+                    _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [PersonnelService.DeActivatePractitionerAsync]", role, user.Id, _applicationUserId);
                     var result = _userManager.RemoveFromRoleAsync(user, role).Result;
                 }
 
@@ -785,7 +828,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
             practitioner.IsCompletedBusinessWalkThrough = true;
             practitioner.UpdatedBy = _applicationUserId;
-            practitioner.UpdatedDate = DateTime.UtcNow;
+            practitioner.UpdatedDate = DateTime.Now;
             _practiGenericRepo.Update(practitioner);
             return true;
         }

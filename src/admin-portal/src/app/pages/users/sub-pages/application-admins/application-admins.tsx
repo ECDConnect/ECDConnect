@@ -34,6 +34,7 @@ export default function ApplicationAdmins() {
 
   const [selectedPage, setSelectedPage] = useState<number>(1);
   const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
+  const [formIsDirty, setFormIsDirty] = useState(false);
 
   let userStatus = statusFilter === 'active' ? true : false;
 

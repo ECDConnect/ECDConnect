@@ -232,6 +232,7 @@ class PractitionerService {
           GetPractitionerById(id: $id) {
             id
             userId
+            isNewInClub
             user {
               gender {
                 description
@@ -310,6 +311,7 @@ class PractitionerService {
           practitionerByUserId(userId: $userId) {
             id
             userId
+            isNewInClub
             user {
               gender {
                 description
@@ -365,6 +367,16 @@ class PractitionerService {
             isCompletedBusinessWalkThrough
             clubId
             clubName
+            absentees {
+              absentDate
+              absentDateEnd
+              className
+              classroomGroupId
+              reason
+              reassignedToPerson
+              reassignedToUserId
+              absenteeId
+          }
           }
         }
       `,
@@ -403,6 +415,7 @@ class PractitionerService {
             dateLinked
             dateAccepted
             dateToBeRemoved
+            daysAbsentLastMonth
             siteAddress {
               addressLine1
               addressLine2

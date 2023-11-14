@@ -10,6 +10,7 @@ import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
+import { getDayOfYear } from 'date-fns';
 
 export const ClassProgrammeAttendanceList: React.FC<
   ClassProgrammeAttendanceListProps
@@ -17,6 +18,7 @@ export const ClassProgrammeAttendanceList: React.FC<
   isPrimaryClass,
   classroomGroup,
   onAttendanceUpdated,
+  attendanceDate,
   isMultipleClasses,
 }) => {
   const [attendanceList, setAttendanceList] = useState<
@@ -33,7 +35,10 @@ export const ClassProgrammeAttendanceList: React.FC<
     if (!classroomGroup) return;
     const filteredLearners = [];
     const _allLearners = allLearners.filter(
-      (x) => !Boolean(x.stoppedAttendance)
+      (x) =>
+        !Boolean(x.stoppedAttendance) &&
+        getDayOfYear(attendanceDate) >=
+          getDayOfYear(new Date(x.startedAttendance))
     );
 
     const uniqueLearners = _allLearners.filter((object, index, array) => {
