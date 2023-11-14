@@ -11,9 +11,9 @@ namespace ECDLink.DataAccessLayer.Hierarchy.Entities
     {
         public string ParentId { get; set; }
 
-        [ForeignKey(nameof(UserId))]
+        //[ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         public string UserType { get; set; }
 

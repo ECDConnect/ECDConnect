@@ -27,7 +27,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         {
             get
             {
-                return _hierarchyEngine.GetUserHierarchy(_userId);
+                return _hierarchyEngine.GetUserHierarchy(_userId.ToString());
             }
         }
 
@@ -67,12 +67,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         public override IQueryable<T> GetAll(PagedQueryInput pagingInput = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            if (string.IsNullOrEmpty(_userId))
+            if (!_userId.HasValue)
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
 
-            var user = _userManager.FindByIdAsync(_userId).Result;
+            var user = _userManager.FindByIdAsync(_userId.ToString()).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             
@@ -94,7 +94,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 try
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
                     if (hh.Count > 0)
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
@@ -131,7 +131,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
                     if (hh != null)
                     {
                         if (!hh.Contains(castRecord.Hierarchy))
@@ -165,7 +165,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
                     if (hh != null)
                     {
                         if (!hh.Contains(castRecord.Hierarchy))
@@ -181,7 +181,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
         public override T GetByUserId(string id)
         {
-            if (string.IsNullOrEmpty(_userId))
+            if (!_userId.HasValue)
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
@@ -199,7 +199,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 }
 
                 //hierarchy confirmation allowing this to be viewed
-                var user = _userManager.FindByIdAsync(_userId).Result;
+                var user = _userManager.FindByIdAsync(_userId.ToString()).Result;
                 var roles = _userManager.GetRolesAsync(user).Result;
                 var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 
@@ -207,7 +207,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))
@@ -228,7 +228,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         }
         public override List<T> GetListByUserId(string id)
         {
-            if (string.IsNullOrEmpty(_userId))
+            if (!_userId.HasValue)
             {
                 throw new UnauthorizedAccessException("User does not have access to this data");
             }
@@ -246,7 +246,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 }
 
                 //hierarchy confirmation allowing this to be viewed
-                var user = _userManager.FindByIdAsync(_userId).Result;
+                var user = _userManager.FindByIdAsync(_userId.ToString()).Result;
                 var roles = _userManager.GetRolesAsync(user).Result;
                 var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 
@@ -254,7 +254,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId);
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))
@@ -280,7 +280,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var typedEntity = entity as IUserType;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId, typedEntity.UserId.ToString());
+            var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId.ToString(), typedEntity.UserId.ToString());
 
             typedEntity.Hierarchy = HierarchyHelper.AppendHierarchy(Hierarchy, hierarchyEntity.Key.ToString());
 
@@ -296,7 +296,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             context.SaveChanges();
 
-            _domainEventService.NotifyCreate(_userId, entity);
+            _domainEventService.NotifyCreate(_userId.ToString(), entity);
 
             //Populate Audit records
             if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
@@ -345,7 +345,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 // Do not modify TenantId.
                 entities.Entry(dbEntity).Property(e => e.TenantId).IsModified = false;
 
-                _domainEventService.NotifyUpdate<T>(_userId, entity);
+                _domainEventService.NotifyUpdate<T>(_userId.ToString(), entity);
 
 
             }

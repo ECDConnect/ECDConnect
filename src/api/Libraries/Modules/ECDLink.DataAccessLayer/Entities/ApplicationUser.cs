@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Users;
 using HotChocolate;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -11,6 +12,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
+    [PrimaryKey(nameof(UserId))]
     public class ApplicationUser : ApplicationIdentityUser, IMultiUserType, ITrackableType, RaceJoin<Guid?>, GenderJoin<Guid?>
     {
         [ForeignKey(nameof(RaceId))]
@@ -31,7 +33,6 @@ namespace ECDLink.DataAccessLayer.Entities
 
         [GraphIgnoreInput]
         public override string Id { get => base.Id; set => base.Id = value; }
-        [Key]
         public Guid UserId { get; set; }
         public override string UserName { get => base.UserName; set => base.UserName = value; }
         public override string NormalizedUserName { get => base.NormalizedUserName; set => base.NormalizedUserName = value; }
@@ -60,12 +61,17 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ReasonForLeaving { get; set; }
         public string ReasonForLeavingComments { get; set; }
 
+        [NotMapped]
         public virtual Franchisor franchisorObjectData { get; set; }
+        [NotMapped] 
         public virtual Coach coachObjectData { get; set; }
         [NotMapped]
         public virtual Practitioner principalObjectData { get; set; }
+        [NotMapped] 
         public virtual Practitioner practitionerObjectData { get; set; }
+        [NotMapped] 
         public virtual Child childObjectData { get; set; }
+        [NotMapped] 
         public virtual Trainee traineeObjectData { get; set; }
 
         public override DateTimeOffset? LockoutEnd { get => base.LockoutEnd; set => base.LockoutEnd = value; }

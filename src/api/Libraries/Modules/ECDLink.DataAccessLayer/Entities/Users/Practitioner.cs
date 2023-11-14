@@ -35,7 +35,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public int? MonthSinceFranchisee { get; set; }
         public virtual ICollection<Document> Documents { get; set; }
 
-        [ForeignKey(nameof(UserId))]
+        //[ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
 

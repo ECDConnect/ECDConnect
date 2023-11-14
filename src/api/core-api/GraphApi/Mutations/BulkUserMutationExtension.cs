@@ -113,8 +113,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     continue;
                 }
                 var insertedDate = DateTime.UtcNow;
+                var userId = Guid.NewGuid();
                 var user = new ApplicationUser()
                 {
+                    Id = userId.ToString(),
                     IdNumber = id,
                     UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                     FirstName = firstName,
@@ -127,7 +129,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ContactPreference = MessageTypeConstants.SMS,
                     TenantId = tenantId,
                     InsertedDate = insertedDate,
-                    IsActive = true
+                    IsActive = true,
+                    UserId = userId
                 };
                 userImportList.Add(user);
 
@@ -398,8 +401,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     
                     var insertedDate = DateTime.UtcNow;
 
+                    var userId = Guid.NewGuid();
                     var user = new ApplicationUser()
                     {
+                        Id = userId.ToString(),
                         IdNumber = id,
                         UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                         FirstName = firstName,
@@ -413,7 +418,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ContactPreference = MessageTypeConstants.SMS,
                         TenantId = tenantId,
                         InsertedDate = insertedDate,
-                        IsActive = true
+                        IsActive = true,
+                        UserId = userId,
                     };
                     userImportList.Add(user);
 

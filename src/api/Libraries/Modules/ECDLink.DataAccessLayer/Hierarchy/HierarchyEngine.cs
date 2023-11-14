@@ -84,7 +84,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 Id = Guid.NewGuid(),
                 NamedTypePath = HierarchyHelper.AppendHierarchy(parentEntity?.NamedTypePath ?? "System.", hierarchyType.Type),
                 ParentId = parentId,
-                UserId = childId,
+                UserId = Guid.Parse(childId),
                 UserType = hierarchyType.Type,
                 TenantId = tenantId
             };
@@ -326,8 +326,10 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
 
+            var guidUserIds = userIds.Select(x => Guid.Parse(x)).ToList();
+
             var entites = userHierarchyRepo.GetAll()
-                .Where(x => userIds.Contains(x.UserId))
+                .Where(x => guidUserIds.Contains(x.UserId))
                 .Select(e => e.Hierarchy);
 
             return entites;
@@ -362,7 +364,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                                .OrderBy(x => x.Key)
                                .FirstOrDefault();
 
-            return entity?.UserId;
+            return entity?.UserId.ToString();
         }
 
         public string GetIntegrationUserId()
@@ -373,7 +375,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                                .OrderBy(x => x.Key)
                                .FirstOrDefault();
 
-            return entity?.UserId;
+            return entity?.UserId.ToString();
         }
 
         public string GetSuperAdminUserId()
@@ -385,7 +387,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                                .OrderBy(x => x.Key)
                                .FirstOrDefault();
 
-            return entity?.UserId;
+            return entity?.UserId.ToString();
         }
 
         public bool RemoveHierarchy(string userId)

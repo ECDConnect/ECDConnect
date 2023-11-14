@@ -307,13 +307,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Guid classgroupId)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var userId = Guid.NewGuid();
             var appUser = new ApplicationUser
             {
+                Id = userId.ToString(),
                 FirstName = firstname,
                 Surname = surname,
                 UserName = $"External_Edit_{Guid.NewGuid()}",
                 IsImported = false,
                 IsActive = true,
+                UserId = userId
             };
             appUser.TenantId = tenantId;
             await userManager.CreateAsync(appUser);

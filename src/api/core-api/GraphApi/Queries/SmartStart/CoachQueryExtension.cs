@@ -194,7 +194,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var clubRepo = repoFactory.CreateRepository<Club>(userContext: uId);
             var clubMeetingRepo = repoFactory.CreateRepository<ClubMeeting>(userContext: uId);
 
-            List<Club> allClubs = clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<Club> allClubs = clubRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.IsActive == true).OrderBy(x => x.Name).ToList();
             List<CircleClub> noMeetings = new List<CircleClub>();
             List<CircleClub> haveMeetings = new List<CircleClub>();
             CircleClub circleClub = new CircleClub();

@@ -1,4 +1,5 @@
 using ECDLink.Core.Helpers;
+using ECDLink.DataAccessLayer.Context.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
@@ -30,6 +31,7 @@ using ECDLink.Security.JwtSecurity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Namotion.Reflection;
 
 namespace ECDLink.DataAccessLayer.Context
 {
@@ -196,65 +198,167 @@ namespace ECDLink.DataAccessLayer.Context
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<Absentees>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
             builder.Entity<ApplicationUser>(x =>
             {
+                x.HasAlternateKey(e => e.UserId);
                 x.Property(p => p.PhoneNumber).HasConversion(
                           v => UserHelper.NormalizePhoneNumber(v),
                           v => v);
+                x.Ignore(c => c.childObjectData);
             });
-
-            builder.Entity<RolePermission>(x =>
+            builder.Entity<Attendance>(x =>
             {
-                x.HasKey(c => new { c.PermissionId, c.RoleId });
+                x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear });
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             });
-
-            builder.Entity<NavigationPermission>(x =>
+            builder.Entity<AuditLog>(x =>
             {
-                x.HasKey(c => new { c.PermissionId, c.NavigationId });
+                x.HasNoKey();
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
             });
-
-            builder.Entity<Permission>(entity =>
+            builder.Entity<CalendarEvent>(x =>
             {
-                entity.Property(x => x.InsertedDate).HasDefaultValueSql("(now())");
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             });
-
-            builder.Entity<UserGrant>(x =>
+            builder.Entity<CalendarEventParticipant>(x =>
             {
-                x.HasKey(e => new { e.GrantId, e.UserId });
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                x.HasOne<ApplicationUser>("ParticipantUser").WithMany().HasForeignKey(e => e.ParticipantUserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             });
-
-            builder.Entity<UserConsent>(x =>
+            builder.Entity<CalendarEventParticipant>(x =>
             {
-                x.HasKey(e => new { e.ConsentId, e.UserId });
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             });
-
             builder.Entity<CareGiverGrant>(x =>
             {
                 x.HasKey(e => new { e.GrantId, e.Id });
             });
-            builder.Entity<Attendance>(x =>
+            builder.Entity<Child>(x =>
             {
-                x.HasKey(e => new { e.ClassroomProgrammeId, e.UserId, e.WeekOfYear }).;
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             });
-
-            builder.Entity<AuditLog>(x =>
-            {
-                x.HasNoKey();
-            });
-
-            builder.Entity<Learner>(x =>
-            {
-                x.HasKey(e => new { e.ClassroomGroupId, e.UserId, e.Id });
-            });
-
             builder.Entity<ChildProgressReport>(x =>
             {
                 x.HasKey(e => new { e.Id });
             });
-
+            builder.Entity<ClassReassignmentHistory>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Classroom>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Club>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<ClubPoints>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Coach>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Document>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Franchisor>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<HealthCareWorker>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Infant>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<JobNotification>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Learner>(x =>
+            {
+                x.HasKey(e => new { e.ClassroomGroupId, e.UserId, e.Id });
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<License>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Mother>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<NavigationPermission>(x =>
+            {
+                x.HasKey(c => new { c.PermissionId, c.NavigationId });
+            });
+            builder.Entity<NavigationPermission>(x =>
+            {
+                x.HasKey(c => new { c.PermissionId, c.NavigationId });
+            });
+            builder.Entity<Note>(x =>
+            {
+                //x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey("UserId").HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                x.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Permission>(x =>
+            {
+                x.Property(p => p.InsertedDate).HasDefaultValueSql("(now())");
+            });
+            builder.Entity<PointsUser>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<PointsUserSummary>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Practitioner>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<Principal>(x =>
+            {
+                x.HasOne<Practitioner>().WithOne().HasForeignKey<Principal>(e => e.Id);
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<PractitionerRemovalHistory>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<RolePermission>(x =>
+            {
+                x.HasKey(c => new { c.PermissionId, c.RoleId });
+            });
+            builder.Entity<TeamLead>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
             builder.Entity<TenantEntity>(x =>
             {
                 x.HasKey(e => new { e.Id, e.SiteAddress });
+            });
+            builder.Entity<Trainee>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+            });
+            builder.Entity<UserGrant>(x =>
+            {
+                x.HasKey(e => new { e.GrantId, e.UserId });
+            });
+            builder.Entity<UserHierarchyEntity>(x =>
+            {
+                x.HasOne<ApplicationUser>("User").WithMany().HasForeignKey(e => e.UserId).HasPrincipalKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

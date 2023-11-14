@@ -21,6 +21,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
     public class CalendarEventParticipantModel
     {
         public string Id { get; set; }
-        public string ParticipantUserId { get; set; }
+        public Guid ParticipantUserId { get; set; }
     }
 }

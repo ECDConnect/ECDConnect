@@ -68,9 +68,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             //now fix them
             //for children, determine the unused and delete - 
-            List<string> allAffectedChildren = duplicatedChildHierarchies.Select(c => c.UserId).Distinct().ToList();
-            List<string> allAffectedPracs = duplicatedPracHierarchies.Select(c => c.UserId).Distinct().ToList();
-            List<string> allAffectedCoaches = duplicatedCoachHierarchies.Select(c => c.UserId).Distinct().ToList();
+            List<string> allAffectedChildren = duplicatedChildHierarchies.Select(c => c.UserId.ToString()).Distinct().ToList();
+            List<string> allAffectedPracs = duplicatedPracHierarchies.Select(c => c.UserId.ToString()).Distinct().ToList();
+            List<string> allAffectedCoaches = duplicatedCoachHierarchies.Select(c => c.UserId.ToString()).Distinct().ToList();
 
             foreach (var child in allAffectedChildren)
             {

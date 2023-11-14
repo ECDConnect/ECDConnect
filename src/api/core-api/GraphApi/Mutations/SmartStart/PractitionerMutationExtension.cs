@@ -316,7 +316,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 UserId = Guid.Parse(practitionerUserId),
                 ClassroomId = Guid.Parse(classroomId),
-                RemovedByUserId = uId,
+                RemovedByUserId = Guid.Parse(uId),
                 ReasonForPractitionerLeavingProgrammeId = Guid.Parse(reasonForPractitionerLeavingProgrammeId),
                 ReasonDetails = reasonDetails,
                 DateOfRemoval = dateOfRemoval,

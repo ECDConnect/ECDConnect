@@ -24,7 +24,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string PhotoProof { get; set; }
         public bool Submitted { get; set; }
         public DateTime DatePaid { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         [GraphQLIgnore]
         [ForeignKey(nameof(StatementsIncomeStatementId))]
         public virtual StatementsIncomeStatement StatementsIncomeStatement { get; set; }

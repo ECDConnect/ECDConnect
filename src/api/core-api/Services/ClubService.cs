@@ -608,7 +608,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 Id = Guid.NewGuid(),
                 Name = input.Name,
-                UserId = input.UserId,
+                UserId = Guid.Parse(input.UserId),
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = _applicationUserId,
@@ -714,7 +714,7 @@ namespace EcdLink.Api.CoreApi.Services
                 foreach (var club in clubs) {
                     leagueClubDetail = new LeagueClubDetail();
                     leagueClubDetail.Id = club.Id;
-                    leagueClubDetail.UserId = club.UserId;
+                    leagueClubDetail.UserId = club.UserId.ToString();
                     leagueClubDetail.Name = club.Name;
                     leagueClubDetail.CoachName = "Coach: " + club.User.FullName;
                     if (club.User.Id == userId)
@@ -736,13 +736,13 @@ namespace EcdLink.Api.CoreApi.Services
         {
             return _clubRepo
                 .GetAll()
-                .Where(x => x.UserId == userId && x.IsActive == true)
+                .Where(x => x.UserId == Guid.Parse(userId) && x.IsActive == true)
                 .OrderBy(x => x.Name)
                 .Select(club => new CoachingClubBase
                 {
                     Id = club.Id,
                     Name = club.Name,
-                    UserId = club.UserId,
+                    UserId = club.UserId.ToString(),
                 })
                 .ToList();
         }
@@ -766,7 +766,7 @@ namespace EcdLink.Api.CoreApi.Services
             bool firstInLeague = false;
             double pointsEarned = 0;
 
-            List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderBy(x => x.Name).ToList();
+            List<Club> clubs = _clubRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.IsActive == true).OrderBy(x => x.Name).ToList();
 
             List<CoachingClubBase> result = new List<CoachingClubBase>();
             foreach (var club in clubs)
@@ -941,7 +941,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         Id = club.Id,
                         Name = club.Name,
-                        UserId = club.UserId,
+                        UserId = club.UserId.ToString(),
                         SecondaryText = secondaryText,
                         SecondaryTextColor = secondaryTextColor,
                         SecondaryTextPriority = secondaryTextPriority,
@@ -1329,7 +1329,7 @@ namespace EcdLink.Api.CoreApi.Services
         public IEnumerable<DetailClubModel> GetClubsForCoach(string coachUserId)
         {
             var clubs = _clubRepo.GetAll()
-                .Where(x => x.UserId == coachUserId && x.IsActive) // Do we need to check the club is active too?
+                .Where(x => x.UserId == Guid.Parse(coachUserId) && x.IsActive) // Do we need to check the club is active too?
                 //Points
                 .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
                 //League
@@ -1559,7 +1559,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     ChangeType = "Insert",
                     Entity = "ClubActivityUpload",
-                    UserId = _applicationUserId,
+                    UserId = Guid.Parse(_applicationUserId),
                     RelatedId = uploadedRecord.Id.ToString(),
                     TenantId = TenantExecutionContext.Tenant.Id
                 });

@@ -64,9 +64,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new QueryException("User already exists.");
 
             // Create new user.
+            var id = input.Id ?? Guid.NewGuid().ToString();
             var newUser = new ApplicationUser
             {
-                Id = input.Id ?? Guid.NewGuid().ToString(),
+                Id = id,
                 PhoneNumber = input.PhoneNumber,
                 UserName = newUsername,
                 IdNumber = input.IdNumber,
@@ -85,7 +86,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 TenantId = tenantId,
                 LanguageId = input.LanguageId,
                 InsertedDate = DateTime.UtcNow,
-                UpdatedDate = null
+                UpdatedDate = null,
+                UserId = Guid.Parse(id)
             };
 
             IdentityResult userCreatedResult = null;
@@ -562,7 +564,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Property = "IsActive",
                         ValueAfter = "false",
                         ValueBefore = "true",
-                        UserId = userId,
+                        UserId = Guid.Parse(userId),
                         RelatedId = id,
                         TenantId = tenantId
                     });
@@ -572,7 +574,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         ChangeType = changeType,
                         Entity = "ApplicationUser",
-                        UserId = userId,
+                        UserId = Guid.Parse(userId),
                         RelatedId = id,
                         TenantId = tenantId
                     });
@@ -587,7 +589,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             Property = change.FieldName,
                             ValueBefore = change.ValueBefore,
                             ValueAfter = change.ValueAfter,
-                            UserId = userId,
+                            UserId = Guid.Parse(userId),
                             RelatedId = id,
                             TenantId = tenantId
                         });

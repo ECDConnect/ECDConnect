@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration;
             {
                 IsActive = true,
                 InsertedDate = DateTime.Now,
-                UserId = _uId,
+                UserId = Guid.Parse(_uId),
                 TenantId = tenantId,
                 RelatedId = relatedId,
                 RelatedType = logRelatedType,

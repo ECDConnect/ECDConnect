@@ -22,7 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities.Notes
         public virtual NoteType NoteType { get; set; }
 
         public Guid UserId { get; set; }
-        [ForeignKey(nameof(UserId))]
+        //[ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
 
         public string CreatedUserId { get; set; }

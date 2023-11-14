@@ -19,7 +19,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
          where TKey : IEquatable<TKey>
     {
 
-        [ForeignKey(nameof(UserId))]
+        //[ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
         public virtual Practitioner Practitioner { get; set; }

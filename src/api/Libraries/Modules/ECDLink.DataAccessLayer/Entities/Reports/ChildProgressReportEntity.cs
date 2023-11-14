@@ -34,7 +34,7 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
 
         public string ReportContent { get; set; }
 
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         [GraphQLIgnore]
         public string Hierarchy { get; set; }

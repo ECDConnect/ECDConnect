@@ -13,7 +13,7 @@ namespace ECDLink.DataAccessLayer.Jobs
         [Column(Order = 1)]
         public Guid Id { get; set; }
 
-        [ForeignKey(nameof(UserId))]
+        //[ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
 

@@ -529,7 +529,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             //if doc is still null here and its a valid statement, generate it and redo this
                             if (statementDoc == null)
                             {
-                                statementDoc = _incomeManager.CreateIncomeStatementPDFDocument(statement.UserId, statement);
+                                statementDoc = _incomeManager.CreateIncomeStatementPDFDocument(statement.UserId.ToString(), statement);
                             }
 
                             if (statementDoc != null)
@@ -1312,7 +1312,7 @@ public class SmartStartIntegrationService : IIntegrationService
         try
         {
             //get all audits - excludin what the admin user did, these are cerates and SL pulls driven by t he system - so to avoid sending back what we got from SL, ignore these changes
-            var audits = _auditRepo.GetAll().Where(x => x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(historyDays * -1)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest -- x.UserId.Equals(auditUserId) &&
+            var audits = _auditRepo.GetAll().Where(x => x.Submitted == null && x.UserId != Guid.Parse(_uId) && x.InsertedDate >= _startTime.AddDays(historyDays * -1)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest -- x.UserId.Equals(auditUserId) &&
                                                                                                                                                                                                   //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).OrderByDescending(x => x.InsertedDate)..ToList(); //overlaps with 10 minutes of changes
             if (entityType != null)
                 return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
@@ -1691,6 +1691,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         var newUser = new ApplicationUser
                         {
                             Id = userId.ToString(),
+                            UserId = userId,
                             PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
                             UserName = validUserName, 
                             IdNumber = entity.IdNumber,
@@ -1973,6 +1974,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         var newUser = new ApplicationUser
                         {
                             Id = userId.ToString(),
+                            UserId = userId,
                             UserName = userId.ToString(),//entity?.IdNumber,
                             IdNumber = entity.IdNumber,
                             IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
@@ -2489,6 +2491,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 newUser = new ApplicationUser
                                 {
                                     Id = userId.ToString(),
+                                    UserId = userId,
                                     PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : whatsappNumberToImport),
                                     UserName = entity.IdNumber,
                                     IdNumber = entity.IdNumber,
@@ -2702,6 +2705,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     newUser = new ApplicationUser
                     {
                         Id = userId.ToString(),
+                        UserId = userId,
                         PhoneNumber = whatsappNumberToImport,
                         UserName = userId.ToString(),
                         //IdNumber = entity.IdNumber,
@@ -2789,6 +2793,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     newUser = new ApplicationUser
                     {
                         Id = userId.ToString(),
+                        UserId = userId,
                         PhoneNumber = whatsappNumberToImport,
                         UserName = entity.IdNumber != null ? entity.IdNumber : userId.ToString(),
                         IdNumber = entity.IdNumber,

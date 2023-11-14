@@ -23,10 +23,11 @@ namespace ECDLink.DataAccessLayer.Entities.Calendar
         [ForeignKey(nameof(CalendarEventId))]
         [GraphQLIgnore]
         public virtual CalendarEvent CalendarEvent { get; set; }
-        [ForeignKey(nameof(ParticipantUserId))]
+        //[ForeignKey(nameof(ParticipantUserId))]
         public virtual ApplicationUser ParticipantUser { get; set; }
-        public string ParticipantUserId { get; set; }
-        public string UserId { get; set; }
+        public Guid ParticipantUserId { get; set; }
+        public virtual ApplicationUser User { get; set; }
+        public Guid UserId { get; set; }
     }
 
     public interface CalendarEventParticipantJoin<TKey>

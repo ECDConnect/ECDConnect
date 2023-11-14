@@ -1502,7 +1502,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 // Check last three statements were submitted
                 var lastThreeStatementsSubmitted = _statementsIncomeStatementRepo.GetAll()
-                    .Where(x => x.UserId == userId)
+                    .Where(x => x.UserId == Guid.Parse(userId))
                     .OrderByDescending(x => x.InsertedDate)
                     .Take(3)
                     .All(x => !x.AutoSubmitted);
@@ -1661,7 +1661,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 Id = Guid.NewGuid(),
                 ClubId = clubId,
-                UserId = coachUserId,
+                UserId = Guid.Parse(coachUserId),
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 UpdatedBy = _uId,
@@ -1697,7 +1697,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     Id = Guid.NewGuid(),
                     ClubId = clubId,
-                    UserId = userId,
+                    UserId = Guid.Parse(userId),
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _uId,
@@ -1746,7 +1746,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     Id = Guid.NewGuid(),
                     ClubId = clubId,
-                    UserId = userId,
+                    UserId = Guid.Parse(userId),
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _uId,
@@ -1782,7 +1782,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     Id = Guid.NewGuid(),
                     ClubId = clubId,
-                    UserId = userId,
+                    UserId = Guid.Parse(userId),
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _uId,

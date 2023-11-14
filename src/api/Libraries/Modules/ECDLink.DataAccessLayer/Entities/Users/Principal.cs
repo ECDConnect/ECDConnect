@@ -17,6 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     }
 
+    /*
     public class Principal<TKey> : EntityBase<TKey>,
         IDocumentQueryable,
         SiteAddressJoin<Guid?>,
@@ -42,7 +43,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         public virtual ICollection<Document> Documents { get; set; }
 
-        [ForeignKey(nameof(UserId))]
+        //[ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
 
@@ -67,4 +68,5 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public Principal Principal { get; set; }
         public TKey PrincipalId { get; set; }
     }
+    */
 }

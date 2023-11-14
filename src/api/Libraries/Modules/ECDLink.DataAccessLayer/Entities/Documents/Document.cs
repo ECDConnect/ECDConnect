@@ -24,7 +24,7 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
 
         public string Reference { get; set; }
 
-        [ForeignKey(nameof(UserId))]
+        //[ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
 

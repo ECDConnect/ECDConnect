@@ -197,7 +197,7 @@ namespace ECDLink.Core.Services
             var statementsQuery = _statementsRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId == userId && 
+                .Where(x => x.UserId == Guid.Parse(userId) && 
                     (x.Year > startDate.Year || (x.Year == startDate.Year && x.Month >= startDate.Month)));
 
             if (endDate.HasValue)
@@ -216,7 +216,7 @@ namespace ECDLink.Core.Services
         public List<StatementsIncome> GetUnsubmittedIncomeItems(string userId)
         {
             var incomeQuery = _statementsIncomeRepo.GetAll()
-                .Where(x => x.UserId == userId && x.StatementsIncomeStatementId == null);
+                .Where(x => x.UserId == Guid.Parse(userId) && x.StatementsIncomeStatementId == null);
 
             return incomeQuery.ToList();
         }
@@ -229,7 +229,7 @@ namespace ECDLink.Core.Services
         public List<StatementsExpenses> GetUnsubmittedExpenseItems(string userId)
         {
             var expenseQuery = _statementsExpensesRepo.GetAll()
-                .Where(x => x.UserId == userId && x.StatementsIncomeStatementId == null);
+                .Where(x => x.UserId == Guid.Parse(userId) && x.StatementsIncomeStatementId == null);
 
             return expenseQuery.ToList();
         }
@@ -353,8 +353,8 @@ namespace ECDLink.Core.Services
 
         public bool AutoSubmitStatement(string userId, int year, int month)
         {
-            var incomeItems = _statementsIncomeRepo.GetAll().Where(x => x.UserId == userId && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
-            var expenseItems = _statementsExpensesRepo.GetAll().Where(x => x.UserId == userId && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
+            var incomeItems = _statementsIncomeRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
+            var expenseItems = _statementsExpensesRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.Submitted == false && x.StatementsIncomeStatementId == null).ToList();
 
             var statement = SubmitMonthlyStatement(month, year, userId, incomeItems, expenseItems, true);
 
@@ -403,7 +403,7 @@ namespace ECDLink.Core.Services
                 Period = "Monthly",
                 Submitted = true,
                 SubmittedDate = DateTime.Now,
-                UserId = userId,
+                UserId = Guid.Parse(userId),
                 UpdatedBy = _applicationUserId,
                 UpdatedDate = DateTime.Now,
                 InsertedDate = DateTime.Now,
@@ -453,7 +453,7 @@ namespace ECDLink.Core.Services
         public void SubmitAnnualStatement(string userId, int year, bool autoSubmitted = false)
         {
             //annually needs to look at the entire years statements and sumbit all these for only that year.
-            var annualRows = _statementsRepo.GetAll().Where(x => x.UserId == userId && x.AnnualSubmittedDate == null && x.SubmittedDate.Year.Equals(year)).ToList();
+            var annualRows = _statementsRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId) && x.AnnualSubmittedDate == null && x.SubmittedDate.Year.Equals(year)).ToList();
             foreach (var row in annualRows)
             {
                 //lock all entries
