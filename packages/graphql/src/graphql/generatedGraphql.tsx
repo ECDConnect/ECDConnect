@@ -9615,6 +9615,9 @@ export type Practitioner = {
   attendedBusinessSkills?: Maybe<Scalars['Boolean']>;
   attendedChildProgress?: Maybe<Scalars['Boolean']>;
   attendedFirstAidCourse?: Maybe<Scalars['Boolean']>;
+  clubLeader?: Maybe<ClubLeader>;
+  clubMember?: Maybe<ClubMember>;
+  clubSupport?: Maybe<ClubSupport>;
   coach?: Maybe<Coach>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
@@ -9738,6 +9741,9 @@ export type PractitionerFilterInput = {
   attendedBusinessSkills?: InputMaybe<BooleanOperationFilterInput>;
   attendedChildProgress?: InputMaybe<BooleanOperationFilterInput>;
   attendedFirstAidCourse?: InputMaybe<BooleanOperationFilterInput>;
+  clubLeader?: InputMaybe<ClubLeaderFilterInput>;
+  clubMember?: InputMaybe<ClubMemberFilterInput>;
+  clubSupport?: InputMaybe<ClubSupportFilterInput>;
   coach?: InputMaybe<CoachFilterInput>;
   coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
@@ -9788,6 +9794,9 @@ export type PractitionerInput = {
   AttendedBusinessSkills?: InputMaybe<Scalars['Boolean']>;
   AttendedChildProgress?: InputMaybe<Scalars['Boolean']>;
   AttendedFirstAidCourse?: InputMaybe<Scalars['Boolean']>;
+  ClubLeader?: InputMaybe<ClubLeaderInput>;
+  ClubMember?: InputMaybe<ClubMemberInput>;
+  ClubSupport?: InputMaybe<ClubSupportInput>;
   Coach?: InputMaybe<CoachInput>;
   CoachHierarchy?: InputMaybe<Scalars['UUID']>;
   ConsentForPhoto?: InputMaybe<Scalars['Boolean']>;
@@ -9986,6 +9995,9 @@ export type PractitionerSortInput = {
   attendedBusinessSkills?: InputMaybe<SortEnumType>;
   attendedChildProgress?: InputMaybe<SortEnumType>;
   attendedFirstAidCourse?: InputMaybe<SortEnumType>;
+  clubLeader?: InputMaybe<ClubLeaderSortInput>;
+  clubMember?: InputMaybe<ClubMemberSortInput>;
+  clubSupport?: InputMaybe<ClubSupportSortInput>;
   coach?: InputMaybe<CoachSortInput>;
   coachHierarchy?: InputMaybe<SortEnumType>;
   consentForPhoto?: InputMaybe<SortEnumType>;
@@ -10090,6 +10102,9 @@ export type Principal = {
   attendedBusinessSkills?: Maybe<Scalars['Boolean']>;
   attendedChildProgress?: Maybe<Scalars['Boolean']>;
   attendedFirstAidCourse?: Maybe<Scalars['Boolean']>;
+  clubLeader?: Maybe<ClubLeader>;
+  clubMember?: Maybe<ClubMember>;
+  clubSupport?: Maybe<ClubSupport>;
   coach?: Maybe<Coach>;
   coachHierarchy?: Maybe<Scalars['UUID']>;
   consentForPhoto?: Maybe<Scalars['Boolean']>;
@@ -10161,6 +10176,9 @@ export type PrincipalFilterInput = {
   attendedBusinessSkills?: InputMaybe<BooleanOperationFilterInput>;
   attendedChildProgress?: InputMaybe<BooleanOperationFilterInput>;
   attendedFirstAidCourse?: InputMaybe<BooleanOperationFilterInput>;
+  clubLeader?: InputMaybe<ClubLeaderFilterInput>;
+  clubMember?: InputMaybe<ClubMemberFilterInput>;
+  clubSupport?: InputMaybe<ClubSupportFilterInput>;
   coach?: InputMaybe<CoachFilterInput>;
   coachHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   consentForPhoto?: InputMaybe<BooleanOperationFilterInput>;
@@ -10211,6 +10229,9 @@ export type PrincipalInput = {
   AttendedBusinessSkills?: InputMaybe<Scalars['Boolean']>;
   AttendedChildProgress?: InputMaybe<Scalars['Boolean']>;
   AttendedFirstAidCourse?: InputMaybe<Scalars['Boolean']>;
+  ClubLeader?: InputMaybe<ClubLeaderInput>;
+  ClubMember?: InputMaybe<ClubMemberInput>;
+  ClubSupport?: InputMaybe<ClubSupportInput>;
   Coach?: InputMaybe<CoachInput>;
   CoachHierarchy?: InputMaybe<Scalars['UUID']>;
   ConsentForPhoto?: InputMaybe<Scalars['Boolean']>;
@@ -10266,6 +10287,9 @@ export type PrincipalSortInput = {
   attendedBusinessSkills?: InputMaybe<SortEnumType>;
   attendedChildProgress?: InputMaybe<SortEnumType>;
   attendedFirstAidCourse?: InputMaybe<SortEnumType>;
+  clubLeader?: InputMaybe<ClubLeaderSortInput>;
+  clubMember?: InputMaybe<ClubMemberSortInput>;
+  clubSupport?: InputMaybe<ClubSupportSortInput>;
   coach?: InputMaybe<CoachSortInput>;
   coachHierarchy?: InputMaybe<SortEnumType>;
   consentForPhoto?: InputMaybe<SortEnumType>;

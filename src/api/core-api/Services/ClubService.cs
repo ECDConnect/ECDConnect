@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -1875,6 +1876,42 @@ namespace EcdLink.Api.CoreApi.Services
             return false;
         }
 
-       
+        // Called from PersonnelServices
+        public bool ArchiveClubUser(Guid practitionerId)
+        {
+            Practitioner practitioner = _practitionerRepo.GetById(practitionerId);
+
+            if (practitioner != null)
+            {
+                if (practitioner.ClubMember != null)
+                {
+                    practitioner.ClubMember.IsActive = false;
+                    practitioner.ClubMember.UpdatedBy = _applicationUserId;
+                    practitioner.ClubMember.UpdatedDate = DateTime.Now;
+                    _clubMemberRepo.Update(practitioner.ClubMember);
+                }
+
+                if (practitioner.ClubLeader != null)
+                {
+                    practitioner.ClubLeader.IsActive = false;
+                    practitioner.ClubLeader.UpdatedBy = _applicationUserId;
+                    practitioner.ClubLeader.UpdatedDate = DateTime.Now;
+                    _clubLeaderRepo.Update(practitioner.ClubLeader);
+                }
+
+                if (practitioner.ClubSupport != null)
+                {
+                    practitioner.ClubSupport.IsActive = false;
+                    practitioner.ClubSupport.UpdatedBy = _applicationUserId;
+                    practitioner.ClubSupport.UpdatedDate = DateTime.Now;
+                    _clubSupportRepo.Update(practitioner.ClubSupport);
+                }
+            }
+
+            return true;
+        }
+
+
+
     }
 }
