@@ -42,6 +42,8 @@ export const MeetRegularly: React.FC = () => {
   const details = useSelector(
     clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
   );
+  const isLeader = club?.clubLeader?.userId === user?.id;
+  const isSupportRole = club?.clubSupport.userId === user?.id;
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
@@ -193,8 +195,23 @@ export const MeetRegularly: React.FC = () => {
               />
             </div>
           )}
+          {(isLeader || isSupportRole) && (
+            <Button
+              className="mt-auto"
+              icon="PlusCircleIcon"
+              type="filled"
+              textColor="white"
+              color="primary"
+              text="Add a meeting"
+              onClick={() =>
+                history.push(
+                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+                )
+              }
+            />
+          )}
           <Button
-            className="mt-auto"
+            className="mt-4"
             icon="ArrowCircleLeftIcon"
             type="outlined"
             textColor="primary"

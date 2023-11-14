@@ -85,18 +85,22 @@ export const MeetingDetails: React.FC = () => {
               />
             )
           )}
-          <Typography
-            type="h4"
-            text="These practitioners were absent:"
-            className="mt-5 mb-2"
-          />
-          {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.map(
-            (member) => (
-              <Item
-                key={member?.userId}
-                name={`${member?.firstName} ${member?.surname}`}
+          {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.length && (
+            <>
+              <Typography
+                type="h4"
+                text="These practitioners were absent:"
+                className="mt-5 mb-2"
               />
-            )
+              {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.map(
+                (member) => (
+                  <Item
+                    key={member?.userId}
+                    name={`${member?.firstName} ${member?.surname}`}
+                  />
+                )
+              )}
+            </>
           )}
         </>
       )}

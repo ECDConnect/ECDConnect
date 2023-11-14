@@ -23,7 +23,8 @@ import {
   getClubById,
 } from '@/store/club/club.actions';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { userSelectors } from '@/store/user';
+import { daysToAcceptBeingLeader } from '@/constants/club';
+import { addDays } from 'date-fns';
 
 export const ClubLeaderEdit: React.FC = () => {
   const [newLeaderId, setNewLeaderId] = useState('');
@@ -35,20 +36,35 @@ export const ClubLeaderEdit: React.FC = () => {
   const lastPathSegment = location.pathname.split('/').pop();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
-  const user = useSelector(userSelectors.getUser);
+  const nextLeader = useSelector(
+    clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
+  );
 
   const isToChange = lastPathSegment?.includes('edit');
 
-  const previousClubLeader = club.clubLeader;
+  const previousClubLeader = club?.clubLeader;
 
-  const newLeader = club.clubMembers.find(
+  const today = new Date().setHours(0, 0, 0, 0);
+  const dueDateNextLeader = nextLeader
+    ? addDays(
+        new Date(nextLeader.dateAssigned),
+        daysToAcceptBeingLeader
+      ).setHours(0, 0, 0, 0)
+    : undefined;
+
+  const isDueDateNextLeaderTodayOrFuture =
+    dueDateNextLeader && dueDateNextLeader >= today;
+
+  const newLeader = club?.clubMembers.find(
     (member) => member.practitionerId === newLeaderId
   );
   const newLeaderFirstName = newLeader?.firstName;
   const availableMembers = club?.clubMembers?.filter(
     (member) =>
       member.practitionerId !== previousClubLeader?.practitionerId &&
-      member.practitionerId !== club.incomingClubLeader?.practitionerId
+      ((isDueDateNextLeaderTodayOrFuture &&
+        member.practitionerId !== newLeader?.practitionerId) ||
+        !isDueDateNextLeaderTodayOrFuture)
   );
 
   const {
@@ -122,6 +138,12 @@ export const ClubLeaderEdit: React.FC = () => {
         className="mb-4"
       />
       <fieldset className="mb-4 flex flex-col gap-2">
+        {!availableMembers?.length && (
+          <Alert
+            type="error"
+            title="No available members to assign as club leader."
+          />
+        )}
         {availableMembers?.map((member) => (
           <Radio
             key={member.practitionerId}
@@ -164,7 +186,9 @@ export const ClubLeaderEdit: React.FC = () => {
             type="info"
             title={
               isToChange
-                ? `The previous club leader (${previousClubLeader.firstName}) and the new club leader (${newLeaderFirstName}) chosen above will be notified immediately.`
+                ? `The previous club leader (${
+                    previousClubLeader?.firstName ?? ''
+                  }) and the new club leader (${newLeaderFirstName}) chosen above will be notified immediately.`
                 : `${newLeaderFirstName} will be notified immediately and asked to complete the club leader agreement.`
             }
             list={

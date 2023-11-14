@@ -15,10 +15,15 @@ import {
   QueryClubForUserArgs,
   MutationSaveWelcomeMessageArgs,
   MutationAcceptNewClubLeaderRoleArgs,
+  ClubMeeting,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
-import { ChangeClubSupportRoleInput, NewClubLeaderInput } from './types';
-import { ClubDto, DetailClubDto } from '@/models/club/club.dto';
+import {
+  ChangeClubSupportRoleInput,
+  ClubMeetingInput,
+  NewClubLeaderInput,
+} from './types';
+import { DetailClubDto } from '@/models/club/club.dto';
 
 class ClubService {
   _accessToken: string;
@@ -323,10 +328,10 @@ class ClubService {
     return response.data.data.activityBeCreativeDetails;
   }
 
-  async getClubForUser(input: QueryClubForUserArgs): Promise<ClubDto> {
+  async getClubForUser(input: QueryClubForUserArgs): Promise<DetailClubDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { clubForUser: ClubDto };
+      data: { clubForUser: DetailClubDto };
       errors?: {};
     }>(``, {
       query: `query clubForUser($userId: String) {
@@ -661,6 +666,35 @@ class ClubService {
     }
 
     return response.data.data.changeClubSupportRole;
+  }
+
+  async addClubMeeting(input: ClubMeetingInput): Promise<ClubMeeting> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addClubMeeting: ClubMeeting };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddClubMeeting($input: ClubMeetingModelInput) {
+          addClubMeeting(input: $input) {
+              id
+              meetingDate
+              meetingNotes
+              clubId
+              coachAttended
+          }
+        }    
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add club meeting failed - Server connection error');
+    }
+
+    return response.data.data.addClubMeeting;
   }
 }
 

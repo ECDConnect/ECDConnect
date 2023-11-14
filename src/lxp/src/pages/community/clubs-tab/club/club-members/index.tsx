@@ -51,7 +51,7 @@ export const ClubMembers: React.FC = () => {
     dueDateNextLeader && dueDateNextLeader >= today;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isLeaderAcceptedAgreement =
-    isDueDateNextLeaderTodayOrFuture && club.incomingClubLeader?.dateAccepted;
+    isDueDateNextLeaderTodayOrFuture && club?.incomingClubLeader?.dateAccepted;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isToChangeLeader = hasLeader || isLeaderRequestSent;
 
@@ -87,7 +87,7 @@ export const ClubMembers: React.FC = () => {
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
           ':clubId',
           clubId
-        ).replace(':leaderId', currentLeader?.practitionerId)
+        ).replace(':leaderId', currentLeader?.practitionerId ?? '')
       ),
   };
 
@@ -211,7 +211,7 @@ export const ClubMembers: React.FC = () => {
     isLeaderRequestSent,
     isLeaderAcceptedAgreement,
     isLeaderAcceptedOverSixMonths,
-    club.incomingClubLeader,
+    club?.incomingClubLeader,
     nextLeader,
     nextLeaderFirstName,
     dueDateNextLeader,

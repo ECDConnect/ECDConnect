@@ -55,6 +55,7 @@ export const ClubTab: React.FC = () => {
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isLeaderRequest = isLeader && !club?.clubLeader?.dateAssigned;
+  const isSupportRole = club?.clubSupport.userId === user?.id;
 
   const onAddMeetingOrEvent = () => {
     return dialog({
@@ -388,15 +389,17 @@ export const ClubTab: React.FC = () => {
           />
           {renderActivitiesContent}
           <div className="mt-auto flex flex-col">
-            <Button
-              icon="PlusCircleIcon"
-              className="mb-4 mt-8"
-              type="filled"
-              textColor="white"
-              color="primary"
-              text="Add a meeting or event"
-              onClick={onAddMeetingOrEvent}
-            />
+            {(isLeader || isSupportRole) && (
+              <Button
+                icon="PlusCircleIcon"
+                className="mb-4 mt-8"
+                type="filled"
+                textColor="white"
+                color="primary"
+                text="Add a meeting or event"
+                onClick={onAddMeetingOrEvent}
+              />
+            )}
             <Button
               icon="UserGroupIcon"
               type="outlined"

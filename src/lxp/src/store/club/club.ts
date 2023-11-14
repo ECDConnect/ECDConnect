@@ -2,6 +2,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   acceptNewClubLeaderRole,
+  addClubMeeting,
   addNewClub,
   addNewClubLeader,
   addNewClubMembers,
@@ -19,10 +20,13 @@ import {
 import { ClubState } from './club.types';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
-import { ClubDto } from '@/models/club/club.dto';
+import { ClubDto, DetailClubDto } from '@/models/club/club.dto';
+import { ClubMeetingInput } from '@/services/ClubService/types';
 
 const initialState: ClubState = {
+  clubForPractitioner: {},
   clubsForCoach: {},
+  addClubMeetingSyncInputs: [],
 };
 
 const clubSlice = createSlice({
@@ -37,8 +41,30 @@ const clubSlice = createSlice({
 
       state.clubForPractitioner = {
         ...state.clubForPractitioner,
-        clubSupport: action.payload,
+        club: {
+          ...state.clubForPractitioner.club,
+          clubSupport: action.payload,
+        } as DetailClubDto,
       };
+    },
+    addClubMeeting: (state, action: PayloadAction<ClubMeetingInput>) => {
+      const newMeeting = action.payload as ClubMeetingInput;
+      const existingMeetingIndex = state.addClubMeetingSyncInputs?.findIndex(
+        (meeting) => meeting?.meetingDate === newMeeting?.meetingDate
+      );
+
+      if (
+        state.addClubMeetingSyncInputs &&
+        existingMeetingIndex !== undefined &&
+        existingMeetingIndex !== -1
+      ) {
+        state.addClubMeetingSyncInputs[existingMeetingIndex] = newMeeting;
+      } else {
+        state.addClubMeetingSyncInputs = [
+          ...(state.addClubMeetingSyncInputs || []),
+          newMeeting,
+        ];
+      }
     },
   },
   extraReducers: (builder) => {
@@ -52,6 +78,22 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, updateCoachAboutInfo);
     setThunkActionStatus(builder, getActivityMeetRegularDetails);
     setThunkActionStatus(builder, getActivityBeCreativeDetails);
+    setThunkActionStatus(builder, addClubMeeting);
+    builder.addCase(addClubMeeting.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      const meta = action.meta.arg as ClubMeetingInput;
+      const meetingDate = meta?.meetingDate;
+
+      if (meetingDate) {
+        state.addClubMeetingSyncInputs = state.addClubMeetingSyncInputs?.filter(
+          (meeting) => meeting?.meetingDate !== meetingDate
+        );
+        return;
+      }
+      // clear all meetings (sync)
+      state.addClubMeetingSyncInputs = [];
+    });
     builder.addCase(getActivityBeCreativeDetails.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const clubId = action.meta.arg.clubId;
@@ -61,7 +103,7 @@ const clubSlice = createSlice({
         [clubId]: {
           ...state.clubsForCoach[clubId],
           points: {
-            ...state.clubsForCoach[clubId].points,
+            ...state.clubsForCoach[clubId]?.points,
             beCreative: action.payload,
           },
         },
@@ -73,16 +115,29 @@ const clubSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
 
         const clubId = action.meta.arg.clubId;
-        state.clubsForCoach = {
-          ...state.clubsForCoach,
-          [clubId]: {
-            ...state.clubsForCoach[clubId],
-            points: {
-              ...state.clubsForCoach[clubId].points,
-              beCreative: action.payload,
+
+        const isCoach = !!state.clubsForCoach[clubId]?.club;
+
+        if (isCoach) {
+          state.clubsForCoach = {
+            ...state.clubsForCoach,
+            [clubId]: {
+              ...state.clubsForCoach[clubId],
+              points: {
+                ...state.clubsForCoach[clubId]?.points,
+                meetRegularly: action.payload,
+              },
             },
-          },
-        };
+          };
+        } else {
+          state.clubForPractitioner = {
+            ...state.clubForPractitioner,
+            points: {
+              ...state.clubForPractitioner?.points,
+              meetRegularly: action.payload,
+            },
+          };
+        }
       }
     );
 
@@ -173,7 +228,10 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, saveWelcomeMessage);
     setThunkActionStatus(builder, changeClubSupportRole);
     builder.addCase(getClubForUser.fulfilled, (state, action) => {
-      state.clubForPractitioner = action.payload;
+      state.clubForPractitioner = {
+        ...state.clubForPractitioner,
+        club: action.payload,
+      };
 
       setFulfilledThunkActionStatus(state, action);
     });
