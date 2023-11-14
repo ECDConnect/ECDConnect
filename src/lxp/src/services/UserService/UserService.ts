@@ -26,7 +26,8 @@ class UserService {
             verifiedByHomeAffairs
             dateOfBirth
             idNumber   
-            isImported         
+            isImported   
+            resetData      
             firstName
             surname
             fullName
