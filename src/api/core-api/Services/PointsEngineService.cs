@@ -1711,7 +1711,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             return true;
         }
-
         public bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today)
         {
             Club club = _clubRepo.GetById(clubId);
@@ -1748,7 +1747,6 @@ namespace EcdLink.Api.CoreApi.Services
 
             return true;
         }
-
         public bool CalculateCompleteChildProgressReports()
         {
             List<ClubPointsLibrary> libraryItems = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.child_progress_reports && x.Type == Constants.ClubSettings.name_purple).ToList();
@@ -1757,6 +1755,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Twice a year: by 31 July and 30 November
             var startDate = DateTime.Now.Month == 7 ? DateTime.Now.GetStartOfYear() : DateTime.Now.GetStartOfYear().AddMonths(7);
+            var scoringMonth = DateTime.Now.Month == 7 ? 6 : 11;
 
             // Get all active purple clubs
             List<Club> purpleClubs = _clubRepo.GetAll()
@@ -1854,7 +1853,7 @@ namespace EcdLink.Api.CoreApi.Services
                             UpdatedBy = _uId,
                             IsActive = true,
                             ClubPointsLibraryId = cplProgress.Id,
-                            Month = DateTime.Now.Month,
+                            Month = scoringMonth,
                             Year = DateTime.Now.Year,
                             Points = points,
                             PointsYTD = totalClubPoints
@@ -1866,7 +1865,6 @@ namespace EcdLink.Api.CoreApi.Services
             // TODO: Caregiver meeting points
             return true;
         }
-
         public bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today)
         {
             Club club = _clubRepo.GetById(clubId);
@@ -1936,6 +1934,74 @@ namespace EcdLink.Api.CoreApi.Services
                     PointsYTD = totalClubPoints
                 });
             }
+            return true;
+        }
+
+        public bool CalculateClubChildAttendance()
+        {
+            var startDate = DateTime.Now.GetStartOfPreviousMonth();
+            var endDate = DateTime.Now.GetEndOfPreviousMonth();
+
+            ClubPointsLibrary clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.capture_child_attendance && x.Type == Constants.ClubSettings.name_purple).FirstOrDefault();
+            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
+            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3).FirstOrDefault();
+
+            // Get all active purple clubs
+            List<Club> allClubs = _clubRepo.GetAll()
+                .Where(x => x.IsActive && x.LeagueId.HasValue && x.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+                .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year && x.ClubPointsLibraryId == clubPointsLibrary.Id))
+                .Include(x => x.ClubMembers.Where(x => x.IsActive))
+                .Include(x => x.ClubLeaders.Where(x => x.IsActive && x.DateAccepted.HasValue))
+                .Include(x => x.ClubSupport.Where(x => x.IsActive))
+                .ToList();
+
+            List<string> allUserIds = new List<string>();
+            List<Classroom> classrooms = new List<Classroom>();
+            var totalClubPoints = 0;
+            var totalUsersWithPoints = 0;
+            var perc = 0.0;
+            foreach (var item in allClubs)
+            {
+                // total club points 
+                totalClubPoints = item.ClubPoints.Select(x => x.Points).Sum();
+
+                // reset userIds for each club
+                allUserIds = new List<string>();
+                allUserIds.AddRange(item.ClubMembers.Select(x => x.Practitioner.UserId).Distinct());
+                allUserIds.AddRange(item.ClubLeaders.Select(x => x.Practitioner.UserId).Distinct());
+                allUserIds.AddRange(item.ClubSupport.Select(x => x.Practitioner.UserId).Distinct());
+                allUserIds = allUserIds.Distinct().ToList();
+
+                totalUsersWithPoints = _pointsUserRepo.GetAll().Where(x => allUserIds.Contains(x.UserId) && x.PointsLibraryId == activity.Id && x.Month == startDate.Month && x.Year == startDate.Year)
+                                                        .Select(x => x.UserId).Distinct().Count();
+
+                if (allUserIds.Count > 0)
+                {
+                    perc = (double)totalUsersWithPoints / (double)allUserIds.Count * 100;
+
+                    if (perc != 0.0 && totalClubPoints <= (clubPointsLibrary.MaxPointsYearly - perc))
+                    {
+                        totalClubPoints += (int)perc;
+                        _clubPointsRepo.Insert(new ClubPoints()
+                        {
+                            Id = Guid.NewGuid(),
+                            ClubId = item.Id,
+                            UserId = _uId,
+                            InsertedDate = DateTime.Now,
+                            UpdatedDate = DateTime.Now,
+                            UpdatedBy = _uId,
+                            IsActive = true,
+                            ClubPointsLibraryId = clubPointsLibrary.Id,
+                            Month = startDate.Month,
+                            Year = startDate.Year,
+                            Points = (int)perc,
+                            PointsYTD = totalClubPoints
+                        });
+                    }
+                }
+
+            }
+
             return true;
         }
         #endregion
