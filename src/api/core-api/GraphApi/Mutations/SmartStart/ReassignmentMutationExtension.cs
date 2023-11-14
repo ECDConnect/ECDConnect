@@ -13,7 +13,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         #region Service Calls       
 
         public bool AddReassignmentForPractitionerService(
-        [Service] IHttpContextAccessor contextAccessor,
         [Service] IReassignmentService reassignmentService,
         string fromUserId,
         string toUserId,
@@ -25,31 +24,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         DateTime? endDate = null
         )
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.AddReassignmentForPractitioner(uId, fromUserId, toUserId, reason, startDate, loggedByUser, classroomGroup, permanentAssign, endDate);
+            return reassignmentService.AddReassignmentForPractitioner(fromUserId, toUserId, reason, startDate, loggedByUser, classroomGroup, permanentAssign, endDate);
         }
 
 
-        public bool ReassignClassroomsFromHistoryService([Service] IHttpContextAccessor contextAccessor,
-            [Service] IReassignmentService reassignmentService,
+        public bool ReassignClassroomsFromHistoryService([Service] IReassignmentService reassignmentService,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
+            return reassignmentService.ReassignClassroomsFromHistory(userId);
         }
 
-        public bool ExpireRelationshipLinksService([Service] IHttpContextAccessor contextAccessor,
-    [Service] IReassignmentService reassignmentService)
+        public bool ExpireRelationshipLinksService([Service] IReassignmentService reassignmentService)
         {
             reassignmentService.ExpireRelationshipLinks();
             return true;
         }
 
-        public bool ReassignAllClassroomsFromHistoryService([Service] IHttpContextAccessor contextAccessor,
-    [Service] IReassignmentService reassignmentService)
+        public bool ReassignAllClassroomsFromHistoryService([Service] IReassignmentService reassignmentService)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId, null);
+            return reassignmentService.ReassignClassroomsFromHistory(null);
         }
 
 

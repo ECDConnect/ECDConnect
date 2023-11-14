@@ -40,6 +40,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [GraphQLIgnore, ForeignKey(nameof(PractitionerRemovalHistoryId))]
         public virtual PractitionerRemovalHistory PractitionerRemovalHistory { get; set; }
 
+        public DateTime? CompletedDate { get; set; }
+        public bool IsRoleAssign { get; set; }
+
     }
 
     public interface AbsenteesJoin<TKey>

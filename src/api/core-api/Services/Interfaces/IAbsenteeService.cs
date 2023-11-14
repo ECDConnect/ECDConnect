@@ -7,14 +7,14 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
     public interface IAbsenteeService
     {
         public Absentees AddAbsenteeForPractitioner(
-            string uId,
             string practitionerId,
             string reassignedToPractitioner,
             string reason,
             DateTime absentDate,
             string loggedByUser,
-            string classroomGroupId = null, // WHY IS THIS NULLABLE???
+            string classroomGroupId = null,
             DateTime? absentDateEnd = null,
+            bool isRoleAssign = false,
             Guid? practitionerRemovalHistory = null);
 
 

@@ -15,6 +15,7 @@ using ECDLink.Security.Extensions;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Core.Extensions;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace ECDLink.Api.CoreApi.Services
 {
@@ -47,7 +48,6 @@ namespace ECDLink.Api.CoreApi.Services
         }
 
         public Absentees AddAbsenteeForPractitioner(
-            string uId,
             string practitionerId,
             string reassignedToPractitioner,
             string reason,
@@ -55,29 +55,55 @@ namespace ECDLink.Api.CoreApi.Services
             string loggedByUser,
             string classroomGroupId = null,
             DateTime? absentDateEnd = null,
+            bool isRoleAssign = false,
             Guid? practitionerRemovalHistory = null)
         {
-            var updated = new Absentees();
+            reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
+            var absentee = new Absentees
+            {
+                UserId = practitionerId,
+                Reason = reason,
+                AbsentDate = absentDate,
+                AbsentDateEnd = absentDateEnd,
+                LoggedBy = loggedByUser,
+                ReassignedClass = classroomGroupId,
+                ReassignedToPractitioner = reassignedToPractitioner,
+                UpdatedBy = loggedByUser,
+                UpdatedDate = DateTime.Now,
+                IsRoleAssign = isRoleAssign,                
+                PractitionerRemovalHistoryId = practitionerRemovalHistory
+            };
+
             if (classroomGroupId != null)
             {
-                reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
-                var absent = new Absentees
+                absentee.ReassignedClass = classroomGroupId;
+            }
+            if (reassignedToPractitioner != null)
+            {
+                absentee.ReassignedToPractitioner = reassignedToPractitioner;
+            }
+            if (absentDateEnd != null)
+            {
+                if (absentDateEnd.HasValue && absentDateEnd >= absentDate)
                 {
-                    UserId = practitionerId,
-                    Reason = reason,
-                    AbsentDate = absentDate,
-                    AbsentDateEnd = absentDateEnd,
-                    LoggedBy = loggedByUser,
-                    ReassignedClass = classroomGroupId,
-                    ReassignedToPractitioner = reassignedToPractitioner,
-                    UpdatedBy = loggedByUser,
-                    UpdatedDate = DateTime.Now,
-                    PractitionerRemovalHistoryId = practitionerRemovalHistory
-                };
-                updated = _absenteeRepo.Insert(absent);
+                    absentee.AbsentDateEnd = absentDateEnd.Value;
+                }
+                else
+                {
+                    absentee.AbsentDateEnd = absentDate.Date;
+                }
+            }
+            else
+            {
+                absentee.AbsentDateEnd = absentDate.Date;
+            }
 
-                //Log to the history table for reassignment back to owner user
-                _reassignmentService.AddReassignmentForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd);
+            var createdAbsentee = _absenteeRepo.Insert(absentee);
+
+            if (createdAbsentee != null)
+            {
+                //Log to the history table for reassignment back to owner user after absentee end date
+                _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, absentee.Id.ToString());
 
                 //send notifications a) Absentee, b) long leave
                 var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
@@ -106,11 +132,9 @@ namespace ECDLink.Api.CoreApi.Services
                     ReplacementValue = absentDate.ToLongDateString(),
                 });
                 _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerMarkedAbsent, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements);
-
             }
 
-            //Save the history so it can be reassigned
-            return updated;
+            return createdAbsentee;
         }
 
         public Absentees EditAbsentee(

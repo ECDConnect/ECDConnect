@@ -29,10 +29,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             DateTime absentDate,
             string loggedByUser,
             string classProgram = null,
-            DateTime? absentDateEnd = null)
+            DateTime? absentDateEnd = null,
+            bool isRoleRasssign = false)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return absenteeService.AddAbsenteeForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd);
+            return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleRasssign);
         }
 
         public Absentees EditAbsentee(
@@ -51,8 +51,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IReassignmentService reassignmentService,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
+            return reassignmentService.ReassignClassroomsFromHistory(userId);
         }
 
     }
