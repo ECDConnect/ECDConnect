@@ -1,5 +1,7 @@
-﻿using ECDLink.AutomatedJobs.Cron;
+﻿using ECDLink.AutomatedJobs.BiannualRunners;
+using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -7,12 +9,12 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ECDLink.AutomatedJobs.BiannualRunners;
+namespace ECDLink.AutomatedJobs.MonthlyRunners;
 
-public class ClubPointsCalculation : CronJobService
+public class ClubChildAttendanceCalculation : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public ClubPointsCalculation(IServiceScopeFactory scopeFactory, IScheduleConfig<ClubPointsCalculation> config, ILogger<ClubPointsCalculation> logger)
+    public ClubChildAttendanceCalculation(IServiceScopeFactory scopeFactory, IScheduleConfig<ClubPointsCalculation> config, ILogger<ClubPointsCalculation> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;
@@ -25,15 +27,10 @@ public class ClubPointsCalculation : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IPointsService>();
 
-            if (DateTime.Now.Month == 7 && DateTime.Now.Day == 31)
+            if (DateTime.Now.Date == DateTime.Now.GetStartOfMonth().Date)
             {
-                service.CalculateCompleteChildProgressReports();
-            } else if (DateTime.Now.Month == 11 && DateTime.Now.Day == 30)
-            {
-                service.CalculateCompleteChildProgressReports();
-                service.CalculateLeaveNoOneBehind();
+                service.CalculateClubChildAttendance();
             }
-           
         }
     }
 }

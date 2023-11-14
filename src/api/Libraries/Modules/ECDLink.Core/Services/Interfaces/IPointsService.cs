@@ -6,5 +6,6 @@ namespace ECDLink.Core.Services.Interfaces
     {
         public bool CalculateCompleteChildProgressReports();
         public bool CalculateLeaveNoOneBehind();
+        public bool CalculateClubChildAttendance();
     }
 }
