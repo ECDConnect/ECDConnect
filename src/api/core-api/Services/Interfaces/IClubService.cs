@@ -43,5 +43,6 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         IEnumerable<DetailClubModel> GetClubsForCoach(string coachUserId);
         DetailClubModel GetClubById(Guid clubId);
         public bool AddBeCreativeActivity(BeCreativeUpload input);
+        public bool ArchiveClubUser(Guid practitionerId);
     }
 }

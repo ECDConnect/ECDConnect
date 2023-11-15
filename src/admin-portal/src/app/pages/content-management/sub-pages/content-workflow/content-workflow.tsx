@@ -114,10 +114,10 @@ export default function ContentWorkflow({
   if (contentView && languages && currentContent && defaultLanguageId) {
     return (
       <div className="flex flex-col">
-        <div className="mb-6 flex flex-row overflow-auto rounded-md bg-white">
+        <div className="mb-6 flex flex-row gap-2 overflow-auto rounded-md bg-white px-2">
           {!isCompareMode &&
             languages.map((item: LanguageDto, index: number) => (
-              <div className={'w-3/12 '}>
+              <div className={'w-3/12'}>
                 <a
                   key={index}
                   onClick={() => {
