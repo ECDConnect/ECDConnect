@@ -49,7 +49,8 @@ class UserService {
             roles {
               id
               name
-            }            
+            }   
+            resetData         
           }
         }
       `,

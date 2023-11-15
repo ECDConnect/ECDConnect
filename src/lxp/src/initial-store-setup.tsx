@@ -62,6 +62,7 @@ import { calendarThunkActions } from './store/calendar';
 import { pointsThunkActions } from './store/points';
 import { getClubForUser } from './store/club/club.actions';
 import { clubActions } from './store/club';
+import { authSelectors } from '@store/auth';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -84,6 +85,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [initloading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
@@ -306,21 +308,17 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function init() {
-      if (userData && !!userData?.resetData) {
-        console.log('RESET APP STORE');
+      if (userAuth && !!userAuth?.resetData) {
         await resetAppStore();
-        console.log('RESET APP STORE DONE');
       }
-      console.log('INIT APP STORE');
       await initStoreSetup();
-      console.log('INIT APP STORE DONE');
+      appDispatch(userActions.updateUserResetData(false));
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    console.log('USE EFFECT 1');
     if (userData && !!userData?.id && !isCoach) {
       (async () =>
         await appDispatch(
@@ -342,7 +340,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   }, [appDispatch, userData, isCoach, isPrincipal]);
 
   useEffect(() => {
-    console.log('USE EFFECT 2');
     if (userData) {
       if (practitioner?.coachHierarchy) {
         if (!isCoach) {
@@ -378,7 +375,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   }, [appDispatch, userData, practitioner, isCoach, traineeCurrentVisit?.id]);
 
   useEffect(() => {
-    console.log('USE EFFECT 3');
     if (userData) {
       if (isCoach) {
         (async () =>
