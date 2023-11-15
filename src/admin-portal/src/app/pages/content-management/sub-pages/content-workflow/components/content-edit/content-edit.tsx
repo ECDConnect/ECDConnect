@@ -157,9 +157,11 @@ export default function ContentEdit({
       });
 
       orderedList.forEach((item: ContentTypeFieldDto) => {
-        const renderedField = getRenderField(item);
+        if (item.displayPage) {
+          const renderedField = getRenderField(item);
 
-        if (renderedField) t.fields.push(renderedField);
+          if (renderedField) t.fields.push(renderedField);
+        }
       });
 
       setTemplate(t);
@@ -183,7 +185,7 @@ export default function ContentEdit({
     const returnField: FormTemplateField = {
       propName: field?.fieldName ?? '',
       type: field?.fieldType.dataType ?? '',
-      title: camelCaseToSentanceCase(field?.fieldName ?? ''),
+      title: camelCaseToSentanceCase(field?.displayName ?? ''),
       required: {
         value: false,
         message: '',
@@ -233,7 +235,8 @@ export default function ContentEdit({
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
-                {cancelEdit && camelCaseToSentanceCase(content.name ?? content.type)}
+                {cancelEdit &&
+                  camelCaseToSentanceCase(content.name ?? content.type)}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
