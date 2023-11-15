@@ -38,6 +38,7 @@ namespace ECDLink.Api.CoreApi.Services
             [Service] UserManager<ApplicationUser> userManager,
             HierarchyEngine hierarchyEngine)
         {
+            _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _reassignmentService = reassignmentService;
             _notificationService = notificationService;
@@ -56,6 +57,8 @@ namespace ECDLink.Api.CoreApi.Services
             string classroomGroupId = null,
             DateTime? absentDateEnd = null,
             bool isRoleAssign = false,
+            string fromRole = null,
+            string toRole = null,
             Guid? practitionerRemovalHistory = null)
         {
             reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;

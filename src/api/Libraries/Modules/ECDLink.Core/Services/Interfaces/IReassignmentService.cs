@@ -4,6 +4,7 @@ namespace ECDLink.Core.Services.Interfaces
 {
     public interface IReassignmentService
     {
+        //public void ProcessReassignments();
         public void ReassignAbsentees();
         public void ExpireRelationshipLinks();
 
@@ -17,6 +18,8 @@ namespace ECDLink.Core.Services.Interfaces
             bool permanentAssign = false,
             DateTime? endDate = null,
             bool isRoleAssign = false,
+            string fromRole = null,
+            string toRole = null,
             string absenteeId = null
             );
         public bool ReassignClassroomsFromHistory(string userId);

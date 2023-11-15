@@ -54,9 +54,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual Absentees Absentee { get; set; }
 
         public DateTime? AssignedRoleDate { get; set; }
-        public DateTime? ReassignedRoleBAckToDate { get; set; }
-        public string AssignedeRole { get; set; }
-        public string ReassignedeRoleBack { get; set; }
+        public DateTime? ReassignedRoleBackToDate { get; set; }
+        public string AssignedRole { get; set; }
+        public string ReassignedRoleBack { get; set; }
 
 
     }

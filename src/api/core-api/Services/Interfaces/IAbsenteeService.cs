@@ -15,6 +15,8 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             string classroomGroupId = null,
             DateTime? absentDateEnd = null,
             bool isRoleAssign = false,
+            string fromRole = null,
+            string toRole = null,
             Guid? practitionerRemovalHistory = null);
 
 
