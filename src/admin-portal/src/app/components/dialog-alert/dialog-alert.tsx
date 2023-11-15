@@ -26,7 +26,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
       buttonClass="rounded-xl"
       actionButtons={[
         {
-          text: btnText[0] ?? 'Yes',
+          text: btnText?.[0] ?? 'Yes',
           textColour: 'white',
           colour: 'secondary',
           type: 'filled',
@@ -34,12 +34,12 @@ const AlertModal: React.FC<AlertModalProps> = ({
           leadingIcon: 'TrashIcon',
         },
         {
-          text: btnText[1] ?? 'No',
+          text: btnText?.[1] ?? 'No',
           textColour: 'secondary',
           colour: 'secondary',
           type: 'outlined',
           onClick: () => onCancel && onCancel(),
-          leadingIcon: btnText[1] === 'Keep editing' ? 'PencilIcon' : 'XIcon',
+          leadingIcon: btnText?.[1] === 'Keep editing' ? 'PencilIcon' : 'XIcon',
         },
       ]}
     />
