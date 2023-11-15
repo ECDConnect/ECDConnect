@@ -104,6 +104,10 @@ export const syncOfflineData = createAsyncThunk<
       title: 'Club Support role',
       action: clubThunkActions.changeClubSupportRole,
     },
+    {
+      title: 'Club meetings',
+      action: clubThunkActions.addClubMeeting,
+    },
   ];
 
   let error: Error | null = null;
@@ -243,6 +247,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       {
         title: 'Club Support role',
         action: clubThunkActions.changeClubSupportRole,
+      },
+      {
+        title: 'Club meetings',
+        action: clubThunkActions.addClubMeeting,
       },
     ];
 

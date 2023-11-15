@@ -172,12 +172,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
+        public virtual List<ActivityChildAttendanceDetail> MonthlyRecords { get; set; }
+    }
+
+    public class ActivityChildAttendanceDetail
+    {
+        public string MonthName { get; set; }
+        public int Points { get; set; }
+        public string PointsColor { get; set; }
     }
 
     public class ActivityChildProgress
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
+        public virtual List<ActivityChildProgressDetail> MonthlyRecords { get; set; }
+    }
+
+    public class ActivityChildProgressDetail
+    {
+        public string MonthName { get; set; }
+        public int ProgressPoints { get; set; }
+        public int CaregiverPoints { get; set; }
+        public int ProgressPerc { get; set; }
+        public int CaregiverPerc { get; set; }
+        public string ProgressPointsColor { get; set; }
+        public string CaregiverPointsColor { get; set; }
+
     }
 
     public class BeCreativeUpload

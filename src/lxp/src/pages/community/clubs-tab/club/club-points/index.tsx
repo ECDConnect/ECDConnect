@@ -25,7 +25,7 @@ export const ClubPoints: React.FC = () => {
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
-  const isPurpleLeague = club.league.leagueTypeName === LeagueType.Purple;
+  const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
 
   const history = useHistory();
 

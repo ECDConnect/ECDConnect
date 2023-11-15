@@ -807,6 +807,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 user.LockoutEnd = DateTime.MaxValue;
                 var userResult = await _userManager.UpdateAsync(user);
 
+                // Archive club member/leader/support
+                _clubService.ArchiveClubUser(practitioner.Id);
+
                 // Remove any roles
                 var roles = _userManager.GetRolesAsync(user).Result;
                 foreach (var role in roles)
@@ -825,7 +828,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
             practitioner.IsCompletedBusinessWalkThrough = true;
             practitioner.UpdatedBy = _applicationUserId;
-            practitioner.UpdatedDate = DateTime.UtcNow;
+            practitioner.UpdatedDate = DateTime.Now;
             _practiGenericRepo.Update(practitioner);
             return true;
         }

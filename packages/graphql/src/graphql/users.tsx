@@ -52,6 +52,7 @@ export const GetUserById = gql`
       phoneNumber
       profileImageUrl
       isImported
+      resetData
       raceId
       languageId
       insertedDate

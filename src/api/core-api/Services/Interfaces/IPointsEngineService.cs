@@ -49,6 +49,7 @@ namespace ECDLink.Core.Services.Interfaces
         bool CalculateCompleteChildProgressReports(); // called from cron 31 July and 30 Nov
         bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today);
         bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
+        bool CalculateClubChildAttendance(); // called from cron - end of month
 
     }
 }
