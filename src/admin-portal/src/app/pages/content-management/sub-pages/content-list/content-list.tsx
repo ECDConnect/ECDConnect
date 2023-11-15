@@ -30,6 +30,7 @@ export interface ContentListProps {
   languages: LanguageDto[];
   viewContent: (content?: ContentManagementView) => void;
   refreshParent: () => void;
+  searchValue?: string;
 }
 
 export default function ContentList({
@@ -39,6 +40,7 @@ export default function ContentList({
   optionDefinitions,
   viewContent,
   refreshParent,
+  searchValue,
 }: ContentListProps) {
   const { hasPermission } = useUser();
 
@@ -50,6 +52,16 @@ export default function ContentList({
   const [languageId, setLanguageId] = useState<string>();
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
+
+  function filterByValue(array, string) {
+    return array.filter((o) =>
+      Object.keys(o).some((k) =>
+        o[k].toLowerCase().includes(string.toLowerCase())
+      )
+    );
+  }
+
+  console.log(filterByValue(tableData, searchValue));
 
   useEffect(() => {
     if (contentType && contentType.fields) {

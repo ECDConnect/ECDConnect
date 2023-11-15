@@ -59,11 +59,13 @@ export default function ContentEdit({
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit } = useForm();
-  const { errors } = formState;
+  const { errors, isDirty } = formState;
   const handleform = {
     register: register,
     errors: errors,
   };
+
+  console.log({ isDirty });
 
   const mutationName = `update${contentType.name}`;
 
