@@ -413,7 +413,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
                 {
-                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId, practitionerToPromote.UserId, "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
+                    _reassignmentService.AddReassignmentForPractitioner(practitionerToDemote.UserId, practitionerToPromote.UserId, "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
