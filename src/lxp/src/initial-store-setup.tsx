@@ -308,7 +308,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function init() {
-      if (userAuth && !!userAuth?.resetData) {
+      if (userAuth && !!userAuth.resetData) {
         await resetAppStore();
       }
       await initStoreSetup();
