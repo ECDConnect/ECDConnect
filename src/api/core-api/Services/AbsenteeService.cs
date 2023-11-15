@@ -105,8 +105,8 @@ namespace ECDLink.Api.CoreApi.Services
 
             if (createdAbsentee != null)
             {
-                //Log to the history table for reassignment back to owner user after absentee end date
-                _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, absentee.Id.ToString());
+                //Log to the history table for reassignment back to owner user after absentee end date and pass on the role selectiosn to for future use with assigned absenteeid
+                _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, fromRole, toRole, absentee.Id.ToString());
 
                 //send notifications a) Absentee, b) long leave
                 var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
