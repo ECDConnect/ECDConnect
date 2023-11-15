@@ -1,30 +1,30 @@
-{
-  "profiles": {
-    "IIS Express": {
-      "commandName": "IISExpress",
-      "launchBrowser": true,
-      "launchUrl": "graphql",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      }
-    },
-    "EcdLink.Api.CoreApi": {
-      "commandName": "Project",
-      "launchBrowser": true,
-      "launchUrl": "graphql",
-      "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
-      },
-      "applicationUrl": "https://localhost:5001;http://localhost:5000"
-    }
-  },
-  "$schema": "http://json.schemastore.org/launchsettings.json",
-  "iisSettings": {
-    "windowsAuthentication": false,
-    "anonymousAuthentication": true,
-    "iisExpress": {
-      "applicationUrl": "http://localhost:16185",
-      "sslPort": 44384
-    }
-  }
+{ 
+ "iisSettings": {
+   "windowsAuthentication": false,
+   "anonymousAuthentication": true,
+   "iisExpress": {
+     "applicationUrl": "http://localhost:16185",
+     "sslPort": 44384
+   }
+ },
+ "$schema": "http://json.schemastore.org/launchsettings.json",
+ "profiles": {
+   "IIS Express": {
+     "commandName": "IISExpress",
+     "launchBrowser": true,
+     "launchUrl": "graphql",
+     "environmentVariables": {
+       "ASPNETCORE_ENVIRONMENT": "Development"
+     }
+   },
+   "EcdLink.Api.CoreApi": {
+     "commandName": "Project",
+     "launchBrowser": true,
+     "launchUrl": "graphql",
+     "applicationUrl": "https://localhost:5001;http://localhost:5000",
+     "environmentVariables": {
+       "ASPNETCORE_ENVIRONMENT": "Development"
+     }
+   }
+ }
 }
