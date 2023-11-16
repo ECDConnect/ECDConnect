@@ -14,4 +14,5 @@ export enum LocalStorageKeys {
   childProfileTutorialComplete = 'childProfileTutorialComplete',
   incomeStatementTutorialComplete = 'IncomeStatementTutorialComplete',
   pointsSubmitStatementsMessageDismissed = 'PointsSubmitStatementsMessageDismissed',
+  askToJoinClubViewed = 'AskToJoinClubViewed',
 }

@@ -6,6 +6,11 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { ClubTab } from './club-tab';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ClubActions } from '@/store/club/club.actions';
+import { useSelector } from 'react-redux';
+import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
+import { AskToJoin } from './club-tab/0-components/ask-to-join';
 
 export const PractitionerCommunity: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -17,16 +22,27 @@ export const PractitionerCommunity: React.FC = () => {
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
   );
 
+  const club = useSelector(getClubForPractitionerSelector);
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_CLUB_FOR_USER
+  );
+
   const tabItems: TabItem[] = [
     {
       title: 'Club',
       initActive: true,
-      child: <ClubTab />,
+      child: isLoading || !!club ? <ClubTab /> : <AskToJoin />,
     },
     {
       title: 'League',
       initActive: false,
-      child: <div className="text-textDark p-4">Coming soon</div>,
+      child:
+        isLoading || !!club ? (
+          <div className="text-textDark p-4">Coming soon</div>
+        ) : (
+          <AskToJoin />
+        ),
     },
     {
       title: 'Connect',

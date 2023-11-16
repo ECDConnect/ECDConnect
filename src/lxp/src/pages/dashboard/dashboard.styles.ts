@@ -7,4 +7,5 @@ export const businessIcon = 'bg-uiLight text-primary';
 export const smartStarterIcon = 'bg-secondary text-white';
 export const calendarIcon = 'bg-uiLight text-primary';
 export const trainingIcon = 'bg-uiLight text-primary';
+export const communityIcon = 'bg-uiLight text-primary';
 export const icon = 'bg-tertiary text-white';
