@@ -53,7 +53,7 @@ namespace ECDLink.Core.Services
         {
             //first process start of leaves absentees
             var absenteesDueToAssign = _absenteeRepo.GetAll()
-                .Where(x => x.AbsentDate.Date <= DateTime.Now.Date)
+                .Where(x => x.AbsentDate.Date <= DateTime.Now.Date && x.IsActive == true) //less than now because of backdating leave
                 .Where(x => x.CompletedDate == null)
                 //.Where(x => x.UserId == "36cef0da-a73a-4d1c-8b63-b4021adb495a")
                 .Where(y => y.PractitionerRemovalHistoryId == null)
@@ -79,7 +79,7 @@ namespace ECDLink.Core.Services
 
             //get all absentees that is due to be reassigned and excluded from the permanent removal PractitionerRemovalHistory
             var absenteesDueToReassign = _absenteeRepo.GetAll()
-                .Where(x => x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date < DateTime.Now.Date)
+                .Where(x => x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date < DateTime.Now.Date) //only day after end date to reassign back
                 .Where(x => x.CompletedDate == null)
                 //.Where(x => x.UserId == "36cef0da-a73a-4d1c-8b63-b4021adb495a")
                 .Where(y => y.PractitionerRemovalHistoryId == null)
@@ -186,11 +186,7 @@ namespace ECDLink.Core.Services
             {
                 if (fromUserId != null)
                 {
-                    //make sure no other assignment exists for this user with same details
-                    //var assignments = _reassignmentsRepo.GetAll().Where(x => x.UserId.Equals(Guid.Parse(fromUserId)) && x.AssignedToDate.Date == startDate.Date);
-                    //if (assignments.Any())
-                    //{
-                    //}
+                    //what about duplicates?
                     ClassReassignmentHistory reassignment = new ClassReassignmentHistory
                     {
                         UserId = fromUserId,
@@ -198,7 +194,7 @@ namespace ECDLink.Core.Services
                         LoggedBy = loggedByUser,
                         ReassignedToUser = toUserId,
                         AssignedToDate = startDate,
-                        ReassignedToDate = startDate,                       
+                        ReassignedToDate = startDate
                     };
 
                     if (absenteeId != null)
@@ -280,11 +276,12 @@ namespace ECDLink.Core.Services
                                 //reassign attendance
                                 UpdateAttendance(reassignment.UserId, reassignment.ReassignedToUser, reassignment.HierarchyToUser, reassignmentLists.ClassProgrammesReassigned, reassignmentLists.LearnersReassigned);
                                 //update the history line with classes, children and classroomgroups also moved
-                                if (reassignmentLists.ClassroomGroupsReassigned != null) reassignment.ReassignedClassroomGroups = string.Join(";", reassignmentLists.ClassroomGroupsReassigned);
-                                if (reassignmentLists.ClassroomsReassigned != null) reassignment.ReassignedClassrooms = string.Join(";", reassignmentLists.ClassroomsReassigned);
-                                if (reassignmentLists.ClassProgrammesReassigned != null) reassignment.ReassignedClassProgrammes = string.Join(";", reassignmentLists.ClassProgrammesReassigned);
-                                if (reassignmentLists.ChildrenReassignedUserIds != null) reassignment.ReassignedChildrenUserIds = string.Join(";", reassignmentLists.ChildrenReassignedUserIds);
-                                if (reassignmentLists.LearnersReassigned != null) reassignment.ReassignedLearners = string.Join(";", reassignmentLists.LearnersReassigned);
+                                if (reassignmentLists.ClassroomGroupsReassigned.Any()) reassignment.ReassignedClassroomGroups = string.Join(";", reassignmentLists.ClassroomGroupsReassigned);
+                                if (reassignmentLists.ClassroomsReassigned.Any()) reassignment.ReassignedClassrooms = string.Join(";", reassignmentLists.ClassroomsReassigned);
+                                if (reassignmentLists.ClassProgrammesReassigned.Any()) reassignment.ReassignedClassProgrammes = string.Join(";", reassignmentLists.ClassProgrammesReassigned);
+                                if (reassignmentLists.ChildrenReassignedUserIds.Any()) reassignment.ReassignedChildrenUserIds = string.Join(";", reassignmentLists.ChildrenReassignedUserIds);
+                                if (reassignmentLists.LearnersReassigned.Any()) reassignment.ReassignedLearners = string.Join(";", reassignmentLists.LearnersReassigned);
+
                                 _reassignmentsRepo.Update(reassignment);
                             }
 
