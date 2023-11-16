@@ -105,7 +105,7 @@ export const Login: React.FC = () => {
           password: loginFormGetValues().password,
         };
 
-        if (currentUserId) {
+        if (currentUserId && !isOnline) {
           if (checkIdOrPassport !== userIdHashDecryptedToString) {
             setDisplayWrongUserError(true);
             setIsLoading(false);
