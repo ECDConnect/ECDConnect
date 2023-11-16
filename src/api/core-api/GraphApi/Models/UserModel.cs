@@ -12,7 +12,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
         public UserModel(ApplicationUser user)
         {
-            Id = user.Id;
+            Id = user.Id.ToString();
             IsSouthAfricanCitizen = user.IsSouthAfricanCitizen;
             IdNumber = user.IdNumber;
             VerifiedByHomeAffairs = user.VerifiedByHomeAffairs;

@@ -51,7 +51,7 @@ namespace ECDLink.DataAccessLayer.Repositories
         {
             using var context = _dbFactory.CreateDbContext();
 
-            var navigationPermissionList = context.NavigationPermissions.Where(entity => string.Equals(entity.NavigationId, navigationId) && permissions.Contains(entity.PermissionId));
+            var navigationPermissionList = context.NavigationPermissions.Where(entity => entity.NavigationId == navigationId && permissions.Contains(entity.PermissionId));
 
             context.NavigationPermissions.RemoveRange(navigationPermissionList);
 

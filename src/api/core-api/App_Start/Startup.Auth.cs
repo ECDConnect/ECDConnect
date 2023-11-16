@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -34,7 +35,7 @@ namespace EcdLink.Api.CoreApi
 
         private void SetIdentityUser(IServiceCollection services)
         {
-            services.AddIdentity<ApplicationUser, IdentityRole>(config =>
+            services.AddIdentity<ApplicationUser, IdentityRole<Guid>>(config =>
             {
                 config.Tokens.ProviderMap.Add(
                     ProviderKeys.Tokens.EMAIL,

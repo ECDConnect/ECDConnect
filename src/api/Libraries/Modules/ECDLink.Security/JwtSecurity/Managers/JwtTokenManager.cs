@@ -85,7 +85,7 @@ namespace ECDLink.Security.JwtSecurity.Managers
             return true;
         }
 
-        public bool GetValidUserWithToken(string jwt, out IdentityUser user)
+        public bool GetValidUserWithToken(string jwt, out IdentityUser<Guid> user)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
             user = null;
@@ -120,7 +120,7 @@ namespace ECDLink.Security.JwtSecurity.Managers
                 }
 
                 // Validation 4 - Validate the user issued exists
-                user = _claimsManager.GetClaimUser<IdentityUser>(tokenInVerification);
+                user = _claimsManager.GetClaimUser<IdentityUser<Guid>>(tokenInVerification);
 
                 if (user == default)
                 {
@@ -141,15 +141,15 @@ namespace ECDLink.Security.JwtSecurity.Managers
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             //remove previous tokens first
-            _jwtService.InvalidateExistingTokens(contextIdentifier);
+            _jwtService.InvalidateExistingTokens(Guid.Parse(contextIdentifier));
 
-            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now, UserId = contextIdentifier, Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId, Role = role });
+            var insertedJWTToken = _jwtService.InsertToken(new JWTUserTokensEntity() { InsertedDate = DateTime.Now, UserId = Guid.Parse(contextIdentifier), Token = auth_token, TokenKey = Guid.NewGuid().ToString(), ExpiresIn = expiresIn, TenantId = tenantId, Role = role });
             return new JWTUserTokensEntityReturn() { id = insertedJWTToken.TokenKey, auth_token = insertedJWTToken.TokenKey, expires_in = insertedJWTToken.ExpiresIn };
         }
 
         public async Task<bool> InvalidateExistingTokens(string contextIdentifier)
         {
-            return _jwtService.InvalidateExistingTokens(contextIdentifier);
+            return _jwtService.InvalidateExistingTokens(Guid.Parse(contextIdentifier));
         }
 
         public async Task<JWTUserTokensEntity> GetJWTTokenByToken(string auth_token)
@@ -158,7 +158,7 @@ namespace ECDLink.Security.JwtSecurity.Managers
         }
         public async Task<JWTUserTokensEntity> GetJWTTokenById(string id)
         {
-            return _jwtService.GetById(id);
+            return _jwtService.GetById(Guid.Parse(id));
         }
 
 

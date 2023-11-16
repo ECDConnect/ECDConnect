@@ -45,7 +45,7 @@ namespace ECDLink.SmartStart.Reports
         {
             return _dbContext.Attendances
               .Include(i => i.ClassroomProgramme)
-              .Where(a => string.Equals(userId, a.UserId) && ClassroomProgrammeIds.Contains(a.ClassroomProgrammeId))
+              .Where(a => Guid.Parse(userId) == a.UserId && ClassroomProgrammeIds.Contains(a.ClassroomProgrammeId))
               .Where(f => f.AttendanceDate >= startMonth.Date && f.AttendanceDate < endMonth.GetEndOfDay())
               .ToList();
         }

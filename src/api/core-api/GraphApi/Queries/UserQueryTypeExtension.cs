@@ -47,8 +47,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
             var usersQuery = userManager.Users
@@ -107,8 +107,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
             var usersQuery = userManager.Users
@@ -215,7 +215,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<ApplicationUser> GetUserById(
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] RoleManager<IdentityRole<Guid>> roleManager,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
@@ -294,7 +294,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 var tokenusr = shortUrlRepo.GetAll().Where(x => x.URL.Contains(token)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
                 if (tokenusr != null)
                 {
-                    var user = userManager.FindByIdAsync(tokenusr.UserId).Result;
+                    var user = userManager.FindByIdAsync(tokenusr.UserId.ToString()).Result;
 
                     if (user is null)
                     {
@@ -310,7 +310,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     tokenuser.FullName = user.FullName;
                     tokenuser.PhoneNumber = user.PhoneNumber;
-                    tokenuser.UserId = user.Id;
+                    tokenuser.UserId = user.Id.ToString();
                     tokenuser.RoleName = (user.practitionerObjectData != null
                         ? Roles.PRACTITIONER
                         : user.principalObjectData != null

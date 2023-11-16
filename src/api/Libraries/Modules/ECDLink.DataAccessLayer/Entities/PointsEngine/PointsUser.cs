@@ -18,7 +18,7 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
         public int Year { get; set; }
         public string? Comment { get; set; }
         public Guid UserId { get; set; }
-        //[ForeignKey(nameof(UserId))]
+        [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public TKey PointsLibraryId { get; set; }
 

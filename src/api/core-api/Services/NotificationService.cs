@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<MessageLog, Guid> _messageRepo;
         private IGenericRepository<MessageTemplate, Guid> _templateRepo;
         private IHttpContextAccessor _contextAccessor;
-        private string _uId;
+        private Guid _uId;
         private UserManager<ApplicationUser> _userManager;
 
         /*
@@ -51,7 +51,7 @@ namespace EcdLink.Api.CoreApi.Services
             _options = optionAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
-            _uId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId();
+            _uId = _contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetAdminUserId().Value;
             _templateRepo = _repositoryFactory.CreateGenericRepository<MessageTemplate>(userContext: _uId);
             _messageRepo = _repositoryFactory.CreateGenericRepository<MessageLog>(userContext: _uId);
             _userManager = userManager;
@@ -94,10 +94,10 @@ namespace EcdLink.Api.CoreApi.Services
                             Message = !string.IsNullOrWhiteSpace(message) ? message : templateItem.Message,
                             Subject = templateItem.Subject,
                             MessageDate = messageDate,
-                            FromUserId = Guid.Parse(_uId),
+                            FromUserId = _uId,
                             MessageTemplateType = item.TemplateType,
                             MessageTemplate = item,
-                            To = (user != null ? user.Id : userType),
+                            To = (user != null ? user.Id.ToString() : userType),
                             Status = status,
                             CTA = templateItem.CTA,
                             CTAText = templateItem.CTAText,
@@ -211,7 +211,7 @@ namespace EcdLink.Api.CoreApi.Services
                 Subject = subject,
                 MessageDate = sendDate,
                 MessageEndDate = messageEndDate,
-                FromUserId = Guid.Parse(_uId)
+                FromUserId = _uId
             };
             MessageTemplate template = RetrieveTemplate(TemplateTypeConstants.GenericMessage).Result.FirstOrDefault();
             await CommitNotification(notification, template);

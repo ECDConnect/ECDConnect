@@ -23,7 +23,7 @@ namespace ECDLink.SmartStart.Services
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private string _applicationUserId;
+        private Guid _applicationUserId;
         private IGenericRepository<Practitioner, Guid> _practiGenericRepo;
         private IGenericRepository<Practitioner, Guid> _practiRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classGroupRepo;
@@ -48,7 +48,7 @@ namespace ECDLink.SmartStart.Services
             _dbContext = dbContext;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
@@ -67,7 +67,7 @@ namespace ECDLink.SmartStart.Services
             var learners = _dbContext.Learners
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
-                            .Where(l => string.Equals(l.UserId, userId));
+                            .Where(l => l.UserId == Guid.Parse(userId));
             // Get all instances of where the user was a learner
 
             if (classgroupId != default(Guid))
@@ -90,7 +90,7 @@ namespace ECDLink.SmartStart.Services
 
         public Classroom GetUserClassroom(string userId, Guid classroomId = default(Guid))
         {
-            Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId));
+            Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => Guid.Parse(userId) == x.UserId);
 
             var classroom = _dbContext.Classrooms
                                 .Include(x => x.ClassroomGroups)
@@ -192,13 +192,13 @@ namespace ECDLink.SmartStart.Services
 
                     foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                     {
-                        var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
+                        var daysOfClass = attendanceForPeriod.Where(x => x.UserId == Guid.Parse(userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
                                               && x.Year == dt.Year);
 
                         var attendedClasses = attendanceForPeriod
-                                              .Where(x => string.Equals(x.UserId, userId)
+                                              .Where(x => x.UserId == Guid.Parse(userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
                                               && x.Year == dt.Year
@@ -245,7 +245,7 @@ namespace ECDLink.SmartStart.Services
                         var daysOfClass = CalculateDaysOfClassForMonth(dt, programme.MeetingDay, validClassDays, learner.StartedAttendance, learner.StoppedAttendance);
 
                         var attendedClasses = attendanceForPeriod
-                                              .Where(x => string.Equals(x.UserId, userId)
+                                              .Where(x => x.UserId == Guid.Parse(userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
                                               && x.Year == dt.Year  

@@ -61,7 +61,7 @@ namespace ECDLink.SmartStart.Reports
                         if(daysOfClass.Count() > 0)
                         {
                             var attendedClasses = attendanceForPeriod
-                                              .Where(x => string.Equals(x.UserId, userId)
+                                              .Where(x => x.UserId == Guid.Parse(userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
                                               && x.MonthOfYear == dt.Month);

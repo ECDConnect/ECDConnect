@@ -13,6 +13,6 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
         public string ConsentType { get; set; }
         public int ConsentId { get; set; }
         public Guid UserId { get; set; }
-        public string CreatedUserId { get; set; }
+        public Guid? CreatedUserId { get; set; }
     }
 }

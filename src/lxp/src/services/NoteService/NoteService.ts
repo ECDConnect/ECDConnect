@@ -13,7 +13,7 @@ class NoteService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetAllNote($createdUserId: String) {
+        query GetAllNote($createdUserId: UUID) {
           GetAllNote (where: {
             and: [{ 
               createdUserId: {eq: $createdUserId}

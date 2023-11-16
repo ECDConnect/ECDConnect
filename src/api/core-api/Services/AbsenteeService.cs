@@ -42,7 +42,7 @@ namespace ECDLink.Api.CoreApi.Services
             _notificationService = notificationService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
+            _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id.ToString();
             _absenteeRepo = repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
         }
 
@@ -82,10 +82,10 @@ namespace ECDLink.Api.CoreApi.Services
                 //send notifications a) Absentee, b) long leave
                 var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
-                var parentUser = _hierarchyEngine.GetUserParentUserId(practitionerId);
+                var parentUser = _hierarchyEngine.GetUserParentUserId(Guid.Parse(practitionerId));
                 if (parentUser != null)
                 {
-                    var parentToSend = _userManager.FindByIdAsync(parentUser).Result;
+                    var parentToSend = _userManager.FindByIdAsync(parentUser.Value.ToString()).Result;
 
                     replacements.Add(new TagsReplacements()
                     {
@@ -171,7 +171,7 @@ namespace ECDLink.Api.CoreApi.Services
             var classRoomRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             List<AbsenteeDetail> absenteeDetails = new List<AbsenteeDetail>();
 
-            var absentees = _absenteeRepo.GetAll().Where(a => a.UserId.Equals(userId)).ToList();
+            var absentees = _absenteeRepo.GetAll().Where(a => a.UserId == Guid.Parse(userId)).ToList();
             if (startDate != null)
             {
                 absentees = absentees.Where(a => a.AbsentDate >= startDate).ToList();
@@ -229,7 +229,7 @@ namespace ECDLink.Api.CoreApi.Services
             var startCount = DateTime.Now.GetStartOfPreviousMonth();
             var endCount = DateTime.Now.GetStartOfMonth();
             var absentees = _absenteeRepo.GetAll()
-                .Where(a => a.UserId.Equals(userId))
+                .Where(a => a.UserId == Guid.Parse(userId))
                 .Where(a => a.AbsentDate < endCount && a.AbsentDate >= startCount)
                 .Where(a => a.AbsentDateEnd.HasValue == false || (a.AbsentDateEnd.HasValue && (a.AbsentDate.Date == a.AbsentDateEnd.Value.Date)))
                 .ToList();

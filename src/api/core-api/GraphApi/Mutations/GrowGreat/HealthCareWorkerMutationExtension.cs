@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = applicationUserId.ToString(),
                 UserId = Guid.Parse(input.UserId),
                 LanguageId = input.LanguageId,
                 TeamLeadId = input.TeamLeadId,

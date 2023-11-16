@@ -18,7 +18,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public Guid UserId { get; set; }
 
         [GraphIgnoreInput]
-        //[ForeignKey(nameof(UserId))]
+        [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
 
         [ForeignKey(nameof(ClassroomGroupId))]

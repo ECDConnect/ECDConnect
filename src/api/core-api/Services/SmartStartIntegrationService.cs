@@ -52,7 +52,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private readonly IGenericRepositoryFactory _repositoryFactory;
     private readonly ISystemSetting<IntegrationDelayOptions> _integrationDelay;
     private readonly ISystemSetting<IntegrationApiOptions> _options;
-    private string _uId;
+    private Guid _uId;
     private UserManager<ApplicationUser> _userManager;
     private IGenericRepository<IntegrationAudit, Guid> _auditRepo;
     private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
@@ -150,7 +150,7 @@ public class SmartStartIntegrationService : IIntegrationService
         _holidayService = holidayService;
         _notificationService = notificationService;
 
-        _uId = _hierarchyEngine.GetIntegrationUserId();
+        _uId = _hierarchyEngine.GetIntegrationUserId().Value;
         Enum.TryParse(_options.Value.Mode, out _apiMode);
         Enum.TryParse(_options.Value.MaskDataMode, out _maskMode);
 
@@ -514,11 +514,11 @@ public class SmartStartIntegrationService : IIntegrationService
                             } else
                             {
                                 //get the latest one created
-                                statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
+                                statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.UserId == prac.UserId && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
                             }
                         }
                         else {
-                            statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
+                            statementDoc = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.UserId == prac.UserId && d.Reference != null && validmonths.Contains(d.InsertedDate.Month)).OrderByDescending(d => d.InsertedDate).FirstOrDefault();
                         }
                         string remoteStatementId = "";
                         List<IntegrationAudit> docaudits = null;
@@ -538,7 +538,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 statement.RelatedDocumentId = statementDoc.Id.ToString();
                                 _statementsRepo.Update(statement);
 
-                                docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
+                                docaudits = allAudits.Where(x => x.Submitted == null && x.RelatedId == statementDoc.Id.ToString()).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
                                 remoteDocId = await PushNewDocument(statementDoc);
                             }
                         }
@@ -748,7 +748,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                     while (nextDay < followingWeekDate)
                     {
-                        var programmeDay = _programmeRepo.GetAll().Where(d => d.MeetingDay == (int)nextDay.DayOfWeek && d.ClassroomGroupId.Equals(classroomGroup.Id)).ToList();
+                        var programmeDay = _programmeRepo.GetAll().Where(d => d.MeetingDay == (int)nextDay.DayOfWeek && d.ClassroomGroupId == classroomGroup.Id).ToList();
                         if (programmeDay.Any())
                         {
                             isMeetingDay = true;
@@ -794,7 +794,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     {
                         //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
                         string learnerRemoteId = "";
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId,learner.UserId) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
+                        var mappedChild = _mappedEntities.Where(x => x.UserId == learner.UserId && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
                         if (mappedChild != null)
                         {
                             learnerRemoteId = mappedChild.RemoteId;
@@ -833,7 +833,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             int daysPresent = 0;
                             int daysAbsent = 0;
 
-                            var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child)).OrderBy(x => x.AttendanceDate).ToList();
+                            var childAttendances = weeklyAttendance.Where(x => x.UserId == Guid.Parse(child)).OrderBy(x => x.AttendanceDate).ToList();
 
                             foreach (var attendance in childAttendances)
                             {
@@ -1115,7 +1115,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 var mappedCoaches = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList();
                 if (coachId!=null)
                 {
-                    mappedCoaches = mappedCoaches.Where(c => string.Equals(c.UserId, coachId)).ToList();
+                    mappedCoaches = mappedCoaches.Where(c => c.UserId == Guid.Parse(coachId)).ToList();
                 }
                 foreach (var coach in mappedCoaches)
                 {
@@ -1145,7 +1145,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     if (franchisee != null)
                                     {
                                         Practitioner newPractitioner = null;
-                                        if (_mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).Count() == 0)
+                                        if (_mappedEntities.Where(x => x.RemoteId == franchisee.Guid && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).Count() == 0)
                                         {
                                             //Create franchisee and map in SS system
                                             franchisee.localParentEntityId = coach.LocalId;
@@ -1157,7 +1157,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                         }
                                         else
                                         {
-                                            var localPractitioner = _mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                                            var localPractitioner = _mappedEntities.Where(x => x.RemoteId == franchisee.Guid && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
                                             newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId.ToString());
                                         }
 
@@ -1255,7 +1255,7 @@ public class SmartStartIntegrationService : IIntegrationService
     public async Task<bool> IntegrationByNewCoach(string remoteCoachId)
     {
         _mappedEntities = await GetMappedEntities();
-        var mappedCoach = _mappedEntities.Where(c => string.Equals(c.RemoteId, remoteCoachId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).FirstOrDefault();
+        var mappedCoach = _mappedEntities.Where(c => c.RemoteId == remoteCoachId && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).FirstOrDefault();
         if (mappedCoach == null)
         {
             List<MappedCoach> remoteCoaches = await _apiManager.GetCoachesAll(remoteCoachId);
@@ -1265,7 +1265,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
 
                     //check if teh franchisor is mapped already, otehrwise start there first
-                    var franchisor = _mappedEntities.Where(x => x.RemoteId.Equals(coach.Franchisor.Guid) && x.LocalEntity == Constants.SSIntegrationSettings.SSFranchisor).FirstOrDefault();
+                    var franchisor = _mappedEntities.Where(x => x.RemoteId == coach.Franchisor.Guid && x.LocalEntity == Constants.SSIntegrationSettings.SSFranchisor).FirstOrDefault();
 
 
                     if (franchisor != null)
@@ -1312,7 +1312,7 @@ public class SmartStartIntegrationService : IIntegrationService
         try
         {
             //get all audits - excludin what the admin user did, these are cerates and SL pulls driven by t he system - so to avoid sending back what we got from SL, ignore these changes
-            var audits = _auditRepo.GetAll().Where(x => x.Submitted == null && x.UserId != Guid.Parse(_uId) && x.InsertedDate >= _startTime.AddDays(historyDays * -1)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest -- x.UserId.Equals(auditUserId) &&
+            var audits = _auditRepo.GetAll().Where(x => x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(historyDays * -1)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest -- x.UserId.Equals(auditUserId) &&
                                                                                                                                                                                                   //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).OrderByDescending(x => x.InsertedDate)..ToList(); //overlaps with 10 minutes of changes
             if (entityType != null)
                 return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
@@ -1337,11 +1337,11 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 if (tester.Id != null)
                 {
-                    list.Add(alllist.Where(x => x.UserId.Equals(tester.Id)).FirstOrDefault());
+                    list.Add(alllist.Where(x => x.UserId == tester.Id).FirstOrDefault());
                 }
             }
 
-            return list;
+            return list; 
         }
         catch (Exception e)
         {
@@ -1484,7 +1484,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
 
                     string childNewHierarchy = "";
-                    UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(child.UserId)).FirstOrDefault();
+                    UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId == child.UserId).FirstOrDefault();
 
                     if (childHierarchy != null)
                     {
@@ -1493,7 +1493,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         //update hierarchy not be 0.466. but 0.1.455.459.
                         childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
                         childHierarchy.Hierarchy = childNewHierarchy;
-                        childHierarchy.ParentId = newPractitioner.UserId.ToString();
+                        childHierarchy.ParentId = newPractitioner.UserId;
                         staticHierarchyRepo.Update(childHierarchy);
                         //uppdate child record Hierarchy
                         Child updatedChild = childRepo.GetByUserId(child.UserId.ToString());
@@ -1502,12 +1502,12 @@ public class SmartStartIntegrationService : IIntegrationService
                     }
 
                     //also align consent - CreatedByUserId must match the practitioner owning child
-                    List<UserConsent> consents = _dbContext.UserConsents.Where(x => string.Equals(x.UserId, child.UserId) && string.Equals(x.CreatedUserId, _uId)).ToList();
+                    List<UserConsent> consents = _dbContext.UserConsents.Where(x => x.UserId == child.UserId && x.CreatedUserId == _uId).ToList();
                     if (consents.Count > 0)
                     {
                         foreach (var consent in consents)
                         {
-                            consent.CreatedUserId = newPractitioner.UserId.ToString();
+                            consent.CreatedUserId = newPractitioner.UserId;
                             _dbContext.Update(consent);
                             _dbContext.SaveChanges();
                         }
@@ -1690,8 +1690,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                         var newUser = new ApplicationUser
                         {
-                            Id = userId.ToString(),
-                            UserId = userId,
+                            Id = userId,
                             PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
                             UserName = validUserName, 
                             IdNumber = entity.IdNumber,
@@ -1787,7 +1786,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
                             }
                             newEntityAddress.Id = siteAddressId;
-                            newEntityAddress.UpdatedBy = _uId;
+                            newEntityAddress.UpdatedBy = _uId.ToString();
                             newEntityAddress.UpdatedDate = DateTime.Now;
                             _siteAddressRepo.Insert(newEntityAddress);
 
@@ -1810,7 +1809,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
                             if (mappedEntities.Count > 0)
                             {
-                                var principalExistsCheck = mappedEntities.Where(x => x.RemoteId.Equals(principalRemoteId)).FirstOrDefault();
+                                var principalExistsCheck = mappedEntities.Where(x => x.RemoteId == principalRemoteId).FirstOrDefault();
                                 if (principalExistsCheck != null)
                                 {
                                     newPractitioner.PrincipalHierarchy = principalExistsCheck.UserId;
@@ -1905,7 +1904,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             mapperLine.LocalId = newPractitioner.Id.ToString();
                             mapperLine.RemoteId = entity.Guid;
                             mapperLine.UserId = userId;
-                            mapperLine.UpdatedBy = _uId;
+                            mapperLine.UpdatedBy = _uId.ToString();
                             mapperLine.UpdatedDate = DateTime.Now;
                             mapperLine.IsComplete = true;
                             mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
@@ -1927,8 +1926,8 @@ public class SmartStartIntegrationService : IIntegrationService
                         mapperLine.RemoteEntity = Constants.SSIntegrationSettings.SLPractitioner;
                         mapperLine.LocalId = existingPrac.Id.ToString();
                         mapperLine.RemoteId = entity.Guid;
-                        mapperLine.UserId = createdUserCheck.UserId;
-                        mapperLine.UpdatedBy = _uId;
+                        mapperLine.UserId = createdUserCheck.Id;
+                        mapperLine.UpdatedBy = _uId.ToString();
                         mapperLine.UpdatedDate = DateTime.Now;
                         mapperLine.IsComplete = true;
                         mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
@@ -1973,8 +1972,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                         var newUser = new ApplicationUser
                         {
-                            Id = userId.ToString(),
-                            UserId = userId,
+                            Id = userId,
                             UserName = userId.ToString(),//entity?.IdNumber,
                             IdNumber = entity.IdNumber,
                             IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
@@ -2126,7 +2124,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 }
                                             }
                                             newEntityAddress.Id = Guid.NewGuid();
-                                            newEntityAddress.UpdatedBy = _uId;
+                                            newEntityAddress.UpdatedBy = _uId.ToString();
                                             newEntityAddress.UpdatedDate = DateTime.Now;
                                             _siteAddressRepo.Insert(newEntityAddress);
 
@@ -2209,7 +2207,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             mapperLine.LocalId = newChild.Id.ToString();
                             mapperLine.RemoteId = entity.Guid;
                             mapperLine.UserId = userId;
-                            mapperLine.UpdatedBy = _uId;
+                            mapperLine.UpdatedBy = _uId.ToString();
                             mapperLine.UpdatedDate = DateTime.Now;
                             mapperLine.IsComplete = true;
                             mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
@@ -2246,7 +2244,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 if (doc.Child != null)
                 {
-                    MappedChild docForChild = children.Where(x => x.Guid.Equals(doc.Child.Guid)).FirstOrDefault();
+                    MappedChild docForChild = children.Where(x => x.Guid == doc.Child.Guid).FirstOrDefault();
                     if (docForChild != null)
                     {
                         docChild = _childGenericRepo.GetByUserId(docForChild.localUserId);
@@ -2276,7 +2274,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 Name = doc.Name,
                 InsertedDate = doc.DocumentDate,
                 UpdatedDate = doc.DocumentDate,
-                CreatedUserId = ownerPractitioner.UserId.ToString(),
+                CreatedUserId = ownerPractitioner.UserId,
                 Hierarchy = ownerPractitioner.Hierarchy
             };
 
@@ -2350,7 +2348,7 @@ public class SmartStartIntegrationService : IIntegrationService
             mapperLine.LocalId = newDoc.Id.ToString();
             mapperLine.RemoteId = doc.Guid;
             mapperLine.UserId = newDoc.UserId;
-            mapperLine.UpdatedBy = _uId;
+            mapperLine.UpdatedBy = _uId.ToString();
             mapperLine.UpdatedDate = DateTime.Now;
             mapperLine.IsComplete = true;
             mapperLine.BeforeJSON = JsonSerializer.Serialize(doc);
@@ -2376,7 +2374,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 //_mappedEntities = await GetMappedEntities();//Constants.SSIntegrationSettings.SSTrainee
 
-                if (!_mappedEntities.Where(x => string.Equals(x.RemoteId, entity.Guid) && string.Equals(x.RemoteEntity, Constants.SSIntegrationSettings.SLTrainee)).Any())
+                if (!_mappedEntities.Where(x => x.RemoteId == entity.Guid && string.Equals(x.RemoteEntity, Constants.SSIntegrationSettings.SLTrainee)).Any())
                 {
                     //entity.IsPrincipal = entity.IsPrincipal.HasValue ? entity.IsPrincipal.Value : false;
                     ////basic checks to allow trainee to be imported
@@ -2388,7 +2386,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         var programmeTypeDesc = entity.ProgrammeType == "ECD Centre" ? "Preschool" : entity.ProgrammeType == "Full Week (Daymothers)" ? "Day Mother" : entity.ProgrammeType == "SmartStart ECD" ? "Preschool" : entity.ProgrammeType == "PlayGroup" ? "Preschool" : "Preschool";
                         var programmeType = _programmeTypeGenericRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).OrderBy(x => x.Id).FirstOrDefault();
                         string siteName = "N/A";
-                        bool pracCreated = false;
+                        bool pracCreated = false; 
 
 
                         Practitioner newPractitioner = null;
@@ -2490,8 +2488,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             {
                                 newUser = new ApplicationUser
                                 {
-                                    Id = userId.ToString(),
-                                    UserId = userId,
+                                    Id = userId,
                                     PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : whatsappNumberToImport),
                                     UserName = entity.IdNumber,
                                     IdNumber = entity.IdNumber,
@@ -2651,7 +2648,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 mapperLine.LocalId = newTrainee.Id.ToString();
                                 mapperLine.RemoteId = entity.Guid;
                                 mapperLine.UserId = userId;
-                                mapperLine.UpdatedBy = _uId;
+                                mapperLine.UpdatedBy = _uId.ToString();
                                 mapperLine.UpdatedDate = DateTime.Now;
                                 mapperLine.IsComplete = true;
                                 mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
@@ -2704,8 +2701,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                     newUser = new ApplicationUser
                     {
-                        Id = userId.ToString(),
-                        UserId = userId,
+                        Id = userId,
                         PhoneNumber = whatsappNumberToImport,
                         UserName = userId.ToString(),
                         //IdNumber = entity.IdNumber,
@@ -2744,7 +2740,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     mapperLine.LocalId = franchisor.Id.ToString();
                     mapperLine.RemoteId = entity.Guid;
                     mapperLine.UserId = userId;
-                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedBy = _uId.ToString();
                     mapperLine.UpdatedDate = DateTime.Now;
                     mapperLine.IsComplete = true;
                     mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
@@ -2792,8 +2788,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                     newUser = new ApplicationUser
                     {
-                        Id = userId.ToString(),
-                        UserId = userId,
+                        Id = userId,
                         PhoneNumber = whatsappNumberToImport,
                         UserName = entity.IdNumber != null ? entity.IdNumber : userId.ToString(),
                         IdNumber = entity.IdNumber,
@@ -2836,7 +2831,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     mapperLine.LocalId = coach.Id.ToString();
                     mapperLine.RemoteId = entity.Guid;
                     mapperLine.UserId = userId;
-                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedBy = _uId.ToString();
                     mapperLine.UpdatedDate = DateTime.Now;
                     mapperLine.IsComplete = true;
                     mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
@@ -2882,7 +2877,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     if (child != null)
                     {
                         //get childs parent
-                        var parentEntity = _mappedEntities.Where(x => string.Equals(x.RemoteId, child.Franchisee.Guid) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                        var parentEntity = _mappedEntities.Where(x => x.RemoteId == child.Franchisee.Guid && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
                         if (parentEntity != null)
                         {
                             Practitioner parentPrac = _practitionerGenericRepo.GetByUserId(parentEntity.UserId.ToString());
@@ -2912,7 +2907,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     if (doc != null)
                     {
                         //get document alignment with child and franchisee
-                        var docParentEntity = _mappedEntities.Where(x => string.Equals(x.RemoteId, model.RelatedGuid) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                        var docParentEntity = _mappedEntities.Where(x => x.RemoteId == model.RelatedGuid && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
                         if (docParentEntity != null)
                         {
                             var practitionerOwner = _practitionerGenericRepo.GetByUserId(docParentEntity.UserId.ToString());
@@ -2920,7 +2915,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             if (doc.Child != null)
                             {
                                 var mappedChildren = await GetMappedEntities(Constants.SSIntegrationSettings.SSChild);
-                                var mappedChild = mappedChildren.Where(x => string.Equals(x.RemoteId, doc.Child.Guid)).FirstOrDefault();
+                                var mappedChild = mappedChildren.Where(x => x.RemoteId == doc.Child.Guid).FirstOrDefault();
                                 if (mappedChild != null)
                                 {
                                     docChild = _childGenericRepo.GetByUserId(mappedChild.UserId.ToString());
@@ -3036,7 +3031,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             if (updatedEntity)
                             {
-                                coach.UpdatedBy = _uId;
+                                coach.UpdatedBy = _uId.ToString();
                                 coach.UpdatedDate = DateTime.Now;
                                 _coachGenericRepo.Update(coach);
                             }
@@ -3067,7 +3062,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             if (updatedEntity)
                             {
-                                prac.UpdatedBy = _uId;
+                                prac.UpdatedBy = _uId.ToString();
                                 prac.UpdatedDate = DateTime.Now;
                                 _practitionerGenericRepo.Update(prac);
                             }
@@ -3100,7 +3095,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             if (updatedEntity)
                             {
-                                child.UpdatedBy = _uId;
+                                child.UpdatedBy = _uId.ToString();
                                 child.UpdatedDate = DateTime.Now;
                                 _childGenericRepo.Update(child);
                             }
@@ -3151,7 +3146,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             if (updatedEntity)
                             {
-                                caregiver.UpdatedBy = _uId;
+                                caregiver.UpdatedBy = _uId.ToString();
                                 caregiver.UpdatedDate = DateTime.Now;
                                 _caregiverRepo.Update(caregiver);
                             }
@@ -3186,7 +3181,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             if (updatedEntity)
                             {
-                                address.UpdatedBy = _uId;
+                                address.UpdatedBy = _uId.ToString();
                                 address.UpdatedDate = DateTime.Now;
                                 _siteAddressRepo.Update(address);
                             }
@@ -3219,7 +3214,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             }
                             if (updatedEntity)
                             {
-                                doc.UpdatedBy = _uId;
+                                doc.UpdatedBy = _uId.ToString();
                                 doc.UpdatedDate = DateTime.Now;
                                 _docRepo.Update(doc);
                             }
@@ -3641,7 +3636,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 if (existingDoc == null)
                 {
                     //pull from new list here as child mightve just been added
-                    var mappedUser = _mapperRepo.GetAll().Where(m => m.UserId.Equals(newDoc.UserId) && (m.LocalEntity == "Child" || m.LocalEntity == "Practitioner" || m.LocalEntity == "Coach")).FirstOrDefault();
+                    var mappedUser = _mapperRepo.GetAll().Where(m => m.UserId == newDoc.UserId && (m.LocalEntity == "Child" || m.LocalEntity == "Practitioner" || m.LocalEntity == "Coach")).FirstOrDefault();
 
                     if (mappedUser != null && docTypeMapped != null)
                     {
@@ -3654,10 +3649,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         if (mappedUser.LocalEntity == "Child" || mappedUser.LocalEntity == "Caregiver")
                         {
                             //its a child doc loaded so retrieve childs paarent franchisee user id
-                            var parentUserId = _hierarchyEngine.GetUserParentUserId(mappedUser.UserId.ToString());
-                            if (!string.IsNullOrEmpty(parentUserId))
+                            var parentUserId = _hierarchyEngine.GetUserParentUserId(mappedUser.UserId);
+                            if (parentUserId.HasValue)
                             {
-                                var parentUser = _mappedEntities.Where(p => p.UserId.ToString() == parentUserId).FirstOrDefault();
+                                var parentUser = _mappedEntities.Where(p => p.UserId == parentUserId.Value).FirstOrDefault();
                                 if (parentUser != null)
                                 {
                                     jsonDocString.AppendLine("\"Franchisee\":{\"Guid\": \"" + parentUser.RemoteId + "\"},");
@@ -3748,7 +3743,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                             cgMapping.LocalId = newDoc.Id.ToString();
                                             cgMapping.RemoteId = docRemoteId;
                                             //cgMapping.UserId = newDoc.UserId;
-                                            cgMapping.UpdatedBy = _uId;
+                                            cgMapping.UpdatedBy = _uId.ToString();
                                             cgMapping.UpdatedDate = DateTime.Now;
                                             cgMapping.IsComplete = true;
                                             cgMapping.BeforeJSON = jsonDocString.ToString() + " | " + jsonNoteString.ToString();
@@ -3888,7 +3883,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 cgMapping.LocalId = newChild.CaregiverId.ToString();
                                 cgMapping.RemoteId = cgRemoteId;
                                 cgMapping.UserId = newChild.UserId;
-                                cgMapping.UpdatedBy = _uId;
+                                cgMapping.UpdatedBy = _uId.ToString();
                                 cgMapping.UpdatedDate = DateTime.Now;
                                 cgMapping.IsComplete = true;
                                 cgMapping.BeforeJSON = jsonCaregiverString.ToString();
@@ -4006,7 +4001,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
                                 else if (bAddConsents)
                                 {
-                                    var userConsents = _dbContext.UserConsents.Where(x => x.UserId.Equals(newChild.UserId)).Select(x => x.ConsentType).ToList();
+                                    var userConsents = _dbContext.UserConsents.Where(x => x.UserId == newChild.UserId).Select(x => x.ConsentType).ToList();
                                     //PersonalInformationAgreement PhotoPermissions
                                     foreach (var item in userConsents)
                                     {
@@ -4028,7 +4023,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
                                 else if (bAddGrants)
                                 {
-                                    var userGrants = _dbContext.UserGrants.Include(ug => ug.Grant).Where(x => x.UserId.Equals(newChild.UserId)).Distinct().ToList();
+                                    var userGrants = _dbContext.UserGrants.Include(ug => ug.Grant).Where(x => x.UserId == newChild.UserId).Distinct().ToList();
                                     foreach (var item in userGrants)
                                     {
                                         jsonChildString.AppendLine("\"GrantType\":\"" + valueToSend + "\",");
@@ -4071,7 +4066,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 childMapping.LocalId = newChild.Id.ToString();
                                 childMapping.RemoteId = childRemoteId;
                                 childMapping.UserId = newChild.UserId;
-                                childMapping.UpdatedBy = _uId;
+                                childMapping.UpdatedBy = _uId.ToString();
                                 childMapping.UpdatedDate = DateTime.Now;
                                 childMapping.IsComplete = true;
                                 childMapping.BeforeJSON = jsonChildString.ToString();
@@ -4110,11 +4105,11 @@ public class SmartStartIntegrationService : IIntegrationService
         if (newCG != null)
         {
             //retrieve the child this CG is linked to
-            Child cgChild = _childGenericRepo.GetAll().Where(x => x.CaregiverId != null && string.Equals(x.CaregiverId, newCG.Id)).FirstOrDefault();
+            Child cgChild = _childGenericRepo.GetAll().Where(x => x.CaregiverId != null && x.CaregiverId == newCG.Id).FirstOrDefault();
             if (cgChild != null)
             {
                 //retrieve teh mapped child
-                IntegrationEntityMapping childMapping = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSChild) && x.UserId.Equals(cgChild.UserId)).FirstOrDefault();
+                IntegrationEntityMapping childMapping = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSChild) && x.UserId == cgChild.UserId).FirstOrDefault();
                 if (childMapping != null)
                 {
                     childRemoteId = childMapping.RemoteId;
@@ -4124,7 +4119,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         if (practitioner != null)
                         {
                             //get remoteId
-                            mappedPractitioner = _mappedEntities.Where(x => x.UserId.Equals(practitioner.UserId) && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                            mappedPractitioner = _mappedEntities.Where(x => x.UserId == practitioner.UserId && x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
 
                             //insert caregiver and map
                             StringBuilder jsonCaregiverString = new StringBuilder();
@@ -4214,7 +4209,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                         cgMapping.LocalId = newCG.ToString();
                                         cgMapping.RemoteId = cgRemoteId;
                                         //cgMapping.UserId = newChild.UserId;
-                                        cgMapping.UpdatedBy = _uId;
+                                        cgMapping.UpdatedBy = _uId.ToString();
                                         cgMapping.UpdatedDate = DateTime.Now;
                                         cgMapping.IsComplete = true;
                                         cgMapping.BeforeJSON = jsonCaregiverString.ToString();
@@ -4291,8 +4286,8 @@ public class SmartStartIntegrationService : IIntegrationService
     {
         if (childUserId != null)
         {
-            var parentUserId = _hierarchyEngine.GetUserParentUserId(childUserId);
-            return _practitionerGenericRepo.GetByUserId(parentUserId);
+            var parentUserId = _hierarchyEngine.GetUserParentUserId(Guid.Parse(childUserId));
+            return _practitionerGenericRepo.GetByUserId(parentUserId.GetValueOrDefault());
         }
         else return null;
     }
@@ -4345,10 +4340,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         string fridayPresent = unknown;
                         string defaultState = unknown;
                         //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
+                        var mappedChild = _mappedEntities.Where(x => x.UserId == Guid.Parse(child) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
                         if (mappedChild != null)
                         {
-                            var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
+                            var childAttendances = attendanceData.Where(x => x.UserId == Guid.Parse(child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
                             //mark public holidays off first
                             if (holidays.Count > 0)
                             {
@@ -4513,7 +4508,7 @@ public class SmartStartIntegrationService : IIntegrationService
     //            if (auditRow != null)
     //            {
     //                auditRow.UpdatedDate = DateTime.Now;
-    //                auditRow.UpdatedBy = _uId;
+    //                auditRow.UpdatedBy = _uId.ToString();
     //                auditRow.Submitted = DateTime.Now;
 
     //                _auditRepo.Update(auditRow);
@@ -4718,7 +4713,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 }
                 if (updatedEntity)
                 {
-                    localEntity.UpdatedBy = _uId;
+                    localEntity.UpdatedBy = _uId.ToString();
                     localEntity.UpdatedDate = DateTime.Now;
                     entityRepo.Update(localEntity);
 
@@ -4767,7 +4762,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
                 IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
-                mapperLine.UpdatedBy = _uId;
+                mapperLine.UpdatedBy = _uId.ToString();
                 mapperLine.UpdatedDate = DateTime.Now;
                 mapperLine.IsComplete = true;
                 mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
@@ -4854,7 +4849,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             //}
                             if (updateAddress)
                             {
-                                localEntityAddress.UpdatedBy = _uId;
+                                localEntityAddress.UpdatedBy = _uId.ToString();
                                 localEntityAddress.UpdatedDate = DateTime.Now;
                                 addressRepo.Update(localEntityAddress);
                             }
@@ -4888,7 +4883,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         }
                         if (updateAddress)
                         {
-                            newEntityAddress.UpdatedBy = _uId;
+                            newEntityAddress.UpdatedBy = _uId.ToString();
                             newEntityAddress.UpdatedDate = DateTime.Now;
                             var addressId = addressRepo.Insert(newEntityAddress);
 
@@ -4938,7 +4933,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 if (updatedEntity)
                 {
-                    localEntity.UpdatedBy = _uId;
+                    localEntity.UpdatedBy = _uId.ToString();
                     localEntity.UpdatedDate = DateTime.Now;
                     entityRepo.Update(localEntity);
 
@@ -4965,7 +4960,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 //        }
                 //    }
                 //}
-                //localEntity.UpdatedBy = _uId;
+                //localEntity.UpdatedBy = _uId.ToString();
                 //localEntity.UpdatedDate = DateTime.Now;
                 //entityRepo.Update(localEntity);
 
@@ -5017,7 +5012,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
                 IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
-                mapperLine.UpdatedBy = _uId;
+                mapperLine.UpdatedBy = _uId.ToString();
                 mapperLine.UpdatedDate = DateTime.Now;
                 mapperLine.IsComplete = true;
                 mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
@@ -5081,7 +5076,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 }
                 if (updatedEntity)
                 {
-                    localEntity.UpdatedBy = _uId;
+                    localEntity.UpdatedBy = _uId.ToString();
                     localEntity.UpdatedDate = DateTime.Now;
                     entityRepo.Update(localEntity);
 
@@ -5110,7 +5105,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 //        }
                 //    }
                 //}
-                //localEntity.UpdatedBy = _uId;
+                //localEntity.UpdatedBy = _uId.ToString();
                 //localEntity.UpdatedDate = DateTime.Now;
                 //entityRepo.Update(localEntity);
 
@@ -5187,7 +5182,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
                 IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
-                mapperLine.UpdatedBy = _uId;
+                mapperLine.UpdatedBy = _uId.ToString();
                 mapperLine.UpdatedDate = DateTime.Now;
                 mapperLine.IsComplete = true;
                 mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
@@ -5250,7 +5245,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 }
                 if (updatedEntity)
                 {
-                    localEntity.UpdatedBy = _uId;
+                    localEntity.UpdatedBy = _uId.ToString();
                     localEntity.UpdatedDate = DateTime.Now;
                     entityRepo.Update(localEntity);
 
@@ -5275,7 +5270,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 //        }
                 //    }
                 //}
-                //localEntity.UpdatedBy = _uId;
+                //localEntity.UpdatedBy = _uId.ToString();
                 //localEntity.UpdatedDate = DateTime.Now;
                 //entityRepo.Update(localEntity);
 
@@ -5283,7 +5278,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
                 IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
-                mapperLine.UpdatedBy = _uId;
+                mapperLine.UpdatedBy = _uId.ToString();
                 mapperLine.UpdatedDate = DateTime.Now;
                 mapperLine.IsComplete = true;
                 mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
@@ -5346,7 +5341,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 }
                 if (updatedEntity)
                 {
-                    localEntity.UpdatedBy = _uId;
+                    localEntity.UpdatedBy = _uId.ToString();
                     localEntity.UpdatedDate = DateTime.Now;
                     entityRepo.Update(localEntity);
 
@@ -5356,7 +5351,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
                 IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
-                mapperLine.UpdatedBy = _uId;
+                mapperLine.UpdatedBy = _uId.ToString();
                 mapperLine.UpdatedDate = DateTime.Now;
                 mapperLine.IsComplete = true;
                 mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
@@ -5418,7 +5413,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 }
                 if (updatedEntity)
                 {
-                    localEntity.UpdatedBy = _uId;
+                    localEntity.UpdatedBy = _uId.ToString();
                     localEntity.UpdatedDate = DateTime.Now;
                     _docRepo.Update(localEntity);
 
@@ -5427,7 +5422,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
                 //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
                 IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
-                mapperLine.UpdatedBy = _uId;
+                mapperLine.UpdatedBy = _uId.ToString();
                 mapperLine.UpdatedDate = DateTime.Now;
                 mapperLine.IsComplete = true;
                 mapperLine.BeforeJSON = JsonSerializer.Serialize(model);

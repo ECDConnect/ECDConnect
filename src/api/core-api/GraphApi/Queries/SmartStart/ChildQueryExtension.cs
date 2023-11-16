@@ -11,6 +11,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ string classroomId)
             var dbRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var classroomGrooupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             List<Child> children = new List<Child>();
-            List<ClassroomGroup> group = classroomGrooupRepo.GetAll().Where(x => x.Classroom.Id.Equals(classroomId)).ToList();
+            List<ClassroomGroup> group = classroomGrooupRepo.GetAll().Where(x => x.Classroom.Id == Guid.Parse(classroomId)).ToList();
             foreach (var groupItem in group)
             {
                 if (groupItem.Learners.Any())

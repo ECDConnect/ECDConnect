@@ -35,12 +35,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           UserManager<ApplicationUser> userManager,
           UserModel input)
         {
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
             bool currentUserIsAdmin = false;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            if (input is null || currentUserId is null)
+            if (input is null)
             {
                 throw new QueryException("Invalid User input.");
             }
@@ -64,7 +64,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new QueryException("User already exists.");
 
             // Create new user.
-            var id = input.Id ?? Guid.NewGuid().ToString();
+            var id = string.IsNullOrEmpty(input.Id) ? Guid.NewGuid() : Guid.Parse(input.Id);
             var newUser = new ApplicationUser
             {
                 Id = id,
@@ -87,7 +87,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 LanguageId = input.LanguageId,
                 InsertedDate = DateTime.UtcNow,
                 UpdatedDate = null,
-                UserId = Guid.Parse(id)
             };
 
             IdentityResult userCreatedResult = null;
@@ -379,7 +378,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.UpdatedDate = DateTime.UtcNow;
                 var updateResult = await userManager.UpdateAsync(user);
 
-                DoAudit(currentUserId, repoFactory, auditFields, id);
+                DoAudit(currentUserId.Value, repoFactory, auditFields, Guid.Parse(id));
 
                 if (!updateResult.Succeeded)
                 {
@@ -416,7 +415,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin)
             {
-                var currentUser = await userManager.FindByIdAsync(currentUserId);
+                var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
                 var isAlsoAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
                 if (!isAlsoAdmin)
@@ -431,10 +430,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);
-            DoAudit(currentUserId, repoFactory, null, id);
+            DoAudit(currentUserId, repoFactory, null, Guid.Parse(id));
 
             // Manage points for user
-            pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
+            pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId.ToString(), DateTime.UtcNow);
 
             return updateResult.Succeeded;
         }
@@ -448,7 +447,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           List<string> ids)
         {
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var currentUser = await userManager.FindByIdAsync(currentUserId);
+            var currentUser = await userManager.FindByIdAsync(currentUserId.ToString());
             var executorIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
             if (ids is null || ids.Count == 0)
@@ -456,7 +455,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return new BulkDeactivateResult();
             }
 
-            var users = userManager.Users.Where(u => ids.Contains(u.Id)).ToList();
+            var guidIds = ids.Select(x => Guid.Parse(x)).ToList();
+            var users = userManager.Users.Where(u => guidIds.Contains(u.Id)).ToList();
             
             if (users is null || users.Count == 0)
             {
@@ -474,7 +474,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 {
                     if (!executorIsAdmin)
                     {
-                        failed.Add(user.Id);
+                        failed.Add(user.Id.ToString());
                         continue;
                     }
                 }
@@ -491,7 +491,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // Manage points for user
                     var isPractitioner = await userManager.IsInRoleAsync(user, Roles.PRACTITIONER);
                     if (isPractitioner)
-                        pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
+                        pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId.ToString(), DateTime.UtcNow);
 
                     // Remove any roles
                     var roles = userManager.GetRolesAsync(user).Result;
@@ -500,11 +500,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         var result = userManager.RemoveFromRoleAsync(user, role).Result;
                     }
 
-                    success.Add(user.Id);
+                    success.Add(user.Id.ToString());
                     DoAudit(currentUserId, repoFactory, null, user.Id, "Delete"); 
                 } else
                 {
-                    failed.Add(user.Id);
+                    failed.Add(user.Id.ToString());
                 }
             }
 
@@ -527,7 +527,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin)
             {
-                var currentUser = await userManager.FindByIdAsync(httpContextAccessor.HttpContext.GetUser().Id);
+                var currentUser = await userManager.FindByIdAsync(httpContextAccessor.HttpContext.GetUser().Id.ToString());
                 var isAlsoAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
                 if (!isAlsoAdmin)
@@ -547,9 +547,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return updatedPassword.Succeeded;
         }
 
-        private bool DoAudit(string userId,
+        private bool DoAudit(Guid userId,
             IGenericRepositoryFactory repoFactory,
-            List<AuditChanges> changes, string id, string changeType = "Update")
+            List<AuditChanges> changes, Guid id, string changeType = "Update")
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: userId);
@@ -564,8 +564,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Property = "IsActive",
                         ValueAfter = "false",
                         ValueBefore = "true",
-                        UserId = Guid.Parse(userId),
-                        RelatedId = id,
+                        UserId = userId,
+                        RelatedId = id.ToString(),
                         TenantId = tenantId
                     });
                     break;
@@ -574,8 +574,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         ChangeType = changeType,
                         Entity = "ApplicationUser",
-                        UserId = Guid.Parse(userId),
-                        RelatedId = id,
+                        UserId = userId,
+                        RelatedId = id.ToString(),
                         TenantId = tenantId
                     });
                     break;
@@ -589,8 +589,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             Property = change.FieldName,
                             ValueBefore = change.ValueBefore,
                             ValueAfter = change.ValueAfter,
-                            UserId = Guid.Parse(userId),
-                            RelatedId = id,
+                            UserId = userId,
+                            RelatedId = id.ToString(),
                             TenantId = tenantId
                         });
 

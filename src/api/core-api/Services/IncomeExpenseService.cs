@@ -30,7 +30,7 @@ namespace ECDLink.Core.Services
     {
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repoFactory;
-        private string _applicationUserId;
+        private Guid _applicationUserId;
         private IGenericRepository<StatementsExpenseType, Guid> _statementsExpenseTypeRepo;
         private IGenericRepository<StatementsExpenses, Guid> _statementsExpensesRepo;
         private IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
@@ -61,7 +61,7 @@ namespace ECDLink.Core.Services
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _hierarchyEngine = hierarchyEngine;
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());       
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);       
 
             _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
             _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
@@ -94,7 +94,7 @@ namespace ECDLink.Core.Services
             var statements = statementRepo.GetAll()
                 .Include(x => x.IncomeItems)
                 .Include(x => x.ExpenseItems)
-                .Where(x => x.UserId.Equals(userId) && x.Year.Equals(year))
+                .Where(x => x.UserId == Guid.Parse(userId) && x.Year.Equals(year))
                 .ToList();
 
             if (statements.Any())
@@ -112,7 +112,7 @@ namespace ECDLink.Core.Services
         {
             var statementSubmitted = _statementsRepo.GetAll() //get all rows for year to date
                     .Where(x => 
-                        string.Equals(x.UserId, userId) && 
+                        x.UserId == Guid.Parse(userId) && 
                         x.Year == year &&
                         x.Month == month &&
                         x.Submitted == true && 
@@ -125,7 +125,7 @@ namespace ECDLink.Core.Services
         private DateTime? GetLastSubmittedDate(string userId)
         {
             var row = _statementsRepo.GetAll() //get all rows for year to date
-                    .Where(x => string.Equals(x.UserId, userId) && x.Submitted == true)
+                    .Where(x => x.UserId == Guid.Parse(userId) && x.Submitted == true)
                     .OrderByDescending(y => y.SubmittedDate)
                     .Select(y => y.SubmittedDate)
                     .FirstOrDefault();
@@ -155,7 +155,7 @@ namespace ECDLink.Core.Services
             // Only return types linked to expenses for params
             var report =
             (
-                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
+                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => y.UserId == Guid.Parse(userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
                 join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
                 select new { statementExpenseType.Description, statementsExpenses.Amount }
             ).ToList();           
@@ -173,7 +173,7 @@ namespace ECDLink.Core.Services
             // Only return types linked to income for params
             var report =
             (
-                from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
+                from StatementsIncome in _statementsIncomeRepo.GetAll().Where(y => y.UserId == Guid.Parse(userId) && y.IsActive == true && (y.StatementsIncomeStatementId.HasValue && y.StatementsIncomeStatementId.ToString() == statementId))
                 join StatementsIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on StatementsIncome.IncomeTypeId equals StatementsIncomeType.Id.ToString()
                 select new { StatementsIncomeType.Description, StatementsIncome.Amount }
             ).ToList();
@@ -269,7 +269,7 @@ namespace ECDLink.Core.Services
                     existingIncomeItem.ChildCoverAmount = model.ChildCoverAmount;
                     existingIncomeItem.PhotoProof = model.PhotoProof;
                     existingIncomeItem.UpdatedDate = DateTime.Now;
-                    existingIncomeItem.UpdatedBy = _applicationUserId;
+                    existingIncomeItem.UpdatedBy = _applicationUserId.ToString();
                     existingIncomeItem.ChildUserId = model.ChildUserId;
                     existingIncomeItem.ContributionTypeId = model.ContributionTypeId;
                     existingIncomeItem.Description = model.Description;
@@ -404,7 +404,7 @@ namespace ECDLink.Core.Services
                 Submitted = true,
                 SubmittedDate = DateTime.Now,
                 UserId = Guid.Parse(userId),
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 UpdatedDate = DateTime.Now,
                 InsertedDate = DateTime.Now,
                 IncomeItems = incomeItems.ToList(),
@@ -713,7 +713,7 @@ namespace ECDLink.Core.Services
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = filename.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
-            pdfDoc.CreatedUserId = _applicationUserId;
+            pdfDoc.CreatedUserId = _applicationUserId.ToString();
 
             return _documentManager.SaveIncomeStatementPDF(pdfDoc).Result;
         }

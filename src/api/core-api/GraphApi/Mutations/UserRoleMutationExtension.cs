@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] UserManager<ApplicationUser> userManager,
           [Service] HierarchyEngine engine,
           [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] RoleManager<IdentityRole> roleManager,
+          [Service] RoleManager<IdentityRole<Guid>> roleManager,
           string userId,
           List<string> roleNames)
         {
@@ -51,9 +51,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // If user is being added as an admin, add them to the hierarchy.
             if (distinctRoleNamesToBeAdded.Contains(Roles.ADMINISTRATOR))
             {
-                if (string.IsNullOrEmpty(engine.GetUserHierarchy(userId)))
+                if (string.IsNullOrEmpty(engine.GetUserHierarchy(Guid.Parse(userId))))
                 {
-                    engine.AddHierarchyEntity<ApplicationUser>(userId, userId);
+                    engine.AddHierarchyEntity<ApplicationUser>(Guid.Parse(userId), Guid.Parse(userId));
                 }
             }
 
@@ -89,7 +89,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 userIsAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
                 // If user having its roles removed is an admin, remove them only if requesting user is an admin
-                var currentUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = currentUserId }, Roles.ADMINISTRATOR);
+                var currentUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = currentUserId.Value }, Roles.ADMINISTRATOR);
                 result = currentUserIsAdmin ? await userManager.RemoveFromRolesAsync(user, distinctRoleNames) : result;
             }
 
@@ -102,10 +102,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             bool hierarchySuccess = true;
             if (distinctRoleNames.Contains(Roles.ADMINISTRATOR)
-                && !string.IsNullOrEmpty(engine.GetUserHierarchy(userId)))
+                && !string.IsNullOrEmpty(engine.GetUserHierarchy(Guid.Parse(userId))))
             {
                 // Make false or return would be false if not admin
-                hierarchySuccess = !engine.RemoveHierarchy(userId);
+                hierarchySuccess = !engine.RemoveHierarchy(Guid.Parse(userId));
             }
 
             return (result?.Succeeded ?? false) && hierarchySuccess;

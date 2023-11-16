@@ -61,7 +61,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                 {
                     var classrooms = dbContext.Classrooms
                                                 .Where(x => x.IsActive)
-                                                .Where(x => string.Equals(x.UserId, practitioner.UserId))
+                                                .Where(x => x.UserId == practitioner.UserId)
                                                 .ToList();
 
                     var reports = new List<MonthlyAttendanceReportModel>();

@@ -12,7 +12,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
-    [PrimaryKey(nameof(UserId))]
+    [PrimaryKey(nameof(Id))]
     public class ApplicationUser : ApplicationIdentityUser, IMultiUserType, ITrackableType, RaceJoin<Guid?>, GenderJoin<Guid?>
     {
         [ForeignKey(nameof(RaceId))]
@@ -32,8 +32,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public virtual ICollection<Documents.Document> Documents { get; set; }
 
         [GraphIgnoreInput]
-        public override string Id { get => base.Id; set => base.Id = value; }
-        public Guid UserId { get; set; }
+        public override Guid Id { get => base.Id; set => base.Id = value; }
         public override string UserName { get => base.UserName; set => base.UserName = value; }
         public override string NormalizedUserName { get => base.NormalizedUserName; set => base.NormalizedUserName = value; }
         public override string Email { get => base.Email; set => base.Email = value; }

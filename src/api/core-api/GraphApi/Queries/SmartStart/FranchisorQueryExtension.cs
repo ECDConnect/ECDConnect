@@ -10,6 +10,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -41,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            List<Coach> coaches = coachRepo.GetAll().Where(x => x.FranchisorId.Equals(userId)).ToList();
+            List<Coach> coaches = coachRepo.GetAll().Where(x => x.FranchisorId == Guid.Parse(userId)).ToList();
 
             return coaches;
         }
@@ -54,7 +55,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            List<Coach> coaches = coachRepo.GetAll().Where(x => x.FranchisorId.Equals(userId)).ToList();
+            List<Coach> coaches = coachRepo.GetAll().Where(x => x.FranchisorId == Guid.Parse(userId)).ToList();
             List<Child> children = new List<Child>();
             foreach (var c in coaches)
             {

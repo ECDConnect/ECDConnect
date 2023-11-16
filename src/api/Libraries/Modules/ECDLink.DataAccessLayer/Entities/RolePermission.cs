@@ -15,9 +15,9 @@ namespace ECDLink.DataAccessLayer.Entities
     {
         // Part of PK
         [ForeignKey(nameof(RoleId))]
-        public virtual IdentityRole Role { get; set; }
+        public virtual IdentityRole<Guid> Role { get; set; }
 
-        public string RoleId { get; set; }
+        public Guid RoleId { get; set; }
 
         // Part of PK
         [ForeignKey(nameof(PermissionId))]

@@ -29,7 +29,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         {
             get
             {
-                return _hierarchyEngine.GetUserHierarchy(_userId.ToString());
+                return _hierarchyEngine.GetUserHierarchy(_userId);
             }
         }
 
@@ -74,7 +74,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 try
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString()).ToList();
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value).ToList();
                     if (hh.Count > 0)
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
@@ -116,7 +116,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString()).ToList();
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value).ToList();
                     if (hh != null)
                     {
                         if (!hh.Contains(castRecord.Hierarchy))
@@ -154,7 +154,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString()).ToList();
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value).ToList();
                     if (hh != null)
                     {
                         if (!hh.Contains(castRecord.Hierarchy))
@@ -196,7 +196,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString()).ToList();
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value).ToList();
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))
@@ -244,7 +244,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString()).ToList();
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value).ToList();
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))

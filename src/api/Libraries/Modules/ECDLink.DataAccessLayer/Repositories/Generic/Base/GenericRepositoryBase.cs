@@ -48,7 +48,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public virtual IQueryable<T> GetAll(PagedQueryInput pagingInput = null)
         {
-            var queryable = entities.Where(e => e.TenantId == null || e.TenantId.Equals(_tenantId)).AsQueryable();
+            var queryable = entities.Where(e => e.TenantId == null || e.TenantId == _tenantId).AsQueryable();
 
             if (pagingInput is not null)
             {
@@ -63,7 +63,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public virtual int Count(PagedQueryInput pagingInput = null)
         {
-            var queryable = entities.Where(e => e.TenantId == null || e.TenantId.Equals(_tenantId)).AsQueryable();
+            var queryable = entities.Where(e => e.TenantId == null || e.TenantId == _tenantId).AsQueryable();
 
             if (pagingInput is not null)
             {
@@ -75,12 +75,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         public virtual T GetById(Guid id)
         {
-            return entities.Where(e => e.TenantId.Equals(_tenantId)).SingleOrDefault(s => s.Id == id);
+            return entities.Where(e => e.TenantId == _tenantId).SingleOrDefault(s => s.Id == id);
         }
 
         public async virtual Task<T> GetByIdAsync(Guid id)
         {
-            return await entities.Where(e => e.TenantId.Equals(_tenantId)).SingleOrDefaultAsync(s => s.Id == id);
+            return await entities.Where(e => e.TenantId == _tenantId).SingleOrDefaultAsync(s => s.Id == id);
         }
 
         public virtual T GetByUserId(string id)
@@ -94,7 +94,29 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             else return default;
         }
 
+        public virtual T GetByUserId(Guid id)
+        {
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + _tenantId + "'").FirstOrDefault();
+                return qq;
+            }
+            else return default;
+        }
+
         public virtual List<T> GetListByUserId(string id)
+        {
+            Type type = typeof(T);
+            if (type.GetProperty("UserId") != null)
+            {
+                var qq = entities.FromSqlRaw("SELECT * FROM \"" + type.Name + "\" WHERE \"UserId\" = '" + id + "' AND \"TenantId\" = '" + _tenantId + "'").ToList();////.OrderByDescending(y => y.InsertedDate);
+                return qq;
+            }
+            else return default;
+        }
+
+        public virtual List<T> GetListByUserId(Guid id)
         {
             Type type = typeof(T);
             if (type.GetProperty("UserId") != null)

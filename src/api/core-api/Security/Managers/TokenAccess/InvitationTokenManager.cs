@@ -2,6 +2,7 @@
 using ECDLink.Security.Managers;
 using ECDLink.Security.Providers;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
@@ -43,9 +44,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             return token;
         }
 
-        public async Task<ApplicationUser> GetValidUserWithTokenAsync(string userId, string token)
+        public async Task<ApplicationUser> GetValidUserWithTokenAsync(string userName, string token)
         {
-            var user = await _userManager.FindByNameAsync(userId);
+            var user = await _userManager.FindByNameAsync(userName);
 
             if (user == null)
             {
@@ -62,9 +63,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             return user;
         }
 
-        public async Task<string> RefreshJwtTokenAsync(string userId, string token)
+        public async Task<string> RefreshJwtTokenAsync(string userName, string token)
         {
-            var user = await _userManager.FindByNameAsync(userId);
+            var user = await _userManager.FindByNameAsync(userName);
 
             if (user == null)
             {

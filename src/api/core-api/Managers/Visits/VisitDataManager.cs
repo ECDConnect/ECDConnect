@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private UserLicenseManager _userLicenseManager;
         private VisitManager _visitManager;
 
-        private string _applicationUserId;
+        private Guid _applicationUserId;
 
         public VisitDataManager(
             IHttpContextAccessor contextAccessor,
@@ -59,7 +59,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _hierarchyEngine = hierarchyEngine;
             _visitManager = visitManager; 
 
-            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
+            _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
@@ -104,7 +104,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
                 entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.UpdatedBy = _applicationUserId.ToString();
                 entityToUpdate.Attended = true;
                 entityToUpdate.ActualVisitDate = DateTime.Now;
                 _visitRepo.Update(entityToUpdate);
@@ -116,7 +116,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // call points engine for hcw
             if (result)
             {
-                _pointsEngineService.CalculateInfantVisits(_applicationUserId, DateTime.UtcNow);
+                _pointsEngineService.CalculateInfantVisits(_applicationUserId.ToString(), DateTime.UtcNow);
             }
             return true;
         }
@@ -153,7 +153,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
                 entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.UpdatedBy = _applicationUserId.ToString();
                 entityToUpdate.Attended = true;
                 entityToUpdate.ActualVisitDate = DateTime.Now;
                 _visitRepo.Update(entityToUpdate);
@@ -165,7 +165,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // call points engine for hcw
             if (result)
             {
-                _pointsEngineService.CalculatePregnantMomVisits(_applicationUserId, DateTime.UtcNow);
+                _pointsEngineService.CalculatePregnantMomVisits(_applicationUserId.ToString(), DateTime.UtcNow);
             }
             return true;
         }
@@ -203,7 +203,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 // update the visit record to show attended/completed 
                 visit.UpdatedDate = DateTime.Now;
-                visit.UpdatedBy = _applicationUserId;
+                visit.UpdatedBy = _applicationUserId.ToString();
                 visit.Attended = true;
                 visit.ActualVisitDate = DateTime.Now;
                 return _visitRepo.Update(visit);
@@ -270,7 +270,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                // update the visit record to show attended/completed 
                var entityToUpdate = _visitRepo.GetById(visitId);
                entityToUpdate.UpdatedDate = DateTime.Now;
-               entityToUpdate.UpdatedBy = _applicationUserId;
+               entityToUpdate.UpdatedBy = _applicationUserId.ToString();
                entityToUpdate.Attended = true;
                entityToUpdate.ActualVisitDate = DateTime.Now;
                return _visitRepo.Update(entityToUpdate);  
@@ -312,16 +312,16 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 // when the smart space checklist is completed, we activate the smartspace license
                 Trainee trainee = _traineeRepo.GetByUserId(input.TraineeId);
-                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId.ToString(), Constants.SSSettings.ss_smart_space_licence);
+                License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(trainee.UserId, Constants.SSSettings.ss_smart_space_licence);
                 if (smartSpaceLicense == null)
                 {
-                    _userLicenseManager.AddSmartSpaceLicense(trainee.UserId.ToString(), DateTime.Now);
+                    _userLicenseManager.AddSmartSpaceLicense(trainee.UserId, DateTime.Now);
                 }
 
                 // update the visit record to show attended/completed 
                 var entityToUpdate = _visitRepo.GetById(new Guid(input.VisitId));
                 entityToUpdate.UpdatedDate = DateTime.Now;
-                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.UpdatedBy = _applicationUserId.ToString();
                 entityToUpdate.Attended = true;
                 entityToUpdate.ActualVisitDate = DateTime.Now;
                 _visitRepo.Update(entityToUpdate);
@@ -412,7 +412,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             visit.Attended = true;
             visit.ActualVisitDate = DateTime.Now;
             visit.UpdatedDate = DateTime.Now;
-            visit.UpdatedBy = _applicationUserId;
+            visit.UpdatedBy = _applicationUserId.ToString();
             _visitRepo.Update(visit);
 
             return true;
@@ -431,7 +431,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 VisitId = new Guid(visitId),
                 VisitName = visitName,
                 VisitSection = visitSection,

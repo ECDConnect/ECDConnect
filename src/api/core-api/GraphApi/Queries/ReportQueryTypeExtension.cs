@@ -337,7 +337,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var classroomGroups = classroomGroupRepo.GetAll()
                 .Where(c => c.UserId == Guid.Parse(practitionerId)).ToList();
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var practitioner = practRepo.GetByUserId(practitionerId);
 
@@ -424,7 +424,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
 
             // Notifications for child progress reports
-            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, uId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), DateTime.Now);
+            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, uId.ToString(), practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), DateTime.Now);
 
             // If any reports were submitted in the overdue period (2nd month of the submission window
             if (reportCounts.overdueReportsSubmitted > 0)
@@ -535,7 +535,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             var classReassignmentHistoryCount = classReassignmentHistoryRepo.GetAll().Count(ch => ch.IsActive
-                && ch.ReassignedToUser == practitionerId
+                && ch.ReassignedToUser == Guid.Parse(practitionerId)
                 && ch.ReassignedToDate >= previousMonthStart
                 && ch.ReassignedToDate <= previousMonthEnd);
 
@@ -664,7 +664,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
-            var uIdGuid = Guid.Parse(uId);
             var practitionerIdGuid = Guid.Parse(practitionerId);
 
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
@@ -754,7 +753,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var children = await childRepo.GetAll().Where(c => c.IsActive == true
                     && c.Hierarchy.StartsWith(practitionerHieracry))
@@ -811,7 +810,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var user = contextAccessor.HttpContext.GetUser();
             var uId = user.Id;
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(Guid.Parse(practitionerId));
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var children = childRepo.GetAll().Where(c => c.IsActive == true
@@ -900,7 +899,7 @@ string practitionerId)
             var classReassignmentHistoryRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>();
             var classReassignmentHistoryList = await classReassignmentHistoryRepo.GetAll()
                 .Where(ch => ch.IsActive
-                    && ch.ReassignedToUser == practitionerId
+                    && ch.ReassignedToUser == Guid.Parse(practitionerId)
                     && ch.ReassignedToDate >= previousMonthStart
                     && ch.ReassignedToDate <= previousMonthEnd)
                 .ToListAsync();
@@ -945,8 +944,8 @@ string practitionerId)
                         .Where(c => reassignment.ReassignedClassroomGroups?.Contains(c.Id.ToString()) ?? false)
                         .FirstOrDefault();
 
-                        var pract1 = await userManager.FindByIdAsync(reassignment.ReassignedToUser);
-                        var pract2 = await userManager.FindByIdAsync(reassignment.ReassignedBackToUserId);
+                        var pract1 = await userManager.FindByIdAsync(reassignment.ReassignedToUser.ToString());
+                        var pract2 = await userManager.FindByIdAsync(reassignment.ReassignedBackToUserId.ToString());
 
                         reassignedClassList.Add(new ClassReassignmentDisplay()
                         {
@@ -1062,13 +1061,13 @@ string practitionerId)
             // Get attendance reports submitted for period
             if (practitioner?.IsPrincipal == true)
             {
-                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId.Equals(practitioner.UserId)).Select(cg => cg.Id).ToListAsync();
+                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId).Select(cg => cg.Id).ToListAsync();
 
             }
             else
             {
                 classroomGroupIds = await classroomGroupRepo.GetAll()
-                    .Where(cg => cg.UserId.Equals(practitioner.UserId))
+                    .Where(cg => cg.UserId == practitioner.UserId)
                     .Select(cg => cg.Id)
                     .ToListAsync();
             }
@@ -1150,7 +1149,7 @@ string practitionerId)
                         holidayService,
                         personnelService,
                         repoFactory,
-                        uId,
+                        uId.ToString(),
                         type).ToList();
                     return practitionerResults;
                 default:
@@ -1273,7 +1272,7 @@ string practitionerId)
                     break;
                 default:
                     // How/Does this get used by a single practitioner ???
-                    practitioners = practRepo.GetAll().Where(x => x.UserId.Equals(uId)).ToList();
+                    practitioners = practRepo.GetAll().Where(x => x.UserId == Guid.Parse(uId)).ToList();
                     break;
             }
 
@@ -1471,7 +1470,7 @@ string practitionerId)
                     {
                         var redFlagVisit =
                         (
-                            from visit in visitRepo.GetAll().Where(x => x.Practitioner.User.UserId.Equals(practitioner.UserId))
+                            from visit in visitRepo.GetAll().Where(x => x.Practitioner.User.Id == practitioner.UserId)
                             join visitData in visitDataRepo.GetAll().Where(y => y.Question == Constants.SSSettings.step16_q1 && y.QuestionAnswer == Constants.SSSettings.answer_yes) on visit.Id equals visitData.VisitId
                             select visitData
                         ).OrderByDescending(y => y.InsertedDate).Any();

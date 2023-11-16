@@ -40,7 +40,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private string _applicationUserId;
+        private Guid _applicationUserId;
         private IGenericRepository<Practitioner, Guid> _practiGenericRepo;
         private IGenericRepository<Practitioner, Guid> _practiRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classGroupRepo;
@@ -85,7 +85,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser()?.Id;
+            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
 
             _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
@@ -125,10 +125,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Practitioner> practitioners = new List<Practitioner>();
             if (currentUser.coachObjectData != null)
             {
-                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
+                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy == currentUser.Id).OrderBy(x => x.User.FirstName).ToList();
             } else if (currentUser.practitionerObjectData != null && currentUser.practitionerObjectData.IsPrincipal.HasValue && currentUser.practitionerObjectData.IsPrincipal.Value)
             {
-                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
+                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == currentUser.Id).OrderBy(x => x.User.FirstName).ToList();
             }
 
             List<PractitionerModel> practitionerList = new List<PractitionerModel>();
@@ -208,7 +208,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 if (practitioner.PrincipalHierarchy.HasValue || (practitioner.IsPrincipal == true || practitioner.IsFundaAppAdmin == true))
                 {
-                    peers = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practitioner.PrincipalHierarchy) : x.IsPrincipal == true ? x.UserId.Equals(practitionerId) : x.UserId.Equals(practitionerId)).ToList();
+                    peers = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy == practitioner.PrincipalHierarchy : x.IsPrincipal == true ? x.UserId == Guid.Parse(practitionerId) : x.UserId == Guid.Parse(practitionerId)).ToList();
                     //also add principal
                     if (practitioner.IsPrincipal == true || practitioner.IsFundaAppAdmin == true)
                     {
@@ -218,7 +218,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                             peers.Add(practiPrincipal);
                         }
                         //now add principal's practitioners
-                        List<Practitioner> practiList = _practiGenericRepo.GetAll().Where(x => string.Equals(x.PrincipalHierarchy.ToString(), practitioner.UserId)).ToList();
+                        List<Practitioner> practiList = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy == practitioner.UserId).ToList();
                         if (practiList != null)
                         {
                             foreach (Practitioner practi in practiList)
@@ -232,7 +232,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     }
                     if (practitioner.PrincipalHierarchy.HasValue)
                     {
-                        List<Practitioner> practiList = _practiGenericRepo.GetAll().Where(x => string.Equals(x.PrincipalHierarchy.ToString(), practitioner.UserId)).ToList();
+                        List<Practitioner> practiList = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy == practitioner.UserId).ToList();
                         if (practiList != null)
                         {
                             foreach (Practitioner practi in practiList)
@@ -274,8 +274,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             if (childUserId != null)
             {
-                var parentUserId = _hierarchyEngine.GetUserParentUserId(childUserId);
-                return _practiGenericRepo.GetByUserId(parentUserId);          
+                var parentUserId = _hierarchyEngine.GetUserParentUserId(Guid.Parse(childUserId));
+                return _practiGenericRepo.GetByUserId(parentUserId.Value);          
             }
             else return null;
         }
@@ -308,7 +308,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         classroom = _classRepo.GetById(classroomGroup.ClassroomId);
                         principalClassroom.ClassroomGroupName = classroomGroup.Name;
                         principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
-                        ProgrammeType ptype = _programmeRepo.GetAll().Where(p => p.Id.Equals(classroomGroup.ProgrammeTypeId)).FirstOrDefault();
+                        ProgrammeType ptype = _programmeRepo.GetAll().Where(p => p.Id == classroomGroup.ProgrammeTypeId).FirstOrDefault();
                         principalClassroom.ProgrammeTypeName = ptype!=null ? ptype.Description : "";
                         principalClassroom.ProgrammeTypeId = classroomGroup.ProgrammeTypeId.ToString();
                     }
@@ -336,7 +336,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         public List<Practitioner> GetAllPractitionersForPrincipal(string userId)
         {
-            List<Practitioner> practitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(Guid.Parse(userId))).ToList();
+            List<Practitioner> practitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy == Guid.Parse(userId)).ToList();
 
             return practitioners;
         }
@@ -347,7 +347,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var classroomgroup = _classGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).FirstOrDefault();
             if (classroomgroup != null) //principals and practitioners are assigned to classroom groups
             {
-                siteName = _classRepo.GetAll().Where(x => x.Id.Equals(classroomgroup.ClassroomId)).OrderBy(x => x.Id).Select(x => x.Name).FirstOrDefault();
+                siteName = _classRepo.GetAll().Where(x => x.Id == classroomgroup.ClassroomId).OrderBy(x => x.Id).Select(x => x.Name).FirstOrDefault();
             }
             else //only principals/FAA are assigned to classrooms only
             {
@@ -386,7 +386,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies and assign new
-                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(Guid.Parse(oldPrincipalUserId))).ToList();
+                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy == Guid.Parse(oldPrincipalUserId)).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     foreach (var practi in allPrincipalPractitioners)
@@ -408,7 +408,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId.ToString()).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
                 {
-                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId.ToString(), practitionerToPromote.UserId.ToString(), "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
+                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId.ToString(), practitionerToDemote.UserId.ToString(), practitionerToPromote.UserId.ToString(), "New principal/administrator", DateTime.Now, _applicationUserId.ToString(), unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
@@ -469,7 +469,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies
-                List<Practitioner> allPrincipalPractitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(Guid.Parse(userId))).ToList();
+                List<Practitioner> allPrincipalPractitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy == Guid.Parse(userId)).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     foreach (var practi in allPrincipalPractitioners)
@@ -572,7 +572,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.ReAccreditationRatings = accreditationRatings;
 
             // Starter license received
-            License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
+            License starterLicense = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_starter_licence);
             if (starterLicense?.LicenseDate != null)
             {
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
@@ -586,7 +586,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // SmartSpace license received
-            License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_smart_space_licence);
             if (smartSpaceLicense?.LicenseDate != null  && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
@@ -600,7 +600,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // Practice license received
-            License practiceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_practice_licence);
+            License practiceLicense = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_practice_licence);
             if (practiceLicense?.LicenseDate != null)
             {
                 timeline.PracticeLicenseStatus = Constants.SSSettings.practice_licence_received;
@@ -768,7 +768,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitioner.DateToBeRemoved = DateTime.Now;
                 practitioner.IsLeaving = true;
                 practitioner.IsActive = false;
-                practitioner.UpdatedBy = _applicationUserId;
+                practitioner.UpdatedBy = _applicationUserId.ToString();
                 practitioner.UpdatedDate = DateTime.Now;
                 practitioner.LeavingComment = leavingComment;
                 practitioner.ReasonForPractitionerLeavingId = Guid.Parse(reasonForPractitionerLeavingId);
@@ -796,7 +796,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
             practitioner.IsCompletedBusinessWalkThrough = true;
-            practitioner.UpdatedBy = _applicationUserId;
+            practitioner.UpdatedBy = _applicationUserId.ToString();
             practitioner.UpdatedDate = DateTime.UtcNow;
             _practiGenericRepo.Update(practitioner);
             return true;
@@ -838,7 +838,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.TraineeVisits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_trainee);
 
             // StarterLicense
-            License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
+            License starterLicense = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_starter_licence);
             if (starterLicense?.LicenseDate != null)
             {
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
@@ -854,7 +854,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // SmartSpace license received
-            License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(Guid.Parse(userId), Constants.SSSettings.ss_smart_space_licence);
             if (smartSpaceLicense?.LicenseDate != null && smartSpaceLicense?.DeclinedDate == null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
@@ -1045,7 +1045,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // Startup Support
-            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId.Equals(trainee.UserId) && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
+            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == trainee.UserId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
             if (startupSupport != null)
             {
                 timeline.StartUpSupportStartDate = startupSupport?.StartDate;

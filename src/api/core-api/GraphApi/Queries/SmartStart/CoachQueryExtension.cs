@@ -132,7 +132,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Child> children = new List<Child>();
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
-            practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
+            practitioners.Where(x => x.CoachHierarchy == Guid.Parse(userId)).ToList();
             foreach (var practioner in practitioners)
             {
                 List<Child> practitionerChildren = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practioner.Hierarchy)).ToList();
@@ -153,7 +153,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Classroom> classrooms = new List<Classroom>();
             var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
-            practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
+            practitioners.Where(x => x.CoachHierarchy == Guid.Parse(userId)).ToList();
             foreach (var practioner in practitioners)
             {
                 List<Classroom> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.ToString().Contains(practioner.UserId.ToString())).ToList();
@@ -174,10 +174,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             List<ClassroomGroup> classrooms = new List<ClassroomGroup>();
             var dbRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.Equals(userIdGuid)).ToList();
+            List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy == userIdGuid).ToList();
             foreach (var practioner in practitioners)
             {
-                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId.Equals(practioner.UserId)).ToList();
+                List<ClassroomGroup> practitionerClasses = classRepo.GetAll().Where(x => x.UserId == practioner.UserId).ToList();
                 classrooms.AddRange(practitionerClasses);
             }
             return classrooms;

@@ -6,6 +6,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -47,7 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (!duplicatedChildHierarchies.Contains(hierarchy) && !duplicatedPracHierarchies.Contains(hierarchy) && !duplicatedCoachHierarchies.Contains(hierarchy))
                 {
                     //check if another exists with teh same userId
-                    var sameHierarchies = allHierarchies.Where(x => string.Equals(x.UserId, hierarchy.UserId)).ToList();
+                    var sameHierarchies = allHierarchies.Where(x => x.UserId == hierarchy.UserId).ToList();
                     if (sameHierarchies.Count > 1)
                     {
                         switch (sameHierarchies[0].UserType)
@@ -77,7 +78,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var record = childRepo.GetByUserId(child);
                 if (record != null)
                 {
-                    foreach (var hierarchy in duplicatedChildHierarchies.Where(x => string.Equals(x.UserId, child)))
+                    foreach (var hierarchy in duplicatedChildHierarchies.Where(x => x.UserId == Guid.Parse(child)))
                     {
                         if (hierarchy.Hierarchy != record.Hierarchy)
                         {
@@ -94,7 +95,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var record = pracRepo.GetByUserId(prac);
                 if (record != null)
                 {
-                    foreach (var hierarchy in duplicatedPracHierarchies.Where(x => string.Equals(x.UserId, prac)))
+                    foreach (var hierarchy in duplicatedPracHierarchies.Where(x => x.UserId == Guid.Parse(prac)))
                     {
                         if (hierarchy.Hierarchy != record.Hierarchy)
                         {
@@ -111,7 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var record = coachRepo.GetByUserId(prac);
                 if (record != null)
                 {
-                    foreach (var hierarchy in duplicatedCoachHierarchies.Where(x => string.Equals(x.UserId, prac)))
+                    foreach (var hierarchy in duplicatedCoachHierarchies.Where(x => x.UserId == Guid.Parse(prac)))
                     {
                         if (hierarchy.Hierarchy != record.Hierarchy)
                         {

@@ -1,10 +1,12 @@
 ﻿using ECDLink.PostgresTenancy.Entities;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace ECDLink.PostgresTenancy.Context
 {
-    public class PostgresTenancyContext : IdentityDbContext<TenancyIdentityUser>
+    public class PostgresTenancyContext : IdentityDbContext<TenancyIdentityUser, IdentityRole<Guid>, Guid>
     {
         internal DbSet<TenantEntity> Tenants { get; set; }
         internal DbSet<JWTUserTokensEntity> JWTTokens { get; set; }

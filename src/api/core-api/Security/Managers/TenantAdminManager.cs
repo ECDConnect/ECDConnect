@@ -1,6 +1,7 @@
 ﻿using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Security.Managers;
 using Microsoft.AspNetCore.Identity;
+using System;
 
 namespace EcdLink.Api.CoreApi.Security.Managers
 {
@@ -13,11 +14,11 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             _userManager = userManager;
         }
 
-        public IdentityUser GetValidAdminUser(string username, string password)
+        public IdentityUser<Guid> GetValidAdminUser(string username, string password)
         {
             var admin = _userManager.FindByNameAsync(username).Result;
 
-            if (admin == default(IdentityUser))
+            if (admin == default(IdentityUser<Guid>))
             {
                 return null;
             }

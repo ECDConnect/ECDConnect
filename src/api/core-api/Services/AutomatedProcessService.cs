@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.Services
             HierarchyEngine hierarchyEngine,
             UserManager<ApplicationUser> userManager) 
         {
-            _adminUserId = hierarchyEngine.GetAdminUserId();
+            _adminUserId = hierarchyEngine.GetAdminUserId()?.ToString();
             _removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: _adminUserId);
             _practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: _adminUserId);
 

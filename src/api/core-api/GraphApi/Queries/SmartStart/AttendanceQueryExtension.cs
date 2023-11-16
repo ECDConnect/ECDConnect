@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var userId = httpContextAccessor.HttpContext.GetUser().Id;
 
-            var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
+            var attendance = trackingRepository.GetAllAttendancesByParentId(userId.ToString())
               .Where(x => x.Year == year);
 
             if (monthOfYear != null && monthOfYear > 0)
@@ -249,7 +249,7 @@ DateTime attendanceDate)
             pdfDoc.Reference = Base64Result;
             pdfDoc.FileName = _header.Replace(" ", "_") + ".pdf";
             pdfDoc.UserId = userId;
-            pdfDoc.CreatedUserId = uId;
+            pdfDoc.CreatedUserId = uId.ToString();
             return await documentManager.SaveAttendancePDF(pdfDoc);
         }
 

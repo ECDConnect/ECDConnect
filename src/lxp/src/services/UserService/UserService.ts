@@ -68,7 +68,7 @@ class UserService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query GetAllUserConsent($createdUserId: String) {
+        query GetAllUserConsent($createdUserId: UUID) {
           GetAllUserConsent (where: {
             and: [{ 
               createdUserId: {eq: $createdUserId}

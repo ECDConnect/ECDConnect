@@ -32,10 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
           DateTime? start)
         {
             var requestingUser = httpContextAccessor.HttpContext.GetUser();
-            var userId = Guid.Parse(requestingUser.Id);
-
-            if (string.IsNullOrWhiteSpace(requestingUser?.Id))
-                return Enumerable.Empty<CalendarEvent>();
+            var userId = requestingUser.Id;
 
             var eventRepo = repoFactory.CreateGenericRepository<CalendarEvent>();
             var eventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>();

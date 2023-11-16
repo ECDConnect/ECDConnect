@@ -2,6 +2,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security;
 using ECDLink.Security.Managers;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
@@ -36,7 +37,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
 
         public T GetClaimUser<T>(ClaimsPrincipal principal)
-            where T : IdentityUser
+            where T : IdentityUser<Guid>
         {
             if (!IsValidPrincipal(principal))
             {

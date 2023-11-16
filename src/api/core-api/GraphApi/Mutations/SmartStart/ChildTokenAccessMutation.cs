@@ -81,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 
-                appUser.UserName = appUser.Id;
+                appUser.UserName = appUser.Id.ToString();
                 appUser.GenderId = child.GenderId;
                 appUser.IsActive = true;
                 appUser.DateOfBirth = child.DateOfBirth;
@@ -137,7 +137,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     ConsentId = 175,
                     ConsentType = "PhotoPermissions",
                     UserId = new Guid(consent.UserId),
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -153,7 +153,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     ConsentId = 173,
                     ConsentType = "CommitmentAgreement",
                     UserId = new Guid(consent.UserId),
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -169,7 +169,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     ConsentId = 172,
                     ConsentType = "ConsentAgreement",
                     UserId = new Guid(consent.UserId),
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -185,7 +185,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     ConsentId = 174,
                     ConsentType = "IndemnityAgreement",
                     UserId = new Guid(consent.UserId),
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -201,7 +201,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     ConsentId = 171,
                     ConsentType = "PersonalInformationAgreement",
                     UserId = new Guid(consent.UserId),
-                    CreatedUserId = tokenModel.AddedByUserId,
+                    CreatedUserId = Guid.Parse(tokenModel.AddedByUserId),
                     TenantId = _tenantId,
                     IsActive = true,
                     InsertedDate = DateTime.Now
@@ -310,13 +310,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var userId = Guid.NewGuid();
             var appUser = new ApplicationUser
             {
-                Id = userId.ToString(),
+                Id = userId,
                 FirstName = firstname,
                 Surname = surname,
                 UserName = $"External_Edit_{Guid.NewGuid()}",
                 IsImported = false,
                 IsActive = true,
-                UserId = userId
             };
             appUser.TenantId = tenantId;
             await userManager.CreateAsync(appUser);
@@ -329,7 +328,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var child = new Child
             {
-                UserId = appUser.UserId,
+                UserId = appUser.Id,
                 WorkflowStatusId = workflowStatus.Id,
                 InsertedBy = !string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A"
             };
@@ -339,17 +338,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var tokenWrapper = new ChildTokenWrapperModel
             {
-                AddedByUserId = addedByUser.Id,
+                AddedByUserId = addedByUser.Id.ToString(),
                 ClassroomGroupId = classgroupId,
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = newChild.Id,
-                ChildUserId = appUser.Id
+                ChildUserId = appUser.Id.ToString()
             };         
 
             await userManager.AddToRoleAsync(appUser, "Child");
 
             // Manage points for user
-            pointsEngineService.CalculateChildrenRegistrationAdd(addedByUser.Id, DateTime.UtcNow);
+            pointsEngineService.CalculateChildrenRegistrationAdd(addedByUser.Id.ToString(), DateTime.UtcNow);
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));
         }
@@ -392,11 +391,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var tokenWrapper = new ChildTokenWrapperModel
             {
-                AddedByUserId = httpContext.HttpContext.GetUser().Id,
+                AddedByUserId = httpContext.HttpContext.GetUser().Id.ToString(),
                 ClassroomGroupId = classgroupId,
                 Token = await tokenManager.GenerateTokenAsync(appUser),
                 ChildId = child.Id,
-                ChildUserId = appUser.Id
+                ChildUserId = appUser.Id.ToString()
             };
 
             return TokenHelper.EncodeToken(JsonConvert.SerializeObject(tokenWrapper));

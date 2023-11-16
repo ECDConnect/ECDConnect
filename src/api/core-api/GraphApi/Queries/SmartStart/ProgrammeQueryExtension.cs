@@ -33,12 +33,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
           UserManager<ApplicationUser> userManager,
           [Service] IHttpContextAccessor httpContextAccessor)
         {
-            var requestingUser = httpContextAccessor.HttpContext.GetUser();
+            var requestingUser = httpContextAccessor.HttpContext.GetUser().Id;
 
-            if (string.IsNullOrWhiteSpace(requestingUser?.Id))
-                return Enumerable.Empty<Programme>();
+            //if (string.IsNullOrWhiteSpace(requestingUser?.Id))
+            //    return Enumerable.Empty<Programme>();
 
-            var user = await userManager.FindByIdAsync(requestingUser.Id);
+            var user = await userManager.FindByIdAsync(requestingUser.ToString());
             var roles = await userManager.GetRolesAsync(user);
 
             var programmes = new List<Programme>();
@@ -49,16 +49,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 return programmes;
             }
 
-            var requestingUserHierarchy = hierarchyEngine.GetUserHierarchy(requestingUser.Id);
+            var requestingUserHierarchy = hierarchyEngine.GetUserHierarchy(requestingUser);
 
             // Get `Practitioner`
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: requestingUser.Id);
-            var targetPractitioner = practitionerRepo.GetByUserId(requestingUser.Id);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: requestingUser);
+            var targetPractitioner = practitionerRepo.GetByUserId(requestingUser);
 
             if (targetPractitioner is null)
                 return programmes;
 
-            var programmeRepo = repoFactory.CreateGenericRepository<Programme>(userContext: requestingUser.Id);
+            var programmeRepo = repoFactory.CreateGenericRepository<Programme>(userContext: requestingUser);
 
             return programmeRepo
                 .GetAll()

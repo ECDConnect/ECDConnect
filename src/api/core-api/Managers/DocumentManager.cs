@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.Managers
         private readonly IHttpContextAccessor _contextAccessor;
         private IntegrationLogManager _logManager;
         private IFileService _fileService;
-        private string _uId;
+        private Guid _uId;
 
         private readonly IGenericRepositoryFactory _repoFactory;
         private readonly IGenericRepository<Document, Guid> _documentRepo;
@@ -48,7 +48,7 @@ namespace EcdLink.Api.CoreApi.Managers
             _logManager = logManager;
             _fileService = fileService;
 
-            _uId = _contextAccessor.HttpContext.GetUser()?.Id;
+            _uId = _contextAccessor.HttpContext.GetUser().Id;
 
             _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _uId);
             _documentTypeRepo = _repoFactory.CreateGenericRepository<DocumentType>(userContext: _uId);
@@ -182,7 +182,7 @@ namespace EcdLink.Api.CoreApi.Managers
                         doc = new Document
                         {
                             Id = Guid.NewGuid(),
-                            CreatedUserId = input.CreatedUserId,
+                            CreatedUserId = Guid.Parse(input.CreatedUserId),
                             Name = input.FileName,
                             UpdatedBy = input.CreatedUserId,
                             InsertedDate = DateTime.Now,
@@ -242,7 +242,7 @@ namespace EcdLink.Api.CoreApi.Managers
                         // Save new document to the database
                         doc = new Document
                         {
-                            CreatedUserId = input.CreatedUserId,
+                            CreatedUserId = Guid.Parse(input.CreatedUserId),
                             Name = input.FileName,
                             UpdatedBy = input.CreatedUserId,
                             InsertedDate = DateTime.Now,
@@ -301,7 +301,7 @@ namespace EcdLink.Api.CoreApi.Managers
                         doc = new Document
                         {
                             Id = Guid.NewGuid(),
-                            CreatedUserId = input.CreatedUserId,
+                            CreatedUserId = Guid.Parse(input.CreatedUserId),
                             Name = input.FileName,
                             UpdatedBy = input.CreatedUserId,
                             InsertedDate = DateTime.Now,

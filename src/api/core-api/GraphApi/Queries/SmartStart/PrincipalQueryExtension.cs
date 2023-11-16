@@ -133,7 +133,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
 
-            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId == System.Guid.Parse(userId)).ToList();
             return classes;
         }
 
@@ -146,10 +146,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             List<ClassroomGroup> allClassGroups = new List<ClassroomGroup>();
-            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId.Equals(userId)).ToList();
+            List<Classroom> classes = classroomRepo.GetAll().Where(x => x.UserId == System.Guid.Parse(userId)).ToList();
             foreach (Classroom classroom in classes)
             {
-                List<ClassroomGroup> cgroups = classroomGroupRepo.GetAll().Where(x => x.ClassroomId.Equals(classroom.Id)).ToList();
+                List<ClassroomGroup> cgroups = classroomGroupRepo.GetAll().Where(x => x.ClassroomId == classroom.Id).ToList();
                 allClassGroups.AddRange(cgroups);
             }
             return allClassGroups;
@@ -168,7 +168,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             {
                 var dbRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
                 List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue).ToList();
-                practitioners.Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
+                practitioners.Where(x => x.PrincipalHierarchy == System.Guid.Parse(userId)).ToList();
                 Practitioner principalPrac = dbRepo.GetByUserId(userId);
                 if (!practitioners.Contains(principalPrac))  //add principal user to the list
                     practitioners.Add(principalPrac);
@@ -193,7 +193,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             foreach (var cg in cGroups)
             {
                 List<Learner> learnerList = new List<Learner>();
-                learnerList = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(cg.Id)).ToList();
+                learnerList = learnerRepo.GetAll().Where(x => x.ClassroomGroupId == cg.Id).ToList();
 
                 foreach (Learner learner in learnerList)
                 {

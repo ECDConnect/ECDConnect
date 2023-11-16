@@ -23,24 +23,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Mother UpdateMother([Service] MotherManager motherManager, string id, MotherModel input)
         {
-            return motherManager.UpdateMother(id, input);
+            return motherManager.UpdateMother(Guid.Parse(id), input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Mother UpdateMotherContactDetails([Service] MotherManager motherManager, string id, MotherModel input) {
-            return motherManager.UpdateContactDetails(id, input);
+            return motherManager.UpdateContactDetails(Guid.Parse(id), input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Mother UpdateMotherAddress([Service] MotherManager motherManager, string id, MotherModel input)
         {
-            return motherManager.UpdateMotherAddress(id, input);
+            return motherManager.UpdateMotherAddress(Guid.Parse(id), input);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public Mother UpdateMotherDeliveryDate([Service] MotherManager motherManager, string id, DateTime? expectedDateOfDelivery)
         {
-            return motherManager.UpdateMotherDeliveryDate(id, expectedDateOfDelivery);
+            return motherManager.UpdateMotherDeliveryDate(Guid.Parse(id), expectedDateOfDelivery);
         }
 
     }

@@ -48,7 +48,7 @@ namespace ECDLink.Core.Services
                 {
                     if (reassign.ReassignedToDate <= DateTime.Now.AddHours(-hrsToReassign))
                     {
-                        ReassignClassroomsFromHistory(adminId, reassign.UserId.ToString());
+                        ReassignClassroomsFromHistory(adminId.ToString(), reassign.UserId.ToString());
                     }
                 }
             }
@@ -70,7 +70,7 @@ namespace ECDLink.Core.Services
                 {
                     if (reassign.ReassignedToDate <= DateTime.Now.AddHours(-hrsToReassign))
                     {
-                        ReassignClassroomsFromHistory(adminId, reassign.UserId.ToString());
+                        ReassignClassroomsFromHistory(adminId.ToString(), reassign.UserId.ToString());
                     }
                 }
             }
@@ -92,7 +92,7 @@ namespace ECDLink.Core.Services
                     if (prac.PrincipalHierarchy != null && prac.UserId != Guid.Empty)
                     {
                         //Reassign all classes and programmes back to principal
-                        AddReassignmentForPractitioner(adminId, prac.UserId.ToString(), prac.PrincipalHierarchy.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, adminId, null, true);
+                        AddReassignmentForPractitioner(adminId.ToString(), prac.UserId.ToString(), prac.PrincipalHierarchy.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, adminId.ToString(), null, true);
                     }
 
                     prac.DateToBeRemoved = null;
@@ -127,16 +127,16 @@ namespace ECDLink.Core.Services
                 {
                     if (fromUserId != null && toUserId != null)
                     {
-                        var toUserHierarchy = _hierarchyEngine.GetUserHierarchy((toUserId != null ? toUserId : uId));
-                        var fromUserHierarchy = _hierarchyEngine.GetUserHierarchy((fromUserId != null ? fromUserId : uId));
+                        var toUserHierarchy = _hierarchyEngine.GetUserHierarchy(Guid.Parse((toUserId != null ? toUserId : uId)));
+                        var fromUserHierarchy = _hierarchyEngine.GetUserHierarchy(Guid.Parse((fromUserId != null ? fromUserId : uId)));
 
                         //Log to the history table
                         var history = new ClassReassignmentHistory
                         {
                             UserId = new Guid(fromUserId),
                             Reason = reason,
-                            LoggedBy = loggedByUser,
-                            ReassignedToUser = toUserId,
+                            LoggedBy = Guid.Parse(loggedByUser),
+                            ReassignedToUser = Guid.Parse(toUserId),
                             ReassignedToDate = startDate,
                             HierarchyToUser = toUserHierarchy,
                             HierarchyBackToUser = fromUserHierarchy
@@ -247,11 +247,11 @@ namespace ECDLink.Core.Services
             if (classroom != null)
             {
                 // a group has been passed in, so match the userid and the classroomgroup, and update that
-                var classroomList = classroomRepo.GetAll().Where(x => x.Id.Equals(classroom)).ToList();
+                var classroomList = classroomRepo.GetAll().Where(x => x.Id == Guid.Parse(classroom)).ToList();
                 if (classroomList != null)
                 {
                     //filter to only where user id matches
-                    classroomList = classroomList.Where(x => x.UserId.Equals(fromUserId)).ToList();
+                    classroomList = classroomList.Where(x => x.UserId == Guid.Parse(fromUserId)).ToList();
                     if (classroomList != null)
                     {
                         foreach (var classes in classroomList)
@@ -289,7 +289,7 @@ namespace ECDLink.Core.Services
             List<string> classroomsProgrammesReassigned = new List<string>();
 
             var classProgrammeRepo = _repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-            List<ClassProgramme> classProgramme = classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId)).ToList();
+            List<ClassProgramme> classProgramme = classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId == classroomGroupId).ToList();
             if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy))
             {
                 foreach (ClassProgramme programme in classProgramme)
@@ -308,7 +308,7 @@ namespace ECDLink.Core.Services
             List<string> learnersReassigned = new List<string>();
 
             var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: uId);
-            List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId)).ToList();
+            List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId == classroomGroupId).ToList();
             if (learners != null && !string.IsNullOrWhiteSpace(newHierarchy))
             {
                 foreach (var learner in learners)
@@ -338,7 +338,7 @@ namespace ECDLink.Core.Services
                     if (children != null)
                     {
                         string childNewHierarchy = "";
-                        UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(children.UserId)).FirstOrDefault();
+                        UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId == children.UserId).FirstOrDefault();
 
                         if (childHierarchy != null)
                         {
@@ -347,10 +347,10 @@ namespace ECDLink.Core.Services
                             //update hierarchy not be 0.466. but 0.1.455.459.
                             childNewHierarchy = HierarchyHelper.AppendHierarchy(newHierarchy, childHierarchy.Key.ToString());
                             childHierarchy.Hierarchy = childNewHierarchy;
-                            childHierarchy.ParentId = newUserId;
+                            childHierarchy.ParentId = Guid.Parse(newUserId);
                             staticHierarchyRepo.Update(childHierarchy);
                             //uppdate child record Hierarchy
-                            Child updatedChild = childRepo.GetByUserId(children.UserId.ToString());
+                            Child updatedChild = childRepo.GetByUserId(children.UserId);
                             updatedChild.Hierarchy = childNewHierarchy;
                             childRepo.Update(updatedChild);
                         }
@@ -399,7 +399,7 @@ namespace ECDLink.Core.Services
                     history = history.Where(x => x.ReassignedBackToDate == null).ToList();
                     foreach (var historyItem in history)
                     {
-                        if (!string.IsNullOrEmpty(historyItem.ReassignedToUser) && !string.IsNullOrEmpty(historyItem.HierarchyToUser) && !string.IsNullOrEmpty(historyItem.HierarchyBackToUser))
+                        if (historyItem.ReassignedToUser.HasValue && !string.IsNullOrEmpty(historyItem.HierarchyToUser) && !string.IsNullOrEmpty(historyItem.HierarchyBackToUser))
                         {
                             if (!string.IsNullOrEmpty(historyItem.ReassignedClassroomGroups))
                             {
@@ -411,18 +411,18 @@ namespace ECDLink.Core.Services
                                     foreach (string reassignedGroup in reassignedClassroomGroups)
                                     {
                                         //Log to the history table the reassignment back to original user as a new row for continuation                                    
-                                        ReassignmentLists newReassignment = UpdateClassroomGroups(uId, historyItem.ReassignedToUser, historyItem.UserId.ToString(), historyItem.HierarchyToUser, historyItem.HierarchyBackToUser, reassignedGroup);
+                                        ReassignmentLists newReassignment = UpdateClassroomGroups(uId, historyItem.ReassignedToUser.Value.ToString(), historyItem.UserId.ToString(), historyItem.HierarchyToUser, historyItem.HierarchyBackToUser, reassignedGroup);
                                         //reassign attendance
-                                        UpdateAttendance(historyItem.UserId.ToString(), historyItem.ReassignedToUser, historyItem.HierarchyToUser, newReassignment.ClassProgrammesReassigned, newReassignment.LearnersReassigned);
+                                        UpdateAttendance(historyItem.UserId.ToString(), historyItem.ReassignedToUser.Value.ToString(), historyItem.HierarchyToUser, newReassignment.ClassProgrammesReassigned, newReassignment.LearnersReassigned);
 
                                         //Log to the history table for the inverse of the presvious historyitem to indicate reassignment to how it was before
                                         var newReassignmentHistory = new ClassReassignmentHistory
                                         {
-                                            UserId = new Guid(historyItem.ReassignedToUser),
+                                            UserId = historyItem.ReassignedToUser.Value,
                                             Reason = "Reassignment back from history item " + historyItem.Id,
-                                            LoggedBy = uId,
+                                            LoggedBy = Guid.Parse(uId),
                                             ReassignedToDate = DateTime.Now,
-                                            ReassignedToUser = historyItem.UserId.ToString(),
+                                            ReassignedToUser = historyItem.UserId,
                                             ReassignedBackToUserId = null,
                                             HierarchyToUser = historyItem.HierarchyBackToUser,
                                             HierarchyBackToUser = null,
@@ -442,7 +442,7 @@ namespace ECDLink.Core.Services
                             }
                             //update the original history row to teh date its reassigned
                             historyItem.ReassignedBackToDate = DateTime.Now;
-                            historyItem.ReassignedBackToUserId = historyItem.UserId.ToString();
+                            historyItem.ReassignedBackToUserId = historyItem.UserId;
                             historyRepo.Update(historyItem);
                             reAssigned = true;
                         }

@@ -50,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             motherManager.ArchiveMotherProfilesWithoutMaternalRecord(id);
 
             // Now we can return all active mothers to the FE
-            List<Mother> allMothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
+            List<Mother> allMothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == Guid.Parse(id) && x.IsActive.Equals(true)).ToList();
             List<Mother> mothers = new List<Mother>();
 
             if (visitType == Constants.GGSettings.visitType_due)
@@ -112,7 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.ToString() == id &&
+            List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == Guid.Parse(id) &&
                                                                   x.IsActive.Equals(true) &&
                                                                   x.InsertedDate.Month == today.Month &&
                                                                   x.InsertedDate.Year == today.Year).ToList();

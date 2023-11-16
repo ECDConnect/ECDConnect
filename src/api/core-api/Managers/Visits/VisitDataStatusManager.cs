@@ -23,7 +23,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private HierarchyEngine _hierarchyEngine;
 
         private VisitType _additionalVisitType;
-        private string _applicationUserId;
+        private Guid _applicationUserId;
         private List<string> _clientVisitDataIds;
 
         private IGenericRepository<Mother, Guid> _motherRepo;
@@ -60,7 +60,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitBackReferralManager = visitBackReferralManager;
             _hierarchyEngine = hierarchyEngine;
 
-            _applicationUserId = _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
+            _applicationUserId = _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId().Value);
 
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -99,7 +99,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // Progress
 
             if (clientType == Constants.GGSettings.client_mother) {
-                Mother mother = _motherRepo.GetAll().Where(x => x.User.Id == id).OrderBy(x => x.Id).FirstOrDefault();
+                Mother mother = _motherRepo.GetAll().Where(x => x.User.Id == Guid.Parse(id)).OrderBy(x => x.Id).FirstOrDefault();
 
                 _clientVisitDataIds = (
                     from visit in _visitRepo.GetAll().Where(x => x.MotherId == mother.Id)
@@ -114,7 +114,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 ManageVisitDataStatusForMother(allVisitData, mother.User.FirstName, mother.Id.ToString());
             } else {
-                Infant infant = _infantRepo.GetAll().Where(x => x.User.Id == id).OrderBy(x => x.Id).FirstOrDefault();
+                Infant infant = _infantRepo.GetAll().Where(x => x.User.Id == Guid.Parse(id)).OrderBy(x => x.Id).FirstOrDefault();
 
                 _clientVisitDataIds = (
                     from visit in _visitRepo.GetAll().Where(x => x.InfantId == infant.Id)
@@ -1470,7 +1470,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _applicationUserId,
+                UpdatedBy = _applicationUserId.ToString(),
                 VisitDataId = input.Id,
                 Comment = "",
                 Color = "",

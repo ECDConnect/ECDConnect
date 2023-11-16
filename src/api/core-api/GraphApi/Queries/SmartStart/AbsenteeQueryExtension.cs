@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 if (absent.ReassignedClass != null)
                 {
                     var classRepo = repoFactory.CreateRepository<Programme>(userContext: uId);
-                    absent.Program = classRepo.GetAll().Where(x => x.Id.Equals(absent.ReassignedClass)).OrderBy(x => x.Id).FirstOrDefault();
+                    absent.Program = classRepo.GetAll().Where(x => x.Id == Guid.Parse(absent.ReassignedClass)).OrderBy(x => x.Id).FirstOrDefault();
                 }
                 if (absent.ReassignedToPractitioner != null)
                 {

@@ -17,7 +17,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public ClubMemberModel(ClubMember clubMember)
         {
             PractitionerId = clubMember.PractitionerId;
-            UserId = clubMember.Practitioner.User.Id;
+            UserId = clubMember.Practitioner.User.Id.ToString();
             FirstName = clubMember.Practitioner.User.FirstName;
             Surname = clubMember.Practitioner.User.Surname;
             PhoneNumber = clubMember.Practitioner.User.PhoneNumber;

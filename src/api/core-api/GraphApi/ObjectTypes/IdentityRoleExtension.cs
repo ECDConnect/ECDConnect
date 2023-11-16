@@ -6,17 +6,18 @@ using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
-    [ExtendObjectType(typeof(IdentityRole))]
+    [ExtendObjectType(typeof(IdentityRole<Guid>))]
     public class IdentityRoleExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
         public IEnumerable<Permission> Permissions(
           [Service] RolePermissionRepository permissionRepository,
-          [Parent] IdentityRole parent)
+          [Parent] IdentityRole<Guid> parent)
         {
             var permissions = permissionRepository.GetPermissionsForRole(new[] { parent.Id });
 

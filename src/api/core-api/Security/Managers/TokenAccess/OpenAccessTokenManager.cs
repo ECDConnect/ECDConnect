@@ -88,7 +88,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return isRetracted.Succeeded;
         }
 
-        public async Task<string> RefreshJwtTokenAsync(string userId, string token)
+        public async Task<string> RefreshJwtTokenAsync(string userName, string token)
         {
             throw new NotSupportedException("Unable to refresh a temporary open token");
         }

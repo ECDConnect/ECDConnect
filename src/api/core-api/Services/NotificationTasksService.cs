@@ -100,8 +100,8 @@ namespace ECDLink.Core.Services
                         FindValue = "RemovalDate",
                         ReplacementValue = DateTime.Now.AddDays(30).ToLongDateString()
                     });
-                    string parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
-                    var userToSend = await _userManager.FindByIdAsync(parentUserId);
+                    var parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
+                    var userToSend = await _userManager.FindByIdAsync(parentUserId.Value.ToString());
                     await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildRegistrationIncomplete, DateTime.Now, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
                 }
             }
@@ -350,7 +350,7 @@ namespace ECDLink.Core.Services
                 ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
             foreach (var requiredAttendance in allRequiredAttendance)
             {
-                var docs = docRepo.GetAll().Where(d => d.UserId.Equals(requiredAttendance.entityData.UserId) && d.DocumentTypeId.Equals(attendancePDF.Id)).ToList();
+                var docs = docRepo.GetAll().Where(d => d.UserId == requiredAttendance.entityData.UserId && d.DocumentTypeId.Equals(attendancePDF.Id)).ToList();
                 //TODO: finish gathering docs and sending to SL
 
 
@@ -419,8 +419,8 @@ namespace ECDLink.Core.Services
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var trainee in newTrainee)
             {
-                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId.ToString());
-                var userToSend = await _userManager.FindByIdAsync(parentUserId);
+                var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy : _hierarchyEngine.GetUserParentUserId(trainee.UserId).Value;
+                var userToSend = await _userManager.FindByIdAsync(parentUserId.Value.ToString());
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(2));
             }
         }

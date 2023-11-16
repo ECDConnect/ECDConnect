@@ -24,7 +24,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual Gender Gender { get; set; }
         public Guid? GenderId { get; set; }
 
-        //[ForeignKey(nameof(UserId))]
+        [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
 

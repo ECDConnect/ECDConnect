@@ -112,7 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Equals(userId)).OrderBy(x => x.Id).FirstOrDefault();
+            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).OrderBy(x => x.Id).FirstOrDefault();
             DateTime today = DateTime.Now.Date;
 
             var pointsEngineData = new HCWPointsEngine();
@@ -146,11 +146,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             highlights.totalThisWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, true) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, true);
             highlights.totalThisWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, true);
-            highlights.totalThisWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, true) + infantManager.GetTotalNewInfantsForWeek(userId, true);
+            highlights.totalThisWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, true) + infantManager.GetTotalNewInfantsForWeek(Guid.Parse(userId), true);
 
             highlights.totalLastWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, false) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, false); ;
             highlights.totalLastWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, false);
-            highlights.totalLastWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, false) + infantManager.GetTotalNewInfantsForWeek(userId, false);
+            highlights.totalLastWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, false) + infantManager.GetTotalNewInfantsForWeek(Guid.Parse(userId), false);
 
             return highlights;
         }
@@ -183,10 +183,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             Guid.TryParse(healthCareWorkerId, out Guid hcwId);
             var communityHealthWorker = healthCareWorkerRepo.GetById(hcwId);
 
-            var healthCareWorkerUserId = communityHealthWorker?.UserId.ToString() ?? userId;
+            var healthCareWorkerUserId = communityHealthWorker == null ? Guid.Parse(userId) : communityHealthWorker.UserId;
 
-            if (healthCareWorkerUserId is null)
-                throw new QueryException("User does not exist.");
+            //if (healthCareWorkerUserId is null)
+            //    throw new QueryException("User does not exist.");
 
             HCWSummary summary = new HCWSummary();
 
@@ -194,25 +194,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             summary.totalPregnantMoms = motherManager.GetTotalPregnantMothers(healthCareWorkerUserId, _startDate, _endDate);
             summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(healthCareWorkerUserId, _startDate, _endDate);
 
-            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(healthCareWorkerUserId, null, _startDate, _endDate);
+            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(healthCareWorkerUserId.ToString(), null, _startDate, _endDate);
 
             // Mothers and Infants are folders.
             summary.totalFoldersOpened = motherManager.GetTotalNewClientsForPeriod(healthCareWorkerUserId, _startDate, _endDate);
 
-            summary.totalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_child, _startDate, _endDate);
+            summary.totalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_child, _startDate, _endDate);
 
-            var motherVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_mother, _startDate, _endDate);
-            var infantVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId, Constants.GGSettings.client_mother, _startDate, _endDate);
+            var motherVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_mother, _startDate, _endDate);
+            var infantVisitsOverdue = visitManager.GetTotalVisitsOverdueForPeriod(healthCareWorkerUserId.ToString(), Constants.GGSettings.client_mother, _startDate, _endDate);
             summary.totalVisitsOverdue = motherVisitsOverdue + infantVisitsOverdue;
 
-            summary.totalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(healthCareWorkerUserId, _startDate, _endDate);
-            summary.totalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(healthCareWorkerUserId, _startDate, _endDate);
+            summary.totalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
+            summary.totalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
 
-            summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(healthCareWorkerUserId, _startDate, _endDate);
-            summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId, _startDate, _endDate); ;
+            summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
+            summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate); ;
 
-            summary.totalPregnantMomsWithNoIssues = visitManager.GetTotalPregnantMothersWithNoIssues(healthCareWorkerUserId, _startDate, _endDate);
-            summary.totalChildrenWithNoIssues = visitManager.GetTotalCaregiversAndChildrenWithNoIssues(healthCareWorkerUserId, _startDate, _endDate); ;
+            summary.totalPregnantMomsWithNoIssues = visitManager.GetTotalPregnantMothersWithNoIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate);
+            summary.totalChildrenWithNoIssues = visitManager.GetTotalCaregiversAndChildrenWithNoIssues(healthCareWorkerUserId.ToString(), _startDate, _endDate); ;
 
             return summary;
         }
@@ -226,12 +226,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             int recordsPerPage = Constants.GGSettings.recordsPerPage,
             int pageNumber = Constants.GGSettings.pageNumber)
         {
-            List<Caregiver> caregivers = caregiverManager.GetAllCaregiversForHCW(userId, recordsPerPage, pageNumber);
+            List<Caregiver> caregivers = caregiverManager.GetAllCaregiversForHCW(Guid.Parse(userId), recordsPerPage, pageNumber);
 
             foreach (var caregiver in caregivers)
             {
-                caregiver.Infants = infantManager.GetAllInfantsForCaregiver(caregiver.Id.ToString());
-                caregiver.Mother = motherManager.GetMotherForCaregiver(caregiver.Id.ToString());
+                caregiver.Infants = infantManager.GetAllInfantsForCaregiver(caregiver.Id);
+                caregiver.Mother = motherManager.GetMotherForCaregiver(caregiver.Id);
             }
 
             return caregivers;
@@ -243,7 +243,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var documentRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
-            List<Document> documents = documentRepo.GetAll().Where(x => x.CreatedUserId == createdUserId || x.UpdatedBy == createdUserId).OrderBy(x => x.Name).ToList();
+            List<Document> documents = documentRepo.GetAll().Where(x => x.CreatedUserId == Guid.Parse(createdUserId) || x.UpdatedBy == createdUserId).OrderBy(x => x.Name).ToList();
             return documents;
         }
 

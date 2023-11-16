@@ -26,7 +26,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
         public virtual ClassProgramme ClassroomProgramme { get; set; }
         public Guid ClassroomProgrammeId { get; set; }
 
-        //[ForeignKey(nameof(UserId)), Column("UserId", TypeName = "uuid")]
+        [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public Guid UserId { get; set; }
 

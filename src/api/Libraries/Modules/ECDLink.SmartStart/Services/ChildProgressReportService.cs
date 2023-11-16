@@ -112,7 +112,7 @@ namespace ECDLink.SmartStart.Services
         }
 
         public async Task<string> GenerateChildProgressReport(
-          string userId,
+          Guid userId,
           Guid childId,
           Guid classgroupId,
           DateTime reportDate)
@@ -147,7 +147,7 @@ namespace ECDLink.SmartStart.Services
         }
 
         public async Task<ChildProgressReportDetailedModel> GetChildProgressReport(
-            string userId,
+            Guid userId,
             Guid reportId)
         {
             var reportRepo = _repoFactory.CreateRepository<DataAccessLayer.Entities.Reports.ChildProgressReport>();
@@ -159,7 +159,7 @@ namespace ECDLink.SmartStart.Services
         }
 
         public async Task<IEnumerable<ChildProgressReportDetailedModel>> GetChildProgressReports(
-            string userId,
+            Guid userId,
             int count)
         {
             var reportRepo = _repoFactory.CreateRepository<DataAccessLayer.Entities.Reports.ChildProgressReport>();
@@ -184,7 +184,7 @@ namespace ECDLink.SmartStart.Services
         }
 
         public async Task<IEnumerable<ChildProgressReportSummaryModel>> GetChildProgressReportSummary(
-            string userId,
+            Guid userId,
             int count)
         {
             var reportRepo = _repoFactory.CreateRepository<DataAccessLayer.Entities.Reports.ChildProgressReport>();
@@ -241,7 +241,7 @@ namespace ECDLink.SmartStart.Services
         }
 
         public async Task<PractitionerProgressReportSummaryModel> GetPractitionerProgressReportSummary(
-            string userId,
+            Guid userId,
             string reportingPeriod,
             string locale)
         {
@@ -258,7 +258,7 @@ namespace ECDLink.SmartStart.Services
         }
 
         public async Task<PractitionerProgressReportSummaryModel> GetPrincipalProgressReportSummary(
-            string userId,
+            Guid userId,
             string reportingPeriod,
             string locale)
         {
@@ -272,11 +272,11 @@ namespace ECDLink.SmartStart.Services
             result.ReportingPeriod = reportingPeriodDate.ToString("MMMM yyyy");
             result.ClassSummaries = new List<PractitionerClassProgressReportSummaryModel>();
 
-            var practitioners = _personnelService.GetAllPractitionersForPrincipal(userId);
+            var practitioners = _personnelService.GetAllPractitionersForPrincipal(userId.ToString());
             foreach (var practitioner in practitioners)
             {
                 if (practitioner.UserId==Guid.Empty) continue;
-                var practitionerClassSummaries = GetPractitionerProgressReportSummary(pracRepo, cprRepo, childRepo, reportingPeriodDate, practitioner.UserId.ToString(), languageId);
+                var practitionerClassSummaries = GetPractitionerProgressReportSummary(pracRepo, cprRepo, childRepo, reportingPeriodDate, practitioner.UserId, languageId);
                 if (practitionerClassSummaries.Count > 0)
                 {
                     result.ClassSummaries.AddRange(practitionerClassSummaries);
@@ -290,12 +290,12 @@ namespace ECDLink.SmartStart.Services
                 IGenericRepository<ChildProgressReport, Guid> cprRepo,
                 IGenericRepository<Child, Guid> childRepo,
                 DateTime reportingPeriodDate,
-                string userId,
+                Guid userId,
                 Guid languageId
             )
         {
             var classSummaries = new List<PractitionerClassProgressReportSummaryModel>();
-            var classroomGroups = _attendanceService.GetUserClassroomGroups(userId);
+            var classroomGroups = _attendanceService.GetUserClassroomGroups(userId.ToString());
             if (classroomGroups == null) return classSummaries;
 
             FetchCategoryData(languageId);
@@ -306,7 +306,7 @@ namespace ECDLink.SmartStart.Services
                 var classSummary = new PractitionerClassProgressReportSummaryModel();
                 classSummaries.Add(classSummary);
                 classSummary.ClassName = classroomGroup.Name;
-                classSummary.PractitionerUserId = new Guid(userId);
+                classSummary.PractitionerUserId = userId;
                 classSummary.PractitionerFullName = practitioner != null ? practitioner.User.FullName : "";
                 classSummary.Categories = _categories.Select(x => new PractitionerClassProgressReportCategorySummary
                 {

@@ -46,7 +46,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                 foreach (var user in users)
                 {
                     // If an existing notification exists
-                    if (existingNotifications.Any(x => string.Equals(x.UserId, user.Id)))
+                    if (existingNotifications.Any(x => x.UserId == user.Id))
                     {
                         continue;
                     }
@@ -56,7 +56,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                     {
                         dbContext.JobNotifications.Add(new JobNotification
                         {
-                            UserId = user.UserId,
+                            UserId = user.Id,
                             UserLastSeen = user.LastSeen,
                             Protocol = user.ContactPreference,
                             TemplateType = TemplateTypeEnum.FourWeekNotLoggedOn,
@@ -68,7 +68,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                     }
 
                     //make sure user doesnt get notification fopr 30 and 21
-                    if (existingNotifications.Any(x => string.Equals(x.UserId, user.Id)))
+                    if (existingNotifications.Any(x => x.UserId == user.Id))
                     {
                         continue;
                     }
@@ -76,7 +76,7 @@ namespace ECDLink.AutomatedJobs.Notifications
                     if (user.LastSeen.Date <= twoOne) { 
                         dbContext.JobNotifications.Add(new JobNotification
                         {
-                            UserId = user.UserId,
+                            UserId = user.Id,
                             UserLastSeen = user.LastSeen,
                             Protocol = user.ContactPreference,
                             TemplateType = TemplateTypeEnum.ThreeWeekNotLoggedOn,

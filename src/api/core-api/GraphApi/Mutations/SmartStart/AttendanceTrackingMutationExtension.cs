@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (result == true)
                 {
                     var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
-                    pointsEngineService.CalculateAttendanceSubmitted(applicationUserId, DateTime.UtcNow);
+                    pointsEngineService.CalculateAttendanceSubmitted(applicationUserId.ToString(), DateTime.UtcNow);
                 }
                 return result;
             }

@@ -19,7 +19,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
-        private string _applicationUserId;
+        private Guid _applicationUserId;
 
         public ChildManager(
             IHttpContextAccessor contextAccessor,

@@ -26,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         )
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.AddReassignmentForPractitioner(uId, fromUserId, toUserId, reason, startDate, loggedByUser, classroomGroup, permanentAssign, endDate);
+            return reassignmentService.AddReassignmentForPractitioner(uId.ToString(), fromUserId, toUserId, reason, startDate, loggedByUser, classroomGroup, permanentAssign, endDate);
         }
 
 
@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
+            return reassignmentService.ReassignClassroomsFromHistory(uId.ToString(), userId);
         }
 
         public bool ExpireRelationshipLinksService([Service] IHttpContextAccessor contextAccessor,
@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     [Service] IReassignmentService reassignmentService)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId, null);
+            return reassignmentService.ReassignClassroomsFromHistory(uId.ToString(), null);
         }
 
 

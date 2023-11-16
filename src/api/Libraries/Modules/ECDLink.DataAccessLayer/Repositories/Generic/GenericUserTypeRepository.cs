@@ -27,7 +27,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         {
             get
             {
-                return _hierarchyEngine.GetUserHierarchy(_userId.ToString());
+                return _hierarchyEngine.GetUserHierarchy(_userId);
             }
         }
 
@@ -55,7 +55,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             context.SaveChanges();
 
-            _hierarchyEngine.RemoveHierarchy(((IUserType)entity).UserId.ToString());
+            _hierarchyEngine.RemoveHierarchy(((IUserType)entity).UserId);
 
 
             //Populate Audit records
@@ -76,7 +76,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
             
-            var query = entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
+            var query = entities.Where(e => e.TenantId == null || e.TenantId == tenantId).AsQueryable();
 
             if (pagingInput is not null)
             {
@@ -94,7 +94,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 try
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value);
                     if (hh.Count > 0)
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
@@ -131,7 +131,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value);
                     if (hh != null)
                     {
                         if (!hh.Contains(castRecord.Hierarchy))
@@ -165,7 +165,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             {
                 if (!string.IsNullOrWhiteSpace(castRecord.Hierarchy))
                 {
-                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
+                    List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value);
                     if (hh != null)
                     {
                         if (!hh.Contains(castRecord.Hierarchy))
@@ -207,7 +207,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value);
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))
@@ -254,7 +254,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 {
                     try
                     {
-                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.ToString());
+                        List<string> hh = _hierarchyEngine.GetHierarchyByParentList<T>(_userManager, _userId.Value);
                         if (hh != null)
                         {
                             if (!hh.Contains(castRecord.Hierarchy))
@@ -280,7 +280,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var typedEntity = entity as IUserType;
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-            var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId.ToString(), typedEntity.UserId.ToString());
+            var hierarchyEntity = _hierarchyEngine.AddHierarchyEntity<T>(_userId.Value, typedEntity.UserId);
 
             typedEntity.Hierarchy = HierarchyHelper.AppendHierarchy(Hierarchy, hierarchyEntity.Key.ToString());
 

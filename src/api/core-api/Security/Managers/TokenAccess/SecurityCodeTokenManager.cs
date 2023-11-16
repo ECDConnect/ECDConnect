@@ -55,9 +55,9 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             return user;
         }
 
-        public async Task<string> RefreshJwtTokenAsync(string userId, string token)
+        public async Task<string> RefreshJwtTokenAsync(string userName, string token)
         {
-            var user = await _userManager.FindByNameAsync(userId);
+            var user = await _userManager.FindByNameAsync(userName);
 
             if (user == null)
             {

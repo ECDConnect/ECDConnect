@@ -39,11 +39,12 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
     public class TestSeed
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
-        private string _userId;
-        private string _practitionerId;
+        private Guid _userId;
+        private Guid _practitionerId;
 
         public TestSeed(IServiceProvider serviceProvider)
         {
+            /*
             _repositoryFactory = serviceProvider.GetService<IGenericRepositoryFactory>();
 
             var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
@@ -84,8 +85,10 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
                 SeedChildAttendance(serviceProvider);
             }
             catch (Exception e) { }
+            */
         }
 
+        /*
         private Guid AddFranchisorCoach(UserManager<ApplicationUser> userManager)
         {
             var fraRepo = _repositoryFactory.CreateRepository<Franchisor>(userContext: _userId);
@@ -628,5 +631,6 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
 
             return siteAddress.Id;
         }
+        */
     }
 }

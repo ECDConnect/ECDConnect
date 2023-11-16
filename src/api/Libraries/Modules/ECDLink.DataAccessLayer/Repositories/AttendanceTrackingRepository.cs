@@ -47,8 +47,8 @@ namespace ECDLink.DataAccessLayer.Repositories
                               .Include(x => x.User)
                               .Include(x => x.ClassroomProgramme)
                                 .ThenInclude(x => x.ClassroomGroup)
-                              .Where(x => string.Equals(x.ParentRecordId, userId))
-                              .Where(e => e.TenantId == Guid.Empty || e.TenantId.Equals(tenantId));
+                              .Where(x => x.ParentRecordId == userId)
+                              .Where(e => e.TenantId == Guid.Empty || e.TenantId == tenantId);
 
             return attendances;
         }
@@ -58,7 +58,7 @@ namespace ECDLink.DataAccessLayer.Repositories
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return _context.Attendances
                 .Where(f => f.AttendanceDate >= start && f.AttendanceDate < end)
-                .Where(e => e.TenantId == Guid.Empty || e.TenantId.Equals(tenantId));
+                .Where(e => e.TenantId == Guid.Empty || e.TenantId == tenantId);
         }
 
         public IQueryable<Attendance> GetAllByDateRangeByFullMonth(DateTime startMonth, DateTime endMonth)
@@ -68,7 +68,7 @@ namespace ECDLink.DataAccessLayer.Repositories
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return _context.Attendances
                 .Where(f => f.AttendanceDate >= start && f.AttendanceDate <= end)
-                .Where(e => e.TenantId == Guid.Empty || e.TenantId.Equals(tenantId));
+                .Where(e => e.TenantId == Guid.Empty || e.TenantId == tenantId);
         }
 
         public List<Attendance> GetAllByDateRangeByClassroom(DateTime startMonth, DateTime endMonth, Guid classroomId, string userId = null)
@@ -79,7 +79,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 var end = endMonth.GetEndOfMonth();
                 Guid tenantId = TenantExecutionContext.Tenant.Id;
                 //get all programmes under classroom
-                IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(classroomId)).AsQueryable();
+                IQueryable<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId == classroomId).AsQueryable();
                 IQueryable<Attendance> attendanceQuery = null;
                 if (userId is not null) {
                     attendanceQuery = _context.Attendances.Where(f => f.UserId.ToString() == userId && f.AttendanceDate >= start && f.AttendanceDate < end);
@@ -88,7 +88,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                     attendanceQuery = _context.Attendances.Where(f => f.AttendanceDate >= start && f.AttendanceDate < end);
                 }
                 List<Attendance> attendance = attendanceQuery
-                    .Where(e => e.TenantId == Guid.Empty || e.TenantId.Equals(tenantId))
+                    .Where(e => e.TenantId == Guid.Empty || e.TenantId == tenantId)
                     .ToList();
                 List<string> programmeIds = programmes.Select(y => y.Id.ToString()).ToList();
 
@@ -124,7 +124,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 List<Attendance> attendance = _context.Attendances.Where(f => f.UserId.ToString() == userId)
                     .Where(g => g.ClassroomProgrammeId == classroomId)
                     .Where(y => y.ParentRecordId == parentRecordId)
-                    .Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).ToList();//
+                    .Where(e => e.TenantId == null || e.TenantId == tenantId).ToList();//
 
                 List<Attendance> filteredAttendance = new List<Attendance>();
 
@@ -183,7 +183,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                 foreach (ClassroomGroup group in groups)
                 {
 
-                    List<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId.Equals(group.Id)).ToList();
+                    List<ClassProgramme> programmes = _context.ClassProgrammes.Where(x => x.ClassroomGroupId == group.Id).ToList();
 
                     foreach (ClassProgramme programme in programmes)
                     {
@@ -191,7 +191,7 @@ namespace ECDLink.DataAccessLayer.Repositories
                             .Where(g => g.ClassroomProgrammeId == programme.Id)
                             .Where(y => y.ParentRecordId == parentRecordId)
                             .Where(x => x.AttendanceDate >= startDate && x.AttendanceDate <= endDate)
-                            .Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).ToList();//
+                            .Where(e => e.TenantId == null || e.TenantId == tenantId).ToList();//
 
                         List<Attendance> filteredAttendance = new List<Attendance>();
 

@@ -10,6 +10,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class RoleQueryTypeExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public IEnumerable<IdentityRole> GetRoles([Service] RoleManager<IdentityRole> roleManager)
+        public IEnumerable<IdentityRole<Guid>> GetRoles([Service] RoleManager<IdentityRole<Guid>> roleManager)
         {
             return roleManager.Roles.ToList();
         }
@@ -29,13 +30,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             IGenericRepositoryFactory repoFactory,
-            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] RoleManager<IdentityRole<Guid>> roleManager,
             [Service] PersonnelService personnelService,
             string userId = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             if (userId == null)
-                userId = uId;
+                userId = uId.ToString();
             var user = userManager.FindByIdAsync(userId).Result;
             if (user != null)
             {

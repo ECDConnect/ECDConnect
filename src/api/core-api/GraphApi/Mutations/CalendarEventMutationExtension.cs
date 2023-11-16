@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid? id,
             CalendarEventModel input)
         {
-            var uId = Guid.Parse(contextAccessor.HttpContext.GetUser().Id);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
             var repoCalendarEvent = repoFactory.CreateGenericRepository<CalendarEvent>();
             var repoCalendarEventParticipant = repoFactory.CreateGenericRepository<CalendarEventParticipant>();
 

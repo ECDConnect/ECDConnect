@@ -56,7 +56,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         practitionerRepo.Update(practitioner);
 
                         //link the practitioners classroom groups to the correct classroom
-                        Classroom principalClassRoom = classroomRepo.GetAll().Where(x => x.UserId.Equals(principalUser.UserId)).OrderBy(x => x.Id).FirstOrDefault();
+                        Classroom principalClassRoom = classroomRepo.GetAll().Where(x => x.UserId == principalUser.UserId).OrderBy(x => x.Id).FirstOrDefault();
                         List<ClassroomGroup> classroomGroups = classroomGroupRepo.GetAll().Where(x => x.IsActive && (x.UserId.HasValue && x.UserId == practitioner.UserId))
                                                                                    .OrderBy(x => x.Id)
                                                                                    .ToList();
@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(userId)).Where(y => y.PrincipalHierarchy.Equals(principalId)).OrderBy(x => x.Id).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == Guid.Parse(userId)).Where(y => y.PrincipalHierarchy.Equals(principalId)).OrderBy(x => x.Id).FirstOrDefault();
             {
                 practitioner.PrincipalHierarchy = null;
                 practitioner.ShareInfo = false;
@@ -152,7 +152,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             //reassign all practitioners to the new principal
             if (oldPrincipal != null && newPrincipal != null)
             {
-                List<Practitioner> allPrincipalPractitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(oldPrincipal.UserId)).ToList();
+                List<Practitioner> allPrincipalPractitioners = practitionerRepo.GetAll().Where(x => x.PrincipalHierarchy == oldPrincipal.UserId).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     foreach (var practi in allPrincipalPractitioners)
@@ -214,7 +214,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (principal.UserId != null && practitioner.UserId != null)
                     {
                         //Reassign all classes and programmes back to principal
-                        reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                        reassignmentService.AddReassignmentForPractitioner(uId.ToString(), practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
                     }
 
                     status.AcceptedDate = null;
@@ -239,7 +239,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (principal.UserId != null && practitioner.UserId != null)
                         {
                             //Reassign all classes and programmes back to principal
-                            reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                            reassignmentService.AddReassignmentForPractitioner(uId.ToString(), practitioner.UserId.ToString(), principal.UserId.ToString(), "Removing link between Principal and Practitioner", DateTime.Now, uId.ToString(), null, true);
                         }
 
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);

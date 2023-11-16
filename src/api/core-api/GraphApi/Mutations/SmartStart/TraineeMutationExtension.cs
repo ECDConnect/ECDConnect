@@ -126,7 +126,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string userId,
             DateTime dateAwarded)
         {
-            return licenseManager.AddSmartSpaceLicense(userId, dateAwarded);
+            return licenseManager.AddSmartSpaceLicense(Guid.Parse(userId), dateAwarded);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
@@ -135,7 +135,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     string userId,
     DateTime dateDeclined, string nextStepsComments)
         {
-            return licenseManager.DeclineSmartSpaceLicense(userId, dateDeclined, nextStepsComments);
+            return licenseManager.DeclineSmartSpaceLicense(Guid.Parse(userId), dateDeclined, nextStepsComments);
         }
 
     }

@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.Documents
             var repo = _repositoryFactory.CreateRepository<Document>(userContext: userId);
 
             var documents = repo.GetAll()
-                                .Where(x => string.Equals(x.UserId, userId)
+                                .Where(x => x.UserId == Guid.Parse(userId)
                                 && x.DocumentType.EnumId == fileType)
                                 .ToList();
 
@@ -97,7 +97,7 @@ namespace EcdLink.Api.CoreApi.Documents
                     doc = new Document
                     {
                         Id = Guid.NewGuid(),
-                        CreatedUserId = addedByUserId,
+                        CreatedUserId = Guid.Parse(addedByUserId),
                         Name = fileName,
                         UpdatedBy = addedByUserId,
                         InsertedDate = DateTime.Now,

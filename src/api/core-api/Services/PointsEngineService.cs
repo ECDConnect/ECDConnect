@@ -60,7 +60,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         private VisitManager _visitManager;
 
-        private readonly string _uId;
+        private readonly Guid _uId;
 
         public PointsEngineService(
             IHttpContextAccessor contextAccessor,
@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
-            _uId = _contextAccessor.HttpContext.GetUser()?.Id;
+            _uId = _contextAccessor.HttpContext.GetUser().Id;
             
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
             _pointsUserRepo = _repositoryFactory.CreateGenericRepository<PointsUser>(userContext: _uId);
@@ -185,7 +185,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity2.Points,
@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Id = Guid.NewGuid(),
                             IsActive = true,
                             InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
+                            UpdatedBy = _uId.ToString(),
                             Month = today.Month,
                             Year = today.Year,
                             Points = activity3.Points,
@@ -244,7 +244,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Id = Guid.NewGuid(),
                             IsActive = true,
                             InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
+                            UpdatedBy = _uId.ToString(),
                             Month = today.Month,
                             Year = today.Year,
                             Points = activity4.Points,
@@ -266,7 +266,7 @@ namespace EcdLink.Api.CoreApi.Services
             PointsLibrary activity1 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac1).FirstOrDefault();
 
             // Complete the client registration flow for 5 or more children under the age of 2 years old
-            var childData = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.User.Id == userId &&
+            var childData = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.User.Id == Guid.Parse(userId) &&
                                                x.IsActive == true &&
                                                x.InsertedDate.Year == today.Year &&
                                                x.InsertedDate.Month == today.Month).ToList();
@@ -285,7 +285,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Id = Guid.NewGuid(),
                             IsActive = true,
                             InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
+                            UpdatedBy = _uId.ToString(),
                             Month = today.Month,
                             Year = today.Year,
                             Points = activity1.Points,
@@ -340,7 +340,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Id = Guid.NewGuid(),
                                     IsActive = true,
                                     InsertedDate = DateTime.Now,
-                                    UpdatedBy = _uId,
+                                    UpdatedBy = _uId.ToString(),
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity1.Points,
@@ -375,7 +375,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity2.Points,
@@ -410,7 +410,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Id = Guid.NewGuid(),
                                     IsActive = true,
                                     InsertedDate = DateTime.Now,
-                                    UpdatedBy = _uId,
+                                    UpdatedBy = _uId.ToString(),
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity3.Points,
@@ -445,7 +445,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity4.Points,
@@ -478,7 +478,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Id = Guid.NewGuid(),
                                     IsActive = true,
                                     InsertedDate = DateTime.Now,
-                                    UpdatedBy = _uId,
+                                    UpdatedBy = _uId.ToString(),
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity5.Points,
@@ -549,7 +549,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Id = Guid.NewGuid(),
                                     IsActive = true,
                                     InsertedDate = DateTime.Now,
-                                    UpdatedBy = _uId,
+                                    UpdatedBy = _uId.ToString(),
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity1.Points,
@@ -605,7 +605,7 @@ namespace EcdLink.Api.CoreApi.Services
                                          Id = Guid.NewGuid(),
                                          IsActive = true,
                                          InsertedDate = DateTime.Now,
-                                         UpdatedBy = _uId,
+                                         UpdatedBy = _uId.ToString(),
                                          Month = today.Month,
                                          Year = today.Year,
                                          Points = activity2.Points,
@@ -627,7 +627,7 @@ namespace EcdLink.Api.CoreApi.Services
                                         Id = Guid.NewGuid(),
                                         IsActive = true,
                                         InsertedDate = DateTime.Now,
-                                        UpdatedBy = _uId,
+                                        UpdatedBy = _uId.ToString(),
                                         Month = today.Month,
                                         Year = today.Year,
                                         Points = activity2.Points,
@@ -668,7 +668,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity3_points,
@@ -681,7 +681,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity3_record.Points = activity3_points;
                         activity3_record.UpdatedDate = DateTime.Now;
-                        activity3_record.UpdatedBy = _uId;
+                        activity3_record.UpdatedBy = _uId.ToString();
                         activity3_record.Comment = comment;
                         UpdateIndividualUserPoints(activity3_record);
                     }
@@ -715,7 +715,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity4_points,
@@ -729,7 +729,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity4_record.Points = activity4_points;
                         activity4_record.UpdatedDate = DateTime.Now;
-                        activity4_record.UpdatedBy = _uId;
+                        activity4_record.UpdatedBy = _uId.ToString()            ;
                         activity4_record.Comment = comment;
                         UpdateIndividualUserPoints(activity4_record);
                     }
@@ -763,7 +763,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity5_points,
@@ -777,7 +777,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity5_record.Points = activity5_points;
                         activity5_record.UpdatedDate = DateTime.Now;
-                        activity5_record.UpdatedBy = _uId;
+                        activity5_record.UpdatedBy = _uId.ToString();
                         activity5_record.Comment = comment;
                         UpdateIndividualUserPoints(activity5_record);
                     }
@@ -809,7 +809,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity6_points,
@@ -823,7 +823,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity6_record.Points = activity6_points;
                         activity6_record.UpdatedDate = DateTime.Now;
-                        activity6_record.UpdatedBy = _uId;
+                        activity6_record.UpdatedBy = _uId.ToString();
                         activity6_record.Comment = comment;
                         UpdateIndividualUserPoints(activity6_record);
                     }
@@ -858,7 +858,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity7_points,
@@ -872,7 +872,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity7_record.Points = activity7_points;
                         activity7_record.UpdatedDate = DateTime.Now;
-                        activity7_record.UpdatedBy = _uId;
+                        activity7_record.UpdatedBy = _uId.ToString();
                         activity7_record.Comment = comment;
                         UpdateIndividualUserPoints(activity7_record);
                     }
@@ -907,7 +907,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity8_points,
@@ -921,7 +921,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity8_record.Points = activity8_points;
                         activity8_record.UpdatedDate = DateTime.Now;
-                        activity8_record.UpdatedBy = _uId;
+                        activity8_record.UpdatedBy = _uId.ToString();
                         activity8_record.Comment = comment;
                         UpdateIndividualUserPoints(activity8_record);
                     }
@@ -952,7 +952,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity9_points,
@@ -966,7 +966,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity9_record.Points = activity9_points;
                         activity9_record.UpdatedDate = DateTime.Now;
-                        activity9_record.UpdatedBy = _uId;
+                        activity9_record.UpdatedBy = _uId.ToString();
                         activity9_record.Comment = comment;
                         UpdateIndividualUserPoints(activity9_record);
                     }
@@ -998,7 +998,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Id = Guid.NewGuid(),
                             IsActive = true,
                             InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
+                            UpdatedBy = _uId.ToString(),
                             Month = today.Month,
                             Year = today.Year,
                             Points = activity10_points,
@@ -1012,7 +1012,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity10_record.Points = activity10_points;
                         activity10_record.UpdatedDate = DateTime.Now;
-                        activity10_record.UpdatedBy = _uId;
+                        activity10_record.UpdatedBy = _uId.ToString();
                         activity10_record.Comment = comment;
                         UpdateIndividualUserPoints(activity10_record);
                     }
@@ -1044,7 +1044,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activity11_points,
@@ -1058,7 +1058,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity11_record.Points = activity11_points;
                         activity11_record.UpdatedDate = DateTime.Now;
-                        activity11_record.UpdatedBy = _uId;
+                        activity11_record.UpdatedBy = _uId.ToString();
                         activity11_record.Comment = comment;
                         UpdateIndividualUserPoints(activity11_record);
                     }
@@ -1086,7 +1086,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Id = Guid.NewGuid(),
                                     IsActive = true,
                                     InsertedDate = DateTime.Now,
-                                    UpdatedBy = _uId,
+                                    UpdatedBy = _uId.ToString(),
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity12.Points,
@@ -1121,7 +1121,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Id = Guid.NewGuid(),
                                     IsActive = true,
                                     InsertedDate = DateTime.Now,
-                                    UpdatedBy = _uId,
+                                    UpdatedBy = _uId.ToString(),
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity13.Points,
@@ -1156,7 +1156,7 @@ namespace EcdLink.Api.CoreApi.Services
                                     Id = Guid.NewGuid(),
                                     IsActive = true,
                                     InsertedDate = DateTime.Now,
-                                    UpdatedBy = _uId,
+                                    UpdatedBy = _uId.ToString(),
                                     Month = today.Month,
                                     Year = today.Year,
                                     Points = activity14.Points,
@@ -1230,7 +1230,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Id = Guid.NewGuid(),
                             IsActive = true,
                             InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
+                            UpdatedBy = _uId.ToString(),
                             Month = today.Month,
                             Year = today.Year,
                             UserId = new Guid(userId),
@@ -1245,7 +1245,7 @@ namespace EcdLink.Api.CoreApi.Services
                     record.PointsTotal = monthTotal;
                     record.PointsYTD = ytdTotal;
                     record.UpdatedDate = DateTime.Now;
-                    record.UpdatedBy = _uId;
+                    record.UpdatedBy = _uId.ToString();
                     record.TimesScored = record.TimesScored + 1;
 
                     UpdateIndividualSummaryUserPoints(record);
@@ -1280,7 +1280,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Id = Guid.NewGuid(),
                             IsActive = true,
                             InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
+                            UpdatedBy = _uId.ToString(),
                             Month = today.Month,
                             Year = today.Year,
                             Points = activityPoints,
@@ -1294,7 +1294,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     activity_record.Points = activityPoints;
                     activity_record.UpdatedDate = DateTime.Now;
-                    activity_record.UpdatedBy = _uId;
+                    activity_record.UpdatedBy = _uId.ToString();
                     UpdateIndividualUserPoints(activity_record);
                 }
                 UpdateUserSummaryPoints(
@@ -1338,7 +1338,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 Id = Guid.NewGuid(),
                                 IsActive = true,
                                 InsertedDate = DateTime.Now,
-                                UpdatedBy = _uId,
+                                UpdatedBy = _uId.ToString(),
                                 Month = today.Month,
                                 Year = today.Year,
                                 Points = activityPoints,
@@ -1352,7 +1352,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         activity_record.Points = activityPoints;
                         activity_record.UpdatedDate = DateTime.Now;
-                        activity_record.UpdatedBy = _uId;
+                        activity_record.UpdatedBy = _uId.ToString();
                         activity_record.Comment = "Total: " + childCount;
                         UpdateIndividualUserPoints(activity_record);
                     }
@@ -1408,7 +1408,7 @@ namespace EcdLink.Api.CoreApi.Services
                             Id = Guid.NewGuid(),
                             IsActive = true,
                             InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
+                            UpdatedBy = _uId.ToString(),
                             Month = today.Month,
                             Year = today.Year,
                             Points = (int)perc,
@@ -1422,7 +1422,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     activity_record.Points = (int)perc;
                     activity_record.UpdatedDate = DateTime.Now;
-                    activity_record.UpdatedBy = _uId;
+                    activity_record.UpdatedBy = _uId.ToString();
                     activity_record.Comment = "Total: " + perc;
                     UpdateIndividualUserPoints(activity_record);
                 }
@@ -1534,7 +1534,7 @@ namespace EcdLink.Api.CoreApi.Services
                         Id = Guid.NewGuid(),
                         IsActive = true,
                         InsertedDate = DateTime.Now,
-                        UpdatedBy = _uId,
+                        UpdatedBy = _uId.ToString(),
                         Month = today.Month,
                         Year = today.Year,
                         Points = activity.Points,
@@ -1664,7 +1664,7 @@ namespace EcdLink.Api.CoreApi.Services
                 UserId = Guid.Parse(coachUserId),
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = _uId,
+                UpdatedBy = _uId.ToString(),
                 IsActive = true,
                 ClubPointsLibraryId = clubPointsLibraryId,
                 Month = today.Month,
@@ -1700,7 +1700,7 @@ namespace EcdLink.Api.CoreApi.Services
                     UserId = Guid.Parse(userId),
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
-                    UpdatedBy = _uId,
+                    UpdatedBy = _uId.ToString(),
                     IsActive = true,
                     ClubPointsLibraryId = clubPointsLibrary.Id,
                     Month = today.Month,
@@ -1749,7 +1749,7 @@ namespace EcdLink.Api.CoreApi.Services
                     UserId = Guid.Parse(userId),
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
-                    UpdatedBy = _uId,
+                    UpdatedBy = _uId.ToString(),
                     IsActive = true,
                     ClubPointsLibraryId = clubPointsLibrary.Id,
                     Month = today.Month,
@@ -1785,7 +1785,7 @@ namespace EcdLink.Api.CoreApi.Services
                     UserId = Guid.Parse(userId),
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
-                    UpdatedBy = _uId,
+                    UpdatedBy = _uId.ToString(),
                     IsActive = true,
                     ClubPointsLibraryId = clubPointsLibrary.Id,
                     Month = today.Month,

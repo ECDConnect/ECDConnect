@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           UserManager<ApplicationUser> userManager,
           string file)
         {
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
 
             if (file is null || currentUserId is null)
             {
@@ -116,7 +116,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var userId = Guid.NewGuid();
                 var user = new ApplicationUser()
                 {
-                    Id = userId.ToString(),
+                    Id = userId,
                     IdNumber = id,
                     UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                     FirstName = firstName,
@@ -130,7 +130,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     TenantId = tenantId,
                     InsertedDate = insertedDate,
                     IsActive = true,
-                    UserId = userId
                 };
                 userImportList.Add(user);
 
@@ -234,7 +233,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var teamLeadSAIdNum = hcwToTeamLeadMap[user.UserName];
                     var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
                     hcw.TeamLeadId = teamLeadSaIdToIdsMap.First(teamLead => teamLead.Value == teamLeadSAIdNum).Key;
-                    hcw.UserId = user.UserId;
+                    hcw.UserId = user.Id;
 
                     communityHealthWorkerRepo.Insert(hcw);
                 }
@@ -330,7 +329,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           UserManager<ApplicationUser> userManager,
           string file)
         {
-            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
 
             if (file is null || currentUserId is null)
@@ -404,7 +403,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var userId = Guid.NewGuid();
                     var user = new ApplicationUser()
                     {
-                        Id = userId.ToString(),
+                        Id = userId,
                         IdNumber = id,
                         UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
                         FirstName = firstName,
@@ -419,7 +418,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId,
                         InsertedDate = insertedDate,
                         IsActive = true,
-                        UserId = userId,
                     };
                     userImportList.Add(user);
 
@@ -529,7 +527,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var newTl = teamLeadUsers.First(tl => tl.Key == user.UserName).Value;
 
                     // Assign newly created user
-                    newTl.UserId = user.UserId;
+                    newTl.UserId = user.Id;
 
                     if (userClinicNames.TryGetValue(user.UserName, out string clinicName))
                     {

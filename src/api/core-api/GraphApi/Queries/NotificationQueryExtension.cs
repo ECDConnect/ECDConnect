@@ -90,7 +90,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
 
-            logs.AddRange(dbRepo.GetAll().Where(x => string.Equals(x.To, userId) && x.IsActive == true).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
+            logs.AddRange(dbRepo.GetAll().Where(x => x.To == userId && x.IsActive == true).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
             //only send in the relevcant prototcol types
             if (inApp)
             {
@@ -124,7 +124,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
             var dbRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
             List<MessageTemplate> templates = dbRepo.GetAll().ToList();
             if (templateId != null)
-                templates.Where(x => string.Equals(x.Id, templateId));
+                templates.Where(x => x.Id == Guid.Parse(templateId));
             return templates;
         }
 
