@@ -30,20 +30,20 @@ namespace ECDLink.Core.Services
         private readonly string _applicationUserId;
         private readonly IGenericRepository<Absentees, Guid> _absenteeRepo;
         private readonly IGenericRepository<ClassReassignmentHistory, Guid> _reassignmentsRepo;
-        //private readonly IPersonnelService _personnelService;
+        private readonly IPersonnelService _personnelService;
 
         public ReassignmentService(
             IGenericRepositoryFactory repositoryFactory,
             HierarchyEngine hierarchyEngine,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] AttendanceTrackingRepository attendanceRepo/*,
-            [Service] IPersonnelService personnelService*/)
+            [Service] AttendanceTrackingRepository attendanceRepo,
+            [Service] IPersonnelService personnelService)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
             _attendanceRepo = attendanceRepo;
             _userManager = userManager;
-            //_personnelService = personnelService;
+            _personnelService = personnelService;
 
             _absenteeRepo = _repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
             _reassignmentsRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: _applicationUserId);
@@ -92,10 +92,6 @@ namespace ECDLink.Core.Services
                     var reassignmentsEnd = _reassignmentsRepo.GetAll()
                     .Where(x => x.ReassignedBackToDate == null)
                     .Where(x => x.AbsenteeId.Equals(item.Id)).FirstOrDefault();
-                    //.Where(x => absenteesDueToAssign.Select(u => u.Id).Contains(x.AbsenteeId))
-                    //.Where(x => absenteesDueToAssign.Where(u => u.Id.Equals(x.AbsenteeId)))
-                    //.Where(x => absenteesDueToAssign.Where(c => c.CompletedDate == null).Select(u =>  u.Id.Equals(x.AbsenteeId)))
-                    //.ToList();
                     if (reassignmentsEnd != null)
                     {
                         ProcessReassignments(reassignmentsEnd.Id, true);
@@ -105,27 +101,6 @@ namespace ECDLink.Core.Services
                 }
             }
 
-            //get all entries that ha snot yet been reassigned back to where they should be
-            //var reassignments = dbRepo.GetAll()
-            //                            .Where(x => x.ReassignedBackToDate == null)
-            //                            .ToList();
-            //var reassignments = _reassignmentsRepo.GetAll()
-            //                .Where(x => x.ReassignedBackToDate == null)
-            //                //.Where(x => absenteesDueToReassign.Select(u => u.UserId).Contains(x.UserId))                            
-            //                .Where(x => absenteesDueToReassign.Where(u => u.Id.Equals(x.AbsenteeId)))
-            //                //.Where(x => absenteesDueToReassign.Where(c => c.CompletedDate == null).Select(u =>  u.Id.Equals(x.AbsenteeId)))
-            //                .ToList();
-            //.Where(x => absenteesDueToReassign.Select(u => u.Id.Equals(x.AbsenteeId))
-            //.Where(x => x.ReassignedBackToDate == null && x.UserId.Contains(absenteesDueToReassign.Select(x => x.UserId)))
-
-
-            //if (reassignments.Count > 0)
-            //{
-            //    foreach (var reassign in reassignments)
-            //    {
-            //        ReassignClassroomsFromHistory(reassign.UserId);
-            //    }
-            //}
             return absenteesDueToReassign.Any();
         }
 
@@ -346,12 +321,12 @@ namespace ECDLink.Core.Services
                                     if (reassignment.AssignedRole == Roles.PRINCIPAL && reassignment.ReassignedRoleBack == Roles.PRACTITIONER)
                                     {
                                         //swap ids for reassigning back
-                                        //_personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId,reassignment.UserId);
+                                        _personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId,reassignment.UserId);
 
                                     }
                                     if (reassignment.AssignedRole == Roles.PRACTITIONER && reassignment.ReassignedRoleBack == Roles.PRINCIPAL)
                                     {
-                                        //_personnelService.SwitchPrincipal(reassignment.UserId,reassignment.ReassignedBackToUserId);
+                                        _personnelService.SwitchPrincipal(reassignment.UserId,reassignment.ReassignedBackToUserId);
 
                                     }
                                     //FAA to principal
