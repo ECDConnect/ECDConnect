@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
 using ECDLink.Tenancy.Context;
@@ -20,7 +21,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
     public class GenericUserTypeRepository<T> : GenericRepositoryBase<T>
      where T : EntityBase<Guid>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
         private readonly HierarchyEngine _hierarchyEngine;
 
         private string Hierarchy
@@ -35,7 +36,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
           AuthenticationDbContext context,
           HierarchyEngine hierarchyEngine,
           IDomainEventService domainEventService,
-          UserManager<ApplicationUser> userManager)
+          ApplicationUserManager userManager)
           : base(context, domainEventService)
         {
             _hierarchyEngine = hierarchyEngine;

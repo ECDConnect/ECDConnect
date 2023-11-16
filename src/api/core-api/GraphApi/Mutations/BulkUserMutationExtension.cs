@@ -6,6 +6,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -39,7 +40,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();
@@ -326,7 +327,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           IGenericRepositoryFactory repoFactory,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id.ToString();

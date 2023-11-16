@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.DataAccessLayer.Services;
@@ -22,13 +23,13 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly IDocumentManagementService _documentManagementService;
         private readonly HierarchyEngine _hierarchyEngine;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
 
         public ChildrenAnonymiseService(
             IGenericRepositoryFactory repositoryFactory,
             IDocumentManagementService documentManagementService,
             HierarchyEngine hierarchyEngine,
-            [Service] UserManager<ApplicationUser> userManager)
+            [Service] ApplicationUserManager userManager)
         {
             _repositoryFactory = repositoryFactory;
             _documentManagementService = documentManagementService;

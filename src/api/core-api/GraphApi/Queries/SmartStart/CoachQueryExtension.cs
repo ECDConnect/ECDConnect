@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -94,7 +95,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public string GetCoachNameByUserId([Service] UserManager<ApplicationUser> userManager,
+        public string GetCoachNameByUserId([Service] ApplicationUserManager userManager,
         string userId)
         {
             var user = userManager.FindByIdAsync(userId).Result;

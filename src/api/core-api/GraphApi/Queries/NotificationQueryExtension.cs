@@ -17,6 +17,7 @@ using System;
 using EcdLink.Api.CoreApi.Services;
 using ECDLink.Tenancy.Context;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -31,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Notification> GetAllNotifications(
     [Service] IHttpContextAccessor contextAccessor,
-    [Service] UserManager<ApplicationUser> userManager,
+    [Service] ApplicationUserManager userManager,
     [Service] INotificationService notificationService,
     IGenericRepositoryFactory repoFactory,
     string userId, bool inApp = true, string protocol = "")

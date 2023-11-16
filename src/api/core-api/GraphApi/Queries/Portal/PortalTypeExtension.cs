@@ -35,8 +35,8 @@
 
 //        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
 //        public async Task<ApplicationUser> GetUserById(
-//            [Service] UserManager<ApplicationUser> userManager,
-//            [Service] RoleManager<IdentityRole> roleManager,
+//            [Service] ApplicationUserManager userManager,
+//            [Service] ApplicationRoleManager roleManager,
 //            IGenericRepositoryFactory repoFactory,
 //            string userId)
 //        {
@@ -92,8 +92,8 @@
 
 //        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
 //        public async Task<ApplicationUser> GetUserSummaryById(
-//            [Service] UserManager<ApplicationUser> userManager,
-//            [Service] RoleManager<IdentityRole> roleManager,
+//            [Service] ApplicationUserManager userManager,
+//            [Service] ApplicationRoleManager roleManager,
 //            IGenericRepositoryFactory repoFactory,
 //            string userId)
 //        {

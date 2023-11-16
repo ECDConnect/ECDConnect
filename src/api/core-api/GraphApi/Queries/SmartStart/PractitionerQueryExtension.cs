@@ -6,11 +6,13 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -65,7 +67,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public PractitionerUserAndNote GetPractitionerByIdNumber(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
@@ -112,7 +114,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public ApplicationUser GetPractitionerByIdNumberInternal(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             string idNumber)
         {
@@ -263,8 +265,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public async Task<List<Child>> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] RoleManager<IdentityRole<Guid>> roleManager,
+            [Service] ApplicationUserManager userManager,
+            [Service] ApplicationRoleManager roleManager,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService practiManager,
             string userId)

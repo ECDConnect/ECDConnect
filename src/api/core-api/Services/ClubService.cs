@@ -15,6 +15,7 @@ using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -57,7 +58,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly string _applicationUserId;
 
         INotificationService _notificationService;
-        UserManager<ApplicationUser> _userManager;
+        ApplicationUserManager _userManager;
         IPointsEngineService _pointsEngineService;
         DocumentManager _documentManager;
 
@@ -65,7 +66,7 @@ namespace EcdLink.Api.CoreApi.Services
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IPointsEngineService pointsEngineService,
             [Service] DocumentManager documentManager
             )

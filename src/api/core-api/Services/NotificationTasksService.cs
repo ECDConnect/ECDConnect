@@ -19,6 +19,7 @@ using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace ECDLink.Core.Services
 {
@@ -26,7 +27,7 @@ namespace ECDLink.Core.Services
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly HierarchyEngine _hierarchyEngine;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
         private readonly INotificationService _notificationService;
         private readonly IIncomeExpenseService _incomeService;
         private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
@@ -35,7 +36,7 @@ namespace ECDLink.Core.Services
         public NotificationTasksService(
             IGenericRepositoryFactory repositoryFactory,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IIncomeExpenseService incomeService,
             HierarchyEngine hierarchyEngine, 
             [Service] AttendanceTrackingRepository attendanceTrackingRepository, 

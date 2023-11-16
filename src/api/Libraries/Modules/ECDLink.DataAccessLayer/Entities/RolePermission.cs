@@ -1,3 +1,4 @@
+using ECDLink.Core.Models;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -15,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities
     {
         // Part of PK
         [ForeignKey(nameof(RoleId))]
-        public virtual IdentityRole<Guid> Role { get; set; }
+        public virtual ApplicationIdentityRole Role { get; set; }
 
         public Guid RoleId { get; set; }
 

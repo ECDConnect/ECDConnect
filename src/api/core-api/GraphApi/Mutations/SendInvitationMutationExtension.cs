@@ -4,6 +4,7 @@ using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -28,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> SendInviteToApplication(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] IHttpContextAccessor accessor,
           string userId,
           bool inviteToPortal = false)
@@ -71,7 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<BulkInvitationResult> SendBulkInviteToPortal(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] IHttpContextAccessor accessor,
           IEnumerable<string> userIds)
         {
@@ -122,7 +123,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<BulkInvitationResult> SendBulkInviteToApp(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
           [Service] IHttpContextAccessor accessor,
           IEnumerable<string> userIds)

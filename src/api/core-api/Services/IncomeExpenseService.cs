@@ -23,6 +23,7 @@ using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using Child = ECDLink.DataAccessLayer.Entities.Users.Child;
 using System.Threading.Tasks;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace ECDLink.Core.Services
 {
@@ -42,7 +43,7 @@ namespace ECDLink.Core.Services
 
         private IPointsEngineService _pointsEngineService;
 
-        private UserManager<ApplicationUser> _userManager;
+        private ApplicationUserManager _userManager;
         private DocumentManager _documentManager;
         private PersonnelService _personnelService;
         private HierarchyEngine _hierarchyEngine;
@@ -51,7 +52,7 @@ namespace ECDLink.Core.Services
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] DocumentManager documentManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] PersonnelService personnelService,
             ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate, 
             IPointsEngineService pointsEngineService,

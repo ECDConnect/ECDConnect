@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security.Helpers;
@@ -26,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public async Task<ChildTokenAccessModel> OpenAccessAddChildDetail(
             [Service] SecurityManager securityManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             IGenericRepositoryFactory repoFactory,
             string token)

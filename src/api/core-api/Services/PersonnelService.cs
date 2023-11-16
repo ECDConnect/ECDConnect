@@ -20,6 +20,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
@@ -62,7 +63,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
         private UserLicenseManager _userLicenseManager;
-        private UserManager<ApplicationUser> _userManager;
+        private ApplicationUserManager _userManager;
         private IReassignmentService _reassignmentService;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
@@ -80,7 +81,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
             [Service] IAbsenteeService absenteeService,
-            UserManager<ApplicationUser> userManager,
+            ApplicationUserManager userManager,
             [Service] HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;

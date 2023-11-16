@@ -8,6 +8,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -30,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<bool> SendNotificationToUser(
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] INotificationService notificationService,
           string userType,
           string templateType, string userId = null)
@@ -65,7 +66,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<BulkInvitationResult> SendNotificationToUser(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] IHttpContextAccessor accessor,
           IEnumerable<string> userIds)
         {
@@ -115,7 +116,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<BulkInvitationResult> SendBulkInviteToApp(
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
           [Service] IHttpContextAccessor accessor,
           IEnumerable<string> userIds)

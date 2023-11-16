@@ -1,5 +1,7 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
@@ -16,10 +18,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.ObjectTypes
     public class ApplicationUserExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public async Task<IEnumerable<IdentityRole<Guid>>> GetRolesAsync(
+        public async Task<IEnumerable<ApplicationIdentityRole>> GetRolesAsync(
           [Parent] ApplicationUser user,
-          [Service] RoleManager<IdentityRole<Guid>> roleManager,
-          [Service] UserManager<ApplicationUser> userManager)
+          [Service] ApplicationRoleManager roleManager,
+          [Service] ApplicationUserManager userManager)
         {
             var roles = await userManager.GetRolesAsync(user);
 

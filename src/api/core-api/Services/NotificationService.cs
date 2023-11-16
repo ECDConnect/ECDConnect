@@ -17,6 +17,7 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -30,7 +31,7 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<MessageTemplate, Guid> _templateRepo;
         private IHttpContextAccessor _contextAccessor;
         private Guid _uId;
-        private UserManager<ApplicationUser> _userManager;
+        private ApplicationUserManager _userManager;
 
         /*
          1 - function is invoked and called with a template type, the template type defines the protocol, singular or multiple
@@ -44,7 +45,7 @@ namespace EcdLink.Api.CoreApi.Services
             IGenericRepositoryFactory repositoryFactory, 
             HierarchyEngine hierarchyEngine, 
             
-            [Service] UserManager<ApplicationUser> userManager)
+            [Service] ApplicationUserManager userManager)
         {
             _contextAccessor = contextAccessor;
             _notificationProviderFactory = notificationProviderFactory;

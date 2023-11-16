@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
@@ -100,7 +101,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
         // Case on type, and depending on type, iterate through different levels of collecting a list of hierarchies to use
         public List<string> GetHierarchyByParentList<T>(
-            UserManager<ApplicationUser> _userManager,
+            ApplicationUserManager _userManager,
             Guid userId)
         {
             var practRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: userId);

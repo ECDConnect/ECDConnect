@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -30,7 +31,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public async Task<IEnumerable<Programme>> GetUserProgrammes(
           IGenericRepositoryFactory repoFactory,
           HierarchyEngine hierarchyEngine,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           [Service] IHttpContextAccessor httpContextAccessor)
         {
             var requestingUser = httpContextAccessor.HttpContext.GetUser().Id;

@@ -12,6 +12,7 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
@@ -43,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IDocumentManagementService documentManagementService,
             string token,
@@ -298,7 +299,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<string> GenerateCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
             [Service] IPointsEngineService pointsEngineService,
@@ -356,7 +357,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<string> RefreshCaregiverChildToken(
             [Service] ITokenManager<ApplicationUser, OpenAccessTokenManager> tokenManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContext,
             Guid childId,

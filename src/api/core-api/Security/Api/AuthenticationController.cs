@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Security.Models;
 using EcdLink.Api.CoreApi.Security.Models.Requests;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Tenancy.Context;
@@ -33,7 +34,7 @@ namespace ECDLink.Security.Api
         [HttpPost("login")]
         public async Task<IActionResult> Post(
             [FromServices] IHttpContextAccessor _httpContextAccessor,
-            [FromServices] UserManager<ApplicationUser> _userManager,
+            [FromServices] ApplicationUserManager _userManager,
             [FromBody] LoginRequestModel login)
         {
             if (!ModelState.IsValid)

@@ -21,6 +21,7 @@ using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -885,7 +886,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<ClassReassignmentDisplay>> GetActionItemClassReassignmentHistory(
 IGenericRepositoryFactory repoFactory,
-[Service] UserManager<ApplicationUser> userManager,
+[Service] ApplicationUserManager userManager,
 string practitionerId)
         {
             DateTime currentDate = DateTime.Now;

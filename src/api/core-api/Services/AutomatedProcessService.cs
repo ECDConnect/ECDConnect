@@ -2,6 +2,7 @@
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using Microsoft.AspNetCore.Identity;
@@ -15,12 +16,12 @@ namespace EcdLink.Api.CoreApi.Services
         private IGenericRepository<PractitionerRemovalHistory, Guid> _removalRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private string _adminUserId;
-        private UserManager<ApplicationUser> _userManager;
+        private ApplicationUserManager _userManager;
 
         public AutomatedProcessService(
             IGenericRepositoryFactory repoFactory,
             HierarchyEngine hierarchyEngine,
-            UserManager<ApplicationUser> userManager) 
+            ApplicationUserManager userManager) 
         {
             _adminUserId = hierarchyEngine.GetAdminUserId()?.ToString();
             _removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: _adminUserId);

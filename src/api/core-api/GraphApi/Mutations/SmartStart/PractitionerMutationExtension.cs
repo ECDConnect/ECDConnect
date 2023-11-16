@@ -11,6 +11,7 @@ using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -229,7 +230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
     IGenericRepositoryFactory repoFactory,
-    [Service] UserManager<ApplicationUser> userManager,
+    [Service] ApplicationUserManager userManager,
     string userId, string firstname, string surname, string contactno)
 
         {
@@ -245,7 +246,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public async Task<bool> SendPractitionerInviteToApplication(
          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
          [Service] InvitationNotificationManager notificationManager,
-         [Service] UserManager<ApplicationUser> userManager,
+         [Service] ApplicationUserManager userManager,
          [Service] ShortUrlManager shortUrlManager,
          [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
@@ -268,7 +269,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
             [Service] PersonnelService personnelService,
-            UserManager<ApplicationUser> userManager,
+            ApplicationUserManager userManager,
             string practitionerUserId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;

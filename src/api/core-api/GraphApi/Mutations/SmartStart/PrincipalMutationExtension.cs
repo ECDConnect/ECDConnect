@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
 using HotChocolate;
@@ -25,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     public class PrincipalMutationExtension
     {
         public Practitioner AddPractitionerToPrincipal([Service] IHttpContextAccessor contextAccessor,
-    [Service] UserManager<ApplicationUser> userManager,
+    [Service] ApplicationUserManager userManager,
     [Service] PersonnelService personnelManager,
     IGenericRepositoryFactory repoFactory,
     string firstName,
@@ -103,7 +104,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             string practitionerId, string firstName, string lastName, string phoneNumber, string email)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -167,7 +168,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public bool SwitchPrincipal([Service] PersonnelService personnelManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             string oldPrincipalUserId,
             string newPrincipalUserId)
         {
@@ -176,7 +177,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
              string userId)
         {
             Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userId);
@@ -184,7 +185,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Practitioner DemotePractitionerAsPrincipal([Service] PersonnelService personnelManager,
-             [Service] UserManager<ApplicationUser> userManager,
+             [Service] ApplicationUserManager userManager,
              string userId)
         {
             Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);

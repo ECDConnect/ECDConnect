@@ -1,4 +1,5 @@
 using ECDLink.Core.Helpers;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
@@ -37,7 +38,7 @@ using System;
 
 namespace ECDLink.DataAccessLayer.Context
 {
-    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, IdentityRole<Guid>, Guid>  //IdentityDbContext<ApplicationUser>
+    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, Guid>  //IdentityDbContext<ApplicationUser>
     {
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }

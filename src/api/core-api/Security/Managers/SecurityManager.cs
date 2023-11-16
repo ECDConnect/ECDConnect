@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.Security.Models;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.PostgresTenancy.Entities;
 using ECDLink.Security;
 using ECDLink.Security.JwtSecurity.Enums;
@@ -26,14 +27,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         private readonly SecurityNotificationManager _notificationManager;
         private readonly ShortUrlManager _shortUrlManager;
 
-        public UserManager<ApplicationUser> _userManager { get; set; }
+        public ApplicationUserManager _userManager { get; set; }
 
         public IJwtFactory _jwtFactory { get; set; }
 
         public JwtTokenManager _jwtTokenManager { get; set; }
 
         public SecurityManager(
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           IPasswordManager<ApplicationUser> passwordManager,
           IClaimsManager claimsManager,
           SecurityNotificationManager notificationManager,

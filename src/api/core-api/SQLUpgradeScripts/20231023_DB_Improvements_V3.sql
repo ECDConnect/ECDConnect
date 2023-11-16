@@ -3,6 +3,13 @@
 --this table is no longer used
 drop table public."ServiceScheduler";
 
+--general cleanup
+alter table "TeamLead" drop constraint "TeamLead_Clinic_FK";
+alter table "Clinic" drop constraint "Clinic_PK";
+alter table "Clinic" add constraint "PK_Clinic" primary key ("Id");
+alter table "TeamLead" add constraint "FK_TeamLead_Clinic_ClinicId" foreign key ("ClinicId") references "Clinic"("Id") on delete restrict;
+
+
 -- Drop FKs
 ALTER TABLE public."AspNetRoleClaims" DROP CONSTRAINT "FK_AspNetRoleClaims_AspNetRoles_RoleId";
 ALTER TABLE public."AspNetUserClaims" DROP CONSTRAINT "FK_AspNetUserClaims_AspNetUsers_UserId";
@@ -375,3 +382,8 @@ select c.table_name, c.column_name, c.data_type
 from information_schema.tables t
 join information_schema.columns c on t.table_schema = c.table_schema and t.table_name = c.table_name 
 where t.table_schema = 'public' and t.table_type = 'BASE TABLE' and c.data_type = 'text' and c.column_name like '%Id';
+
+select *
+from pg_catalog.pg_indexes i
+where i.schemaname = 'public' and i.indexname not like 'PK%' and 
+order by i.tablename 

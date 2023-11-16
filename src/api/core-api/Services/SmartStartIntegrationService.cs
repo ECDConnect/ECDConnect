@@ -45,6 +45,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.SmartStart.Services;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.Services;
 public class SmartStartIntegrationService : IIntegrationService
@@ -53,7 +54,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private readonly ISystemSetting<IntegrationDelayOptions> _integrationDelay;
     private readonly ISystemSetting<IntegrationApiOptions> _options;
     private Guid _uId;
-    private UserManager<ApplicationUser> _userManager;
+    private ApplicationUserManager _userManager;
     private IGenericRepository<IntegrationAudit, Guid> _auditRepo;
     private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
     private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
@@ -121,7 +122,7 @@ public class SmartStartIntegrationService : IIntegrationService
         IGenericRepositoryFactory repositoryFactory,
         ISystemSetting<IntegrationDelayOptions> integrationDelay,
         ISystemSetting<IntegrationApiOptions> options,
-        [Service] UserManager<ApplicationUser> userManager,
+        [Service] ApplicationUserManager userManager,
         HierarchyEngine hierarchyEngine,
          AuthenticationDbContext dbContext,
          IntegrationLogManager logManager,

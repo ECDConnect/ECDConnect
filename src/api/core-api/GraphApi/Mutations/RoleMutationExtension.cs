@@ -1,4 +1,6 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
@@ -13,12 +15,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class RoleMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public IdentityRole<Guid> AddRole(
-            [Service] RoleManager<IdentityRole<Guid>> roleManager,
+        public ApplicationIdentityRole AddRole(
+            [Service] ApplicationRoleManager roleManager,
              string name,
              string normalizedName)
         {
-            var newRole = new IdentityRole<Guid>
+            var newRole = new ApplicationIdentityRole
             {
                 Name = name,
                 NormalizedName = normalizedName
@@ -35,15 +37,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public IdentityRole<Guid> UpdateRole(
-            [Service] RoleManager<IdentityRole<Guid>> roleManager,
+        public ApplicationIdentityRole UpdateRole(
+            [Service] ApplicationRoleManager roleManager,
              string id,
              string name,
              string normalizedName)
         {
             var roleToUpdate = roleManager.FindByIdAsync(id).Result;
 
-            if (roleToUpdate == default(IdentityRole<Guid>))
+            if (roleToUpdate == default(ApplicationIdentityRole))
             {
                 throw new KeyNotFoundException();
             }
@@ -63,12 +65,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public bool DeleteRole(
-            [Service] RoleManager<IdentityRole<Guid>> roleManager,
+            [Service] ApplicationRoleManager roleManager,
             string id)
         {
             var roleToDelete = roleManager.FindByIdAsync(id).Result;
 
-            if (roleToDelete == default(IdentityRole<Guid>))
+            if (roleToDelete == default(ApplicationIdentityRole))
             {
                 throw new KeyNotFoundException();
             }

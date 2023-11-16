@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Managers;
 using ECDLink.Security.Providers;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +10,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
 {
     public class InvitationTokenManager : ITokenManager<ApplicationUser, InvitationTokenManager>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
 
         private string EmailTokenProvider
         {
@@ -27,7 +28,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers.TokenAccess
             }
         }
 
-        public InvitationTokenManager(UserManager<ApplicationUser> userManager)
+        public InvitationTokenManager(ApplicationUserManager userManager)
         {
             _userManager = userManager;
         }

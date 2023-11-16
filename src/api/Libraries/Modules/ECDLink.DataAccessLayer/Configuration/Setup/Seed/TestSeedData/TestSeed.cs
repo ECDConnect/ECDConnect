@@ -47,7 +47,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             /*
             _repositoryFactory = serviceProvider.GetService<IGenericRepositoryFactory>();
 
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+            var userManager = serviceProvider.GetService<ApplicationUserManager>();
 
             var user = userManager.Users.FirstOrDefault();
             Guid coachId = Guid.NewGuid();
@@ -89,7 +89,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
         }
 
         /*
-        private Guid AddFranchisorCoach(UserManager<ApplicationUser> userManager)
+        private Guid AddFranchisorCoach(ApplicationUserManager userManager)
         {
             var fraRepo = _repositoryFactory.CreateRepository<Franchisor>(userContext: _userId);
             var coaRepo = _repositoryFactory.CreateRepository<Coach>(userContext: _userId);
@@ -146,7 +146,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
             return Guid.Parse(coachId);
         }
 
-        private void AddPractitioners(UserManager<ApplicationUser> userManager, Guid siteAddressId, string coachId)
+        private void AddPractitioners(ApplicationUserManager userManager, Guid siteAddressId, string coachId)
         {
             var pracRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _userId);
 
@@ -332,7 +332,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.TestSeedData
 
         private void SeedChild(ApplicationUser user, Guid classroomGroupId, Guid statusId, IServiceProvider serviceProvider)
         {
-            var userManager = serviceProvider.GetService<UserManager<ApplicationUser>>();
+            var userManager = serviceProvider.GetService<ApplicationUserManager>();
             userManager.CreateAsync(user);
             var currentChild = userManager.FindByIdAsync(user.Id).Result;
 

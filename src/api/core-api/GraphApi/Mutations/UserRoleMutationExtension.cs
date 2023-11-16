@@ -1,6 +1,8 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
@@ -21,10 +23,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> AddUsersToRoleAsync(
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] HierarchyEngine engine,
           [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] RoleManager<IdentityRole<Guid>> roleManager,
+          [Service] ApplicationRoleManager roleManager,
           string userId,
           List<string> roleNames)
         {
@@ -63,7 +65,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         // TODO: Refactor
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> RemoveUserFromRolesAsync(
-          [Service] UserManager<ApplicationUser> userManager,
+          [Service] ApplicationUserManager userManager,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] HierarchyEngine engine,
           string userId,

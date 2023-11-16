@@ -22,6 +22,8 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using Microsoft.AspNetCore.Http;
 using ECDLink.Security.Extensions;
 using HotChocolate.Data;
+using ECDLink.Core.Models;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -39,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         // TODO: Builder pattern for query?
         [UseSorting]
         public async Task<IQueryable<ApplicationUser>> GetUsersAsync(
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             PagedQueryInput? pagingInput = null,
@@ -79,7 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return usersQuery;
         }
 
-        private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(UserManager<ApplicationUser> userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
+        private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(ApplicationUserManager userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
         {
             if (!userIsAdmin)
             {
@@ -99,7 +101,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
         public async Task<int> GetCountUsersAsync(
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             PagedQueryInput? pagingInput = null,
@@ -186,7 +188,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         // TODO: add logic to comply with, Admins can see admins, but other users can't see admins
         private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(
-            UserManager<ApplicationUser> userManager,
+            ApplicationUserManager userManager,
             PagedQueryInput pagingInput,
             IQueryable<ApplicationUser> usersQuery)
         {
@@ -214,8 +216,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<ApplicationUser> GetUserById(
-            [Service] UserManager<ApplicationUser> userManager,
-            [Service] RoleManager<IdentityRole<Guid>> roleManager,
+            [Service] ApplicationUserManager userManager,
+            [Service] ApplicationRoleManager roleManager,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
@@ -282,7 +284,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         public UserByToken GetUserByToken(
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             IGenericRepositoryFactory repoFactory,
             string token)
         {
@@ -327,7 +329,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public string getMoodleSessionForUserId(
             [Service] MoodleManager moodleManager,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             string userId)
         {
             string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfigVar;

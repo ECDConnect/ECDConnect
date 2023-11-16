@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ECDLink.Abstractrions.Constants;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -32,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] ILogger<UserMutationExtension> _logger,
           IGenericRepositoryFactory repoFactory,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           UserModel input)
         {
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
@@ -149,7 +150,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<ApplicationUser> UpdateUser(
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           [Service] SecurityNotificationManager securityNotificationManager,
           [Service] ILogger<UserMutationExtension> logger,
           [Service] IHttpContextAccessor httpContextAccessor,
@@ -400,7 +401,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
           [Service] IPointsEngineService pointsEngineService,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           string id)
         {
             var user = await userManager.FindByIdAsync(id);
@@ -443,7 +444,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
           [Service] IPointsEngineService pointsEngineService,
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           List<string> ids)
         {
             var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
@@ -515,7 +516,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         // TODO: Should a user be able to reset another user's password?
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> ResetUserPassword(
-          UserManager<ApplicationUser> userManager,
+          ApplicationUserManager userManager,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] SecurityNotificationManager securityNotificationManager,
           string id,

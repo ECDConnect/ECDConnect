@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.Security.Managers;
 using ECDLink.Security.Providers;
 using Microsoft.AspNetCore.Identity;
@@ -9,7 +10,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 {
     public class OpenAccessTokenManager : ITokenManager<ApplicationUser, OpenAccessTokenManager>
     {
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
 
         private string AccessTokenProvider
         {
@@ -27,7 +28,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             }
         }
 
-        public OpenAccessTokenManager(UserManager<ApplicationUser> userManager)
+        public OpenAccessTokenManager(ApplicationUserManager userManager)
         {
             _userManager = userManager;
         }

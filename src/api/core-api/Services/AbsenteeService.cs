@@ -15,6 +15,7 @@ using ECDLink.Security.Extensions;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Managers;
 
 namespace ECDLink.Api.CoreApi.Services
 {
@@ -24,7 +25,7 @@ namespace ECDLink.Api.CoreApi.Services
         private IHttpContextAccessor _contextAccessor;
         private readonly IReassignmentService _reassignmentService;
         private readonly INotificationService _notificationService;
-        private readonly UserManager<ApplicationUser> _userManager;
+        private readonly ApplicationUserManager _userManager;
         private readonly HierarchyEngine _hierarchyEngine;
         private string _applicationUserId;
         private IGenericRepository<Absentees, Guid> _absenteeRepo;
@@ -34,7 +35,7 @@ namespace ECDLink.Api.CoreApi.Services
             IGenericRepositoryFactory repositoryFactory,
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             HierarchyEngine hierarchyEngine)
         {
             _repositoryFactory = repositoryFactory;

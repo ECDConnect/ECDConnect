@@ -7,6 +7,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -86,7 +87,7 @@ namespace EcdLink.Api.CoreApi.Managers
             return docDate.ToString("MMMM", CultureInfo.InvariantCulture) + " " + docDate.ToString("yyyy", CultureInfo.InvariantCulture);
         }
 
-        public string GetDocumentHeaderAddress([Service] UserManager<ApplicationUser> userManager, PdfDocumentHeader pdfDocumentHeader)
+        public string GetDocumentHeaderAddress([Service] ApplicationUserManager userManager, PdfDocumentHeader pdfDocumentHeader)
         {
             var _headerAddress = "";
             ApplicationUser user = userManager.FindByIdAsync(pdfDocumentHeader.UserId).Result;

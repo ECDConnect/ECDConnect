@@ -8,6 +8,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Managers;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -121,7 +122,7 @@ DateTime attendanceDate)
             [Service] ChildAttendanceReport report,
             [Service] DocumentManager documentManager,
             [Service] PersonnelService personnelService,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] ApplicationUserManager userManager,
             [Service] AttendanceService attendanceService,
             IGenericRepositoryFactory repoFactory,
             string userId,
