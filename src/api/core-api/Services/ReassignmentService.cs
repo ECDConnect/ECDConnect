@@ -15,6 +15,7 @@ using ECDLink.Security;
 using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,23 +31,33 @@ namespace ECDLink.Core.Services
         private readonly string _applicationUserId;
         private readonly IGenericRepository<Absentees, Guid> _absenteeRepo;
         private readonly IGenericRepository<ClassReassignmentHistory, Guid> _reassignmentsRepo;
-        private readonly IPersonnelService _personnelService;
+        private IPersonnelService __personnelService;
+        private readonly IServiceProvider _services;
 
         public ReassignmentService(
             IGenericRepositoryFactory repositoryFactory,
             HierarchyEngine hierarchyEngine,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] AttendanceTrackingRepository attendanceRepo,
-            [Service] IPersonnelService personnelService)
+            IServiceProvider services)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
             _attendanceRepo = attendanceRepo;
             _userManager = userManager;
-            _personnelService = personnelService;
+            _services = services;
 
             _absenteeRepo = _repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
             _reassignmentsRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: _applicationUserId);
+        }
+
+        private IPersonnelService _personnelService
+        {
+            get
+            {
+                if (__personnelService == null) __personnelService = (IPersonnelService)_services.GetServices<IPersonnelService>();
+                return __personnelService;
+            }
         }
 
         public bool ReassignAbsentees()
@@ -269,12 +280,12 @@ namespace ECDLink.Core.Services
                                 {
                                     if (reassignment.AssignedRole == Roles.PRINCIPAL && reassignment.ReassignedRoleBack == Roles.PRACTITIONER)
                                     {
-                                        //_personnelService.SwitchPrincipal(reassignment.UserId, reassignment.ReassignedBackToUserId);
+                                        _personnelService.SwitchPrincipal(reassignment.UserId, reassignment.ReassignedBackToUserId);
 
                                     }
                                     if (reassignment.AssignedRole == Roles.PRACTITIONER && reassignment.ReassignedRoleBack == Roles.PRINCIPAL)
                                     {
-                                        //_personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId, reassignment.UserId);
+                                        _personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId, reassignment.UserId);
 
                                     }
                                     //FAA to principal

@@ -29,6 +29,7 @@ using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -65,12 +66,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private VisitManager _visitManager;
         private UserLicenseManager _userLicenseManager;
         private UserManager<ApplicationUser> _userManager;
-        private IReassignmentService _reassignmentService;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
         private IClubService _clubService;
         private IAbsenteeService _absenteeService;
         private ILogger<UserMutationExtension> _logger;
+        private IReassignmentService __reassignmentService;
+        private IServiceProvider _services;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -79,13 +81,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             VisitDataManager visitDataManager,
             VisitManager visitManager,
             UserLicenseManager userLicenseManager,
-            //[Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
             [Service] IAbsenteeService absenteeService,
             UserManager<ApplicationUser> userManager,
             [Service] HierarchyEngine hierarchyEngine,
-            [Service] ILogger<UserMutationExtension> logger)
+            [Service] ILogger<UserMutationExtension> logger,
+            IServiceProvider services
+            )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -112,13 +115,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
             _userLicenseManager = userLicenseManager;
-            //_reassignmentService = reassignmentService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _clubService = clubService;
             _absenteeService = absenteeService;
             _logger = logger;
+            _services = services;
+        }
+
+        private IReassignmentService _reassignmentService
+        {
+            get
+            {
+                if (__reassignmentService == null) __reassignmentService = (IReassignmentService)_services.GetService<IReassignmentService>();
+                return __reassignmentService;
+            }
         }
 
 
