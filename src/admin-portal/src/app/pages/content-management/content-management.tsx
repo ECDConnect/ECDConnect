@@ -34,6 +34,8 @@ export function ContentManagement() {
     fetchPolicy: 'cache-and-network',
   });
 
+  console.log({ languages });
+
   const [getContentTypes, { data: dataTypes, refetch }] = useLazyQuery(
     contentTypes,
     {
@@ -184,7 +186,7 @@ export function ContentManagement() {
     // getCountUsers({
     //   variables: getUserCountQueryVariables
     // });
-  }, [getContentTypes, searchValue]);
+  }, []);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');

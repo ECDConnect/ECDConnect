@@ -53,15 +53,12 @@ export default function ContentList({
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
-  function filterByValue(array, string) {
-    return array.filter((o) =>
-      Object.keys(o).some((k) =>
-        o[k].toLowerCase().includes(string.toLowerCase())
-      )
+  function filterByValue(array, value) {
+    return array.filter(
+      (data) =>
+        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
   }
-
-  console.log(filterByValue(tableData, searchValue));
 
   useEffect(() => {
     if (contentType && contentType.fields) {
@@ -74,7 +71,11 @@ export default function ContentList({
       });
 
       orderedList.forEach((x) => {
-        if (x.fieldType.dataType === FieldType.Text && !!x.displayMainTable)
+        if (
+          (x.fieldType.dataType === FieldType.Text ||
+            x.fieldType.dataType === FieldType.Link) &&
+          !!x.displayMainTable
+        )
           displayFields.push(x);
       });
 
@@ -93,6 +94,7 @@ export default function ContentList({
         return `
         ${x.fieldName} {
           id
+          name
         }
       `;
     }) ?? [];
@@ -103,6 +105,7 @@ export default function ContentList({
     query ${getAllCall} ($localeId: String) {
       ${getAllCall} (localeId: $localeId) {
         id
+        name
         ${fields.join('\n')}
         }
       }
@@ -249,9 +252,22 @@ export default function ContentList({
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={displayFields.map((item) => {
-                    return { field: item.fieldName, use: item.displayName };
+                    return {
+                      field:
+                        typeof item.fieldName === 'string'
+                          ? item.fieldName
+                          : JSON?.stringify(item.fieldName),
+                      use:
+                        typeof item.displayName === 'string'
+                          ? item.displayName
+                          : JSON?.stringify(item.displayName),
+                    };
                   })}
-                  rows={tableData}
+                  rows={
+                    searchValue
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   component={'cms'}
                   viewRow={
                     hasPermission(PermissionEnum.update_static) &&
