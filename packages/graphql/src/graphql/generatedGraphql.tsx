@@ -15887,6 +15887,7 @@ export type UserModelInput = {
   phoneNumber?: InputMaybe<Scalars['String']>;
   profileImageUrl?: InputMaybe<Scalars['String']>;
   raceId?: InputMaybe<Scalars['UUID']>;
+  resetData?: InputMaybe<Scalars['Boolean']>;
   surname?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs?: InputMaybe<Scalars['Boolean']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;

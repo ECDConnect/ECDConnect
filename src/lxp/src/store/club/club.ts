@@ -47,6 +47,11 @@ const clubSlice = createSlice({
         } as DetailClubDto,
       };
     },
+    resetClubState: (state) => {
+      state.clubsForCoach = initialState.clubsForCoach;
+      state.clubForPractitioner = initialState.clubForPractitioner;
+      state.addClubMeetingSyncInputs = initialState.addClubMeetingSyncInputs;
+    },
     addClubMeeting: (state, action: PayloadAction<ClubMeetingInput>) => {
       const newMeeting = action.payload as ClubMeetingInput;
       const existingMeetingIndex = state.addClubMeetingSyncInputs?.findIndex(
