@@ -45,9 +45,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return reassignmentService.ReassignClassroomsFromHistory(null);
         }
 
-        public void ReassignAbsentees([Service] IReassignmentService reassignmentService)
+        public bool ReassignAbsentees([Service] IReassignmentService reassignmentService)
         {
-            reassignmentService.ReassignAbsentees();
+           return reassignmentService.ReassignAbsentees();
         }
 
 

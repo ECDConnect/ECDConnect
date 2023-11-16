@@ -49,8 +49,34 @@ namespace ECDLink.Core.Services
             _reassignmentsRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: _applicationUserId);
         }
 
-        public void ReassignAbsentees()
+        public bool ReassignAbsentees()
         {
+            //first process start of leaves absentees
+            var absenteesDueToAssign = _absenteeRepo.GetAll()
+                .Where(x => x.AbsentDate.Date <= DateTime.Now.Date)
+                .Where(x => x.CompletedDate == null)
+                //.Where(x => x.UserId == "36cef0da-a73a-4d1c-8b63-b4021adb495a")
+                .Where(y => y.PractitionerRemovalHistoryId == null)
+                .ToList();
+
+            if (absenteesDueToAssign.Any())
+            {
+                foreach (var item in absenteesDueToAssign)
+                {
+                    var reassignmentsStart = _reassignmentsRepo.GetAll()
+                    .Where(x => x.ReassignedBackToDate == null)
+                    .Where(x => x.AbsenteeId.Equals(item.Id)).FirstOrDefault();
+                    //.Where(x => absenteesDueToAssign.Select(u => u.Id).Contains(x.AbsenteeId))
+                    //.Where(x => absenteesDueToAssign.Where(u => u.Id.Equals(x.AbsenteeId)))
+                    //.Where(x => absenteesDueToAssign.Where(c => c.CompletedDate == null).Select(u =>  u.Id.Equals(x.AbsenteeId)))
+                    //.ToList();
+                    if (reassignmentsStart != null) {
+                        ProcessReassignments(reassignmentsStart.Id, false);
+                    }
+                }
+            }
+
+
             //get all absentees that is due to be reassigned and excluded from the permanent removal PractitionerRemovalHistory
             var absenteesDueToReassign = _absenteeRepo.GetAll()
                 .Where(x => x.AbsentDateEnd.HasValue && x.AbsentDateEnd.Value.Date < DateTime.Now.Date)
@@ -58,6 +84,26 @@ namespace ECDLink.Core.Services
                 //.Where(x => x.UserId == "36cef0da-a73a-4d1c-8b63-b4021adb495a")
                 .Where(y => y.PractitionerRemovalHistoryId == null)
                 .ToList();
+
+            if (absenteesDueToReassign.Any())
+            {
+                foreach (var item in absenteesDueToReassign)
+                {
+                    var reassignmentsEnd = _reassignmentsRepo.GetAll()
+                    .Where(x => x.ReassignedBackToDate == null)
+                    .Where(x => x.AbsenteeId.Equals(item.Id)).FirstOrDefault();
+                    //.Where(x => absenteesDueToAssign.Select(u => u.Id).Contains(x.AbsenteeId))
+                    //.Where(x => absenteesDueToAssign.Where(u => u.Id.Equals(x.AbsenteeId)))
+                    //.Where(x => absenteesDueToAssign.Where(c => c.CompletedDate == null).Select(u =>  u.Id.Equals(x.AbsenteeId)))
+                    //.ToList();
+                    if (reassignmentsEnd != null)
+                    {
+                        ProcessReassignments(reassignmentsEnd.Id, true);
+                    }
+                    item.CompletedDate = DateTime.Now;
+                    _absenteeRepo.Update(item);
+                }
+            }
 
             //get all entries that ha snot yet been reassigned back to where they should be
             //var reassignments = dbRepo.GetAll()
@@ -80,23 +126,8 @@ namespace ECDLink.Core.Services
             //        ReassignClassroomsFromHistory(reassign.UserId);
             //    }
             //}
+            return absenteesDueToReassign.Any();
         }
-
-        //public void AssignFutureDatedAbsentees()
-        //{
-        //    //get all future dated absentees - where created date < Absentdate but absentdate is today
-        //    var reassignments = _reassignmentsRepo.GetAll()
-        //                                .Where(x => x.ReassignedBackToDate == null)
-        //                                .ToList();
-
-        //    if (reassignments.Count > 0)
-        //    {
-        //        foreach (var reassign in reassignments)
-        //        {
-        //            ReassignClassroomsFromHistory(reassign.UserId);
-        //        }
-        //    }
-        //}
 
         public void ExpireRelationshipLinks()
         {
@@ -240,7 +271,6 @@ namespace ECDLink.Core.Services
                 {
                     if (!reassignBack) //only forward assignments its the due date of the reassignment to start and everything needs to be shifted
                     {
-
                         if (reassignment.AssignedToDate.Date <= DateTime.Now.Date)
                         { //|| reassignment.ReassignedToDate
                             if (!string.IsNullOrEmpty(reassignment.HierarchyToUser) && !string.IsNullOrEmpty(reassignment.HierarchyBackToUser))
@@ -292,7 +322,55 @@ namespace ECDLink.Core.Services
                     } else if (reassignBack) //only back assignments its the end due date of the reassignment to end and everything needs to be shifted back to before the reassignment/absentee)
                     {
 
+                        if (reassignment.ReassignedBackToDate.HasValue && reassignment.ReassignedBackToDate.Value.Date <= DateTime.Now.Date)
+                        { //|| reassignment.ReassignedToDate
+                            if (!string.IsNullOrEmpty(reassignment.HierarchyToUser) && !string.IsNullOrEmpty(reassignment.HierarchyBackToUser))
+                            {
+                                //reassign classroomGroups - populate the other objects done insid ethe classroomgroups function
+                                ReassignmentLists reassignmentLists = UpdateClassroomGroups(reassignment.UserId, reassignment.ReassignedToUser, reassignment.HierarchyBackToUser, reassignment.HierarchyToUser, reassignment.ReassignedClassroomGroups);
+                                //reassign attendance
+                                UpdateAttendance(reassignment.ReassignedToUser, reassignment.UserId, reassignment.HierarchyBackToUser, reassignmentLists.ClassProgrammesReassigned, reassignmentLists.LearnersReassigned);
+                                //update the history line with classes, children and classroomgroups also moved
+                                if (reassignmentLists.ClassroomGroupsReassigned != null) reassignment.ReassignedClassroomGroups = string.Join(";", reassignmentLists.ClassroomGroupsReassigned);
+                                if (reassignmentLists.ClassroomsReassigned != null) reassignment.ReassignedClassrooms = string.Join(";", reassignmentLists.ClassroomsReassigned);
+                                if (reassignmentLists.ClassProgrammesReassigned != null) reassignment.ReassignedClassProgrammes = string.Join(";", reassignmentLists.ClassProgrammesReassigned);
+                                if (reassignmentLists.ChildrenReassignedUserIds != null) reassignment.ReassignedChildrenUserIds = string.Join(";", reassignmentLists.ChildrenReassignedUserIds);
+                                if (reassignmentLists.LearnersReassigned != null) reassignment.ReassignedLearners = string.Join(";", reassignmentLists.LearnersReassigned);
+                                _reassignmentsRepo.Update(reassignment);
+                            }
 
+                            //reassigned roles and permissions
+                            if (reassignment.ReassignedRoleBack != reassignment.AssignedRole)
+                            {
+                                var practiRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+                                var practitioner = practiRepo.GetByUserId(reassignment.ReassignedToUser);
+                                if (practitioner != null)
+                                {
+                                    if (reassignment.AssignedRole == Roles.PRINCIPAL && reassignment.ReassignedRoleBack == Roles.PRACTITIONER)
+                                    {
+                                        //swap ids for reassigning back
+                                        //_personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId,reassignment.UserId);
+
+                                    }
+                                    if (reassignment.AssignedRole == Roles.PRACTITIONER && reassignment.ReassignedRoleBack == Roles.PRINCIPAL)
+                                    {
+                                        //_personnelService.SwitchPrincipal(reassignment.UserId,reassignment.ReassignedBackToUserId);
+
+                                    }
+                                    //FAA to principal
+                                    if (reassignment.ReassignedRoleBack == "FAA" && reassignment.AssignedRole == Roles.PRACTITIONER)
+                                    {
+                                        practitioner.IsFundaAppAdmin = true;
+                                    }
+                                    if (reassignment.ReassignedRoleBack == Roles.PRACTITIONER && reassignment.AssignedRole == "FAA")
+                                    {
+                                        practitioner.IsFundaAppAdmin = false;
+                                    }
+                                    reassignment.AssignedRoleDate = DateTime.Now;
+                                    _reassignmentsRepo.Update(reassignment);
+                                }
+                            }
+                        }
 
                     }
 
