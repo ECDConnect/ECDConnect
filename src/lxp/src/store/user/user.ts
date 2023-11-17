@@ -34,6 +34,11 @@ const userSlice = createSlice({
 
       if (!existCheck) state.userConsent?.push(action.payload);
     },
+    updateUserResetData: (state, action: PayloadAction<boolean>) => {
+      if (state.user) {
+        state.user.resetData = action.payload;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(getUser.fulfilled, (state, action) => {
