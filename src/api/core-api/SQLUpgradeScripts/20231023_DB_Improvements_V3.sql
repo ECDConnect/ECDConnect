@@ -2,12 +2,32 @@
 
 --this table is no longer used
 drop table public."ServiceScheduler";
+drop table "ContentValueBak";
 
---general cleanup
+-- fix primary key names
 alter table "TeamLead" drop constraint "TeamLead_Clinic_FK";
 alter table "Clinic" drop constraint "Clinic_PK";
 alter table "Clinic" add constraint "PK_Clinic" primary key ("Id");
 alter table "TeamLead" add constraint "FK_TeamLead_Clinic_ClinicId" foreign key ("ClinicId") references "Clinic"("Id") on delete restrict;
+
+alter table "HealthCareWorker" drop constraint "fk_healthcareworker_teamlead";
+alter table "TeamLead" drop constraint "TeamLead_PK";
+alter table "TeamLead" add constraint "PK_TeamLead" primary key ("Id");
+alter table "HealthCareWorker" add constraint "FK_HealthCareWorker_TeamLead_TeamLeadId" foreign key ("TeamLeadId") references "TeamLead"("Id") on delete set null;
+
+alter table "Infant" drop constraint "FK_Infant_MotherCaregiverId";
+alter table "Visit" drop constraint "FK_Visit_MotherId";
+alter table "EventRecord" drop constraint "FK_EventRecord_MotherId";
+alter table "Mother" drop constraint "pk_mother";
+alter table "Mother" add constraint "PK_Mother" primary key ("Id");
+alter table "Infant" add constraint "FK_Infant_Mother_MotherCaregiverId" foreign key ("MotherCaregiverId") references "Mother"("Id") on delete set null;
+alter table "Visit"  add constraint "FK_Visit_Mother_MotherId" foreign key ("MotherId") references "Mother"("Id") on delete set null;
+alter table "EventRecord" add constraint "FK_EventRecord_Mother_MotherId" foreign key ("MotherId") references "Mother"("Id") on delete set null;
+
+alter table "ClubMeeting"  drop constraint "FK_ClubMeeting_ContentValueId";
+alter table "ContentValue" drop constraint "contentvalue_pk";
+alter table "ContentValue" add constraint  "PK_ContentValue" primary key ("Id");
+alter table "ClubMeeting"  add constraint  "FK_ClubMeeting_ContentValue_ContentValueId" foreign key ("ContentValueId") references "ContentValue"("Id") on delete set null;
 
 
 -- Drop FKs
@@ -343,7 +363,52 @@ UPDATE "Visit" v set "TraineeId" = (select t."UserId" from "Trainee" t where t."
 update "Trainee" set "Id" = "UserId";
 ALTER TABLE public."Visit" ADD CONSTRAINT "FK_Visit_Trainee_TraineeId" FOREIGN KEY ("TraineeId") REFERENCES public."Trainee"("Id");   
 
+-- create indices
+SELECT
+    tc.constraint_name, 
+    tc.table_name, 
+    kcu.column_name,
+    i.indexname ,
+    i.indexdef
+FROM information_schema.table_constraints AS tc 
+JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
+JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+left join pg_catalog.pg_indexes i on i.tablename = tc.table_name and i.indexname not like 'PK%' and i.indexdef like '%"UserId"%'
+WHERE tc.constraint_type = 'FOREIGN KEY'
+    AND tc.table_schema='public'
+    and tc.table_name not like 'AspNet%'
+    and ccu.table_name = 'AspNetUsers'
+    and i.indexname is null
+order by tc.table_name, kcu.column_name;
 
+create index "IX_ChildProgressReport_UserId" on "ChildProgressReport" using btree ("UserId");
+create index "IX_ClassroomGroup_UserId" on "ClassroomGroup" using btree ("UserId");
+create index "IX_ClubPoints_UserId" on "ClubPoints" using btree ("UserId");
+create index "IX_HealthCareWorker_UserId" on "HealthCareWorker" using btree ("UserId");
+create index "IX_Infant_UserId" on "Infant" using btree ("UserId");
+create index "IX_IntegrationAudit_UserId" on "IntegrationAudit" using btree ("UserId");
+create index "IX_IntegrationEntityMapping_UserId" on "IntegrationEntityMapping" using btree ("UserId");
+create index "IX_IntegrationLog_UserId" on "IntegrationLog" using btree ("UserId");
+create index "IX_JWTUserTokens_UserId" on "JWTUserTokens" using btree ("UserId");
+create index "IX_License_UserId" on "License" using btree ("UserId");
+create index "IX_MessageLog_FromUserId" on "MessageLog" using btree ("FromUserId");
+create index "IX_MessageLog_SentByUserId" on "MessageLog" using btree ("SentByUserId");
+create index "IX_Mother_UserId" on "Mother" using btree ("UserId");
+create index "IX_PointsUser_UserId" on "PointsUser" using btree ("UserId");
+create index "IX_PointsUserSummary_UserId" on "PointsUserSummary" using btree ("UserId");
+create index "IX_PractitionerRemovalHistory_RemovedByUserId" on "PractitionerRemovalHistory" using btree ("RemovedByUserId");
+create index "IX_PractitionerRemovalHistory_UserId" on "PractitionerRemovalHistory" using btree ("UserId");
+create index "IX_ShortUrl_UserId" on "ShortUrl" using btree ("UserId");
+create index "IX_StatementsExpenses_UserId" on "StatementsExpenses" using btree ("UserId");
+create index "IX_StatementsIncome_ChildUserId" on "StatementsIncome" using btree ("ChildUserId");
+create index "IX_StatementsIncome_UserId" on "StatementsIncome" using btree ("UserId");
+create index "IX_StatementsIncomeStatement_UserId" on "StatementsIncomeStatement" using btree ("UserId");
+create index "IX_StatementsStartupSupport_ChildUserId" on "StatementsStartupSupport" using btree ("ChildUserId");
+create index "IX_StatementsStartupSupport_UserId" on "StatementsStartupSupport" using btree ("UserId");
+create index "IX_TeamLead_UserId" on "TeamLead" using btree ("UserId");
+create index "IX_UserConsent_CreatedUserId" on "UserConsent" using btree ("CreatedUserId");
+create index "IX_UserConsent_UserId" on "UserConsent" using btree ("UserId");
+create index "IX_UserGrants_UserId" on "UserGrants" using btree ("UserId");
 
 
 
@@ -385,5 +450,21 @@ where t.table_schema = 'public' and t.table_type = 'BASE TABLE' and c.data_type 
 
 select *
 from pg_catalog.pg_indexes i
-where i.schemaname = 'public' and i.indexname not like 'PK%' and 
-order by i.tablename 
+where i.schemaname = 'public' and i.indexname not like 'PK%' and tablename not like 'AspNet%'
+order by i.tablename ;
+
+SELECT
+    tc.constraint_name, 
+    tc.table_name, 
+    kcu.column_name,
+    i.indexname ,
+    i.indexdef
+FROM information_schema.table_constraints AS tc 
+JOIN information_schema.key_column_usage AS kcu ON tc.constraint_name = kcu.constraint_name AND tc.table_schema = kcu.table_schema
+JOIN information_schema.constraint_column_usage AS ccu ON ccu.constraint_name = tc.constraint_name
+left join pg_catalog.pg_indexes i on i.tablename = tc.table_name and i.indexname not like 'PK%' and i.indexdef like '%UserId")'
+WHERE tc.constraint_type = 'FOREIGN KEY'
+    AND tc.table_schema='public'
+    and tc.table_name not like 'AspNet%'
+    and ccu.table_name = 'AspNetUsers'
+order by tc.table_name, kcu.column_name;
