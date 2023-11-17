@@ -59,23 +59,23 @@ export default function ContentEdit({
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit } = useForm();
-  const { errors } = formState;
+  const { errors, isDirty } = formState;
   const handleform = {
     register: register,
     errors: errors,
   };
 
-  const mutationName = `update${contentType.name}`;
+  const mutationName = `update${contentType?.name}`;
 
   const updateMutation = gql` 
-    mutation ${mutationName} ($id: String!, $input: ${contentType.name}Input!, $localeId: String!) {
+    mutation ${mutationName} ($id: String!, $input: ${contentType?.name}Input!, $localeId: String!) {
       ${mutationName} (id: $id, input: $input, localeId: $localeId) {
         id
       } 
     }
   `;
 
-  const deleteMutationName = `delete${contentType.name}`;
+  const deleteMutationName = `delete${contentType?.name}`;
   const deleteMutation = gql` 
     mutation ${deleteMutationName} ($id: String!, $localeId: String!) {
       ${deleteMutationName} (id: $id, localeId: $localeId) 
@@ -146,11 +146,14 @@ export default function ContentEdit({
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
       const t: DynamicFormTemplate = {
-        title: `${contentType.name} Form`,
+        title: `${contentType?.name} Form`,
         fields: [],
       };
 
-      const copy: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
+      const copy: ContentTypeFieldDto[] = Object.assign(
+        [],
+        contentType?.fields
+      );
 
       const orderedList = copy?.sort(function (a, b) {
         return a.fieldOrder - b.fieldOrder;
@@ -236,7 +239,7 @@ export default function ContentEdit({
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 {cancelEdit &&
-                  camelCaseToSentanceCase(content.name ?? content.type)}
+                  camelCaseToSentanceCase(content?.name ?? content?.type)}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
@@ -264,13 +267,13 @@ export default function ContentEdit({
             </div>
           </div>
           <div className="rounded-xl bg-white px-12 pt-6 pb-8">
-            {contentType.name === 'Consent' ? (
+            {contentType?.name === 'Consent' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : contentType.name === 'Info Pages' ? (
+            ) : contentType?.name === 'Info Pages' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
