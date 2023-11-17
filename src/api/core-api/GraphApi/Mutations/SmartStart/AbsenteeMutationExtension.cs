@@ -21,7 +21,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
         public Absentees AddAbsenteeForPractitioner(
-            [Service] IHttpContextAccessor contextAccessor,
             [Service] IAbsenteeService absenteeService,
             string practitionerId,
             string reassignedToPractitioner,
@@ -49,8 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd);
         }
 
-        public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,
-            [Service] IReassignmentService reassignmentService,
+        public bool ReassignAbsenteeFromHistory([Service] IReassignmentService reassignmentService,
             string userId)
         {
             return reassignmentService.ReassignClassroomsFromHistory(userId);

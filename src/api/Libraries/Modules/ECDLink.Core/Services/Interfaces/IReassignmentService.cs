@@ -23,7 +23,7 @@ namespace ECDLink.Core.Services.Interfaces
             string toRole = null,
             string absenteeId = null
             );
-        public bool ReassignClassroomsFromHistory(string userId);
+        public bool ReassignClassroomsFromHistory(string userId, string reassignmentId = null);
 
     }
 }
