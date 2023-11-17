@@ -4,6 +4,14 @@ export const copyToClip = async (value: string): Promise<boolean> => {
     // Permission api not supported by ie, android browser 2023/05/01
     // https://caniuse.com/?search=permission
 
+    if (
+      window.navigator.userAgent.toLowerCase().includes('iphone') ||
+      window.navigator.userAgent.toLowerCase().includes('mac')
+    ) {
+      document.execCommand('copy', true, value);
+      return true;
+    }
+
     if (navigator?.permissions) {
       const permissionName = 'clipboard-write' as PermissionName;
       let permissionResult = await navigator?.permissions?.query({
