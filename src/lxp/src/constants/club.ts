@@ -26,6 +26,14 @@ export const enum ClubActivities {
   MeetRegularly = 'Meet regularly',
 }
 
+export const ClubActivitiesMaxPointsPerLeague = {
+  MeetRegularly: {
+    NewStars: 800,
+    RisingStars: 800,
+  },
+  // TODO: add other activities
+};
+
 export const enum IssuesTasks {
   noClubLeader = 'No club leader',
   contactClubLeader = 'Contact club leader',
