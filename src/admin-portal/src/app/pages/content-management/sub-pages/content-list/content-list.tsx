@@ -85,16 +85,23 @@ export default function ContentList({
 
   const fields =
     contentType.fields?.map((x) => {
+      console.log({ x });
       if (
         x.fieldType.dataType !== FieldType.Link &&
         x.fieldType.dataType !== FieldType.StaticLink
       )
         return x.fieldName;
-      else
+      else if (x.fieldType.dataType === FieldType.Link)
         return `
         ${x.fieldName} {
           id
           name
+        }
+      `;
+      else
+        return `
+        ${x.fieldName} {
+          id
         }
       `;
     }) ?? [];

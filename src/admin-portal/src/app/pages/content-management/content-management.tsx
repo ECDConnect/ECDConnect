@@ -22,7 +22,7 @@ export function ContentManagement() {
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
-  console.log({ selectedType });
+
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
 
@@ -33,8 +33,6 @@ export function ContentManagement() {
   const { data: languages } = useQuery(GetAllLanguage, {
     fetchPolicy: 'cache-and-network',
   });
-
-  console.log({ languages });
 
   const [getContentTypes, { data: dataTypes, refetch }] = useLazyQuery(
     contentTypes,
