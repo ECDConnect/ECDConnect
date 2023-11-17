@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (classRoom != null)
             {
 
-                reassignmentService.AddReassignmentForPractitioner(uId, uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classroomId, true);
+                reassignmentService.AddReassignmentForPractitioner(uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classroomId, true);
                 return classRoom;
             }
 

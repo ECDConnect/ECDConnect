@@ -285,7 +285,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 if (reassignment.ClassroomGroupId != null || reassignment.PractitionerId != null)
                 {
-                    reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
+                    reassignmentService.AddReassignmentForPractitioner(practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
                 }               
             }
 
@@ -332,7 +332,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     return false;
                 }
-                absenteeService.AddAbsenteeForPractitioner(uId, practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId,null, removalHistory.Id);
+                absenteeService.AddAbsenteeForPractitioner(practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId,null,false, null,null, removalHistory.Id);
             }
 
             return true;
@@ -364,7 +364,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 if(reassignment.Id == null)
                 {
-                    absenteeService.AddAbsenteeForPractitioner(uId, removal.UserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, removal.Id);
+                    absenteeService.AddAbsenteeForPractitioner(removal.UserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, false,null,null, removal.Id);
                 }
                 else
                 {

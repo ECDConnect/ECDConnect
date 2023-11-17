@@ -214,7 +214,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (principal.UserId != null && practitioner.UserId != null)
                     {
                         //Reassign all classes and programmes back to principal
-                        reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                        reassignmentService.AddReassignmentForPractitioner(practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                     }
 
                     status.AcceptedDate = null;
@@ -239,7 +239,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (principal.UserId != null && practitioner.UserId != null)
                         {
                             //Reassign all classes and programmes back to principal
-                            reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                            reassignmentService.AddReassignmentForPractitioner(practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                         }
 
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
