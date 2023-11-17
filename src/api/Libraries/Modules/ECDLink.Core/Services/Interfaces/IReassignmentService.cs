@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace ECDLink.Core.Services.Interfaces
 {
     public interface IReassignmentService
     {
-        //public void ProcessReassignments();
         public bool ReassignAbsentees();
         public void ExpireRelationshipLinks();
 

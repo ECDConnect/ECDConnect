@@ -15,7 +15,6 @@ using ECDLink.Security.Extensions;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.Core.Extensions;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace ECDLink.Api.CoreApi.Services
 {
