@@ -8,7 +8,7 @@ export const copyToClip = async (value: string): Promise<boolean> => {
       window.navigator.userAgent.toLowerCase().includes('iphone') ||
       window.navigator.userAgent.toLowerCase().includes('mac')
     ) {
-      document.execCommand('copy', true, value);
+      navigator?.clipboard?.writeText && navigator?.clipboard?.writeText(value);
       return true;
     }
 
