@@ -1088,7 +1088,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // Startup Support
-            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == trainee.UserId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
+            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
             if (startupSupport != null)
             {
                 timeline.StartUpSupportStartDate = startupSupport?.StartDate;
