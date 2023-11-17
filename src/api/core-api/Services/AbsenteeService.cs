@@ -102,7 +102,7 @@ namespace ECDLink.Api.CoreApi.Services
 
             var createdAbsentee = _absenteeRepo.Insert(absentee);
 
-            if (createdAbsentee != null)
+            if (createdAbsentee.Id != Guid.Empty)
             {
                 //Log to the history table for reassignment back to owner user after absentee end date and pass on the role selectiosn to for future use with assigned absenteeid
                 _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, fromRole, toRole, absentee.Id.ToString());

@@ -34,6 +34,7 @@ public class ExpireInvitations : CronJobService
             TenancyContext.SetTenantContext(scope);
 
             service.ExpireRelationshipLinks();
+            service.ReassignAbsentees();
         }
     }
 }

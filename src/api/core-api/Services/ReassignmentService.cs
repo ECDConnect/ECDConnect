@@ -103,8 +103,7 @@ namespace ECDLink.Core.Services
                     if (reassignmentsEnd != null)
                     {
                         ProcessReassignments(reassignmentsEnd.Id, true);
-
-                        item.AssignedDate = DateTime.Now; //
+                        
                         item.CompletedDate = DateTime.Now;
                         item.UpdatedDate = DateTime.Now;
                         item.UpdatedBy = _applicationUserId;
@@ -220,8 +219,8 @@ namespace ECDLink.Core.Services
                     }
 
                     //provide enddate               
-                    if (endDate != null)
-                        reassignment.ReassignedToDate = (DateTime)endDate;
+                    //if (endDate != null)
+                        //reassignment.ReassignedToDate = (DateTime)endDate;
                     //update the reassignments
                     _reassignmentsRepo.Update(reassignment);
 
