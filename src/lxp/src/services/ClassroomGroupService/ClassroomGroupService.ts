@@ -118,7 +118,11 @@ class ClassroomGroupService {
     absentDate: Date,
     loggedByUser: string,
     classProgram: string,
-    absentDateEnd?: Date
+    absentDateEnd?: Date,
+    isRoleRasssign?: boolean,
+    fromRole?: string,
+    toRole?: string,
+    roleAssignedToUser?: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -130,7 +134,10 @@ class ClassroomGroupService {
            reason: $reason, absentDate: $absentDate, 
            loggedByUser: $loggedByUser, classProgram: $classProgram, 
            reassignedToPractitioner: $reassignedToPractitioner, 
-           absentDateEnd: $absentDateEnd) { 
+           absentDateEnd: $absentDateEnd, isRoleRasssign: $isRoleRasssign,
+           fromRole: $fromRole,
+           toRole: $toRole,
+           roleAssignedToUser: $roleAssignedToUser) { 
                   id  
                      }      
                        }
@@ -143,6 +150,10 @@ class ClassroomGroupService {
         loggedByUser: loggedByUser,
         classProgram: classProgram,
         absentDateEnd: absentDateEnd,
+        isRoleRasssign: isRoleRasssign,
+        fromRole: fromRole,
+        toRole: toRole,
+        roleAssignedToUser: roleAssignedToUser,
       },
     });
 
@@ -161,7 +172,11 @@ class ClassroomGroupService {
     reassignedToPractitioner: string,
     reason: string,
     absentDate: Date,
-    absentDateEnd?: Date
+    absentDateEnd?: Date,
+    isRoleRasssign?: boolean,
+    fromRole?: string,
+    toRole?: string,
+    roleAssignedToUser?: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -178,7 +193,11 @@ class ClassroomGroupService {
     reassignedToPractitioner: $reassignedToPractitioner,
      reason: $reason,
      absentDate: $absentDate,
-     absentDateEnd: $absentDateEnd
+     absentDateEnd: $absentDateEnd,
+     isRoleRasssign: $isRoleRasssign,
+        fromRole: $fromRole,
+        toRole: $toRole,
+        roleAssignedToUser: $roleAssignedToUser
      ) { 
           id   
              }  
@@ -191,6 +210,10 @@ class ClassroomGroupService {
         reason,
         absentDate,
         absentDateEnd,
+        isRoleRasssign: isRoleRasssign,
+        fromRole: fromRole,
+        toRole: toRole,
+        roleAssignedToUser: roleAssignedToUser,
       },
     });
 
