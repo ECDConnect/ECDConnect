@@ -2220,6 +2220,7 @@ export type ClubMember = {
   isNewInClub?: Maybe<Scalars['Boolean']>;
   practitioner?: Maybe<Practitioner>;
   practitionerId: Scalars['UUID'];
+  shareContactInfo: Scalars['Boolean'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
   welcomeMessage?: Maybe<Scalars['String']>;
@@ -2237,6 +2238,7 @@ export type ClubMemberFilterInput = {
   or?: InputMaybe<Array<ClubMemberFilterInput>>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
   practitionerId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  shareContactInfo?: InputMaybe<BooleanOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   welcomeMessage?: InputMaybe<StringOperationFilterInput>;
@@ -2251,6 +2253,7 @@ export type ClubMemberInput = {
   IsNewInClub?: InputMaybe<Scalars['Boolean']>;
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId: Scalars['UUID'];
+  ShareContactInfo: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   WelcomeMessage?: InputMaybe<Scalars['String']>;
 };
@@ -2261,6 +2264,7 @@ export type ClubMemberModel = {
   phoneNumber?: Maybe<Scalars['String']>;
   practitionerId: Scalars['UUID'];
   profileImageUrl?: Maybe<Scalars['String']>;
+  shareContactInfo: Scalars['Boolean'];
   surname?: Maybe<Scalars['String']>;
   userId?: Maybe<Scalars['String']>;
   welcomeMessage?: Maybe<Scalars['String']>;
@@ -2277,6 +2281,7 @@ export type ClubMemberSortInput = {
   isNewInClub?: InputMaybe<SortEnumType>;
   practitioner?: InputMaybe<PractitionerSortInput>;
   practitionerId?: InputMaybe<SortEnumType>;
+  shareContactInfo?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   welcomeMessage?: InputMaybe<SortEnumType>;
@@ -7546,6 +7551,7 @@ export type MutationResetUserPasswordArgs = {
 export type MutationSaveWelcomeMessageArgs = {
   clubId: Scalars['UUID'];
   practitionerId: Scalars['UUID'];
+  shareContactInfo: Scalars['Boolean'];
   welcomeMessage?: InputMaybe<Scalars['String']>;
 };
 

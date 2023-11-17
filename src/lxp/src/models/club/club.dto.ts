@@ -33,6 +33,7 @@ export type ClubMemberDto = {
   whatsAppNumber: string;
   profileImageUrl: string;
   welcomeMessage: string;
+  shareContactInfo: boolean;
 };
 export type ClubCoachDto = {
   userId: string;
@@ -40,6 +41,7 @@ export type ClubCoachDto = {
   firstName: string;
   surname: string;
   phoneNumber: string;
+  whatsAppNumber: string;
   profileImageUrl: string;
   aboutInfo: string;
 };

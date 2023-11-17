@@ -17,7 +17,6 @@ import { clubSelectors } from '@/store/club';
 import { userSelectors } from '@/store/user';
 import { useMemo, useState } from 'react';
 import { AboutYourselfDialog } from './about-yourself-dialog';
-import { coachSelectors } from '@/store/coach';
 
 export const UserProfile: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -43,16 +42,18 @@ export const UserProfile: React.FC = () => {
   const clubMember = club?.clubMembers.find(
     (member) => member.practitionerId === (isMember ? practitionerId : leaderId)
   );
-  console.log('clubMember', clubMember);
-  console.log('practitionerId', practitionerId);
+
   const name = isCoach
-    ? `${user?.firstName} ${user?.surname}`
+    ? `${club?.clubCoach.firstName} ${club?.clubCoach.surname}`
     : `${clubMember?.firstName} ${clubMember?.surname}`;
 
   const whatsAppNumber = isCoach
-    ? user?.whatsappNumber
+    ? club?.clubCoach.whatsAppNumber
     : clubMember?.whatsAppNumber;
-  const phoneNumber = isCoach ? user?.phoneNumber : clubMember?.phoneNumber;
+
+  const phoneNumber = isCoach
+    ? club?.clubCoach.phoneNumber
+    : clubMember?.phoneNumber;
 
   const headerHeight = isMember ? 254 : 300;
   const userRole = useMemo(() => {
@@ -135,47 +136,62 @@ export const UserProfile: React.FC = () => {
         style={{ height: height - headerHeight }}
       >
         <Typography type="h3" text={name} />
-        <Typography
-          type="body"
-          text={(phoneNumber || whatsAppNumber) ?? 'Phone number unavailable'}
-          color="secondary"
-        />
-        {!isCoach && (
+        {(!isMember || clubMember?.shareContactInfo) && (
           <>
-            <div className="my-4 flex flex-wrap justify-between gap-4">
-              <Button
-                className="flex-grow"
-                type="outlined"
-                color="primary"
-                textColor="primary"
-                onClick={onWhatsapp}
-              >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className="mr-2"
-                />
-                <Typography
-                  type="button"
-                  text={`WhatsApp ${isLeader ? 'club leader' : 'practitioner'}`}
-                  color="primary"
-                />
-              </Button>
-              <Button
-                className="flex-grow"
-                icon="PhoneIcon"
-                type="outlined"
-                color="primary"
-                text={`Call ${isLeader ? 'club leader' : 'practitioner'}`}
-                textColor="primary"
-                onClick={onCall}
-              />
-            </div>
-            <Alert
-              type="info"
-              title="WhatsApps and phone calls will be charged at your standard carrier rates."
+            <Typography
+              type="body"
+              text={
+                (phoneNumber || whatsAppNumber) ?? 'Phone number unavailable'
+              }
+              color="secondary"
             />
+            {!isCoach && (
+              <>
+                <div className="my-4 flex flex-wrap justify-between gap-4">
+                  <Button
+                    className="flex-grow"
+                    type="outlined"
+                    color="primary"
+                    textColor="primary"
+                    onClick={onWhatsapp}
+                  >
+                    <img
+                      src={getLogo(LogoSvgs.whatsapp)}
+                      alt="whatsapp"
+                      className="mr-2"
+                    />
+                    <Typography
+                      type="button"
+                      text={`WhatsApp ${
+                        isLeader ? 'club leader' : 'practitioner'
+                      }`}
+                      color="primary"
+                    />
+                  </Button>
+                  <Button
+                    className="flex-grow"
+                    icon="PhoneIcon"
+                    type="outlined"
+                    color="primary"
+                    text={`Call ${isLeader ? 'club leader' : 'practitioner'}`}
+                    textColor="primary"
+                    onClick={onCall}
+                  />
+                </div>
+                <Alert
+                  type="info"
+                  title="WhatsApps and phone calls will be charged at your standard carrier rates."
+                />
+              </>
+            )}
           </>
+        )}
+        {isMember && !clubMember?.shareContactInfo && (
+          <Alert
+            className="mt-5"
+            type="info"
+            title="Practitioner has not shared contact details."
+          />
         )}
         {isLeader && (
           <Button

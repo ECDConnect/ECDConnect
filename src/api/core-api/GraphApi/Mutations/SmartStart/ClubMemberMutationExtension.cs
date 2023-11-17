@@ -30,10 +30,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool SaveWelcomeMessage([Service] IClubService clubService, Guid clubId, Guid practitionerId, string welcomeMessage)
+        public bool SaveWelcomeMessage([Service] IClubService clubService, Guid clubId, Guid practitionerId, string welcomeMessage, bool shareContactInfo)
         {
-            return clubService.SaveWelcomeMessage(clubId, practitionerId, welcomeMessage);
-
+            return clubService.SaveWelcomeMessage(clubId, practitionerId, welcomeMessage, shareContactInfo);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]

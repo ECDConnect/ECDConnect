@@ -31,7 +31,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public bool RejectNewClubLeaderRole(Guid clubId, Guid practitionerId);
         public bool ChangeClubSupportRole(Guid clubId, Guid practitionerId);
         public Club AddNewClub(NewClubInput input);
-        public bool SaveWelcomeMessage(Guid clubId, Guid practitionerId, string welcomeMessage);
+        public bool SaveWelcomeMessage(Guid clubId, Guid practitionerId, string welcomeMessage, bool shareContactInfo);
         public bool UpdateNewMemberStatus(Guid clubId, Guid practitionerId);
         public ActivityMeetRegular GetActivityMeetRegularDetails(Guid clubId, int month, int year);
         public ActivityBeCreative GetActivityBeCreativeDetails(Guid clubId);

@@ -43,7 +43,7 @@ export const MeetRegularly: React.FC = () => {
     clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
   );
   const isLeader = club?.clubLeader?.userId === user?.id;
-  const isSupportRole = club?.clubSupport.userId === user?.id;
+  const isSupportRole = club?.clubSupport?.userId === user?.id;
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',

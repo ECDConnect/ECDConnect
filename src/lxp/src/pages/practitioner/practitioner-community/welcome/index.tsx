@@ -2,6 +2,8 @@ import { useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
+  ButtonGroup,
+  ButtonGroupTypes,
   Card,
   FormInput,
   Typography,
@@ -10,7 +12,6 @@ import { ReactComponent as Robot } from '@/assets/iconRobot.svg';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { useSelector } from 'react-redux';
-import { userSelectors } from '@/store/user';
 import { useAppDispatch } from '@/store';
 import { clubThunkActions } from '@/store/club';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -22,9 +23,10 @@ import {
   welcomeMessageSchema,
 } from '@/schemas/community/welcome/welcome-message';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerCommunityWelcome: React.FC = () => {
-  const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const { theme } = useTheme();
 
@@ -38,21 +40,23 @@ export const PractitionerCommunityWelcome: React.FC = () => {
     ClubActions.SAVE_WELCOME_MESSAGE
   );
 
-  const { getValues, register, formState } = useForm<WelcomeMessageModel>({
-    resolver: yupResolver(welcomeMessageSchema),
-    mode: 'onChange',
-  });
+  const { getValues, setValue, register, trigger, formState } =
+    useForm<WelcomeMessageModel>({
+      resolver: yupResolver(welcomeMessageSchema),
+      mode: 'onChange',
+    });
 
   const { errors, isValid } = formState;
 
   const onSave = async () => {
-    if (isValid && !!club && !!user) {
+    if (isValid && !!club && !!practitioner) {
       var values = getValues();
       await appDispatch(
         clubThunkActions.saveWelcomeMessage({
           clubId: club.id,
-          practitionerId: user.id,
+          practitionerId: practitioner.id,
           welcomeMessage: values.message,
+          shareContactInfo: values.shareContactInfo!,
         })
       );
 
@@ -105,6 +109,26 @@ export const PractitionerCommunityWelcome: React.FC = () => {
           className="mt-10"
           error={errors.message}
         />
+        <label className="font-body text-textMid mt-5 block text-base font-medium">
+          {`Would you like to share your phone and WhatsApp number with your club?`}
+        </label>
+        <div className={'mt-2'}>
+          <ButtonGroup
+            options={[
+              { text: 'Yes', value: true },
+              { text: 'No', value: false },
+            ]}
+            onOptionSelected={(value: boolean | boolean[]) => {
+              setValue('shareContactInfo', value as boolean);
+              trigger();
+            }}
+            selectedOptions={getValues().shareContactInfo}
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            className={'w-full'}
+            multiple={false}
+          />
+        </div>
         <Button
           type="filled"
           color="primary"

@@ -633,6 +633,7 @@ namespace EcdLink.Api.CoreApi.Services
                 _clubMemberRepo.InsertMany(newMembers);
             }
 
+            // TODO! I think this should mark old club memberships as in active and create new club members!
             if (input.TransferredClubMembers.Count > 0)
             {
                 ClubMember clubMember = new ClubMember();
@@ -652,7 +653,7 @@ namespace EcdLink.Api.CoreApi.Services
             return club;
         }
 
-        public bool SaveWelcomeMessage(Guid clubId, Guid practitionerId, string welcomeMessage)
+        public bool SaveWelcomeMessage(Guid clubId, Guid practitionerId, string welcomeMessage, bool shareContactInfo)
         {
             ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.ClubId == clubId && x.PractitionerId == practitionerId).FirstOrDefault();
             if (clubMember != null)
@@ -661,6 +662,7 @@ namespace EcdLink.Api.CoreApi.Services
                 clubMember.UpdatedDate = DateTime.Now;
                 clubMember.UpdatedBy = _applicationUserId;
                 clubMember.IsNewInClub = false;
+                clubMember.ShareContactInfo = shareContactInfo;
                 _clubMemberRepo.Update(clubMember);
                 return true;
             }
