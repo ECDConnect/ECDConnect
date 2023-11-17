@@ -342,11 +342,11 @@ namespace ECDLink.Core.Services
                                     //FAA to principal
                                     if (reassignment.ReassignedRoleBack == "FAA" && reassignment.AssignedRole == Roles.PRACTITIONER)
                                     {
-                                        practitioner.IsFundaAppAdmin = true;
+                                        _personnelService.MarkFAA(practitioner.UserId, true);
                                     }
                                     if (reassignment.ReassignedRoleBack == Roles.PRACTITIONER && reassignment.AssignedRole == "FAA")
                                     {
-                                        practitioner.IsFundaAppAdmin = false;
+                                        _personnelService.MarkFAA(practitioner.UserId, false);
                                     }
                                     reassignment.AssignedRoleDate = DateTime.Now;
                                 }
