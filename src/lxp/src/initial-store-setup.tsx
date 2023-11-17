@@ -149,7 +149,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(documentActions.resetDocumentsState());
     appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(contentReportActions.resetContentReportState());
-    appDispatch(clubActions.resetClubState());
+    // appDispatch(clubActions.resetClubState());
   };
 
   const initStoreSetup = useCallback(async () => {
