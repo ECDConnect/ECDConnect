@@ -19,6 +19,7 @@ namespace ECDLink.Core.Services.Interfaces
             bool isRoleAssign = false,
             string fromRole = null,
             string toRole = null,
+            string roleAssignedToUser = null,
             string absenteeId = null
             );
         public bool ReassignClassroomsFromHistory(string userId, string reassignmentId = null);

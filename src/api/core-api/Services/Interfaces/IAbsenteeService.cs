@@ -17,6 +17,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             bool isRoleAssign = false,
             string fromRole = null,
             string toRole = null,
+            string roleAssignedToUser = null,
             Guid? practitionerRemovalHistory = null);
 
 
