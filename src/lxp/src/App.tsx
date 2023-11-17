@@ -130,6 +130,7 @@ const App: React.FC = () => {
     return () => {
       window.removeEventListener('focus', onFocus);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleSync = async () => {
