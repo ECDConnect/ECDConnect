@@ -342,7 +342,7 @@ export const AddProgrammeForm: React.FC<{
 
             <FormInput<EditProgrammeModel>
               label={
-                'How many non-SmartStart trained teaching assistants do have?'
+                'How many non-SmartStart trained teaching assistants do you have?'
               }
               register={programmeFormRegister}
               nameProp={'nonSmartStartPractitioners'}
