@@ -8,8 +8,10 @@ using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -22,6 +24,7 @@ namespace ECDLink.Core.Services
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly HierarchyEngine _hierarchyEngine;
+        private IHttpContextAccessor _contextAccessor;
         private readonly AttendanceTrackingRepository _attendanceRepo;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly string _applicationUserId;
@@ -31,17 +34,20 @@ namespace ECDLink.Core.Services
         private readonly IServiceProvider _services;
 
         public ReassignmentService(
+            IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
             HierarchyEngine hierarchyEngine,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] AttendanceTrackingRepository attendanceRepo,
             IServiceProvider services)
         {
+            _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
             _attendanceRepo = attendanceRepo;
             _userManager = userManager;
             _services = services;
+            _applicationUserId = contextAccessor.HttpContext.GetUser()?.Id;
 
             _absenteeRepo = _repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
             _reassignmentsRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: _applicationUserId);
@@ -265,7 +271,7 @@ namespace ECDLink.Core.Services
                                 if (reassignmentLists.ClassProgrammesReassigned.Any()) reassignment.ReassignedClassProgrammes = string.Join(";", reassignmentLists.ClassProgrammesReassigned);
                                 if (reassignmentLists.ChildrenReassignedUserIds.Any()) reassignment.ReassignedChildrenUserIds = string.Join(";", reassignmentLists.ChildrenReassignedUserIds);
                                 if (reassignmentLists.LearnersReassigned.Any()) reassignment.ReassignedLearners = string.Join(";", reassignmentLists.LearnersReassigned);
-
+                                reassignment.AssignedToDate = DateTime.Now;
                                 _reassignmentsRepo.Update(reassignment);
                             }
 
