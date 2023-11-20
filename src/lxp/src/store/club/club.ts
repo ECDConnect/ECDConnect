@@ -103,16 +103,28 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
       const clubId = action.meta.arg.clubId;
 
-      state.clubsForCoach = {
-        ...state.clubsForCoach,
-        [clubId]: {
-          ...state.clubsForCoach[clubId],
+      const isCoach = !!state.clubsForCoach[clubId]?.club;
+
+      if (isCoach) {
+        state.clubsForCoach = {
+          ...state.clubsForCoach,
+          [clubId]: {
+            ...state.clubsForCoach[clubId],
+            points: {
+              ...state.clubsForCoach[clubId]?.points,
+              beCreative: action.payload,
+            },
+          },
+        };
+      } else {
+        state.clubForPractitioner = {
+          ...state.clubForPractitioner,
           points: {
-            ...state.clubsForCoach[clubId]?.points,
+            ...state.clubForPractitioner?.points,
             beCreative: action.payload,
           },
-        },
-      };
+        };
+      }
     });
     builder.addCase(
       getActivityMeetRegularDetails.fulfilled,

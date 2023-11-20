@@ -36,6 +36,7 @@ import {
 import { getAlertSeverity } from '@/utils/common/string.utils';
 import { ClubActivitiesMaxPointsPerLeague, LeagueType } from '@/constants/club';
 import PositiveEmoticon from '@/assets/positive-green-emoticon.png';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 
 export const MeetRegularly: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -73,8 +74,8 @@ export const MeetRegularly: React.FC = () => {
   const currentYear = currentDate.getFullYear();
 
   const activityId = 'meet-regularly';
-  const isPractitioner = user?.roles?.some(
-    (item) => item?.name === Roles.PRACTITIONER
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
   );
 
   const upcomingMeetings: UserAlertListDataItem[] =
@@ -247,9 +248,9 @@ export const MeetRegularly: React.FC = () => {
             text="Back to club"
             onClick={() =>
               history.push(
-                isPractitioner
-                  ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-                  : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+                isCoach
+                  ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+                  : ROUTES.PRACTITIONER.COMMUNITY.ROOT
               )
             }
           />
