@@ -11,6 +11,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.DataAccessLayer.Services;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,6 +72,8 @@ namespace EcdLink.Api.CoreApi.Services
                         ApplicationUser childUser = _userManager.FindByIdAsync(child.UserId).Result;
                         if (childUser != null)
                         {
+                            //delete docs 
+                            RemoveChildDocuments(null, childUser.Id);
                             var result = _userManager.DeleteAsync(childUser).Result;
                         }
                         //notify of problem child that cant delete
@@ -95,13 +98,13 @@ namespace EcdLink.Api.CoreApi.Services
 
         private List<Child> GetChildrenToRemove(IGenericRepository<Child, Guid> childRepo)
         {
-            var expiryTime = DateTime.UtcNow.AddDays(-21);
+            var expiryTime = DateTime.UtcNow.AddDays(-30);
 
             // Removed child where status is pending (not all required information saved)
             // and they were inserted within the last 21 days
             return childRepo.GetAll()
                         .Where(c => c.IsActive && c.CaregiverId.Equals(null)
-                                    && c.InsertedDate <= expiryTime).ToList();
+                                    && c.InsertedDate <= expiryTime).Include(c => c.User).ToList();
         }
 
 

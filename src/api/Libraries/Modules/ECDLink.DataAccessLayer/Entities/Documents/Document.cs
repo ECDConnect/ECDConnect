@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -38,6 +39,8 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
         public TKey WorkflowStatusId { get; set; }
 
         public string Hierarchy { get; set; }
+        //[GraphQLIgnore, GraphIgnoreInput]
+        //public string ClientName { get; set; }
     }
 
     public interface DocumentJoin<TKey>

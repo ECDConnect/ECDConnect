@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -28,19 +29,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [UseSorting]
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public IQueryable<Document> GetAllDocument(
+             [Service] UserManager<ApplicationUser> userManager,
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId,
             string[] showOnlyTypes,
             string search = null,
-            PagedQueryInput pagingInput = null)
+            PagedQueryInput pagingInput = null, bool includeCreatedBy = false)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
             var docsQuery = docRepo.GetAll();
 
-            if (!string.IsNullOrWhiteSpace(userId))
-                docsQuery = docsQuery.Where(x => x.UserId == userId);
+            if (!string.IsNullOrWhiteSpace(userId)) {
+                docsQuery = docsQuery.Where(x => x.UserId == userId).Include(x => x.User);
+            }
 
             if (showOnlyTypes is not null && showOnlyTypes.Length > 0)
                 docsQuery = docsQuery
@@ -54,8 +57,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                docsQuery = docsQuery.Where(x => EF.Functions.ILike(x.User.FirstName, search) || EF.Functions.ILike(x.User.Surname, search)
+                docsQuery = docsQuery.Where(x => EF.Functions.ILike(x.User.FirstName, $"%{search}%") || EF.Functions.ILike(x.User.Surname, $"%{search}%")
                  || EF.Functions.ILike(x.Name, search));
+            }
+
+            if (includeCreatedBy)
+            {
+                foreach (var doc in docsQuery)
+                {
+                    var client = userManager.FindByIdAsync(doc.CreatedUserId).Result;
+                    if (client != null)
+                    {
+                        //doc.ClientName = client.FirstName + " " + client.Surname;
+                    }
+                }
             }
 
             return docsQuery;
