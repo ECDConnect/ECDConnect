@@ -72,8 +72,7 @@ export class UserLastLoginNotificationValidator
             daysPassed > 21 && daysPassed % 2 > 0 ? daysPassed.toString() : '21'
           }`,
           title: 'Go online again to keep using Funda App!',
-          message: `You haven't synced you app in more than 21 days.  We suggest connecting to a wifi network to complete this process.
-          After syncing your data, the Funda app will continue to work offline.`,
+          message: `You haven't been online for more than 3 weeks. Turn on your wifi or data in the next week or you might lose some of your information!`,
         },
       ];
 
