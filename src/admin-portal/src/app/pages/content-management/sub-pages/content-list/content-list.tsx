@@ -85,13 +85,15 @@ export default function ContentList({
 
   const fields =
     contentType.fields?.map((x) => {
-      console.log({ x });
       if (
         x.fieldType.dataType !== FieldType.Link &&
         x.fieldType.dataType !== FieldType.StaticLink
       )
         return x.fieldName;
-      else if (x.fieldType.dataType === FieldType.Link)
+      else if (
+        x.fieldType.dataType === FieldType.Link &&
+        x?.displayMainTable === true
+      )
         return `
         ${x.fieldName} {
           id
@@ -112,7 +114,6 @@ export default function ContentList({
     query ${getAllCall} ($localeId: String) {
       ${getAllCall} (localeId: $localeId) {
         id
-        name
         ${fields.join('\n')}
         }
       }
