@@ -31,6 +31,7 @@ import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
 import { getAlertType } from '../0-components/alert-card/utils';
 import { ActivityBeCreativeDetail } from '@ecdlink/graphql';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const BeCreative: React.FC = () => {
   const [showAlert, setShowAlert] = useState(false);
@@ -50,6 +51,8 @@ export const BeCreative: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { showMessage } = useSnackbar();
 
+  const { isOnline } = useOnlineStatus();
+
   const currentDate = new Date();
   const currentMonthName = currentDate.toLocaleString('default', {
     month: 'long',
@@ -58,7 +61,7 @@ export const BeCreative: React.FC = () => {
   const hasRecordInCurrentMonth = details?.monthlyRecords?.some(
     (record) =>
       record?.monthName?.toLowerCase() === currentMonthName.toLowerCase() &&
-      getAlertType(record?.documentStatusColor ?? '') !== 'error'
+      !!record?.documentName
   );
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
@@ -122,12 +125,14 @@ export const BeCreative: React.FC = () => {
   ]);
 
   useEffect(() => {
-    appDispatch(
-      getActivityBeCreativeDetails({
-        clubId,
-      })
-    );
-  }, [appDispatch, clubId]);
+    if (isOnline) {
+      appDispatch(
+        getActivityBeCreativeDetails({
+          clubId,
+        })
+      );
+    }
+  }, [appDispatch, clubId, isOnline]);
 
   useEffect(() => {
     if (wasLoading && !isLoading && isRejected) {
