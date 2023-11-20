@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.Security.Managers;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Managers;
@@ -34,7 +35,7 @@ namespace EcdLink.Api.CoreApi
 
         private void SetIdentityUser(IServiceCollection services)
         {
-            services.AddIdentity<ApplicationUser, IdentityRole>(config =>
+            services.AddIdentity<ApplicationUser, ApplicationIdentityRole>(config =>
             {
                 config.Tokens.ProviderMap.Add(
                     ProviderKeys.Tokens.EMAIL,
