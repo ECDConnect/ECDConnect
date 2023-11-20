@@ -729,7 +729,22 @@ namespace EcdLink.Api.CoreApi.Services
 
             return leagueClubs;
         }
-        
+
+        public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId)
+        {
+            return _clubRepo
+                .GetAll()
+                .Where(x => x.UserId == userId && x.IsActive == true)
+                .OrderBy(x => x.Name)
+                .Select(club => new CoachingClubBase
+                {
+                    Id = club.Id,
+                    Name = club.Name,
+                    UserId = club.UserId,
+                })
+                .ToList();
+        }
+
         /// <summary>
         /// To be replaced with mroe efficient call below GetClubsForCoach 
         /// Still fetched and added to coach store, but then not used from there...
