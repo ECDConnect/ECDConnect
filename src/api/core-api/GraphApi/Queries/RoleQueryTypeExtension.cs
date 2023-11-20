@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -20,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class RoleQueryTypeExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public IEnumerable<IdentityRole> GetRoles([Service] RoleManager<IdentityRole> roleManager)
+        public IEnumerable<ApplicationIdentityRole> GetRoles([Service] RoleManager<ApplicationIdentityRole> roleManager)
         {
             return roleManager.Roles.ToList();
         }
@@ -29,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             IGenericRepositoryFactory repoFactory,
-            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] RoleManager<ApplicationIdentityRole> roleManager,
             [Service] PersonnelService personnelService,
             string userId = null)
         {

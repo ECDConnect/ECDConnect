@@ -1,4 +1,5 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.EGraphQL.Authorization;
@@ -10,13 +11,13 @@ using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
-    [ExtendObjectType(typeof(IdentityRole))]
-    public class IdentityRoleExtension
+    [ExtendObjectType(typeof(ApplicationIdentityRole))]
+    public class ApplicationIdentityRoleExtension
     {
         [Permission(PermissionGroups.SYSTEM, GraphActionEnum.View)]
         public IEnumerable<Permission> Permissions(
           [Service] RolePermissionRepository permissionRepository,
-          [Parent] IdentityRole parent)
+          [Parent] ApplicationIdentityRole parent)
         {
             var permissions = permissionRepository.GetPermissionsForRole(new[] { parent.Id });
 
