@@ -35,7 +35,7 @@ import {
 } from '@/pages/community/clubs-tab/index.filters';
 import { getAlertSeverity } from '@/utils/common/string.utils';
 import { ClubActivitiesMaxPointsPerLeague, LeagueType } from '@/constants/club';
-import PositiveEmoticon from '@/assets/positive-green-emoticon.png';
+import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 
 export const MeetRegularly: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -48,8 +48,10 @@ export const MeetRegularly: React.FC = () => {
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
-  const isClubInNewStarts = club?.league?.name === LeagueType.NewStars;
-  const isClubInRisingStars = club?.league?.name === LeagueType.RisingStars;
+  const isClubInNewStarts =
+    club?.league?.leagueTypeName === LeagueType.NewStars;
+  const isClubInRisingStars =
+    club?.league?.leagueTypeName === LeagueType.RisingStars;
 
   const isCelebratoryMessage =
     (isClubInRisingStars &&
@@ -190,13 +192,7 @@ export const MeetRegularly: React.FC = () => {
               className="mt-4"
               type="successLight"
               title="Wow, great job!"
-              customIcon={
-                <img
-                  width={48}
-                  src={PositiveEmoticon}
-                  alt="Positive emoticon"
-                />
-              }
+              customIcon={<PositiveEmoticon className="w-12" />}
             />
           )}
           {upcomingMeetings.length && (
