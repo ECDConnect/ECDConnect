@@ -170,6 +170,7 @@ namespace ECDLink.Core.Services
             bool isRoleAssign = false,
             string fromRole = null,
             string toRole = null,
+            string roleAssignedToUser = null,
             string absenteeId = null
             )
         {
@@ -202,14 +203,22 @@ namespace ECDLink.Core.Services
                         reassignment.ReassignedClassroomGroups = classroomGroup;
                     }
                     //what the role will be when reassignments kicks in
-                    if (toRole != null)
+                    if (isRoleAssign)
                     {
-                        reassignment.AssignedRole = toRole;
-                    }
-                    //what the role will be when reassignment is reverted/before teh reassignment
-                    if (fromRole != null)
-                    {
-                        reassignment.ReassignedRoleBack = fromRole;
+                        if (toRole != null)
+                        {
+                            reassignment.AssignedRole = toRole;
+                        }
+                        //what the role will be when reassignment is reverted/before teh reassignment
+                        if (fromRole != null)
+                        {
+                            reassignment.ReassignedRoleBack = fromRole;
+                        }
+                        if (roleAssignedToUser != null)
+                        {
+                            reassignment.RoleAssignedToUser = roleAssignedToUser;
+                        }
+
                     }
                     _reassignmentsRepo.Insert(reassignment);
 
@@ -276,31 +285,30 @@ namespace ECDLink.Core.Services
                             }
 
                             //reassigned roles and permissions
-                            if (reassignment.AssignedRole != reassignment.ReassignedRoleBack)
+                            if (reassignment.AssignedRole != reassignment.ReassignedRoleBack && reassignment.RoleAssignedToUser != null)
                             {
                                 var practiRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-                                var practitioner = practiRepo.GetByUserId(reassignment.UserId);
-                                if (practitioner != null)
+                                var practitioner = practiRepo.GetByUserId(reassignment.RoleAssignedToUser);
+                                if (practitioner != null) //check that this is a legtitimate user
                                 {
                                     if (reassignment.AssignedRole == Roles.PRINCIPAL && reassignment.ReassignedRoleBack == Roles.PRACTITIONER)
                                     {
                                         _personnelService.SwitchPrincipal(reassignment.UserId, reassignment.ReassignedBackToUserId);
-
                                     }
                                     if (reassignment.AssignedRole == Roles.PRACTITIONER && reassignment.ReassignedRoleBack == Roles.PRINCIPAL)
                                     {
                                         _personnelService.SwitchPrincipal(reassignment.ReassignedBackToUserId, reassignment.UserId);
-
                                     }
                                     //FAA to principal
                                     if (reassignment.AssignedRole == "FAA" && reassignment.ReassignedRoleBack == Roles.PRACTITIONER)
                                     {
-                                        practitioner.IsFundaAppAdmin = true;
+                                        _personnelService.MarkFAA(practitioner.UserId, true);
                                     }
                                     if (reassignment.AssignedRole == Roles.PRACTITIONER && reassignment.ReassignedRoleBack == "FAA")
                                     {
-                                        practitioner.IsFundaAppAdmin = false;
+                                        _personnelService.MarkFAA(practitioner.UserId, true);
                                     }
+                                    
                                     reassignment.AssignedRoleDate = DateTime.Now;
                                 }
                             }
@@ -334,11 +342,11 @@ namespace ECDLink.Core.Services
                                     //FAA to principal
                                     if (reassignment.ReassignedRoleBack == "FAA" && reassignment.AssignedRole == Roles.PRACTITIONER)
                                     {
-                                        practitioner.IsFundaAppAdmin = true;
+                                        _personnelService.MarkFAA(practitioner.UserId, true);
                                     }
                                     if (reassignment.ReassignedRoleBack == Roles.PRACTITIONER && reassignment.AssignedRole == "FAA")
                                     {
-                                        practitioner.IsFundaAppAdmin = false;
+                                        _personnelService.MarkFAA(practitioner.UserId, false);
                                     }
                                     reassignment.AssignedRoleDate = DateTime.Now;
                                 }

@@ -543,6 +543,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             return practitionerToDemote;
         }
+        public Practitioner MarkFAA(string userId, bool isFAA = false)
+        {
+            var practitioner = _practiRepo.GetByUserId(userId);
+            if (practitioner != null)
+            {
+                practitioner.IsFundaAppAdmin = isFAA;
+                _practiRepo.Update(practitioner);
+            }
+
+            return practitioner;
+        }
 
         public Principal MapPractitionerToPrincipal(Practitioner practitioner)
         {
