@@ -257,6 +257,81 @@ namespace ECDLink.Core.Services
             return isReassigned;
         }
 
+        public bool EditReassignment(
+            string fromUserId,
+            string toUserId,
+            string reason,
+            DateTime startDate,
+            bool isRoleAssign = false,
+            string roleAssignedToUser = null,
+            string absenteeId = null,
+            bool deleteReassignment = false
+            )
+        {
+            bool isReassigned = false;
+            try
+            {
+                if (fromUserId != null && absenteeId != null)
+                {
+                    var reassignment = _reassignmentsRepo.GetAll().Where(x => x.AbsenteeId.HasValue && x.AbsenteeId.Equals(new Guid(absenteeId))).FirstOrDefault();
+
+                    if (startDate > DateTime.Now.Date)
+                    {
+                        if ( startDate != reassignment.AssignedToDate && reassignment.AssignedToDate.Date >= DateTime.Now.Date )
+                        {
+                            //change if date is still in future or today
+                            reassignment.AssignedToDate = startDate;
+                        }
+                    
+                        if (reassignment.ReassignedToUser != toUserId)
+                        {
+                            reassignment.ReassignedToUser = toUserId;
+                        }
+                        reassignment.Reason = reason;
+                    };
+
+                    //what the role will be when reassignments kicks in
+                    if (isRoleAssign)
+                    {
+                        if (roleAssignedToUser != null)
+                        {
+                            reassignment.RoleAssignedToUser = roleAssignedToUser;
+                        }
+                    }
+                    
+                    if (toUserId != null)
+                    {
+                        var toUser = _userManager.FindByIdAsync(toUserId).Result;
+                        var toUserHierarchy = _hierarchyEngine.GetUserHierarchy((toUserId != null ? toUserId : _applicationUserId));
+
+                        reassignment.HierarchyToUser = toUserHierarchy;
+                    }
+                    if (deleteReassignment)
+                    {
+                        reassignment.IsActive = false;
+                    }
+
+                    //update the reassignments
+                    _reassignmentsRepo.Update(reassignment);
+
+                    if (startDate.Date <= DateTime.Now.Date && reassignment.IsActive) //backdating reassignments - immediately reassign everything back so that the records match up and functionality remains consistent
+                    {
+                        //process the reassignment and backdate again
+                        ProcessReassignments(reassignment.Id, false);
+
+                        isReassigned = true;
+                    }
+                }
+                else isReassigned = false;
+            }
+            catch (Exception e)
+            {
+                // Error
+                isReassigned = false;
+            }
+            return isReassigned;
+        }
+
         public ClassReassignmentHistory ProcessReassignments(Guid reassignmentId, bool reassignBack = false)
         {
             if (reassignmentId != Guid.Empty)
