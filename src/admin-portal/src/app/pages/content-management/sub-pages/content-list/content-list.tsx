@@ -1,5 +1,5 @@
 /* eslint-disable react-hooks/rules-of-hooks */
-import { gql, useMutation, useQuery } from '@apollo/client';
+import { gql, useQuery } from '@apollo/client';
 import {
   camelCaseToSentanceCase,
   ContentDefinitionModelDto,
@@ -8,14 +8,11 @@ import {
   LanguageDto,
   NOTIFICATION,
   PermissionEnum,
-  useDialog,
   useNotifications,
   usePanel,
 } from '@ecdlink/core';
-import { DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import LanguageSelector from '../../../../components/language-selector/language-selector';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
@@ -33,6 +30,7 @@ export interface ContentListProps {
   languages: LanguageDto[];
   viewContent: (content?: ContentManagementView) => void;
   refreshParent: () => void;
+  searchValue?: string;
 }
 
 export default function ContentList({
@@ -42,22 +40,29 @@ export default function ContentList({
   optionDefinitions,
   viewContent,
   refreshParent,
+  searchValue,
 }: ContentListProps) {
   const { hasPermission } = useUser();
 
   const [tableData, setTableData] = useState<any[]>([]);
-  const dialog = useDialog();
   const { setNotification } = useNotifications();
   const panel = usePanel();
   const type = contentType.description;
 
   const [languageId, setLanguageId] = useState<string>();
 
-  const [displayFields, setDisplayFields] = useState<string[]>();
+  const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
+
+  function filterByValue(array, value) {
+    return array.filter(
+      (data) =>
+        JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
+    );
+  }
 
   useEffect(() => {
     if (contentType && contentType.fields) {
-      const displayFields: string[] = [];
+      const displayFields: ContentTypeFieldDto[] = [];
 
       const copy: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
 
@@ -66,8 +71,12 @@ export default function ContentList({
       });
 
       orderedList.forEach((x) => {
-        if (x.fieldType.dataType === FieldType.Text)
-          displayFields.push(x.fieldName);
+        if (
+          (x.fieldType.dataType === FieldType.Text ||
+            x.fieldType.dataType === FieldType.Link) &&
+          !!x.displayMainTable
+        )
+          displayFields.push(x);
       });
 
       setDisplayFields(displayFields);
@@ -81,6 +90,16 @@ export default function ContentList({
         x.fieldType.dataType !== FieldType.StaticLink
       )
         return x.fieldName;
+      else if (
+        x.fieldType.dataType === FieldType.Link &&
+        x?.displayMainTable === true
+      )
+        return `
+        ${x.fieldName} {
+          id
+          name
+        }
+      `;
       else
         return `
         ${x.fieldName} {
@@ -118,18 +137,23 @@ export default function ContentList({
           (item: { type: string }) =>
             item.type === 'client profile' || item.type === 'Info Page'
         );
-        setTableData(clientProfileData);
+        setTableData(
+          clientProfileData?.length > 0 ? clientProfileData : moreInforItems
+        );
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'
         );
-        console.log(postNatalData);
-        setTableData(postNatalData);
+        setTableData(
+          postNatalData?.length > 0 ? postNatalData : moreInforItems
+        );
       } else if (selectedTab === 3) {
         let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
-        setTableData(anteNatalData);
+        setTableData(
+          anteNatalData?.length > 0 ? anteNatalData : moreInforItems
+        );
       } else {
         const copyItems = contentData[getAllCall].map((item: any) => ({
           ...item,
@@ -236,9 +260,22 @@ export default function ContentList({
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={displayFields.map((item) => {
-                    return { field: item, use: item };
+                    return {
+                      field:
+                        typeof item.fieldName === 'string'
+                          ? item.fieldName
+                          : JSON?.stringify(item.fieldName),
+                      use:
+                        typeof item.displayName === 'string'
+                          ? item.displayName
+                          : JSON?.stringify(item.displayName),
+                    };
                   })}
-                  rows={tableData}
+                  rows={
+                    searchValue
+                      ? filterByValue(tableData, searchValue)
+                      : tableData
+                  }
                   component={'cms'}
                   viewRow={
                     hasPermission(PermissionEnum.update_static) &&

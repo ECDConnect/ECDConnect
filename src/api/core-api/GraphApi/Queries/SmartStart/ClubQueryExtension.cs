@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
@@ -7,6 +8,8 @@ using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -15,6 +18,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
     {
         public ClubQueryExtension()
         {
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public ClubModel GetClubForUser(
+            [Service] IClubService clubService,
+            string userId)
+        {
+            var club = clubService.GetClubForUser(userId);
+
+            return club;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<DetailClubModel> GetClubsForCoach(
+            [Service] IClubService clubService,
+            string coachUserId)
+        {
+            var clubs = clubService.GetClubsForCoach(coachUserId);
+
+            return clubs.ToList();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public DetailClubModel GetClubsForCoach(
+            [Service] IClubService clubService,
+            Guid clubId)
+        {
+            var club = clubService.GetClubById(clubId);
+
+            return club;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

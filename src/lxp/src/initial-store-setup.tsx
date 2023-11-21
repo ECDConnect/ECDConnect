@@ -52,12 +52,17 @@ import {
 import { analyticsActions } from './store/analytics';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
-import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
+import {
+  childrenForPractitionerActions,
+  childrenForPractitionerThunkActions,
+} from './store/childrenForPractitioner';
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
 import { pointsThunkActions } from './store/points';
 import { getClubForUser } from './store/club/club.actions';
+import { clubActions } from './store/club';
+import { authSelectors } from '@store/auth';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -80,8 +85,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const [initloading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
-  const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
 
@@ -103,116 +108,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const resetAuth = async () => {
     appDispatch(authActions.resetAuthState());
   };
-
-  useEffect(() => {
-    if (userData) {
-      if (practitioner?.coachHierarchy) {
-        if (!isCoach) {
-          (async () =>
-            await appDispatch(
-              coachThunkActions.getCoachByCoachId({
-                coachId: practitioner?.coachHierarchy!,
-              })
-            ).unwrap())();
-        }
-      }
-      if (practitioner?.isTrainee) {
-        (async () =>
-          await appDispatch(
-            traineeThunkActions.getTraineeTimeline({
-              userId: practitioner?.userId ? practitioner?.userId : '',
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            traineeThunkActions.getTraineeVisitData({
-              visitId: traineeCurrentVisit?.id,
-            })
-          ).unwrap())();
-      }
-    }
-  }, [appDispatch, userData, practitioner, isCoach, traineeCurrentVisit?.id]);
-
-  useEffect(() => {
-    if (userData) {
-      (async () =>
-        await appDispatch(
-          traineeThunkActions.getTraineeById({ userId: userData?.id! })
-        ).unwrap())();
-      if (isCoach) {
-        (async () =>
-          await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
-        (async () =>
-          await appDispatch(
-            practitionerForCoachThunkActions.getPractitionersForCoach({})
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getAllCoachingCircleClubsForCoach({
-              coachId: userData?.id!,
-              startDate: quarterStartDate,
-              endDate: quarterLastDay,
-            })
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            coachThunkActions.getAllClubsForCoach({
-              userId: userData?.id!,
-            })
-          ).unwrap())();
-      }
-      if (!isCoach) {
-        const currentDate = new Date();
-        const oneYearAgo = new Date();
-        oneYearAgo.setMonth(currentDate.getMonth() - 12);
-
-        (async () =>
-          await appDispatch(
-            getClubForUser({ userId: userData?.id! })
-          ).unwrap())();
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: userData?.id!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsLibrary({
-              userId: userData?.id!,
-            })
-          ).unwrap())();
-      }
-    }
-  }, [appDispatch, userData, isCoach, practitioner]);
-
-  useEffect(() => {
-    if (userData && !!userData?.id && !isCoach) {
-      (async () =>
-        await appDispatch(
-          practitionerThunkActions.getPractitionerByUserId({
-            userId: userData?.id || '',
-          })
-        ).unwrap())();
-    }
-  }, [appDispatch, userData, isCoach, practitioners]);
-
-  useEffect(() => {
-    if (userData) {
-      if (isPrincipal) {
-        (async () =>
-          await appDispatch(
-            childrenForPractitionerThunkActions?.getChildrenForPractitioner({
-              id: userData?.id!,
-            })
-          ).unwrap())();
-      }
-    }
-  }, [appDispatch, isPrincipal, userData]);
 
   const resetAppStore = async (showLoading = true) => {
     if (showLoading) {
@@ -247,10 +142,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(practitionerActions.resetPractitionerState());
     appDispatch(practitionerForCoachActions.resetPractitionerState());
     appDispatch(childrenActions.resetChildrenState());
+    appDispatch(
+      childrenForPractitionerActions.resetChildrenForPractitionerState()
+    );
     appDispatch(caregiverActions.resetCaregiverState());
     appDispatch(documentActions.resetDocumentsState());
     appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(contentReportActions.resetContentReportState());
+    appDispatch(clubActions.resetClubState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -409,11 +308,124 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     async function init() {
+      if (userAuth && !!userAuth.resetData) {
+        await resetAppStore();
+      }
       await initStoreSetup();
+      appDispatch(userActions.updateUserResetData(false));
     }
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (userData && !!userData?.id && !isCoach) {
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getPractitionerByUserId({
+            userId: userData?.id || '',
+          })
+        ).unwrap())();
+    }
+    if (userData) {
+      if (isPrincipal) {
+        (async () =>
+          await appDispatch(
+            childrenForPractitionerThunkActions?.getChildrenForPractitioner({
+              id: userData?.id!,
+            })
+          ).unwrap())();
+      }
+    }
+  }, [appDispatch, userData, isCoach, isPrincipal]);
+
+  useEffect(() => {
+    if (userData) {
+      if (practitioner?.coachHierarchy) {
+        if (!isCoach) {
+          (async () =>
+            await appDispatch(
+              coachThunkActions.getCoachByCoachId({
+                coachId: practitioner?.coachHierarchy!,
+              })
+            ).unwrap())();
+        }
+      }
+      if (practitioner?.isTrainee) {
+        (async () =>
+          await appDispatch(
+            traineeThunkActions.getTraineeById({ userId: userData?.id! })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            traineeThunkActions.getTraineeTimeline({
+              userId: practitioner?.userId ? practitioner?.userId : '',
+            })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            traineeThunkActions.getTraineeVisitData({
+              visitId: traineeCurrentVisit?.id,
+            })
+          ).unwrap())();
+      }
+    }
+  }, [appDispatch, userData, practitioner, isCoach, traineeCurrentVisit?.id]);
+
+  useEffect(() => {
+    if (userData) {
+      if (isCoach) {
+        (async () =>
+          await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
+        (async () =>
+          await appDispatch(
+            practitionerForCoachThunkActions.getPractitionersForCoach({})
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            coachThunkActions.getAllCoachingCircleClubsForCoach({
+              coachId: userData?.id!,
+              startDate: quarterStartDate,
+              endDate: quarterLastDay,
+            })
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            coachThunkActions.getAllClubsForCoach({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
+      }
+      if (!isCoach) {
+        const currentDate = new Date();
+        const oneYearAgo = new Date();
+        oneYearAgo.setMonth(currentDate.getMonth() - 12);
+
+        (async () =>
+          await appDispatch(
+            getClubForUser({ userId: userData?.id! })
+          ).unwrap())();
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsSummaryForUser({
+              userId: userData?.id!,
+              startDate: oneYearAgo,
+              endDate: currentDate,
+            })
+          ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            pointsThunkActions.getPointsLibrary({
+              userId: userData?.id!,
+            })
+          ).unwrap())();
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appDispatch, userData, isCoach, practitioner]);
 
   return (
     <IntialStoreSetupContext.Provider value={values}>

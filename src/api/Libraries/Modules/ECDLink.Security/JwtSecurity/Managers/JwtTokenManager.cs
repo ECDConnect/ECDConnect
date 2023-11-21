@@ -39,7 +39,7 @@ namespace ECDLink.Security.JwtSecurity.Managers
             _jwtService = jWTService;
         }
 
-        public async Task<string> GenerateJwt(ClaimsIdentity identity, string userId, JwtEncoderEnum encoderType)
+        public async Task<string> GenerateJwt(ClaimsIdentity identity, string userId, JwtEncoderEnum encoderType, bool? resetData)
         {
             var jwtEncoder = _jwtFactory.CreateJwtEncoder(encoderType);
 
@@ -47,7 +47,8 @@ namespace ECDLink.Security.JwtSecurity.Managers
             {
                 id = identity.Claims.Single(c => c.Type == "id").Value,
                 auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
-                expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds
+                expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds,
+                resetData,
             };
 
             return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });

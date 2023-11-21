@@ -249,32 +249,30 @@ class ClubService {
       query: `
         query GetActivityMeetRegularDetails($clubId: UUID!, $month: Int!, $year: Int!) {
           activityMeetRegularDetails(clubId: $clubId, month: $month, year: $year) {
+            points
+            pointsColor
+            upcomingMeetings {
+              meetingDate
+            }
+            pastMeetings {
+              meetingDate
+              meetingNotes
+              meetingAttendancePerc
+              meetingAttendanceColor
               points
-              pointsColor
-              upcomingMeetings {
-                  meetingDate
+              meetingParticipants {
+                userId
+                firstName
+                surname
               }
-              pastMeetings {
-                  meetingDate
-                  meetingNotes
-                  meetingAttendancePerc
-                  meetingAttendanceColor
-                  points
-                  meetingParticipants {
-                      userId
-                      firstName
-                      surname
-                  }
-                  meetingAbsentees {
-                    userId
-                    firstName
-                    surname
-                  }
-                } 
-              }     
-          }
-        }
-      `,
+              meetingAbsentees {
+                userId
+                firstName
+                surname
+              }
+            } 
+          }     
+        }`,
       variables: {
         ...input,
       },
@@ -596,8 +594,8 @@ class ClubService {
       errors?: {};
     }>(``, {
       query: `
-        mutation SaveWelcomeMessage($clubId: UUID!, $practitionerId: UUID!, $welcomeMessage: String) {
-          saveWelcomeMessage(clubId: $clubId, practitionerId: $practitionerId, welcomeMessage: $welcomeMessage) {
+        mutation SaveWelcomeMessage($clubId: UUID!, $practitionerId: UUID!, $welcomeMessage: String, $shareContactInfo: Boolean!) {
+          saveWelcomeMessage(clubId: $clubId, practitionerId: $practitionerId, welcomeMessage: $welcomeMessage, shareContactInfo: $shareContactInfo) {
           }
         }
       `,

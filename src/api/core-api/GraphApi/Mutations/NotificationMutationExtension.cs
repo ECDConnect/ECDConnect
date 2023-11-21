@@ -31,16 +31,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] UserManager<ApplicationUser> userManager,
           [Service] INotificationService notificationService,
           string userType,
-          string templateType, string userId = null)
+          string templateType, string userId = null, DateTime? startDate = null, DateTime? endDate = null)
         {
+            if (startDate==null)
+                startDate = DateTime.Now;
             if (userId != null)
             {
                 var userToSend = await userManager.FindByIdAsync(userId);
-                return await notificationService.SendNotificationAsync(userType, templateType, DateTime.Now,  userToSend);
+                return await notificationService.SendNotificationAsync(userType, templateType, (DateTime)startDate,  userToSend);
             }
             else
             { 
-                return await notificationService.SendNotificationAsync(userType, templateType, DateTime.Now);
+                return await notificationService.SendNotificationAsync(userType, templateType, (DateTime)startDate);
             }
         }
 

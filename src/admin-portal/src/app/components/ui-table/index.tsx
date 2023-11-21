@@ -193,6 +193,7 @@ export default function UiTable({
       };
 
       ++rowKey;
+
       return row;
     });
   };
@@ -251,6 +252,21 @@ export default function UiTable({
         >
           {formatDate(display_value)}
         </span>
+      );
+    } else if (column.field === 'subCategories') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div
+              key={item?.id}
+              className={' text-textMid m-1 rounded-full py-1 text-xs'}
+            >
+              {index === display_value?.length - 1
+                ? `${item?.name}`
+                : `${item?.name};`}
+            </div>
+          ))}
+        </div>
       );
     } else if (column.field === 'roles') {
       rowValue = (

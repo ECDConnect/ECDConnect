@@ -12,6 +12,7 @@ import {
   Typography,
   UserAvatar,
   ScoreCard,
+  TitleListItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -247,7 +248,7 @@ export const Dashboard: React.FC = () => {
     }
   }, [completedSteps?.length]);
 
-  const leagueCard = useMemo((): ScoreCardProps => {
+  const clubCard = useMemo((): ScoreCardProps => {
     const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
       club?.pointsTotal ?? 0,
       club?.maxPointsTotal ?? 0
@@ -292,7 +293,7 @@ export const Dashboard: React.FC = () => {
           ]
         ),
     };
-  }, []);
+  }, [club, practitioner]);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -965,8 +966,7 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {/* EC-1909 - Suppress ticket */}
-        {/* {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
@@ -986,20 +986,34 @@ export const Dashboard: React.FC = () => {
         {isPractitioner && !!club && (
           <ScoreCard
             className="h-20"
-            mainText={leagueCard.mainText}
-            hint={leagueCard.hint}
-            hintClassName={leagueCard.hintClassName}
+            mainText={clubCard.mainText}
+            hint={clubCard.hint}
+            hintClassName={clubCard.hintClassName}
             textPosition="left"
-            currentPoints={leagueCard.currentPoints}
-            maxPoints={leagueCard.maxPoints}
-            onClick={leagueCard.onClick}
-            barBgColour={leagueCard.barBgColour}
-            barColour={leagueCard.barColour}
-            bgColour={leagueCard.bgColour}
-            image={leagueCard.image}
-            textColour={leagueCard.textColour}
+            currentPoints={clubCard.currentPoints}
+            maxPoints={clubCard.maxPoints}
+            onClick={clubCard.onClick}
+            barBgColour={clubCard.barBgColour}
+            barColour={clubCard.barColour}
+            bgColour={clubCard.bgColour}
+            image={clubCard.image}
+            textColour={clubCard.textColour}
           />
-        )} */}
+        )}
+        {isPractitioner && !club && (
+          <div className="mt-4">
+            <TitleListItem
+              item={{
+                title: 'Community',
+                titleIcon: 'UserGroupIcon',
+                titleIconClassName: styles.communityIcon,
+                classNames: 'bg-uiBg',
+                onActionClick: () =>
+                  history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+              }}
+            />
+          </div>
+        )}
       </div>
     </BannerWrapper>
   );

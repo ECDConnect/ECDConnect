@@ -5,22 +5,16 @@ import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
   GetTenantContext,
-  SortEnumType,
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
-import { ContentTypeDto, DocumentTypeDto } from '@ecdlink/core';
+import { ContentTypeDto } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import {
-  ArrowLeftIcon,
-  ChartBarIcon,
-  PresentationChartBarIcon,
-  SearchIcon,
-} from '@heroicons/react/solid';
+import { ArrowLeftIcon, SearchIcon } from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 
 export function ContentManagement() {
@@ -168,7 +162,6 @@ export function ContentManagement() {
       setSelectedType(currentType);
       setSelectedContent(contentManagementView);
     });
-    console.log(contentManagementView);
   };
 
   const refreshParent = () => {
@@ -177,7 +170,6 @@ export function ContentManagement() {
   };
 
   useEffect(() => {
-    console.log(searchValue);
     getContentTypes({
       variables: {
         search: searchValue,
@@ -192,15 +184,13 @@ export function ContentManagement() {
     // getCountUsers({
     //   variables: getUserCountQueryVariables
     // });
-  }, [searchValue]);
+  }, []);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
-  }, 150);
+  }, 500);
 
   const listItems: StackedListItemType[] = [];
-
-  console.log(dataTypes?.contentTypes);
 
   if (specialType === 'Progress') {
     listItems.push(
@@ -220,7 +210,7 @@ export function ContentManagement() {
         classNames: 'bg-uiBg',
       },
       {
-        title: 'Progress categories',
+        title: 'Progress categories & subcategories',
         description: 'Development areas',
         titleIcon: 'PresentationChartBarIcon',
         titleIconClassName: 'bg-secondary text-white',
@@ -233,21 +223,21 @@ export function ContentManagement() {
         },
         classNames: 'bg-uiBg',
       },
-      {
-        title: 'Progress subcategories',
-        description: 'Development areas',
-        titleIcon: 'PresentationChartBarIcon',
-        titleIconClassName: 'bg-secondary text-white',
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) =>
-              type.name === 'ProgressTrackingSubCategory'
-          );
-          showGroupContentTypes(selectedTypeObject);
-        },
-        classNames: 'bg-uiBg',
-      },
+      // {
+      //   title: 'Progress subcategories',
+      //   description: 'Development areas',
+      //   titleIcon: 'PresentationChartBarIcon',
+      //   titleIconClassName: 'bg-secondary text-white',
+      //   onActionClick: () => {
+      //     setSpecialType('');
+      //     const selectedTypeObject = dataTypes?.contentTypes.find(
+      //       (type: ContentTypeDto) =>
+      //         type.name === 'ProgressTrackingSubCategory'
+      //     );
+      //     showGroupContentTypes(selectedTypeObject);
+      //   },
+      //   classNames: 'bg-uiBg',
+      // },
       {
         title: 'Progress tool',
         description: 'Edit the skills shown in the progress tracker',
@@ -412,7 +402,9 @@ export function ContentManagement() {
                     <button
                       onClick={() => {
                         setSelectedType(null);
-                        setSpecialType('Programmes');
+                        setSpecialType(
+                          selectedTab === 2 ? 'Progress' : 'Programmes'
+                        );
                       }}
                       type="button"
                       className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
@@ -420,7 +412,7 @@ export function ContentManagement() {
                       <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
                         {' '}
                       </ArrowLeftIcon>
-                      {selectedTab === 2 ? 'Progress' : 'Programme'}
+                      {selectedTab === 2 ? 'Progress' : 'Programmes'}
                       <span className="px-1 text-gray-400">
                         {' '}
                         / {selectedType?.name}
@@ -456,6 +448,7 @@ export function ContentManagement() {
                         viewContent={getContentValues}
                         refreshParent={() => refreshParent()}
                         selectedTab={selectedTab}
+                        searchValue={searchValue}
                       ></ContentList>
                     )}
                   {specialType === 'Programmes' && (

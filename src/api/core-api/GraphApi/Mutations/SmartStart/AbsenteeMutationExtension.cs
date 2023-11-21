@@ -21,18 +21,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
         public Absentees AddAbsenteeForPractitioner(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IAbsenteeService absenteetService,
+            [Service] IAbsenteeService absenteeService,
             string practitionerId,
             string reassignedToPractitioner,
             string reason,
             DateTime absentDate,
             string loggedByUser,
             string classProgram = null,
-            DateTime? absentDateEnd = null)
+            DateTime? absentDateEnd = null,
+            bool isRoleRasssign = false,
+            string fromRole = null,
+            string toRole = null)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return absenteetService.AddAbsenteeForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd);
+            return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleRasssign, fromRole, toRole, null);
         }
 
         public Absentees EditAbsentee(
@@ -47,12 +48,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd);
         }
 
-        public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,
-            [Service] IReassignmentService reassignmentService,
+        public bool ReassignAbsenteeFromHistory([Service] IReassignmentService reassignmentService,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
+            return reassignmentService.ReassignClassroomsFromHistory(userId);
         }
 
     }
