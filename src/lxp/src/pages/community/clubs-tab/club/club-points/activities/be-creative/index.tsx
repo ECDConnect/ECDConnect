@@ -1,4 +1,10 @@
-import { BannerWrapper, Button, EmptyPage, ScoreCard } from '@ecdlink/ui';
+import {
+  Alert,
+  BannerWrapper,
+  Button,
+  EmptyPage,
+  ScoreCard,
+} from '@ecdlink/ui';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
@@ -14,9 +20,8 @@ import {
 } from '@ecdlink/core';
 import { BeCreativeRouteState } from './index.types';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
 import { useAppDispatch } from '@/store';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ClubActions,
   getActivityBeCreativeDetails,
@@ -25,8 +30,11 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
 import { getAlertType } from '../0-components/alert-card/utils';
 import { ActivityBeCreativeDetail } from '@ecdlink/graphql';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 
 export const BeCreative: React.FC = () => {
+  const [showAlert, setShowAlert] = useState(false);
+
   const { clubId } = useParams<ClubsRouteState>();
 
   const user = useSelector(userSelectors.getUser);
@@ -42,15 +50,41 @@ export const BeCreative: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { showMessage } = useSnackbar();
 
+  const currentDate = new Date();
+  const currentMonthName = currentDate.toLocaleString('default', {
+    month: 'long',
+  });
+
+  const hasRecordInCurrentMonth = details?.monthlyRecords?.some(
+    (record) =>
+      record?.monthName?.toLowerCase() === currentMonthName.toLowerCase() &&
+      getAlertType(record?.documentStatusColor ?? '') !== 'error'
+  );
+
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
     ClubActions.GET_ACTIVITY_BE_CREATIVE_DETAILS
   );
 
-  const isPractitioner = user?.roles?.some(
-    (item) => item?.name === Roles.PRACTITIONER
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
   );
+
+  const isLeader = club?.clubLeader?.userId === user?.id;
+  const isSupportRole = club?.clubSupport?.userId === user?.id;
+
   const isFromAddCollageEvent = location?.state?.isFromAddCollageEvent;
+  const isToShowAddImageEventButton =
+    (isFromAddCollageEvent || isLeader || isSupportRole) &&
+    !hasRecordInCurrentMonth;
+
+  const isToShowInfoCard =
+    isToShowAddImageEventButton &&
+    !details?.monthlyRecords?.some(
+      (record) =>
+        getAlertType(record?.documentStatusColor ?? '') === 'info' ||
+        getAlertType(record?.documentStatusColor ?? '') === 'success'
+    );
 
   const activityId = 'be-creative';
 
@@ -63,6 +97,29 @@ export const BeCreative: React.FC = () => {
       type: getAlertType(record.documentStatusColor ?? ''),
     },
   });
+
+  useEffect(() => {
+    if (
+      wasLoading &&
+      !isLoading &&
+      isFromAddCollageEvent &&
+      hasRecordInCurrentMonth &&
+      !showAlert
+    ) {
+      setShowAlert(true);
+      showMessage({
+        message: 'You have already added an image this month.',
+        type: 'error',
+      });
+    }
+  }, [
+    isLoading,
+    hasRecordInCurrentMonth,
+    showMessage,
+    isFromAddCollageEvent,
+    showAlert,
+    wasLoading,
+  ]);
 
   useEffect(() => {
     appDispatch(
@@ -80,6 +137,7 @@ export const BeCreative: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"
@@ -123,6 +181,14 @@ export const BeCreative: React.FC = () => {
           {details.monthlyRecords.map((item) => (
             <AlertCard item={formatMonthlyRecord(item!)} />
           ))}
+          {isToShowInfoCard && (
+            <Alert
+              className="my-5"
+              title="How can you help your club earn points?"
+              list={['Add a “Be creative” image every month.']}
+              type="info"
+            />
+          )}
         </div>
       ) : (
         <EmptyPage
@@ -131,14 +197,14 @@ export const BeCreative: React.FC = () => {
           subTitle=""
         />
       )}
-      {isFromAddCollageEvent && (
+      {isToShowAddImageEventButton && (
         <Button
           className="mt-auto mb-4"
           icon="PlusCircleIcon"
           type="filled"
           textColor="white"
           color="primary"
-          text="Add image to {month}"
+          text={`Add image for ${currentMonthName}`}
           onClick={() =>
             history.push(
               ROUTES.PRACTITIONER.COMMUNITY.CLUB.COLLAGE_EVENT.ADD_EVENT
@@ -147,7 +213,7 @@ export const BeCreative: React.FC = () => {
         />
       )}
       <Button
-        className="mt-auto"
+        className={isFromAddCollageEvent ? '' : 'mt-auto'}
         icon="ArrowCircleLeftIcon"
         type="outlined"
         textColor="primary"
@@ -155,9 +221,9 @@ export const BeCreative: React.FC = () => {
         text="Back to club"
         onClick={() =>
           history.push(
-            isPractitioner
-              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+            isCoach
+              ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+              : ROUTES.PRACTITIONER.COMMUNITY.ROOT
           )
         }
       />
