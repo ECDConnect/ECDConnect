@@ -1,4 +1,5 @@
 import {
+  Alert,
   BannerWrapper,
   Button,
   LoadingSpinner,
@@ -33,6 +34,8 @@ import {
   getScoreBarColor,
 } from '@/pages/community/clubs-tab/index.filters';
 import { getAlertSeverity } from '@/utils/common/string.utils';
+import { ClubActivitiesMaxPointsPerLeague, LeagueType } from '@/constants/club';
+import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 
 export const MeetRegularly: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -44,6 +47,19 @@ export const MeetRegularly: React.FC = () => {
   );
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
+
+  const isClubInNewStarts =
+    club?.league?.leagueTypeName === LeagueType.NewStars;
+  const isClubInRisingStars =
+    club?.league?.leagueTypeName === LeagueType.RisingStars;
+
+  const isCelebratoryMessage =
+    (isClubInRisingStars &&
+      details?.points ===
+        ClubActivitiesMaxPointsPerLeague.MeetRegularly.RisingStars) ||
+    (isClubInNewStarts &&
+      details?.points ===
+        ClubActivitiesMaxPointsPerLeague.MeetRegularly.NewStars);
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
@@ -171,8 +187,16 @@ export const MeetRegularly: React.FC = () => {
             bgColour="uiBg"
             textColour="black"
           /> */}
+          {isCelebratoryMessage && (
+            <Alert
+              className="mt-4"
+              type="successLight"
+              title="Wow, great job!"
+              customIcon={<PositiveEmoticon className="w-12" />}
+            />
+          )}
           {upcomingMeetings.length && (
-            <div className="mt-7">
+            <div className="mt-4">
               <Typography
                 className="mb-5"
                 type="h3"
@@ -186,7 +210,7 @@ export const MeetRegularly: React.FC = () => {
             </div>
           )}
           {pastMeetings.length && (
-            <div className="mt-7 mb-5">
+            <div className="mt-4 mb-5">
               <Typography className="mb-5" type="h3" text="Past meetings:" />
               <StackedList
                 className="flex flex-col gap-2"
