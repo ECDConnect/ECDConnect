@@ -966,8 +966,7 @@ export const Dashboard: React.FC = () => {
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {/* EC-1909 - Suppress ticket */}
-        {/* {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
@@ -983,7 +982,7 @@ export const Dashboard: React.FC = () => {
             textColour={pointsScoreProps.textColour}
             textPosition={pointsScoreProps.textPosition}
           />
-        )} */}
+        )}
         {isPractitioner && !!club && (
           <ScoreCard
             className="h-20"

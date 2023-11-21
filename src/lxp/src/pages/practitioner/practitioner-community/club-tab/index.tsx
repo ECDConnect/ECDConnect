@@ -55,7 +55,7 @@ export const ClubTab: React.FC = () => {
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isLeaderRequest = isLeader && !club?.clubLeader?.dateAssigned;
-  const isSupportRole = club?.clubSupport.userId === user?.id;
+  const isSupportRole = club?.clubSupport?.userId === user?.id;
 
   const onAddMeetingOrEvent = () => {
     return dialog({
@@ -265,8 +265,7 @@ export const ClubTab: React.FC = () => {
             type={'MenuList' as StackedListType}
             listItems={[leagueCard]}
           />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-2"
             mainText={String(club?.pointsTotal ?? 0)}
             hint="points"
@@ -284,7 +283,7 @@ export const ClubTab: React.FC = () => {
             bgColour="uiBg"
             textColour="black"
             onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
-          /> */}
+          />
         </div>
       );
     }
@@ -361,32 +360,36 @@ export const ClubTab: React.FC = () => {
               </div>
             </>
           )}
-          <div className="mb-2 mt-6 flex items-center justify-between">
-            <Typography type="h3" text="Club support role" />
-            <Button
-              type="outlined"
-              color="primary"
-              textColor="primary"
-              text="Change"
-              icon="RefreshIcon"
-              onClick={() =>
-                history.push(
-                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
-                )
-              }
-            />
-          </div>
-          <Typography
-            className="mb-4"
-            type="body"
-            color="textMid"
-            text="This club member can take meeting attendance & add events."
-          />
-          <StackedList
-            isFullHeight={false}
-            type={'UserAlertList' as StackedListType}
-            listItems={[clubSupportRole]}
-          />
+          {!!club?.clubSupport && (
+            <>
+              <div className="mb-2 mt-6 flex items-center justify-between">
+                <Typography type="h3" text="Club support role" />
+                <Button
+                  type="outlined"
+                  color="primary"
+                  textColor="primary"
+                  text="Change"
+                  icon="RefreshIcon"
+                  onClick={() =>
+                    history.push(
+                      ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
+                    )
+                  }
+                />
+              </div>
+              <Typography
+                className="mb-4"
+                type="body"
+                color="textMid"
+                text="This club member can take meeting attendance & add events."
+              />
+              <StackedList
+                isFullHeight={false}
+                type={'UserAlertList' as StackedListType}
+                listItems={[clubSupportRole]}
+              />
+            </>
+          )}
           {renderActivitiesContent}
           <div className="mt-auto flex flex-col">
             {(isLeader || isSupportRole) && (
@@ -406,7 +409,11 @@ export const ClubTab: React.FC = () => {
               textColor="primary"
               color="primary"
               text="See club members"
-              onClick={() => {}}
+              onClick={() =>
+                history.push(
+                  ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(':clubId', clubId)
+                )
+              }
             />
           </div>
         </>

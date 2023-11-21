@@ -26,6 +26,7 @@ namespace ECDLink.SmartStart.Services.Interfaces
         public Practitioner SwitchPrincipal(string oldPrincipalUserId, string newPrincipalUserId);
         public Practitioner PromotePractitionerToPrincipal(string userId);
         public Practitioner DemotePractitionerAsPrincipal(string userId);
+        public Practitioner MarkFAA(string userId, bool isFAA = false);
         public Principal MapPractitionerToPrincipal(Practitioner practitioner);
         //public Trainee GetTraineeByUserId(
         //        [Service] UserLicenseManager userLicenseManager,
