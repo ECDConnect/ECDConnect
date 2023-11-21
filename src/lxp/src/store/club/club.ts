@@ -272,7 +272,7 @@ const clubSlice = createSlice({
           );
         return;
       }
-      // clear all meetings (sync)
+      // clear all activities (sync)
       state.addBeCreativeActivitySyncInputs = [];
     });
     builder.addCase(addClubMeeting.fulfilled, (state, action) => {
