@@ -212,10 +212,15 @@ export const AddProgrammeForm: React.FC<{
   };
 
   const onSubmitForImportedUser = (e: EditProgrammeModel) => {
-    if (classroom?.id) {
-      updateClassroom(e, classroom.id);
+    if (!e.isPrincipalOrLeader && e.isPrincipleOrOwnerSmartStarter) {
+      setIsNotPrincipal(true);
+      onNext(PractitionerSetupSteps.ADD_PHOTO);
+    } else {
+      if (classroom?.id) {
+        updateClassroom(e, classroom.id);
+      }
+      onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
     }
-    onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
 
   useEffect(() => {
@@ -398,7 +403,7 @@ export const AddProgrammeForm: React.FC<{
             className={styles.button}
             disabled={isFundaAppAdmin ? !validationForFundaAdmin : !isValid}
             onClick={
-              isSmartLinkImported && classroom?.id
+              isSmartLinkImported
                 ? handleSubmit(onSubmitForImportedUser)
                 : handleSubmit(onSubmit)
             } // Navigate to a different page if it is principle
