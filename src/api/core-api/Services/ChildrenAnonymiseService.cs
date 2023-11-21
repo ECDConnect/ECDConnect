@@ -49,7 +49,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 try
                 {
-                    if (!string.IsNullOrWhiteSpace(child.UserId) && child.User != null)
+                    if (child.User != null)
                     {
                         RemoveChildDocuments(child, adminId);
 
@@ -59,10 +59,7 @@ namespace EcdLink.Api.CoreApi.Services
                             learnerRepo.Delete(learnerRow.Id);
 
                         _hierarchyEngine.DeleteHierarchy(child.UserId);
-                        if (childRepo.GetAll().Where(c => c.UserId.Equals(child.UserId)).FirstOrDefault() != null)
-                        {
-                            childRepo.Delete(child.Id);
-                        }
+                        childRepo.Delete(child.Id);
 
                         var result = _userManager.DeleteAsync(child.User).Result;
                     }
@@ -87,11 +84,11 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var expiryTime = DateTime.UtcNow.AddDays(-30);
 
-            // Removed child where status is pending (not all required information saved)
-            // and they were inserted within the last 21 days
+            // Remove child where caregiver has not yet completed all data
+            // and they were inserted within the last 30 days
             return childRepo.GetAll()
                         .Where(c => c.IsActive && c.CaregiverId.Equals(null)
-                                    && c.InsertedDate <= expiryTime).Include(c => c.User).Include(c => c.User).ToList();
+                                    && c.InsertedDate <= expiryTime).Include(c => c.User).ToList();
         }
 
 

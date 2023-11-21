@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             string userId,
             string[] showOnlyTypes,
             string search = null,
-            PagedQueryInput pagingInput = null, bool includeCreatedBy = false)
+            PagedQueryInput pagingInput = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
@@ -58,18 +58,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 docsQuery = docsQuery.Where(x => EF.Functions.ILike(x.User.FirstName, $"%{search}%") || EF.Functions.ILike(x.User.Surname, $"%{search}%")
                  || EF.Functions.ILike(x.Name, search));
-            }
-
-            if (includeCreatedBy)
-            {
-
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    docsQuery = docsQuery.Where(x => x.CreatedUser!=null)
-                        .Where(x => EF.Functions.ILike(x.CreatedUser.FirstName, $"%{search}%") || EF.Functions.ILike(x.CreatedUser.Surname, $"%{search}%")
-                     || EF.Functions.ILike(x.Name, search));
-                }
-                docsQuery = docsQuery.OrderByDescending(x => x.UpdatedDate);
             }
 
             return docsQuery;
