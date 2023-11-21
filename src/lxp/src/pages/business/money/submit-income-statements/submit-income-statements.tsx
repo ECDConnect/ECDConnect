@@ -187,15 +187,15 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const currentMonthRecord = useMemo(() => {
     var date = new Date();
+    if (isThisMonthSubmitted) {
+      return format(getNextMonth(date), 'MMM yyyy');
+    }
+
     if (
       !isLastMonthSubmitted &&
       date.getDate() <= IncomeStatementDates.SubmitEndDay
     ) {
       return format(getPreviousMonth(date), 'MMM yyyy');
-    }
-
-    if (isThisMonthSubmitted) {
-      format(getNextMonth(date), 'MMM yyyy');
     }
 
     return format(date, 'MMM yyyy');
@@ -332,7 +332,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     const submittedWithFeesPointsThisMonth =
       submitPreschoolFeesPoints[0].pointsTotal;
     const submitConsecutiveBonusPointsThisMonth =
-      submitStatementConsecutivePoints[0].pointsTotal;
+      submitStatementConsecutivePoints[0]?.pointsTotal;
     const monthTotal =
       submittedPointsThisMonth +
       submittedWithFeesPointsThisMonth +
@@ -362,6 +362,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     // Only the last month submitted
+    // EC-1909 - Suppress ticket
     if (submittedMonthsInARow === 1) {
       return (
         <CelebrationCard
@@ -372,7 +373,7 @@ export const SubmitIncomeStatements: React.FC = () => {
           )} statement${
             submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
           }!`}
-          scoreMessage={`${monthTotal} points earned`}
+          //scoreMessage={`${monthTotal} points earned`}
           scoreIcon="GiftIcon"
           primaryTextColour="successMain"
           backgroundColour="successBg"
@@ -384,6 +385,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     // Multiple months, but less than 12
+    // EC-1909 - Suppress ticket
     return (
       <CelebrationCard
         image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -394,7 +396,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             ? consecutiveBonusMessage
             : ''
         }`}
-        scoreMessage={`${monthTotal} points earned`}
+        // scoreMessage={`${monthTotal} points earned`}
         scoreIcon="GiftIcon"
         primaryTextColour="successMain"
         backgroundColour="successBg"

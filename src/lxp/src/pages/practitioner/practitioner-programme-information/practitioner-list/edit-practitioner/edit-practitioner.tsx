@@ -84,6 +84,8 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
                 register={practitionerInfoFormRegister}
               />
             </div>
+            {/*
+                 // EC-1909 - Suppress ticket
             <div className="-mb-4 w-full self-end">
               <Button
                 size="normal"
@@ -109,6 +111,7 @@ export const EditPractitioner: React.FC<EditPractitionerProps> = ({
                 onClick={() => {}}
               />
             </div>
+              */}
           </div>
         </div>
       </div>
