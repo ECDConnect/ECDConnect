@@ -22,6 +22,9 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using Microsoft.AspNetCore.Http;
 using ECDLink.Security.Extensions;
 using HotChocolate.Data;
+using DotLiquid;
+using ECDLink.DataAccessLayer.Context;
+using NPOI.SS.Formula.Functions;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -355,6 +358,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // create session for moodle user
             // return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
         }
+
+
+        
 
     }
 }

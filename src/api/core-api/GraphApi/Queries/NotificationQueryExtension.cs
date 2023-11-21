@@ -1,5 +1,6 @@
-using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -10,13 +11,10 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
-using System;
-using EcdLink.Api.CoreApi.Services;
-using ECDLink.Tenancy.Context;
-using ECDLink.Core.Services.Interfaces;
+using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -135,8 +133,171 @@ IGenericRepositoryFactory repoFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
-            return dbRepo.GetAll().Where(x => x.Ward != null).Select(x => x.Ward).Distinct().ToList();
+            return dbRepo.GetAll().Where(x => x.Ward != null).Select(x => x.Ward).Distinct().OrderBy(x => x).ToList();
         }
 
+
+        public List<MessageLog> GetAllMessageLogsForAdmin(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
+
+            return dbRepo.GetAll()
+                .Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive)
+                .Select(item => new MessageLog() {
+                                                  Message = item.Message, 
+                                                  Subject = item.Subject, 
+                                                  MessageDate = item.MessageDate, 
+                                                  MessageEndDate = item.MessageEndDate, 
+                                                  Status = item.Status, 
+                                                  ToGroups = item.ToGroups }).Distinct().ToList();
+
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public int GetUserCountForMessageCriteria([Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
+                                                  [Service] RoleManager<IdentityRole> roleManager,
+                                                  string provinceId,
+                                                  string districtId,
+                                                  string wardName,
+                                                  List<string> roleIds)
+        {
+            var count = 0;
+
+            if (roleIds.Count == 0)
+            {
+                return count;
+            }
+
+            AuthenticationDbContext context = dbContextFactory.CreateDbContext();
+            var roles = roleManager.Roles.Where(x => roleIds.Contains(x.Id)).ToList();
+            // These counts are used for province and district queries
+            var practitionerCount = roles.Where(x => x.Name == Roles.PRACTITIONER).Count();
+            var coachCount = roles.Where(x => x.Name == Roles.COACH).Count();
+            var principalCount = roles.Where(x => x.Name == Roles.PRINCIPAL).Count();
+            var franchisorCount = roles.Where(x => x.Name == Roles.FRANCHISOR).Count();
+
+            // Currently we don't have districts in the system, but this will change after the development in December 23
+            if (provinceId != "" || wardName != "")
+            {
+                if (provinceId != "" && wardName == "")
+                {
+                    if (practitionerCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join practitioner in context.Practitioners.Where(x => x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId) on user.Id equals practitioner.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (coachCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join coach in context.Coaches.Where(x => x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId) on user.Id equals coach.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (principalCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join practitioner in context.Practitioners.Where(x => x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.ProvinceId.ToString() == provinceId) on user.Id equals practitioner.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (franchisorCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join franchisor in context.Franchisors.Where(x => x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId) on user.Id equals franchisor.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                }
+                else if (provinceId == "" && wardName != "")
+                {
+                    if (practitionerCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join practitioner in context.Practitioners.Where(x => x.IsActive == true && x.SiteAddress.Ward == wardName) on user.Id equals practitioner.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (coachCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join coach in context.Coaches.Where(x => x.IsActive == true && x.SiteAddress.Ward == wardName) on user.Id equals coach.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (principalCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join practitioner in context.Practitioners.Where(x => x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.Ward == wardName) on user.Id equals practitioner.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (franchisorCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join franchisor in context.Franchisors.Where(x => x.IsActive == true && x.SiteAddress.Ward == wardName) on user.Id equals franchisor.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                }
+                else
+                {
+                    if (practitionerCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join practitioner in context.Practitioners.Where(x => x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId && x.SiteAddress.Ward == wardName) on user.Id equals practitioner.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (coachCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join coach in context.Coaches.Where(x => x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId && x.SiteAddress.Ward == wardName) on user.Id equals coach.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (principalCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join practitioner in context.Practitioners.Where(x => x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.ProvinceId.ToString() == provinceId && x.SiteAddress.Ward == wardName) on user.Id equals practitioner.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                    if (franchisorCount > 0)
+                    {
+                        count += (from user in context.Users.Where(x => x.IsActive == true)
+                                  join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                  join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                  join franchisor in context.Franchisors.Where(x => x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId && x.SiteAddress.Ward == wardName) on user.Id equals franchisor.UserId
+                                  select user.Id).Distinct().Count();
+                    }
+                }
+            }
+            else
+            {
+                count += (from user in context.Users.Where(x => x.IsActive == true)
+                          join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                          join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                          select user.Id).Distinct().Count();
+
+            }
+            return count;
+        }
     }
 }

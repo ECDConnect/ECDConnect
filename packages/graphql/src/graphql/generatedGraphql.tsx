@@ -5163,6 +5163,17 @@ export type MessageLogInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type MessageLogModelInput = {
+  districtId?: InputMaybe<Scalars['String']>;
+  message?: InputMaybe<Scalars['String']>;
+  messageDate?: InputMaybe<Scalars['DateTime']>;
+  messageTime?: InputMaybe<Scalars['String']>;
+  provinceId?: InputMaybe<Scalars['UUID']>;
+  sendByUserId: Scalars['UUID'];
+  subject?: InputMaybe<Scalars['String']>;
+  toGroups?: InputMaybe<Scalars['String']>;
+};
+
 export type MessageLogSortInput = {
   cTA?: InputMaybe<SortEnumType>;
   cTAText?: InputMaybe<SortEnumType>;
@@ -5853,6 +5864,7 @@ export type Mutation = {
   sendGGyoungerthan20Notification: Scalars['Boolean'];
   sendGainedCommunitySupportNotification: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
+  sendMessagesForAdmin?: Maybe<MessageLog>;
   sendNewClubleaderNotification: Scalars['Boolean'];
   sendNotificationToUser: Scalars['Boolean'];
   sendOnly2MoreTraineeTaskLeftsNotification: Scalars['Boolean'];
@@ -7847,6 +7859,10 @@ export type MutationSendGainedCommunitySupportNotificationArgs = {
 export type MutationSendInviteToApplicationArgs = {
   inviteToPortal?: Scalars['Boolean'];
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSendMessagesForAdminArgs = {
+  input?: InputMaybe<MessageLogModelInput>;
 };
 
 export type MutationSendNewClubleaderNotificationArgs = {
@@ -11009,6 +11025,7 @@ export type Query = {
   allInfants?: Maybe<Array<Maybe<Infant>>>;
   allInfantsForHealthCareWorker?: Maybe<Array<Maybe<Infant>>>;
   allLeagues?: Maybe<Array<Maybe<LeagueClub>>>;
+  allMessageLogsForAdmin?: Maybe<Array<Maybe<MessageLog>>>;
   allMothers?: Maybe<Array<Maybe<Mother>>>;
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
   allNotifications?: Maybe<Array<Maybe<Notification>>>;
@@ -12783,6 +12800,10 @@ export type QueryAllInfantsForHealthCareWorkerArgs = {
 };
 
 export type QueryAllLeaguesArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllMessageLogsForAdminArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 

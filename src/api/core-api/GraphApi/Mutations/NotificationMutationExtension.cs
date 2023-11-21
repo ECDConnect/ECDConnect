@@ -1,8 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
-using EcdLink.Api.CoreApi.Services;
-using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
@@ -158,6 +156,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             return result;
+        }
+
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public MessageLog SaveMessagesForAdmin(
+          [Service] UserManager<ApplicationUser> userManager,
+          [Service] INotificationService notificationService,
+          MessageLogModel input)
+        {
+
+            // Finding users for criteria
+            if (input.ProvinceId != "")
+            {
+
+            }
+            if (input.DistrictId != "")
+            {
+
+            }
+            
+
+
+            /*if (userId != null)
+            {
+                var userToSend = await userManager.FindByIdAsync(userId);
+                return await notificationService.SendNotificationAsync(userType, templateType, DateTime.Now, userToSend);
+            }
+            else
+            {
+                return await notificationService.SendNotificationAsync(userType, templateType, DateTime.Now);
+            }*/
+
+            return new MessageLog();
         }
 
 
