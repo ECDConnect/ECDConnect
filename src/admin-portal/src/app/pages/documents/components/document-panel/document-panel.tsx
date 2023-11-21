@@ -1,6 +1,6 @@
 /* This example requires Tailwind CSS v2.0+ */
 import { useMutation } from '@apollo/client';
-import { DocumentInput, UpdateDocument } from '@ecdlink/graphql';
+import { DocumentInput, FileTypeEnum, UpdateDocument } from '@ecdlink/graphql';
 import {
   NOTIFICATION,
   useNotifications,
@@ -14,6 +14,7 @@ import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
+import { Typography } from '@ecdlink/ui';
 
 /* eslint-disable-next-line */
 export interface DocumentPanelProps {
@@ -44,6 +45,8 @@ export default function DocumentPanel(props: DocumentPanelProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [props.item]);
+
+  console.log(props.item);
 
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
@@ -109,6 +112,23 @@ export default function DocumentPanel(props: DocumentPanelProps) {
               </button>
             </div>
           </div>
+          <div className="flex w-8/12 items-center justify-items-start gap-1">
+            <Typography
+              type={'body'}
+              hover={true}
+              text={'Document type:'}
+              color={'textDark'}
+            />
+            <Typography
+              type={'body'}
+              hover={true}
+              text={FileTypeEnum?.[props.item?.documentType?.name].replace(
+                /_/g,
+                ' '
+              )}
+              color={'textDark'}
+            />
+          </div>
           <div className="mt-6 grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
             <div className="sm:col-span-6">
               <FormField
@@ -134,6 +154,7 @@ export default function DocumentPanel(props: DocumentPanelProps) {
               />
             </div>
           </div>
+          <img src={props?.item?.reference} alt="" className="h-8/12 w-full" />
         </div>
       </div>
     </form>
