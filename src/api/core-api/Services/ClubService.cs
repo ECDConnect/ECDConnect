@@ -1584,7 +1584,7 @@ namespace EcdLink.Api.CoreApi.Services
                 .ThenInclude(x => x.Practitioner)
                 .ThenInclude(x => x.User)
                 .Select(x => x.Club)
-                .SingleOrDefault();
+                .FirstOrDefault();
 
             if (club == null) return null;
 
