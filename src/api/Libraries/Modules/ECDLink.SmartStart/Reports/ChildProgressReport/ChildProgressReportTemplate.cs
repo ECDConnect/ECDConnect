@@ -68,7 +68,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 
         private static void AddPhysicalDevelopment(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
         {
-            var category = model.Categories.Where(x => x.CategoryId == 686).FirstOrDefault();
+            var category = model.Categories.Where(x => x.CategoryId == Constants.Categories.Physical).FirstOrDefault();
 
             var tasks = GetCategoryTasks(category);
             var missingTasks = GetCategoryMissingTasks(category);
@@ -142,7 +142,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 
         private static void AddCognitiveDevelopment(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
         {
-            var category = model.Categories.Where(x => x.CategoryId == 685).FirstOrDefault();
+            var category = model.Categories.Where(x => x.CategoryId == Constants.Categories.CognitiveAndNumeracy).FirstOrDefault();
 
             var tasks = GetCategoryTasks(category);
             var missingTasks = GetCategoryMissingTasks(category);
@@ -216,7 +216,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 
         private static void AddLanguageDevelopment(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
         {
-            var category = model.Categories.Where(x => x.CategoryId == 686).FirstOrDefault();
+            var category = model.Categories.Where(x => x.CategoryId == Constants.Categories.LanguageAndLiteracy).FirstOrDefault();
 
             if (category.SupportingTask != null)
             {
@@ -312,7 +312,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 
         private static void AddSocialDevelopment(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
         {
-            var category = model.Categories.Where(x => x.CategoryId == 12).FirstOrDefault();
+            var category = model.Categories.Where(x => x.CategoryId == Constants.Categories.SocialAndEmotional).FirstOrDefault();
 
             if (category == default)
             {

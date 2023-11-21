@@ -56,7 +56,9 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
 
   const hasMeetingInCurrentMonth = allMeetings.some(
-    (meeting) => new Date(meeting?.meetingDate).getMonth() === currentMonth
+    (meeting) =>
+      new Date(meeting?.meetingDate).getMonth() === currentMonth &&
+      new Date(meeting?.meetingDate).getFullYear() === currentYear
   );
 
   const { isLoading, isFulfilled, wasLoading, isRejected, error } =
