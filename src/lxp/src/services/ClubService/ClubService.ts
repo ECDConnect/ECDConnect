@@ -19,6 +19,7 @@ import {
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import {
+  BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
   NewClubLeaderInput,
@@ -693,6 +694,33 @@ class ClubService {
     }
 
     return response.data.data.addClubMeeting;
+  }
+
+  async addBeCreativeActivity(
+    input: BeCreativeActivityInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addBeCreativeActivity: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddBeCreativeActivity($input: BeCreativeUploadInput) {
+          addBeCreativeActivity(input: $input) {}
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add be creative activity failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addBeCreativeActivity;
   }
 }
 
