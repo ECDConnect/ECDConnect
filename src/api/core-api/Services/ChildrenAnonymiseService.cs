@@ -49,51 +49,38 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 try
                 {
-                    if (child.User != null)
+                    if (!string.IsNullOrWhiteSpace(child.UserId) && child.User != null)
                     {
-                        //check that child record hasnt already been removed
-                        if (childRepo.GetAll().Where(c => c.UserId.Equals(child.UserId)).FirstOrDefault() != null)
-                        {
-                            childRepo.Delete(child.Id);
-                        }
+                        RemoveChildDocuments(child, adminId);
+
                         //remove learners from allocated classes
                         var learnerRow = learnerRepo.GetByUserId(child.UserId);
                         if (learnerRow != null)
                             learnerRepo.Delete(learnerRow.Id);
 
                         _hierarchyEngine.DeleteHierarchy(child.UserId);
-
-                        RemoveChildDocuments(child, adminId);
+                        if (childRepo.GetAll().Where(c => c.UserId.Equals(child.UserId)).FirstOrDefault() != null)
+                        {
+                            childRepo.Delete(child.Id);
+                        }
 
                         var result = _userManager.DeleteAsync(child.User).Result;
-                    } else
-                    {
-                        //remove user - find it first
-                        ApplicationUser childUser = _userManager.FindByIdAsync(child.UserId).Result;
-                        if (childUser != null)
-                        {
-                            //delete docs 
-                            RemoveChildDocuments(null, childUser.Id);
-                            var result = _userManager.DeleteAsync(childUser).Result;
-                        }
-                        //notify of problem child that cant delete
                     }
                 }
                 catch (Exception e)
                 {
                     //notify of error
+
                 }
             }
         }
 
         private void RemoveChildDocuments(Child child, string accessUserId)
         {
-            // Remove Document
-            // Remove photo
-            // Remove bith documents
-            _documentManagementService.DeleteUserDocument(accessUserId, FileTypeEnum.ChildBirthCertificate);
-            _documentManagementService.DeleteUserDocument(accessUserId, FileTypeEnum.ChildClinicCard);
-            _documentManagementService.DeleteUserDocument(accessUserId, FileTypeEnum.ChildRegistrationForm);
+            // Remove Document,photo,birth documents
+            _documentManagementService.DeleteUserDocument(child.UserId, accessUserId, FileTypeEnum.ChildBirthCertificate);
+            _documentManagementService.DeleteUserDocument(child.UserId, accessUserId, FileTypeEnum.ChildClinicCard);
+            _documentManagementService.DeleteUserDocument(child.UserId, accessUserId, FileTypeEnum.ChildRegistrationForm);
         }
 
         private List<Child> GetChildrenToRemove(IGenericRepository<Child, Guid> childRepo)
@@ -104,7 +91,7 @@ namespace EcdLink.Api.CoreApi.Services
             // and they were inserted within the last 21 days
             return childRepo.GetAll()
                         .Where(c => c.IsActive && c.CaregiverId.Equals(null)
-                                    && c.InsertedDate <= expiryTime).Include(c => c.User).ToList();
+                                    && c.InsertedDate <= expiryTime).Include(c => c.User).Include(c => c.User).ToList();
         }
 
 

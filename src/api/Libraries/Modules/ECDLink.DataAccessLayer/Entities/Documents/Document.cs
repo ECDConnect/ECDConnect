@@ -20,7 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
     public class Document<TKey> : EntityBase<TKey>, ApplicationUserJoin, DocumentTypeJoin<TKey>, WorkflowStatusJoin<TKey>, IUserScoped, ITrackableType
          where TKey : IEquatable<TKey>
     {
-        public string CreatedUserId { get; set; }
+        
         public string Name { get; set; }
 
         public string Reference { get; set; }
@@ -39,8 +39,11 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
         public TKey WorkflowStatusId { get; set; }
 
         public string Hierarchy { get; set; }
-        //[GraphQLIgnore, GraphIgnoreInput]
-        //public string ClientName { get; set; }
+
+
+        [NotMapped, ForeignKey(nameof(CreatedUserId))]
+        public virtual ApplicationUser CreatedUser { get; set; }
+        public string CreatedUserId { get; set; }
     }
 
     public interface DocumentJoin<TKey>

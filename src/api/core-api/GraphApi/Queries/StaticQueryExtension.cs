@@ -29,7 +29,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [UseSorting]
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public IQueryable<Document> GetAllDocument(
-             [Service] UserManager<ApplicationUser> userManager,
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId,
@@ -63,14 +62,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (includeCreatedBy)
             {
-                foreach (var doc in docsQuery)
+
+                if (!string.IsNullOrWhiteSpace(search))
                 {
-                    var client = userManager.FindByIdAsync(doc.CreatedUserId).Result;
-                    if (client != null)
-                    {
-                        //doc.ClientName = client.FirstName + " " + client.Surname;
-                    }
+                    docsQuery = docsQuery.Where(x => x.CreatedUser!=null)
+                        .Where(x => EF.Functions.ILike(x.CreatedUser.FirstName, $"%{search}%") || EF.Functions.ILike(x.CreatedUser.Surname, $"%{search}%")
+                     || EF.Functions.ILike(x.Name, search));
                 }
+                docsQuery = docsQuery.OrderByDescending(x => x.UpdatedDate);
             }
 
             return docsQuery;
