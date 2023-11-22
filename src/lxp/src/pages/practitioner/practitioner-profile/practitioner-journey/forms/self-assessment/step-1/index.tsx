@@ -27,9 +27,16 @@ export const Step1 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
       />
       <Typography
         type="h4"
-        text={`Due date: ${new Date(
+        text={
           selfAssessment?.plannedVisitDate
-        ).toLocaleDateString('en-ZA', dateLongMonthOptions)}`}
+            ? `Due date: ${new Date(
+                selfAssessment?.plannedVisitDate
+              ).toLocaleDateString('en-ZA', dateLongMonthOptions)}`
+            : `Due date: ${new Date().toLocaleDateString(
+                'en-ZA',
+                dateLongMonthOptions
+              )}`
+        }
         color="textMid"
       />
       <Divider dividerType="dashed" className="my-4" />
