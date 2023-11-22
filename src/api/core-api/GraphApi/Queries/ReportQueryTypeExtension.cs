@@ -847,7 +847,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var percentOfChildrenOutsideAgeGroup = childrenOutsideAgeGroupCount ?? 1 / (children?.Count ?? 1) * 100;
             return percentOfChildrenOutsideAgeGroup;
         }
-        private static int GetIncompleteChildRegistrations(List<Child> children, IQueryable<Learner> learners, IQueryable<Document> documents)
+        private static int GetIncompleteChildRegistrations(List<Child> children, List<Learner> learners, List<Document> documents)
         {
             var incompleteRegistrations = 0;
             if (children != null && children.Count() > 0)
@@ -1247,16 +1247,20 @@ string practitionerId)
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var visitRepo = repoFactory.CreateRepository<Visit>(userContext: uId);
-            var visitDataRepo = repoFactory.CreateRepository<VisitData>(userContext: uId);
+            var visitGenRepo = repoFactory.CreateGenericRepository<Visit>(userContext: uId);
+            var visitDataRepo = repoFactory.CreateGenericRepository<VisitData>(userContext: uId);
             var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
             var licenseRepo = repoFactory.CreateRepository<License>(userContext: uId);
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
+            //var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId); 
+            //var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: uId);
+            var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
             var clubMeetingRegisterRepo = repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: uId);
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
             var removalRepo = repoFactory.CreateGenericRepository<PractitionerRemovalHistory>(userContext: uId);
             var pqaRatingRepo = repoFactory.CreateGenericRepository<PQARating>(userContext: uId);
-            var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
+            //var docRepo = repoFactory.CreateRepository<Document>(userContext: uId);
+            var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId); 
 
             var previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
             var previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
@@ -1266,10 +1270,10 @@ string practitionerId)
             switch (mode)
             {
                 case "coach":
-                    practitioners = practRepo.GetAll().Where(x => x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(uId)).ToList();
+                    practitioners = practRepo.GetAll().Where(x => x.IsActive && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(uId)).ToList();
                     break;
                 case "principal":
-                    practitioners = practRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(uId)).ToList();
+                    practitioners = practRepo.GetAll().Where(x => x.IsActive && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(uId)).ToList();
                     break;
                 default:
                     // How/Does this get used by a single practitioner ???
@@ -1339,26 +1343,26 @@ string practitionerId)
                 #endregion
 
                 #region INCOMPLETE CHILD REGISTRATIONS
-                 var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
-                                         .Include(c => c.User)
-                                         .ToListAsync().Result;
-                 var childUserIds = children.Select(c => c.UserId);
-                 var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true);
-                 var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true 
-                 && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate));
+                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
+                                        //.Include(c => c.User)
+                                        .ToListAsync().Result;
+                var childUserIds = children.Select(c => c.UserId);
+                var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true).ToList();
+                var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true
+                && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
 
-                 var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
-                 if (incompleteRegistrations > 0)
-                 {
-                     notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
-                     notification.Icon = MetricsIconEnum.Error.ToString();
-                     notification.Color = MetricsColorEnum.Error.ToString();
-                     notification.Message = "";
-                     notification.Notes = "";
-                     notification.GroupingName = "Child Registrations";
-                     yield return notification;
-                     continue;
-                 }
+                var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
+                if (incompleteRegistrations > 0)
+                {
+                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Child Registrations";
+                    yield return notification;
+                    continue;
+                }
                 #endregion
 
                 #region ON LEAVE
@@ -1471,7 +1475,7 @@ string practitionerId)
                     {
                         var redFlagVisit =
                         (
-                            from visit in visitRepo.GetAll().Where(x => x.Practitioner.User.Id == practitioner.UserId)
+                            from visit in visitGenRepo.GetAll().Where(x => x.Practitioner.User.Id == practitioner.UserId)
                             join visitData in visitDataRepo.GetAll().Where(y => y.Question == Constants.SSSettings.step16_q1 && y.QuestionAnswer == Constants.SSSettings.answer_yes) on visit.Id equals visitData.VisitId
                             select visitData
                         ).OrderByDescending(y => y.InsertedDate).Any();

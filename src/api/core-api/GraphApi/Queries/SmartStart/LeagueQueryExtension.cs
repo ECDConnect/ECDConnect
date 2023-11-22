@@ -1,7 +1,9 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
@@ -19,5 +21,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
 
+        public LeagueClubsModel GetLeagueForUser([Service] IClubService clubService, string userId)
+        {            
+            return clubService.GetLeagueForUser(userId);
+        }
     }
 }

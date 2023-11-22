@@ -76,14 +76,28 @@ export const getCoachSmartSpaceSection2VisitDataCount = (
   return step2CountFormatted?.length || undefined;
 };
 
+export const getCoachSmartSpaceVisit1DataNotAttendedStandardsForStep3 = (
+  state: RootState
+): SectionQuestions[] | undefined | [] => {
+  const step1Count = state.trainee.coachSmartSpaceCheckData?.[0] as unknown;
+  const formateedStep1Count = step1Count as SectionQuestions;
+  const step2CountFormatted = formateedStep1Count?.questions?.filter(
+    (item) => item?.answer === false || item?.answer === 'false'
+  );
+  return (step2CountFormatted as []) || undefined;
+};
+
 export const getCoachSmartSpaceVisit1DataNotAttendedStandards = (
   state: RootState
 ): SectionQuestions[] | undefined | [] => {
-  const step1Count = state?.trainee?.coachSmartSpaceCheckData?.[0] as unknown;
-  const formattedStep1Count = step1Count as SectionQuestions;
-  const step1CountFormatted = formattedStep1Count?.questions?.filter(
-    (item) => item?.answer === false || item?.answer === 'false'
+  const step1Count = state?.trainee?.coachSmartSpaceCheckData as VisitData[];
+
+  const step1CountFormatted = step1Count?.filter(
+    (item) =>
+      item?.questionAnswer === 'false' ||
+      Boolean(item?.questionAnswer) === false
   );
+
   return (step1CountFormatted as []) || undefined;
 };
 
@@ -91,8 +105,8 @@ export const getCoachSmartSpaceVisit2DataNotAttendedStandards = (
   state: RootState
 ): SectionQuestions[] | undefined | [] => {
   const step2Count = state.trainee.coachSmartSpaceCheckData?.[1] as unknown;
-  const formateedStep2Count = step2Count as SectionQuestions;
-  const step2CountFormatted = formateedStep2Count?.questions?.filter(
+  const formattedStep2Count = step2Count as SectionQuestions;
+  const step2CountFormatted = formattedStep2Count?.questions?.filter(
     (item) => item?.answer === false || item?.answer === 'false'
   );
   return (step2CountFormatted as []) || undefined;
@@ -132,8 +146,10 @@ export const getCoachVisitDataNextSteps = (
   const visitData = state?.trainee?.coachSmartSpaceCheckData;
 
   const programmeDetailsSections = visitData?.find(
-    (item) => item?.visitSection === 'Discuss next steps'
+    (item) =>
+      item?.visitSection === 'Discuss next steps' && item?.questionAnswer !== ''
   );
+
   return programmeDetailsSections;
 };
 

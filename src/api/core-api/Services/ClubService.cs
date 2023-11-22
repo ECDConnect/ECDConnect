@@ -709,7 +709,8 @@ namespace EcdLink.Api.CoreApi.Services
                 leagueClub.Clubs = new List<LeagueClubDetail>();
 
                 List<Club> clubs = _clubRepo.GetAll().Where(x => x.LeagueId == item.Id && x.IsActive == true).ToList();
-                foreach (var club in clubs) {
+                foreach (var club in clubs) 
+                {
                     leagueClubDetail = new LeagueClubDetail();
                     leagueClubDetail.Id = club.Id;
                     leagueClubDetail.UserId = club.UserId;
@@ -729,7 +730,21 @@ namespace EcdLink.Api.CoreApi.Services
 
             return leagueClubs;
         }
-        
+        public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId)
+        {
+            return _clubRepo
+                .GetAll()
+                .Where(x => x.UserId == userId && x.IsActive == true)
+                .OrderBy(x => x.Name)
+                .Select(club => new CoachingClubBase
+                {
+                    Id = club.Id,
+                    Name = club.Name,
+                    UserId = club.UserId,
+                })
+                .ToList();
+        }
+
         /// <summary>
         /// To be replaced with mroe efficient call below GetClubsForCoach 
         /// Still fetched and added to coach store, but then not used from there...
@@ -1569,7 +1584,7 @@ namespace EcdLink.Api.CoreApi.Services
                 .ThenInclude(x => x.Practitioner)
                 .ThenInclude(x => x.User)
                 .Select(x => x.Club)
-                .SingleOrDefault();
+                .FirstOrDefault();
 
             if (club == null) return null;
 
@@ -1679,6 +1694,64 @@ namespace EcdLink.Api.CoreApi.Services
                     GetTasksForClub(club.Id, club.ClubLeaders, club.ClubMembers),
                     club.League != null ? GetClubActivities(club, DateTime.Now.Year) : new List<ClubActivity>());
             }
+        }
+
+        public LeagueClubsModel GetLeagueForUser(string userId)
+        {
+            var practitioner = _practitionerRepo.GetByUserId(userId);
+            var userLeague = _clubMemberRepo.GetAll()
+                .Where(x => x.PractitionerId == practitioner.Id)
+                .Include(x => x.Club.League.LeagueType)
+                .Select(x => x.Club.League)
+                .FirstOrDefault();
+
+            var clubs = _clubRepo.GetAll()
+               .Where(x => x.LeagueId == userLeague.Id && x.IsActive)
+               //Points
+               .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
+               .ToList();
+
+            var leagueModel = new LeagueClubsModel
+            {
+                Id = userLeague.Id,
+                Name = userLeague.Name,
+                LeagueTypeId = userLeague.LeagueTypeId,
+                LeagueTypeName = userLeague.LeagueType.Name,
+                Clubs = new List<ClubPointsSummaryModel>()
+            };
+
+            foreach (var club in clubs)
+            {
+                // Get points total for club
+                var pointsTotal = club.ClubPoints.Select(x => x.Points).Sum();
+
+                leagueModel.Clubs.Add(
+                    new ClubPointsSummaryModel()
+                    {
+                        ClubId = club.Id,
+                        ClubName = club.Name,
+                        PointsTotal = pointsTotal,
+                        LeagueRank = 0
+                    });
+            }
+
+            leagueModel.Clubs.Sort(CompareClubsByPoints);
+
+            // Set league ranks, keeping highest rank for all that have equal points
+            leagueModel.Clubs[0].LeagueRank = 1;
+            for (int i = 1; i < leagueModel.Clubs.Count; i++)
+            {
+                if (leagueModel.Clubs[i].PointsTotal == leagueModel.Clubs[i-1].PointsTotal)
+                {
+                    leagueModel.Clubs[i].LeagueRank = leagueModel.Clubs[i - 1].LeagueRank;
+                }
+                else
+                {
+                    leagueModel.Clubs[i].LeagueRank = i + 1;
+                }
+            }
+
+            return leagueModel;
         }
 
         private List<IssueTask> GetTasksForClub(Guid clubId, IEnumerable<ClubLeader> leaders, IEnumerable<ClubMember> clubMembers)
@@ -1913,6 +1986,17 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
 
-
+        private static int CompareClubsByPoints(ClubPointsSummaryModel x, ClubPointsSummaryModel y)
+        {
+            if (x.PointsTotal == y.PointsTotal)
+            {
+                return 0;
+            }
+            if (x.PointsTotal > y.PointsTotal)
+            {
+                return -1;
+            }
+            return 1;
+        }
     }
 }
