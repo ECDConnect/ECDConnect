@@ -57,7 +57,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? ReassignedRoleBackDate { get; set; }
         public string AssignedRole { get; set; }
         public string ReassignedRoleBack { get; set; }
-
+        public string RoleAssignedToUser { get; set; }
 
     }
 

@@ -22,6 +22,7 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using Microsoft.AspNetCore.Http;
 using ECDLink.Security.Extensions;
 using HotChocolate.Data;
+using ECDLink.Core.Models;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -215,7 +216,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<ApplicationUser> GetUserById(
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] RoleManager<ApplicationIdentityRole> roleManager,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {

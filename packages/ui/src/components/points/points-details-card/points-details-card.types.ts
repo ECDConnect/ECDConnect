@@ -9,4 +9,6 @@ export interface PointsDetailsCardProps extends ComponentBaseProps {
   colour?: Colours;
   isShare?: boolean;
   badgeImage: JSX.Element;
+  badgeTextColour?: Colours;
+  textColour?: Colours;
 }

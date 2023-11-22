@@ -1,8 +1,11 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -13,15 +16,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class RoleMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public IdentityRole AddRole(
-            [Service] RoleManager<IdentityRole> roleManager,
+        public ApplicationIdentityRole AddRole(
+            [Service] RoleManager<ApplicationIdentityRole> roleManager,
              string name,
              string normalizedName)
         {
-            var newRole = new IdentityRole
+            var tenantId = TenantExecutionContext.Tenant.Id;
+
+            var newRole = new ApplicationIdentityRole
             {
                 Name = name,
-                NormalizedName = normalizedName
+                NormalizedName = normalizedName,
+                TenantId = tenantId
             };
 
             var isSuccessful = roleManager.CreateAsync(newRole).Result;
@@ -35,15 +41,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public IdentityRole UpdateRole(
-            [Service] RoleManager<IdentityRole> roleManager,
+        public ApplicationIdentityRole UpdateRole(
+            [Service] RoleManager<ApplicationIdentityRole> roleManager,
              string id,
              string name,
              string normalizedName)
         {
             var roleToUpdate = roleManager.FindByIdAsync(id).Result;
 
-            if (roleToUpdate == default(IdentityRole))
+            if (roleToUpdate == default(ApplicationIdentityRole))
             {
                 throw new KeyNotFoundException();
             }
@@ -63,12 +69,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public bool DeleteRole(
-            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] RoleManager<ApplicationIdentityRole> roleManager,
             string id)
         {
             var roleToDelete = roleManager.FindByIdAsync(id).Result;
 
-            if (roleToDelete == default(IdentityRole))
+            if (roleToDelete == default(ApplicationIdentityRole))
             {
                 throw new KeyNotFoundException();
             }

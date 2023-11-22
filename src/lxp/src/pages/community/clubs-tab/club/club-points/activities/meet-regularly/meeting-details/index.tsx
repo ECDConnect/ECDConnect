@@ -34,6 +34,20 @@ export const MeetingDetails: React.FC = () => {
 
   const { formattedDate } = getPointsActivityDateDetails(meeting?.meetingDate);
 
+  const renderAttendanceBadgeColor = (attendancePerc: number) => {
+    let badgeColor;
+
+    if (attendancePerc >= 80) {
+      badgeColor = 'bg-successMain';
+    } else if (attendancePerc >= 60) {
+      badgeColor = 'bg-alertMain';
+    } else {
+      badgeColor = 'bg-errorMain';
+    }
+
+    return badgeColor;
+  };
+
   useEffect(() => {
     if (!details) {
       history.push(
@@ -72,7 +86,11 @@ export const MeetingDetails: React.FC = () => {
         <>
           <Typography type="h2" className="mb-5" text="Attendance" />
           <div className="flex items-center gap-2">
-            <p className="bg-successMain rounded-3xl px-2 py-1">
+            <p
+              className={`${renderAttendanceBadgeColor(
+                (meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc
+              )} rounded-3xl px-2 py-1`}
+            >
               {(meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc}%
             </p>
             <Typography type="h4" text="club members attended:" />
