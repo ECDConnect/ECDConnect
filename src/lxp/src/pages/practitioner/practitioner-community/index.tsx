@@ -1,4 +1,4 @@
-import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
+import { BannerWrapper, EmptyPage, TabItem, TabList } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { PractitionerCommunityRouteState } from './index.types';
@@ -11,6 +11,8 @@ import { ClubActions } from '@/store/club/club.actions';
 import { useSelector } from 'react-redux';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { AskToJoin } from './club-tab/0-components/ask-to-join';
+import { PractitionerLeagueView } from './league-tab';
+import AlienImage from '@/assets/ECD_Connect_alien.svg';
 
 export const PractitionerCommunity: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -39,7 +41,15 @@ export const PractitionerCommunity: React.FC = () => {
       initActive: false,
       child:
         isLoading || !!club ? (
-          <div className="text-textDark p-4">Coming soon</div>
+          !!club?.league ? (
+            <PractitionerLeagueView />
+          ) : (
+            <EmptyPage
+              image={AlienImage}
+              title="Your club is not in a league"
+              subTitle="Clubs are added to leagues from 1 April every year."
+            />
+          )
         ) : (
           <AskToJoin />
         ),
