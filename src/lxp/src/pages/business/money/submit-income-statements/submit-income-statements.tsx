@@ -99,7 +99,6 @@ export const SubmitIncomeStatements: React.FC = () => {
       );
       setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statements, isSubmitWindowOpen, setDaysUntilFinalSubmission]);
 
   const balanceNotifications = useMemo(() => {
@@ -289,7 +288,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     } else {
       setPointsSubmitStatementsMessageDismissed(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onDismissCelebration = useCallback(() => {
@@ -409,7 +407,6 @@ export const SubmitIncomeStatements: React.FC = () => {
         secondaryTextColour="black"
       />
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     pointsSubmitStatementsMessageDismissed,
     submitStatementPoints,

@@ -76,8 +76,11 @@ export const PointsSummary: React.FC = () => {
     });
 
     return pointsList;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pointsSummaryDataWithLibrary]);
+  }, [
+    pointsSummaryDataWithLibrary,
+    practitioner?.isFundaAppAdmin,
+    practitioner?.isPrincipal,
+  ]);
 
   const pointsTotal = pointsSummaryDataWithLibrary.reduce(
     (total, current) => (total += current.pointsTotal),
@@ -179,8 +182,12 @@ export const PointsSummary: React.FC = () => {
         />
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [percentageScore, userStanding]);
+  }, [
+    percentageScore,
+    pointsTotalForYear,
+    practitioner?.user?.firstName,
+    userStanding,
+  ]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);

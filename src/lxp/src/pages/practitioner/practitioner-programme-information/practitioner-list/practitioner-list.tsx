@@ -107,7 +107,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
 
   useEffect(() => {
     getRemovalsForPractitioners();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioners]);
 
   const cancelPractitionerRemoval = async () => {

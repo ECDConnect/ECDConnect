@@ -162,8 +162,12 @@ export const PointsYearView: React.FC = () => {
         />
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pointsTotalForYear, percentageScore, practitioner]);
+  }, [
+    userStanding,
+    pointsTotalForYear,
+    percentageScore,
+    practitioner?.user?.firstName,
+  ]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);

@@ -271,8 +271,7 @@ export const Club: React.FC = () => {
         />
       </div>
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activities, isClubInALeague, isToShowPointsScreen]);
+  }, [activities, isClubInALeague]);
 
   const renderIssuesAndTasksContent = useMemo(() => {
     const items: MenuListDataItem[] = [];
