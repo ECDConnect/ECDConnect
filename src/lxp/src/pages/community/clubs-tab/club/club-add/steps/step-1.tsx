@@ -46,7 +46,7 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
 
   const onCheckboxChange = (event: CheckboxChange) => {
     const value = event.value as PractitionerDto;
-    if (event.checked && !!event.value) {
+    if (event.checked && !!value) {
       const currentPractitioners = selectedPractitioners
         ? [
             ...selectedPractitioners,
@@ -66,7 +66,7 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
     }
 
     const currentPractitioners = selectedPractitioners?.filter(
-      (item) => item !== value
+      (item) => item.practitionerId !== value?.id
     );
 
     return setSelectedPractitioners(currentPractitioners);
