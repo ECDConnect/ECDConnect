@@ -25,6 +25,7 @@ import {
   NewClubLeaderInput,
 } from './types';
 import { DetailClubDto } from '@/models/club/club.dto';
+import { LeagueClubsDto } from '@/models/club/league.dto';
 
 class ClubService {
   _accessToken: string;
@@ -694,6 +695,38 @@ class ClubService {
     }
 
     return response.data.data.addClubMeeting;
+  }
+
+  async getLeagueForUser(input: { userId: string }): Promise<LeagueClubsDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { leagueForUser: LeagueClubsDto };
+      errors?: {};
+    }>(``, {
+      query: `query GetLeagueForUser($userId: String) {
+          leagueForUser(userId: $userId) {
+            id
+            name
+            leagueTypeId
+            leagueTypeName
+            clubs {
+              clubId
+              clubName
+              leagueRank
+              pointsTotal
+            }
+          }
+        }`,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get league for user failed - Server connection error');
+    }
+
+    return response.data.data.leagueForUser;
   }
 
   async addBeCreativeActivity(

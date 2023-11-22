@@ -81,8 +81,7 @@ export const CaptureChildAttendance: React.FC = () => {
         icon="ClipboardCheckIcon"
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      {/* EC-1909 - Suppress ticket */}
-      {/* <ScoreCard
+      <ScoreCard
         className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
@@ -91,15 +90,15 @@ export const CaptureChildAttendance: React.FC = () => {
         barBgColour="uiLight"
         barColour={
           isCurrentPointsAtLeast80PercentOfTotal(
-            club.pointsTotal,
-            club.maxPointsTotal
+            club?.pointsTotal ? club?.pointsTotal : 0,
+            club?.maxPointsTotal ? club?.maxPointsTotal : 0
           )
             ? 'successMain'
             : 'secondary'
         }
         bgColour="uiBg"
         textColour="black"
-      /> */}
+      />
       {hasItems ? (
         <div className="mt-5">
           {items.map((item) => (
