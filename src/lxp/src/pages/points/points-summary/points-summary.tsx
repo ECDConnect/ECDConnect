@@ -76,6 +76,7 @@ export const PointsSummary: React.FC = () => {
     });
 
     return pointsList;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pointsSummaryDataWithLibrary]);
 
   const pointsTotal = pointsSummaryDataWithLibrary.reduce(
@@ -178,6 +179,7 @@ export const PointsSummary: React.FC = () => {
         />
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [percentageScore, userStanding]);
 
   // SHARE LOGIC
@@ -201,8 +203,7 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMM yyyy')}
           />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-5"
             mainText={`${pointsTotal} points`}
             currentPoints={pointsTotal}
@@ -217,7 +218,7 @@ export const PointsSummary: React.FC = () => {
             }
             bgColour="uiBg"
             textColour="black"
-          /> */}
+          />
           {celebrationCard}
           {!!pointsTodoList && !!pointsTodoList.length && (
             <Typography

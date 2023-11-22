@@ -162,6 +162,7 @@ export const PointsYearView: React.FC = () => {
         />
       );
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pointsTotalForYear, percentageScore, practitioner]);
 
   // SHARE LOGIC
@@ -187,8 +188,7 @@ export const PointsYearView: React.FC = () => {
           color="black"
           text={format(new Date(), 'MMM yyyy')}
         />
-        {/* EC-1909 - Suppress ticket */}
-        {/* <ScoreCard
+        <ScoreCard
           className="mt-5"
           mainText={`${pointsTotalForYear}`}
           secondaryText="points"
@@ -209,7 +209,7 @@ export const PointsYearView: React.FC = () => {
           }
           bgColour="uiBg"
           textColour="black"
-        /> */}
+        />
         {celebrationCard}
         {pointsTotalForYear > 0 && (
           <>

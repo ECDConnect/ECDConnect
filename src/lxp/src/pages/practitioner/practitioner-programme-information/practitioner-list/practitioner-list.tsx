@@ -7,6 +7,7 @@ import {
   StackedList,
   Dialog,
   DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
 import {
   PractitionerColleagues,
@@ -14,11 +15,9 @@ import {
 } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
-import * as styles from './practitioner-list.styles';
 import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { PractitionerListProps } from './practitioner-list.types';
-import { renderIcon } from '@ecdlink/ui';
 import { practitionerSelectors } from '@/store/practitioner';
 import { EditPractitioner } from './edit-practitioner/edit-practitioner';
 import { userSelectors } from '@store/user';
@@ -108,11 +107,12 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
 
   useEffect(() => {
     getRemovalsForPractitioners();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitioners]);
 
   const cancelPractitionerRemoval = async () => {
     const removalId = existingRemovals?.find(
-      (x) => x.userId == removingPractitionerId
+      (x) => x.userId === removingPractitionerId
     )?.id;
     if (removalId) {
       await new PractitionerService(
@@ -140,29 +140,28 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
             actionIcon: 'PencilIcon',
             buttonType:
               !!practitioners && practitioners.length ? 'filled' : 'ghost',
-            // EC-1909 - Suppress ticket
-            // onActionClick: () => {
-            //   const userId = item?.userId || '';
-            //   if (item?.isPrincipal && userId === practitioner?.userId) {
-            //     if (!!practitioners && practitioners.length) {
-            //       history.push(ROUTES.PRINCIPAL.SWAP_PRINCIPAL);
-            //     }
-            //   } else {
-            //     const existingRemoval = existingRemovals?.find(
-            //       (x) => x.userId === userId
-            //     );
-            //     if (existingRemoval) {
-            //       setRemovingPractitionerId(userId);
-            //     } else {
-            //       history.push(
-            //         ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
-            //         {
-            //           practitionerId: userId,
-            //         }
-            //       );
-            //     }
-            //   }
-            // }, // Disabled the editPractitioner view state
+            onActionClick: () => {
+              const userId = item?.userId || '';
+              if (item?.isPrincipal && userId === practitioner?.userId) {
+                if (!!practitioners && practitioners.length) {
+                  history.push(ROUTES.PRINCIPAL.SWAP_PRINCIPAL);
+                }
+              } else {
+                const existingRemoval = existingRemovals?.find(
+                  (x) => x.userId === userId
+                );
+                if (existingRemoval) {
+                  setRemovingPractitionerId(userId);
+                } else {
+                  history.push(
+                    ROUTES.PRINCIPAL.PRACTITIONER_REMOVE_FROM_PROGRAMME,
+                    {
+                      practitionerId: userId,
+                    }
+                  );
+                }
+              }
+            },
           };
         })
       : otherColleaguesFiltered?.map((item: any) => {
@@ -229,8 +228,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                 onClick={() => history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)}
               />
             </div>
-            {/* EC-1909 - Suppress ticket */}
-            {/*
             <div className="mb-8 flex justify-center">
               <Button
                 type="outlined"
@@ -252,7 +249,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                 ></Typography>
               </Button>
             </div>
-              */}
           </div>
         )}
       </div>

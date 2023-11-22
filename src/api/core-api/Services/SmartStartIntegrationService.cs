@@ -1520,7 +1520,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         staticHierarchyRepo.Update(childHierarchy);
                         //uppdate child record Hierarchy
                         Child updatedChild = childRepo.GetByUserId(child.UserId);
-                        updatedChild.Hierarchy = child.Hierarchy.Replace("0.1.", newPractitioner.Hierarchy);
+                        updatedChild.Hierarchy = childNewHierarchy;
                         childRepo.Update(updatedChild);
                     }
 
