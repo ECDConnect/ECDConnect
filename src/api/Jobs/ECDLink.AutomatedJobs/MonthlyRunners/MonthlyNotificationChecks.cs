@@ -13,7 +13,7 @@ namespace ECDLink.AutomatedJobs.MonthlyRunners;
 public class MonthlyNotificationChecks : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public MonthlyNotificationChecks(IServiceScopeFactory scopeFactory, IScheduleConfig<MonthlyNotificationChecks> config, ILogger<MonthlyNotificationChecks> logger)
+    public MonthlyNotificationChecks(IServiceScopeFactory scopeFactory, CronJobConfig<MonthlyNotificationChecks> config, ILogger<MonthlyNotificationChecks> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;
