@@ -146,8 +146,10 @@ export const getCoachVisitDataNextSteps = (
   const visitData = state?.trainee?.coachSmartSpaceCheckData;
 
   const programmeDetailsSections = visitData?.find(
-    (item) => item?.visitSection === 'Discuss next steps'
+    (item) =>
+      item?.visitSection === 'Discuss next steps' && item?.questionAnswer !== ''
   );
+
   return programmeDetailsSections;
 };
 
