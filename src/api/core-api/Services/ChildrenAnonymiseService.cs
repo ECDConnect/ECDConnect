@@ -12,6 +12,7 @@ using ECDLink.DataAccessLayer.Services;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,17 +25,20 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IDocumentManagementService _documentManagementService;
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly UserManager<ApplicationUser> _userManager;
+        private ILogger<ChildrenAnonymiseService> _logger;
 
         public ChildrenAnonymiseService(
             IGenericRepositoryFactory repositoryFactory,
             IDocumentManagementService documentManagementService,
             HierarchyEngine hierarchyEngine,
-            [Service] UserManager<ApplicationUser> userManager)
+            [Service] UserManager<ApplicationUser> userManager,
+            ILogger<ChildrenAnonymiseService> logger)
         {
             _repositoryFactory = repositoryFactory;
             _documentManagementService = documentManagementService;
             _hierarchyEngine = hierarchyEngine;
             _userManager = userManager;
+            _logger = logger;
         }
 
         public void AnonymiseChild()
@@ -49,25 +53,22 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 try
                 {
-                    if (child.User != null)
+                    RemoveChildDocuments(child, adminId);
+                    var learner = learnerRepo.GetAll().Where(x => x.UserId == child.UserId).ToList();
+                    if (learner.Any())
                     {
-                        RemoveChildDocuments(child, adminId);
-
-                        //remove learners from allocated classes
-                        var learnerRow = learnerRepo.GetByUserId(child.UserId);
-                        if (learnerRow != null)
+                        foreach (var learnerRow in learner)
+                        {
                             learnerRepo.Delete(learnerRow.Id);
-
-                        _hierarchyEngine.DeleteHierarchy(child.UserId);
-                        childRepo.Delete(child.Id);
-
-                        var result = _userManager.DeleteAsync(child.User).Result;
+                        }
                     }
+                    _hierarchyEngine.DeleteHierarchy(child.UserId);
+                    childRepo.Delete(child.Id);
+                    var result = _userManager.DeleteAsync(child.User).Result;
                 }
-                catch (Exception e)
+                catch (Exception ex)
                 {
-                    //notify of error
-
+                    _logger.LogError(ex, "AnonymiseChild Failed for child Id: {0} on {1}", child.Id, ex.Message);
                 }
             }
         }

@@ -40,10 +40,16 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
 
         public string Hierarchy { get; set; }
 
+        public string CreatedUserId { get; set; }
 
         [NotMapped]
         public virtual ApplicationUser CreatedUser { get; set; }
-        public string CreatedUserId { get; set; }
+        [NotMapped]
+        public string ClientName { get; set; }
+        [NotMapped]
+        public string CreatedByName { get; set; }
+
+
     }
 
     public interface DocumentJoin<TKey>

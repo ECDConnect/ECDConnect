@@ -40,17 +40,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
-            var cgRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
+            var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>();
 
-            var docsQuery = docRepo.GetAll();
+            var docsQuery = docRepo.GetAll().Where(x => x.UserId != null);
 
             if (showOnlyTypes == null) {
                 showOnlyTypes = new[] { DocumentTypeConstants.MaternalCaseRecord, DocumentTypeConstants.RoadToHealthBook };
-                docsQuery = docsQuery
-                    .Include(d => d.DocumentType)
-                    .Where(x => showOnlyTypes.Contains(x.DocumentType.Name));
+                docsQuery = docsQuery.Include(d => d.DocumentType).Where(x => showOnlyTypes.Contains(x.DocumentType.Name));
             }
 
             if (pagingInput?.FilterBy is not null)
@@ -58,26 +56,48 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 docsQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, docsQuery);
             }
 
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                docsQuery = docsQuery.Where(x => EF.Functions.ILike(x.User.FirstName, $"%{search}%") || EF.Functions.ILike(x.User.Surname, $"%{search}%")
-                 || EF.Functions.ILike(x.Name, search));
+            var docsList = docsQuery.ToList();
 
-                docsQuery = docsQuery.Where(x => x.CreatedUser != null)
-                        .Where(x => EF.Functions.ILike(x.CreatedUser.FirstName, $"%{search}%") || EF.Functions.ILike(x.CreatedUser.Surname, $"%{search}%")
-                     || EF.Functions.ILike(x.Name, search));
+            //populate additional user info based on usertypes - createduser is HCW, userid is infant/mother
+            foreach (var doc in docsList)
+            {
+                if (doc.CreatedUserId != null)
+                {
+                    HealthCareWorker hcw = healthCareWorkerRepo.GetAll().Where(x => x.UserId == doc.CreatedUserId).FirstOrDefault();
+                    if (hcw != null && hcw.User != null)
+                    {
+                        doc.CreatedUser = hcw.User;
+                        doc.CreatedByName = hcw.User.FirstName + " " + hcw.User.Surname; 
+                    }
+                }
+
+                if (doc.DocumentType.Name == DocumentTypeConstants.MaternalCaseRecord)
+                {
+                    //mother
+                    Mother mother = motherRepo.GetAll().Where(x => x.UserId == doc.UserId).FirstOrDefault();
+                    if (mother != null && mother.User != null)
+                    {
+                        doc.ClientName = mother.User.FirstName + " " + mother.User.Surname;
+                    }
+
+                } 
+                else if (doc.DocumentType.Name == DocumentTypeConstants.RoadToHealthBook)
+                {
+                    //infants
+                    Infant infant = infantRepo.GetAll().Where(x => x.UserId == doc.UserId).FirstOrDefault();
+                    if (infant != null && infant.Caregiver != null)
+                    {
+                        doc.ClientName = infant.Caregiver.FirstName + " " + infant.Caregiver.Surname + " & " + infant.User.FirstName;
+                    }
+                }
             }
 
-            var docs = docsQuery.OrderByDescending(x => x.UpdatedDate).ToList();
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                docsList = docsList.Where(x => (x.ClientName!= null && x.ClientName.Contains(search)) || (x.CreatedByName != null && x.CreatedByName.Contains(search))).ToList(); 
+            }
 
-            //populate additional user info based on usertypes - createduser is HCW, userid is child/mother
-            //TODO: Completing logic based on doc types determines users link
-            //foreach (var doc in docs)
-            //{
-            //    //check client
-            //}
-
-            return docs;
+            return docsList;
         }
 
     }
