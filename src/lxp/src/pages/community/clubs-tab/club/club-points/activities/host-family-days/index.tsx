@@ -25,6 +25,8 @@ import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActivityHostFamilyDaysDetail } from '@ecdlink/graphql';
 import { getAlertType } from '../0-components/alert-card/utils';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ClubActions } from '@/store/club/club.actions';
 
 export const HostFamilyDays: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -41,6 +43,11 @@ export const HostFamilyDays: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const { isOnline } = useOnlineStatus();
+
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
+  );
 
   const isClubInNewStarts =
     club?.league?.leagueTypeName === LeagueType.NewStars;
@@ -97,6 +104,8 @@ export const HostFamilyDays: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
+      displayOffline={!isOnline}
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"

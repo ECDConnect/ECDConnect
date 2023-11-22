@@ -30,4 +30,5 @@ export type ClubState = {
   };
   addClubMeetingSyncInputs?: ClubMeetingInput[];
   addBeCreativeActivitySyncInputs?: BeCreativeActivityInput[];
+  addFamilyDayMeetingSyncInputs?: ClubMeetingInput[];
 };

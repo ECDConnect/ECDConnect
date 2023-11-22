@@ -47,6 +47,7 @@ export const ClubActions = {
   CHANGE_CLUB_SUPPORT_ROLE: 'changeClubSupportRole',
   ADD_CLUB_MEETING: 'addClubMeeting',
   ADD_BE_CREATIVE_ACTIVITY: 'addBeCreativeActivity',
+  ADD_FAMILY_DAY_MEETING: 'addFamilyDayMeeting',
 };
 
 export const getClubById = createAsyncThunk<
@@ -522,6 +523,42 @@ export const addBeCreativeActivity = createAsyncThunk<
             new ClubService(userAuth?.auth_token).addBeCreativeActivity(
               activity
             )
+          );
+
+          return await Promise.all(promises);
+        }
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addFamilyDayMeeting = createAsyncThunk<
+  // TODO: add type
+  any,
+  ClubMeetingInput | undefined,
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_FAMILY_DAY_MEETING,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      clubs: { addFamilyDayMeetingSyncInputs },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input?.meetingDate) {
+          return await new ClubService(
+            userAuth?.auth_token
+          ).addFamilyDayMeeting(input);
+        }
+        if (!input?.meetingDate && addFamilyDayMeetingSyncInputs?.length) {
+          const promises = addFamilyDayMeetingSyncInputs.map((activity) =>
+            new ClubService(userAuth?.auth_token).addFamilyDayMeeting(activity)
           );
 
           return await Promise.all(promises);
