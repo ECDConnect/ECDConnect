@@ -122,6 +122,7 @@ export const getCoachVisitDataAssitantsNumber = (
   const visitData = state.trainee.coachSmartSpaceCheckData?.find((item) => {
     return item?.visitSection === 'Programme details';
   }) as unknown;
+
   const visitDataFormatted = visitData as SectionQuestions;
   const programmeDetailsSection = visitDataFormatted.questions?.[0]?.answer;
 

@@ -48,7 +48,8 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
   );
   const coachVisitNextSteps = useSelector(
     traineeSelectors?.getCoachVisitDataNextSteps
-  );
+  ) as unknown;
+  const coachVisitNextStepsFormatted = coachVisitNextSteps as SectionQuestions;
 
   const [questions, setAnswers] = useState([
     {
@@ -156,7 +157,7 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
           />
           <Typography
             type={'body'}
-            text={`• ${coachVisitNextSteps}`}
+            text={`• ${coachVisitNextStepsFormatted?.questions[0]?.answer}`}
             color={'textMid'}
             className={'my-3'}
           />
