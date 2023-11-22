@@ -28,6 +28,10 @@ export interface BeCreativeActivityInput {
   imageBase64?: string;
 }
 
-export interface HostFamilyActivityInput {
+export interface ActivityHostFamilyDetailsInput {
+  clubId: string;
+}
+
+export interface ActivityLeaveNoOneBehindDetailsInput {
   clubId: string;
 }

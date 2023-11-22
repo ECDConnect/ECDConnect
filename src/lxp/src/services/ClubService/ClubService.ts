@@ -17,14 +17,16 @@ import {
   MutationAcceptNewClubLeaderRoleArgs,
   ClubMeeting,
   ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import {
   BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
-  HostFamilyActivityInput,
+  ActivityHostFamilyDetailsInput,
   NewClubLeaderInput,
+  ActivityLeaveNoOneBehindDetailsInput,
 } from './types';
 import { DetailClubDto } from '@/models/club/club.dto';
 
@@ -726,7 +728,7 @@ class ClubService {
   }
 
   async getActivityHostFamilyDetails(
-    input: HostFamilyActivityInput
+    input: ActivityHostFamilyDetailsInput
   ): Promise<ActivityHostFamilyDays> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
@@ -762,6 +764,68 @@ class ClubService {
     }
 
     return response.data.data.activityHostFamilyDetails;
+  }
+
+  async getActivityLeaveNoOneBehindDetails(
+    input: ActivityLeaveNoOneBehindDetailsInput
+  ): Promise<ActivityLeaveNoOneBehind> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityLeaveNoOneBehindDetails: ActivityLeaveNoOneBehind };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityLeaveNoOneBehindDetails($clubId: UUID!) {
+          activityLeaveNoOneBehindDetails(clubId: $clubId) {
+            points
+            pointsColor
+            greenPerc
+            greenText
+            redPerc
+            redText
+            orangePerc
+            orangeText
+            bluePerc
+            blueText
+            greenUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            redUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            orangeUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            blueUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity leave no one behind details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityLeaveNoOneBehindDetails;
   }
 
   async addFamilyDayMeeting(input: ClubMeetingInput): Promise<ClubMeeting> {

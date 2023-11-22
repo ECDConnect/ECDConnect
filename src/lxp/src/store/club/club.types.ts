@@ -6,6 +6,7 @@ import {
 import {
   ActivityBeCreative,
   ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
   ActivityMeetRegular,
 } from '@ecdlink/graphql';
 
@@ -13,6 +14,7 @@ export type Points = {
   meetRegularly?: ActivityMeetRegular;
   beCreative?: ActivityBeCreative;
   hostFamily?: ActivityHostFamilyDays;
+  leaveNoOneBehind?: ActivityLeaveNoOneBehind;
 };
 
 export type ClubState = {

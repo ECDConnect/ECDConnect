@@ -3,6 +3,7 @@ import { RootState, ThunkApiType } from '../types';
 import {
   ActivityBeCreative,
   ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
   ActivityMeetRegular,
   Club,
   ClubLeader,
@@ -23,8 +24,9 @@ import {
   BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
-  HostFamilyActivityInput,
+  ActivityHostFamilyDetailsInput,
   NewClubLeaderInput,
+  ActivityLeaveNoOneBehindDetailsInput,
 } from '@/services/ClubService/types';
 import { DetailClubDto } from '@/models/club/club.dto';
 
@@ -41,6 +43,8 @@ export const ClubActions = {
   GET_ACTIVITY_MEET_REGULAR_DETAILS: 'getActivityMeetRegularDetails',
   GET_ACTIVITY_BE_CREATIVE_DETAILS: 'getActivityBeCreativeDetails',
   GET_ACTIVITY_HOST_FAMILY_DETAILS: 'getActivityHostFamilyDetails',
+  GET_ACTIVITY_LEAVE_NO_ONE_BEHIND_DETAILS:
+    'getActivityLeaveNoOneBehindDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
   ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
@@ -325,7 +329,7 @@ export const getActivityBeCreativeDetails = createAsyncThunk<
 
 export const getActivityHostFamilyDetails = createAsyncThunk<
   ActivityHostFamilyDays,
-  HostFamilyActivityInput,
+  ActivityHostFamilyDetailsInput,
   ThunkApiType<RootState>
 >(
   ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS,
@@ -339,6 +343,31 @@ export const getActivityHostFamilyDetails = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).getActivityHostFamilyDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getActivityLeaveNoOneBehindDetails = createAsyncThunk<
+  ActivityLeaveNoOneBehind,
+  ActivityLeaveNoOneBehindDetailsInput,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_LEAVE_NO_ONE_BEHIND_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityLeaveNoOneBehindDetails(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
