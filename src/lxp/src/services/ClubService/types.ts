@@ -16,3 +16,11 @@ export interface ClubMeetingInput {
   totalCaregiversAttended: number;
   clubMeetingParticipants: { practitionerId: string; attended: boolean }[];
 }
+
+export interface BeCreativeActivityInput {
+  clubId: string;
+  dateUploaded: string;
+  description?: string;
+  fileType?: string;
+  imageBase64?: string;
+}
