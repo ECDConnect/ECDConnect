@@ -156,7 +156,7 @@ export const Dashboard: React.FC = () => {
 
     const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
-      if (current.month == currentMonth) {
+      if (current.month === currentMonth) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -680,16 +680,15 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
-    //EC-1909 - Suppress ticket
-    // dashboardItems.push({
-    //   title: 'Calendar',
-    //   titleIcon: 'CalendarIcon',
-    //   titleIconClassName: styles.icon,
-    //   classNames: 'bg-uiBg',
-    //   onActionClick: () => {
-    //     goToCalendar();
-    //   },
-    // });
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.icon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isCoach) {
@@ -702,16 +701,16 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
-    //EC-1909 - Suppress ticket
-    // dashboardItems.push({
-    //   title: 'Calendar',
-    //   titleIcon: 'CalendarIcon',
-    //   titleIconClassName: styles.calendarIcon,
-    //   classNames: 'bg-uiBg',
-    //   onActionClick: () => {
-    //     goToCalendar();
-    //   },
-    // });
+
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isTrainee) {
