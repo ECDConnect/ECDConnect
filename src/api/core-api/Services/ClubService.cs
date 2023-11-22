@@ -1670,6 +1670,7 @@ namespace EcdLink.Api.CoreApi.Services
                 .Include(x => x.ClubSupport.Where(x => x.IsActive))
                 .ThenInclude(x => x.Practitioner)
                 .ThenInclude(x => x.User)
+                .AsNoTracking()
                 .ToList();
 
             var coach = _coachRepo.GetAll().Include(x => x.User).First(x => x.UserId == coachUserId);
@@ -1986,7 +1987,7 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
 
-        private static int CompareClubsByPoints(ClubPointsSummaryModel x, ClubPointsSummaryModel y)
+private static int CompareClubsByPoints(ClubPointsSummaryModel x, ClubPointsSummaryModel y)
         {
             if (x.PointsTotal == y.PointsTotal)
             {
