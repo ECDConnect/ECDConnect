@@ -21,7 +21,6 @@ import {
   useSnackbar,
 } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/store';
 import {
@@ -34,9 +33,10 @@ import {
   getScoreBarColor,
 } from '@/pages/community/clubs-tab/index.filters';
 import { getAlertSeverity } from '@/utils/common/string.utils';
-import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
+import { ClubActivitiesPointsPerLeague } from '@/constants/club';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const MeetRegularly: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -49,18 +49,8 @@ export const MeetRegularly: React.FC = () => {
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
-  const isClubInNewStarts =
-    club?.league?.leagueTypeName === LeagueType.NewStars;
-  const isClubInRisingStars =
-    club?.league?.leagueTypeName === LeagueType.RisingStars;
-
   const isCelebratoryMessage =
-    (isClubInRisingStars &&
-      details?.points ===
-        ClubActivitiesPointsPerLeague.MeetRegularly.RisingStars.max) ||
-    (isClubInNewStarts &&
-      details?.points ===
-        ClubActivitiesPointsPerLeague.MeetRegularly.NewStars.max);
+    details?.points === ClubActivitiesPointsPerLeague.MeetRegularly.All.max;
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
@@ -70,6 +60,8 @@ export const MeetRegularly: React.FC = () => {
 
   const history = useHistory();
   const appDispatch = useAppDispatch();
+
+  const { isOnline } = useOnlineStatus();
 
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth() + 1;
@@ -130,14 +122,16 @@ export const MeetRegularly: React.FC = () => {
     }) ?? [];
 
   useEffect(() => {
-    appDispatch(
-      getActivityMeetRegularDetails({
-        clubId,
-        month: currentMonth,
-        year: currentYear,
-      })
-    );
-  }, [appDispatch, clubId, currentMonth, currentYear]);
+    if (isOnline) {
+      appDispatch(
+        getActivityMeetRegularDetails({
+          clubId,
+          month: currentMonth,
+          year: currentYear,
+        })
+      );
+    }
+  }, [appDispatch, clubId, currentMonth, currentYear, isOnline]);
 
   useEffect(() => {
     if (wasLoading && !isLoading && isRejected) {
@@ -153,6 +147,7 @@ export const MeetRegularly: React.FC = () => {
       title={formatStringWithFirstLetterCapitalized(activityId)}
       subTitle={club?.name ?? ''}
       onBack={() => history.goBack()}
+      displayOffline={!isOnline}
       displayHelp
       onHelp={() =>
         history.push(
@@ -176,18 +171,21 @@ export const MeetRegularly: React.FC = () => {
             title={formatStringWithFirstLetterCapitalized(activityId)}
             date={new Date()}
           />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-5"
             mainText={String(details?.points ?? 0)}
             hint="points"
             currentPoints={details?.points || 18}
-            maxPoints={800}
+            maxPoints={ClubActivitiesPointsPerLeague.MeetRegularly.All.max}
             barBgColour="uiLight"
-            barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
+            barColour={getScoreBarColor(
+              details?.points ?? 0,
+              ClubActivitiesPointsPerLeague.MeetRegularly.All.green,
+              ClubActivitiesPointsPerLeague.MeetRegularly.All.amber
+            )}
             bgColour="uiBg"
             textColour="black"
-          /> */}
+          />
           {isCelebratoryMessage && (
             <Alert
               className="mt-4"
@@ -220,6 +218,15 @@ export const MeetRegularly: React.FC = () => {
               />
             </div>
           )}
+          <Alert
+            className="mb-4"
+            type="info"
+            title="How can you help your club earn points?"
+            list={[
+              'Encourage all club members to attend meetings.',
+              'Make sure you schedule meetings at a time that works for everyone.',
+            ]}
+          />
           {(isLeader || isSupportRole) && (
             <Button
               className="mt-auto"

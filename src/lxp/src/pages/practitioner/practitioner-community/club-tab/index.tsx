@@ -12,7 +12,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   ClubActivities,
   LeagueType,
@@ -35,21 +35,65 @@ import { isCurrentPointsAtLeast80PercentOfTotal } from '@/pages/community/clubs-
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { userSelectors } from '@/store/user';
 import { coachSelectors } from '@/store/coach';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useAppDispatch } from '@/store';
+import { clubSelectors, clubThunkActions } from '@/store/club';
+import { getTermNumberForCurrentMonth } from '@/utils/club';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
   const user = useSelector(userSelectors.getUser);
   const coach = useSelector(coachSelectors.getCoach);
+
+  const clubId = club?.id ?? '';
+
+  const detailsMeetRegular = useSelector(
+    clubSelectors.getActivityMeetRegularDetailsSelector(clubId)
+  );
+  const detailsHostFamily = useSelector(
+    clubSelectors.getActivityHostFamilyDetailsSelector(clubId)
+  );
+
   const history = useHistory();
 
   const dialog = useDialog();
 
-  const { isLoading } = useThunkFetchCall(
+  const appDispatch = useAppDispatch();
+
+  const { isOnline } = useOnlineStatus();
+
+  const { isLoading: isLoadingClub } = useThunkFetchCall(
     'clubs',
     ClubActions.GET_CLUB_FOR_USER
   );
+  const { isLoading: isLoadingMeetRegular } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_MEET_REGULAR_DETAILS
+  );
+  const { isLoading: isLoadingHostFamily } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
+  );
 
-  const clubId = club?.id ?? '';
+  const isLoading =
+    isLoadingClub || isLoadingMeetRegular || isLoadingHostFamily;
+
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const currentYear = currentDate.getFullYear();
+
+  const addedMeetingRegularThisMonth = detailsMeetRegular?.pastMeetings?.some(
+    (meeting) =>
+      new Date(meeting?.meetingDate).getMonth() === currentMonth &&
+      new Date(meeting?.meetingDate).getFullYear() === currentYear
+  );
+
+  const addedFamilyDayThisQuarter = getTermNumberForCurrentMonth()
+    ? detailsHostFamily?.terms
+        ?.find((term) => term?.termNr === getTermNumberForCurrentMonth())
+        ?.documentStatus?.toLocaleLowerCase() !== 'not completed'
+    : false;
+
   const isClubInALeague = !!club?.league;
   const totalMembers = club?.clubMembers?.length ?? 0;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
@@ -57,15 +101,59 @@ export const ClubTab: React.FC = () => {
   const isLeaderRequest = isLeader && !club?.clubLeader?.dateAssigned;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
+  // From EC-1515
   const onAddMeetingOrEvent = () => {
-    return dialog({
-      position: DialogPosition.Middle,
-      blocking: false,
-      render: (onClose) => {
-        return <AddEventOrMeetingDialog onClose={onClose} />;
-      },
-    });
+    // Scenario 1
+    if (!addedMeetingRegularThisMonth && addedFamilyDayThisQuarter) {
+      return history.push(
+        ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+      );
+    }
+
+    // Scenario 2
+    if (addedMeetingRegularThisMonth && !addedFamilyDayThisQuarter) {
+      return history.push(
+        ROUTES.PRACTITIONER.COMMUNITY.CLUB.FAMILY_DAY_EVENT.ADD_EVENT
+      );
+    }
+
+    // Scenario 3
+    if (!addedMeetingRegularThisMonth && !addedFamilyDayThisQuarter) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: false,
+        render: (onClose) => {
+          return <AddEventOrMeetingDialog onClose={onClose} />;
+        },
+      });
+    }
+
+    // Scenario 4
+    if (addedMeetingRegularThisMonth && addedFamilyDayThisQuarter) {
+      return;
+    }
   };
+
+  useEffect(() => {
+    if (isOnline && (isLeader || isSupportRole)) {
+      appDispatch(
+        clubThunkActions.getActivityMeetRegularDetails({
+          clubId,
+          month: currentMonth + 1,
+          year: currentYear,
+        })
+      );
+      appDispatch(clubThunkActions.getActivityHostFamilyDetails({ clubId }));
+    }
+  }, [
+    appDispatch,
+    clubId,
+    currentMonth,
+    currentYear,
+    isLeader,
+    isOnline,
+    isSupportRole,
+  ]);
 
   const coachItem: UserAlertListDataItem = {
     title: `${coach?.user?.firstName} ${coach?.user?.surname}`,
