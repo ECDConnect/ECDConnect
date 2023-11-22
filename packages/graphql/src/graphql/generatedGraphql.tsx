@@ -2489,6 +2489,14 @@ export type ClubPointsSortInput = {
   year?: InputMaybe<SortEnumType>;
 };
 
+export type ClubPointsSummaryModel = {
+  __typename?: 'ClubPointsSummaryModel';
+  clubId: Scalars['UUID'];
+  clubName?: Maybe<Scalars['String']>;
+  leagueRank: Scalars['Int'];
+  pointsTotal: Scalars['Int'];
+};
+
 export type ClubSortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
@@ -4628,6 +4636,15 @@ export type LeagueClubDetail = {
   name?: Maybe<Scalars['String']>;
   points: Scalars['Float'];
   userId?: Maybe<Scalars['String']>;
+};
+
+export type LeagueClubsModel = {
+  __typename?: 'LeagueClubsModel';
+  clubs?: Maybe<Array<Maybe<ClubPointsSummaryModel>>>;
+  id: Scalars['UUID'];
+  leagueTypeId: Scalars['UUID'];
+  leagueTypeName?: Maybe<Scalars['String']>;
+  name?: Maybe<Scalars['String']>;
 };
 
 export type LeagueFilterInput = {
@@ -11241,6 +11258,7 @@ export type Query = {
   infantVisits?: Maybe<Array<Maybe<Visit>>>;
   infographics: Array<Maybe<Infographics>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
+  leagueForUser?: Maybe<LeagueClubsModel>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
@@ -13677,6 +13695,10 @@ export type QueryInfographicsArgs = {
 };
 
 export type QueryLastPractitionerInviteDateArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryLeagueForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
