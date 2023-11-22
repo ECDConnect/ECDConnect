@@ -2,6 +2,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   acceptNewClubLeaderRole,
+  addBeCreativeActivity,
   addClubMeeting,
   addNewClub,
   addNewClubLeader,
@@ -21,12 +22,16 @@ import { ClubState } from './club.types';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
 import { ClubDto, DetailClubDto } from '@/models/club/club.dto';
-import { ClubMeetingInput } from '@/services/ClubService/types';
+import {
+  BeCreativeActivityInput,
+  ClubMeetingInput,
+} from '@/services/ClubService/types';
 
 const initialState: ClubState = {
   clubForPractitioner: {},
   clubsForCoach: {},
   addClubMeetingSyncInputs: [],
+  addBeCreativeActivitySyncInputs: [],
 };
 
 const clubSlice = createSlice({
@@ -71,6 +76,30 @@ const clubSlice = createSlice({
         ];
       }
     },
+    addBeCreativeActivity: (
+      state,
+      action: PayloadAction<BeCreativeActivityInput>
+    ) => {
+      const newActivity = action.payload as BeCreativeActivityInput;
+      const existingActivityIndex =
+        state.addBeCreativeActivitySyncInputs?.findIndex(
+          (activity) => activity?.dateUploaded === newActivity?.dateUploaded
+        );
+
+      if (
+        state.addBeCreativeActivitySyncInputs &&
+        existingActivityIndex !== undefined &&
+        existingActivityIndex !== -1
+      ) {
+        state.addBeCreativeActivitySyncInputs[existingActivityIndex] =
+          newActivity;
+      } else {
+        state.addBeCreativeActivitySyncInputs = [
+          ...(state.addBeCreativeActivitySyncInputs || []),
+          newActivity,
+        ];
+      }
+    },
   },
   extraReducers: (builder) => {
     // Coach
@@ -83,36 +112,32 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, updateCoachAboutInfo);
     setThunkActionStatus(builder, getActivityMeetRegularDetails);
     setThunkActionStatus(builder, getActivityBeCreativeDetails);
-    setThunkActionStatus(builder, addClubMeeting);
-    builder.addCase(addClubMeeting.fulfilled, (state, action) => {
-      setFulfilledThunkActionStatus(state, action);
-
-      const meta = action.meta.arg as ClubMeetingInput;
-      const meetingDate = meta?.meetingDate;
-
-      if (meetingDate) {
-        state.addClubMeetingSyncInputs = state.addClubMeetingSyncInputs?.filter(
-          (meeting) => meeting?.meetingDate !== meetingDate
-        );
-        return;
-      }
-      // clear all meetings (sync)
-      state.addClubMeetingSyncInputs = [];
-    });
     builder.addCase(getActivityBeCreativeDetails.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const clubId = action.meta.arg.clubId;
 
-      state.clubsForCoach = {
-        ...state.clubsForCoach,
-        [clubId]: {
-          ...state.clubsForCoach[clubId],
+      const isCoach = !!state.clubsForCoach[clubId]?.club;
+
+      if (isCoach) {
+        state.clubsForCoach = {
+          ...state.clubsForCoach,
+          [clubId]: {
+            ...state.clubsForCoach[clubId],
+            points: {
+              ...state.clubsForCoach[clubId]?.points,
+              beCreative: action.payload,
+            },
+          },
+        };
+      } else {
+        state.clubForPractitioner = {
+          ...state.clubForPractitioner,
           points: {
-            ...state.clubsForCoach[clubId]?.points,
+            ...state.clubForPractitioner?.points,
             beCreative: action.payload,
           },
-        },
-      };
+        };
+      }
     });
     builder.addCase(
       getActivityMeetRegularDetails.fulfilled,
@@ -232,6 +257,39 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, getClubForUser);
     setThunkActionStatus(builder, saveWelcomeMessage);
     setThunkActionStatus(builder, changeClubSupportRole);
+    setThunkActionStatus(builder, addClubMeeting);
+    setThunkActionStatus(builder, addBeCreativeActivity);
+    builder.addCase(addBeCreativeActivity.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      const meta = action.meta.arg as BeCreativeActivityInput;
+      const dateUploaded = meta?.dateUploaded;
+
+      if (dateUploaded) {
+        state.addBeCreativeActivitySyncInputs =
+          state.addBeCreativeActivitySyncInputs?.filter(
+            (activity) => activity?.dateUploaded !== dateUploaded
+          );
+        return;
+      }
+      // clear all activities (sync)
+      state.addBeCreativeActivitySyncInputs = [];
+    });
+    builder.addCase(addClubMeeting.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      const meta = action.meta.arg as ClubMeetingInput;
+      const meetingDate = meta?.meetingDate;
+
+      if (meetingDate) {
+        state.addClubMeetingSyncInputs = state.addClubMeetingSyncInputs?.filter(
+          (meeting) => meeting?.meetingDate !== meetingDate
+        );
+        return;
+      }
+      // clear all meetings (sync)
+      state.addClubMeetingSyncInputs = [];
+    });
     builder.addCase(getClubForUser.fulfilled, (state, action) => {
       state.clubForPractitioner = {
         ...state.clubForPractitioner,

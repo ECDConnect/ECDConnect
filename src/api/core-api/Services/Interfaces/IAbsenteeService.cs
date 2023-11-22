@@ -29,7 +29,9 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
             string reassignedToPractitioner = null,
             string reason = null,
             DateTime? absentDate = null,
-            DateTime? absentDateEnd = null);
+            DateTime? absentDateEnd = null,
+            bool isRoleAssign = false,
+            string roleAssignedToUser = null);
 
         public int GetAbsenteeCountByUser(string userId);
     }
