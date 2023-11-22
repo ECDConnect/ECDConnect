@@ -72,7 +72,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   const coachSmartSpaceVisit1DataNotAttendedStandards = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandards
+    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandardsForStep3
   );
   const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
     coachSmartSpaceVisit1DataNotAttendedStandards?.length! > 0
