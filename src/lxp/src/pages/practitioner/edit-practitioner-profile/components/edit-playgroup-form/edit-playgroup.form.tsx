@@ -130,10 +130,10 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
   const getCannotDeletePlaygroupRender = (submit: () => void) => {
     return (
       <ActionModal
-        title={`Cannot delete this playgroup`}
+        title={`Cannot delete this class`}
         paragraphs={[
-          'You cannot delete this playgroup because there are still children in the playgroup.',
-          'Please move the children to a different playgroup before deleting.',
+          'You cannot delete this class because there are still children in the class.',
+          'Please move the children to a different class before deleting.',
         ]}
         actionButtons={[
           {

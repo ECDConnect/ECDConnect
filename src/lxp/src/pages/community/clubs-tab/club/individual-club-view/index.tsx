@@ -14,7 +14,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useCallback, useMemo } from 'react';
+import { useMemo } from 'react';
 import { useHistory, useParams } from 'react-router';
 import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
@@ -37,7 +37,6 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
 import { getScoreBarColor } from '../../index.filters';
 import { shouldShowPointsScreen as shouldShowPoints } from '@/utils/club';
-import is from 'date-fns/locale/is';
 
 export function isCurrentPointsAtLeast80PercentOfTotal(
   currentPoints: number,
@@ -220,8 +219,7 @@ export const Club: React.FC = () => {
             type={'MenuList' as StackedListType}
             listItems={[leagueCard]}
           />
-          {/* EC-1909 - Suppress ticket */}
-          {/* {shouldShowPointsScreen() && (
+          {isToShowPointsScreen && (
             <ScoreCard
               className="mt-5"
               mainText={String(club?.pointsTotal || 0)}
@@ -238,7 +236,7 @@ export const Club: React.FC = () => {
                 )
               }
             />
-          )} */}
+          )}
         </div>
       );
     }
@@ -273,7 +271,7 @@ export const Club: React.FC = () => {
         />
       </div>
     );
-  }, [activities, isClubInALeague, isToShowPointsScreen]);
+  }, [activities, isClubInALeague]);
 
   const renderIssuesAndTasksContent = useMemo(() => {
     const items: MenuListDataItem[] = [];

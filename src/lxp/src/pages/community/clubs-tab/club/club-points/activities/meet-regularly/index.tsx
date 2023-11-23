@@ -21,7 +21,6 @@ import {
   useSnackbar,
 } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
 import { useEffect } from 'react';
 import { useAppDispatch } from '@/store';
 import {
@@ -176,8 +175,7 @@ export const MeetRegularly: React.FC = () => {
             title={formatStringWithFirstLetterCapitalized(activityId)}
             date={new Date()}
           />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-5"
             mainText={String(details?.points ?? 0)}
             hint="points"
@@ -187,7 +185,7 @@ export const MeetRegularly: React.FC = () => {
             barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
             bgColour="uiBg"
             textColour="black"
-          /> */}
+          />
           {isCelebratoryMessage && (
             <Alert
               className="mt-4"

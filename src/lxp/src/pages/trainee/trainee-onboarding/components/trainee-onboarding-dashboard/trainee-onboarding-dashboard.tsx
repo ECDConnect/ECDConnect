@@ -79,8 +79,12 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.type !== 'inProgress' &&
       item?.title !== 'SmartSpace Licence'
   );
-
-  const completedSteps = steps?.filter((item) => item?.type === 'completed');
+  console.log({ steps });
+  const completedSteps = steps?.filter(
+    (item) =>
+      item?.type === 'completed' ||
+      item?.title === 'Consolidation meeting attended'
+  );
 
   const stepperCount = steps?.length;
 

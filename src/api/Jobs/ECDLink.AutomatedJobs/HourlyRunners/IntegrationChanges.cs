@@ -16,7 +16,7 @@ public class IntegrationChanges : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<IntegrationChanges> config, ILogger<IntegrationChanges> logger)
+    public IntegrationChanges(IServiceScopeFactory scopeFactory, CronJobConfig<IntegrationChanges> config, ILogger<IntegrationChanges> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

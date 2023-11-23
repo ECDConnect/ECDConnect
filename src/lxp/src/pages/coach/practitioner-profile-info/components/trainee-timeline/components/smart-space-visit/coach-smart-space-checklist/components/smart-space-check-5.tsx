@@ -38,8 +38,6 @@ export const getGroupColor = (count: number): Colours => {
 };
 
 export const SmartSpaceCheck5: React.FC<SmartSpaceCheck1Props> = ({
-  practitioner,
-  programmeName,
   setSectionQuestions,
   handleNextSection,
   saveSmartSpaceCheckData,

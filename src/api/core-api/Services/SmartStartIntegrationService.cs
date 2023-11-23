@@ -307,7 +307,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
         return true;
     }
-    
+
     /// <summary>
     /// Pull past PQA data for practitioners, that were created on SmartLink and outside of the Funda app.
     /// 
@@ -343,7 +343,7 @@ public class SmartStartIntegrationService : IIntegrationService
                 // Need to get existing PQA visits and see if we have mapped this one before - DO WE ONLY NEED TO PULL OLD PQAS ONCE PER PRACTITIONER???
                 var pqas = await _apiManager.GetPQAByFranchisee(practitioner.RemoteId);
 
-                if(pqas == null || !pqas.Any())
+                if (pqas == null || !pqas.Any())
                 {
                     continue;
                 }
@@ -362,7 +362,7 @@ public class SmartStartIntegrationService : IIntegrationService
                     }
 
                     // Create visit
-                    var mappedCoach = mappedCoaches.FirstOrDefault(x => x.RemoteId == slPQA.Coach.Guid);                    
+                    var mappedCoach = mappedCoaches.FirstOrDefault(x => x.RemoteId == slPQA.Coach.Guid);
                     var visit = new Visit()
                     {
                         Id = Guid.Parse(slPQA.Guid),
@@ -372,7 +372,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         VisitTypeId = pqaVisit1TypeId,
                         TenantId = _tenantId,
                         Attended = slPQA.StatusOutcome.ToLower() != "not done",
-                        DueDate = slPQA.DateOfVisit, 
+                        DueDate = slPQA.DateOfVisit,
                         PlannedVisitDate = slPQA.DateOfVisit,
                         PractitionerId = practitionerId,
                         Risk = Constants.GGSettings.normal_risk, // GG only field, but non nullable in the database
@@ -725,17 +725,13 @@ public class SmartStartIntegrationService : IIntegrationService
         string unknown = "Unknown";
         string present = "Present";
         string pholiday = "Public Holiday";
-
         var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
         int trackingWeekOfYear = trackingWeekDate.GetWeekOfYear();        
        
         foreach (var parent in attendancesDueList)
         {
-            bool isMeetingDay = false;
             DateTime nextDay = trackingWeekDate;
 
-            StringBuilder jsonAttendanceString = new StringBuilder();
-            jsonAttendanceString.AppendLine("[");
             Dictionary<string, bool> meetingDays = new Dictionary<string, bool>();
             List<AttendanceList> attendances = new List<AttendanceList>();
             List<Learner> allLearners = new List<Learner>();
@@ -756,47 +752,41 @@ public class SmartStartIntegrationService : IIntegrationService
                         continue;
                     }
 
-
-                    while (nextDay < followingWeekDate)
+                    var programmeDays = _programmeRepo.GetAll().Where(d => d.ClassroomGroupId.Equals(classroomGroup.Id)).ToList();
+                    while (nextDay < followingWeekDate && (int)nextDay.DayOfWeek < 6) //skip weekends
                     {
-                        var programmeDay = _programmeRepo.GetAll().Where(d => d.MeetingDay == (int)nextDay.DayOfWeek && d.ClassroomGroupId.Equals(classroomGroup.Id)).ToList();
-                        if (programmeDay.Any())
+                        if (programmeDays.Any(x => x.MeetingDay == (int)nextDay.DayOfWeek))
                         {
-                            isMeetingDay = true;
-                            meetingDays.Add(nextDay.DayOfWeek.ToString(), isMeetingDay);
+                            meetingDays.Add(nextDay.DayOfWeek.ToString(), true);
+                        }
+                        else
+                        {
+                            meetingDays.Add(nextDay.DayOfWeek.ToString(), false);
                         }
 
                         nextDay = nextDay.AddDays(1);
                     }
                 }
 
-                if (allLearners.Count>0)
+                if (allLearners.Count > 0)
                 {
-                    Dictionary<string, string> weeklyBaseAttendanceList = new Dictionary<string, string>();
+                    var weeklyBaseAttendanceList = new Dictionary<string, string>();
                     foreach (var meetDay in meetingDays)
                     {
-                        if (holidays.Count > 0)
+                        // Group did not meet on this day
+                        if (!meetingDays[meetDay.Key])
                         {
-                            foreach (var publicholiday in holidays)
-                            {
-                                if (meetDay.Key == publicholiday.Day.ToString("dddd"))
-                                {
-                                    if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
-                                        weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? pholiday : nosession) : pholiday);
-                                    else
-                                        weeklyBaseAttendanceList[meetDay.Key] = pholiday;
-                                }
-                                else
-                                {
-                                    if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
-                                        weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? unknown : nosession) : unknown);
-                                }
-                            }
+                            weeklyBaseAttendanceList.Add(meetDay.Key, nosession);
                         }
+                        // Check for public holiday
+                        else if (holidays.Any(x => meetDay.Key == x.Day.ToString("dddd")))
+                        {
+                            weeklyBaseAttendanceList.Add(meetDay.Key, pholiday);
+                        }
+                        // Otherwise unknown and we will update with attended/absent
                         else
                         {
-                            if (!weeklyBaseAttendanceList.Keys.Contains(meetDay.Key))
-                                weeklyBaseAttendanceList.Add(meetDay.Key, meetingDays.ContainsKey(meetDay.Key) ? (meetingDays[meetDay.Key] == true ? unknown : nosession) : unknown);
+                            weeklyBaseAttendanceList.Add(meetDay.Key, unknown);
                         }
                     }
 
@@ -851,22 +841,16 @@ public class SmartStartIntegrationService : IIntegrationService
                                 string attendedKey = attendance.AttendanceDate.ToString("dddd");
                                 if (learnerAttendance.WeeklyAttendance.ContainsKey(attendedKey))
                                 {
-                                    foreach (var d in learnerAttendance.WeeklyAttendance)
+                                    learnerAttendance.WeeklyAttendance[attendedKey] = attendance.Attended ? present : absent;
+                                    if (attendance.Attended)
                                     {
-                                        if (d.Key == attendedKey)
-                                        {
-                                            if (attendance.Attended)
-                                            {
-                                                daysPresent++;
-                                                learnerAttendance.WeeklyAttendance[attendedKey] = present;
-                                            }
-                                            else
-                                            {
-                                                daysAbsent++;
-                                                learnerAttendance.WeeklyAttendance[attendedKey] = absent;
-                                            }
-                                            continue;
-                                        }
+                                        daysPresent++;
+                                        learnerAttendance.WeeklyAttendance[attendedKey] = present;
+                                    }
+                                    else
+                                    {
+                                        daysAbsent++;
+                                        learnerAttendance.WeeklyAttendance[attendedKey] = absent;
                                     }
                                 }
                             }
@@ -883,13 +867,17 @@ public class SmartStartIntegrationService : IIntegrationService
                 //now build up the strings to push
                 try
                 {
+                    var jsonAttendanceString = new StringBuilder();
+                    jsonAttendanceString.AppendLine("[");
 
                     bool validAttendance = false;
                     foreach (var attendance in attendances)
                     {
                         if (!string.IsNullOrWhiteSpace(attendance.LearnerRemoteId))
                         {                            
-                            int absentDays = attendance.daysPresent == 0 && attendance.daysAbsent == 0 ? meetingDays.Count : attendance.daysAbsent;
+                            int absentDays = attendance.daysPresent == 0 && attendance.daysAbsent == 0 
+                                ? meetingDays.Values.Where(x => x).Count() 
+                                : attendance.daysAbsent;
 
                             jsonAttendanceString.AppendLine("{");
                             jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
@@ -906,37 +894,36 @@ public class SmartStartIntegrationService : IIntegrationService
                             validAttendance = true;
                         }
                     }
+                    jsonAttendanceString.AppendLine("]");
 
                     if (validAttendance)
                     {
-                        jsonAttendanceString.AppendLine("]");
-
                         try
                         {
-                            //now send to API call <entity type>/Multiple
-                            var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
-                            if (!string.IsNullOrEmpty(apiResponse.ResponseString))
-                            {
-                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
-                                if (returnObj != null)
-                                {
-                                    var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                    isComplete = true;
-                                    //mark mapped parent practitioner of last date attendance was sent
-                                    parent.LastAttendanceSubmittedDate = DateTime.Now;
-                                    _mapperRepo.Update(parent);
+                           //now send to API call <entity type>/Multiple
+                           var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
+                           if (!string.IsNullOrEmpty(apiResponse.ResponseString))
+                           {
+                               var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
+                               if (returnObj != null)
+                               {
+                                   var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                   isComplete = true;
+                                   //mark mapped parent practitioner of last date attendance was sent
+                                   parent.LastAttendanceSubmittedDate = DateTime.Now;
+                                   _mapperRepo.Update(parent);
 
-                                    attendancesSent++;
-                                }
-                                else //error empty response received
-                                {
-                                    await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > GetAPIHandlerResponse");
-                                }
-                            }
+                                   attendancesSent++;
+                               }
+                               else //error empty response received
+                               {
+                                   await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > GetAPIHandlerResponse");
+                               }
+                           }
                         }
                         catch (Exception e)
                         {
-                            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAtIntegrationAttendanceByDueDatatendanceData > GetAPIHandlerResponse");
+                           await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAtIntegrationAttendanceByDueDatatendanceData > GetAPIHandlerResponse");
                         }
                     }
                 }
@@ -1263,7 +1250,7 @@ public class SmartStartIntegrationService : IIntegrationService
             scheduledRun.UpdatedBy = _uId;
             schedulerRepo.Update(scheduledRun);
 
-            await _logManager.IntegrationLog($"IntegrationByMappedCoach completed at {DateTime.Now}", runResults, null, LogRelatedType.TaskRun, "IntegrationByMappedCoach");            
+            await _logManager.IntegrationLog($"IntegrationByMappedCoach completed at {DateTime.Now}", runResults, null, LogRelatedType.TaskRun, "IntegrationByMappedCoach");
 
         }
         catch (Exception e)
@@ -1520,7 +1507,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         staticHierarchyRepo.Update(childHierarchy);
                         //uppdate child record Hierarchy
                         Child updatedChild = childRepo.GetByUserId(child.UserId);
-                        updatedChild.Hierarchy = child.Hierarchy.Replace("0.1.", newPractitioner.Hierarchy);
+                        updatedChild.Hierarchy = childNewHierarchy;
                         childRepo.Update(updatedChild);
                     }
 
@@ -1718,7 +1705,7 @@ public class SmartStartIntegrationService : IIntegrationService
                         {
                             Id = userId.ToString(),
                             PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
-                            UserName = validUserName, 
+                            UserName = validUserName,
                             IdNumber = entity.IdNumber,
                             Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
                             IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
@@ -1884,7 +1871,7 @@ public class SmartStartIntegrationService : IIntegrationService
                             List<License> licenses = new List<License>();
                             var licenseTypes = _licenseTypeRepo.GetAll();
                             licenses.Add(
-                               new License() { LicenseDate = (entity.StarterLicenceDate!=null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }                                 
+                               new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Starter Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
                             );
                             licenses.Add(
                                new License() { LicenseDate = (entity.StarterLicenceDate != null ? entity.StarterLicenceDate : entity.StartDate), LicenseTypeId = licenseTypes.Where(x => x.NormalizedName.Equals("Practice Licence")).Select(x => x.Id).FirstOrDefault(), IsActive = true, InsertedDate = DateTime.Now, UserId = newPractitioner.UserId, CollectedSSHandbook = false, CollectedSSPlaykit = false }
@@ -2930,7 +2917,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 {
                                     List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, new List<MappedChild>() { child }, parentPrac);
                                 }
-                        }
+                            }
                         }
                     }
                     break;
@@ -3007,7 +2994,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                     //{
                                     string currentValue = prop.GetValue(entityUser, null) != null ? prop.GetValue(entityUser, null).ToString() : "";
 
-                                    if (localColumnChange.RemapToString) 
+                                    if (localColumnChange.RemapToString)
                                         newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
 
                                     if (currentValue != newData)

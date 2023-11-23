@@ -48,7 +48,8 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
   );
   const coachVisitNextSteps = useSelector(
     traineeSelectors?.getCoachVisitDataNextSteps
-  );
+  ) as unknown;
+  const coachVisitNextStepsFormatted = coachVisitNextSteps as SectionQuestions;
 
   const [questions, setAnswers] = useState([
     {
@@ -145,23 +146,21 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
         color={'textDark'}
         className={'my-3'}
       />
-      {coachVisitNextSteps && (
-        <Card className="bg-uiBg rounded-2xl p-4">
-          <Typography
-            type={'body'}
-            weight="bold"
-            text={`Next steps for ${practitioner?.user?.firstName}`}
-            color={'textDark'}
-            className={'my-3'}
-          />
-          <Typography
-            type={'body'}
-            text={`• ${coachVisitNextSteps}`}
-            color={'textMid'}
-            className={'my-3'}
-          />
-        </Card>
-      )}
+      <Card className="bg-uiBg rounded-2xl p-4">
+        <Typography
+          type={'body'}
+          weight="bold"
+          text={`Next steps for ${practitioner?.user?.firstName}`}
+          color={'textDark'}
+          className={'my-3'}
+        />
+        <Typography
+          type={'body'}
+          text={`• ${coachVisitNextStepsFormatted?.questions[0]?.answer}`}
+          color={'textMid'}
+          className={'my-3'}
+        />
+      </Card>
 
       <Typography
         type={'h4'}

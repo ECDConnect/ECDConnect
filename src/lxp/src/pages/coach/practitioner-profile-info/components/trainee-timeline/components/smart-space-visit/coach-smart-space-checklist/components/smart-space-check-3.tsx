@@ -72,7 +72,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   const coachSmartSpaceVisit1DataNotAttendedStandards = useSelector(
-    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandards
+    traineeSelectors.getCoachSmartSpaceVisit1DataNotAttendedStandardsForStep3
   );
   const coachSmartSpaceVisit1DataNotAttendedStandardsFormatted =
     coachSmartSpaceVisit1DataNotAttendedStandards?.length! > 0
@@ -189,6 +189,7 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   const declineSmartSpaceLicence = useCallback(async () => {
+    await onSubmit();
     await dispatch(
       coachThunkActions.declineSmartSpaceLicenseForTrainee({
         userId: practitioner?.userId!,
@@ -196,7 +197,6 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         nextStepsComments: questions[0].answer,
       })
     );
-    await onSubmit();
     await dispatch(traineeActions.resetCoachSmartSpaceVisitData());
   }, [dispatch, onSubmit, practitioner?.userId, questions]);
 
@@ -240,7 +240,13 @@ export const SmartSpaceCheck3: React.FC<SmartSpaceCheck1Props> = ({
         />
       ),
     });
-  }, [dialog, history]);
+  }, [
+    declineSmartSpaceLicence,
+    dialog,
+    history,
+    practitioner?.user?.firstName,
+    practitioner?.userId,
+  ]);
 
   const renderButton = useMemo(() => {
     if (Number(visitData1Completed) === 17) {

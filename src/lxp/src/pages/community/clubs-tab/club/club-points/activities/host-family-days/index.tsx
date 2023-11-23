@@ -131,18 +131,21 @@ export const HostFamilyDays: React.FC = () => {
         imageUrl={familyIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      {/* EC-1909 - Suppress ticket */}
-      {/* <ScoreCard
+      <ScoreCard
         className="mt-5"
         mainText={String(details?.points ?? 0)}
         hint="points"
         currentPoints={details?.points || 18}
         maxPoints={pointsConfig.max}
         barBgColour="uiLight"
-        barColour={getScoreBarColor(details?.points ?? 0, pointsConfig.green, pointsConfig.amber)}
+        barColour={getScoreBarColor(
+          details?.points ?? 0,
+          pointsConfig.green,
+          pointsConfig.amber
+        )}
         bgColour="uiBg"
         textColour="black"
-      /> */}
+      />
       {!!details?.terms?.length ? (
         <div className="mt-5">
           {details?.terms?.map((item, index) => (

@@ -16,7 +16,7 @@ public class IncomeStatementsAutoSubmit : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public IncomeStatementsAutoSubmit(IServiceScopeFactory scopeFactory, IScheduleConfig<IncomeStatementsAutoSubmit> config, ILogger<IncomeStatementsAutoSubmit> logger)
+    public IncomeStatementsAutoSubmit(IServiceScopeFactory scopeFactory, CronJobConfig<IncomeStatementsAutoSubmit> config, ILogger<IncomeStatementsAutoSubmit> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;
