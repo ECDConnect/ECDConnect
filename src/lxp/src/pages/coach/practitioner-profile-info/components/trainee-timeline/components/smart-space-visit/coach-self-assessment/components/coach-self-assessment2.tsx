@@ -29,12 +29,14 @@ export const CoachSelfAssessment2: React.FC<CoachSelfAssessment1Props> = ({
         color={'textDark'}
         className={'mt-3'}
       />
-      <Typography
-        type={'body'}
-        text={dueDate ? `Due date: ${format(dueDate, 'dd MMM yyyy')}` : ``}
-        color={'textMid'}
-        className={'mb-3'}
-      />
+      {dueDate && (
+        <Typography
+          type={'body'}
+          text={dueDate ? `Due date: ${format(dueDate, 'dd MMM yyyy')}` : ``}
+          color={'textMid'}
+          className={'mb-3'}
+        />
+      )}
 
       <SelfAssessmentAlert practitioner={practitioner} />
 
