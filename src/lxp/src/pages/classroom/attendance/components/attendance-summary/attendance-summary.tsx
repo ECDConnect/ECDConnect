@@ -427,24 +427,25 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         {isValidAttendanceDay ? (
           <div></div>
         ) : (
-          // EC-1909 - Suppress ticket
-          // <PointsSuccessCard
-          //   visible={successMessageVisible}
-          //   isSmartStartUser={isSmartStartUser}
-          //   points={100}
-          //   onClose={() => closeNotification()}
-          //   message={getPointsMessage(isSmartStartUser)}
-          //   icon={''}
-          // />
-          <div>
-            <Alert
-              title={'Today is not a school day.'}
-              message={
-                'This is a great time to catch up on your attendance registers!'
-              }
-              type={'info'}
+          <>
+            <PointsSuccessCard
+              visible={successMessageVisible}
+              isSmartStartUser={isSmartStartUser}
+              points={100}
+              onClose={() => closeNotification()}
+              message={getPointsMessage(isSmartStartUser)}
+              icon={''}
             />
-          </div>
+            <div>
+              <Alert
+                title={'Today is not a school day.'}
+                message={
+                  'This is a great time to catch up on your attendance registers!'
+                }
+                type={'info'}
+              />
+            </div>
+          </>
         )}
 
         {attendanceActionList.length > 0 &&

@@ -296,9 +296,7 @@ export const PractitionerProfile: React.FC = () => {
     {
       title: 'Journey',
       initActive: false,
-      // EC-1909 - Suppress ticket
-      //child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
-      child: 'Coming Soon!',
+      child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
     },
   ];
 

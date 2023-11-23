@@ -15,6 +15,7 @@ import {
   NewClubInput,
   NewClubMemberInput,
   QueryActivityBeCreativeDetailsArgs,
+  QueryActivityChildProgressArgs,
   QueryActivityMeetRegularDetailsArgs,
   QueryClubForUserArgs,
 } from '@ecdlink/graphql';
@@ -26,7 +27,11 @@ import {
   HostFamilyActivityInput,
   NewClubLeaderInput,
 } from '@/services/ClubService/types';
-import { DetailClubDto } from '@/models/club/club.dto';
+import {
+  ActivityChildProgressDto,
+  DetailClubDto,
+} from '@/models/club/club.dto';
+import { LeagueClubsDto } from '@/models/club/league.dto';
 
 export const ClubActions = {
   GET_CLUBS_FOR_COACH: 'getClubsForCoach',
@@ -41,7 +46,9 @@ export const ClubActions = {
   GET_ACTIVITY_MEET_REGULAR_DETAILS: 'getActivityMeetRegularDetails',
   GET_ACTIVITY_BE_CREATIVE_DETAILS: 'getActivityBeCreativeDetails',
   GET_ACTIVITY_HOST_FAMILY_DETAILS: 'getActivityHostFamilyDetails',
+  GET_ACTIVITY_CHILD_PROGRESS_DETAILS: 'getActivityChildProgressDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
+  GET_LEAGUE_FOR_USER: 'getLeagueForUser',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
   ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
   CHANGE_CLUB_SUPPORT_ROLE: 'changeClubSupportRole',
@@ -322,6 +329,31 @@ export const getActivityBeCreativeDetails = createAsyncThunk<
   }
 );
 
+export const getActivityChildProgressDetails = createAsyncThunk<
+  ActivityChildProgressDto,
+  QueryActivityChildProgressArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_CHILD_PROGRESS_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityChildProgressDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getActivityHostFamilyDetails = createAsyncThunk<
   ActivityHostFamilyDays,
   HostFamilyActivityInput,
@@ -361,6 +393,31 @@ export const getClubForUser = createAsyncThunk<
     try {
       if (userAuth?.auth_token) {
         return await new ClubService(userAuth?.auth_token).getClubForUser(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getLeagueForUser = createAsyncThunk<
+  LeagueClubsDto,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_LEAGUE_FOR_USER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).getLeagueForUser(
           input
         );
       } else {

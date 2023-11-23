@@ -12,7 +12,7 @@ public class RevertReassignment : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public RevertReassignment(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config, ILogger<RevertReassignment> logger)
+    public RevertReassignment(IServiceScopeFactory scopeFactory, CronJobConfig<RevertReassignment> config, ILogger<RevertReassignment> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

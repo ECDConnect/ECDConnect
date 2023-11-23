@@ -76,7 +76,11 @@ export const PointsSummary: React.FC = () => {
     });
 
     return pointsList;
-  }, [pointsSummaryDataWithLibrary]);
+  }, [
+    pointsSummaryDataWithLibrary,
+    practitioner?.isFundaAppAdmin,
+    practitioner?.isPrincipal,
+  ]);
 
   const pointsTotal = pointsSummaryDataWithLibrary.reduce(
     (total, current) => (total += current.pointsTotal),
@@ -178,7 +182,12 @@ export const PointsSummary: React.FC = () => {
         />
       );
     }
-  }, [percentageScore, userStanding]);
+  }, [
+    percentageScore,
+    pointsTotalForYear,
+    practitioner?.user?.firstName,
+    userStanding,
+  ]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);
@@ -201,8 +210,7 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMM yyyy')}
           />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-5"
             mainText={`${pointsTotal} points`}
             currentPoints={pointsTotal}
@@ -217,7 +225,7 @@ export const PointsSummary: React.FC = () => {
             }
             bgColour="uiBg"
             textColour="black"
-          /> */}
+          />
           {celebrationCard}
           {!!pointsTodoList && !!pointsTodoList.length && (
             <Typography

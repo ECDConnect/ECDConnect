@@ -187,15 +187,14 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const currentMonthRecord = useMemo(() => {
     var date = new Date();
+    if (isThisMonthSubmitted) {
+      return format(getNextMonth(date), 'MMM yyyy');
+    }
     if (
       !isLastMonthSubmitted &&
       date.getDate() <= IncomeStatementDates.SubmitEndDay
     ) {
       return format(getPreviousMonth(date), 'MMM yyyy');
-    }
-
-    if (isThisMonthSubmitted) {
-      format(getNextMonth(date), 'MMM yyyy');
     }
 
     return format(date, 'MMM yyyy');
@@ -332,7 +331,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     const submittedWithFeesPointsThisMonth =
       submitPreschoolFeesPoints[0].pointsTotal;
     const submitConsecutiveBonusPointsThisMonth =
-      submitStatementConsecutivePoints[0].pointsTotal;
+      submitStatementConsecutivePoints[0]?.pointsTotal;
     const monthTotal =
       submittedPointsThisMonth +
       submittedWithFeesPointsThisMonth +
