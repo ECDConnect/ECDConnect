@@ -5,7 +5,7 @@ import {
   usePanel,
   WorkflowStatusDto,
 } from '@ecdlink/core';
-import { DocumentList, GetAllWorkflowStatus } from '@ecdlink/graphql';
+import { GetAllWorkflowStatus, PersonalRecordsList } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
 import UiTable from '../../components/ui-table';
@@ -14,8 +14,10 @@ import DocumentPanel from './components/document-panel/document-panel';
 
 export default function Documents() {
   const { hasPermission } = useUser();
-
-  const { data: documentData, refetch } = useQuery(DocumentList, {
+  const { data: workflowStatuses } = useQuery(GetAllWorkflowStatus, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const { data: newData, refetch } = useQuery(PersonalRecordsList, {
     variables: {
       showOnlyTypes: ['MaternalCaseRecord', 'RoadToHealthBook'],
       order: [{ updatedDate: 'DESC' }],
@@ -38,32 +40,34 @@ export default function Documents() {
     },
     fetchPolicy: 'cache-and-network',
   });
-  const { data: workflowStatuses } = useQuery(GetAllWorkflowStatus, {
-    fetchPolicy: 'cache-and-network',
-  });
 
   const [tableData, setTableData] = useState<any[]>([]);
 
   useEffect(() => {
-    if (documentData && documentData.allDocument) {
-      const copyItems = documentData.allDocument.map((item: DocumentDto) => ({
-        ...item,
-        fullName: item.user
-          ? `${item.user?.firstName} ${item.user?.surname}`
-          : 'System',
-        type: item.documentType?.name,
-        status: item.workflowStatus?.description,
-        createddate:
-          item.insertedDate !== null
-            ? new Date(item.insertedDate).toISOString()
-            : '',
-        _view: undefined,
-        _edit: undefined,
-        _url: undefined,
-      }));
+    if (newData && newData?.allClientRecords) {
+      const copyItems = newData?.allClientRecords?.map((item: DocumentDto) => {
+        console.log(item);
+        return {
+          ...item,
+          fullName: item.user
+            ? `${item.user?.firstName} ${item.user?.surname}`
+            : 'System',
+          type: item.documentType?.name,
+          status: item.workflowStatus?.description,
+          createdByName: item?.createdByName,
+          clientName: item?.clientName,
+          createdDate:
+            item.insertedDate !== null
+              ? new Date(item.insertedDate).toISOString()
+              : '',
+          _view: undefined,
+          _edit: undefined,
+          _url: undefined,
+        };
+      });
       setTableData(copyItems);
     }
-  }, [documentData]);
+  }, [newData]);
 
   const panel = usePanel();
   const displayPanel = (item: DocumentDto) => {
@@ -73,7 +77,7 @@ export default function Documents() {
     );
     panel({
       noPadding: true,
-      title: 'Edit Document',
+      title: 'View document',
       render: (onSubmit: any) => (
         <DocumentPanel
           item={item}
@@ -93,7 +97,7 @@ export default function Documents() {
   const displayDocument = (document: DocumentDto) => {
     window.open(document.reference, '_blank');
   };
-
+  console.log({ tableData });
   if (tableData) {
     return (
       <div>
@@ -103,11 +107,11 @@ export default function Documents() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'fullName', use: 'user' },
-                    { field: 'name', use: 'name' },
+                    { field: 'fullName', use: 'Client' },
+                    { field: 'createdByName', use: 'CHW' },
                     { field: 'type', use: 'type' },
-                    { field: 'createddate', use: 'date' },
-                    { field: 'status', use: 'status' },
+                    { field: 'insertedDate', use: 'Date added' },
+                    { field: 'status', use: 'Client status' },
                   ]}
                   rows={tableData}
                   editRow={
