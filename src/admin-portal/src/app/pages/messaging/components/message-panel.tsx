@@ -1,154 +1,195 @@
 import {
   Alert,
   Button,
-  DatePicker,
   Typography,
-  FormInput,
+  ActionModal,
+  Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
 import { CalendarIcon } from '@heroicons/react/solid';
-import { useMutation, useQuery } from '@apollo/client';
+import { useQuery, useLazyQuery, useMutation } from '@apollo/client';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import * as yup from 'yup';
+import * as Yup from 'yup';
 import {
-  GetAllProvince,
   FilterRoleList,
+  GetAllWards,
   GetUserCountForMessageCriteria,
+  SaveBulkMessagesForAdmin,
 } from '@ecdlink/graphql';
-import FormSelectorField from '../../../components/form-selector-field/form-selector-field';
 import {
-  ProvinceDto,
-  RoleDto,
-  useDialog,
-  MessageLogDto,
-  LocalStorageKeys,
   AuthUser,
+  LocalStorageKeys,
+  MessageLogDto,
+  RoleDto,
+  WardDto,
 } from '@ecdlink/core';
-import { useCallback, useEffect, useState } from 'react';
-import AlertError from '../../../components/alerts/error';
-import AlertModal from '../../../components/dialog-alert/dialog-alert';
+import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-
+import { XIcon } from '@heroicons/react/solid';
+import MessageForm from './message-form';
 export interface PanelProps {
-  message?: any;
+  message?: MessageLogDto;
   closeDialog: (value: boolean) => void;
+  setFormIsDirty?: (value: boolean) => void;
+  isView?: boolean;
 }
 
 export default function MessagePanel(props: PanelProps) {
-  const dialog = useDialog();
-  const [provinceData, setProvinceData] = useState<ProvinceDto[]>([]);
-  // const [regionData, setRegionData] = useState<string[]>([]);
-  const [roleData, setRoleData] = useState<RoleDto[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<RoleDto[]>([]);
-  const [messageDate, setMessageDate] = useState<Date>(null);
-  const [messageText, setMessageText] = useState('');
-  const [messageTitle, setMessageTitle] = useState('');
-  const [formIsValid, setFormIsValid] = useState(false);
-  const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
-  const [userCount, setUserCount] = useState(0);
-  const [isEdit, setEdit] = useState(props.message ? true : false);
-  const user = localStorage.getItem(LocalStorageKeys.user);
-
-  const { data: provinces } = useQuery(GetAllProvince, {
-    fetchPolicy: 'cache-and-network',
+  const messageSchema = Yup.object().shape({
+    subject: Yup.string()
+      .required('Message title is required')
+      .max(50, 'Message title too long'),
+    message: Yup.string()
+      .required('Message text is required')
+      .max(160, 'Message text too long'),
+    messageDate: Yup.date(), //.required('Message date is required'),
+    messageTime: Yup.string(), //.required('Message time is required'),
+    roleIds: Yup.array()
+      .min(1, 'Choose at least 1 role')
+      .required('Roles are required'),
+    provinceId: Yup.string(),
+    wardName: Yup.string(),
   });
 
-  // const { data: regions } = useQuery(GetAllRegions, {
-  //     fetchPolicy: 'cache-and-network',
-  // });
+  const roleIds: string[] = [];
+  const initialMessageValues: MessageLogDto = {
+    subject: '',
+    message: '',
+    messageDate: new Date(),
+    messageTime: '',
+    toGroups: '',
+    provinceId: '',
+    wardName: '',
+    districtId: '',
+    sendByUserId: '',
+    roleIds: roleIds,
+    roleNames: '',
+  };
+
+  // FORMS
+  const {
+    register: messageRegister,
+    formState: messageFormState,
+    getValues: messageGetValues,
+    setValue: messageSetValue,
+  } = useForm({
+    resolver: yupResolver(messageSchema),
+    defaultValues: initialMessageValues,
+    mode: 'onBlur',
+  });
+
+  const {
+    errors: messageFormErrors,
+    isValid: isMessageValid,
+    isDirty,
+  } = messageFormState;
+
+  const user = localStorage.getItem(LocalStorageKeys.user);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+  const [showSavingDialog, setShowSavingDialog] = useState(false);
+  const [userCount, setUserCount] = useState(0);
+  const [selectedRoles, setSelectedRoles] = useState<RoleDto[]>([]);
+  const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
+  const [wardData, setWardData] = useState<WardDto[]>([]);
+  const [wardName, setWardName] = useState('');
+  const [currentMessage, setCurrentMessage] = useState(props.message);
+
+  const { data: wards } = useQuery(GetAllWards, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const { data: roles } = useQuery(FilterRoleList, {
     fetchPolicy: 'cache-and-network',
   });
 
   useEffect(() => {
-    if (provinces) {
-      const copyItems = Object.assign([], provinces.GetAllProvince);
-      const newProvince: ProvinceDto = {
-        id: '',
-        description: 'Click to choose a province',
-        enumId: '',
-      };
-      copyItems.unshift(newProvince);
-      setProvinceData(copyItems);
-    }
-    if (roles) {
-      setRoleData(roles.roles);
-    }
-    // if (regions) {
-    //     setRegionData(regions.GetAllRegions);
-    // }
-
     if (user) {
       setAuthenticatedUser(JSON.parse(user));
     }
-  }, [provinces, roles, user]);
-
-  // Form
-  const messageSchema = yup.object().shape({
-    messageTitle: yup
-      .string()
-      .required('Message title is required')
-      .max(50, 'Message title too long'),
-    messageText: yup
-      .string()
-      .required('Message text is required')
-      .max(160, 'Message text too long'),
-    messageDate: yup.date().required('Message date is required'),
-    messageTime: yup.string().required('Message time is required'),
-    roleNames: yup.array(),
-    provinceId: yup.string(),
-  });
-
-  const initialMessageValues = {
-    messageTitle: '',
-    messageText: '',
-    messageDate: new Date(),
-    messageTime: '',
-    roleNames: [],
-    provinceId: '',
-    wardName: '',
-    districtId: '',
-  };
-
-  const { register, handleSubmit, setValue, formState, getValues } = useForm({
-    resolver: yupResolver(messageSchema),
-    defaultValues: initialMessageValues,
-    mode: 'onChange',
-  });
-  const { errors, isValid, isSubmitted } = formState;
-
-  const onRoleSelectionChange = (item) => {
-    const isSelected = selectedRoles.includes(item);
-    let updateSelectedRoles = [];
-
-    if (isSelected) {
-      updateSelectedRoles = selectedRoles.filter(
-        (selectedRow) => selectedRow !== item
-      );
-    } else {
-      updateSelectedRoles = [...selectedRoles, item];
+    if (wards) {
+      const copyItems = Object.assign([], wards.allWards);
+      const newWard: WardDto = {
+        provinceId: '',
+        ward: 'Click to choose a district',
+      };
+      copyItems.unshift(newWard);
+      setWardData(wards.allWards);
     }
-    setSelectedRoles(updateSelectedRoles);
-  };
+    if (currentMessage) {
+      console.log('currentMessage', currentMessage);
 
-  const onShowDialog = () => {
-    if (Object.keys(errors).length === 0) {
-      // get user count for selected criteria
+      if (currentMessage.roleIds.length != 0) {
+        if (roles) {
+          const availableRoles = Object.assign([], roles.roles);
+          const messageRoles = [];
 
-      saveDialog();
+          currentMessage.roleIds.forEach((roleId) => {
+            messageRoles.push(
+              availableRoles.find((item) => item.id.indexOf(roleId) !== -1)
+            );
+          });
+          setSelectedRoles(messageRoles);
+          messageSetValue('roleIds', messageRoles.map(({ id }) => id) ?? [], {
+            shouldValidate: true,
+          });
+        }
+      }
+
+      if (currentMessage.wardName != '') {
+        const wardIndex = wardData.findIndex((item) =>
+          item.ward.indexOf(currentMessage.wardName)
+        );
+        setWardName(wardName);
+        messageSetValue('wardName', wardIndex.toString(), {
+          shouldValidate: true,
+        });
+      }
+
+      if (currentMessage.messageDate != null) {
+        const messageDate = new Date(currentMessage.messageDate);
+        const messageHours = messageDate.getHours();
+        const messageMinute =
+          (messageDate.getMinutes() < 10 ? '0' : '') + messageDate.getMinutes();
+
+        messageSetValue('messageTime', messageHours + ':' + messageMinute, {
+          shouldValidate: true,
+        });
+
+        messageSetValue(
+          'messageDate',
+          new Date(currentMessage.messageDate) ?? undefined,
+          {
+            shouldValidate: false,
+          }
+        );
+      }
+
+      messageSetValue('provinceId', currentMessage.provinceId ?? '', {
+        shouldValidate: true,
+      });
+
+      messageSetValue('districtId', currentMessage.districtId ?? '', {
+        shouldValidate: true,
+      });
+
+      messageSetValue('subject', currentMessage.subject ?? '', {
+        shouldValidate: true,
+      });
+      messageSetValue('message', currentMessage.message ?? '', {
+        shouldValidate: true,
+      });
     }
-  };
+  }, [user, wards, currentMessage, roles]);
 
-  const { data: totalUsers, refetch: refetchTotalUsers } = useQuery(
+  const [getUserCountForMessageCriteria, { data: totalUsers }] = useLazyQuery(
     GetUserCountForMessageCriteria,
     {
       fetchPolicy: 'cache-and-network',
       variables: {
-        provinceId: getValues('provinceId'),
-        districtId: getValues('districtId'),
-        wardName: getValues('wardName'),
+        provinceId: messageGetValues('provinceId'),
+        districtId: messageGetValues('districtId'),
+        wardName: wardName,
         roleIds: selectedRoles.map(({ id }) => id),
       },
     }
@@ -160,313 +201,251 @@ export default function MessagePanel(props: PanelProps) {
     }
   }, [totalUsers]);
 
+  const [isEdit, setEdit] = useState(props.message ? true : false);
+  const [saveBulkMessagesForAdmin] = useMutation(SaveBulkMessagesForAdmin);
+  const messageForm = messageGetValues();
+
+  const onShowDialog = () => {
+    getUserCountForMessageCriteria();
+    setShowSavingDialog(true);
+  };
+
   const onSaveMessage = async () => {
     if (isEdit) {
       // edit message
     } else {
-      const formValues = getValues();
+      const formValues = messageGetValues();
+      const messageDate = formValues.messageDate;
+      const messageTimeItems = formValues.messageTime.split(':');
+      const hour = messageTimeItems[0];
+      const minute = messageTimeItems[1];
+
+      let toGroups = '';
+
+      if (formValues.districtId != '') {
+        toGroups += 'District:' + formValues.districtId + '|';
+      }
+      if (wardName != '') {
+        toGroups += 'Ward:' + wardName + '|';
+      }
+      if (formValues.provinceId != '') {
+        toGroups += 'Province:' + formValues.provinceId + '|';
+      }
+      if (selectedRoles.length != 0) {
+        toGroups += 'Role:' + selectedRoles.map(({ id }) => id);
+      }
+
       const inputModel: MessageLogDto = {
-        districtId: '',
+        districtId: formValues.districtId,
+        wardName: wardName,
         provinceId: formValues.provinceId,
-        toGroups: selectedRoles.map(({ id }) => id),
+        toGroups: toGroups,
         sendByUserId: authenticatedUser.id,
-        message: formValues.messageText,
-        messageDate: formValues.messageDate,
+        message: formValues.message,
+        messageDate: new Date(
+          messageDate.getFullYear(),
+          messageDate.getMonth(),
+          messageDate.getDate(),
+          +hour,
+          +minute
+        ),
         messageTime: formValues.messageTime,
-        subject: formValues.messageTitle,
+        subject: formValues.subject,
+        roleIds: selectedRoles.map(({ id }) => id),
+        roleNames: '',
       };
 
-      console.log('inputmodel', inputModel);
-      // add message
+      await saveBulkMessagesForAdmin({
+        variables: {
+          input: inputModel,
+        },
+      })
+        .then((response) => {
+          //   setNotification({
+          //     title: 'Successfully created a bulk message!',
+          //     variant: NOTIFICATION.SUCCESS,
+          //   });
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+
+      props.closeDialog(true);
     }
   };
 
-  const getErrors = () => {
-    const currentErrors = [];
-    if (selectedRoles.length == 0) {
-      currentErrors.push('Roles are required');
-    } else {
-      if (
-        selectedRoles.findIndex((x) => x.name === 'Community Health Worker') !=
-          -1 ||
-        selectedRoles.findIndex((x) => x.name === 'Team Lead') != -1
-      ) {
-        if (errors.provinceId?.message) {
-          currentErrors.push(errors.provinceId?.message);
-        }
+  const panelSetRoles = async (roles: RoleDto[]) => {
+    setSelectedRoles(roles);
+  };
+
+  useEffect(() => {
+    if (messageForm) {
+      // console.log('messageForm', messageForm);
+      if (messageForm.wardName != '') {
+        // console.log('wardname', messageForm.wardName);
+
+        const wardIndex = +messageGetValues('wardName');
+        //setWardName(wardData[wardIndex - 1].ward);
       }
     }
-    if (messageDate == undefined)
-      currentErrors.push('Message date is required');
-    if (errors.messageTime?.message)
-      currentErrors.push(errors.messageTime?.message);
-    if (errors.messageTitle?.message)
-      currentErrors.push(errors.messageTitle?.message);
-    if (errors.messageText?.message)
-      currentErrors.push(errors.messageText?.message);
+  }, [messageForm]);
 
-    messageSchema.isValidSync(getValues());
-
-    if (Object.keys(errors).length === 0) {
-      setFormIsValid(true);
-    }
-    return currentErrors;
+  const getIsValid = () => {
+    return isMessageValid ? true : false;
   };
 
-  const saveDialog = async () => {
-    dialog({
-      blocking: false,
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title={
-            `Schedule message for ` +
-            format(getValues('messageDate'), 'dd MMMM') +
-            ` at ` +
-            getValues('messageTime') +
-            ` ?`
-          }
-          btnText={['Yes schedule', 'No cancel']}
-          message={
-            `This message will be sent to ` +
-            userCount +
-            ` people (` +
-            selectedRoles.map((x) => {
-              return x.name;
-            }) +
-            `).`
-          }
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSaveMessage();
-            onCancel();
-          }}
-        />
-      ),
-    });
+  const getComponent = () => {
+    return (
+      <>
+        {isDirty && (
+          <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+            <button
+              className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+              onClick={() => setDisplayFormIsDirty(true)}
+            >
+              <span className="sr-only">Close panel</span>
+              <XIcon className="h-6 w-6" aria-hidden="true" />
+            </button>
+          </div>
+        )}
+        <div>
+          <div className="pb-2">
+            <hr className="border-b border-dashed border-gray-500 px-2" />
+            {props.isView ? (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                message={`You can view the sent message but you cannot edit.`}
+                title={
+                  `This message was last sent on ` + currentMessage.messageDate
+                }
+                type="warning"
+              />
+            ) : (
+              <Alert
+                className="mt-2 mb-2 rounded-md"
+                message={`Messages will only be sent to active users.`}
+                type="info"
+              />
+            )}
+          </div>
+
+          <MessageForm
+            formKey={`message-${new Date().getTime()}`}
+            register={messageRegister}
+            errors={messageFormErrors}
+            messageSetValue={messageSetValue}
+            panelSetRoles={panelSetRoles}
+            editMessageDate={currentMessage?.messageDate ?? undefined}
+            editRoles={selectedRoles}
+            wardData={wardData}
+            isView={props.isView}
+          />
+
+          <Button
+            className="mt-3 mr-6 w-full rounded"
+            type="filled"
+            color="secondary"
+            onClick={onShowDialog}
+            disabled={!getIsValid() || props.isView}
+          >
+            <CalendarIcon color="white" className="mr-6 h-6 w-6" />
+            <Typography
+              type="help"
+              color="white"
+              text="Schedule message"
+            ></Typography>
+          </Button>
+        </div>
+        <Dialog
+          className="px-60"
+          stretch
+          visible={displayFormIsDirty}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`Discard unsaved changes?`}
+            detailText={'If you leave now, you will lose all of your changes.'}
+            actionButtons={[
+              {
+                text: 'Keep editing',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => setDisplayFormIsDirty(false),
+                leadingIcon: 'PencilIcon',
+              },
+              {
+                text: 'Discard changes',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  props.closeDialog(false);
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        </Dialog>
+
+        <Dialog
+          className="px-60"
+          stretch
+          visible={showSavingDialog}
+          position={DialogPosition.Middle}
+        >
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={
+              `Schedule message for ` +
+              format(messageGetValues('messageDate'), 'dd MMMM') +
+              ` at ` +
+              messageGetValues('messageTime') +
+              ` ?`
+            }
+            detailText={
+              `This message will be sent to ` +
+              userCount +
+              ` people (` +
+              selectedRoles.map((x) => {
+                return x.name;
+              }) +
+              `).`
+            }
+            actionButtons={[
+              {
+                text: 'Yes schedule',
+                textColour: 'secondary',
+                colour: 'secondary',
+                type: 'outlined',
+                onClick: () => onSaveMessage(),
+                leadingIcon: 'PencilIcon',
+              },
+              {
+                text: 'No cancel',
+                textColour: 'white',
+                colour: 'secondary',
+                type: 'filled',
+                onClick: () => {
+                  setShowSavingDialog(false);
+                },
+                leadingIcon: 'TrashIcon',
+              },
+            ]}
+          />
+        </Dialog>
+      </>
+    );
   };
 
   return (
-    <div>
-      <hr className="border-b border-dashed border-gray-500 px-2" />
-
-      <Alert
-        className="mt-2 mb-2 rounded-md"
-        message={`Messages will only be sent to active users.`}
-        type="info"
-      />
-
-      <form className="space-y-8 divide-y divide-gray-200">
-        <div className="space-y-0">
-          <div className="grid grid-cols-1 ">
-            <div className="my-4 sm:col-span-3">
-              <Typography
-                type={'body'}
-                color="textMid"
-                weight="bold"
-                text={`Which users would you like to send this message to?`}
-                className={'mt-4 ml-4'}
-              />
-
-              {roleData &&
-                roleData.map((item: any) => (
-                  <div
-                    key={item.id}
-                    className="mt-1 ml-4 mr-4 flex items-center"
-                  >
-                    <div
-                      className="bg-uiBg relative flex w-full items-center rounded p-1"
-                      onClick={(e) => onRoleSelectionChange(item)}
-                    >
-                      <input
-                        type="checkbox"
-                        name="roleNames"
-                        checked={selectedRoles.includes(item)}
-                        id={item.id}
-                        {...register('roleNames')}
-                        className="focus:ring-primary text-primary h-4 w-4 rounded border-gray-300"
-                      />
-                      <Typography
-                        text={item.name}
-                        type="body"
-                        color={'textMid'}
-                        className="ml-2 p-1 text-sm font-medium text-gray-900"
-                      />
-                    </div>
-                  </div>
-                ))}
-
-              <div className="mt-4 ml-4 mr-4">
-                <Typography
-                  type={'body'}
-                  color="textMid"
-                  weight="bold"
-                  text={`Select provinces`}
-                />
-
-                <FormSelectorField
-                  label="Optional - if you would like to send this message to users in a specific province only, select the province below."
-                  nameProp={'provinceId'}
-                  register={register}
-                  options={
-                    provinceData &&
-                    provinceData.map((x: ProvinceDto) => {
-                      return { key: x.id, value: x.description };
-                    })
-                  }
-                />
-              </div>
-              {/* Pending until development for districts are completed */}
-              {/* <div className="mt-4 ml-4 mr-4">
-                                <Typography
-                                    type={'body'}
-                                    color="textMid"
-                                    weight="bold"
-                                    text={`Select districts`}
-                                    />
-
-                                <FormSelectorField
-                                    label="Optional - if you would like to send this message to users in a specific district only, select the district below."
-                                    nameProp={'districtName'}
-                                    register={register}
-                                    options={
-                                        regionData &&
-                                        regionData.map((x: any) => {
-                                            return { key: x.ward, value: x.ward };
-                                        })
-                                    }
-                                    />
-                            </div> */}
-
-              <div className="gap-2">
-                <Typography
-                  type={'body'}
-                  color="textMid"
-                  weight="bold"
-                  text={`When would you like to send this message?`}
-                  className={'mt-4 ml-4'}
-                />
-                <div className="center-items flex">
-                  <div className="ml-4 w-full">
-                    <Typography
-                      type={'markdown'}
-                      weight="normal"
-                      text={`Date`}
-                    />
-                    <DatePicker
-                      placeholderText={`Click to choose a date`}
-                      wrapperClassName="text-left"
-                      name="messageDate"
-                      className="text-textMid bg-uiBg ml-4"
-                      selected={messageDate ? new Date(messageDate) : undefined}
-                      onChange={(date: Date) => {
-                        setMessageDate(date);
-                        setValue('messageDate', date);
-                      }}
-                      minDate={new Date()}
-                      dateFormat="EEE, dd MMM yyyy"
-                    />
-                  </div>
-                  <div className="ml-4 mr-4 w-full">
-                    <Typography
-                      type={'markdown'}
-                      weight="normal"
-                      text={`Time`}
-                    />
-                    <span>
-                      <input
-                        type="time"
-                        name="messageTime"
-                        {...register('messageTime')}
-                      />
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="gap-2">
-                <Typography
-                  type={'body'}
-                  color="textMid"
-                  weight="bold"
-                  text={`Message title*`}
-                  className={'mt-4 ml-4'}
-                />
-                <Typography
-                  type={'markdown'}
-                  fontSize={'16'}
-                  text={'Character limit: 50'}
-                  className={'ml-4'}
-                />
-                <FormInput
-                  register={register}
-                  nameProp={'messageTitle'}
-                  placeholder="Message title"
-                  label=""
-                  type={'text'}
-                  maxCharacters={50}
-                  maxLength={50}
-                  className={'ml-4 mr-4'}
-                  value={messageTitle}
-                  onChange={(event) => {
-                    setMessageTitle(event.target.value);
-                    setValue('messageTitle', event.target.value);
-                  }}
-                ></FormInput>
-              </div>
-              <div className="gap-2">
-                <Typography
-                  type={'body'}
-                  color="textMid"
-                  weight="bold"
-                  text={`Message text*`}
-                  className={'mt-4 ml-4'}
-                />
-                <Typography
-                  type={'markdown'}
-                  fontSize={'16'}
-                  text={'Character limit: 160'}
-                  className={'ml-4'}
-                />
-                <FormInput
-                  register={register}
-                  nameProp={'messageText'}
-                  placeholder="Message text"
-                  label=""
-                  type={'text'}
-                  textInputType={'textarea'}
-                  maxCharacters={160}
-                  maxLength={160}
-                  className={'ml-4 mr-4'}
-                  value={messageText}
-                  onChange={(event) => {
-                    setMessageText(event.target.value);
-                    setValue('messageText', event.target.value);
-                  }}
-                />
-              </div>
-              {isSubmitted && !formIsValid ? (
-                <div className="pt-8">
-                  <AlertError alertMessage="Form Errors" errors={getErrors()} />
-                </div>
-              ) : null}
-              <Button
-                className="mt-3 mr-6 w-full rounded"
-                type="filled"
-                color="secondary"
-                onClick={handleSubmit(onShowDialog)}
-              >
-                <CalendarIcon color="white" className="mr-6 h-6 w-6" />
-                <Typography
-                  type="help"
-                  color="white"
-                  text="Schedule message"
-                ></Typography>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </form>
-    </div>
+    <article>
+      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+    </article>
   );
 }

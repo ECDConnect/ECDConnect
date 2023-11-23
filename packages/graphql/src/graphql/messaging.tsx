@@ -6,23 +6,29 @@ export const MessageList = gql`
       message
       subject
       messageDate
-      messageEndDate
       status
       toGroups
+      provinceId
+      wardName
+      districtId
+      roleIds
+      roleNames
     }
   }
 `;
 
-export const SaveMessagesForAdmin = gql`
-  mutation SaveMessagesForAdmin($input: MessageLogModelInput) {
-    saveMessagesForAdmin(input: $input) {
-      message
-      subject
-      messageDate
-      messageEndDate
-      status
-      toGroups
+export const GetAllWards = gql`
+  query GetAllWards {
+    allWards {
+      provinceId
+      ward
     }
+  }
+`;
+
+export const SaveBulkMessagesForAdmin = gql`
+  mutation SaveBulkMessagesForAdmin($input: MessageLogModelInput) {
+    saveBulkMessagesForAdmin(input: $input)
   }
 `;
 

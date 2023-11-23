@@ -6,12 +6,13 @@ import {
   LocalStorageKeys,
   AuthUser,
   RoleDto,
+  MessageLogDto,
 } from '@ecdlink/core';
 import MessagePanel from './components/message-panel';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 import debounce from 'lodash.debounce';
-import UiTable from '../../components/ui-table';
+import UiTable from '../../components/old-ui-table';
 import { FilterRoleList, MessageList } from '@ecdlink/graphql';
 import { useQuery } from '@apollo/client';
 import {
@@ -53,7 +54,7 @@ export default function Messaging() {
   const { data: messages, refetch } = useQuery(MessageList, {
     fetchPolicy: 'cache-and-network',
     variables: {
-      userId: 'c7f3ac46-dc54-4915-a01d-8bc673d3f6f6', //authenticatedUser?.id,
+      userId: authenticatedUser?.id,
     },
   });
 
@@ -62,21 +63,18 @@ export default function Messaging() {
       setRoleData(roles.roles);
     }
     if (messages) {
-      const copyItems = messages.allMessageLogsForAdmin.map((item: any) => ({
-        ...item,
-        message: item.message,
-        subject: item.subject,
-        messageDate:
-          item.messageDate !== null
-            ? format(new Date(item.messageDate), 'dd MMM yyyy hh:mm')
-            : '',
-        messageEndDate:
-          item.messageEndDate !== null
-            ? format(new Date(item.messageEndDate), 'dd MMM yyyy hh:mm')
-            : '',
-        status: item.status,
-        toGroups: item.toGroups,
-      }));
+      const copyItems = messages.allMessageLogsForAdmin.map(
+        (item: MessageLogDto) => ({
+          ...item,
+          message: item.message,
+          subject: item.subject,
+          messageDate:
+            item.messageDate !== null
+              ? format(new Date(item.messageDate), 'dd MMM yyyy hh:mm')
+              : '',
+          status: item.messageDate > new Date() ? 'Scheduled' : 'Sent',
+        })
+      );
 
       setTableData(copyItems);
     }
@@ -84,13 +82,13 @@ export default function Messaging() {
 
   const displayMessagePanel = () => {
     panel({
-      noPadding: true,
+      noPadding: false,
       title: 'Send a message',
       render: (onSubmit: any) => (
         <MessagePanel
+          isView={false}
           closeDialog={(messageCreated: boolean) => {
             onSubmit();
-
             if (messageCreated) {
               refetch();
             }
@@ -100,17 +98,27 @@ export default function Messaging() {
     });
   };
 
-  const viewSelectedRow = (selectedRow: any) => {
-    localStorage.setItem(
-      'selectedUser',
-      selectedRow?.userId ?? selectedRow?.id
-    );
-    history.push({
-      pathname: '/users/view-user',
-      state: {
-        component: 'administrators',
-        userId: selectedRow?.userId,
-      },
+  const displayEditViewMessagePanel = (message: MessageLogDto) => {
+    var messageDate = new Date(message.messageDate);
+    var messageTitle =
+      messageDate < new Date() ? 'View message' : 'Edit message';
+    var isView = messageDate < new Date() ? true : false;
+
+    panel({
+      noPadding: false,
+      title: messageTitle,
+      render: (onSubmit: any) => (
+        <MessagePanel
+          isView={isView}
+          message={message}
+          closeDialog={(messageCreated: boolean) => {
+            onSubmit();
+            if (messageCreated) {
+              refetch();
+            }
+          }}
+        />
+      ),
     });
   };
 
@@ -292,18 +300,16 @@ export default function Messaging() {
               <UiTable
                 columns={[
                   { field: 'message', use: 'Message text' },
-                  { field: 'toGroups', use: 'Send to (roles)' },
+                  { field: 'roleNames', use: 'Send to (roles)' },
                   { field: 'status', use: 'Status' },
                   { field: 'messageDate', use: 'Scheduled date' },
                 ]}
-                viewRow={viewSelectedRow}
                 rows={tableData}
-                sendRow={true}
-                searchInput={searchValue}
-                options={{
-                  per_page: selectedPageSize,
-                  rows: tableData?.length,
-                }}
+                viewRow={displayEditViewMessagePanel}
+                editRow={
+                  hasPermission(PermissionEnum.update_system) &&
+                  displayEditViewMessagePanel
+                }
                 component={'messaging'}
               />
             </div>

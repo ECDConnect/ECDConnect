@@ -17,6 +17,8 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
 using ECDLink.Abstractrions.Enums;
+using EcdLink.Api.CoreApi.GraphApi.Models;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -100,7 +102,7 @@ namespace EcdLink.Api.CoreApi.Services
                             To = (user != null ? user.Id : userType),
                             Status = status,
                             CTA = templateItem.CTA,
-                            CTAText = templateItem.CTAText,
+                            CTAText = templateItem.CTAText
                         };
                         if (messageEndDate != null)
                         {
@@ -170,7 +172,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public async Task<MessageLog> CommitNotification(Notification notification, MessageTemplate template)
         {
-            try
+           try
             {
                 if (notification.To != null)
                 {
@@ -191,17 +193,18 @@ namespace EcdLink.Api.CoreApi.Services
                         Status = notification.Status,
                         SentByUserId = notification.FromUserId,
                         CTA = notification.CTA,
-                        CTAText = notification.CTAText
+                        CTAText = notification.CTAText,
+                        ToGroups = notification.ToGroups
                     });
                 } else return null;
-            } catch (Exception ex)
-            {
-                throw ex;                
-            }
+           } catch (Exception ex)
+           {
+               throw ex;                
+           }
 
         }
 
-        public async Task<bool> SendGenericMessage(string to, string toGroups, string message,string subject, string ctaText, DateTime sendDate, DateTime messageEndDate)
+        public async Task<bool> SendGenericMessage(string to, string toGroups, string message, string subject, DateTime sendDate, MessageTemplate template, DateTime? messageEndDate = null)
         {
             Notification notification = new Notification()
             {
@@ -211,9 +214,12 @@ namespace EcdLink.Api.CoreApi.Services
                 Subject = subject,
                 MessageDate = sendDate,
                 MessageEndDate = messageEndDate,
-                FromUserId = Guid.Parse(_uId)
+                FromUserId = Guid.Parse(_uId),
+                MessageTemplate = template,
+                MessageProtocol = template.Protocol,
+                Status = MessageStatusConstants.Blue
+
             };
-            MessageTemplate template = RetrieveTemplate(TemplateTypeConstants.GenericMessage).Result.FirstOrDefault();
             await CommitNotification(notification, template);
             return true;
         }
@@ -304,6 +310,50 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             return new MessageTemplateText() { Message = message, Subject = subject, CTAText = ctaText, CTA = cta };
+        }
+
+        public MessageLogModel RetrieveToGroupItems(string toGroups)
+        {
+            MessageLogModel model = new MessageLogModel();
+
+            var toGroupsItems = toGroups.Split("|");
+            var provinceId = "";
+            var wardName = "";
+            var districtId = "";
+            var roleIds = new List<string>();
+            var savedRoles = "";
+
+            foreach (var toGroup in toGroupsItems)
+            {
+                if (toGroup.IndexOf("Province:") != -1)
+                {
+                    provinceId = toGroup.Split(':')[1];
+                }
+
+                if (toGroup.IndexOf("Ward:") != -1)
+                {
+                    wardName = toGroup.Split(':')[1];
+                }
+
+                if (toGroup.IndexOf("District:") != -1)
+                {
+                    districtId = toGroup.Split(':')[1];
+                }
+
+                if (toGroup.IndexOf("Role:") != -1)
+                {
+                    savedRoles = toGroup.Split(':')[1];
+                    roleIds = savedRoles.Split(",").ToList();
+
+                }
+            }
+            model.ProvinceId = provinceId;
+            model.WardName = wardName;
+            model.DistrictId = districtId;
+            model.RoleIds = roleIds;
+
+            return model;
+
         }
 
     }
