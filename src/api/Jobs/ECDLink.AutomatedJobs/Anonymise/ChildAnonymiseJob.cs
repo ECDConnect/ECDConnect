@@ -12,7 +12,7 @@ namespace ECDLink.AutomatedJobs.Anonymise
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public ChildAnonymiseJob(IServiceScopeFactory scopeFactory, IScheduleConfig<ChildAnonymiseJob> config, ILogger<ChildAnonymiseJob> logger)
+        public ChildAnonymiseJob(IServiceScopeFactory scopeFactory, CronJobConfig<ChildAnonymiseJob> config, ILogger<ChildAnonymiseJob> logger)
             : base(config, logger)
         {
             _scopeFactory = scopeFactory;
