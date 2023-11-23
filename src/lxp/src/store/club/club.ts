@@ -4,6 +4,7 @@ import {
   acceptNewClubLeaderRole,
   addBeCreativeActivity,
   addClubMeeting,
+  addFamilyDayMeeting,
   addNewClub,
   addNewClubLeader,
   addNewClubMembers,
@@ -36,6 +37,7 @@ const initialState: ClubState = {
   clubsForCoach: {},
   addClubMeetingSyncInputs: [],
   addBeCreativeActivitySyncInputs: [],
+  addFamilyDayMeetingSyncInputs: [],
 };
 
 const clubSlice = createSlice({
@@ -101,6 +103,26 @@ const clubSlice = createSlice({
         state.addBeCreativeActivitySyncInputs = [
           ...(state.addBeCreativeActivitySyncInputs || []),
           newActivity,
+        ];
+      }
+    },
+    addFamilyDayMeeting: (state, action: PayloadAction<ClubMeetingInput>) => {
+      const newMeeting = action.payload as ClubMeetingInput;
+      const existingMeetingIndex =
+        state.addFamilyDayMeetingSyncInputs?.findIndex(
+          (meeting) => meeting?.meetingDate === newMeeting?.meetingDate
+        );
+
+      if (
+        state.addFamilyDayMeetingSyncInputs &&
+        existingMeetingIndex !== undefined &&
+        existingMeetingIndex !== -1
+      ) {
+        state.addFamilyDayMeetingSyncInputs[existingMeetingIndex] = newMeeting;
+      } else {
+        state.addFamilyDayMeetingSyncInputs = [
+          ...(state.addFamilyDayMeetingSyncInputs || []),
+          newMeeting,
         ];
       }
     },
@@ -322,6 +344,23 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, changeClubSupportRole);
     setThunkActionStatus(builder, addClubMeeting);
     setThunkActionStatus(builder, addBeCreativeActivity);
+    setThunkActionStatus(builder, addFamilyDayMeeting);
+    builder.addCase(addFamilyDayMeeting.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      const meta = action.meta.arg as ClubMeetingInput;
+      const meetingDate = meta?.meetingDate;
+
+      if (meetingDate) {
+        state.addFamilyDayMeetingSyncInputs =
+          state.addFamilyDayMeetingSyncInputs?.filter(
+            (meeting) => meeting?.meetingDate !== meetingDate
+          );
+        return;
+      }
+      // clear all meetings (sync)
+      state.addFamilyDayMeetingSyncInputs = [];
+    });
     builder.addCase(addBeCreativeActivity.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 

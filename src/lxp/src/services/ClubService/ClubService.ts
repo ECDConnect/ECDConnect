@@ -839,6 +839,33 @@ class ClubService {
 
     return response.data.data.activityHostFamilyDetails;
   }
+
+  async addFamilyDayMeeting(input: ClubMeetingInput): Promise<ClubMeeting> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addFamilyDayMeeting: ClubMeeting };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddFamilyDayMeeting($input: ClubMeetingModelInput) {
+          addFamilyDayMeeting(input: $input) {
+              id
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add family day meeting failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addFamilyDayMeeting;
+  }
 }
 
 export default ClubService;

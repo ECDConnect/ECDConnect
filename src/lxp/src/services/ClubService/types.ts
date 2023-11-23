@@ -10,11 +10,14 @@ export interface ChangeClubSupportRoleInput {
 
 export interface ClubMeetingInput {
   meetingDate: string;
+  meetingType?: string;
   meetingNotes?: string;
   clubId: string;
-  coachAttend: boolean;
+  coachAttend?: boolean;
   totalCaregiversAttended: number;
   clubMeetingParticipants: { practitionerId: string; attended: boolean }[];
+  fileType?: string;
+  imageBase64?: string;
 }
 
 export interface BeCreativeActivityInput {
