@@ -29,11 +29,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             string loggedByUser,
             string classProgram = null,
             DateTime? absentDateEnd = null,
-            bool isRoleRasssign = false,
+            bool isRoleAssign = false,
             string fromRole = null,
-            string toRole = null)
+            string toRole = null,
+            string roleAssignedToUser = null)
         {
-            return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleRasssign, fromRole, toRole, null);
+            return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleAssign, fromRole, toRole,roleAssignedToUser, null);
         }
 
         public Absentees EditAbsentee(
