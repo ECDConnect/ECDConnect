@@ -16,8 +16,8 @@ public class IncomeStatementSubmit : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private SchedulerService _scheduler;
     private string _jobId = "IntegrationStatementsData";
-    public IncomeStatementSubmit(IServiceScopeFactory scopeFactory, 
-        IScheduleConfig<IncomeStatementSubmit> config, ILogger<IncomeStatementSubmit> logger)
+    public IncomeStatementSubmit(IServiceScopeFactory scopeFactory,
+        CronJobConfig<IncomeStatementSubmit> config, ILogger<IncomeStatementSubmit> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

@@ -16,7 +16,7 @@ public class AttendanceWeekly : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public AttendanceWeekly(IServiceScopeFactory scopeFactory, IScheduleConfig<AttendanceWeekly> config, ILogger<AttendanceWeekly> logger)
+    public AttendanceWeekly(IServiceScopeFactory scopeFactory, CronJobConfig<AttendanceWeekly> config, ILogger<AttendanceWeekly> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;
