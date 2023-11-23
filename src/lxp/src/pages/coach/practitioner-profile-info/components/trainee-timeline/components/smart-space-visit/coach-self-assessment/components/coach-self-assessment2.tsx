@@ -31,7 +31,7 @@ export const CoachSelfAssessment2: React.FC<CoachSelfAssessment1Props> = ({
       />
       <Typography
         type={'body'}
-        text={`Due date: ${format(dueDate, 'dd MMM yyyy')}`}
+        text={dueDate ? `Due date: ${format(dueDate, 'dd MMM yyyy')}` : ``}
         color={'textMid'}
         className={'mb-3'}
       />
