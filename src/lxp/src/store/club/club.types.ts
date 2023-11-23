@@ -1,4 +1,8 @@
-import { DetailClubDto } from '@/models/club/club.dto';
+import {
+  ActivityChildProgressDto,
+  DetailClubDto,
+} from '@/models/club/club.dto';
+import { LeagueClubsDto } from '@/models/club/league.dto';
 import {
   BeCreativeActivityInput,
   ClubMeetingInput,
@@ -13,6 +17,7 @@ export type Points = {
   meetRegularly?: ActivityMeetRegular;
   beCreative?: ActivityBeCreative;
   hostFamily?: ActivityHostFamilyDays;
+  childProgressDetails?: ActivityChildProgressDto;
 };
 
 export type ClubState = {
@@ -21,6 +26,7 @@ export type ClubState = {
     club?: DetailClubDto;
     points?: Points;
   };
+  leagueForPractitioner: LeagueClubsDto | undefined;
   clubsForCoach: {
     [clubId: string]: {
       dateLoaded: string;

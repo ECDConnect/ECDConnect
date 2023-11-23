@@ -18,7 +18,6 @@ import ROUTES from '@/routes/routes';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { Header } from '../0-components/header';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
-import { ClubMember, Maybe } from '@ecdlink/graphql';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
 import { Roles } from '@/constants/roles';
@@ -91,8 +90,7 @@ export const LeaveNoOneBehind: React.FC = () => {
         imageUrl={inclusiveIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      {/* EC-1909 - Suppress ticket */}
-      {/* <ScoreCard
+      <ScoreCard
         className="mt-5"
         mainText={String(mockedPoints)}
         hint="points"
@@ -101,15 +99,15 @@ export const LeaveNoOneBehind: React.FC = () => {
         barBgColour="uiLight"
         barColour={
           isCurrentPointsAtLeast80PercentOfTotal(
-            club.pointsTotal,
-            club.maxPointsTotal
+            club?.pointsTotal ? club?.pointsTotal : 0,
+            club?.maxPointsTotal ? club?.maxPointsTotal : 0
           )
             ? 'successMain'
             : 'secondary'
         }
         bgColour="uiBg"
         textColour="black"
-      /> */}
+      />
       {hasItems ? (
         <div className="my-5">
           {['green', 'orange', 'red', 'comingUp'].map((item, index) => {

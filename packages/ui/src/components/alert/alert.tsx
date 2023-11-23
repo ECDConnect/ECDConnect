@@ -41,7 +41,7 @@ export const Alert: React.FC<AlertProps> = ({
           (customIcon || <div className={styles.iconWrapper}>{icon}</div>)}
         {leftChip && (
           <StatusChip
-            className="ml-auto self-center"
+            className="self-center"
             borderColour={chipBackground}
             backgroundColour={chipBackground}
             textColour="white"

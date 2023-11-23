@@ -24,25 +24,29 @@ interface AlertCardProps {
 }
 
 export const AlertCard = ({ item }: AlertCardProps) => (
-  <div className="mb-5">
-    <Typography type="h3" text={item.title} />
-    {item.subTitle && (
-      <Typography type="h4" color="textMid" text={item.subTitle} />
+  <div className="mb-1">
+    {(!!item.title || !!item.subTitle) && (
+      <>
+        <Typography type="h3" text={item.title} />
+        {item.subTitle && (
+          <Typography type="h4" color="textMid" text={item.subTitle} />
+        )}
+        {item.descriptionLabel && (
+          <Typography
+            type="h4"
+            color="textDark"
+            text={item.descriptionLabel}
+            className="mt-5"
+          />
+        )}
+        <Typography
+          type="body"
+          color="textMid"
+          text={item.description}
+          className={`${!item.descriptionLabel ? 'mt-5' : ''} mb-4`}
+        />
+      </>
     )}
-    {item.descriptionLabel && (
-      <Typography
-        type="h4"
-        color="textDark"
-        text={item.descriptionLabel}
-        className="mt-5"
-      />
-    )}
-    <Typography
-      type="body"
-      color="textMid"
-      text={item.description}
-      className={`${!item.descriptionLabel ? 'mt-5' : ''} mb-4`}
-    />
     <Alert
       type={item.alert.type}
       title={item.alert.title}

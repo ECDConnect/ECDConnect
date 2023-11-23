@@ -12,7 +12,7 @@ namespace ECDLink.AutomatedJobs.BiannualRunners;
 public class ClubPointsCalculation : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public ClubPointsCalculation(IServiceScopeFactory scopeFactory, IScheduleConfig<ClubPointsCalculation> config, ILogger<ClubPointsCalculation> logger)
+    public ClubPointsCalculation(IServiceScopeFactory scopeFactory, CronJobConfig<ClubPointsCalculation> config, ILogger<ClubPointsCalculation> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

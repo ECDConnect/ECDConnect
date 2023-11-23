@@ -13,7 +13,7 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 public class YearlyNotificationChecks : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public YearlyNotificationChecks(IServiceScopeFactory scopeFactory, IScheduleConfig<YearlyNotificationChecks> config, ILogger<YearlyNotificationChecks> logger)
+    public YearlyNotificationChecks(IServiceScopeFactory scopeFactory, CronJobConfig<YearlyNotificationChecks> config, ILogger<YearlyNotificationChecks> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

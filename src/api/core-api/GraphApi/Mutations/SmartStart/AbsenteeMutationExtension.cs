@@ -43,9 +43,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     string reassignedToPractitioner = null,
     string reason = null,
     DateTime? absentDate = null,
-    DateTime? absentDateEnd = null)
+    DateTime? absentDateEnd = null,
+    bool isRoleAssign = false,
+    string roleAssignedToUser = null)
         {
-            return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd);
+            return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd, isRoleAssign, roleAssignedToUser);
         }
 
         public bool ReassignAbsenteeFromHistory([Service] IReassignmentService reassignmentService,

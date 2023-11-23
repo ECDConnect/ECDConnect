@@ -12,10 +12,12 @@ import {
   changeClubSupportRole,
   getActivityBeCreativeDetails,
   getActivityHostFamilyDetails,
+  getActivityChildProgressDetails,
   getActivityMeetRegularDetails,
   getClubById,
   getClubForUser,
   getClubsForCoach,
+  getLeagueForUser,
   moveClubMembers,
   saveWelcomeMessage,
   updateCoachAboutInfo,
@@ -31,6 +33,7 @@ import {
 
 const initialState: ClubState = {
   clubForPractitioner: {},
+  leagueForPractitioner: undefined,
   clubsForCoach: {},
   addClubMeetingSyncInputs: [],
   addBeCreativeActivitySyncInputs: [],
@@ -221,6 +224,37 @@ const clubSlice = createSlice({
         }
       }
     );
+    builder.addCase(
+      getActivityChildProgressDetails.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+
+        const clubId = action.meta.arg.clubId;
+
+        const isCoach = !!state.clubsForCoach[clubId]?.club;
+
+        if (isCoach) {
+          state.clubsForCoach = {
+            ...state.clubsForCoach,
+            [clubId]: {
+              ...state.clubsForCoach[clubId],
+              points: {
+                ...state.clubsForCoach[clubId]?.points,
+                childProgressDetails: action.payload,
+              },
+            },
+          };
+        } else {
+          state.clubForPractitioner = {
+            ...state.clubForPractitioner,
+            points: {
+              ...state.clubForPractitioner?.points,
+              childProgressDetails: action.payload,
+            },
+          };
+        }
+      }
+    );
     builder.addCase(getClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
@@ -305,6 +339,7 @@ const clubSlice = createSlice({
     // Practitioner
     setThunkActionStatus(builder, acceptNewClubLeaderRole);
     setThunkActionStatus(builder, getClubForUser);
+    setThunkActionStatus(builder, getLeagueForUser);
     setThunkActionStatus(builder, saveWelcomeMessage);
     setThunkActionStatus(builder, changeClubSupportRole);
     setThunkActionStatus(builder, addClubMeeting);
@@ -360,8 +395,14 @@ const clubSlice = createSlice({
     builder.addCase(getClubForUser.fulfilled, (state, action) => {
       state.clubForPractitioner = {
         ...state.clubForPractitioner,
+        dateLoaded: new Date().toLocaleDateString(),
         club: action.payload,
       };
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getLeagueForUser.fulfilled, (state, action) => {
+      state.leagueForPractitioner = action.payload;
 
       setFulfilledThunkActionStatus(state, action);
     });
