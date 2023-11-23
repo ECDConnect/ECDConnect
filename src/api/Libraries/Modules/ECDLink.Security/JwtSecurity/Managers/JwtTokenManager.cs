@@ -43,15 +43,27 @@ namespace ECDLink.Security.JwtSecurity.Managers
         {
             var jwtEncoder = _jwtFactory.CreateJwtEncoder(encoderType);
 
-            var response = new
-            {
-                id = identity.Claims.Single(c => c.Type == "id").Value,
-                auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
-                expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds,
-                resetData,
-            };
+            if (encoderType.Equals(JwtEncoderEnum.OneTime)) {
+                var response = new
+                {
+                    id = identity.Claims.Single(c => c.Type == "id").Value,
+                    auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
+                    expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds,
+                };
 
-            return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+                return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+            } else {
+
+                var response = new
+                {
+                    id = identity.Claims.Single(c => c.Type == "id").Value,
+                    auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
+                    expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds,
+                    resetData,
+                };
+
+                return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+            }
         }
 
         public async Task<bool> CanRefreshToken(string token)
