@@ -13,6 +13,17 @@ export const getLeagueForPractitionerSelector = (state: RootState) =>
 export const getAllClubsForCoachSelector = (state: RootState) =>
   Object.values(state.clubs.clubsForCoach).map((x) => x.club);
 
+export const getLeaguesForCoachSelector = (state: RootState) =>
+  state.clubs?.leaguesForCoach;
+
+export const getLeagueForCoachSelector = (leagueId: string) =>
+  createSelector(
+    (state: RootState) => {
+      return state.clubs.leaguesForCoach.find((x) => x.id === leagueId);
+    },
+    (club) => club
+  );
+
 // Both
 export const getClubByIdSelector = (clubId: string) =>
   createSelector(

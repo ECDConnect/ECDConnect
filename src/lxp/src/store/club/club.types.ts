@@ -36,6 +36,10 @@ export type ClubState = {
       points?: Points;
     };
   };
+  leaguesForCoach: LeagueClubsDto[];
+
+  dateLeagueDataLoaded: string | undefined;
+
   addClubMeetingSyncInputs?: ClubMeetingInput[];
   addBeCreativeActivitySyncInputs?: BeCreativeActivityInput[];
   addFamilyDayMeetingSyncInputs?: ClubMeetingInput[];

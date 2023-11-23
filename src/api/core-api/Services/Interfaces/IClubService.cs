@@ -17,7 +17,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public List<ClubMember> GetClubsMembers(Guid[] clubId);
         public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId);
         public List<CoachingClubBase> GetAllClubsForCoach(string userId);
-        public List<LeagueClub> GetAllLeagues(string userId);
+        IEnumerable<LeagueClubsModel> GetLeaguesForCoach(string coachUserId);
         public List<ClubLeader> GetLeadersForClub(Guid clubId);
         public ClubSupport GetSupportForClub(Guid clubId);
         public ClubMember GetClubForPractitioner(Guid practitionerId);

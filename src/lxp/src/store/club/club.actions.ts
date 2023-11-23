@@ -34,6 +34,7 @@ import {
   DetailClubDto,
 } from '@/models/club/club.dto';
 import { LeagueClubsDto } from '@/models/club/league.dto';
+import differenceInDays from 'date-fns/differenceInDays';
 
 export const ClubActions = {
   GET_CLUBS_FOR_COACH: 'getClubsForCoach',
@@ -52,6 +53,7 @@ export const ClubActions = {
     'getActivityLeaveNoOneBehindDetails',
   GET_ACTIVITY_CHILD_PROGRESS_DETAILS: 'getActivityChildProgressDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
+  GET_LEAGUES_FOR_COACH: 'getLeaguesForCoach',
   GET_LEAGUE_FOR_USER: 'getLeagueForUser',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
   ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
@@ -434,6 +436,43 @@ export const getClubForUser = createAsyncThunk<
   }
 );
 
+export const getLeaguesForCoach = createAsyncThunk<
+  LeagueClubsDto[],
+  { coachUserId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_LEAGUES_FOR_COACH,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      clubs: { leaguesForCoach, dateLeagueDataLoaded },
+    } = getState();
+
+    try {
+      if (!!leaguesForCoach) {
+        const daysSinceLoad = differenceInDays(
+          new Date(),
+          new Date(dateLeagueDataLoaded || 0)
+        );
+
+        if (daysSinceLoad < 1) {
+          return leaguesForCoach;
+        }
+      }
+
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).getLeaguesForCoach(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getLeagueForUser = createAsyncThunk<
   LeagueClubsDto,
   { userId: string },
@@ -443,9 +482,21 @@ export const getLeagueForUser = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      clubs: { leagueForPractitioner, dateLeagueDataLoaded },
     } = getState();
 
     try {
+      if (!!leagueForPractitioner) {
+        const daysSinceLoad = differenceInDays(
+          new Date(),
+          new Date(dateLeagueDataLoaded || 0)
+        );
+
+        if (daysSinceLoad < 1) {
+          return leagueForPractitioner;
+        }
+      }
+
       if (userAuth?.auth_token) {
         return await new ClubService(userAuth?.auth_token).getLeagueForUser(
           input
