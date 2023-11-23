@@ -220,7 +220,7 @@ export const ClubTab: React.FC = () => {
         clubId
       ),
     },
-    ...(true
+    ...(isPurpleLeague
       ? [
           {
             title: ClubActivities.CompleteChildProgressReports,
@@ -302,6 +302,7 @@ export const ClubTab: React.FC = () => {
   }, [
     club?.maxPointsTotal,
     club?.pointsTotal,
+    clubId,
     history,
     isClubInALeague,
     leagueCard,
