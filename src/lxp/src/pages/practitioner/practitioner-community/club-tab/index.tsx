@@ -96,8 +96,7 @@ export const ClubTab: React.FC = () => {
 
   const isClubInALeague = !!club?.league;
   const totalMembers = club?.clubMembers?.length ?? 0;
-  const isPurpleLeague =
-    /* club?.league?.leagueTypeName === LeagueType.Purple */ true;
+  const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isLeaderRequest = isLeader && !club?.clubLeader?.dateAssigned;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
