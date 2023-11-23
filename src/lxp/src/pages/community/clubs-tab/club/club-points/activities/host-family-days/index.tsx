@@ -49,16 +49,22 @@ export const HostFamilyDays: React.FC = () => {
     ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
   );
 
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+
   const isFromAddFamilyDayEvent = location?.state?.isFromAddFamilyDayEvent;
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
   );
+  const isLeagueStarts = currentMonth >= 3;
+  const isClubInALeague = !!club?.league;
 
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
   const isToShowFamilyDayEventButton =
     isFromAddFamilyDayEvent || isLeader || isSupportRole;
+  const isToShowPoints = isLeagueStarts && isClubInALeague;
 
   const activityId = 'host-family-days';
 
@@ -73,7 +79,7 @@ export const HostFamilyDays: React.FC = () => {
           description: term.description ?? '',
         }
       : {}),
-    rightChip: `+ ${term.points}`,
+    rightChip: isToShowPoints ? `+ ${term.points}` : '',
     alert: {
       title: term.documentStatus ?? '',
       type: getAlertType(term.documentStatusColor ?? ''),
@@ -100,7 +106,7 @@ export const HostFamilyDays: React.FC = () => {
           ? history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT)
           : history.goBack()
       }
-      displayHelp
+      displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
           ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
@@ -115,21 +121,23 @@ export const HostFamilyDays: React.FC = () => {
         imageUrl={familyIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
-        className="mt-5"
-        mainText={String(details?.points ?? 0)}
-        hint="points"
-        currentPoints={details?.points || 18}
-        maxPoints={pointsConfig.max}
-        barBgColour="uiLight"
-        barColour={getScoreBarColor(
-          details?.points ?? 0,
-          pointsConfig.green,
-          pointsConfig.amber
-        )}
-        bgColour="uiBg"
-        textColour="black"
-      />
+      {isToShowPoints && (
+        <ScoreCard
+          className="mt-5"
+          mainText={String(details?.points ?? 0)}
+          hint="points"
+          currentPoints={details?.points || 18}
+          maxPoints={pointsConfig.max}
+          barBgColour="uiLight"
+          barColour={getScoreBarColor(
+            details?.points ?? 0,
+            pointsConfig.green,
+            pointsConfig.amber
+          )}
+          bgColour="uiBg"
+          textColour="black"
+        />
+      )}
       {!!details?.terms?.length ? (
         <div className="mt-5">
           {details?.terms?.map((item, index) => (

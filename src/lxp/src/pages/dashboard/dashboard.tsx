@@ -982,7 +982,7 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && !!club && (
+        {isPractitioner && !!club && !!club?.league?.id && (
           <ScoreCard
             className="h-20"
             mainText={clubCard.mainText}
@@ -999,11 +999,11 @@ export const Dashboard: React.FC = () => {
             textColour={clubCard.textColour}
           />
         )}
-        {isPractitioner && !club && (
-          <div className="mt-4">
+        {isPractitioner && (!club || (!!club && !club?.league?.id)) && (
+          <div className="mt-1">
             <TitleListItem
               item={{
-                title: 'Community',
+                title: !!club ? club?.name : 'Community',
                 titleIcon: 'UserGroupIcon',
                 titleIconClassName: styles.communityIcon,
                 classNames: 'bg-uiBg',

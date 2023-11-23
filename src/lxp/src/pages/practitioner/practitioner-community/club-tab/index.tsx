@@ -94,6 +94,8 @@ export const ClubTab: React.FC = () => {
         ?.documentStatus?.toLocaleLowerCase() !== 'not completed'
     : false;
 
+  // The league starts from 1 April
+  const isLeagueStarts = currentMonth >= 3;
   const isClubInALeague = !!club?.league;
   const totalMembers = club?.clubMembers?.length ?? 0;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
@@ -171,6 +173,29 @@ export const ClubTab: React.FC = () => {
       //   ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH
       //     .replace(':clubId', clubId)
       //     .replace(':coachId', coacd?.user?.id ?? ''))
+    },
+  };
+
+  const leader: UserAlertListDataItem = {
+    title: `${club?.clubLeader?.firstName ?? ''} ${
+      club?.clubLeader?.surname ?? ''
+    }`,
+    titleStyle: 'text-textDark',
+    profileDataUrl: club?.clubLeader?.profileImageUrl ?? '',
+    profileText: `${club?.clubLeader?.firstName ?? ''} ${
+      club?.clubLeader?.surname ?? ''
+    }`,
+    avatarColor: 'var(--primaryAccent2)',
+    alertSeverity: 'none',
+    hideAlertSeverity: true,
+    onActionClick: () => {
+      // TODO: update user profile to handle with coach view and practitioner view
+      // history.push(
+      //   ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+      //     ':clubId',
+      //     clubId
+      //   ).replace(':leaderId', club?.clubLeader?.practitionerId ?? '')
+      // )
     },
   };
 
@@ -412,7 +437,7 @@ export const ClubTab: React.FC = () => {
   }, [activities, isClubInALeague]);
 
   return (
-    <div className="p-4 pt-6">
+    <div className="h-full p-4 pt-6">
       {isLoading ? (
         <LoadingSpinner
           className="mt-4"
@@ -421,7 +446,7 @@ export const ClubTab: React.FC = () => {
           backgroundColor="uiLight"
         />
       ) : (
-        <>
+        <div className="flex h-full flex-col">
           <Typography type="h2" text={club?.name ?? ''} />
           <div className="mt-4 flex gap-2">
             {isPurpleLeague && (
@@ -441,7 +466,7 @@ export const ClubTab: React.FC = () => {
           </div>
           {leaderAlert}
           {renderLeagueContent}
-          {!!coach && (
+          {!!coach && isLeagueStarts && isClubInALeague && (
             <>
               <Typography className="mb-2" type="h3" text="Coach" />
               <div>
@@ -453,22 +478,36 @@ export const ClubTab: React.FC = () => {
               </div>
             </>
           )}
-          {!!club?.clubSupport && (
+          {!!club?.clubLeader && !isLeader && (
+            <>
+              <Typography className="mb-2 mt-6" type="h3" text="Club leader" />
+              <div>
+                <StackedList
+                  isFullHeight={false}
+                  type={'UserAlertList' as StackedListType}
+                  listItems={[leader]}
+                />
+              </div>
+            </>
+          )}
+          {!!club?.clubSupport && isLeagueStarts && isClubInALeague && (
             <>
               <div className="mb-2 mt-6 flex items-center justify-between">
                 <Typography type="h3" text="Club support role" />
-                <Button
-                  type="outlined"
-                  color="primary"
-                  textColor="primary"
-                  text="Change"
-                  icon="RefreshIcon"
-                  onClick={() =>
-                    history.push(
-                      ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
-                    )
-                  }
-                />
+                {(isLeader || isSupportRole) && (
+                  <Button
+                    type="outlined"
+                    color="primary"
+                    textColor="primary"
+                    text="Change"
+                    icon="RefreshIcon"
+                    onClick={() =>
+                      history.push(
+                        ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
+                      )
+                    }
+                  />
+                )}
               </div>
               <Typography
                 className="mb-4"
@@ -498,8 +537,8 @@ export const ClubTab: React.FC = () => {
             )}
             <Button
               icon="UserGroupIcon"
-              type="outlined"
-              textColor="primary"
+              type={isLeader || isSupportRole ? 'outlined' : 'filled'}
+              textColor={isLeader || isSupportRole ? 'primary' : 'white'}
               color="primary"
               text="See club members"
               onClick={() =>
@@ -509,7 +548,7 @@ export const ClubTab: React.FC = () => {
               }
             />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

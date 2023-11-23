@@ -64,13 +64,18 @@ export const MeetRegularly: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
+  const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
   const activityId = 'meet-regularly';
+
+  const isLeagueStarts = currentMonth >= 3;
+  const isClubInALeague = !!club?.league;
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
   );
+
+  const isToShowPoints = isLeagueStarts && isClubInALeague;
 
   const upcomingMeetings: UserAlertListDataItem[] =
     details?.upcomingMeetings?.map((item) => {
@@ -103,7 +108,7 @@ export const MeetRegularly: React.FC = () => {
 
       return {
         title: monthName,
-        subItem: `+ ${item?.points ?? 0}`,
+        subItem: isToShowPoints ? `+ ${item?.points ?? 0}` : '',
         subTitle: item?.meetingAttendancePerc
           ? `${item?.meetingAttendancePerc}% attendance`
           : 'No register submitted',
@@ -126,7 +131,7 @@ export const MeetRegularly: React.FC = () => {
       appDispatch(
         getActivityMeetRegularDetails({
           clubId,
-          month: currentMonth,
+          month: currentMonth + 1,
           year: currentYear,
         })
       );
@@ -148,7 +153,7 @@ export const MeetRegularly: React.FC = () => {
       subTitle={club?.name ?? ''}
       onBack={() => history.goBack()}
       displayOffline={!isOnline}
-      displayHelp
+      displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
           ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
@@ -171,21 +176,23 @@ export const MeetRegularly: React.FC = () => {
             title={formatStringWithFirstLetterCapitalized(activityId)}
             date={new Date()}
           />
-          <ScoreCard
-            className="mt-5"
-            mainText={String(details?.points ?? 0)}
-            hint="points"
-            currentPoints={details?.points || 18}
-            maxPoints={ClubActivitiesPointsPerLeague.MeetRegularly.All.max}
-            barBgColour="uiLight"
-            barColour={getScoreBarColor(
-              details?.points ?? 0,
-              ClubActivitiesPointsPerLeague.MeetRegularly.All.green,
-              ClubActivitiesPointsPerLeague.MeetRegularly.All.amber
-            )}
-            bgColour="uiBg"
-            textColour="black"
-          />
+          {isToShowPoints && (
+            <ScoreCard
+              className="mt-5"
+              mainText={String(details?.points ?? 0)}
+              hint="points"
+              currentPoints={details?.points || 18}
+              maxPoints={ClubActivitiesPointsPerLeague.MeetRegularly.All.max}
+              barBgColour="uiLight"
+              barColour={getScoreBarColor(
+                details?.points ?? 0,
+                ClubActivitiesPointsPerLeague.MeetRegularly.All.green,
+                ClubActivitiesPointsPerLeague.MeetRegularly.All.amber
+              )}
+              bgColour="uiBg"
+              textColour="black"
+            />
+          )}
           {isCelebratoryMessage && (
             <Alert
               className="mt-4"
@@ -218,15 +225,17 @@ export const MeetRegularly: React.FC = () => {
               />
             </div>
           )}
-          <Alert
-            className="mb-4"
-            type="info"
-            title="How can you help your club earn points?"
-            list={[
-              'Encourage all club members to attend meetings.',
-              'Make sure you schedule meetings at a time that works for everyone.',
-            ]}
-          />
+          {isToShowPoints && (
+            <Alert
+              className="mb-4"
+              type="info"
+              title="How can you help your club earn points?"
+              list={[
+                'Encourage all club members to attend meetings.',
+                'Make sure you schedule meetings at a time that works for everyone.',
+              ]}
+            />
+          )}
           {(isLeader || isSupportRole) && (
             <Button
               className="mt-auto"

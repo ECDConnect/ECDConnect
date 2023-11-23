@@ -22,7 +22,7 @@ import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
 import { useCallback, useEffect, useMemo } from 'react';
-import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
+import { ClubActivitiesPointsPerLeague } from '@/constants/club';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
@@ -53,29 +53,22 @@ export const LeaveNoOneBehind: React.FC = () => {
     ClubActions.GET_ACTIVITY_LEAVE_NO_ONE_BEHIND_DETAILS
   );
 
-  const isClubInNewStarts =
-    club?.league?.leagueTypeName === LeagueType.NewStars;
-  const isClubInRisingStars =
-    club?.league?.leagueTypeName === LeagueType.RisingStars;
-
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
   );
 
   const activityId = 'leave-no-one-behind';
 
-  const pointsConfig = useMemo(() => {
-    if (isClubInNewStarts) {
-      return ClubActivitiesPointsPerLeague.LeaveNoOneBehind.NewStars;
-    }
+  const pointsConfig = ClubActivitiesPointsPerLeague.LeaveNoOneBehind.All;
 
-    if (isClubInRisingStars) {
-      return ClubActivitiesPointsPerLeague.LeaveNoOneBehind.RisingStars;
-    }
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
 
-    // TODO: handle other use cases (purple league for example)
-    return { max: 100, green: 100, amber: 0, red: 0 };
-  }, [isClubInNewStarts, isClubInRisingStars]);
+  const isLeagueStarts = currentMonth >= 3;
+  const isClubInALeague = !!club?.league;
+  const isToShowPoints = isLeagueStarts && isClubInALeague;
+
+  const isDecember = currentMonth === 11;
 
   const mapMembers = useCallback(
     (members: ClubUser[]): UserAlertListDataItem[] =>
@@ -153,12 +146,10 @@ export const LeaveNoOneBehind: React.FC = () => {
   );
 
   const hasItems =
-    [
-      ...(membersWithGreenPqa ?? []),
-      ...(membersWithOrangePqa ?? []),
-      ...(membersWithRedPqa ?? []),
-      ...(membersWithPqaComingUp ?? []),
-    ].length > 0;
+    !!membersWithGreenPqa?.length ||
+    !!membersWithOrangePqa?.length ||
+    (!!membersWithPqaComingUp?.length && !isDecember) ||
+    !!membersWithRedPqa?.length;
 
   const renderContent = useMemo(() => {
     if (!hasItems) {
@@ -240,7 +231,7 @@ export const LeaveNoOneBehind: React.FC = () => {
             }}
           />
         )}
-        {membersWithPqaComingUp?.length && (
+        {membersWithPqaComingUp?.length && !isDecember && (
           <AlertCard
             className="mb-1"
             item={{
@@ -253,6 +244,7 @@ export const LeaveNoOneBehind: React.FC = () => {
       </div>
     );
   }, [
+    isDecember,
     hasItems,
     details,
     getMembers,
@@ -281,7 +273,7 @@ export const LeaveNoOneBehind: React.FC = () => {
       title={formatStringWithFirstLetterCapitalized(activityId)}
       subTitle={club?.name ?? ''}
       onBack={() => history.goBack()}
-      displayHelp
+      displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
           ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
@@ -296,21 +288,23 @@ export const LeaveNoOneBehind: React.FC = () => {
         imageUrl={inclusiveIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
-        className="mt-5"
-        mainText={String(details?.points ?? 0)}
-        hint="points"
-        currentPoints={details?.points || 8}
-        maxPoints={pointsConfig.max}
-        barBgColour="uiLight"
-        barColour={getScoreBarColor(
-          details?.points ?? 0,
-          pointsConfig.green,
-          pointsConfig.amber
-        )}
-        bgColour="uiBg"
-        textColour="black"
-      />
+      {isToShowPoints && (
+        <ScoreCard
+          className="mt-5"
+          mainText={String(details?.points ?? 0)}
+          hint="points"
+          currentPoints={details?.points || 8}
+          maxPoints={pointsConfig.max}
+          barBgColour="uiLight"
+          barColour={getScoreBarColor(
+            details?.points ?? 0,
+            pointsConfig.green,
+            pointsConfig.amber
+          )}
+          bgColour="uiBg"
+          textColour="black"
+        />
+      )}
       {details?.greenPerc === 100 && (
         <Alert
           className="mt-5"
@@ -320,7 +314,7 @@ export const LeaveNoOneBehind: React.FC = () => {
         />
       )}
       {renderContent}
-      {!isCoach && hasItems && (
+      {!isCoach && hasItems && isToShowPoints && (
         <Alert
           className="mb-5"
           type="info"
