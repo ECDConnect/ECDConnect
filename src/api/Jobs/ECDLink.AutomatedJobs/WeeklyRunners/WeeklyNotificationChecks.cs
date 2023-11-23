@@ -1,9 +1,6 @@
-﻿using ECDLink.AutomatedJobs.Anonymise;
-using ECDLink.AutomatedJobs.Cron;
+﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,7 +12,7 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 public class WeeklyNotificationChecks : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public WeeklyNotificationChecks(IServiceScopeFactory scopeFactory, IScheduleConfig<WeeklyNotificationChecks> config, ILogger<WeeklyNotificationChecks> logger)
+    public WeeklyNotificationChecks(IServiceScopeFactory scopeFactory, CronJobConfig<WeeklyNotificationChecks> config, ILogger<WeeklyNotificationChecks> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

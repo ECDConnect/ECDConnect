@@ -21,7 +21,6 @@ namespace ECDLink.Api.CoreApi.Services
     public class AbsenteeService : Interfaces.IAbsenteeService
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
-        private IHttpContextAccessor _contextAccessor;
         private readonly IReassignmentService _reassignmentService;
         private readonly INotificationService _notificationService;
         private readonly UserManager<ApplicationUser> _userManager;
@@ -37,7 +36,6 @@ namespace ECDLink.Api.CoreApi.Services
             [Service] UserManager<ApplicationUser> userManager,
             HierarchyEngine hierarchyEngine)
         {
-            _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _reassignmentService = reassignmentService;
             _notificationService = notificationService;
@@ -58,6 +56,7 @@ namespace ECDLink.Api.CoreApi.Services
             bool isRoleAssign = false,
             string fromRole = null,
             string toRole = null,
+            string roleAssignedToUser = null,
             Guid? practitionerRemovalHistory = null)
         {
             reason = string.IsNullOrEmpty(reason) ? "Practitioner Marked Absent" : reason;
@@ -105,7 +104,7 @@ namespace ECDLink.Api.CoreApi.Services
             if (createdAbsentee.Id != Guid.Empty)
             {
                 //Log to the history table for reassignment back to owner user after absentee end date and pass on the role selectiosn to for future use with assigned absenteeid
-                _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, fromRole, toRole, absentee.Id.ToString());
+                _reassignmentService.AddReassignmentForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classroomGroupId, false, absentDateEnd, isRoleAssign, fromRole, toRole, roleAssignedToUser, absentee.Id.ToString());
 
                 //send notifications a) Absentee, b) long leave
                 var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
@@ -145,7 +144,9 @@ namespace ECDLink.Api.CoreApi.Services
             string reassignedToPractitioner = null,
             string reason = null,
             DateTime? absentDate = null,           
-            DateTime? absentDateEnd = null)
+            DateTime? absentDateEnd = null,
+            bool isRoleAssign = false,
+            string roleAssignedToUser = null)
         {
             if (absenteeId != null) {
                 var absentee = _absenteeRepo.GetById(Guid.Parse(absenteeId));
@@ -181,11 +182,16 @@ namespace ECDLink.Api.CoreApi.Services
                                 absentee.AbsentDateEnd = (DateTime)absentDateEnd;
                             }
                         }
+                        if (isRoleAssign && roleAssignedToUser!=null)
+                        {
+                            absentee.IsRoleAssign = isRoleAssign;
+                        }
 
                         if (reason != null)
                             absentee.Reason = reason;
                     }
                     _absenteeRepo.Update(absentee);
+                    _reassignmentService.EditReassignment(absentee.UserId, reassignedToPractitioner, reason != null ? reason : absentee.Reason, (DateTime)(absentDate != null ? absentDate : absentee.AbsentDate), isRoleAssign, roleAssignedToUser, absentee.Id.ToString(), deleteAbsentee);
                     return absentee;
                 }
             }

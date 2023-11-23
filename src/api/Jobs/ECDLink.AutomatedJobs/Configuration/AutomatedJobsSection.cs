@@ -4,15 +4,6 @@ namespace ECDLink.AutomatedJobs.Configuration
 {
     public class AutomatedJobsSection
     {
-        public class Job
-        {
-            public string Name { get; set; }
-            public string Type { get; set; }
-            public string Cron { get; set; }
-            public string TimeZone { get; set; }
-            public int Enabled { get; set; }
-        }
-
         public static string Name = "AutomatedJobs";
         public static string JobsName = "AutomatedJobs:Jobs";
         public static string JobNamePrefix = "AutomatedJobs:Jobs:";

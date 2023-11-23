@@ -1,4 +1,5 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.EGraphQL.Authorization;
@@ -25,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] UserManager<ApplicationUser> userManager,
           [Service] HierarchyEngine engine,
           [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] RoleManager<IdentityRole> roleManager,
+          [Service] RoleManager<ApplicationIdentityRole> roleManager,
           string userId,
           List<string> roleNames)
         {

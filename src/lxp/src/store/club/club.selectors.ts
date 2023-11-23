@@ -6,6 +6,9 @@ import { createSelector } from '@reduxjs/toolkit';
 export const getClubForPractitionerSelector = (state: RootState) =>
   state.clubs?.clubForPractitioner?.club;
 
+export const getLeagueForPractitionerSelector = (state: RootState) =>
+  state.clubs?.leagueForPractitioner;
+
 // Coach
 export const getAllClubsForCoachSelector = (state: RootState) =>
   Object.values(state.clubs.clubsForCoach).map((x) => x.club);
@@ -73,4 +76,22 @@ export const getActivityBeCreativeDetailsSelector = (clubId: string) =>
       }
     },
     (beCreative) => beCreative
+  );
+
+export const getActivityChildProgressReportsSelector = (clubId: string) =>
+  createSelector(
+    (state: RootState) => {
+      const user = state.user.user;
+
+      const isCoach = user?.roles?.some((role) =>
+        role.name.includes(UserTypeEnum.Coach)
+      );
+
+      if (isCoach) {
+        return state.clubs.clubsForCoach[clubId].points?.childProgressDetails;
+      } else {
+        return state.clubs.clubForPractitioner?.points?.childProgressDetails;
+      }
+    },
+    (childProgressReports) => childProgressReports
   );

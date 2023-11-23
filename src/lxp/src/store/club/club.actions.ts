@@ -14,16 +14,22 @@ import {
   NewClubInput,
   NewClubMemberInput,
   QueryActivityBeCreativeDetailsArgs,
+  QueryActivityChildProgressArgs,
   QueryActivityMeetRegularDetailsArgs,
   QueryClubForUserArgs,
 } from '@ecdlink/graphql';
 import { ClubService } from '@/services/ClubService';
 import {
+  BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
   NewClubLeaderInput,
 } from '@/services/ClubService/types';
-import { DetailClubDto } from '@/models/club/club.dto';
+import {
+  ActivityChildProgressDto,
+  DetailClubDto,
+} from '@/models/club/club.dto';
+import { LeagueClubsDto } from '@/models/club/league.dto';
 
 export const ClubActions = {
   GET_CLUBS_FOR_COACH: 'getClubsForCoach',
@@ -37,11 +43,14 @@ export const ClubActions = {
   UPDATE_COACH_ABOUT_INFO: 'updateCoachAboutInfo',
   GET_ACTIVITY_MEET_REGULAR_DETAILS: 'getActivityMeetRegularDetails',
   GET_ACTIVITY_BE_CREATIVE_DETAILS: 'getActivityBeCreativeDetails',
+  GET_ACTIVITY_CHILD_PROGRESS_DETAILS: 'getActivityChildProgressDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
+  GET_LEAGUE_FOR_USER: 'getLeagueForUser',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
   ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
   CHANGE_CLUB_SUPPORT_ROLE: 'changeClubSupportRole',
   ADD_CLUB_MEETING: 'addClubMeeting',
+  ADD_BE_CREATIVE_ACTIVITY: 'addBeCreativeActivity',
 };
 
 export const getClubById = createAsyncThunk<
@@ -317,6 +326,31 @@ export const getActivityBeCreativeDetails = createAsyncThunk<
   }
 );
 
+export const getActivityChildProgressDetails = createAsyncThunk<
+  ActivityChildProgressDto,
+  QueryActivityChildProgressArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_CHILD_PROGRESS_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityChildProgressDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getClubForUser = createAsyncThunk<
   DetailClubDto,
   QueryClubForUserArgs,
@@ -331,6 +365,31 @@ export const getClubForUser = createAsyncThunk<
     try {
       if (userAuth?.auth_token) {
         return await new ClubService(userAuth?.auth_token).getClubForUser(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getLeagueForUser = createAsyncThunk<
+  LeagueClubsDto,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_LEAGUE_FOR_USER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).getLeagueForUser(
           input
         );
       } else {
@@ -454,6 +513,44 @@ export const addClubMeeting = createAsyncThunk<
         if (!input?.meetingDate && addClubMeetingSyncInputs?.length) {
           const promises = addClubMeetingSyncInputs.map((meeting) =>
             new ClubService(userAuth?.auth_token).addClubMeeting(meeting)
+          );
+
+          return await Promise.all(promises);
+        }
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addBeCreativeActivity = createAsyncThunk<
+  // TODO: add type
+  any,
+  BeCreativeActivityInput | undefined,
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_BE_CREATIVE_ACTIVITY,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      clubs: { addBeCreativeActivitySyncInputs },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input?.dateUploaded) {
+          return await new ClubService(
+            userAuth?.auth_token
+          ).addBeCreativeActivity(input);
+        }
+        if (!input?.dateUploaded && addBeCreativeActivitySyncInputs?.length) {
+          const promises = addBeCreativeActivitySyncInputs.map((activity) =>
+            new ClubService(userAuth?.auth_token).addBeCreativeActivity(
+              activity
+            )
           );
 
           return await Promise.all(promises);

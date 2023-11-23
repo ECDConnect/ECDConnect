@@ -158,8 +158,8 @@ export const Money: React.FC = () => {
       {!isLoading && !isSubmittingStatement && (
         <>
           <SubmitIncomeStatements />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <Dialog
+
+          <Dialog
             visible={showUpdatePreschoolFeeReminder && !tourActive}
             position={DialogPosition.Middle}
           >
@@ -219,7 +219,7 @@ export const Money: React.FC = () => {
                 />
               </Button>
             </div>
-          </Dialog> */}
+          </Dialog>
         </>
       )}
     </>

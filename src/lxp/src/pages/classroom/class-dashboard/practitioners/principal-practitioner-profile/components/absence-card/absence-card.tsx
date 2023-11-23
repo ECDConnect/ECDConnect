@@ -332,43 +332,43 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
           </div>
         </Card>
       ) : (
-        <div></div>
-        // EC-1909 - Suppress ticket
-        // <Card className={'bg-uiBg mt-4 w-11/12 rounded-xl'}>
-        //   <div className={'mt-6 ml-4'}>
-        //     <Typography
-        //       type={'h1'}
-        //       color="textDark"
-        //       text={`Mark ${practitioner?.user?.firstName} absent`}
-        //       className={'mt-6 ml-4'}
-        //     />
-        //     <Typography
-        //       type={'body'}
-        //       color="textMid"
-        //       text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
-        //       className={'mt-4 ml-4'}
-        //     />
-        //     <div className="flex justify-center">
-        //       <Button
-        //         type="filled"
-        //         color="primary"
-        //         className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-        //         onClick={() => handleReassignClass(practitionerUserId)}
-        //       >
-        //         {renderIcon(
-        //           'PencilAltIcon',
-        //           'w-5 h-5 color-white text-white mr-1'
-        //         )}
-        //         <Typography
-        //           type="body"
-        //           className="mr-4"
-        //           color="white"
-        //           text={'Record absence/leave'}
-        //         ></Typography>
-        //       </Button>
-        //     </div>
-        //   </div>
-        // </Card>
+        <div>
+          <Card className={'bg-uiBg mt-4 w-11/12 rounded-xl'}>
+            <div className={'mt-6 ml-4'}>
+              <Typography
+                type={'h1'}
+                color="textDark"
+                text={`Mark ${practitioner?.user?.firstName} absent`}
+                className={'mt-6 ml-4'}
+              />
+              <Typography
+                type={'body'}
+                color="textMid"
+                text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
+                className={'mt-4 ml-4'}
+              />
+              <div className="flex justify-center">
+                <Button
+                  type="filled"
+                  color="primary"
+                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                  onClick={() => handleReassignClass(practitionerUserId)}
+                >
+                  {renderIcon(
+                    'PencilAltIcon',
+                    'w-5 h-5 color-white text-white mr-1'
+                  )}
+                  <Typography
+                    type="body"
+                    className="mr-4"
+                    color="white"
+                    text={'Record absence/leave'}
+                  ></Typography>
+                </Button>
+              </div>
+            </div>
+          </Card>
+        </div>
       )}
     </>
   );
