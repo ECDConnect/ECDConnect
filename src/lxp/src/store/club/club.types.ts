@@ -9,6 +9,7 @@ import {
 } from '@/services/ClubService/types';
 import {
   ActivityBeCreative,
+  ActivityChildAttendance,
   ActivityHostFamilyDays,
   ActivityLeaveNoOneBehind,
   ActivityMeetRegular,
@@ -20,6 +21,7 @@ export type Points = {
   hostFamily?: ActivityHostFamilyDays;
   leaveNoOneBehind?: ActivityLeaveNoOneBehind;
   childProgressDetails?: ActivityChildProgressDto;
+  childAttendance?: ActivityChildAttendance;
 };
 
 export type ClubState = {

@@ -22,6 +22,7 @@ import {
   moveClubMembers,
   saveWelcomeMessage,
   updateCoachAboutInfo,
+  getActivityChildAttendanceDetails,
 } from './club.actions';
 import { ClubState } from './club.types';
 import { setThunkActionStatus } from '../utils';
@@ -141,6 +142,38 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, getActivityBeCreativeDetails);
     setThunkActionStatus(builder, getActivityHostFamilyDetails);
     setThunkActionStatus(builder, getActivityLeaveNoOneBehindDetails);
+    setThunkActionStatus(builder, getActivityChildProgressDetails);
+    setThunkActionStatus(builder, getActivityChildAttendanceDetails);
+    builder.addCase(
+      getActivityChildAttendanceDetails.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+        const clubId = action.meta.arg.clubId;
+
+        const isCoach = !!state.clubsForCoach[clubId]?.club;
+
+        if (isCoach) {
+          state.clubsForCoach = {
+            ...state.clubsForCoach,
+            [clubId]: {
+              ...state.clubsForCoach[clubId],
+              points: {
+                ...state.clubsForCoach[clubId]?.points,
+                childAttendance: action.payload,
+              },
+            },
+          };
+        } else {
+          state.clubForPractitioner = {
+            ...state.clubForPractitioner,
+            points: {
+              ...state.clubForPractitioner?.points,
+              childAttendance: action.payload,
+            },
+          };
+        }
+      }
+    );
     builder.addCase(
       getActivityLeaveNoOneBehindDetails.fulfilled,
       (state, action) => {

@@ -18,13 +18,16 @@ import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
-import { useEffect } from 'react';
+import { Fragment, useEffect } from 'react';
 import { useAppDispatch } from '@/store';
-import { getActivityChildProgressDetails } from '@/store/club/club.actions';
+import {
+  ClubActions,
+  getActivityChildProgressDetails,
+} from '@/store/club/club.actions';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { ActivityChildProgressDetailDto } from '@/models/club/club.dto';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const CompleteChildProgressReports: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -37,6 +40,11 @@ export const CompleteChildProgressReports: React.FC = () => {
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const points = useSelector(
     clubSelectors.getActivityChildProgressReportsSelector(clubId)
+  );
+
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_CHILD_PROGRESS_DETAILS
   );
 
   const isCoach = user?.roles?.some(
@@ -55,9 +63,6 @@ export const CompleteChildProgressReports: React.FC = () => {
 
   const history = useHistory();
 
-  const isPractitioner = user?.roles?.some(
-    (item) => item?.name === Roles.PRACTITIONER
-  );
   const activityId = 'complete-child-progress-reports';
 
   const mapProgressCard = (
@@ -90,6 +95,7 @@ export const CompleteChildProgressReports: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"
@@ -97,6 +103,7 @@ export const CompleteChildProgressReports: React.FC = () => {
       subTitle={club?.name ?? ''}
       onBack={() => history.goBack()}
       displayHelp
+      displayOffline={!isOnline}
       onHelp={() =>
         history.push(
           ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
@@ -130,13 +137,17 @@ export const CompleteChildProgressReports: React.FC = () => {
         />
       ) : (
         <>
-          {points.monthlyRecords.map((x) => {
+          {points.monthlyRecords.map((record) => {
             return (
-              <>
-                <Typography className="mb-3" type="h1" text={x.monthName} />
-                <AlertCard className="mb-1" item={mapProgressCard(x)} />
-                <AlertCard className="mb-1" item={mapCaregiverCard(x)} />
-              </>
+              <Fragment key={record.monthName}>
+                <Typography
+                  className="mb-3"
+                  type="h1"
+                  text={record.monthName}
+                />
+                <AlertCard className="mb-1" item={mapProgressCard(record)} />
+                <AlertCard className="mb-1" item={mapCaregiverCard(record)} />
+              </Fragment>
             );
           })}
           {!isCoach && (
@@ -161,9 +172,9 @@ export const CompleteChildProgressReports: React.FC = () => {
         text="Back to club"
         onClick={() =>
           history.push(
-            isPractitioner
-              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+            isCoach
+              ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+              : ROUTES.PRACTITIONER.COMMUNITY.ROOT
           )
         }
       />

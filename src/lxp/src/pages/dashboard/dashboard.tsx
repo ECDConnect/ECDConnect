@@ -960,7 +960,7 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      <div className={`${!classroom ? styles.wrapper : ''}`}>
+      <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
         <DashboardItems
           listItems={dashboardItems}
           notification={dashboardNotification}
