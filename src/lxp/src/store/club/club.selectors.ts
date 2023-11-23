@@ -78,6 +78,24 @@ export const getActivityBeCreativeDetailsSelector = (clubId: string) =>
     (beCreative) => beCreative
   );
 
+export const getActivityHostFamilyDetailsSelector = (clubId: string) =>
+  createSelector(
+    (state: RootState) => {
+      const user = state.user.user;
+
+      const isCoach = user?.roles?.some((role) =>
+        role.name.includes(UserTypeEnum.Coach)
+      );
+
+      if (isCoach) {
+        return state.clubs.clubsForCoach[clubId].points?.hostFamily;
+      } else {
+        return state.clubs.clubForPractitioner?.points?.hostFamily;
+      }
+    },
+    (hostFamily) => hostFamily
+  );
+
 export const getActivityChildProgressReportsSelector = (clubId: string) =>
   createSelector(
     (state: RootState) => {

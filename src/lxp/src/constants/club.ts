@@ -26,10 +26,14 @@ export const enum ClubActivities {
   MeetRegularly = 'Meet regularly',
 }
 
-export const ClubActivitiesMaxPointsPerLeague = {
+export const ClubActivitiesPointsPerLeague = {
   MeetRegularly: {
-    NewStars: 800,
-    RisingStars: 800,
+    NewStars: { max: 800, green: 600, amber: 599, red: 0 },
+    RisingStars: { max: 800, green: 600, amber: 599, red: 0 },
+  },
+  HostFamilyDays: {
+    NewStars: { max: 300, green: 225, amber: 224, red: 0 },
+    RisingStars: { max: 300, green: 225, amber: 224, red: 0 },
   },
   // TODO: add other activities
 };

@@ -33,7 +33,7 @@ import {
   getScoreBarColor,
 } from '@/pages/community/clubs-tab/index.filters';
 import { getAlertSeverity } from '@/utils/common/string.utils';
-import { ClubActivitiesMaxPointsPerLeague, LeagueType } from '@/constants/club';
+import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 
@@ -56,10 +56,10 @@ export const MeetRegularly: React.FC = () => {
   const isCelebratoryMessage =
     (isClubInRisingStars &&
       details?.points ===
-        ClubActivitiesMaxPointsPerLeague.MeetRegularly.RisingStars) ||
+        ClubActivitiesPointsPerLeague.MeetRegularly.RisingStars.max) ||
     (isClubInNewStarts &&
       details?.points ===
-        ClubActivitiesMaxPointsPerLeague.MeetRegularly.NewStars);
+        ClubActivitiesPointsPerLeague.MeetRegularly.NewStars.max);
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',

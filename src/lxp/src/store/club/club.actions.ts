@@ -2,6 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import {
   ActivityBeCreative,
+  ActivityHostFamilyDays,
   ActivityMeetRegular,
   Club,
   ClubLeader,
@@ -23,6 +24,7 @@ import {
   BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
+  HostFamilyActivityInput,
   NewClubLeaderInput,
 } from '@/services/ClubService/types';
 import {
@@ -43,6 +45,7 @@ export const ClubActions = {
   UPDATE_COACH_ABOUT_INFO: 'updateCoachAboutInfo',
   GET_ACTIVITY_MEET_REGULAR_DETAILS: 'getActivityMeetRegularDetails',
   GET_ACTIVITY_BE_CREATIVE_DETAILS: 'getActivityBeCreativeDetails',
+  GET_ACTIVITY_HOST_FAMILY_DETAILS: 'getActivityHostFamilyDetails',
   GET_ACTIVITY_CHILD_PROGRESS_DETAILS: 'getActivityChildProgressDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
   GET_LEAGUE_FOR_USER: 'getLeagueForUser',
@@ -342,6 +345,31 @@ export const getActivityChildProgressDetails = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).getActivityChildProgressDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getActivityHostFamilyDetails = createAsyncThunk<
+  ActivityHostFamilyDays,
+  HostFamilyActivityInput,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityHostFamilyDetails(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

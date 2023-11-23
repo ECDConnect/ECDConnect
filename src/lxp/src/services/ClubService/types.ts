@@ -24,3 +24,7 @@ export interface BeCreativeActivityInput {
   fileType?: string;
   imageBase64?: string;
 }
+
+export interface HostFamilyActivityInput {
+  clubId: string;
+}

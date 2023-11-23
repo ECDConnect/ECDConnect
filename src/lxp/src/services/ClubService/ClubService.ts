@@ -16,8 +16,7 @@ import {
   MutationSaveWelcomeMessageArgs,
   MutationAcceptNewClubLeaderRoleArgs,
   ClubMeeting,
-  QueryActionItemChildProgressArgs,
-  ActivityChildProgress,
+  ActivityHostFamilyDays,
   QueryActivityChildProgressArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
@@ -25,6 +24,7 @@ import {
   BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
+  HostFamilyActivityInput,
   NewClubLeaderInput,
 } from './types';
 import {
@@ -799,6 +799,45 @@ class ClubService {
     }
 
     return response.data.data.addBeCreativeActivity;
+  }
+
+  async getActivityHostFamilyDetails(
+    input: HostFamilyActivityInput
+  ): Promise<ActivityHostFamilyDays> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityHostFamilyDetails: ActivityHostFamilyDays };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityHostFamilyDetails($clubId: UUID!) {
+          activityHostFamilyDetails(clubId: $clubId) {
+              points
+              pointsColor
+              terms {
+                  termNr
+                  termName
+                  eventName
+                  description
+                  documentStatus
+                  documentStatusColor
+                  points
+              }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Activity Host Family Details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityHostFamilyDetails;
   }
 }
 
