@@ -17,5 +17,5 @@ export interface DocumentDto extends EntityBase {
   fileName?: string;
   fileType?: string;
   clientName?: string;
-  createdByName: string;
+  createdByName?: string;
 }
