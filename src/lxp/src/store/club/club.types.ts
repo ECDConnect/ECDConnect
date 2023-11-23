@@ -1,4 +1,5 @@
 import { DetailClubDto } from '@/models/club/club.dto';
+import { LeagueClubsDto } from '@/models/club/league.dto';
 import {
   BeCreativeActivityInput,
   ClubMeetingInput,
@@ -16,6 +17,7 @@ export type ClubState = {
     club?: DetailClubDto;
     points?: Points;
   };
+  leagueForPractitioner: LeagueClubsDto | undefined;
   clubsForCoach: {
     [clubId: string]: {
       dateLoaded: string;

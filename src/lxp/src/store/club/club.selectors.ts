@@ -6,6 +6,9 @@ import { createSelector } from '@reduxjs/toolkit';
 export const getClubForPractitionerSelector = (state: RootState) =>
   state.clubs?.clubForPractitioner?.club;
 
+export const getLeagueForPractitionerSelector = (state: RootState) =>
+  state.clubs?.leagueForPractitioner;
+
 // Coach
 export const getAllClubsForCoachSelector = (state: RootState) =>
   Object.values(state.clubs.clubsForCoach).map((x) => x.club);
