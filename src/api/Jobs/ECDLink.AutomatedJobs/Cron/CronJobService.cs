@@ -12,17 +12,17 @@ namespace ECDLink.AutomatedJobs.Cron
     public abstract class CronJobService : IHostedService, IDisposable
     {
         private System.Timers.Timer _timer;
-        private readonly string _name;
+        protected readonly string _name;
         private readonly string _cronExpression;
         private readonly CronExpression _expression;
         private readonly TimeZoneInfo _timeZoneInfo;
         private readonly bool _testMode;
-        private ILogger _logger;
+        protected ILogger _logger;
 
-        protected CronJobService(IScheduleConfigBase config, ILogger logger)
+        protected CronJobService(ICronJobConfig config, ILogger logger)
         {
             _name = config.Name;
-            _cronExpression = config.CronExpression;
+            _cronExpression = config.Cron;
             _expression = CronExpression.Parse(_cronExpression);
             _timeZoneInfo = config.TimeZoneInfo;
             _testMode = config.TestMode;

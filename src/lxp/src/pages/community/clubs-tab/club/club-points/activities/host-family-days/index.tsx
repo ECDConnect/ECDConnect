@@ -7,8 +7,7 @@ import {
 } from '@ecdlink/ui';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
-import { clubSelectors } from '@/store/club';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '../../../individual-club-view';
+import { clubSelectors, clubThunkActions } from '@/store/club';
 import { ClubsRouteState } from '../../../../index.types';
 import ROUTES from '@/routes/routes';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
@@ -18,66 +17,95 @@ import familyIcon from '@/assets/icon/family.svg';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { HostFamilyDaysRouteState } from './index.types';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
+import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
+import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
+import { useEffect, useMemo } from 'react';
+import { useAppDispatch } from '@/store';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ActivityHostFamilyDaysDetail } from '@ecdlink/graphql';
+import { getAlertType } from '../0-components/alert-card/utils';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ClubActions } from '@/store/club/club.actions';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 
 export const HostFamilyDays: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
   const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
+  const details = useSelector(
+    clubSelectors.getActivityHostFamilyDetailsSelector(clubId)
+  );
 
   const history = useHistory();
   const location = useLocation<HostFamilyDaysRouteState>();
 
-  const isFromAddFamilyDayEvent = location?.state?.isFromAddFamilyDayEvent;
-  const isPractitioner = user?.roles?.some(
-    (item) => item?.name === Roles.PRACTITIONER
+  const appDispatch = useAppDispatch();
+
+  const { isOnline } = useOnlineStatus();
+
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
   );
+
+  const isClubInNewStarts =
+    club?.league?.leagueTypeName === LeagueType.NewStars;
+  const isClubInRisingStars =
+    club?.league?.leagueTypeName === LeagueType.RisingStars;
+
+  const isFromAddFamilyDayEvent = location?.state?.isFromAddFamilyDayEvent;
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
+  );
+
+  const isLeader = club?.clubLeader?.userId === user?.id;
+  const isSupportRole = club?.clubSupport?.userId === user?.id;
+
+  const isToShowFamilyDayEventButton =
+    isFromAddFamilyDayEvent || isLeader || isSupportRole;
 
   const activityId = 'host-family-days';
 
-  const mockedPoints = 200;
+  const pointsConfig = useMemo(() => {
+    if (isClubInNewStarts) {
+      return ClubActivitiesPointsPerLeague.HostFamilyDays.NewStars;
+    }
 
-  const items: Item[] = [
-    {
-      title: 'Term 3: August to October',
-      subTitle: 'Open Day',
-      descriptionLabel: 'Description',
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore e',
-      rightChip: '+ 100',
-      alert: {
-        title: 'Attendance register uploaded',
-        type: 'success',
-      },
-    },
-    {
-      title: 'Term 2: May to July',
-      rightChip: '+ 0',
-      alert: {
-        title: 'Not completed',
-        type: 'error',
-      },
-    },
-    {
-      title: 'Term 1: January to April',
-      subTitle: 'Open Day',
-      descriptionLabel: 'Description',
-      description:
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore e',
-      rightChip: '+ 100',
-      alert: {
-        title: 'Attendance register uploaded',
-        type: 'success',
-      },
-    },
-  ];
+    if (isClubInRisingStars) {
+      return ClubActivitiesPointsPerLeague.HostFamilyDays.RisingStars;
+    }
 
-  // TODO: add real value
-  const hasItems = true;
+    // TODO: handle other use cases (purple league for example)
+    return { max: 0, green: 0, amber: 0, red: 0 };
+  }, [isClubInNewStarts, isClubInRisingStars]);
+
+  const formatTerm = (term: ActivityHostFamilyDaysDetail): Item => ({
+    title: term.termName ?? '',
+    subTitle: term.eventName ?? '',
+    ...(term?.description
+      ? {
+          descriptionLabel: 'Description',
+          description: term.description ?? '',
+        }
+      : {}),
+    rightChip: `+ ${term.points}`,
+    alert: {
+      title: term.documentStatus ?? '',
+      type: getAlertType(term.documentStatusColor ?? ''),
+    },
+  });
+
+  useEffect(() => {
+    if (isOnline) {
+      appDispatch(clubThunkActions.getActivityHostFamilyDetails({ clubId }));
+    }
+  }, [appDispatch, clubId, isOnline]);
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
+      displayOffline={!isOnline}
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"
@@ -99,35 +127,31 @@ export const HostFamilyDays: React.FC = () => {
       }
     >
       <Header
-        // TODO: change to activity date
         date={new Date()}
         imageUrl={familyIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
       <ScoreCard
         className="mt-5"
-        mainText={String(mockedPoints)}
+        mainText={String(details?.points ?? 0)}
         hint="points"
-        currentPoints={mockedPoints}
-        maxPoints={800}
+        currentPoints={details?.points || 18}
+        maxPoints={pointsConfig.max}
         barBgColour="uiLight"
-        barColour={
-          isCurrentPointsAtLeast80PercentOfTotal(
-            club?.pointsTotal ? club?.pointsTotal : 0,
-            club?.maxPointsTotal ? club?.maxPointsTotal : 0
-          )
-            ? 'successMain'
-            : 'secondary'
-        }
+        barColour={getScoreBarColor(
+          details?.points ?? 0,
+          pointsConfig.green,
+          pointsConfig.amber
+        )}
         bgColour="uiBg"
         textColour="black"
       />
-      {hasItems ? (
+      {!!details?.terms?.length ? (
         <div className="mt-5">
-          {items.map((item, index) => (
+          {details?.terms?.map((item, index) => (
             <>
               {index !== 0 && <Divider dividerType="dashed" className="mb-4" />}
-              <AlertCard item={item} />
+              <AlertCard item={formatTerm(item!)} />
             </>
           ))}
         </div>
@@ -138,8 +162,7 @@ export const HostFamilyDays: React.FC = () => {
           subTitle=""
         />
       )}
-      {/* TODO: check real rule to show this button */}
-      {isFromAddFamilyDayEvent && (
+      {isToShowFamilyDayEventButton && (
         <Button
           className="mt-auto mb-4"
           icon="PlusCircleIcon"
@@ -155,7 +178,7 @@ export const HostFamilyDays: React.FC = () => {
         />
       )}
       <Button
-        className="mt-auto"
+        className={isToShowFamilyDayEventButton ? '' : 'mt-auto'}
         icon="ArrowCircleLeftIcon"
         type="outlined"
         textColor="primary"
@@ -163,9 +186,9 @@ export const HostFamilyDays: React.FC = () => {
         text="Back to club"
         onClick={() =>
           history.push(
-            isPractitioner
-              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+            isCoach
+              ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+              : ROUTES.PRACTITIONER.COMMUNITY.ROOT
           )
         }
       />

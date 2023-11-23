@@ -220,11 +220,6 @@ namespace EcdLink.Api.CoreApi.Services
             return _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive == true).Include(x => x.Club).FirstOrDefault();
         }
 
-        private Coach GetCoachForClub(string userId)
-        {
-            return _coachRepo.GetByUserId(userId);
-        }
-
         private int GetLeagueMaxPoints(string name)
         {
             int maxPoints = Constants.ClubSettings.non_purple_club_max_points;
@@ -683,53 +678,6 @@ namespace EcdLink.Api.CoreApi.Services
             return false;
         }
 
-        public List<LeagueClub> GetAllLeagues(string userId)
-        {
-            List<LeagueClub> leagueClubs = new List<LeagueClub>();
-
-            // Get all league ids in use - must be restricted
-            List<Guid?> activeLeagueIds = _clubRepo.GetAll().Where(x => x.IsActive && x.LeagueId != null && x.UserId != null).Select(x => x.LeagueId).Distinct().ToList();
-            
-            // get leagues and order by purple, new stars and then rising stars
-            List<League> leagues = _leagueRepo.GetAll().Where(x => activeLeagueIds.Contains(x.Id)).
-                OrderBy(x => x.LeagueType.Name == Constants.ClubSettings.name_purple).
-                ThenBy(x => x.LeagueType.Name == Constants.ClubSettings.name_new_stars).
-                ThenBy(x => x.LeagueType.Name == Constants.ClubSettings.name_rising_stars).
-                Distinct().
-                ToList();
-
-            LeagueClub leagueClub = new LeagueClub();
-            LeagueClubDetail leagueClubDetail = new LeagueClubDetail();
-            foreach (var item in leagues)
-            {
-                leagueClub = new LeagueClub();
-                leagueClub.Id = item.Id;
-                leagueClub.Name = item.Name;
-                leagueClub.LeagueType = item.LeagueType;
-                leagueClub.Clubs = new List<LeagueClubDetail>();
-
-                List<Club> clubs = _clubRepo.GetAll().Where(x => x.LeagueId == item.Id && x.IsActive == true).ToList();
-                foreach (var club in clubs) 
-                {
-                    leagueClubDetail = new LeagueClubDetail();
-                    leagueClubDetail.Id = club.Id;
-                    leagueClubDetail.UserId = club.UserId;
-                    leagueClubDetail.Name = club.Name;
-                    leagueClubDetail.CoachName = "Coach: " + club.User.FullName;
-                    if (club.User.Id == userId)
-                    {
-                        leagueClubDetail.CoachName = "Coach: You";
-                    }
-                    leagueClubDetail.Points = 0;
-                    leagueClubDetail.ClubPosition = 0;
-                    leagueClub.Clubs.Add(leagueClubDetail);
-                 }
-
-                leagueClubs.Add(leagueClub);
-            }
-
-            return leagueClubs;
-        }
         public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId)
         {
             return _clubRepo
@@ -1501,53 +1449,61 @@ namespace EcdLink.Api.CoreApi.Services
                 activityChildProgress.PointsColor = MetricsColorEnum.Success.ToString();
             }
 
-            var months = clubPoints.Select(x => x.Month).Distinct().ToList();
+            var clubPointsLibraryItems = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.child_progress_reports).ToList();
+            var maxCaregiverTotal = clubPointsLibraryItems.Where(x => x.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.MaxPointsYearly).First();
+            var maxProgressTotal = clubPointsLibraryItems.Where(x => x.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.MaxPointsYearly).First();
 
-            var caregiverPoints = 0;
-            var caregiverPerc = 0.0;
-            var caregiverPointsColor = MetricsColorEnum.Error.ToString();
-            var maxCaregiverTotal = clubPoints.Where(x => x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.ClubPointsLibrary.MaxPointsYearly).FirstOrDefault();
-
-            var progressPoints = 0;
-            var progressPerc = 0.0;
-            var progressPointsColor = MetricsColorEnum.Error.ToString();
-            var maxProgressTotal = clubPoints.Where(x => x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.ClubPointsLibrary.MaxPointsYearly).FirstOrDefault();
-
-            foreach (var item in months)
+            // Rollup scores for November - any points earned from August on
+            if (today > new DateTime(DateTime.Now.Year, 11, 1))
             {
-                caregiverPoints = clubPoints.Where(x => x.Month == item && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.Points).Sum();
-                progressPoints = clubPoints.Where(x => x.Month == item && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.Points).Sum();
-
-                caregiverPerc = caregiverPoints == 0 ? 0: (double)caregiverPoints / (double)maxCaregiverTotal * 100;
-                progressPerc = progressPoints == 0 ?  0: (double)progressPoints / (double)maxProgressTotal * 100;
-
-                if (caregiverPerc > 0 && caregiverPerc < 38)
-                {
-                    caregiverPointsColor = MetricsColorEnum.Warning.ToString();
-                }
-                else if (caregiverPerc >= 38)
-                {
-                    caregiverPointsColor = MetricsColorEnum.Success.ToString();
-                }
-
-                if (progressPerc > 0 && progressPerc < 38)
-                {
-                    progressPointsColor = MetricsColorEnum.Warning.ToString();
-                }
-                else if (progressPerc >= 38)
-                {
-                    progressPointsColor = MetricsColorEnum.Success.ToString();
-                }
+                var caregiverPoints = clubPoints.Where(x => x.Month > 7 && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.Points).Sum();
+                var progressPoints = clubPoints.Where(x => x.Month > 7 && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.Points).Sum();
 
                 activityChildProgress.MonthlyRecords.Add(new ActivityChildProgressDetail()
                 {
-                    MonthName = new DateTime(today.Year, item, 1).ToString("MMMM") + " reports",
+                    MonthName = new DateTime(today.Year, 11, 1).ToString("MMMM") + " reports",
                     ProgressPoints = progressPoints,
-                    ProgressPerc = (int)progressPerc,
-                    ProgressPointsColor = progressPointsColor,
+                    ProgressPerc = progressPoints / maxProgressTotal * 100,
+                    ProgressPointsColor = progressPoints == 0
+                        ? MetricsColorEnum.Error.ToString()
+                        : progressPoints < 38
+                            ? MetricsColorEnum.Warning.ToString()
+                            : MetricsColorEnum.Success.ToString(),
+
                     CaregiverPoints = caregiverPoints,
-                    CaregiverPerc = (int)caregiverPerc,
-                    CaregiverPointsColor = caregiverPointsColor
+                    CaregiverPerc = caregiverPoints / maxCaregiverTotal * 100,
+                    CaregiverPointsColor = caregiverPoints == 0
+                        ? MetricsColorEnum.Error.ToString()
+                        : caregiverPoints < 38
+                            ? MetricsColorEnum.Warning.ToString()
+                            : MetricsColorEnum.Success.ToString()
+                });
+            }
+
+            // Rollup scores for June Section, any points up until 31 July
+            if (today > new DateTime(DateTime.Now.Year, 4, 1))
+            {
+                var caregiverPoints = clubPoints.Where(x => x.Month < 8 && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.Points).Sum();
+                var progressPoints = clubPoints.Where(x => x.Month < 8 && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.Points).Sum();
+
+                activityChildProgress.MonthlyRecords.Add(new ActivityChildProgressDetail()
+                {
+                    MonthName = new DateTime(today.Year, 6, 1).ToString("MMMM") + " reports",
+                    ProgressPoints = progressPoints,
+                    ProgressPerc = progressPoints / (maxProgressTotal / 2) * 100,
+                    ProgressPointsColor = progressPoints == 0
+                        ? MetricsColorEnum.Error.ToString()
+                        : progressPoints < 38
+                            ? MetricsColorEnum.Warning.ToString()
+                            : MetricsColorEnum.Success.ToString(),
+
+                    CaregiverPoints = caregiverPoints,
+                    CaregiverPerc = caregiverPoints / (maxCaregiverTotal / 2) * 100,
+                    CaregiverPointsColor = caregiverPoints == 0
+                        ? MetricsColorEnum.Error.ToString()
+                        : caregiverPoints < 38
+                            ? MetricsColorEnum.Warning.ToString()
+                            : MetricsColorEnum.Success.ToString()
                 });
             }
 
@@ -1697,6 +1653,21 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
+        public IEnumerable<LeagueClubsModel> GetLeaguesForCoach(string coachUserId)
+        {
+            var clubsForCoach = _clubRepo.GetAll()
+                .Where(x => x.UserId == coachUserId && x.LeagueId != null)
+                .Include(x => x.League)
+                .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
+                .ToList();
+
+            foreach(var league in clubsForCoach.Select(x => x.League).Distinct())
+            {
+                var clubs = clubsForCoach.Where(x => x.LeagueId == league.Id);
+                yield return MapToLeagueClubsModel(league, clubs);
+            }
+        }
+
         public LeagueClubsModel GetLeagueForUser(string userId)
         {
             var practitioner = _practitionerRepo.GetByUserId(userId);
@@ -1712,12 +1683,17 @@ namespace EcdLink.Api.CoreApi.Services
                .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
                .ToList();
 
+            return MapToLeagueClubsModel(userLeague, clubs);
+        }
+
+        private LeagueClubsModel MapToLeagueClubsModel(League league, IEnumerable<Club> clubs)
+        {
             var leagueModel = new LeagueClubsModel
             {
-                Id = userLeague.Id,
-                Name = userLeague.Name,
-                LeagueTypeId = userLeague.LeagueTypeId,
-                LeagueTypeName = userLeague.LeagueType.Name,
+                Id = league.Id,
+                Name = league.Name,
+                LeagueTypeId = league.LeagueTypeId,
+                LeagueTypeName = league.LeagueType.Name,
                 Clubs = new List<ClubPointsSummaryModel>()
             };
 
@@ -1742,7 +1718,7 @@ namespace EcdLink.Api.CoreApi.Services
             leagueModel.Clubs[0].LeagueRank = 1;
             for (int i = 1; i < leagueModel.Clubs.Count; i++)
             {
-                if (leagueModel.Clubs[i].PointsTotal == leagueModel.Clubs[i-1].PointsTotal)
+                if (leagueModel.Clubs[i].PointsTotal == leagueModel.Clubs[i - 1].PointsTotal)
                 {
                     leagueModel.Clubs[i].LeagueRank = leagueModel.Clubs[i - 1].LeagueRank;
                 }
