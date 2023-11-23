@@ -59,7 +59,7 @@ namespace ECDLink.Security.JwtSecurity.Managers
                     id = identity.Claims.Single(c => c.Type == "id").Value,
                     auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
                     expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds,
-                    resetData,
+                    resetData = resetData != null ? resetData : false,
                 };
 
                 return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
