@@ -131,10 +131,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     }
   };
 
-  const handleProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
-    onProgrammeClick(routineItem);
-  };
-
   const showOnlineOnly = () => {
     dialog({
       color: 'bg-white',
@@ -504,7 +500,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                     key={`id_${routineItem.id}`}
                     routineItem={routineItem}
                     day={currentDailyProgramme}
-                    onClick={() => handleProgrammeClick(routineItem)}
+                    onClick={() => onProgrammeClick(routineItem)}
                   />
                 );
               }
