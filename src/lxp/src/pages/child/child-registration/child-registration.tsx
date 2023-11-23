@@ -478,11 +478,12 @@ export const ChildRegistration: React.FC = () => {
               title={
                 childDetails
                   ? `${childDetails?.firstName}'s registration is complete, great job!`
-                  : existingChild
-                  ? `${existingChild?.user?.firstName}'s registration is complete, great job!`
+                  : existingChildUser
+                  ? `${existingChildUser.firstName}'s registration is complete, great job!`
                   : `This child's registration is complete, great job!`
               }
-              detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
+              // EC-1909 - Suppress ticket
+              //detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
               actionButtons={[
                 {
                   colour: 'primary',

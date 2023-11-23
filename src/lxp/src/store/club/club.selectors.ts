@@ -77,3 +77,21 @@ export const getActivityBeCreativeDetailsSelector = (clubId: string) =>
     },
     (beCreative) => beCreative
   );
+
+export const getActivityChildProgressReportsSelector = (clubId: string) =>
+  createSelector(
+    (state: RootState) => {
+      const user = state.user.user;
+
+      const isCoach = user?.roles?.some((role) =>
+        role.name.includes(UserTypeEnum.Coach)
+      );
+
+      if (isCoach) {
+        return state.clubs.clubsForCoach[clubId].points?.childProgressDetails;
+      } else {
+        return state.clubs.clubForPractitioner?.points?.childProgressDetails;
+      }
+    },
+    (childProgressReports) => childProgressReports
+  );

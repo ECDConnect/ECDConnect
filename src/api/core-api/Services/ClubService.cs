@@ -1501,53 +1501,61 @@ namespace EcdLink.Api.CoreApi.Services
                 activityChildProgress.PointsColor = MetricsColorEnum.Success.ToString();
             }
 
-            var months = clubPoints.Select(x => x.Month).Distinct().ToList();
+            var clubPointsLibraryItems = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.child_progress_reports).ToList();
+            var maxCaregiverTotal = clubPointsLibraryItems.Where(x => x.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.MaxPointsYearly).First();
+            var maxProgressTotal = clubPointsLibraryItems.Where(x => x.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.MaxPointsYearly).First();
 
-            var caregiverPoints = 0;
-            var caregiverPerc = 0.0;
-            var caregiverPointsColor = MetricsColorEnum.Error.ToString();
-            var maxCaregiverTotal = clubPoints.Where(x => x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.ClubPointsLibrary.MaxPointsYearly).FirstOrDefault();
-
-            var progressPoints = 0;
-            var progressPerc = 0.0;
-            var progressPointsColor = MetricsColorEnum.Error.ToString();
-            var maxProgressTotal = clubPoints.Where(x => x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.ClubPointsLibrary.MaxPointsYearly).FirstOrDefault();
-
-            foreach (var item in months)
+            // Rollup scores for November - any points earned from August on
+            if (today > new DateTime(DateTime.Now.Year, 11, 1))
             {
-                caregiverPoints = clubPoints.Where(x => x.Month == item && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.Points).Sum();
-                progressPoints = clubPoints.Where(x => x.Month == item && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.Points).Sum();
-
-                caregiverPerc = caregiverPoints == 0 ? 0: (double)caregiverPoints / (double)maxCaregiverTotal * 100;
-                progressPerc = progressPoints == 0 ?  0: (double)progressPoints / (double)maxProgressTotal * 100;
-
-                if (caregiverPerc > 0 && caregiverPerc < 38)
-                {
-                    caregiverPointsColor = MetricsColorEnum.Warning.ToString();
-                }
-                else if (caregiverPerc >= 38)
-                {
-                    caregiverPointsColor = MetricsColorEnum.Success.ToString();
-                }
-
-                if (progressPerc > 0 && progressPerc < 38)
-                {
-                    progressPointsColor = MetricsColorEnum.Warning.ToString();
-                }
-                else if (progressPerc >= 38)
-                {
-                    progressPointsColor = MetricsColorEnum.Success.ToString();
-                }
+                var caregiverPoints = clubPoints.Where(x => x.Month > 7 && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.Points).Sum();
+                var progressPoints = clubPoints.Where(x => x.Month > 7 && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.Points).Sum();
 
                 activityChildProgress.MonthlyRecords.Add(new ActivityChildProgressDetail()
                 {
-                    MonthName = new DateTime(today.Year, item, 1).ToString("MMMM") + " reports",
+                    MonthName = new DateTime(today.Year, 11, 1).ToString("MMMM") + " reports",
                     ProgressPoints = progressPoints,
-                    ProgressPerc = (int)progressPerc,
-                    ProgressPointsColor = progressPointsColor,
+                    ProgressPerc = progressPoints / maxProgressTotal * 100,
+                    ProgressPointsColor = progressPoints == 0
+                        ? MetricsColorEnum.Error.ToString()
+                        : progressPoints < 38
+                            ? MetricsColorEnum.Warning.ToString()
+                            : MetricsColorEnum.Success.ToString(),
+
                     CaregiverPoints = caregiverPoints,
-                    CaregiverPerc = (int)caregiverPerc,
-                    CaregiverPointsColor = caregiverPointsColor
+                    CaregiverPerc = caregiverPoints / maxCaregiverTotal * 100,
+                    CaregiverPointsColor = caregiverPoints == 0
+                        ? MetricsColorEnum.Error.ToString()
+                        : caregiverPoints < 38
+                            ? MetricsColorEnum.Warning.ToString()
+                            : MetricsColorEnum.Success.ToString()
+                });
+            }
+
+            // Rollup scores for June Section, any points up until 31 July
+            if (today > new DateTime(DateTime.Now.Year, 4, 1))
+            {
+                var caregiverPoints = clubPoints.Where(x => x.Month < 8 && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_caregiver_meeting).Select(x => x.Points).Sum();
+                var progressPoints = clubPoints.Where(x => x.Month < 8 && x.ClubPointsLibrary.SubActivity == Constants.ClubSettings.sub_progress_tracking).Select(x => x.Points).Sum();
+
+                activityChildProgress.MonthlyRecords.Add(new ActivityChildProgressDetail()
+                {
+                    MonthName = new DateTime(today.Year, 6, 1).ToString("MMMM") + " reports",
+                    ProgressPoints = progressPoints,
+                    ProgressPerc = progressPoints / (maxProgressTotal / 2) * 100,
+                    ProgressPointsColor = progressPoints == 0
+                        ? MetricsColorEnum.Error.ToString()
+                        : progressPoints < 38
+                            ? MetricsColorEnum.Warning.ToString()
+                            : MetricsColorEnum.Success.ToString(),
+
+                    CaregiverPoints = caregiverPoints,
+                    CaregiverPerc = caregiverPoints / (maxCaregiverTotal / 2) * 100,
+                    CaregiverPointsColor = caregiverPoints == 0
+                        ? MetricsColorEnum.Error.ToString()
+                        : caregiverPoints < 38
+                            ? MetricsColorEnum.Warning.ToString()
+                            : MetricsColorEnum.Success.ToString()
                 });
             }
 

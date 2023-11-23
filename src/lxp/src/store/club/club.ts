@@ -10,6 +10,7 @@ import {
   changeClubName,
   changeClubSupportRole,
   getActivityBeCreativeDetails,
+  getActivityChildProgressDetails,
   getActivityMeetRegularDetails,
   getClubById,
   getClubForUser,
@@ -172,7 +173,37 @@ const clubSlice = createSlice({
         }
       }
     );
+    builder.addCase(
+      getActivityChildProgressDetails.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
 
+        const clubId = action.meta.arg.clubId;
+
+        const isCoach = !!state.clubsForCoach[clubId]?.club;
+
+        if (isCoach) {
+          state.clubsForCoach = {
+            ...state.clubsForCoach,
+            [clubId]: {
+              ...state.clubsForCoach[clubId],
+              points: {
+                ...state.clubsForCoach[clubId]?.points,
+                childProgressDetails: action.payload,
+              },
+            },
+          };
+        } else {
+          state.clubForPractitioner = {
+            ...state.clubForPractitioner,
+            points: {
+              ...state.clubForPractitioner?.points,
+              childProgressDetails: action.payload,
+            },
+          };
+        }
+      }
+    );
     builder.addCase(getClubsForCoach.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 

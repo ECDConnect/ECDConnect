@@ -14,6 +14,7 @@ import {
   NewClubInput,
   NewClubMemberInput,
   QueryActivityBeCreativeDetailsArgs,
+  QueryActivityChildProgressArgs,
   QueryActivityMeetRegularDetailsArgs,
   QueryClubForUserArgs,
 } from '@ecdlink/graphql';
@@ -24,7 +25,10 @@ import {
   ClubMeetingInput,
   NewClubLeaderInput,
 } from '@/services/ClubService/types';
-import { DetailClubDto } from '@/models/club/club.dto';
+import {
+  ActivityChildProgressDto,
+  DetailClubDto,
+} from '@/models/club/club.dto';
 import { LeagueClubsDto } from '@/models/club/league.dto';
 
 export const ClubActions = {
@@ -39,6 +43,7 @@ export const ClubActions = {
   UPDATE_COACH_ABOUT_INFO: 'updateCoachAboutInfo',
   GET_ACTIVITY_MEET_REGULAR_DETAILS: 'getActivityMeetRegularDetails',
   GET_ACTIVITY_BE_CREATIVE_DETAILS: 'getActivityBeCreativeDetails',
+  GET_ACTIVITY_CHILD_PROGRESS_DETAILS: 'getActivityChildProgressDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
   GET_LEAGUE_FOR_USER: 'getLeagueForUser',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
@@ -312,6 +317,31 @@ export const getActivityBeCreativeDetails = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).getActivityBeCreativeDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getActivityChildProgressDetails = createAsyncThunk<
+  ActivityChildProgressDto,
+  QueryActivityChildProgressArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_CHILD_PROGRESS_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityChildProgressDetails(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

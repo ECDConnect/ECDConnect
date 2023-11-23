@@ -6,7 +6,7 @@ namespace ECDLink.Core.Services.Interfaces
     {
         public bool DeleteDocumentById(string documentId);
 
-        public bool DeleteUserDocument(string userId, FileTypeEnum fileType);
+        public bool DeleteUserDocument(string userId, string accessUserId, FileTypeEnum fileType);
 
         public bool AddUserDocument(string userId, string fileType, string file, string fileName, string addedByUserId);
     }

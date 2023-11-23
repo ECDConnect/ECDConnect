@@ -282,7 +282,11 @@ export const ClubTab: React.FC = () => {
             }
             bgColour="uiBg"
             textColour="black"
-            onClick={() => history.push(ROUTES.COMMUNITY.CLUB.POINTS.ROOT)}
+            onClick={() =>
+              history.push(
+                ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(':clubId', clubId)
+              )
+            }
           />
         </div>
       );
