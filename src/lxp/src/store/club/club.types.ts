@@ -1,14 +1,25 @@
-import { DetailClubDto } from '@/models/club/club.dto';
+import {
+  ActivityChildProgressDto,
+  DetailClubDto,
+} from '@/models/club/club.dto';
 import { LeagueClubsDto } from '@/models/club/league.dto';
 import {
   BeCreativeActivityInput,
   ClubMeetingInput,
 } from '@/services/ClubService/types';
-import { ActivityBeCreative, ActivityMeetRegular } from '@ecdlink/graphql';
+import {
+  ActivityBeCreative,
+  ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
+  ActivityMeetRegular,
+} from '@ecdlink/graphql';
 
 export type Points = {
   meetRegularly?: ActivityMeetRegular;
   beCreative?: ActivityBeCreative;
+  hostFamily?: ActivityHostFamilyDays;
+  leaveNoOneBehind?: ActivityLeaveNoOneBehind;
+  childProgressDetails?: ActivityChildProgressDto;
 };
 
 export type ClubState = {
@@ -25,6 +36,11 @@ export type ClubState = {
       points?: Points;
     };
   };
+  leaguesForCoach: LeagueClubsDto[];
+
+  dateLeagueDataLoaded: string | undefined;
+
   addClubMeetingSyncInputs?: ClubMeetingInput[];
   addBeCreativeActivitySyncInputs?: BeCreativeActivityInput[];
+  addFamilyDayMeetingSyncInputs?: ClubMeetingInput[];
 };

@@ -14,7 +14,7 @@ namespace ECDLink.AutomatedJobs.MonthlyRunners;
 public class ClubChildAttendanceCalculation : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public ClubChildAttendanceCalculation(IServiceScopeFactory scopeFactory, IScheduleConfig<ClubPointsCalculation> config, ILogger<ClubPointsCalculation> logger)
+    public ClubChildAttendanceCalculation(IServiceScopeFactory scopeFactory, CronJobConfig<ClubChildAttendanceCalculation> config, ILogger<ClubChildAttendanceCalculation> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

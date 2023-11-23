@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -19,7 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
     public class Document<TKey> : EntityBase<TKey>, ApplicationUserJoin, DocumentTypeJoin<TKey>, WorkflowStatusJoin<TKey>, IUserScoped, ITrackableType
          where TKey : IEquatable<TKey>
     {
-        public string CreatedUserId { get; set; }
+        
         public string Name { get; set; }
 
         public string Reference { get; set; }
@@ -38,6 +39,17 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
         public TKey WorkflowStatusId { get; set; }
 
         public string Hierarchy { get; set; }
+
+        public string CreatedUserId { get; set; }
+
+        [NotMapped]
+        public virtual ApplicationUser CreatedUser { get; set; }
+        [NotMapped]
+        public string ClientName { get; set; }
+        [NotMapped]
+        public string CreatedByName { get; set; }
+
+
     }
 
     public interface DocumentJoin<TKey>

@@ -2,6 +2,8 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import {
   ActivityBeCreative,
+  ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
   ActivityMeetRegular,
   Club,
   ClubLeader,
@@ -14,6 +16,7 @@ import {
   NewClubInput,
   NewClubMemberInput,
   QueryActivityBeCreativeDetailsArgs,
+  QueryActivityChildProgressArgs,
   QueryActivityMeetRegularDetailsArgs,
   QueryClubForUserArgs,
 } from '@ecdlink/graphql';
@@ -22,10 +25,16 @@ import {
   BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
+  ActivityHostFamilyDetailsInput,
   NewClubLeaderInput,
+  ActivityLeaveNoOneBehindDetailsInput,
 } from '@/services/ClubService/types';
-import { DetailClubDto } from '@/models/club/club.dto';
+import {
+  ActivityChildProgressDto,
+  DetailClubDto,
+} from '@/models/club/club.dto';
 import { LeagueClubsDto } from '@/models/club/league.dto';
+import differenceInDays from 'date-fns/differenceInDays';
 
 export const ClubActions = {
   GET_CLUBS_FOR_COACH: 'getClubsForCoach',
@@ -39,13 +48,19 @@ export const ClubActions = {
   UPDATE_COACH_ABOUT_INFO: 'updateCoachAboutInfo',
   GET_ACTIVITY_MEET_REGULAR_DETAILS: 'getActivityMeetRegularDetails',
   GET_ACTIVITY_BE_CREATIVE_DETAILS: 'getActivityBeCreativeDetails',
+  GET_ACTIVITY_HOST_FAMILY_DETAILS: 'getActivityHostFamilyDetails',
+  GET_ACTIVITY_LEAVE_NO_ONE_BEHIND_DETAILS:
+    'getActivityLeaveNoOneBehindDetails',
+  GET_ACTIVITY_CHILD_PROGRESS_DETAILS: 'getActivityChildProgressDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
+  GET_LEAGUES_FOR_COACH: 'getLeaguesForCoach',
   GET_LEAGUE_FOR_USER: 'getLeagueForUser',
   SAVE_WELCOME_MESSAGE: 'saveWelcomeMessage',
   ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
   CHANGE_CLUB_SUPPORT_ROLE: 'changeClubSupportRole',
   ADD_CLUB_MEETING: 'addClubMeeting',
   ADD_BE_CREATIVE_ACTIVITY: 'addBeCreativeActivity',
+  ADD_FAMILY_DAY_MEETING: 'addFamilyDayMeeting',
 };
 
 export const getClubById = createAsyncThunk<
@@ -321,6 +336,81 @@ export const getActivityBeCreativeDetails = createAsyncThunk<
   }
 );
 
+export const getActivityChildProgressDetails = createAsyncThunk<
+  ActivityChildProgressDto,
+  QueryActivityChildProgressArgs,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_CHILD_PROGRESS_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityChildProgressDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getActivityHostFamilyDetails = createAsyncThunk<
+  ActivityHostFamilyDays,
+  ActivityHostFamilyDetailsInput,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityHostFamilyDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getActivityLeaveNoOneBehindDetails = createAsyncThunk<
+  ActivityLeaveNoOneBehind,
+  ActivityLeaveNoOneBehindDetailsInput,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_LEAVE_NO_ONE_BEHIND_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityLeaveNoOneBehindDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getClubForUser = createAsyncThunk<
   DetailClubDto,
   QueryClubForUserArgs,
@@ -346,6 +436,43 @@ export const getClubForUser = createAsyncThunk<
   }
 );
 
+export const getLeaguesForCoach = createAsyncThunk<
+  LeagueClubsDto[],
+  { coachUserId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_LEAGUES_FOR_COACH,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      clubs: { leaguesForCoach, dateLeagueDataLoaded },
+    } = getState();
+
+    try {
+      if (!!leaguesForCoach) {
+        const daysSinceLoad = differenceInDays(
+          new Date(),
+          new Date(dateLeagueDataLoaded || 0)
+        );
+
+        if (daysSinceLoad < 1) {
+          return leaguesForCoach;
+        }
+      }
+
+      if (userAuth?.auth_token) {
+        return await new ClubService(userAuth?.auth_token).getLeaguesForCoach(
+          input
+        );
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getLeagueForUser = createAsyncThunk<
   LeagueClubsDto,
   { userId: string },
@@ -355,9 +482,21 @@ export const getLeagueForUser = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      clubs: { leagueForPractitioner, dateLeagueDataLoaded },
     } = getState();
 
     try {
+      if (!!leagueForPractitioner) {
+        const daysSinceLoad = differenceInDays(
+          new Date(),
+          new Date(dateLeagueDataLoaded || 0)
+        );
+
+        if (daysSinceLoad < 1) {
+          return leagueForPractitioner;
+        }
+      }
+
       if (userAuth?.auth_token) {
         return await new ClubService(userAuth?.auth_token).getLeagueForUser(
           input
@@ -521,6 +660,42 @@ export const addBeCreativeActivity = createAsyncThunk<
             new ClubService(userAuth?.auth_token).addBeCreativeActivity(
               activity
             )
+          );
+
+          return await Promise.all(promises);
+        }
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addFamilyDayMeeting = createAsyncThunk<
+  // TODO: add type
+  any,
+  ClubMeetingInput | undefined,
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_FAMILY_DAY_MEETING,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      clubs: { addFamilyDayMeetingSyncInputs },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input?.meetingDate) {
+          return await new ClubService(
+            userAuth?.auth_token
+          ).addFamilyDayMeeting(input);
+        }
+        if (!input?.meetingDate && addFamilyDayMeetingSyncInputs?.length) {
+          const promises = addFamilyDayMeetingSyncInputs.map((activity) =>
+            new ClubService(userAuth?.auth_token).addFamilyDayMeeting(activity)
           );
 
           return await Promise.all(promises);

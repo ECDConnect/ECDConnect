@@ -1777,20 +1777,53 @@ string practitionerId)
                 }
                 #endregion
 
-                #region 50% CHILD ATTENDANCE
-                var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId, previousMonthStart, previousMonthEnd);
-                if (attendancePercentage < 60)
+               
+                if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
                 {
-                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "Improve attendance";
-                    notification.GroupingName = "50% child attendance last month";
-                    yield return notification;
-                    continue;
+                    #region 50% CHILD ATTENDANCE
+                    var attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(practitioner.UserId, previousMonthStart, previousMonthEnd);
+                    if (attendancePercentage < 60)
+                    {
+                        notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                        notification.Icon = MetricsIconEnum.Error.ToString();
+                        notification.Color = MetricsColorEnum.Error.ToString();
+                        notification.Message = "";
+                        notification.Notes = "Improve attendance";
+                        notification.GroupingName = "50% child attendance last month";
+                        yield return notification;
+                        continue;
+                    }
+                    #endregion
+
+                    #region 70% CHILD ATTENDENCE
+                    if (attendancePercentage < 80)
+                    {
+                        notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                        notification.Icon = MetricsIconEnum.Warning.ToString();
+                        notification.Color = MetricsColorEnum.Warning.ToString();
+                        notification.Message = "";
+                        notification.Notes = "Improve attendance";
+                        notification.GroupingName = "70% child attendance";
+                        yield return notification;
+                        continue;
+                    }
+                    #endregion
+
+                    #region 80% CHILD ATTENDANCE
+                    if (attendancePercentage >= 80)
+                    {
+                        notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
+                        notification.Icon = MetricsIconEnum.Success.ToString();
+                        notification.Color = MetricsColorEnum.Success.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "80% child attendance";
+                        yield return notification;
+                        continue;
+                    }
+                    #endregion
                 }
-                #endregion
+
 
                 // STARTUP SUPPORT ENDING (1 month)
 
@@ -1866,19 +1899,7 @@ string practitionerId)
 
                 // STARTUP SUPPORT ENDING (3 months)
 
-                #region 70% CHILD ATTENDENCE
-                if (attendancePercentage < 80)
-                {
-                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
-                    notification.Icon = MetricsIconEnum.Warning.ToString();
-                    notification.Color = MetricsColorEnum.Warning.ToString();
-                    notification.Message = "";
-                    notification.Notes = "Improve attendance";
-                    notification.GroupingName = "70% child attendance";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
+              
 
                 #region CHILDREN DID NOT PROGRESS
                 var childProgress = GetChildProgress(repoFactory, GetReportPeriodStart(previousMonthStart.Year, previousMonthStart.Month <= 7), children);
@@ -1905,20 +1926,6 @@ string practitionerId)
                     notification.Message = "";
                     notification.Notes = "";
                     notification.GroupingName = "New trainee";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region 80% CHILD ATTENDANCE
-                if (attendancePercentage >= 80)
-                {
-                    notification.Subject = $"{attendancePercentage}% child attendance in {previousMonthStart.ToString("MMM")}";
-                    notification.Icon = MetricsIconEnum.Success.ToString();
-                    notification.Color = MetricsColorEnum.Success.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "80% child attendance";
                     yield return notification;
                     continue;
                 }

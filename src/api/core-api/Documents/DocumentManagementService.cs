@@ -44,9 +44,9 @@ namespace EcdLink.Api.CoreApi.Documents
             return true;
         }
 
-        public bool DeleteUserDocument(string userId, FileTypeEnum fileType)
+        public bool DeleteUserDocument(string userId, string accessUserId, FileTypeEnum fileType)
         {
-            var repo = _repositoryFactory.CreateRepository<Document>(userContext: userId);
+            var repo = _repositoryFactory.CreateRepository<Document>(userContext: accessUserId);
 
             var documents = repo.GetAll()
                                 .Where(x => string.Equals(x.UserId, userId)

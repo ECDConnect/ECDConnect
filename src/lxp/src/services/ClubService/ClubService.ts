@@ -16,15 +16,23 @@ import {
   MutationSaveWelcomeMessageArgs,
   MutationAcceptNewClubLeaderRoleArgs,
   ClubMeeting,
+  ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
+  QueryActivityChildProgressArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import {
   BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
+  ActivityHostFamilyDetailsInput,
   NewClubLeaderInput,
+  ActivityLeaveNoOneBehindDetailsInput,
 } from './types';
-import { DetailClubDto } from '@/models/club/club.dto';
+import {
+  ActivityChildProgressDto,
+  DetailClubDto,
+} from '@/models/club/club.dto';
 import { LeagueClubsDto } from '@/models/club/league.dto';
 
 class ClubService {
@@ -326,6 +334,45 @@ class ClubService {
     }
 
     return response.data.data.activityBeCreativeDetails;
+  }
+
+  async getActivityChildProgressDetails(
+    input: QueryActivityChildProgressArgs
+  ): Promise<ActivityChildProgressDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityChildProgress: ActivityChildProgressDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityChildProgress($clubId: UUID!) {
+          activityChildProgress(clubId: $clubId) {
+            points
+            pointsColor
+            monthlyRecords {
+              monthName
+              progressPoints
+              caregiverPoints
+              progressPerc
+              caregiverPerc
+              progressPointsColor
+              caregiverPointsColor
+            }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity child progress failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityChildProgress;
   }
 
   async getClubForUser(input: QueryClubForUserArgs): Promise<DetailClubDto> {
@@ -697,6 +744,40 @@ class ClubService {
     return response.data.data.addClubMeeting;
   }
 
+  async getLeaguesForCoach(input: {
+    coachUserId: string;
+  }): Promise<LeagueClubsDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { leaguesForCoach: LeagueClubsDto[] };
+      errors?: {};
+    }>(``, {
+      query: `query GetLeaguesForCoach($coachUserId: String) {
+          leaguesForCoach(coachUserId: $coachUserId) {
+            id
+            name
+            leagueTypeId
+            leagueTypeName
+            clubs {
+              clubId
+              clubName
+              leagueRank
+              pointsTotal
+            }
+          }
+        }`,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get leagues for coach failed - Server connection error');
+    }
+
+    return response.data.data.leaguesForCoach;
+  }
+
   async getLeagueForUser(input: { userId: string }): Promise<LeagueClubsDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
@@ -754,6 +835,134 @@ class ClubService {
     }
 
     return response.data.data.addBeCreativeActivity;
+  }
+
+  async getActivityHostFamilyDetails(
+    input: ActivityHostFamilyDetailsInput
+  ): Promise<ActivityHostFamilyDays> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityHostFamilyDetails: ActivityHostFamilyDays };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityHostFamilyDetails($clubId: UUID!) {
+          activityHostFamilyDetails(clubId: $clubId) {
+              points
+              pointsColor
+              terms {
+                  termNr
+                  termName
+                  eventName
+                  description
+                  documentStatus
+                  documentStatusColor
+                  points
+              }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Activity Host Family Details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityHostFamilyDetails;
+  }
+
+  async getActivityLeaveNoOneBehindDetails(
+    input: ActivityLeaveNoOneBehindDetailsInput
+  ): Promise<ActivityLeaveNoOneBehind> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityLeaveNoOneBehindDetails: ActivityLeaveNoOneBehind };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityLeaveNoOneBehindDetails($clubId: UUID!) {
+          activityLeaveNoOneBehindDetails(clubId: $clubId) {
+            points
+            pointsColor
+            greenPerc
+            greenText
+            redPerc
+            redText
+            orangePerc
+            orangeText
+            bluePerc
+            blueText
+            greenUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            redUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            orangeUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            blueUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity leave no one behind details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityLeaveNoOneBehindDetails;
+  }
+
+  async addFamilyDayMeeting(input: ClubMeetingInput): Promise<ClubMeeting> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addFamilyDayMeeting: ClubMeeting };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddFamilyDayMeeting($input: ClubMeetingModelInput) {
+          addFamilyDayMeeting(input: $input) {
+              id
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add family day meeting failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addFamilyDayMeeting;
   }
 }
 
