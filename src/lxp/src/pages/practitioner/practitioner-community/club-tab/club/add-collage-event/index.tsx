@@ -51,12 +51,8 @@ export const AddCollageEvent: React.FC = () => {
   };
 
   const formatImage = (image: string) => {
-    /* 
-      return {
-        fileType: .png,
-        imageBase64: "iVBORw0KGgoAAAANSUhEUgAAACgA...."
-      }
-    */
+    // fileType: .png,
+    // imageBase64: "iVBORw0KGgoAAAANSUhEUgAAACgA...."
     return {
       fileType: `.${image.split(';')[0].split('/')[1]}`,
       imageBase64: image.split(',')[1],
@@ -146,7 +142,6 @@ export const AddCollageEvent: React.FC = () => {
         iconContainerColor="tertiary"
         currentImageString={photoUrl}
         overrideOnClick={() => setPhotoActionBarVisible(true)}
-        onValueChange={(imageString: string) => {}}
       />
       <FormInput
         textInputType="textarea"

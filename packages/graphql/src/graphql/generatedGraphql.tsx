@@ -3214,6 +3214,9 @@ export type DisplaySetSortInput = {
 
 export type Document = {
   __typename?: 'Document';
+  clientName?: Maybe<Scalars['String']>;
+  createdByName?: Maybe<Scalars['String']>;
+  createdUser?: Maybe<ApplicationUser>;
   createdUserId?: Maybe<Scalars['String']>;
   documentType?: Maybe<DocumentType>;
   documentTypeId: Scalars['UUID'];
@@ -3233,6 +3236,9 @@ export type Document = {
 
 export type DocumentFilterInput = {
   and?: InputMaybe<Array<DocumentFilterInput>>;
+  clientName?: InputMaybe<StringOperationFilterInput>;
+  createdByName?: InputMaybe<StringOperationFilterInput>;
+  createdUser?: InputMaybe<ApplicationUserFilterInput>;
   createdUserId?: InputMaybe<StringOperationFilterInput>;
   documentType?: InputMaybe<DocumentTypeFilterInput>;
   documentTypeId?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -3252,6 +3258,9 @@ export type DocumentFilterInput = {
 };
 
 export type DocumentInput = {
+  ClientName?: InputMaybe<Scalars['String']>;
+  CreatedByName?: InputMaybe<Scalars['String']>;
+  CreatedUser?: InputMaybe<ApplicationUserInput>;
   CreatedUserId?: InputMaybe<Scalars['String']>;
   DocumentType?: InputMaybe<DocumentTypeInput>;
   DocumentTypeId: Scalars['UUID'];
@@ -3274,6 +3283,9 @@ export type DocumentModel = {
 };
 
 export type DocumentSortInput = {
+  clientName?: InputMaybe<SortEnumType>;
+  createdByName?: InputMaybe<SortEnumType>;
+  createdUser?: InputMaybe<ApplicationUserSortInput>;
   createdUserId?: InputMaybe<SortEnumType>;
   documentType?: InputMaybe<DocumentTypeSortInput>;
   documentTypeId?: InputMaybe<SortEnumType>;
@@ -7478,8 +7490,10 @@ export type MutationEditAbsenteeArgs = {
   absentDateEnd?: InputMaybe<Scalars['DateTime']>;
   absenteeId?: InputMaybe<Scalars['String']>;
   deleteAbsentee?: Scalars['Boolean'];
+  isRoleAssign?: Scalars['Boolean'];
   reason?: InputMaybe<Scalars['String']>;
   reassignedToPractitioner?: InputMaybe<Scalars['String']>;
+  roleAssignedToUser?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationEditVisitDataArgs = {
@@ -11063,6 +11077,7 @@ export type Query = {
   allClassroomsForCoach?: Maybe<Array<Maybe<Classroom>>>;
   allClassroomsForPractitioner?: Maybe<Array<Maybe<Classroom>>>;
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
+  allClientRecords?: Maybe<Array<Maybe<Document>>>;
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
   allClubsForCoach?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allClubsForCoachSimple?: Maybe<Array<Maybe<CoachingClubBase>>>;
@@ -12803,6 +12818,13 @@ export type QueryAllClassroomsForPractitionerArgs = {
 
 export type QueryAllClassroomsForPrincipalArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryAllClientRecordsArgs = {
+  order?: InputMaybe<Array<DocumentSortInput>>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  search?: InputMaybe<Scalars['String']>;
+  showOnlyTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 export type QueryAllClubsForCoachArgs = {

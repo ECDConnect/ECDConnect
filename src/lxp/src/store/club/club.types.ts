@@ -7,11 +7,18 @@ import {
   BeCreativeActivityInput,
   ClubMeetingInput,
 } from '@/services/ClubService/types';
-import { ActivityBeCreative, ActivityMeetRegular } from '@ecdlink/graphql';
+import {
+  ActivityBeCreative,
+  ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
+  ActivityMeetRegular,
+} from '@ecdlink/graphql';
 
 export type Points = {
   meetRegularly?: ActivityMeetRegular;
   beCreative?: ActivityBeCreative;
+  hostFamily?: ActivityHostFamilyDays;
+  leaveNoOneBehind?: ActivityLeaveNoOneBehind;
   childProgressDetails?: ActivityChildProgressDto;
 };
 
@@ -31,4 +38,5 @@ export type ClubState = {
   };
   addClubMeetingSyncInputs?: ClubMeetingInput[];
   addBeCreativeActivitySyncInputs?: BeCreativeActivityInput[];
+  addFamilyDayMeetingSyncInputs?: ClubMeetingInput[];
 };

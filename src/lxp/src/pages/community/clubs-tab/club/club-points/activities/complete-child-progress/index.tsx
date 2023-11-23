@@ -134,8 +134,8 @@ export const CompleteChildProgressReports: React.FC = () => {
             return (
               <>
                 <Typography className="mb-3" type="h1" text={x.monthName} />
-                <AlertCard item={mapProgressCard(x)} />
-                <AlertCard item={mapCaregiverCard(x)} />
+                <AlertCard className="mb-1" item={mapProgressCard(x)} />
+                <AlertCard className="mb-1" item={mapCaregiverCard(x)} />
               </>
             );
           })}

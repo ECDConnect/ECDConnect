@@ -16,8 +16,8 @@ import {
   MutationSaveWelcomeMessageArgs,
   MutationAcceptNewClubLeaderRoleArgs,
   ClubMeeting,
-  QueryActionItemChildProgressArgs,
-  ActivityChildProgress,
+  ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
   QueryActivityChildProgressArgs,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
@@ -25,7 +25,9 @@ import {
   BeCreativeActivityInput,
   ChangeClubSupportRoleInput,
   ClubMeetingInput,
+  ActivityHostFamilyDetailsInput,
   NewClubLeaderInput,
+  ActivityLeaveNoOneBehindDetailsInput,
 } from './types';
 import {
   ActivityChildProgressDto,
@@ -799,6 +801,134 @@ class ClubService {
     }
 
     return response.data.data.addBeCreativeActivity;
+  }
+
+  async getActivityHostFamilyDetails(
+    input: ActivityHostFamilyDetailsInput
+  ): Promise<ActivityHostFamilyDays> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityHostFamilyDetails: ActivityHostFamilyDays };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityHostFamilyDetails($clubId: UUID!) {
+          activityHostFamilyDetails(clubId: $clubId) {
+              points
+              pointsColor
+              terms {
+                  termNr
+                  termName
+                  eventName
+                  description
+                  documentStatus
+                  documentStatusColor
+                  points
+              }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Activity Host Family Details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityHostFamilyDetails;
+  }
+
+  async getActivityLeaveNoOneBehindDetails(
+    input: ActivityLeaveNoOneBehindDetailsInput
+  ): Promise<ActivityLeaveNoOneBehind> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityLeaveNoOneBehindDetails: ActivityLeaveNoOneBehind };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityLeaveNoOneBehindDetails($clubId: UUID!) {
+          activityLeaveNoOneBehindDetails(clubId: $clubId) {
+            points
+            pointsColor
+            greenPerc
+            greenText
+            redPerc
+            redText
+            orangePerc
+            orangeText
+            bluePerc
+            blueText
+            greenUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            redUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            orangeUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+            blueUsers {
+                userId
+                firstName
+                surname
+                profileImageUrl
+            }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity leave no one behind details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityLeaveNoOneBehindDetails;
+  }
+
+  async addFamilyDayMeeting(input: ClubMeetingInput): Promise<ClubMeeting> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addFamilyDayMeeting: ClubMeeting };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddFamilyDayMeeting($input: ClubMeetingModelInput) {
+          addFamilyDayMeeting(input: $input) {
+              id
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add family day meeting failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addFamilyDayMeeting;
   }
 }
 

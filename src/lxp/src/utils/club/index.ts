@@ -12,3 +12,27 @@ export const shouldShowPointsScreen = (isPurpleLeague: boolean): boolean => {
 
   return false;
 };
+
+export const getTermNumberForCurrentMonth = () => {
+  const currentDate = new Date();
+
+  // Get the current month (ranges from 0 to 11, where 0 is January and 11 is December)
+  const currentMonth = currentDate.getMonth();
+
+  let term = undefined;
+
+  // Term 1: January to April
+  if (currentMonth >= 0 && currentMonth <= 3) {
+    term = 1;
+  }
+  // Term 2: May to July
+  else if (currentMonth >= 4 && currentMonth <= 6) {
+    term = 2;
+  }
+  // Term 3: August to October
+  else if (currentMonth >= 7 && currentMonth <= 9) {
+    term = 3;
+  }
+
+  return term;
+};
