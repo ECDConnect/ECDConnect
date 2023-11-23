@@ -4,7 +4,8 @@ export const wrapper = `rounded-10 p-4 relative`;
 export const innerWrapper = 'flex flex-row ';
 export const extendedContentWrapper = 'pl-3 mt-2 ';
 export const iconWrapper = 'flex-shrink-0';
-export const contentWrapper = 'flex flex-col justify-start items-start ';
+export const contentWrapper =
+  'flex flex-col justify-start items-start mr-auto ';
 export const icon = 'h-5 w-5 ';
 export const messageWrapper = 'ml-3 ';
 export const message = (hasTitle: boolean) =>

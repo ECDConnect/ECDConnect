@@ -77,3 +77,18 @@ export type ClubActivity = {
   name: string;
   points: number;
 };
+
+export type ActivityChildProgressDto = {
+  monthlyRecords?: ActivityChildProgressDetailDto[];
+  points: number;
+  pointsColor: string;
+};
+export type ActivityChildProgressDetailDto = {
+  caregiverPerc: number;
+  caregiverPoints: number;
+  caregiverPointsColor: string;
+  monthName: string;
+  progressPerc: number;
+  progressPoints: number;
+  progressPointsColor: string;
+};
