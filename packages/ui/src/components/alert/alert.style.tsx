@@ -16,9 +16,7 @@ export const list = 'list-disc pl-4 mt-2 ';
 export const alertColor = (type: string, style: AlertVariant) => {
   switch (type) {
     case 'info':
-      return ` text-infoDark ${
-        style !== 'flat' && 'border-infoDark'
-      } bg-infoBb`;
+      return `text-infoDark ${style !== 'flat' && 'border-infoDark'} bg-infoBb`;
     case 'success':
       return `text-successDark ${
         style === 'flat'

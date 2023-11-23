@@ -113,3 +113,21 @@ export const getActivityChildProgressReportsSelector = (clubId: string) =>
     },
     (childProgressReports) => childProgressReports
   );
+
+export const getActivityLeaveNoOneBehindDetailsSelector = (clubId: string) =>
+  createSelector(
+    (state: RootState) => {
+      const user = state.user.user;
+
+      const isCoach = user?.roles?.some((role) =>
+        role.name.includes(UserTypeEnum.Coach)
+      );
+
+      if (isCoach) {
+        return state.clubs.clubsForCoach[clubId].points?.leaveNoOneBehind;
+      } else {
+        return state.clubs.clubForPractitioner?.points?.leaveNoOneBehind;
+      }
+    },
+    (leaveNoOneBehind) => leaveNoOneBehind
+  );

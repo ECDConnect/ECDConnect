@@ -20,11 +20,12 @@ export interface Item {
 }
 
 interface AlertCardProps {
+  className?: string;
   item: Item;
 }
 
-export const AlertCard = ({ item }: AlertCardProps) => (
-  <div className="mb-1">
+export const AlertCard = ({ item, className = 'mb-5' }: AlertCardProps) => (
+  <div className={className}>
     {(!!item.title || !!item.subTitle) && (
       <>
         <Typography type="h3" text={item.title} />

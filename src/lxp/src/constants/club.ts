@@ -35,6 +35,10 @@ export const ClubActivitiesPointsPerLeague = {
     NewStars: { max: 300, green: 225, amber: 224, red: 0 },
     RisingStars: { max: 300, green: 225, amber: 224, red: 0 },
   },
+  LeaveNoOneBehind: {
+    NewStars: { max: 100, green: 75, amber: 74, red: 0 },
+    RisingStars: { max: 100, green: 75, amber: 74, red: 0 },
+  },
   // TODO: add other activities
 };
 

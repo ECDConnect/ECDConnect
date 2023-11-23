@@ -12,6 +12,7 @@ import {
   changeClubSupportRole,
   getActivityBeCreativeDetails,
   getActivityHostFamilyDetails,
+  getActivityLeaveNoOneBehindDetails,
   getActivityChildProgressDetails,
   getActivityMeetRegularDetails,
   getClubById,
@@ -139,6 +140,37 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, getActivityMeetRegularDetails);
     setThunkActionStatus(builder, getActivityBeCreativeDetails);
     setThunkActionStatus(builder, getActivityHostFamilyDetails);
+    setThunkActionStatus(builder, getActivityLeaveNoOneBehindDetails);
+    builder.addCase(
+      getActivityLeaveNoOneBehindDetails.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+        const clubId = action.meta.arg.clubId;
+
+        const isCoach = !!state.clubsForCoach[clubId]?.club;
+
+        if (isCoach) {
+          state.clubsForCoach = {
+            ...state.clubsForCoach,
+            [clubId]: {
+              ...state.clubsForCoach[clubId],
+              points: {
+                ...state.clubsForCoach[clubId]?.points,
+                leaveNoOneBehind: action.payload,
+              },
+            },
+          };
+        } else {
+          state.clubForPractitioner = {
+            ...state.clubForPractitioner,
+            points: {
+              ...state.clubForPractitioner?.points,
+              leaveNoOneBehind: action.payload,
+            },
+          };
+        }
+      }
+    );
     builder.addCase(getActivityHostFamilyDetails.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const clubId = action.meta.arg.clubId;

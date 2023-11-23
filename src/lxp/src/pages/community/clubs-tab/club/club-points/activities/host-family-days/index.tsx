@@ -17,7 +17,6 @@ import familyIcon from '@/assets/icon/family.svg';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { HostFamilyDaysRouteState } from './index.types';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
 import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
 import { useEffect, useMemo } from 'react';
@@ -27,6 +26,7 @@ import { ActivityHostFamilyDaysDetail } from '@ecdlink/graphql';
 import { getAlertType } from '../0-components/alert-card/utils';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 
 export const HostFamilyDays: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -55,8 +55,8 @@ export const HostFamilyDays: React.FC = () => {
     club?.league?.leagueTypeName === LeagueType.RisingStars;
 
   const isFromAddFamilyDayEvent = location?.state?.isFromAddFamilyDayEvent;
-  const isPractitioner = user?.roles?.some(
-    (item) => item?.name === Roles.PRACTITIONER
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
   );
 
   const isLeader = club?.clubLeader?.userId === user?.id;
@@ -186,9 +186,9 @@ export const HostFamilyDays: React.FC = () => {
         text="Back to club"
         onClick={() =>
           history.push(
-            isPractitioner
-              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+            isCoach
+              ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+              : ROUTES.PRACTITIONER.COMMUNITY.ROOT
           )
         }
       />
