@@ -79,7 +79,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     {
                         doc.ClientName = mother.User.FirstName + " " + mother.User.Surname;
                     }
-
                 } 
                 else if (doc.DocumentType.Name == DocumentTypeConstants.RoadToHealthBook)
                 {
