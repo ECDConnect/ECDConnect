@@ -66,11 +66,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public IEnumerable<Attendance> GetWeeklyAttendance(
-    [Service] AttendanceTrackingRepository trackingRepository,
-    string userId,
-    int year,
-    int? monthOfYear,
-    int? weekOfYear)
+            [Service] AttendanceTrackingRepository trackingRepository,
+            string userId,
+            int year,
+            int? monthOfYear,
+            int? weekOfYear)
         {
             var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
                 .Where(x => x.Year == year);
@@ -94,9 +94,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         public IEnumerable<Attendance> GetDailyAttendance(
-[Service] AttendanceTrackingRepository trackingRepository,
-string userId,
-DateTime attendanceDate)
+            [Service] AttendanceTrackingRepository trackingRepository,
+            string userId,
+            DateTime attendanceDate)
         {
             var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
               .Where(x => x.Year == attendanceDate.Year);
