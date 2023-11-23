@@ -42,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
             var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>();
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
 
             var docsQuery = docRepo.GetAll().Where(x => x.UserId != null);
 
@@ -79,7 +79,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     {
                         doc.ClientName = mother.User.FirstName + " " + mother.User.Surname;
                     }
-
                 } 
                 else if (doc.DocumentType.Name == DocumentTypeConstants.RoadToHealthBook)
                 {

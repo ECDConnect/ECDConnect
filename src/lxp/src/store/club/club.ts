@@ -19,6 +19,7 @@ import {
   getClubForUser,
   getClubsForCoach,
   getLeagueForUser,
+  getLeaguesForCoach,
   moveClubMembers,
   saveWelcomeMessage,
   updateCoachAboutInfo,
@@ -36,6 +37,8 @@ const initialState: ClubState = {
   clubForPractitioner: {},
   leagueForPractitioner: undefined,
   clubsForCoach: {},
+  leaguesForCoach: [],
+  dateLeagueDataLoaded: undefined,
   addClubMeetingSyncInputs: [],
   addBeCreativeActivitySyncInputs: [],
   addFamilyDayMeetingSyncInputs: [],
@@ -132,6 +135,7 @@ const clubSlice = createSlice({
     // Coach
     setThunkActionStatus(builder, getClubById);
     setThunkActionStatus(builder, getClubsForCoach);
+    setThunkActionStatus(builder, getLeaguesForCoach);
     setThunkActionStatus(builder, addNewClub);
     setThunkActionStatus(builder, addNewClubLeader);
     setThunkActionStatus(builder, moveClubMembers);
@@ -368,6 +372,12 @@ const clubSlice = createSlice({
       }
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(getLeaguesForCoach.fulfilled, (state, action) => {
+      state.leaguesForCoach = action.payload;
+      state.dateLeagueDataLoaded = new Date().toISOString();
+
+      setFulfilledThunkActionStatus(state, action);
+    });
     // Practitioner
     setThunkActionStatus(builder, acceptNewClubLeaderRole);
     setThunkActionStatus(builder, getClubForUser);
@@ -435,7 +445,7 @@ const clubSlice = createSlice({
     });
     builder.addCase(getLeagueForUser.fulfilled, (state, action) => {
       state.leagueForPractitioner = action.payload;
-
+      state.dateLeagueDataLoaded = new Date().toISOString();
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(saveWelcomeMessage.fulfilled, (state, action) => {

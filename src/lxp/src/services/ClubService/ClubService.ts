@@ -744,6 +744,40 @@ class ClubService {
     return response.data.data.addClubMeeting;
   }
 
+  async getLeaguesForCoach(input: {
+    coachUserId: string;
+  }): Promise<LeagueClubsDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { leaguesForCoach: LeagueClubsDto[] };
+      errors?: {};
+    }>(``, {
+      query: `query GetLeaguesForCoach($coachUserId: String) {
+          leaguesForCoach(coachUserId: $coachUserId) {
+            id
+            name
+            leagueTypeId
+            leagueTypeName
+            clubs {
+              clubId
+              clubName
+              leagueRank
+              pointsTotal
+            }
+          }
+        }`,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get leagues for coach failed - Server connection error');
+    }
+
+    return response.data.data.leaguesForCoach;
+  }
+
   async getLeagueForUser(input: { userId: string }): Promise<LeagueClubsDto> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{

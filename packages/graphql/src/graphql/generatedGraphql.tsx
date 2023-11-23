@@ -4632,24 +4632,6 @@ export type League = {
   updatedDate: Scalars['DateTime'];
 };
 
-export type LeagueClub = {
-  __typename?: 'LeagueClub';
-  clubs?: Maybe<Array<Maybe<LeagueClubDetail>>>;
-  id: Scalars['UUID'];
-  leagueType?: Maybe<LeagueType>;
-  name?: Maybe<Scalars['String']>;
-};
-
-export type LeagueClubDetail = {
-  __typename?: 'LeagueClubDetail';
-  clubPosition: Scalars['Int'];
-  coachName?: Maybe<Scalars['String']>;
-  id: Scalars['UUID'];
-  name?: Maybe<Scalars['String']>;
-  points: Scalars['Float'];
-  userId?: Maybe<Scalars['String']>;
-};
-
 export type LeagueClubsModel = {
   __typename?: 'LeagueClubsModel';
   clubs?: Maybe<Array<Maybe<ClubPointsSummaryModel>>>;
@@ -11090,7 +11072,6 @@ export type Query = {
   allHealthCareWorkers?: Maybe<Array<Maybe<HealthCareWorker>>>;
   allInfants?: Maybe<Array<Maybe<Infant>>>;
   allInfantsForHealthCareWorker?: Maybe<Array<Maybe<Infant>>>;
-  allLeagues?: Maybe<Array<Maybe<LeagueClub>>>;
   allMothers?: Maybe<Array<Maybe<Mother>>>;
   allMothersForHealthCareWorker?: Maybe<Array<Maybe<Mother>>>;
   allNotifications?: Maybe<Array<Maybe<Notification>>>;
@@ -11274,6 +11255,7 @@ export type Query = {
   infographics: Array<Maybe<Infographics>>;
   lastPractitionerInviteDate?: Maybe<Scalars['String']>;
   leagueForUser?: Maybe<LeagueClubsModel>;
+  leaguesForCoach?: Maybe<Array<Maybe<LeagueClubsModel>>>;
   mapPractitionerToPrincipal?: Maybe<Principal>;
   monthlyAttendanceRecordCSV?: Maybe<FileModel>;
   monthlyAttendanceReport?: Maybe<Array<Maybe<MonthlyAttendanceReportModel>>>;
@@ -12876,10 +12858,6 @@ export type QueryAllInfantsForHealthCareWorkerArgs = {
   visitType?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryAllLeaguesArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryAllMothersForHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['String']>;
   visitType?: InputMaybe<Scalars['String']>;
@@ -13722,6 +13700,10 @@ export type QueryLastPractitionerInviteDateArgs = {
 
 export type QueryLeagueForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryLeaguesForCoachArgs = {
+  coachUserId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryMapPractitionerToPrincipalArgs = {
