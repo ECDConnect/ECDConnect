@@ -55,8 +55,8 @@ export class NotificationService {
       this.user
     );
 
-    const backendNotifications = await backendValidator.getNotifications();
-    notifications.push(...(backendNotifications ?? []));
+    // const backendNotifications = await backendValidator.getNotifications();
+    // notifications.push(...(backendNotifications ?? []));
 
     for (let validator of this.validators) {
       const differenceInMs = differenceInMilliseconds(
