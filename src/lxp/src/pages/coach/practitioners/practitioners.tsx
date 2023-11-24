@@ -140,7 +140,7 @@ export const Practitioners: React.FC = () => {
   }, [practitionersList?.length, practitionersMessages]);
 
   const practionersDetailsFor = async (target = 'practitioner') => {
-    // setLoading(true);
+    setLoading(true);
 
     const practitionersMessageData = await new PractitionerService(
       userAuth?.auth_token!
