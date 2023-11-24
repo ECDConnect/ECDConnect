@@ -14,6 +14,7 @@ import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
+import { OfflineModal } from '../../0-components/offline-modal';
 
 export const AddMeeting: React.FC = () => {
   const [step1, setStep1] = useState<Step1Props>();
@@ -59,6 +60,22 @@ export const AddMeeting: React.FC = () => {
     });
   };
 
+  const onOffline = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return (
+          <OfflineModal
+            title="Meeting added! Go online to update"
+            detailText="To make sure your meeting register is submitted to SmartStart before the deadline, please go online again as soon as possible."
+            onClose={onClose}
+          />
+        );
+      },
+    });
+  };
+
   const onSuccess = useCallback(() => {
     showMessage({
       message: `Meeting added! ${
@@ -83,10 +100,11 @@ export const AddMeeting: React.FC = () => {
 
     if (isOnline) {
       await appDispatch(clubThunkActions.addClubMeeting(payload));
+      onAddCollage();
     }
 
-    onAddCollage();
     if (!isOnline) {
+      onOffline();
       onSuccess();
       history.goBack();
     }
@@ -158,6 +176,7 @@ export const AddMeeting: React.FC = () => {
 
   return (
     <BannerWrapper
+      renderBorder
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"
