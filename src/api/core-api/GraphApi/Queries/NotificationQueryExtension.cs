@@ -1,3 +1,4 @@
+using DotLiquid;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Models;
@@ -18,6 +19,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -143,28 +145,54 @@ IGenericRepositoryFactory repoFactory, string templateId)
 
 
         public List<MessageLogModel> GetAllMessageLogsForAdmin(
+            [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
             [Service] INotificationService notificationService,
             [Service] RoleManager<ApplicationIdentityRole> roleManager,
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            string userId)
+            string userId,
+            List<string> roleIds,
+            string status,
+            DateTime? startDate,
+            DateTime? endDate)
         {
             var tenantId = TenantExecutionContext.Tenant.Id;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
             List<MessageLogModel> messages = new List<MessageLogModel>();
-            var roles = roleManager.Roles.Where(x => x.TenantId == null || x.TenantId == tenantId).ToList();
+            List<MessageLog> messageRecords = dbRepo.GetAll()
+                                                .Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive)
+                                                .Select(x => new MessageLog() {Id = x.Id, To = x.To, Message = x.Message, Subject = x.Subject, ToGroups = x.ToGroups, MessageDate = x.MessageDate, Status = x.Status })
+                                                .Distinct().ToList();
 
-            var messageRecords = dbRepo.GetAll()
-                .Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive)
-                .Select(x => new { x.Message, x.Subject, x.ToGroups, x.MessageDate, x.Status})
-                .Distinct().ToList();
-
-            MessageLogModel toGroupsItem = new MessageLogModel();
-            foreach (var item in messageRecords)
+            if (status != "")
             {
-                toGroupsItem = notificationService.RetrieveToGroupItems(item.ToGroups);
+                messageRecords = (status == "scheduled" ? messageRecords.Where(x => x.MessageDate >= DateTime.Now).ToList() : messageRecords.Where(x => x.MessageDate <= DateTime.Now).ToList());
+            } 
+            if (startDate != null) 
+            {
+                messageRecords = messageRecords.Where(x => x.MessageDate >= startDate.Value).ToList();
+            } 
+            if (endDate != null)
+            {
+                messageRecords = messageRecords.Where(x => x.MessageDate <= endDate.Value).ToList();
+            } 
+            if (roleIds.Count != 0)
+            {
+                AuthenticationDbContext context = dbContextFactory.CreateDbContext();
+                List<string> userIds = (from user in context.Users.Where(x => x.IsActive)
+                                        join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                        join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                        select user.Id).Distinct().ToList();
+                messageRecords = messageRecords.Where(x => userIds.Contains(x.To)).ToList();
+            }
 
+            var filteredMessages = messageRecords.Select(x => new { x.Message, x.Subject, x.ToGroups, x.MessageDate, x.Status }).OrderByDescending(x => x.MessageDate).Distinct().ToList();
+            List<ApplicationIdentityRole> roles = roleManager.Roles.Where(x => x.TenantId == null || x.TenantId == tenantId).ToList();
+            MessageLogModel toGroupsItems = new MessageLogModel();
+            foreach (var item in filteredMessages)
+            {
+                toGroupsItems = notificationService.RetrieveToGroupItems(item.ToGroups);                
                 messages.Add(new MessageLogModel()
                 {
                     Message = item.Message,
@@ -172,11 +200,15 @@ IGenericRepositoryFactory repoFactory, string templateId)
                     MessageDate = (System.DateTime)item.MessageDate,
                     ToGroups = item.ToGroups,
                     Status = item.Status,
-                    ProvinceId = toGroupsItem.ProvinceId,
-                    WardName = toGroupsItem.WardName,
-                    DistrictId = toGroupsItem.DistrictId,
-                    RoleIds = toGroupsItem.RoleIds,
-                    RoleNames = string.Join(", ", roles.Where(x => toGroupsItem.RoleIds.Contains(x.Id)).Select(x => x.Name).ToList())   
+                    ProvinceId = toGroupsItems.ProvinceId,
+                    WardName = toGroupsItems.WardName,
+                    DistrictId = toGroupsItems.DistrictId,
+                    RoleIds = toGroupsItems.RoleIds,
+                    RoleNames = string.Join(", ", roles.Where(x => toGroupsItems.RoleIds.Contains(x.Id)).Select(x => x.Name).ToList()),
+                    MessageLogIds = messageRecords.Where(x => x.Message == item.Message &&
+                                                            x.Subject == item.Subject &&
+                                                            x.MessageDate == (System.DateTime)item.MessageDate &&
+                                                            x.ToGroups == item.ToGroups).Select(x => x.Id).ToList()
                 });
             }
             return messages;
@@ -205,7 +237,7 @@ IGenericRepositoryFactory repoFactory, string templateId)
             }
 
             AuthenticationDbContext context = dbContextFactory.CreateDbContext();
-            var roles = roleManager.Roles.Where(x => roleIds.Contains(x.Id) && (x.TenantId == null || x.TenantId == tenantId)).ToList();
+            List<ApplicationIdentityRole> roles = roleManager.Roles.Where(x => roleIds.Contains(x.Id) && (x.TenantId == null || x.TenantId == tenantId)).ToList();
 
             // role ids are mandatory
             List<string> userIds = (from user in context.Users.Where(x => x.IsActive == true)

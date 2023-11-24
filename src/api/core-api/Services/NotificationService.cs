@@ -224,7 +224,6 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-
         public async Task<bool> DisableNotification(string notificationId)
         {
             if (notificationId != null)

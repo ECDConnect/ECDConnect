@@ -17,7 +17,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Message { get; set; }
         public string ToGroups { get; set;}
         public string Status { get; set; }
-
+        public bool IsEdit { get; set; }
+        public List<Guid> MessageLogIds { get; set; }
     }
 }
 

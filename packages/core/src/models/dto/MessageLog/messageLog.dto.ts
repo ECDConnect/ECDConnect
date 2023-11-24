@@ -11,4 +11,6 @@ export interface MessageLogDto extends EntityBase {
   toGroups: string;
   roleIds: string[];
   roleNames: string;
+  isEdit: boolean;
+  messageLogIds: string[];
 }

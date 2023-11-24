@@ -5219,8 +5219,10 @@ export type MessageLogInput = {
 export type MessageLogModel = {
   __typename?: 'MessageLogModel';
   districtId?: Maybe<Scalars['String']>;
+  isEdit: Scalars['Boolean'];
   message?: Maybe<Scalars['String']>;
   messageDate: Scalars['DateTime'];
+  messageLogIds?: Maybe<Array<Maybe<Scalars['String']>>>;
   messageTime?: Maybe<Scalars['String']>;
   provinceId?: Maybe<Scalars['String']>;
   roleIds?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -5234,8 +5236,10 @@ export type MessageLogModel = {
 
 export type MessageLogModelInput = {
   districtId?: InputMaybe<Scalars['String']>;
+  isEdit: Scalars['Boolean'];
   message?: InputMaybe<Scalars['String']>;
   messageDate: Scalars['DateTime'];
+  messageLogIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   messageTime?: InputMaybe<Scalars['String']>;
   provinceId?: InputMaybe<Scalars['String']>;
   roleIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -12898,6 +12902,10 @@ export type QueryAllInfantsForHealthCareWorkerArgs = {
 };
 
 export type QueryAllMessageLogsForAdminArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  roleIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
+  status?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 

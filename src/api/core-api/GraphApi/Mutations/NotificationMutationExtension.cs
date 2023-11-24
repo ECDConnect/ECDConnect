@@ -1,3 +1,4 @@
+using AngleSharp.Text;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
@@ -25,6 +26,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -175,7 +177,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepositoryFactory repoFactory,
             MessageLogModel input)
         {
-
             var tenantId = TenantExecutionContext.Tenant.Id;
             AuthenticationDbContext context = dbContextFactory.CreateDbContext();
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -183,16 +184,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             var messageTemplateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
+            var messageLogRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
 
-            if (input.ToGroups == "")
+            if (input.RoleIds.Count == 0)
             {
                 return false;
             }
 
-            var roles = roleManager.Roles.Where(x => input.ToGroups.Contains(x.Id) && (x.TenantId == null || x.TenantId == tenantId)).ToList();
+            var roles = roleManager.Roles.Where(x => input.RoleIds.Contains(x.Id) && (x.TenantId == null || x.TenantId == tenantId)).ToList();
             List<string> userIds = (from user in context.Users.Where(x => x.IsActive == true)
                                     join userRoles in context.UserRoles on user.Id equals userRoles.UserId
-                                    join role in context.Roles.Where(x => input.ToGroups.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                    join role in context.Roles.Where(x => input.RoleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
                                     select user.Id).ToList();
 
             List<string> messageUserIds = new List<string>();
@@ -308,17 +310,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (messageUserIds.Count > 0)
             {
-                MessageTemplate template = messageTemplateRepo.GetAll().Where(x => x.Protocol == "push" && x.TemplateType == "generic-message").FirstOrDefault();
-                string toGroups = String.Join(",", roles.Select(x => x.Name).ToList());
+                MessageTemplate template = messageTemplateRepo.GetAll().Where(x => x.Protocol == "push" && x.TemplateType == "generic-message" && x.IsActive).FirstOrDefault();
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
 
+                if (input.IsEdit)
+                {
+                    // first delete current records for edit functionality and then create again.
+                    foreach (var logId in input.MessageLogIds)
+                    {
+                        messageLogRepo.Delete(logId);
+                    }
+                }
+                var timeItems = input.MessageTime.Split(":");
+                int hour = Int32.Parse(timeItems[0]);
+                int minutes = Int32.Parse(timeItems[1]);
+                var timeSpan = new TimeSpan(hour, minutes, 0);
+                DateTime messageDate = new DateTime(input.MessageDate.Year, input.MessageDate.Month, input.MessageDate.Day).Add(timeSpan);
                 foreach (var userId in messageUserIds)
                 {
                     var userToSend = await userManager.FindByIdAsync(userId);
-                    await notificationService.SendGenericMessage(userId, toGroups, input.Message, input.Subject, input.MessageDate, template, null);
+                    await notificationService.SendGenericMessage(userId, input.ToGroups, input.Message, input.Subject, messageDate, template, null);
                 }
             }
-
             return true;
                        
         }

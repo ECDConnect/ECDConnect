@@ -33,6 +33,7 @@ export interface PanelProps {
   closeDialog: (value: boolean) => void;
   setFormIsDirty?: (value: boolean) => void;
   isView?: boolean;
+  messageStatus?: string;
 }
 
 export default function MessagePanel(props: PanelProps) {
@@ -53,6 +54,7 @@ export default function MessagePanel(props: PanelProps) {
   });
 
   const roleIds: string[] = [];
+  const messageLogIds: string[] = [];
   const initialMessageValues: MessageLogDto = {
     subject: '',
     message: '',
@@ -65,6 +67,8 @@ export default function MessagePanel(props: PanelProps) {
     sendByUserId: '',
     roleIds: roleIds,
     roleNames: '',
+    isEdit: false,
+    messageLogIds: messageLogIds,
   };
 
   // FORMS
@@ -117,8 +121,6 @@ export default function MessagePanel(props: PanelProps) {
       setWardData(wards.allWards);
     }
     if (currentMessage) {
-      console.log('currentMessage', currentMessage);
-
       if (currentMessage.roleIds.length != 0) {
         if (roles) {
           const availableRoles = Object.assign([], roles.roles);
@@ -148,14 +150,13 @@ export default function MessagePanel(props: PanelProps) {
 
       if (currentMessage.messageDate != null) {
         const messageDate = new Date(currentMessage.messageDate);
-        const messageHours = messageDate.getHours();
+        const messageHours =
+          (messageDate.getHours() < 10 ? '0' : '') + messageDate.getHours();
         const messageMinute =
           (messageDate.getMinutes() < 10 ? '0' : '') + messageDate.getMinutes();
-
         messageSetValue('messageTime', messageHours + ':' + messageMinute, {
           shouldValidate: true,
         });
-
         messageSetValue(
           'messageDate',
           new Date(currentMessage.messageDate) ?? undefined,
@@ -211,67 +212,60 @@ export default function MessagePanel(props: PanelProps) {
   };
 
   const onSaveMessage = async () => {
-    if (isEdit) {
-      // edit message
-    } else {
-      const formValues = messageGetValues();
-      const messageDate = formValues.messageDate;
-      const messageTimeItems = formValues.messageTime.split(':');
-      const hour = messageTimeItems[0];
-      const minute = messageTimeItems[1];
+    const formValues = messageGetValues();
 
-      let toGroups = '';
-
-      if (formValues.districtId != '') {
-        toGroups += 'District:' + formValues.districtId + '|';
-      }
-      if (wardName != '') {
-        toGroups += 'Ward:' + wardName + '|';
-      }
-      if (formValues.provinceId != '') {
-        toGroups += 'Province:' + formValues.provinceId + '|';
-      }
-      if (selectedRoles.length != 0) {
-        toGroups += 'Role:' + selectedRoles.map(({ id }) => id);
-      }
-
-      const inputModel: MessageLogDto = {
-        districtId: formValues.districtId,
-        wardName: wardName,
-        provinceId: formValues.provinceId,
-        toGroups: toGroups,
-        sendByUserId: authenticatedUser.id,
-        message: formValues.message,
-        messageDate: new Date(
-          messageDate.getFullYear(),
-          messageDate.getMonth(),
-          messageDate.getDate(),
-          +hour,
-          +minute
-        ),
-        messageTime: formValues.messageTime,
-        subject: formValues.subject,
-        roleIds: selectedRoles.map(({ id }) => id),
-        roleNames: '',
-      };
-
-      await saveBulkMessagesForAdmin({
-        variables: {
-          input: inputModel,
-        },
-      })
-        .then((response) => {
-          //   setNotification({
-          //     title: 'Successfully created a bulk message!',
-          //     variant: NOTIFICATION.SUCCESS,
-          //   });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-
-      props.closeDialog(true);
+    let toGroups = '';
+    if (formValues.districtId != '') {
+      toGroups += 'District:' + formValues.districtId + '|';
     }
+    if (wardName != '') {
+      toGroups += 'Ward:' + wardName + '|';
+    }
+    if (formValues.provinceId != '') {
+      toGroups += 'Province:' + formValues.provinceId + '|';
+    }
+    if (selectedRoles.length != 0) {
+      toGroups += 'Role:' + selectedRoles.map(({ id }) => id);
+    }
+
+    const messageDate = formValues.messageDate;
+    const messageTimeItems = formValues.messageTime.split(':');
+    const hour = messageTimeItems[0];
+    const minute = messageTimeItems[1];
+
+    const inputModel: MessageLogDto = {
+      districtId: formValues.districtId,
+      wardName: wardName,
+      provinceId: formValues.provinceId,
+      toGroups: toGroups,
+      sendByUserId: authenticatedUser.id,
+      message: formValues.message,
+      messageDate: new Date(
+        messageDate.getFullYear(),
+        messageDate.getMonth(),
+        messageDate.getDate(),
+        +hour,
+        +minute
+      ),
+      messageTime: formValues.messageTime,
+      subject: formValues.subject,
+      roleIds: selectedRoles.map(({ id }) => id),
+      roleNames: '',
+      isEdit: isEdit,
+      messageLogIds: currentMessage && currentMessage.messageLogIds,
+    };
+
+    await saveBulkMessagesForAdmin({
+      variables: {
+        input: inputModel,
+      },
+    })
+      .then((response) => {
+        props.closeDialog(true);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
   };
 
   const panelSetRoles = async (roles: RoleDto[]) => {
@@ -311,7 +305,7 @@ export default function MessagePanel(props: PanelProps) {
         <div>
           <div className="pb-2">
             <hr className="border-b border-dashed border-gray-500 px-2" />
-            {props.isView ? (
+            {props.messageStatus == 'completed' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You can view the sent message but you cannot edit.`}

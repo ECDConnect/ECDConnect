@@ -7,14 +7,15 @@ import {
   AuthUser,
   RoleDto,
   MessageLogDto,
+  useNotifications,
+  NOTIFICATION,
 } from '@ecdlink/core';
 import MessagePanel from './components/message-panel';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
-import { useHistory } from 'react-router';
 import debounce from 'lodash.debounce';
 import UiTable from '../../components/old-ui-table';
-import { FilterRoleList, MessageList } from '@ecdlink/graphql';
-import { useQuery } from '@apollo/client';
+import { FilterRoleList, GetAllMessageLogsForAdmin } from '@ecdlink/graphql';
+import { useQuery, useLazyQuery } from '@apollo/client';
 import {
   SearchDropDown,
   SearchDropDownOption,
@@ -26,20 +27,19 @@ import { format } from 'date-fns';
 export default function Messaging() {
   const { hasPermission } = useUser();
   const panel = usePanel();
-  const history = useHistory();
 
   const [tableData, setTableData] = useState<any[]>([]);
-  const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
   const [searchValue, setSearchValue] = useState('');
   const [roleData, setRoleData] = useState<RoleDto[]>([]);
   const [showFilter, setShowFilter] = useState(false);
-  const [roleFilter, setRoleFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [startDateFilter, setStartDateFilter] = useState<Date>(null);
   const [endDateFilter, setEndDateFilter] = useState<Date>(null);
   const [selectedRoles, setSelectedRoles] = useState<RoleDto[]>([]);
   const user = localStorage.getItem(LocalStorageKeys.user);
+  const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
+  const { setNotification } = useNotifications();
 
   useEffect(() => {
     if (user) {
@@ -51,12 +51,25 @@ export default function Messaging() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: messages, refetch } = useQuery(MessageList, {
-    fetchPolicy: 'cache-and-network',
-    variables: {
-      userId: authenticatedUser?.id,
-    },
-  });
+  const [getAllMessageLogsForAdmin, { data: messages, refetch }] = useLazyQuery(
+    GetAllMessageLogsForAdmin,
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        userId: authenticatedUser?.id,
+        roleIds: selectedRoles.map(({ id }) => id),
+        status: statusFilter,
+        startDate: startDateFilter,
+        endDate: endDateFilter,
+      },
+    }
+  );
+
+  useEffect(() => {
+    if (!messages) {
+      getAllMessageLogsForAdmin();
+    }
+  }, [messages]);
 
   useEffect(() => {
     if (roles) {
@@ -72,7 +85,8 @@ export default function Messaging() {
             item.messageDate !== null
               ? format(new Date(item.messageDate), 'dd MMM yyyy hh:mm')
               : '',
-          status: item.messageDate > new Date() ? 'Scheduled' : 'Sent',
+          status:
+            new Date(item.messageDate) > new Date() ? 'Scheduled' : 'Sent',
         })
       );
 
@@ -87,10 +101,15 @@ export default function Messaging() {
       render: (onSubmit: any) => (
         <MessagePanel
           isView={false}
+          messageStatus="new"
           closeDialog={(messageCreated: boolean) => {
             onSubmit();
             if (messageCreated) {
               refetch();
+              setNotification({
+                title: 'Message scheduled',
+                variant: NOTIFICATION.SUCCESS,
+              });
             }
           }}
         />
@@ -98,11 +117,12 @@ export default function Messaging() {
     });
   };
 
-  const displayEditViewMessagePanel = (message: MessageLogDto) => {
-    var messageDate = new Date(message.messageDate);
-    var messageTitle =
+  const displayEditMessagePanel = (message: MessageLogDto) => {
+    const messageDate = new Date(message.messageDate);
+    const messageTitle =
       messageDate < new Date() ? 'View message' : 'Edit message';
-    var isView = messageDate < new Date() ? true : false;
+    const isView = messageDate < new Date() ? true : false;
+    const messageStatus = messageDate < new Date() ? 'completed' : 'pending';
 
     panel({
       noPadding: false,
@@ -110,12 +130,39 @@ export default function Messaging() {
       render: (onSubmit: any) => (
         <MessagePanel
           isView={isView}
+          messageStatus={messageStatus}
           message={message}
           closeDialog={(messageCreated: boolean) => {
             onSubmit();
             if (messageCreated) {
-              refetch();
+              if (!isView) {
+                refetch();
+                setNotification({
+                  title: 'Message scheduled',
+                  variant: NOTIFICATION.SUCCESS,
+                });
+              }
             }
+          }}
+        />
+      ),
+    });
+  };
+
+  const displayViewMessagePanel = (message: MessageLogDto) => {
+    const messageDate = new Date(message.messageDate);
+    const messageStatus = messageDate < new Date() ? 'completed' : 'pending';
+
+    panel({
+      noPadding: false,
+      title: 'View message',
+      render: (onSubmit: any) => (
+        <MessagePanel
+          isView={true}
+          messageStatus={messageStatus}
+          message={message}
+          closeDialog={(messageCreated: boolean) => {
+            onSubmit();
           }}
         />
       ),
@@ -127,14 +174,16 @@ export default function Messaging() {
   }, 150);
 
   const clearFilters = () => {
-    setRoleFilter('');
+    setSelectedRoles([]);
     setStatusFilter('');
     setStartDateFilter(null);
     setEndDateFilter(null);
+    getAllMessageLogsForAdmin();
   };
 
   const onRoleFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedRoles(value.map((x) => x.value));
+    getAllMessageLogsForAdmin();
   };
 
   return (
@@ -202,6 +251,7 @@ export default function Messaging() {
                       ]}
                       onChange={(item) => {
                         setStatusFilter(item);
+                        getAllMessageLogsForAdmin();
                       }}
                       className="w-48"
                     />
@@ -218,7 +268,16 @@ export default function Messaging() {
                             : undefined
                         }
                         onChange={(date: Date) => {
-                          setStartDateFilter(date);
+                          setStartDateFilter(
+                            new Date(
+                              date.getFullYear(),
+                              date.getMonth(),
+                              date.getDate(),
+                              1,
+                              1
+                            )
+                          );
+                          getAllMessageLogsForAdmin();
                         }}
                         dateFormat="EEE, dd MMM yyyy"
                       />
@@ -232,7 +291,16 @@ export default function Messaging() {
                           endDateFilter ? new Date(endDateFilter) : undefined
                         }
                         onChange={(date: Date) => {
-                          setEndDateFilter(date);
+                          setEndDateFilter(
+                            new Date(
+                              date.getFullYear(),
+                              date.getMonth(),
+                              date.getDate(),
+                              23,
+                              59
+                            )
+                          );
+                          getAllMessageLogsForAdmin();
                         }}
                         dateFormat="EEE, dd MMM yyyy"
                       />
@@ -300,16 +368,26 @@ export default function Messaging() {
               <UiTable
                 columns={[
                   { field: 'message', use: 'Message text' },
-                  { field: 'roleNames', use: 'Send to (roles)' },
-                  { field: 'status', use: 'Status' },
+                  {
+                    field: 'roleNames',
+                    use: 'Send to (roles)',
+                    type: 'roleNames',
+                  },
+                  { field: 'status', use: 'Status', type: 'messageStatus' },
                   { field: 'messageDate', use: 'Scheduled date' },
                 ]}
+                showSearch={false}
                 rows={tableData}
-                viewRow={displayEditViewMessagePanel}
+                viewRow={displayViewMessagePanel}
+                searchInput={searchValue}
                 editRow={
                   hasPermission(PermissionEnum.update_system) &&
-                  displayEditViewMessagePanel
+                  displayEditMessagePanel
                 }
+                options={{
+                  per_page: selectedPageSize,
+                  rows: tableData?.length,
+                }}
                 component={'messaging'}
               />
             </div>

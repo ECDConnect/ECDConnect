@@ -1,8 +1,20 @@
 import { gql } from '@apollo/client';
 
-export const MessageList = gql`
-  query GetAllMessageLogsForAdmin($userId: String) {
-    allMessageLogsForAdmin(userId: $userId) {
+export const GetAllMessageLogsForAdmin = gql`
+  query GetAllMessageLogsForAdmin(
+    $userId: String
+    $roleIds: [String]
+    $status: String
+    $startDate: DateTime
+    $endDate: DateTime
+  ) {
+    allMessageLogsForAdmin(
+      userId: $userId
+      roleIds: $roleIds
+      status: $status
+      startDate: $startDate
+      endDate: $endDate
+    ) {
       message
       subject
       messageDate
@@ -13,6 +25,7 @@ export const MessageList = gql`
       districtId
       roleIds
       roleNames
+      messageLogIds
     }
   }
 `;
