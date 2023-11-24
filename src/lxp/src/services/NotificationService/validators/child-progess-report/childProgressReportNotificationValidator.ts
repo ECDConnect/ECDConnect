@@ -157,14 +157,17 @@ export class ChildProgressReportNotificationValidator
       reportingPeriod,
       practitioner?.userId || ''
     );
+    console.log({ childrenReports });
 
     if (childrenReports.length === 0) return [];
-
-    const expectedReportCount = childrenReports?.length;
+    const activeChildrenReports = childrenReports?.filter(
+      (item) => item?.child?.isActive === true
+    );
+    const expectedReportCount = activeChildrenReports?.length;
     const completedReportCount = childrenReports.filter(
       (cr) => cr.report !== undefined
     ).length;
-
+    console.log({ expectedReportCount });
     if (completedReportCount < expectedReportCount) return [];
 
     const notification: Message = {
