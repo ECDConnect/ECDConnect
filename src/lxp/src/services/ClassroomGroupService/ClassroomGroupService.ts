@@ -173,9 +173,7 @@ class ClassroomGroupService {
     reason: string,
     absentDate: Date,
     absentDateEnd?: Date,
-    isRoleRasssign?: boolean,
-    fromRole?: string,
-    toRole?: string,
+    isRoleAssign?: boolean,
     roleAssignedToUser?: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
@@ -187,21 +185,19 @@ class ClassroomGroupService {
     $reassignedToPractitioner: String!,
     $reason: String!,
     $absentDate: DateTime!,
-    $absentDateEnd: DateTime!)       {
+    $absentDateEnd: DateTime!,
+    $isRoleAssign: Boolean,
+    $roleAssignedToUser: String
+    )       {
         editAbsentee (absenteeId: $absenteeId,
         deleteAbsentee: $deleteAbsentee,
     reassignedToPractitioner: $reassignedToPractitioner,
      reason: $reason,
      absentDate: $absentDate,
      absentDateEnd: $absentDateEnd,
-     isRoleRasssign: $isRoleRasssign,
-        fromRole: $fromRole,
-        toRole: $toRole,
-        roleAssignedToUser: $roleAssignedToUser
-     ) { 
-          id   
-             }  
-               }
+    isRoleAssign: $isRoleAssign,
+    roleAssignedToUser: $roleAssignedToUser
+     ) {           id             }               }
       `,
       variables: {
         absenteeId,
@@ -210,9 +206,7 @@ class ClassroomGroupService {
         reason,
         absentDate,
         absentDateEnd,
-        isRoleRasssign: isRoleRasssign,
-        fromRole: fromRole,
-        toRole: toRole,
+        isRoleAssign: isRoleAssign,
         roleAssignedToUser: roleAssignedToUser,
       },
     });

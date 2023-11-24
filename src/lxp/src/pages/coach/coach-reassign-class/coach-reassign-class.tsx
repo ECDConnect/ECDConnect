@@ -115,7 +115,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   >([]);
   const [principalOrFundaAppAdmin, setPrincipalOrFundaAppAdmin] = useState();
   const [endDate, setEndDate] = useState<Date>();
-  console.log({ principalOrFundaAppAdmin });
+
   const handleReassignClassroomGroupPractitioner = useCallback(
     (classroomGroup: reassignedClassroomGroupProps) => {
       setReassignedClassroomGroups([
@@ -251,8 +251,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             new Date(selectedDate),
             endDate || new Date(selectedDate),
             true,
-            'Practitioner',
-            'FAA',
             principalOrFundaAppAdmin
           );
 
@@ -275,8 +273,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           item?.classroomId,
           endDate || new Date(selectedDate),
           true,
-          'Practitioner',
-          'FAA',
           principalOrFundaAppAdmin
         );
       });
@@ -297,8 +293,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             new Date(selectedDate),
             endDate || new Date(selectedDate),
             true,
-            'Practitioner',
-            'FAA',
             principalOrFundaAppAdmin
           );
 
@@ -320,8 +314,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           '',
           endDate || new Date(selectedDate),
           true,
-          'Practitioner',
-          'FAA',
           principalOrFundaAppAdmin
         );
       }

@@ -76,8 +76,6 @@ export const Practitioners: React.FC = () => {
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
 
-  console.log({ practitionersForCoach });
-
   const [practitionersMessages, setPractitionersMessages] =
     useState<NotificationDisplay[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
