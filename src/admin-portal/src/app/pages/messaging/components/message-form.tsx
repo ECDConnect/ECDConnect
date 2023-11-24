@@ -35,7 +35,6 @@ const MessageForm: React.FC<MessageFormProps> = ({
   isView,
 }) => {
   const [provinceData, setProvinceData] = useState<ProvinceDto[]>([]);
-  const [setWardData] = useState<WardDto[]>(wardData);
   const [roleData, setRoleData] = useState<RoleDto[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<RoleDto[]>([]);
   const [tenantInfo, setTenantInfo] = useState<TenantDto>();

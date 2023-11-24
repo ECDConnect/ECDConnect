@@ -274,12 +274,9 @@ export default function MessagePanel(props: PanelProps) {
 
   useEffect(() => {
     if (messageForm) {
-      // console.log('messageForm', messageForm);
-      if (messageForm.wardName != '') {
-        // console.log('wardname', messageForm.wardName);
-
+      if (messageForm.wardName !== '' && messageForm.wardName !== '-1') {
         const wardIndex = +messageGetValues('wardName');
-        //setWardName(wardData[wardIndex - 1].ward);
+        setWardName(wardData[wardIndex].ward);
       }
     }
   }, [messageForm]);
