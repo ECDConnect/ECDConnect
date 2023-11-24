@@ -52,7 +52,7 @@ export default function ContentList({
   const [languageId, setLanguageId] = useState<string>();
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
-
+  console.log({ displayFields });
   function filterByValue(array, value) {
     return array.filter(
       (data) =>
@@ -158,7 +158,7 @@ export default function ContentList({
         const copyItems = contentData[getAllCall].map((item: any) => ({
           ...item,
         }));
-
+        console.log({ copyItems });
         setTableData(copyItems);
       }
     }
@@ -183,6 +183,8 @@ export default function ContentList({
       localeId: languageId.toString(),
     });
   };
+
+  console.log({ tableData });
 
   const viewSelectedRow = (item?: any) => {
     const model: ContentManagementView = {

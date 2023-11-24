@@ -51,3 +51,4 @@ export * from './infant';
 export * from './tenant';
 export * from './team-lead';
 export * from './clinic';
+export * from './personalRecords';
