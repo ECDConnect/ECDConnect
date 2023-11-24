@@ -16,7 +16,7 @@ public class RemovePractitioners : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
 
-    public RemovePractitioners(IServiceScopeFactory scopeFactory, IScheduleConfig<RemovePractitioners> config, ILogger<RemovePractitioners> logger)
+    public RemovePractitioners(IServiceScopeFactory scopeFactory, CronJobConfig<RemovePractitioners> config, ILogger<RemovePractitioners> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

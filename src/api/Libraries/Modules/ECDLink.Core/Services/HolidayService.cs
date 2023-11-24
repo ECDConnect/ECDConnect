@@ -1,5 +1,6 @@
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Caching;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
@@ -87,27 +88,21 @@ namespace ECDLink.Core.Services
             _cacheService.SetCacheItem(CacheKeyConstants.HolidayCache, HolidayCache);
         }
 
-        public IEnumerable<Holiday> GetHolidays(DateTime startMonth, DateTime endMonth, string locale = "ZA")
+        public IEnumerable<Holiday> GetHolidays(DateTime startDate, DateTime endDate, string locale = "ZA")
         {
-            var startYear = startMonth.Year;
-            var endYear = endMonth.Year;
+            var startYear = startDate.Year;
+            var endYear = endDate.Year;
 
-            var yearsHolidays = new Dictionary<int, IEnumerable<Holiday>>();
+            var yearsHolidays = new List<Holiday>();
 
             for (int i = startYear; i <= endYear; i++)
             {
-                yearsHolidays.Add(i, GetHolidays(i));
+                yearsHolidays.AddRange(GetHolidays(i));
             }
 
-            var flattenedHolidays = yearsHolidays[startYear].Where(x => x.Day >= startMonth).ToList();
-            flattenedHolidays.AddRange(yearsHolidays[endYear].Where(x => x.Day <= endMonth).ToList());
+            var holidays = yearsHolidays.Where(x => x.Day >= startDate && x.Day <= endDate).ToList();
 
-            for (int i = startYear + 1; i < endYear; i++)
-            {
-                flattenedHolidays.AddRange(yearsHolidays[i]);
-            }
-
-            return flattenedHolidays;
+            return holidays;
         }
 
         private async Task<IEnumerable<Holiday>> GetHolidaysFromResponseAsync(HttpResponseMessage response)

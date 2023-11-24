@@ -181,6 +181,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //audit user changes
             List<AuditChanges> auditFields = new List<AuditChanges>();
 
+            if (input.ResetData is not null) {
+                user.ResetData = input.ResetData;
+            }    
+
             if (input.PhoneNumber is not null 
                 && input.PhoneNumber != user.PhoneNumber)
             {
@@ -374,10 +378,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 auditFields.Add(new AuditChanges() { FieldName = "ProfileImageUrl", ValueBefore = user.ProfileImageUrl, ValueAfter = input.ProfileImageUrl });
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
+          
+            user.UpdatedDate = DateTime.UtcNow;
+            var updateResult = await userManager.UpdateAsync(user);
+
             if (auditFields.Count > 0)
             {
-                user.UpdatedDate = DateTime.UtcNow;
-                var updateResult = await userManager.UpdateAsync(user);
 
                 DoAudit(currentUserId, repoFactory, auditFields, id);
 

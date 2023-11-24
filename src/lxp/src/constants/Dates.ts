@@ -46,6 +46,6 @@ type ShortMonthType = {
 };
 
 export const IncomeStatementDates = {
-  SubmitStartDay: 25,
+  SubmitStartDay: 20,
   SubmitEndDay: 7,
 };

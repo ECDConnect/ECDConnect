@@ -9,6 +9,7 @@ export interface AuthUser {
   auth_token: string;
   expires_in: string;
   id: string;
+  resetData: boolean;
 }
 
 export interface RegisterRequestModel {
