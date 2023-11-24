@@ -22,7 +22,6 @@ import { programmeRoutineSelectors } from '@store/content/programme-routine';
 import {
   DailyProgrammeDto,
   ProgrammeRoutineItemDto,
-  getWeekDate,
   useDialog,
 } from '@ecdlink/core';
 import { MessageBoard } from '../../../components/message-board/message-board';
@@ -127,14 +126,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         );
       }
       history.push(ROUTES.PROGRAMMES.THEME);
-    } else {
-      showOnlineOnly();
-    }
-  };
-
-  const handleProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
-    if (isOnline) {
-      onProgrammeClick(routineItem);
     } else {
       showOnlineOnly();
     }
@@ -464,7 +455,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   return (
-    <div className={'flex flex-col pt-4'}>
+    <div className={'mb-20 flex flex-col pt-4'}>
       <ProgrammePlanningHeaderUpdated
         headerText={`Today's daily Routine`}
         subHeaderText={currentDate}
@@ -509,7 +500,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                     key={`id_${routineItem.id}`}
                     routineItem={routineItem}
                     day={currentDailyProgramme}
-                    onClick={() => handleProgrammeClick(routineItem)}
+                    onClick={() => onProgrammeClick(routineItem)}
                   />
                 );
               }
@@ -541,7 +532,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         />
       )}
       {improveProgrammeMessage && (
-        <>
+        <div className="px-4">
           <Typography
             type={'h4'}
             text={improveProgrammeMessage}
@@ -568,7 +559,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 return null;
               })}
           </Card>
-        </>
+        </div>
       )}
 
       <Button

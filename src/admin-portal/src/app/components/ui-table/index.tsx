@@ -215,7 +215,7 @@ export default function UiTable({
       return column.field === columns[0].field ? display_value : <></>;
     }
     let rowValue: any;
-
+    console.log(column?.field);
     const checkboxCell = (
       <input
         type="checkbox"
@@ -240,8 +240,25 @@ export default function UiTable({
           )}
         </div>
       );
+    } else if (display_value === 'RoadToHealthBook') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (display_value === 'MaternalCaseRecord') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
     } else if (
-      column.field.match(/created|createdAt|updated|insertedDate|updatedAt/)
+      column.field.match(/created|createdAt|updated|insertedDate|updatedAt/) &&
+      column.field !== 'createdByName'
     ) {
       rowValue = (
         <span
