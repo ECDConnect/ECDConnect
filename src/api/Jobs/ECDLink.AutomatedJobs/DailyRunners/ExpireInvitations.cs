@@ -17,9 +17,7 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 public class ExpireInvitations : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IGenericRepositoryFactory _repoFactory;
-    private readonly HierarchyEngine _hierarchyEngine;
-    public ExpireInvitations(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config, ILogger<ExpireInvitations> logger)
+    public ExpireInvitations(IServiceScopeFactory scopeFactory, CronJobConfig<ExpireInvitations> config, ILogger<ExpireInvitations> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;

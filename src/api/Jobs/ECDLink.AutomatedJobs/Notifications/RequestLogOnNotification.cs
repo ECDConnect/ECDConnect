@@ -18,7 +18,7 @@ namespace ECDLink.AutomatedJobs.Notifications
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public RequestLogOnNotification(IServiceScopeFactory scopeFactory, IScheduleConfig<RequestLogOnNotification> config, ILogger<RequestLogOnNotification> logger)
+        public RequestLogOnNotification(IServiceScopeFactory scopeFactory, CronJobConfig<RequestLogOnNotification> config, ILogger<RequestLogOnNotification> logger)
             : base(config, logger)
         {
             _scopeFactory = scopeFactory;
