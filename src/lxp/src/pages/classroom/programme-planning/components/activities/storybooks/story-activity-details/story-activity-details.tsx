@@ -1,14 +1,8 @@
-import {
-  ActivityDto,
-  getAvatarColor,
-  StoryBookDto,
-  useDialog,
-} from '@ecdlink/core/';
+import { ActivityDto, getAvatarColor, StoryBookDto } from '@ecdlink/core/';
 import {
   Alert,
   BannerWrapper,
   Button,
-  DialogPosition,
   Divider,
   RoundIcon,
   StatusChip,
@@ -16,7 +10,7 @@ import {
   URL,
   stripPTag,
 } from '@ecdlink/ui/';
-import React from 'react';
+import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { StoryBookTypes } from '@enums/ProgrammeRoutineType';
@@ -112,6 +106,9 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
   isSelected,
   linkedActivity,
 }) => {
+  const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
+  const { isOnline } = useOnlineStatus();
+
   const storyBookParts = [...(storyBook?.storyBookParts || [])].sort((a, b) =>
     +a.part >= +b.part ? 1 : -1
   );
@@ -127,7 +124,16 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
     <div className={'flex flex-col bg-white'}>
       <div className={'flex flex-col items-start justify-start'}>
         <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
-
+        {isOnlineOnlyAlert && (
+          <div className="absolute  z-10 flex h-full items-center ">
+            <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
+              <OnlineOnlyModal
+                onSubmit={() => setOnlineOnlyAlert(false)}
+              ></OnlineOnlyModal>
+            </div>
+            <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
+          </div>
+        )}
         <div className={'items-stetch flex w-full flex-col justify-start p-4'}>
           <Typography
             text={storyBook.name}
@@ -190,7 +196,11 @@ const StoryBookDetails: React.FC<StoryBookDetailsProps> = ({
                 selected={true}
                 buttonIcon={'SwitchVerticalIcon'}
                 buttonText={'Change activity'}
-                onSelected={() => onActivitySwitched && onActivitySwitched()}
+                onSelected={() =>
+                  onActivitySwitched && isOnline
+                    ? onActivitySwitched()
+                    : setOnlineOnlyAlert(true)
+                }
                 onCleared={() => {}}
               />
             </div>
@@ -523,24 +533,15 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
   onActivitySwitched,
   onStorySwitched,
 }) => {
-  const { isOnline } = useOnlineStatus();
-  const dialog = useDialog();
+  const [isOnlineOnlyAlert, setOnlineOnlyAlert] = useState(false);
 
-  const showOnlineOnly = () => {
-    dialog({
-      color: 'bg-white',
-      position: DialogPosition.Middle,
-      render: (onSubmit) => {
-        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
-      },
-    });
-  };
+  const { isOnline } = useOnlineStatus();
 
   const handleActivitySwitched = () => {
     if (isOnline) {
       onActivitySwitched?.();
     } else {
-      showOnlineOnly();
+      setOnlineOnlyAlert(true);
     }
   };
 
@@ -548,6 +549,16 @@ const StorybookActivityDetails: React.FC<StorybookActivityDetailsProps> = ({
     <div className={'flex flex-col'}>
       <div className={'flex flex-col pb-24'}>
         <LanguageSelector currentLocale={'en-za'} selectLanguage={() => {}} />
+        {isOnlineOnlyAlert && (
+          <div className="absolute  z-10 flex h-full items-center ">
+            <div className="rounded-10 z-10 mx-4 bg-white opacity-100">
+              <OnlineOnlyModal
+                onSubmit={() => setOnlineOnlyAlert(false)}
+              ></OnlineOnlyModal>
+            </div>
+            <div className="absolute z-0 h-full w-full bg-gray-600 opacity-40"></div>
+          </div>
+        )}
         <Divider />
         <Typography
           className="px-4"
