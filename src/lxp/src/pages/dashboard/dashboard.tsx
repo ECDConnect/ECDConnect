@@ -982,7 +982,7 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && !!club && !!club?.league?.id && (
+        {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
             mainText={clubCard.mainText}
@@ -999,20 +999,21 @@ export const Dashboard: React.FC = () => {
             textColour={clubCard.textColour}
           />
         )}
-        {isPractitioner && (!club || (!!club && !club?.league?.id)) && (
-          <div className="mt-1">
-            <TitleListItem
-              item={{
-                title: !!club ? club?.name : 'Community',
-                titleIcon: 'UserGroupIcon',
-                titleIconClassName: styles.communityIcon,
-                classNames: 'bg-uiBg',
-                onActionClick: () =>
-                  history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
-              }}
-            />
-          </div>
-        )}
+        {isPractitioner &&
+          (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
+            <div className="mt-1">
+              <TitleListItem
+                item={{
+                  title: !!club ? club?.name : 'Community',
+                  titleIcon: 'UserGroupIcon',
+                  titleIconClassName: styles.communityIcon,
+                  classNames: 'bg-uiBg',
+                  onActionClick: () =>
+                    history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+                }}
+              />
+            </div>
+          )}
       </div>
     </BannerWrapper>
   );
