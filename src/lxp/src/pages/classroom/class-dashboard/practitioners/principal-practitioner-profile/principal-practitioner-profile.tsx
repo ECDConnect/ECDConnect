@@ -74,6 +74,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
 
   const practitionerAbsentees = practitioner?.absentees;
+
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDateEnd as string)) ||
@@ -94,6 +95,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const allAbsenteeClasses = practitionerAbsentees?.filter(
     (item) => item?.absentDate === currentAbsentee?.absentDate
   );
+
+  const classesWithAbsence =
+    validAbsenteesDates &&
+    Object.values(
+      validAbsenteesDates?.reduce(
+        (acc, obj) => ({ ...acc, [obj.absentDate as string]: obj }),
+        {}
+      )
+    );
+
+  classesWithAbsence?.sort(function (a, b) {
+    return a?.absentDate?.localeCompare(b?.absentDate);
+  });
 
   const isOnLeave =
     isPast(new Date(currentAbsentee?.absentDate as string)) &&
@@ -131,7 +145,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const handleReassignClass = useCallback(
     (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
-      const isPrincipal = practitionerUser?.isPrincipal;
+      const isPrincipal = practitioner?.isPrincipal;
 
       if (isPrincipal) {
         if (allAbsenteeClasses) {
@@ -142,10 +156,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           });
           return;
         }
-        history.push('practitioner-reassign-class', {
-          practitionerId,
-          // principalPractitioner: practitionerUser,
-        });
+        if (allAbsenteeClasses)
+          history.push('practitioner-reassign-class', {
+            practitionerId,
+            allAbsenteeClasses,
+            // principalPractitioner: practitionerUser,
+          });
 
         return;
       }
@@ -162,7 +178,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         practitionerId,
       });
     },
-    [history]
+    [history, practitionerUser]
   );
 
   const handleComebackDay = useCallback((date: Date) => {
@@ -173,43 +189,50 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     return new Date(addDays(new Date(date), 1));
   }, []);
 
-  const handleAbsenceModal = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`What would you like to edit?`}
-          actionButtons={[
-            {
-              text: 'Edit this absence',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                handleReassignClass(practitionerUserId, allAbsenteeClasses);
-                onSubmit();
+  const handleAbsenceModal = useCallback(
+    (item: AbsenteeDto) => {
+      const absenceClasses = validAbsenteesDates?.filter(
+        (absence) => absence?.absenteeId === item?.absenteeId
+      );
+
+      dialog({
+        position: DialogPosition.Middle,
+        render: (onSubmit, onCancel) => (
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`What would you like to edit?`}
+            actionButtons={[
+              {
+                text: 'Edit this absence',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  handleReassignClass(practitionerUserId, absenceClasses);
+                  onSubmit();
+                },
+                leadingIcon: 'PencilAltIcon',
               },
-              leadingIcon: 'PencilAltIcon',
-            },
-            {
-              text: 'Add a new leave/absence',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                handleReassignClass(practitionerUserId);
-                onSubmit();
+              {
+                text: 'Add a new leave/absence',
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  handleReassignClass(practitionerUserId);
+                  onSubmit();
+                },
+                leadingIcon: 'PlusIcon',
               },
-              leadingIcon: 'PlusIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerUserId]);
+            ]}
+          />
+        ),
+      });
+    },
+    [dialog, handleReassignClass, practitionerUserId, validAbsenteesDates]
+  );
 
   useEffect(() => {
     if (!!classMetrics && !!classMetrics?.length) {
@@ -455,10 +478,14 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               practitioner={practitioner!}
               isOnLeave={isOnLeave}
               handleReassignClass={handleReassignClass}
-              handleAbsenceModal={handleAbsenceModal}
+              handleAbsenceModal={(item: AbsenteeDto) =>
+                handleAbsenceModal(item)
+              }
               isLeave={isLeave}
               allAbsenteeClasses={allAbsenteeClasses}
               practitionerUserId={practitionerUserId}
+              classesWithAbsence={classesWithAbsence}
+              practitionerAbsentees={practitionerAbsentees}
             />
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {

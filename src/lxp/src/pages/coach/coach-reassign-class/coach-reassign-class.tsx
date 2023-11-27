@@ -219,8 +219,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  console.log({ allAbsenteeClasses });
-
   useEffect(() => {
     if (hasAbsenteeClasses) {
       setReassignClassValue(
@@ -280,7 +278,8 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           userData?.id!,
           item?.classroomId,
           endDate || new Date(selectedDate),
-          true,
+          '',
+          '',
           principalOrFundaAppAdmin
         );
       });
@@ -310,6 +309,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
 
           return;
         }
+
         setIsLoading(true);
         await new ClassroomGroupService(
           userAuth.auth_token
@@ -321,7 +321,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           userData?.id!,
           '',
           endDate || new Date(selectedDate),
-          true,
+          '',
           principalOrFundaAppAdmin
         );
       }
