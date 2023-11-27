@@ -39,6 +39,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { clubSelectors, clubThunkActions } from '@/store/club';
 import { getTermNumberForCurrentMonth } from '@/utils/club';
+import { OfflineAlert } from '@/components/offline-alert';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
@@ -94,6 +95,8 @@ export const ClubTab: React.FC = () => {
         ?.documentStatus?.toLocaleLowerCase() !== 'not completed'
     : false;
 
+  // The league starts from 1 April
+  const isLeagueStarts = currentMonth >= 3;
   const isClubInALeague = !!club?.league;
   const totalMembers = club?.clubMembers?.length ?? 0;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
@@ -174,6 +177,29 @@ export const ClubTab: React.FC = () => {
     },
   };
 
+  const leader: UserAlertListDataItem = {
+    title: `${club?.clubLeader?.firstName ?? ''} ${
+      club?.clubLeader?.surname ?? ''
+    }`,
+    titleStyle: 'text-textDark',
+    profileDataUrl: club?.clubLeader?.profileImageUrl ?? '',
+    profileText: `${club?.clubLeader?.firstName ?? ''} ${
+      club?.clubLeader?.surname ?? ''
+    }`,
+    avatarColor: 'var(--primaryAccent2)',
+    alertSeverity: 'none',
+    hideAlertSeverity: true,
+    onActionClick: () => {
+      // TODO: update user profile to handle with coach view and practitioner view
+      // history.push(
+      //   ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+      //     ':clubId',
+      //     clubId
+      //   ).replace(':leaderId', club?.clubLeader?.practitionerId ?? '')
+      // )
+    },
+  };
+
   const clubSupportRole: UserAlertListDataItem = {
     title: `${club?.clubSupport?.firstName ?? ''} ${
       club?.clubSupport?.surname ?? ''
@@ -203,7 +229,7 @@ export const ClubTab: React.FC = () => {
           title={`Accept the club leader agreement!`}
           type="warning"
           list={[
-            'Your coach selected you for the {clubName} club leader role.',
+            `Your coach selected you for the ${club?.name} club leader role.`,
             'If you do not want to accept the agreement, please contact your coach.',
           ]}
           button={
@@ -240,7 +266,7 @@ export const ClubTab: React.FC = () => {
     }
 
     return <></>;
-  }, [history, isLeader, isLeaderRequest]);
+  }, [club?.name, history, isLeader, isLeaderRequest]);
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
@@ -348,34 +374,40 @@ export const ClubTab: React.FC = () => {
             type="h3"
             text="League position & points"
           />
-          <StackedList
-            isFullHeight={false}
-            type={'MenuList' as StackedListType}
-            listItems={[leagueCard]}
-          />
-          <ScoreCard
-            className="mt-2"
-            mainText={String(club?.pointsTotal ?? 0)}
-            hint="points"
-            currentPoints={club?.pointsTotal || 18}
-            maxPoints={club?.maxPointsTotal ?? 0}
-            barBgColour="uiLight"
-            barColour={
-              isCurrentPointsAtLeast80PercentOfTotal(
-                club?.pointsTotal || 0,
-                club?.maxPointsTotal || 0
-              )
-                ? 'successMain'
-                : 'secondary'
-            }
-            bgColour="uiBg"
-            textColour="black"
-            onClick={() =>
-              history.push(
-                ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(':clubId', clubId)
-              )
-            }
-          />
+          {isOnline ? (
+            <>
+              <StackedList
+                isFullHeight={false}
+                type={'MenuList' as StackedListType}
+                listItems={[leagueCard]}
+              />
+              <ScoreCard
+                className="mt-2"
+                mainText={String(club?.pointsTotal ?? 0)}
+                hint="points"
+                currentPoints={club?.pointsTotal || 18}
+                maxPoints={club?.maxPointsTotal ?? 0}
+                barBgColour="uiLight"
+                barColour={
+                  isCurrentPointsAtLeast80PercentOfTotal(
+                    club?.pointsTotal || 0,
+                    club?.maxPointsTotal || 0
+                  )
+                    ? 'successMain'
+                    : 'secondary'
+                }
+                bgColour="uiBg"
+                textColour="black"
+                onClick={() =>
+                  history.push(
+                    ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(':clubId', clubId)
+                  )
+                }
+              />
+            </>
+          ) : (
+            <OfflineAlert />
+          )}
         </div>
       );
     }
@@ -388,6 +420,7 @@ export const ClubTab: React.FC = () => {
       />
     );
   }, [
+    isOnline,
     club?.maxPointsTotal,
     club?.pointsTotal,
     clubId,
@@ -402,17 +435,21 @@ export const ClubTab: React.FC = () => {
     return (
       <div className="mt-7 mb-5">
         <Typography className="mb-2" type="h3" text="Activities" />
-        <StackedList
-          className="flex flex-col gap-2"
-          type={'MenuList' as StackedListType}
-          listItems={activities}
-        />
+        {isOnline ? (
+          <StackedList
+            className="flex flex-col gap-2"
+            type={'MenuList' as StackedListType}
+            listItems={activities}
+          />
+        ) : (
+          <OfflineAlert />
+        )}
       </div>
     );
-  }, [activities, isClubInALeague]);
+  }, [activities, isClubInALeague, isOnline]);
 
   return (
-    <div className="p-4 pt-6">
+    <div className="h-full p-4 pt-6">
       {isLoading ? (
         <LoadingSpinner
           className="mt-4"
@@ -421,7 +458,7 @@ export const ClubTab: React.FC = () => {
           backgroundColor="uiLight"
         />
       ) : (
-        <>
+        <div className="flex h-full flex-col">
           <Typography type="h2" text={club?.name ?? ''} />
           <div className="mt-4 flex gap-2">
             {isPurpleLeague && (
@@ -441,7 +478,7 @@ export const ClubTab: React.FC = () => {
           </div>
           {leaderAlert}
           {renderLeagueContent}
-          {!!coach && (
+          {!!coach && isLeagueStarts && isClubInALeague && (
             <>
               <Typography className="mb-2" type="h3" text="Coach" />
               <div>
@@ -453,22 +490,36 @@ export const ClubTab: React.FC = () => {
               </div>
             </>
           )}
-          {!!club?.clubSupport && (
+          {!!club?.clubLeader && !isLeader && (
+            <>
+              <Typography className="mb-2 mt-6" type="h3" text="Club leader" />
+              <div>
+                <StackedList
+                  isFullHeight={false}
+                  type={'UserAlertList' as StackedListType}
+                  listItems={[leader]}
+                />
+              </div>
+            </>
+          )}
+          {!!club?.clubSupport && isLeagueStarts && isClubInALeague && (
             <>
               <div className="mb-2 mt-6 flex items-center justify-between">
                 <Typography type="h3" text="Club support role" />
-                <Button
-                  type="outlined"
-                  color="primary"
-                  textColor="primary"
-                  text="Change"
-                  icon="RefreshIcon"
-                  onClick={() =>
-                    history.push(
-                      ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
-                    )
-                  }
-                />
+                {(isLeader || isSupportRole) && (
+                  <Button
+                    type="outlined"
+                    color="primary"
+                    textColor="primary"
+                    text="Change"
+                    icon="RefreshIcon"
+                    onClick={() =>
+                      history.push(
+                        ROUTES.PRACTITIONER.COMMUNITY.CLUB.SUPPORT_ROLE.EDIT
+                      )
+                    }
+                  />
+                )}
               </div>
               <Typography
                 className="mb-4"
@@ -484,7 +535,11 @@ export const ClubTab: React.FC = () => {
             </>
           )}
           {renderActivitiesContent}
-          <div className="mt-auto flex flex-col">
+          <div
+            className={`mt-auto flex flex-col ${
+              isLeader || isSupportRole ? 'pb-4' : ''
+            }`}
+          >
             {(isLeader || isSupportRole) && (
               <Button
                 icon="PlusCircleIcon"
@@ -498,8 +553,8 @@ export const ClubTab: React.FC = () => {
             )}
             <Button
               icon="UserGroupIcon"
-              type="outlined"
-              textColor="primary"
+              type={isLeader || isSupportRole ? 'outlined' : 'filled'}
+              textColor={isLeader || isSupportRole ? 'primary' : 'white'}
               color="primary"
               text="See club members"
               onClick={() =>
@@ -509,7 +564,7 @@ export const ClubTab: React.FC = () => {
               }
             />
           </div>
-        </>
+        </div>
       )}
     </div>
   );

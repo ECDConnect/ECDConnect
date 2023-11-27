@@ -54,6 +54,7 @@ export const BeCreative: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
   const currentMonthName = currentDate.toLocaleString('default', {
     month: 'long',
   });
@@ -76,6 +77,8 @@ export const BeCreative: React.FC = () => {
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
+  const isLeagueStarts = currentMonth >= 3;
+  const isClubInALeague = !!club?.league;
   const isFromAddCollageEvent = location?.state?.isFromAddCollageEvent;
   const isToShowAddImageEventButton =
     (isFromAddCollageEvent || isLeader || isSupportRole) &&
@@ -88,13 +91,14 @@ export const BeCreative: React.FC = () => {
         getAlertType(record?.documentStatusColor ?? '') === 'info' ||
         getAlertType(record?.documentStatusColor ?? '') === 'success'
     );
+  const isToShowPoints = isLeagueStarts && isClubInALeague;
 
   const activityId = 'be-creative';
 
   const formatMonthlyRecord = (record: ActivityBeCreativeDetail): Item => ({
     title: record.monthName ?? '',
     description: record.description ?? '',
-    rightChip: `+ ${record.points}`,
+    rightChip: isToShowPoints ? `+ ${record.points}` : '',
     alert: {
       title: record.documentStatus ?? '',
       type: getAlertType(record.documentStatusColor ?? ''),
@@ -153,7 +157,7 @@ export const BeCreative: React.FC = () => {
           ? history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT)
           : history.goBack()
       }
-      displayHelp
+      displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
           ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
@@ -164,22 +168,23 @@ export const BeCreative: React.FC = () => {
       }
     >
       <Header
-        // TODO: change to activity date
         date={new Date()}
         imageUrl={paintPaletteIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
-        className="mt-5"
-        mainText={String(details?.points ?? 0)}
-        hint="points"
-        currentPoints={details?.points || 18}
-        maxPoints={800}
-        barBgColour="uiLight"
-        barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
-        bgColour="uiBg"
-        textColour="black"
-      />
+      {isToShowPoints && (
+        <ScoreCard
+          className="mt-5"
+          mainText={String(details?.points ?? 0)}
+          hint="points"
+          currentPoints={details?.points || 18}
+          maxPoints={800}
+          barBgColour="uiLight"
+          barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
+          bgColour="uiBg"
+          textColour="black"
+        />
+      )}
       {details?.monthlyRecords?.length ? (
         <div className="mt-5">
           {details.monthlyRecords.map((item) => (

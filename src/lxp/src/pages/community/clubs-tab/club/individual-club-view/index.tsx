@@ -4,6 +4,7 @@ import {
   Alert,
   BannerWrapper,
   Button,
+  DialogPosition,
   EmptyPage,
   LoadingSpinner,
   MenuListDataItem,
@@ -14,7 +15,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useHistory, useParams } from 'react-router';
 import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
@@ -37,6 +38,10 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
 import { getScoreBarColor } from '../../index.filters';
 import { shouldShowPointsScreen as shouldShowPoints } from '@/utils/club';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { OfflineAlert } from '@/components/offline-alert';
+import { useDialog } from '@ecdlink/core';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export function isCurrentPointsAtLeast80PercentOfTotal(
   currentPoints: number,
@@ -57,6 +62,8 @@ export const Club: React.FC = () => {
 
   const { clubId } = useParams<ClubsRouteState>();
 
+  const { isOnline } = useOnlineStatus();
+
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
     clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
@@ -64,6 +71,8 @@ export const Club: React.FC = () => {
   const nextLeader = useSelector(
     clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
+
+  const dialog = useDialog();
 
   const totalMembers = club?.clubMembers?.length || 0;
   const monthsSinceCurrentLeaderAccepted = differenceInMonths(
@@ -87,6 +96,27 @@ export const Club: React.FC = () => {
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   // TODO: check this rule
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
+
+  const onOffline = useCallback(() => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return <OnlineOnlyModal onSubmit={onClose} />;
+      },
+    });
+  }, [dialog]);
+
+  const onOnlineNavigation = useCallback(
+    (route: string) => {
+      if (isOnline) {
+        return history.push(route);
+      }
+
+      return onOffline();
+    },
+    [history, isOnline, onOffline]
+  );
 
   const leader: UserAlertListDataItem = {
     title: `${currentLeader?.firstName ?? ''} ${currentLeader?.surname ?? ''}`,
@@ -214,28 +244,41 @@ export const Club: React.FC = () => {
             type="h3"
             text="League position & points"
           />
-          <StackedList
-            isFullHeight={false}
-            type={'MenuList' as StackedListType}
-            listItems={[leagueCard]}
-          />
-          {isToShowPointsScreen && (
-            <ScoreCard
-              className="mt-5"
-              mainText={String(club?.pointsTotal || 0)}
-              hint="points"
-              currentPoints={club?.pointsTotal}
-              maxPoints={club?.maxPointsTotal}
-              barBgColour="uiLight"
-              barColour={getScoreBarColor(club?.pointsTotal ?? 0, 1500, 1499)}
-              bgColour="uiBg"
-              textColour="black"
-              onClick={() =>
-                history.push(
-                  ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(':clubId', clubId)
-                )
-              }
-            />
+          {isOnline ? (
+            <>
+              <StackedList
+                isFullHeight={false}
+                type={'MenuList' as StackedListType}
+                listItems={[leagueCard]}
+              />
+              {isToShowPointsScreen && (
+                <ScoreCard
+                  className="mt-5"
+                  mainText={String(club?.pointsTotal || 0)}
+                  hint="points"
+                  currentPoints={club?.pointsTotal}
+                  maxPoints={club?.maxPointsTotal}
+                  barBgColour="uiLight"
+                  barColour={getScoreBarColor(
+                    club?.pointsTotal ?? 0,
+                    1500,
+                    1499
+                  )}
+                  bgColour="uiBg"
+                  textColour="black"
+                  onClick={() =>
+                    history.push(
+                      ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(
+                        ':clubId',
+                        clubId
+                      )
+                    )
+                  }
+                />
+              )}
+            </>
+          ) : (
+            <OfflineAlert />
           )}
         </div>
       );
@@ -249,6 +292,7 @@ export const Club: React.FC = () => {
       />
     );
   }, [
+    isOnline,
     club?.maxPointsTotal,
     club?.pointsTotal,
     clubId,
@@ -264,14 +308,18 @@ export const Club: React.FC = () => {
     return (
       <div className="mt-7 mb-5">
         <Typography className="mb-2" type="h3" text="Activities" />
-        <StackedList
-          className="flex flex-col gap-2"
-          type={'MenuList' as StackedListType}
-          listItems={activities}
-        />
+        {isOnline ? (
+          <StackedList
+            className="flex flex-col gap-2"
+            type={'MenuList' as StackedListType}
+            listItems={activities}
+          />
+        ) : (
+          <OfflineAlert />
+        )}
       </div>
     );
-  }, [activities, isClubInALeague]);
+  }, [isOnline, activities, isClubInALeague]);
 
   const renderIssuesAndTasksContent = useMemo(() => {
     const items: MenuListDataItem[] = [];
@@ -300,7 +348,7 @@ export const Club: React.FC = () => {
         iconBackgroundColor: 'errorMain',
         backgroundColor: 'errorBg',
         onActionClick: () =>
-          history.push(
+          onOnlineNavigation(
             ROUTES.COMMUNITY.CLUB.LEADER.ADD.replace(':clubId', clubId)
           ),
       });
@@ -339,7 +387,7 @@ export const Club: React.FC = () => {
         iconBackgroundColor: 'errorMain',
         backgroundColor: 'errorBg',
         onActionClick: () =>
-          history.push(
+          onOnlineNavigation(
             ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
           ),
       });
@@ -357,7 +405,9 @@ export const Club: React.FC = () => {
         iconBackgroundColor: 'errorMain',
         backgroundColor: 'errorBg',
         onActionClick: () =>
-          history.push(ROUTES.COMMUNITY.CLUB.ADD.replace(':clubId', 'new')),
+          onOnlineNavigation(
+            ROUTES.COMMUNITY.CLUB.ADD.replace(':clubId', 'new')
+          ),
       });
     }
 
@@ -373,7 +423,7 @@ export const Club: React.FC = () => {
         iconBackgroundColor: 'alertMain',
         backgroundColor: 'alertBg',
         onActionClick: () =>
-          history.push(
+          onOnlineNavigation(
             ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(':clubId', clubId)
           ),
       });
@@ -400,13 +450,16 @@ export const Club: React.FC = () => {
     isLeaderRequestSent,
     totalMembers,
     isLeaderAcceptedOverSixMonths,
-    history,
+    onOnlineNavigation,
     clubId,
+    history,
   ]);
 
   return (
     <BannerWrapper
+      displayOffline={!isOnline}
       showBackground={false}
+      renderBorder
       className="flex flex-col p-4 pt-6 "
       size="small"
       title={`${club?.name} club`}
@@ -464,7 +517,7 @@ export const Club: React.FC = () => {
                       icon="UserAddIcon"
                       text="Assign a club leader!"
                       onClick={() =>
-                        history.push(
+                        onOnlineNavigation(
                           ROUTES.COMMUNITY.CLUB.LEADER.ADD.replace(
                             ':clubId',
                             clubId
@@ -499,11 +552,19 @@ export const Club: React.FC = () => {
               color="primary"
               text={!!totalMembers ? 'See all members' : 'Add club members'}
               onClick={() =>
-                history.push(
-                  ROUTES.COMMUNITY.CLUB.MEMBERS[
-                    !!totalMembers ? 'ROOT' : 'ADD'
-                  ].replace(':clubId', clubId)
-                )
+                !!totalMembers
+                  ? history.push(
+                      ROUTES.COMMUNITY.CLUB.MEMBERS.ROOT.replace(
+                        ':clubId',
+                        clubId
+                      )
+                    )
+                  : onOnlineNavigation(
+                      ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(
+                        ':clubId',
+                        clubId
+                      )
+                    )
               }
             />
             <Button
@@ -513,7 +574,7 @@ export const Club: React.FC = () => {
               color="primary"
               text="Change club name"
               onClick={() =>
-                history.push(
+                onOnlineNavigation(
                   ROUTES.COMMUNITY.CLUB.EDIT.replace(':clubId', clubId)
                 )
               }

@@ -6,12 +6,13 @@ export type OnlineOnlyModalProps = {
   overrideText?: string;
 };
 
-const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({
+export const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({
   onSubmit,
   overrideText,
 }) => {
   return (
     <ActionModal
+      className="bg-white"
       customIcon={
         <div className="rounded-full">
           {renderIcon('ExclamationIcon', 'text-alertMain w-24 h-24')}

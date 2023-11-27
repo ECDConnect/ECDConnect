@@ -18,8 +18,8 @@ import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { HostFamilyDaysRouteState } from './index.types';
 import { userSelectors } from '@/store/user';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
-import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
-import { useEffect, useMemo } from 'react';
+import { ClubActivitiesPointsPerLeague } from '@/constants/club';
+import { useEffect } from 'react';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActivityHostFamilyDaysDetail } from '@ecdlink/graphql';
@@ -49,36 +49,26 @@ export const HostFamilyDays: React.FC = () => {
     ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
   );
 
-  const isClubInNewStarts =
-    club?.league?.leagueTypeName === LeagueType.NewStars;
-  const isClubInRisingStars =
-    club?.league?.leagueTypeName === LeagueType.RisingStars;
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
 
   const isFromAddFamilyDayEvent = location?.state?.isFromAddFamilyDayEvent;
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
   );
+  const isLeagueStarts = currentMonth >= 3;
+  const isClubInALeague = !!club?.league;
 
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
   const isToShowFamilyDayEventButton =
     isFromAddFamilyDayEvent || isLeader || isSupportRole;
+  const isToShowPoints = isLeagueStarts && isClubInALeague;
 
   const activityId = 'host-family-days';
 
-  const pointsConfig = useMemo(() => {
-    if (isClubInNewStarts) {
-      return ClubActivitiesPointsPerLeague.HostFamilyDays.NewStars;
-    }
-
-    if (isClubInRisingStars) {
-      return ClubActivitiesPointsPerLeague.HostFamilyDays.RisingStars;
-    }
-
-    // TODO: handle other use cases (purple league for example)
-    return { max: 0, green: 0, amber: 0, red: 0 };
-  }, [isClubInNewStarts, isClubInRisingStars]);
+  const pointsConfig = ClubActivitiesPointsPerLeague.HostFamilyDays.All;
 
   const formatTerm = (term: ActivityHostFamilyDaysDetail): Item => ({
     title: term.termName ?? '',
@@ -89,7 +79,7 @@ export const HostFamilyDays: React.FC = () => {
           description: term.description ?? '',
         }
       : {}),
-    rightChip: `+ ${term.points}`,
+    rightChip: isToShowPoints ? `+ ${term.points}` : '',
     alert: {
       title: term.documentStatus ?? '',
       type: getAlertType(term.documentStatusColor ?? ''),
@@ -116,7 +106,7 @@ export const HostFamilyDays: React.FC = () => {
           ? history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT)
           : history.goBack()
       }
-      displayHelp
+      displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
           ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
@@ -131,21 +121,23 @@ export const HostFamilyDays: React.FC = () => {
         imageUrl={familyIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      <ScoreCard
-        className="mt-5"
-        mainText={String(details?.points ?? 0)}
-        hint="points"
-        currentPoints={details?.points || 18}
-        maxPoints={pointsConfig.max}
-        barBgColour="uiLight"
-        barColour={getScoreBarColor(
-          details?.points ?? 0,
-          pointsConfig.green,
-          pointsConfig.amber
-        )}
-        bgColour="uiBg"
-        textColour="black"
-      />
+      {isToShowPoints && (
+        <ScoreCard
+          className="mt-5"
+          mainText={String(details?.points ?? 0)}
+          hint="points"
+          currentPoints={details?.points || 18}
+          maxPoints={pointsConfig.max}
+          barBgColour="uiLight"
+          barColour={getScoreBarColor(
+            details?.points ?? 0,
+            pointsConfig.green,
+            pointsConfig.amber
+          )}
+          bgColour="uiBg"
+          textColour="black"
+        />
+      )}
       {!!details?.terms?.length ? (
         <div className="mt-5">
           {details?.terms?.map((item, index) => (

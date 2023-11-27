@@ -2,7 +2,7 @@ import {
   Alert,
   BannerWrapper,
   Button,
-  LoadingSpinner,
+  EmptyPage,
   ScoreCard,
   StackedList,
   StackedListType,
@@ -21,7 +21,7 @@ import {
   useSnackbar,
 } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useAppDispatch } from '@/store';
 import {
   ClubActions,
@@ -37,6 +37,8 @@ import { ClubActivitiesPointsPerLeague } from '@/constants/club';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { OfflineAlert } from '@/components/offline-alert';
+import AlienImage from '@/assets/ECD_Connect_alien.svg';
 
 export const MeetRegularly: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -64,69 +66,25 @@ export const MeetRegularly: React.FC = () => {
   const { isOnline } = useOnlineStatus();
 
   const currentDate = new Date();
-  const currentMonth = currentDate.getMonth() + 1;
+  const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
 
   const activityId = 'meet-regularly';
+
+  const isLeagueStarts = currentMonth >= 3;
+  const isClubInALeague = !!club?.league;
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
   );
 
-  const upcomingMeetings: UserAlertListDataItem[] =
-    details?.upcomingMeetings?.map((item) => {
-      const { meetingId, monthName, formattedDate } =
-        getPointsActivityDateDetails(item?.meetingDate ?? '');
-
-      return {
-        title: monthName,
-        alertSeverity: 'none',
-        alertSeverityNoneIcon: 'CalendarIcon',
-        alertSeverityNoneColor: 'primary',
-        subTitle: `Scheduled: ${formattedDate}`,
-        avatarColor: '',
-        hideAvatar: true,
-        onActionClick: () =>
-          history.push(
-            ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS.replace(
-              ':meetingId',
-              meetingId!
-            ).replace(':clubId', clubId)
-          ),
-      };
-    }) ?? [];
-
-  const pastMeetings: UserAlertListDataItem[] =
-    details?.pastMeetings?.map((item) => {
-      const { meetingId, monthName } = getPointsActivityDateDetails(
-        item?.meetingDate ?? ''
-      );
-
-      return {
-        title: monthName,
-        subItem: `+ ${item?.points ?? 0}`,
-        subTitle: item?.meetingAttendancePerc
-          ? `${item?.meetingAttendancePerc}% attendance`
-          : 'No register submitted',
-        alertSeverity: getAlertSeverity(item?.meetingAttendanceColor ?? ''),
-        titleStyle: 'text-textDark',
-        avatarColor: '',
-        hideAvatar: true,
-        onActionClick: () =>
-          history.push(
-            ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS.replace(
-              ':meetingId',
-              meetingId!
-            ).replace(':clubId', clubId)
-          ),
-      };
-    }) ?? [];
+  const isToShowPoints = isLeagueStarts && isClubInALeague;
 
   useEffect(() => {
     if (isOnline) {
       appDispatch(
         getActivityMeetRegularDetails({
           clubId,
-          month: currentMonth,
+          month: currentMonth + 1,
           year: currentYear,
         })
       );
@@ -139,38 +97,79 @@ export const MeetRegularly: React.FC = () => {
     }
   }, [error, isRejected, showMessage, isLoading, wasLoading]);
 
-  return (
-    <BannerWrapper
-      showBackground={false}
-      className="flex flex-col p-4 pt-6"
-      size="small"
-      title={formatStringWithFirstLetterCapitalized(activityId)}
-      subTitle={club?.name ?? ''}
-      onBack={() => history.goBack()}
-      displayOffline={!isOnline}
-      displayHelp
-      onHelp={() =>
-        history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
-            ':activityId',
-            activityId
-          )
-        )
-      }
-    >
-      {isLoading ? (
-        <LoadingSpinner
-          size="medium"
-          spinnerColor="primary"
-          backgroundColor="uiLight"
+  const upcomingMeetings: UserAlertListDataItem[] = useMemo(
+    () =>
+      details?.upcomingMeetings?.map((item) => {
+        const { meetingId, monthName, formattedDate } =
+          getPointsActivityDateDetails(item?.meetingDate ?? '');
+
+        return {
+          title: monthName,
+          alertSeverity: 'none',
+          alertSeverityNoneIcon: 'CalendarIcon',
+          alertSeverityNoneColor: 'primary',
+          subTitle: `Scheduled: ${formattedDate}`,
+          avatarColor: '',
+          hideAvatar: true,
+          onActionClick: () =>
+            history.push(
+              ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS.replace(
+                ':meetingId',
+                meetingId!
+              ).replace(':clubId', clubId)
+            ),
+        };
+      }) ?? [],
+    [clubId, details?.upcomingMeetings, history]
+  );
+
+  const pastMeetings: UserAlertListDataItem[] = useMemo(
+    () =>
+      details?.pastMeetings?.map((item) => {
+        const { meetingId, monthName } = getPointsActivityDateDetails(
+          item?.meetingDate ?? ''
+        );
+
+        return {
+          title: monthName,
+          subItem: isToShowPoints ? `+ ${item?.points ?? 0}` : '',
+          subTitle: item?.meetingAttendancePerc
+            ? `${item?.meetingAttendancePerc}% attendance`
+            : 'No register submitted',
+          alertSeverity: getAlertSeverity(item?.meetingAttendanceColor ?? ''),
+          titleStyle: 'text-textDark',
+          avatarColor: '',
+          hideAvatar: true,
+          onActionClick: () =>
+            history.push(
+              ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS.replace(
+                ':meetingId',
+                meetingId!
+              ).replace(':clubId', clubId)
+            ),
+        };
+      }) ?? [],
+    [clubId, details?.pastMeetings, history, isToShowPoints]
+  );
+
+  const renderContent = useMemo(() => {
+    if (!isOnline) {
+      return <OfflineAlert />;
+    }
+
+    if (!details?.pastMeetings?.length && !details?.upcomingMeetings?.length) {
+      return (
+        <EmptyPage
+          image={AlienImage}
+          title="No items to show yet this year. "
+          subTitle=""
         />
-      ) : (
-        <>
-          <Header
-            imageUrl={partnershipIcon}
-            title={formatStringWithFirstLetterCapitalized(activityId)}
-            date={new Date()}
-          />
+      );
+    }
+
+    return (
+      <>
+        {isToShowPoints && (
           <ScoreCard
             className="mt-5"
             mainText={String(details?.points ?? 0)}
@@ -186,38 +185,36 @@ export const MeetRegularly: React.FC = () => {
             bgColour="uiBg"
             textColour="black"
           />
-          {isCelebratoryMessage && (
-            <Alert
-              className="mt-4"
-              type="successLight"
-              title="Wow, great job!"
-              customIcon={<PositiveEmoticon className="w-12" />}
+        )}
+        {isCelebratoryMessage && (
+          <Alert
+            className="mt-4"
+            type="successLight"
+            title="Wow, great job!"
+            customIcon={<PositiveEmoticon className="w-12" />}
+          />
+        )}
+        {upcomingMeetings.length && (
+          <div className="mt-4">
+            <Typography className="mb-5" type="h3" text="Upcoming meetings:" />
+            <StackedList
+              className="flex flex-col gap-2"
+              type={'UserAlertList' as StackedListType}
+              listItems={upcomingMeetings}
             />
-          )}
-          {upcomingMeetings.length && (
-            <div className="mt-4">
-              <Typography
-                className="mb-5"
-                type="h3"
-                text="Upcoming meetings:"
-              />
-              <StackedList
-                className="flex flex-col gap-2"
-                type={'UserAlertList' as StackedListType}
-                listItems={upcomingMeetings}
-              />
-            </div>
-          )}
-          {pastMeetings.length && (
-            <div className="mt-4 mb-5">
-              <Typography className="mb-5" type="h3" text="Past meetings:" />
-              <StackedList
-                className="flex flex-col gap-2"
-                type={'UserAlertList' as StackedListType}
-                listItems={pastMeetings}
-              />
-            </div>
-          )}
+          </div>
+        )}
+        {pastMeetings.length && (
+          <div className="mt-4 mb-5">
+            <Typography className="mb-5" type="h3" text="Past meetings:" />
+            <StackedList
+              className="flex flex-col gap-2"
+              type={'UserAlertList' as StackedListType}
+              listItems={pastMeetings}
+            />
+          </div>
+        )}
+        {isToShowPoints && (
           <Alert
             className="mb-4"
             type="info"
@@ -227,38 +224,74 @@ export const MeetRegularly: React.FC = () => {
               'Make sure you schedule meetings at a time that works for everyone.',
             ]}
           />
-          {(isLeader || isSupportRole) && (
-            <Button
-              className="mt-auto"
-              icon="PlusCircleIcon"
-              type="filled"
-              textColor="white"
-              color="primary"
-              text="Add a meeting"
-              onClick={() =>
-                history.push(
-                  ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
-                )
-              }
-            />
-          )}
-          <Button
-            className="mt-4"
-            icon="ArrowCircleLeftIcon"
-            type="outlined"
-            textColor="primary"
-            color="primary"
-            text="Back to club"
-            onClick={() =>
-              history.push(
-                isCoach
-                  ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
-                  : ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              )
-            }
-          />
-        </>
+        )}
+      </>
+    );
+  }, [
+    details?.pastMeetings?.length,
+    details?.points,
+    details?.upcomingMeetings?.length,
+    isCelebratoryMessage,
+    isOnline,
+    isToShowPoints,
+    pastMeetings,
+    upcomingMeetings,
+  ]);
+
+  return (
+    <BannerWrapper
+      isLoading={isLoading}
+      showBackground={false}
+      className="flex flex-col p-4 pt-6"
+      size="small"
+      title={formatStringWithFirstLetterCapitalized(activityId)}
+      subTitle={club?.name ?? ''}
+      onBack={() => history.goBack()}
+      displayOffline={!isOnline}
+      displayHelp={isToShowPoints}
+      onHelp={() =>
+        history.push(
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
+            ':activityId',
+            activityId
+          )
+        )
+      }
+    >
+      <Header
+        imageUrl={partnershipIcon}
+        title={formatStringWithFirstLetterCapitalized(activityId)}
+        date={new Date()}
+      />
+      {renderContent}
+      {(isLeader || isSupportRole) && (
+        <Button
+          className="mt-auto"
+          icon="PlusCircleIcon"
+          type="filled"
+          textColor="white"
+          color="primary"
+          text="Add a meeting"
+          onClick={() =>
+            history.push(ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING)
+          }
+        />
       )}
+      <Button
+        className={isLeader || isSupportRole ? 'mt-4' : 'mt-auto'}
+        icon="ArrowCircleLeftIcon"
+        type="outlined"
+        textColor="primary"
+        color="primary"
+        text="Back to club"
+        onClick={() =>
+          history.push(
+            isCoach
+              ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+              : ROUTES.PRACTITIONER.COMMUNITY.ROOT
+          )
+        }
+      />
     </BannerWrapper>
   );
 };
