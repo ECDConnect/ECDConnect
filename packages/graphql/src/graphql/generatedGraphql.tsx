@@ -2520,6 +2520,7 @@ export type ClubSupport = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  isNewInSupportRole: Scalars['Boolean'];
   practitioner?: Maybe<Practitioner>;
   practitionerId: Scalars['UUID'];
   updatedBy?: Maybe<Scalars['String']>;
@@ -2535,6 +2536,7 @@ export type ClubSupportFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  isNewInSupportRole?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<ClubSupportFilterInput>>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
   practitionerId?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -2549,6 +2551,7 @@ export type ClubSupportInput = {
   DateAssigned?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  IsNewInSupportRole: Scalars['Boolean'];
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId: Scalars['UUID'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -2575,6 +2578,7 @@ export type ClubSupportSortInput = {
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
+  isNewInSupportRole?: InputMaybe<SortEnumType>;
   practitioner?: InputMaybe<PractitionerSortInput>;
   practitionerId?: InputMaybe<SortEnumType>;
   updatedBy?: InputMaybe<SortEnumType>;
@@ -6113,11 +6117,12 @@ export type MutationAddAbsenteeForPractitionerArgs = {
   absentDateEnd?: InputMaybe<Scalars['DateTime']>;
   classProgram?: InputMaybe<Scalars['String']>;
   fromRole?: InputMaybe<Scalars['String']>;
-  isRoleRasssign?: Scalars['Boolean'];
+  isRoleAssign?: Scalars['Boolean'];
   loggedByUser?: InputMaybe<Scalars['String']>;
   practitionerId?: InputMaybe<Scalars['String']>;
   reason?: InputMaybe<Scalars['String']>;
   reassignedToPractitioner?: InputMaybe<Scalars['String']>;
+  roleAssignedToUser?: InputMaybe<Scalars['String']>;
   toRole?: InputMaybe<Scalars['String']>;
 };
 
@@ -9934,6 +9939,7 @@ export type PractitionerModel = {
   isFundaAppAdmin?: Maybe<Scalars['Boolean']>;
   isLeaving?: Maybe<Scalars['Boolean']>;
   isNewInClub?: Maybe<Scalars['Boolean']>;
+  isNewInSupportRole: Scalars['Boolean'];
   isOnLeave: Scalars['Boolean'];
   isOnStipend?: Maybe<Scalars['Boolean']>;
   isPrincipal?: Maybe<Scalars['Boolean']>;

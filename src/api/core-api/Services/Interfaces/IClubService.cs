@@ -46,5 +46,6 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public bool AddBeCreativeActivity(BeCreativeUpload input);
         public bool ArchiveClubUser(Guid practitionerId);
         public LeagueClubsModel GetLeagueForUser(string userId);
+        public ClubSupport UpdateClubSupportStatus(Guid practitionerId);
     }
 }
