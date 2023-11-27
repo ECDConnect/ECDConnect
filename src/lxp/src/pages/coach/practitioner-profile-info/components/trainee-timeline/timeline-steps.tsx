@@ -274,7 +274,7 @@ export const timelineSteps = (
             visitId: (timeline.sSCoachVisitId as string) || '',
           }),
         nextStep,
-        timeline?.sSCoachVisitEventId || timeline?.sSCoachVisitId
+        timeline?.sSCoachVisitEventId
       )
     );
   }
