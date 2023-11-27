@@ -5971,6 +5971,7 @@ export type Mutation = {
   updateClubPoints?: Maybe<ClubPoints>;
   updateClubPointsLibrary?: Maybe<ClubPointsLibrary>;
   updateClubSupport?: Maybe<ClubSupport>;
+  updateClubSupportStatus?: Maybe<ClubSupport>;
   updateCoach?: Maybe<Coach>;
   updateCoachAboutInfo?: Maybe<Coach>;
   updateCoachClubClicked: Scalars['Boolean'];
@@ -8224,6 +8225,10 @@ export type MutationUpdateClubPointsLibraryArgs = {
 export type MutationUpdateClubSupportArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ClubSupportInput>;
+};
+
+export type MutationUpdateClubSupportStatusArgs = {
+  practitionerId: Scalars['UUID'];
 };
 
 export type MutationUpdateCoachArgs = {
