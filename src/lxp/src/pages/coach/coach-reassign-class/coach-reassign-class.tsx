@@ -135,7 +135,8 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     control: control,
   });
 
-  const disableButton = !reason || !selectedDate;
+  const disableButton =
+    !reason || !selectedDate || !endDate || !principalOrFundaAppAdmin;
 
   const practitionerClassroomGroups = useMemo(
     () =>
@@ -248,7 +249,9 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             item?.practitioner,
             reason,
             new Date(selectedDate),
-            endDate || new Date(selectedDate)
+            endDate || new Date(selectedDate),
+            true,
+            principalOrFundaAppAdmin
           );
 
           dispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
@@ -268,7 +271,9 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           new Date(selectedDate),
           userData?.id!,
           item?.classroomId,
-          endDate || new Date(selectedDate)
+          endDate || new Date(selectedDate),
+          true,
+          principalOrFundaAppAdmin
         );
       });
 
@@ -286,7 +291,9 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             practitioner2,
             reason,
             new Date(selectedDate),
-            endDate || new Date(selectedDate)
+            endDate || new Date(selectedDate),
+            true,
+            principalOrFundaAppAdmin
           );
 
           await refreshClassroom();
@@ -305,7 +312,9 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           new Date(selectedDate),
           userData?.id!,
           '',
-          endDate || new Date(selectedDate)
+          endDate || new Date(selectedDate),
+          true,
+          principalOrFundaAppAdmin
         );
       }
     }
