@@ -83,11 +83,11 @@ export const NewPassword: React.FC = () => {
           password: newPasswordFormGetValues().password,
         };
 
-        const isAuthenticated = await appDispatch(
+        const isAuthenticated: any = await appDispatch(
           authThunkActions.login(body)
         ).unwrap();
 
-        if (isAuthenticated) {
+        if (isAuthenticated && isAuthenticated?.error === undefined) {
           history.push('/');
         } else {
           console.log('Error signing in user');
