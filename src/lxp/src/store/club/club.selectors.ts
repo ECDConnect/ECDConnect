@@ -142,3 +142,21 @@ export const getActivityLeaveNoOneBehindDetailsSelector = (clubId: string) =>
     },
     (leaveNoOneBehind) => leaveNoOneBehind
   );
+
+export const getActivityChildAttendanceDetailsSelector = (clubId: string) =>
+  createSelector(
+    (state: RootState) => {
+      const user = state.user.user;
+
+      const isCoach = user?.roles?.some((role) =>
+        role.name.includes(UserTypeEnum.Coach)
+      );
+
+      if (isCoach) {
+        return state.clubs.clubsForCoach[clubId].points?.childAttendance;
+      } else {
+        return state.clubs.clubForPractitioner?.points?.childAttendance;
+      }
+    },
+    (childAttendance) => childAttendance
+  );

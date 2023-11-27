@@ -19,6 +19,7 @@ import {
   ActivityHostFamilyDays,
   ActivityLeaveNoOneBehind,
   QueryActivityChildProgressArgs,
+  ActivityChildAttendance,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import {
@@ -28,6 +29,7 @@ import {
   ActivityHostFamilyDetailsInput,
   NewClubLeaderInput,
   ActivityLeaveNoOneBehindDetailsInput,
+  ActivityChildAttendanceDetailsInput,
 } from './types';
 import {
   ActivityChildProgressDto,
@@ -936,6 +938,41 @@ class ClubService {
     }
 
     return response.data.data.activityLeaveNoOneBehindDetails;
+  }
+
+  async getActivityChildAttendanceDetails(
+    input: ActivityChildAttendanceDetailsInput
+  ): Promise<ActivityChildAttendance> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityChildAttendance: ActivityChildAttendance };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityChildAttendance($clubId: UUID!) {
+          activityChildAttendance(clubId: $clubId) {
+              points
+              pointsColor
+              monthlyRecords {
+                  monthName
+                  points
+                  pointsColor
+              }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity child attendance details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityChildAttendance;
   }
 
   async addFamilyDayMeeting(input: ClubMeetingInput): Promise<ClubMeeting> {

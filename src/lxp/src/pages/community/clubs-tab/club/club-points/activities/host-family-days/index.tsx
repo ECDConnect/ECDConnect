@@ -18,8 +18,8 @@ import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { HostFamilyDaysRouteState } from './index.types';
 import { userSelectors } from '@/store/user';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
-import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
-import { useEffect, useMemo } from 'react';
+import { ClubActivitiesPointsPerLeague } from '@/constants/club';
+import { useEffect } from 'react';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActivityHostFamilyDaysDetail } from '@ecdlink/graphql';
@@ -49,11 +49,6 @@ export const HostFamilyDays: React.FC = () => {
     ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
   );
 
-  const isClubInNewStarts =
-    club?.league?.leagueTypeName === LeagueType.NewStars;
-  const isClubInRisingStars =
-    club?.league?.leagueTypeName === LeagueType.RisingStars;
-
   const isFromAddFamilyDayEvent = location?.state?.isFromAddFamilyDayEvent;
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
@@ -67,18 +62,7 @@ export const HostFamilyDays: React.FC = () => {
 
   const activityId = 'host-family-days';
 
-  const pointsConfig = useMemo(() => {
-    if (isClubInNewStarts) {
-      return ClubActivitiesPointsPerLeague.HostFamilyDays.NewStars;
-    }
-
-    if (isClubInRisingStars) {
-      return ClubActivitiesPointsPerLeague.HostFamilyDays.RisingStars;
-    }
-
-    // TODO: handle other use cases (purple league for example)
-    return { max: 0, green: 0, amber: 0, red: 0 };
-  }, [isClubInNewStarts, isClubInRisingStars]);
+  const pointsConfig = ClubActivitiesPointsPerLeague.HostFamilyDays.All;
 
   const formatTerm = (term: ActivityHostFamilyDaysDetail): Item => ({
     title: term.termName ?? '',

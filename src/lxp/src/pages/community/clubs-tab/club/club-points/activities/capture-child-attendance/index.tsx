@@ -1,8 +1,7 @@
 import { BannerWrapper, Button, EmptyPage, ScoreCard } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
-import { clubSelectors } from '@/store/club';
-import { isCurrentPointsAtLeast80PercentOfTotal } from '../../../individual-club-view';
+import { clubSelectors, clubThunkActions } from '@/store/club';
 import { ClubsRouteState } from '../../../../index.types';
 import ROUTES from '@/routes/routes';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
@@ -10,52 +9,60 @@ import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
 import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
+import { getAlertType } from '../0-components/alert-card/utils';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ActivityChildAttendanceDetail } from '@ecdlink/graphql';
+import { useEffect } from 'react';
+import { useAppDispatch } from '@/store';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import { ClubActivitiesPointsPerLeague } from '@/constants/club';
+import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
+import { addMonths, format } from 'date-fns';
 
 export const CaptureChildAttendance: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
   const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
+  const details = useSelector(
+    clubSelectors.getActivityChildAttendanceDetailsSelector(clubId)
+  );
 
   const history = useHistory();
 
-  const isPractitioner = user?.roles?.some(
-    (item) => item?.name === Roles.PRACTITIONER
+  const appDispatch = useAppDispatch();
+
+  const { isOnline } = useOnlineStatus();
+
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
   );
+
   const activityId = 'capture-child-attendance';
 
-  const mockedPoints = 240;
+  const currentDate = new Date();
+  const currentMonth = format(currentDate, 'MMMM');
+  const nextMonthDate = addMonths(currentDate, 1);
+  const nextMonth = format(nextMonthDate, 'MMMM');
 
-  const items: Item[] = [
-    {
-      title: 'June',
-      rightChip: '+ 60',
-      alert: {
-        title: 'club members submitted all registers',
-        type: 'warning',
-      },
+  const formatMonthlyRecord = (
+    record: ActivityChildAttendanceDetail
+  ): Item => ({
+    title: record.monthName ?? '',
+    rightChip: `+ ${record.points}`,
+    alert: {
+      title: 'club members submitted all registers',
+      type: getAlertType(record.pointsColor ?? ''),
     },
-    {
-      title: 'May',
-      rightChip: '+ 80',
-      alert: {
-        title: 'club members submitted all registers',
-        type: 'success',
-      },
-    },
-    {
-      title: 'April',
-      rightChip: '+ 100',
-      alert: {
-        title: 'club members submitted all registers',
-        type: 'success',
-      },
-    },
-  ];
+  });
 
-  // TODO: add real value
-  const hasItems = true;
+  useEffect(() => {
+    if (isOnline) {
+      appDispatch(
+        clubThunkActions.getActivityChildAttendanceDetails({ clubId })
+      );
+    }
+  }, [appDispatch, clubId, isOnline]);
 
   return (
     <BannerWrapper
@@ -76,40 +83,39 @@ export const CaptureChildAttendance: React.FC = () => {
       }
     >
       <Header
-        // TODO: change to activity date
         date={new Date()}
         icon="ClipboardCheckIcon"
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
       <ScoreCard
         className="mt-5"
-        mainText={String(mockedPoints)}
+        mainText={String(details?.points ?? 0)}
         hint="points"
-        currentPoints={mockedPoints}
-        maxPoints={800}
+        currentPoints={details?.points || 18}
+        maxPoints={ClubActivitiesPointsPerLeague.ChildAttendance.All.max}
         barBgColour="uiLight"
-        barColour={
-          isCurrentPointsAtLeast80PercentOfTotal(
-            club?.pointsTotal ? club?.pointsTotal : 0,
-            club?.maxPointsTotal ? club?.maxPointsTotal : 0
-          )
-            ? 'successMain'
-            : 'secondary'
-        }
+        barColour={getScoreBarColor(
+          details?.points ?? 0,
+          ClubActivitiesPointsPerLeague.ChildAttendance.All.green,
+          ClubActivitiesPointsPerLeague.ChildAttendance.All.amber
+        )}
         bgColour="uiBg"
         textColour="black"
       />
-      {hasItems ? (
+      {details?.monthlyRecords?.length ? (
         <div className="mt-5">
-          {items.map((item) => (
-            <AlertCard item={item} />
+          {details?.monthlyRecords?.map((item) => (
+            <AlertCard
+              key={item?.monthName}
+              item={formatMonthlyRecord(item!)}
+            />
           ))}
         </div>
       ) : (
         <EmptyPage
           image={AlienImage}
           title="No attendance items to show yet this year."
-          subTitle="You will be able to see the April summary by 1 May."
+          subTitle={`You will be able to see the ${currentMonth} summary by 1 ${nextMonth}.`}
         />
       )}
       <Button
@@ -121,9 +127,9 @@ export const CaptureChildAttendance: React.FC = () => {
         text="Back to club"
         onClick={() =>
           history.push(
-            isPractitioner
-              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+            isCoach
+              ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+              : ROUTES.PRACTITIONER.COMMUNITY.ROOT
           )
         }
       />
