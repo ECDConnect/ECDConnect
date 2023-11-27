@@ -201,7 +201,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool IsClubSupport(Guid practitionerId)
         {
-            ClubSupport clubSupport = _clubSupportRepo.GetAll().Where(x => x.PractitionerId == practitionerId && x.IsActive && x.DateAccepted.HasValue).FirstOrDefault();
+            ClubSupport clubSupport = _clubSupportRepo.GetAll().Where(x => x.PractitionerId == practitionerId).FirstOrDefault();
             return clubSupport == null ? false : true;
         }
 
@@ -212,7 +212,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public ClubSupport GetSupportForClub(Guid clubId)
         {
-            return _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive && x.DateAccepted.HasValue).FirstOrDefault();
+            return _clubSupportRepo.GetAll().Where(x => x.ClubId == clubId && x.IsActive).FirstOrDefault();
         }
 
         public ClubMember GetClubForPractitioner(Guid practitionerId)
