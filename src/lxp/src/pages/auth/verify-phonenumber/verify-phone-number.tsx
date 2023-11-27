@@ -107,6 +107,7 @@ export const VerifyPhoneNumber = () => {
         .then(async (isAuthenticated: any) => {
           if (
             isAuthenticated &&
+            isAuthenticated?.error === undefined &&
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             await appDispatch(settingActions.setApplicationVersion(version));
