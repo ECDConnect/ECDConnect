@@ -192,13 +192,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.StipendType = practitioner.StipendType;
 
             ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
-            if (clubMember != null)
+            if (practitionerRecord != null)
             {
                 practitionerRecord.ClubId = clubMember?.Club?.Id;
                 practitionerRecord.ClubName = clubMember?.Club?.Name;
                 practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
                 practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
+            }
+
+            if (practitioner.ClubSupport != null)
+            {
+                practitionerRecord.IsNewInSupportRole = practitioner.ClubSupport.IsNewInSupportRole;
             }
 
             List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth(), DateTime.Now.AddDays(30).Date);

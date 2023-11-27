@@ -1962,6 +1962,15 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        public ClubSupport UpdateClubSupportStatus(Guid practitionerId)
+        {
+            ClubSupport clubSupport = _practitionerRepo.GetById(practitionerId).ClubSupport;
+            clubSupport.IsNewInSupportRole = false;
+            clubSupport.UpdatedBy = _applicationUserId;
+            clubSupport.UpdatedDate = DateTime.Now;
+            return _clubSupportRepo.Update(clubSupport);
+        }
+
 
 private static int CompareClubsByPoints(ClubPointsSummaryModel x, ClubPointsSummaryModel y)
         {
