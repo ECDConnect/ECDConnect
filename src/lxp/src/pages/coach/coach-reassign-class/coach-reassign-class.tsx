@@ -218,6 +218,8 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  console.log({ allAbsenteeClasses });
+
   useEffect(() => {
     if (hasAbsenteeClasses) {
       setReassignClassValue(
@@ -229,6 +231,12 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
 
       setReassignClassValue('reason', allAbsenteeClasses?.[0]?.reason);
+
+      if (allAbsenteeClasses?.[0]?.reassignedToUserId) {
+        setPrincipalOrFundaAppAdmin(
+          allAbsenteeClasses?.[0]?.reassignedToUserId as any
+        );
+      }
     }
   }, []);
 

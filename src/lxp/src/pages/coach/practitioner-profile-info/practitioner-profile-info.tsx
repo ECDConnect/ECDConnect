@@ -127,11 +127,13 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
   const practitionerAbsentees = practitioner?.absentees;
+  console.log({ practitionerAbsentees });
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDate as string)) ||
       isToday(new Date(item?.absentDate as string))
   );
+  console.log({ validAbsenteesDates });
   const currentDates = validAbsenteesDates?.map((item) => {
     return item?.absentDate as string;
   });
@@ -147,6 +149,21 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     (item) => item?.absentDate === currentAbsentee?.absentDate
   );
 
+  const result =
+    validAbsenteesDates &&
+    Object.values(
+      validAbsenteesDates?.reduce(
+        (acc, obj) => ({ ...acc, [obj.absentDate as string]: obj }),
+        {}
+      )
+    );
+
+  const a = result?.sort(function (a, b) {
+    return a?.absentDate?.localeCompare(b?.absentDate);
+  });
+
+  console.log(a);
+  console.log(result);
   const absenceIsToday = isSameDay(
     new Date(),
     new Date(currentAbsentee?.absentDate || '')
@@ -171,44 +188,51 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     },
     [history]
   );
-
-  const handleAbsenceModal = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`What would you like to edit?`}
-          actionButtons={[
-            {
-              text: 'Edit this absence',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                handleReassignClass(practitionerId, allAbsenteeClasses);
-                onSubmit();
+  console.log({ allAbsenteeClasses });
+  const handleAbsenceModal = useCallback(
+    (item: AbsenteeDto) => {
+      console.log({ item });
+      const absenceClasses = validAbsenteesDates?.filter(
+        (absence) => absence?.absenteeId === item?.absenteeId
+      );
+      dialog({
+        position: DialogPosition.Middle,
+        render: (onSubmit, onCancel) => (
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`What would you like to edit?`}
+            actionButtons={[
+              {
+                text: 'Edit this absence',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  handleReassignClass(practitionerId, absenceClasses);
+                  onSubmit();
+                },
+                leadingIcon: 'PencilAltIcon',
               },
-              leadingIcon: 'PencilAltIcon',
-            },
-            {
-              text: 'Add a new leave/absence',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                handleReassignClass(practitionerId);
-                onSubmit();
+              {
+                text: 'Add a new leave/absence',
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  handleReassignClass(practitionerId);
+                  onSubmit();
+                },
+                leadingIcon: 'PlusIcon',
               },
-              leadingIcon: 'PlusIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerId]);
+            ]}
+          />
+        ),
+      });
+    },
+    [dialog, handleReassignClass, practitionerId, validAbsenteesDates]
+  );
 
   const call = () => {
     window.open(`tel:${practitioner?.user?.phoneNumber}`);
@@ -860,10 +884,325 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
             </div>
             {currentAbsentee && (
               <div className="p-4">
-                <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
-                  <div className={'p-4'}>
-                    {renderCardHeader}
-                    {allAbsenteeClasses &&
+                {result?.map((item: AbsenteeDto) => {
+                  const practitionerAbsenteeClasses =
+                    practitionerAbsentees?.filter(
+                      (absence) => absence?.absentDate === item?.absentDate
+                    );
+                  console.log({ practitionerAbsenteeClasses });
+                  // const practitionerAbsenteeClassroomGroups = practitionerAbsenteeClasses?.
+                  if (absenceIsToday) {
+                    return (
+                      <>
+                        <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
+                          <div className={'p-4'}>
+                            <Typography
+                              type={'h1'}
+                              color="textDark"
+                              text={`${practitioner?.user?.firstName} is absent today`}
+                              className={'mt-6 ml-4'}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`Reason:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${currentAbsentee?.reason}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`${practitioner?.user?.firstName} will be back on:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${format(
+                                  new Date(
+                                    handleComebackDay(
+                                      item?.absentDateEnd as Date
+                                    )
+                                  ),
+                                  'd MMM yyyy'
+                                )}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                          </div>
+                        </Card>
+                      </>
+                    );
+                  }
+
+                  if (isOnLeave) {
+                    return (
+                      <>
+                        <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
+                          <div className={'p-4'}>
+                            <Typography
+                              type={'h1'}
+                              color="textDark"
+                              text={`${practitioner?.user?.firstName} is on leave`}
+                              className={'mt-6 ml-4'}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`Start date:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${format(
+                                  new Date(
+                                    handleComebackDay(item?.absentDate as Date)
+                                  ),
+                                  'd MMM yyyy'
+                                )}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`End date:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${format(
+                                  new Date(
+                                    handleComebackDay(
+                                      item?.absentDateEnd as Date
+                                    )
+                                  ),
+                                  'd MMM yyyy'
+                                )}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`Reason:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${item?.reason}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                          </div>
+                        </Card>
+                      </>
+                    );
+                  }
+
+                  if (!isOnLeave && item?.absentDate === item?.absentDateEnd) {
+                    return (
+                      <>
+                        <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
+                          <div className={'p-4'}>
+                            <Typography
+                              type={'h1'}
+                              color="textDark"
+                              text={`${
+                                practitioner?.user?.firstName
+                              } will be absent on ${
+                                currentAbsentee?.absentDate &&
+                                format(
+                                  new Date(item?.absentDate as string),
+                                  'EEEE'
+                                )
+                              }, ${
+                                item?.absentDate &&
+                                format(
+                                  new Date(item?.absentDate as string),
+                                  'd MMM'
+                                )
+                              }`}
+                              className={'mt-6 ml-4'}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`Reason:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${item?.reason}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`${practitioner?.user?.firstName} will be back on:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${
+                                  item?.absentDateEnd &&
+                                  format(
+                                    new Date(
+                                      handleComebackDay(
+                                        item?.absentDateEnd as Date
+                                      )
+                                    ),
+                                    'd MMM yyyy'
+                                  )
+                                }`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                          </div>
+                        </Card>
+                      </>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
+                        <div className={'p-4'}>
+                          <Typography
+                            type={'h1'}
+                            color="textDark"
+                            text={`${practitioner?.user?.firstName} will be on leave`}
+                            className={'mt-4 ml-4'}
+                          />
+                          <div className="flex items-center gap-2">
+                            <Typography
+                              type={'body'}
+                              color="textMid"
+                              weight="bold"
+                              text={`Start date:`}
+                              className={'mt-4 ml-4'}
+                            />
+                            <Typography
+                              type={'body'}
+                              color="textMid"
+                              text={`${format(
+                                new Date(
+                                  handleComebackDay(item?.absentDate as Date)
+                                ),
+                                'd MMM yyyy'
+                              )}`}
+                              className={'mt-4'}
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Typography
+                              type={'body'}
+                              color="textMid"
+                              weight="bold"
+                              text={`End date:`}
+                              className={'mt-4 ml-4'}
+                            />
+                            <Typography
+                              type={'body'}
+                              color="textMid"
+                              text={`${format(
+                                new Date(
+                                  handleComebackDay(item?.absentDateEnd as Date)
+                                ),
+                                'd MMM yyyy'
+                              )}`}
+                              className={'mt-4'}
+                            />
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Typography
+                              type={'body'}
+                              color="textMid"
+                              weight="bold"
+                              text={`Reason:`}
+                              className={'mt-4 ml-4'}
+                            />
+                            <Typography
+                              type={'body'}
+                              color="textMid"
+                              text={`${item?.reason}`}
+                              className={'mt-4'}
+                            />
+                          </div>
+                          {item?.className &&
+                            practitionerAbsenteeClasses?.map(
+                              (classroomGroup) => (
+                                <div className="flex items-center gap-2">
+                                  <Typography
+                                    type={'body'}
+                                    color="textMid"
+                                    weight="bold"
+                                    text={`${classroomGroup?.className} class reassigned to:`}
+                                    className={'mt-4 ml-4'}
+                                  />
+                                  <Typography
+                                    type={'body'}
+                                    color="textMid"
+                                    text={`${classroomGroup?.reassignedToPerson}`}
+                                    className={'mt-4'}
+                                  />
+                                </div>
+                              )
+                            )}
+                          {isPrincipal && (
+                            <div className="flex justify-center">
+                              <Button
+                                type="filled"
+                                color="primary"
+                                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                                onClick={() => handleAbsenceModal(item)}
+                              >
+                                {renderIcon(
+                                  'PencilAltIcon',
+                                  'w-5 h-5 color-white text-white mr-1'
+                                )}
+                                <Typography
+                                  type="body"
+                                  className="mr-4"
+                                  color="white"
+                                  text={'Edit absence/leave'}
+                                ></Typography>
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                      </Card>
+                    </>
+                  );
+                })}
+                {/* {renderCardHeader} */}
+                {/* {allAbsenteeClasses &&
                       allAbsenteeClasses?.length > 0 &&
                       allAbsenteeClasses?.map((item) => {
                         return (
@@ -887,30 +1226,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                             )}
                           </div>
                         );
-                      })}
-                    {isPrincipal && (
-                      <div className="flex justify-center">
-                        <Button
-                          type="filled"
-                          color="primary"
-                          className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                          onClick={() => handleAbsenceModal()}
-                        >
-                          {renderIcon(
-                            'PencilAltIcon',
-                            'w-5 h-5 color-white text-white mr-1'
-                          )}
-                          <Typography
-                            type="body"
-                            className="mr-4"
-                            color="white"
-                            text={'Edit absence/leave'}
-                          ></Typography>
-                        </Button>
-                      </div>
-                    )}
-                  </div>
-                </Card>
+                      })} */}
               </div>
             )}
           </BannerWrapper>
