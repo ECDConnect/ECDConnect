@@ -2515,7 +2515,6 @@ export type ClubSupport = {
   __typename?: 'ClubSupport';
   club?: Maybe<Club>;
   clubId: Scalars['UUID'];
-  dateAccepted?: Maybe<Scalars['DateTime']>;
   dateAssigned?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -2531,7 +2530,6 @@ export type ClubSupportFilterInput = {
   and?: InputMaybe<Array<ClubSupportFilterInput>>;
   club?: InputMaybe<ClubFilterInput>;
   clubId?: InputMaybe<ComparableGuidOperationFilterInput>;
-  dateAccepted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   dateAssigned?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -2547,7 +2545,6 @@ export type ClubSupportFilterInput = {
 export type ClubSupportInput = {
   Club?: InputMaybe<ClubInput>;
   ClubId: Scalars['UUID'];
-  DateAccepted?: InputMaybe<Scalars['DateTime']>;
   DateAssigned?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -2559,7 +2556,6 @@ export type ClubSupportInput = {
 
 export type ClubSupportModel = {
   __typename?: 'ClubSupportModel';
-  dateAccepted?: Maybe<Scalars['DateTime']>;
   dateAssigned?: Maybe<Scalars['DateTime']>;
   firstName?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
@@ -2573,7 +2569,6 @@ export type ClubSupportModel = {
 export type ClubSupportSortInput = {
   club?: InputMaybe<ClubSortInput>;
   clubId?: InputMaybe<SortEnumType>;
-  dateAccepted?: InputMaybe<SortEnumType>;
   dateAssigned?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
