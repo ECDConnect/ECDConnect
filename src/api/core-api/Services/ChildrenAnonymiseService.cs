@@ -1,16 +1,10 @@
-﻿using DotLiquid;
-using ECDLink.Abstractrions.Enums;
+﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.DataAccessLayer.Services;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -59,13 +53,17 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         foreach (var learnerRow in learner)
                         {
-                            _context.Remove(learner);
+                            _context.Remove(learnerRow);
                         }
                     }
                     _hierarchyEngine.DeleteHierarchy(child.UserId);
                     _context.Remove(child);
                     _context.SaveChanges();
                     var result = _userManager.DeleteAsync(child.User).Result;
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation("AnonymiseChild Succeeded for child Id: {0} and UserId {1}", child.Id, child.UserId);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -86,8 +84,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             var expiryTime = DateTime.UtcNow.AddDays(-30);
 
-            // Remove child where caregiver has not yet completed all data
-            // and they were inserted within the last 30 days
+            // Remove child where caregiver has not yet completed all data and they were inserted within the last 30 days
             return _context.Children.Where(c => c.IsActive && c.CaregiverId.Equals(null)
                                    && c.InsertedDate <= expiryTime).Include(c => c.User).ToList();
 
