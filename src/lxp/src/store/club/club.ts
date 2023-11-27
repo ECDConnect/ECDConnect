@@ -24,6 +24,7 @@ import {
   saveWelcomeMessage,
   updateCoachAboutInfo,
   getActivityChildAttendanceDetails,
+  updateClubSupportStatus,
 } from './club.actions';
 import { ClubState } from './club.types';
 import { setThunkActionStatus } from '../utils';
@@ -32,6 +33,7 @@ import { ClubDto, DetailClubDto } from '@/models/club/club.dto';
 import {
   BeCreativeActivityInput,
   ClubMeetingInput,
+  UpdateClubSupportStatusInput,
 } from '@/services/ClubService/types';
 
 const initialState: ClubState = {
@@ -130,6 +132,26 @@ const clubSlice = createSlice({
           newMeeting,
         ];
       }
+    },
+    updateClubSupportStatus: (
+      state,
+      action: PayloadAction<UpdateClubSupportStatusInput>
+    ) => {
+      const { practitionerId } = action.payload;
+      const clubId = state.clubForPractitioner?.club?.id;
+
+      if (!clubId || !practitionerId) return;
+
+      state.clubForPractitioner = {
+        ...state.clubForPractitioner,
+        club: {
+          ...state.clubForPractitioner.club,
+          clubSupport: {
+            ...state?.clubForPractitioner?.club?.clubSupport,
+            isNewInSupportRole: true,
+          },
+        } as DetailClubDto,
+      };
     },
   },
   extraReducers: (builder) => {
@@ -420,6 +442,10 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, addClubMeeting);
     setThunkActionStatus(builder, addBeCreativeActivity);
     setThunkActionStatus(builder, addFamilyDayMeeting);
+    setThunkActionStatus(builder, updateClubSupportStatus);
+    builder.addCase(updateClubSupportStatus.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
     builder.addCase(addFamilyDayMeeting.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
@@ -471,7 +497,18 @@ const clubSlice = createSlice({
       state.clubForPractitioner = {
         ...state.clubForPractitioner,
         dateLoaded: new Date().toLocaleDateString(),
-        club: action.payload,
+        club: {
+          ...action.payload,
+          clubSupport: {
+            ...action.payload.clubSupport,
+            isNewInSupportRole:
+              state.clubForPractitioner?.club?.clubSupport
+                .isNewInSupportRole !== undefined
+                ? state.clubForPractitioner?.club?.clubSupport
+                    .isNewInSupportRole
+                : action.payload.clubSupport.isNewInSupportRole,
+          },
+        },
       };
 
       setFulfilledThunkActionStatus(state, action);
