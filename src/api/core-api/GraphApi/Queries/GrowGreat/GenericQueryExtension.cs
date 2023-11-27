@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
 
-            var docsQuery = docRepo.GetAll().Where(x => x.UserId != null);
+            var docsQuery = docRepo.GetAll(pagingInput).Where(x => x.UserId != null);
 
             if (showOnlyTypes == null) {
                 showOnlyTypes = new[] { DocumentTypeConstants.MaternalCaseRecord, DocumentTypeConstants.RoadToHealthBook };
@@ -56,7 +56,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 docsQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, docsQuery);
             }
 
-            var docsList = docsQuery.ToList();
+            var docsList = docsQuery.OrderByDescending(x => x.UpdatedDate).ToList();
 
             //populate additional user info based on usertypes - createduser is HCW, userid is infant/mother
             foreach (var doc in docsList)
