@@ -52,3 +52,4 @@ export * from './tenant';
 export * from './team-lead';
 export * from './clinic';
 export * from './personalRecords';
+export * from './messaging';

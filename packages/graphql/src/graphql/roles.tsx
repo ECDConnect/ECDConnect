@@ -14,6 +14,15 @@ export const RoleList = gql`
   }
 `;
 
+export const FilterRoleList = gql`
+  {
+    roles {
+      id
+      name
+    }
+  }
+`;
+
 export const AddPermissionToRole = gql`
   mutation addPermissionsToRole($roleId: String!, $permissionIds: [UUID!]) {
     addPermissionsToRole(roleId: $roleId, permissionIds: $permissionIds)
