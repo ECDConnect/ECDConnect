@@ -5546,6 +5546,7 @@ export type Mutation = {
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
   addBeCreativeActivity: Scalars['Boolean'];
+  addCaregiverReportBackMeeting: Scalars['Boolean'];
   addClinic?: Maybe<Clinic>;
   addClubMeeting?: Maybe<ClubMeeting>;
   addCoachCircleMeeting?: Maybe<ClubMeeting>;
@@ -6169,6 +6170,11 @@ export type MutationAddAdditionalVisitForMotherArgs = {
 
 export type MutationAddBeCreativeActivityArgs = {
   input?: InputMaybe<BeCreativeUploadInput>;
+};
+
+export type MutationAddCaregiverReportBackMeetingArgs = {
+  clubId: Scalars['UUID'];
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddClinicArgs = {

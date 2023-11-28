@@ -10,19 +10,23 @@ import {
 } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
-import { clubSelectors } from '@/store/club';
+import { clubActions, clubSelectors } from '@/store/club';
 import { ClubsRouteState } from '../../../../index.types';
 import ROUTES from '@/routes/routes';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
-import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import {
+  formatStringWithFirstLetterCapitalized,
+  useSnackbar,
+} from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { Fragment, useEffect } from 'react';
+import { Fragment, useCallback, useEffect } from 'react';
 import { useAppDispatch } from '@/store';
 import {
   ClubActions,
   getActivityChildProgressDetails,
+  addCaregiverReportBackMeeting,
 } from '@/store/club/club.actions';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
@@ -31,6 +35,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const CompleteChildProgressReports: React.FC = () => {
   const appDispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
 
   const { isOnline } = useOnlineStatus();
 
@@ -41,6 +46,16 @@ export const CompleteChildProgressReports: React.FC = () => {
   const points = useSelector(
     clubSelectors.getActivityChildProgressReportsSelector(clubId)
   );
+  const lastReportBack = useSelector(
+    clubSelectors.getLastCaregiverReportBackDateForPractitioner
+  );
+
+  const date = new Date();
+  const hasLoggedCaregiverMeeting =
+    !!lastReportBack &&
+    lastReportBack.year === date.getFullYear() &&
+    ((lastReportBack.month === 6 && date.getMonth() < 7) ||
+      (lastReportBack.month === 11 && date.getMonth() > 6));
 
   const { isLoading } = useThunkFetchCall(
     'clubs',
@@ -64,6 +79,43 @@ export const CompleteChildProgressReports: React.FC = () => {
   const history = useHistory();
 
   const activityId = 'complete-child-progress-reports';
+
+  const onSubmitCaregiverReportBack = useCallback(() => {
+    const input = { clubId: clubId, userId: user?.id! };
+
+    appDispatch(clubActions.addCaregiverReportBackMeeting(input));
+
+    if (isOnline) {
+      appDispatch(addCaregiverReportBackMeeting(input));
+
+      showMessage({
+        message: `Submitted`,
+        type: 'success',
+      });
+    } else {
+      showMessage({
+        message: `Saved, remember to sync changes next time you are online`,
+        type: 'success',
+      });
+    }
+  }, [appDispatch, clubId, user, isOnline]);
+
+  const month = new Date().getMonth();
+  const submitButton =
+    !isCoach &&
+    !hasLoggedCaregiverMeeting &&
+    ((month >= 3 && month <= 7) || month >= 10) ? (
+      <Button
+        icon="PlusCircleIcon"
+        type="filled"
+        textColor="white"
+        color="primary"
+        text="Log caregiver meeting"
+        onClick={onSubmitCaregiverReportBack}
+      />
+    ) : (
+      <></>
+    );
 
   const mapProgressCard = (
     monthRecord: ActivityChildProgressDetailDto
@@ -98,12 +150,14 @@ export const CompleteChildProgressReports: React.FC = () => {
       isLoading={isLoading}
       showBackground={false}
       className="flex flex-col p-4 pt-6"
-      size="small"
+      size="medium"
+      renderBorder={true}
+      color={'primary'}
       title={formatStringWithFirstLetterCapitalized(activityId)}
       subTitle={club?.name ?? ''}
       onBack={() => history.goBack()}
-      displayHelp
       displayOffline={!isOnline}
+      displayHelp
       onHelp={() =>
         history.push(
           ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
@@ -159,6 +213,7 @@ export const CompleteChildProgressReports: React.FC = () => {
                 'Encourage all club members to create progress reports & discuss them with caregivers in June & November.',
               ]}
               className="mt-4 mb-4"
+              button={submitButton}
             />
           )}
         </>

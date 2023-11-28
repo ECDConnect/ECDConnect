@@ -9,6 +9,10 @@ export const getClubForPractitionerSelector = (state: RootState) =>
 export const getLeagueForPractitionerSelector = (state: RootState) =>
   state.clubs?.leagueForPractitioner;
 
+export const getLastCaregiverReportBackDateForPractitioner = (
+  state: RootState
+) => state.clubs?.practitionerLastCaregiverReportBackDate;
+
 // Coach
 export const getAllClubsForCoachSelector = (state: RootState) =>
   Object.values(state.clubs.clubsForCoach).map((x) => x.club);
