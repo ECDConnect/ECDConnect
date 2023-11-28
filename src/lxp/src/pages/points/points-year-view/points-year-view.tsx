@@ -45,9 +45,7 @@ export const PointsYearView: React.FC = () => {
     currentMonth === 0
   );
 
-  const currentMonthPoints = useSelector(
-    pointsSelectors.getPointsSummaryWithLibrary(new Date())
-  );
+  const yearSummaries = useSelector(pointsSelectors.getPointsSummaryForYear());
 
   const pointsTotalForYear = useSelector(
     pointsSelectors.getPointsTotalForYear()
@@ -172,9 +170,6 @@ export const PointsYearView: React.FC = () => {
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
-  const filteredPointsSummaries = currentMonthPoints.filter(
-    (x) => x.pointsYTD > 0
-  );
 
   return (
     <BannerWrapper
@@ -292,7 +287,7 @@ export const PointsYearView: React.FC = () => {
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Year"
-          pointsSummaries={filteredPointsSummaries}
+          pointsSummaries={yearSummaries}
           userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
           childCount={children?.length || 0}
           clubStanding={userStanding}
