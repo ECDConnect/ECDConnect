@@ -119,7 +119,6 @@ class ClassroomGroupService {
     loggedByUser: string,
     classProgram: string,
     absentDateEnd?: Date,
-    isRoleRasssign?: boolean,
     fromRole?: string,
     toRole?: string,
     roleAssignedToUser?: string
@@ -129,12 +128,16 @@ class ClassroomGroupService {
       query: `
       mutation addAbsenteeForPractitioner ($practitionerId: String,
         $reason: String, $absentDate: DateTime!,$loggedByUser: String,
-        $classProgram: String,$reassignedToPractitioner: String, $absentDateEnd: DateTime!)       {
+        $classProgram: String,$reassignedToPractitioner: String, $absentDateEnd: DateTime!,
+        $fromRole: String,
+        $toRole: String,
+        $roleAssignedToUser: String
+        )       {
          addAbsenteeForPractitioner (practitionerId: $practitionerId,
            reason: $reason, absentDate: $absentDate, 
            loggedByUser: $loggedByUser, classProgram: $classProgram, 
            reassignedToPractitioner: $reassignedToPractitioner, 
-           absentDateEnd: $absentDateEnd, isRoleRasssign: $isRoleRasssign,
+           absentDateEnd: $absentDateEnd,
            fromRole: $fromRole,
            toRole: $toRole,
            roleAssignedToUser: $roleAssignedToUser) { 
@@ -150,7 +153,6 @@ class ClassroomGroupService {
         loggedByUser: loggedByUser,
         classProgram: classProgram,
         absentDateEnd: absentDateEnd,
-        isRoleRasssign: isRoleRasssign,
         fromRole: fromRole,
         toRole: toRole,
         roleAssignedToUser: roleAssignedToUser,
