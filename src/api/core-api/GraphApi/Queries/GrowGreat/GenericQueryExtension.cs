@@ -44,18 +44,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
 
-            var docsQuery = docRepo.GetAll().Where(x => x.UserId != null);
-
             if (showOnlyTypes == null)
             {
                 showOnlyTypes = new[] { DocumentTypeConstants.MaternalCaseRecord, DocumentTypeConstants.RoadToHealthBook };
-                docsQuery = docsQuery.Include(d => d.DocumentType).Where(x => showOnlyTypes.Contains(x.DocumentType.Name));
             }
+
+            var docsQuery = docRepo.GetAll().Include(d => d.DocumentType).Where(x => showOnlyTypes.Contains(x.DocumentType.Name)).Where(x => x.UserId != null);
 
             if (pagingInput is not null)
             {
                 if (pagingInput.PageSize is not null)
-                docsQuery = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 100, docsQuery);                
+                    docsQuery = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 100, docsQuery);
                 docsQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, docsQuery);
             }
 
