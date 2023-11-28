@@ -2116,7 +2116,7 @@ export type ClubMeeting = {
   meetingTypeId?: Maybe<Scalars['UUID']>;
   name?: Maybe<Scalars['String']>;
   otherDescription?: Maybe<Scalars['String']>;
-  totalCaregiversAttended?: Maybe<Scalars['Int']>;
+  totalCaregiversAttended: Scalars['Int'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -2138,7 +2138,7 @@ export type ClubMeetingFilterInput = {
   name?: InputMaybe<StringOperationFilterInput>;
   or?: InputMaybe<Array<ClubMeetingFilterInput>>;
   otherDescription?: InputMaybe<StringOperationFilterInput>;
-  totalCaregiversAttended?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
+  totalCaregiversAttended?: InputMaybe<ComparableInt32OperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
 };
@@ -2157,7 +2157,7 @@ export type ClubMeetingInput = {
   MeetingTypeId?: InputMaybe<Scalars['UUID']>;
   Name?: InputMaybe<Scalars['String']>;
   OtherDescription?: InputMaybe<Scalars['String']>;
-  TotalCaregiversAttended?: InputMaybe<Scalars['Int']>;
+  TotalCaregiversAttended: Scalars['Int'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
@@ -5222,7 +5222,7 @@ export type MessageLogModel = {
   isEdit: Scalars['Boolean'];
   message?: Maybe<Scalars['String']>;
   messageDate: Scalars['DateTime'];
-  messageLogIds?: Maybe<Array<Maybe<Scalars['String']>>>;
+  messageLogIds?: Maybe<Array<Scalars['UUID']>>;
   messageTime?: Maybe<Scalars['String']>;
   provinceId?: Maybe<Scalars['String']>;
   roleIds?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -5239,7 +5239,7 @@ export type MessageLogModelInput = {
   isEdit: Scalars['Boolean'];
   message?: InputMaybe<Scalars['String']>;
   messageDate: Scalars['DateTime'];
-  messageLogIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  messageLogIds?: InputMaybe<Array<Scalars['UUID']>>;
   messageTime?: InputMaybe<Scalars['String']>;
   provinceId?: InputMaybe<Scalars['String']>;
   roleIds?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;

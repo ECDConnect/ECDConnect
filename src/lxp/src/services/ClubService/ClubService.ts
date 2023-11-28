@@ -551,8 +551,8 @@ class ClubService {
       data: { clubById: DetailClubDto };
       errors?: {};
     }>(``, {
-      query: `query clubById($clubId: UUID!) {
-          clubsForCoach(clubId: $clubId) {
+      query: `query GetClubById($clubId: UUID!) {
+        clubById(clubId: $clubId) {
             id
             name
             pointsTotal
