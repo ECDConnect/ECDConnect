@@ -96,7 +96,7 @@ export const ProgrammeTutorial: React.FC<ProgrammeTutorialProps> = ({
           : 'November' + today.getFullYear();
       fetchData(reportDate);
     }
-  }, []);
+  }, [progressSummary, fetchData]);
 
   const { toPDF, targetRef } = usePDF({
     filename: 'practitioner-progress-summary-report.pdf',

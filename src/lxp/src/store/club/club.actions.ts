@@ -9,6 +9,7 @@ import {
   Club,
   ClubLeader,
   ClubMember,
+  ClubSupport,
   Coach,
   MutationAcceptNewClubLeaderRoleArgs,
   MutationChangeClubNameArgs,
@@ -30,6 +31,7 @@ import {
   NewClubLeaderInput,
   ActivityLeaveNoOneBehindDetailsInput,
   ActivityChildAttendanceDetailsInput,
+  UpdateClubSupportStatusInput,
 } from '@/services/ClubService/types';
 import {
   ActivityChildProgressDto,
@@ -65,6 +67,7 @@ export const ClubActions = {
   ADD_CAREGIVER_REPORT_BACK_MEETING: 'addCaregiverReportBackMeeting',
   ADD_BE_CREATIVE_ACTIVITY: 'addBeCreativeActivity',
   ADD_FAMILY_DAY_MEETING: 'addFamilyDayMeeting',
+  UPDATE_CLUB_SUPPORT_STATUS: 'updateClubSupportStatus',
 };
 
 export const getClubById = createAsyncThunk<
@@ -772,6 +775,31 @@ export const addFamilyDayMeeting = createAsyncThunk<
 
           return await Promise.all(promises);
         }
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateClubSupportStatus = createAsyncThunk<
+  ClubSupport,
+  UpdateClubSupportStatusInput,
+  ThunkApiType<RootState>
+>(
+  ClubActions.UPDATE_CLUB_SUPPORT_STATUS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).updateClubSupportStatus(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

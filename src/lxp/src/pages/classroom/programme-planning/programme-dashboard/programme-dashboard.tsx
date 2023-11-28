@@ -61,6 +61,16 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
     [appDispatch]
   );
 
+  const { toPDF, targetRef } = usePDF({
+    filename: 'practitioner-progress-summary-report.pdf',
+  });
+
+  const downloadPdf = useCallback(() => {
+    setShowReport(true);
+    setTimeout(() => toPDF(), 600);
+    setTimeout(() => setShowReport(false), 600);
+  }, [setShowReport, toPDF]);
+
   useEffect(() => {
     if (!progressSummary) {
       const today = new Date();
@@ -74,11 +84,54 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
       const skills: iSkills[] = [];
       const dMessage = [];
 
-      progressSummary?.classSummaries?.map((item) => {
+      const showProgressReportDialog = async (dMessage: string[]) => {
+        dialog({
+          // blocking: true,
+          position: DialogPosition.Middle,
+          render: (onSubmit: any, onCancel: any) => (
+            <ActionModal
+              className={'mx-4'}
+              title="What are children working on?"
+              paragraphs={dMessage}
+              customIcon={
+                <div
+                  className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"
+                  style={{ width: 85 }}
+                >
+                  <img src={iconRobotImage} alt="card" />
+                </div>
+              }
+              actionButtons={[
+                {
+                  text: 'Download the full summary',
+                  colour: 'primary',
+                  onClick: () => {
+                    downloadPdf();
+                    setTimeout(() => onCancel(), 600);
+                  },
+                  type: 'filled',
+                  textColour: 'white',
+                  leadingIcon: 'DownloadIcon',
+                },
+                {
+                  text: 'Close',
+                  textColour: 'primary',
+                  colour: 'primary',
+                  type: 'outlined',
+                  onClick: () => onCancel(),
+                  leadingIcon: 'XIcon',
+                },
+              ]}
+            />
+          ),
+        });
+      };
+
+      progressSummary?.classSummaries?.forEach((item) => {
         total = item.childCount || 0;
-        item?.categories?.map((subItem) => {
-          subItem?.subCategories?.map((subCategoriesItem) => {
-            subCategoriesItem?.childrenPerSkill?.map((skillItem) => {
+        item?.categories?.forEach((subItem) => {
+          subItem?.subCategories?.forEach((subCategoriesItem) => {
+            subCategoriesItem?.childrenPerSkill?.forEach((skillItem) => {
               let childSkill: string = skillItem?.skill || '';
               let childCount: number = skillItem?.childCount || 0;
               const existing = skills.find((n) => n.skill === childSkill);
@@ -108,7 +161,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
         );
 
         skills.sort((a, b) => a.totalChildren - b.totalChildren);
-        skills.map((item, index) => {
+        skills.forEach((item, index) => {
           if (index <= 2) {
             dMessage.push(
               '- ' +
@@ -153,7 +206,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
         }
       }
     }
-  }, []);
+  }, [fetchData, progressSummary, downloadPdf, dialog]);
 
   // const handleAddProgramme = () => {
   //   if (isOnline) {
@@ -171,59 +224,6 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   //     },
   //   });
   // };
-
-  const { toPDF, targetRef } = usePDF({
-    filename: 'practitioner-progress-summary-report.pdf',
-  });
-
-  const downloadPdf = useCallback(() => {
-    setShowReport(true);
-    setTimeout(() => toPDF(), 600);
-    setTimeout(() => setShowReport(false), 600);
-  }, [setShowReport, toPDF]);
-
-  const showProgressReportDialog = async (dMessage: string[]) => {
-    dialog({
-      // blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <ActionModal
-          className={'mx-4'}
-          title="What are children working on?"
-          paragraphs={dMessage}
-          customIcon={
-            <div
-              className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"
-              style={{ width: 85 }}
-            >
-              <img src={iconRobotImage} alt="card" />
-            </div>
-          }
-          actionButtons={[
-            {
-              text: 'Download the full summary',
-              colour: 'primary',
-              onClick: () => {
-                downloadPdf();
-                setTimeout(() => onCancel(), 600);
-              },
-              type: 'filled',
-              textColour: 'white',
-              leadingIcon: 'DownloadIcon',
-            },
-            {
-              text: 'Close',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => onCancel(),
-              leadingIcon: 'XIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
 
   return (
     <>

@@ -20,6 +20,7 @@ import {
   ActivityLeaveNoOneBehind,
   QueryActivityChildProgressArgs,
   ActivityChildAttendance,
+  ClubSupport,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import {
@@ -30,6 +31,7 @@ import {
   NewClubLeaderInput,
   ActivityLeaveNoOneBehindDetailsInput,
   ActivityChildAttendanceDetailsInput,
+  UpdateClubSupportStatusInput,
 } from './types';
 import {
   ActivityChildProgressDto,
@@ -424,6 +426,7 @@ class ClubService {
               whatsAppNumber
               profileImageUrl
               dateAssigned
+              isNewInSupportRole
             }
             clubMembers {
               userId
@@ -1024,6 +1027,36 @@ class ClubService {
     }
 
     return response.data.data.addFamilyDayMeeting;
+  }
+
+  async updateClubSupportStatus(
+    input: UpdateClubSupportStatusInput
+  ): Promise<ClubSupport> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateClubSupportStatus: ClubSupport };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation UpdateClubSupportStatus($practitionerId: UUID!) {
+          updateClubSupportStatus(practitionerId: $practitionerId) {
+            id
+            isNewInSupportRole
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Update club support status failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateClubSupportStatus;
   }
 }
 

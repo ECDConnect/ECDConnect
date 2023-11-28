@@ -65,6 +65,7 @@ export type ClubSupportDto = {
   phoneNumber: string;
   profileImageUrl: string;
   dateAssigned: string;
+  isNewInSupportRole?: boolean;
 };
 
 export type IssueTask = {
