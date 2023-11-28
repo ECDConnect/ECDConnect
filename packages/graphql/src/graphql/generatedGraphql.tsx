@@ -2558,6 +2558,7 @@ export type ClubSupportModel = {
   __typename?: 'ClubSupportModel';
   dateAssigned?: Maybe<Scalars['DateTime']>;
   firstName?: Maybe<Scalars['String']>;
+  isNewInSupportRole: Scalars['Boolean'];
   phoneNumber?: Maybe<Scalars['String']>;
   practitionerId: Scalars['UUID'];
   profileImageUrl?: Maybe<Scalars['String']>;

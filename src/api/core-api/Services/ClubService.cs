@@ -578,6 +578,7 @@ namespace EcdLink.Api.CoreApi.Services
                     _clubSupportRepo.Insert(new ClubSupport()
                     {
                         Id = Guid.NewGuid(),
+                        IsNewInSupportRole = true,
                         IsActive = true,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,
