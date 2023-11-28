@@ -1,0 +1,12 @@
+﻿using ECDLink.DataAccessLayer.Entities;
+using System;
+
+namespace EcdLink.Api.CoreApi.GraphApi.Models
+{
+    public class WardModel
+    {
+        public Guid? ProvinceId { get; set; }
+        public string Ward { get; set; }
+        
+    }
+}

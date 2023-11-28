@@ -2,13 +2,14 @@ import {
   Alert,
   BannerWrapper,
   Button,
+  DialogPosition,
   ProfileAvatar,
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
-import { useSnackbar, useTheme } from '@ecdlink/core';
+import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import { ClubsRouteState } from '../../index.types';
 import { useWindowSize } from '@reach/window-size';
 import ROUTES from '@/routes/routes';
@@ -17,16 +18,22 @@ import { clubSelectors } from '@/store/club';
 import { userSelectors } from '@/store/user';
 import { useMemo, useState } from 'react';
 import { AboutYourselfDialog } from './about-yourself-dialog';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const UserProfile: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const history = useHistory();
 
+  const dialog = useDialog();
+
   const { height } = useWindowSize();
   const { showMessage } = useSnackbar();
   const { clubId, leaderId, practitionerId, coachId } =
     useParams<ClubsRouteState>();
+
+  const { isOnline } = useOnlineStatus();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const user = useSelector(userSelectors.getUser);
@@ -72,6 +79,24 @@ export const UserProfile: React.FC = () => {
     return '';
   }, [isCoach, isLeader, isSupportRole]);
 
+  const onOffline = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return <OnlineOnlyModal onSubmit={onClose} />;
+      },
+    });
+  };
+
+  const onOnlineNavigation = (route: string) => {
+    if (isOnline) {
+      return history.push(route);
+    }
+
+    return onOffline();
+  };
+
   const onWhatsapp = () => {
     if (whatsAppNumber) {
       return window.open(`whatsapp://send?text=${whatsAppNumber}`);
@@ -96,6 +121,8 @@ export const UserProfile: React.FC = () => {
 
   return (
     <BannerWrapper
+      displayOffline={!isOnline}
+      renderBorder
       showBackground
       backgroundUrl={theme?.images.graphicOverlayUrl}
       className="z-10"
@@ -202,7 +229,7 @@ export const UserProfile: React.FC = () => {
             text="Change club leader"
             textColor="white"
             onClick={() =>
-              history.push(
+              onOnlineNavigation(
                 ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(':clubId', clubId)
               )
             }

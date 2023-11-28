@@ -6,6 +6,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -55,5 +56,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return clubService.AddClubMeeting(input, meeting_type);
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public bool AddCaregiverReportBackMeeting([Service] IClubService clubService, Guid clubId, string userId)
+        {
+            clubService.AddCaregiverReportBackMeeting(clubId, userId);
+
+            return true;
+        }
     }
 }

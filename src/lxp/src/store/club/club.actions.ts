@@ -2,6 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import {
   ActivityBeCreative,
+  ActivityChildAttendance,
   ActivityHostFamilyDays,
   ActivityLeaveNoOneBehind,
   ActivityMeetRegular,
@@ -28,6 +29,7 @@ import {
   ActivityHostFamilyDetailsInput,
   NewClubLeaderInput,
   ActivityLeaveNoOneBehindDetailsInput,
+  ActivityChildAttendanceDetailsInput,
 } from '@/services/ClubService/types';
 import {
   ActivityChildProgressDto,
@@ -52,6 +54,7 @@ export const ClubActions = {
   GET_ACTIVITY_LEAVE_NO_ONE_BEHIND_DETAILS:
     'getActivityLeaveNoOneBehindDetails',
   GET_ACTIVITY_CHILD_PROGRESS_DETAILS: 'getActivityChildProgressDetails',
+  GET_ACTIVITY_CHILD_ATTENDANCE_DETAILS: 'getActivityChildAttendanceDetails',
   GET_CLUB_FOR_USER: 'getClubForUser',
   GET_LEAGUES_FOR_COACH: 'getLeaguesForCoach',
   GET_LEAGUE_FOR_USER: 'getLeagueForUser',
@@ -59,6 +62,7 @@ export const ClubActions = {
   ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
   CHANGE_CLUB_SUPPORT_ROLE: 'changeClubSupportRole',
   ADD_CLUB_MEETING: 'addClubMeeting',
+  ADD_CAREGIVER_REPORT_BACK_MEETING: 'addCaregiverReportBackMeeting',
   ADD_BE_CREATIVE_ACTIVITY: 'addBeCreativeActivity',
   ADD_FAMILY_DAY_MEETING: 'addFamilyDayMeeting',
 };
@@ -411,6 +415,31 @@ export const getActivityLeaveNoOneBehindDetails = createAsyncThunk<
   }
 );
 
+export const getActivityChildAttendanceDetails = createAsyncThunk<
+  ActivityChildAttendance,
+  ActivityChildAttendanceDetailsInput,
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_ACTIVITY_CHILD_ATTENDANCE_DETAILS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getActivityChildAttendanceDetails(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getClubForUser = createAsyncThunk<
   DetailClubDto,
   QueryClubForUserArgs,
@@ -590,6 +619,49 @@ export const changeClubSupportRole = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).changeClubSupportRole(payload);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addCaregiverReportBackMeeting = createAsyncThunk<
+  boolean[],
+  { clubId: string; userId: string } | undefined,
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_CAREGIVER_REPORT_BACK_MEETING,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      clubs: { addCaregiverReportBackMeetingSyncInput },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!input.clubId) {
+          return [
+            await new ClubService(
+              userAuth?.auth_token
+            ).addCaregiverReportBackMeeting(input.clubId, input.userId),
+          ];
+        }
+
+        if (!!addCaregiverReportBackMeetingSyncInput) {
+          return [
+            await new ClubService(
+              userAuth?.auth_token
+            ).addCaregiverReportBackMeeting(
+              addCaregiverReportBackMeetingSyncInput.clubId,
+              addCaregiverReportBackMeetingSyncInput.userId
+            ),
+          ];
+        }
+
+        return [true];
       } else {
         return rejectWithValue('no access token, profile check required');
       }

@@ -836,6 +836,7 @@ namespace EcdLink.Api.CoreApi
             public const string meeting_type_story_day = "story_day";
             public const string meeting_type_end_of_year_celebration = "end_of_year_celebration";
             public const string meeting_type_open_day = "open_day";
+            public const string meeting_type_caregiver_meeting = "caregiver_meeting";
             public const string meeting_type_other = "other";
 
             public const string no_club_leader = "No club leader";

@@ -1,22 +1,25 @@
-using ECDLink.Abstractrions.GraphQL.Attributes;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
-using EcdLink.Api.CoreApi.Services;
-using ECDLink.Tenancy.Context;
-using ECDLink.Core.Services.Interfaces;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -129,14 +132,213 @@ IGenericRepositoryFactory repoFactory, string templateId)
         }
 
 
-        public List<string> GetAllRegions(
-[Service] IHttpContextAccessor contextAccessor,
-IGenericRepositoryFactory repoFactory)
+        public List<WardModel> GetAllWards(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
-            return dbRepo.GetAll().Where(x => x.Ward != null).Select(x => x.Ward).Distinct().ToList();
+            return dbRepo.GetAll().Where(x => x.Ward != null && x.Ward != "").Select(x => new WardModel() { ProvinceId = x.ProvinceId, Ward = x.Ward}).Distinct().OrderBy(x => x.Ward).ToList();
         }
 
+
+        public List<MessageLogModel> GetAllMessageLogsForAdmin(
+            [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
+            [Service] INotificationService notificationService,
+            [Service] RoleManager<ApplicationIdentityRole> roleManager,
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string userId,
+            List<string> roleIds,
+            string status,
+            DateTime? startDate,
+            DateTime? endDate)
+        {
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var dbRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
+            List<MessageLogModel> messages = new List<MessageLogModel>();
+            List<MessageLog> messageRecords = dbRepo.GetAll()
+                                                .Where(x => x.SentByUserId.ToString() == userId && x.MessageProtocol == "push" && x.MessageTemplateType == "generic-message" && x.IsActive)
+                                                .Select(x => new MessageLog() {Id = x.Id, To = x.To, Message = x.Message, Subject = x.Subject, ToGroups = x.ToGroups, MessageDate = x.MessageDate, Status = x.Status })
+                                                .Distinct().ToList();
+
+            if (status != "")
+            {
+                messageRecords = (status == "scheduled" ? messageRecords.Where(x => x.MessageDate >= DateTime.Now).ToList() : messageRecords.Where(x => x.MessageDate <= DateTime.Now).ToList());
+            } 
+            if (startDate != null) 
+            {
+                messageRecords = messageRecords.Where(x => x.MessageDate >= startDate.Value).ToList();
+            } 
+            if (endDate != null)
+            {
+                messageRecords = messageRecords.Where(x => x.MessageDate <= endDate.Value).ToList();
+            } 
+            if (roleIds.Count != 0)
+            {
+                AuthenticationDbContext context = dbContextFactory.CreateDbContext();
+                List<string> userIds = (from user in context.Users.Where(x => x.IsActive)
+                                        join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                        join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                        select user.Id).Distinct().ToList();
+                messageRecords = messageRecords.Where(x => userIds.Contains(x.To)).ToList();
+            }
+
+            var filteredMessages = messageRecords.Select(x => new { x.Message, x.Subject, x.ToGroups, x.MessageDate, x.Status }).OrderByDescending(x => x.MessageDate).Distinct().ToList();
+            List<ApplicationIdentityRole> roles = roleManager.Roles.Where(x => x.TenantId == null || x.TenantId == tenantId).ToList();
+            MessageLogModel toGroupsItems = new MessageLogModel();
+            foreach (var item in filteredMessages)
+            {
+                toGroupsItems = notificationService.RetrieveToGroupItems(item.ToGroups);                
+                messages.Add(new MessageLogModel()
+                {
+                    Message = item.Message,
+                    Subject = item.Subject,
+                    MessageDate = (System.DateTime)item.MessageDate,
+                    ToGroups = item.ToGroups,
+                    Status = item.Status,
+                    ProvinceId = toGroupsItems.ProvinceId,
+                    WardName = toGroupsItems.WardName,
+                    DistrictId = toGroupsItems.DistrictId,
+                    RoleIds = toGroupsItems.RoleIds,
+                    RoleNames = string.Join(", ", roles.Where(x => toGroupsItems.RoleIds.Contains(x.Id)).Select(x => x.Name).ToList()),
+                    MessageLogIds = messageRecords.Where(x => x.Message == item.Message &&
+                                                            x.Subject == item.Subject &&
+                                                            x.MessageDate == (System.DateTime)item.MessageDate &&
+                                                            x.ToGroups == item.ToGroups).Select(x => x.Id).ToList()
+                });
+            }
+            return messages;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public int GetUserCountForMessageCriteria([Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
+                                                  [Service] RoleManager<ApplicationIdentityRole> roleManager,
+                                                  [Service] IHttpContextAccessor contextAccessor,
+                                                  IGenericRepositoryFactory repoFactory,
+                                                  string provinceId,
+                                                  string districtId,
+                                                  string wardName,
+                                                  List<string> roleIds)
+        {
+            var count = 0;
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+
+            if (roleIds.Count == 0)
+            {
+                return count;
+            }
+
+            AuthenticationDbContext context = dbContextFactory.CreateDbContext();
+            List<ApplicationIdentityRole> roles = roleManager.Roles.Where(x => roleIds.Contains(x.Id) && (x.TenantId == null || x.TenantId == tenantId)).ToList();
+
+            // role ids are mandatory
+            List<string> userIds = (from user in context.Users.Where(x => x.IsActive == true)
+                                    join userRoles in context.UserRoles on user.Id equals userRoles.UserId
+                                    join role in context.Roles.Where(x => roleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
+                                    select user.Id).ToList();
+
+            // Currently we don't have districts in the system, but this will change after the development in December 23
+            if (provinceId != "" || wardName != "")
+            {
+                var practitionerCount = roles.Where(x => x.Name == Roles.PRACTITIONER).Count();
+                var coachCount = roles.Where(x => x.Name == Roles.COACH).Count();
+                var principalCount = roles.Where(x => x.Name == Roles.PRINCIPAL).Count();
+                var franchisorCount = roles.Where(x => x.Name == Roles.FRANCHISOR).Count();
+
+                if (practitionerCount > 0)
+                {
+                    if (provinceId != "" && wardName == "")
+                    {
+                        count += practitionerRepo.GetAll()
+                        .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId)
+                        .Distinct().Count();
+                    } else if (provinceId == "" && wardName != "")
+                    {
+                        count += practitionerRepo.GetAll()
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.Ward == wardName)
+                            .Distinct().Count();
+                    } else
+                    {
+                        count += practitionerRepo.GetAll()
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId && x.SiteAddress.Ward == wardName)
+                            .Distinct().Count();
+                    }
+                }
+                if (coachCount > 0)
+                {
+                    if (provinceId != "" && wardName == "")
+                    {
+                        count += coachRepo.GetAll()
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId)
+                            .Distinct().Count();
+                    }
+                    else if (provinceId == "" && wardName != "")
+                    {
+                        count += coachRepo.GetAll()
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.Ward == wardName)
+                            .Distinct().Count();
+                    }
+                    else
+                    {
+                        count += coachRepo.GetAll()
+                        .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId && x.SiteAddress.Ward == wardName)
+                        .Distinct().Count();
+                    }
+                }
+                if (principalCount > 0)
+                {
+                    if (provinceId != "" && wardName == "")
+                    {
+                        count += practitionerRepo.GetAll()
+                        .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.ProvinceId.ToString() == provinceId)
+                        .Distinct().Count();
+                    }
+                    else if (provinceId == "" && wardName != "")
+                    {
+                        count += practitionerRepo.GetAll()
+                        .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.Ward == wardName)
+                        .Distinct().Count();
+                    }
+                    else
+                    {
+                        count += practitionerRepo.GetAll()
+                        .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.ProvinceId.ToString() == provinceId && x.SiteAddress.Ward == wardName)
+                        .Distinct().Count();
+                    }
+                }
+                if (franchisorCount > 0)
+                {
+                    if (provinceId != "" && wardName == "")
+                    {
+                        count += franchisorRepo.GetAll()
+                                .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId)
+                                .Distinct().Count();
+                    }
+                    else if (provinceId == "" && wardName != "")
+                    {
+                        count += franchisorRepo.GetAll()
+                        .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.Ward == wardName)
+                        .Distinct().Count();
+                    }
+                    else
+                    {
+                        count += franchisorRepo.GetAll()
+                        .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == provinceId && x.SiteAddress.Ward == wardName)
+                        .Distinct().Count();
+                    }
+                }
+            }
+            else
+            {
+                count = userIds.Count;
+            }
+            return count;
+        }
     }
 }

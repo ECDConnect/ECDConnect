@@ -19,6 +19,7 @@ import {
   ActivityHostFamilyDays,
   ActivityLeaveNoOneBehind,
   QueryActivityChildProgressArgs,
+  ActivityChildAttendance,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 import {
@@ -28,6 +29,7 @@ import {
   ActivityHostFamilyDetailsInput,
   NewClubLeaderInput,
   ActivityLeaveNoOneBehindDetailsInput,
+  ActivityChildAttendanceDetailsInput,
 } from './types';
 import {
   ActivityChildProgressDto,
@@ -533,7 +535,6 @@ class ClubService {
       },
     });
 
-    console.log('response.data.data.clubsForCoach', response);
     if (response.status !== 200 || response.data.errors) {
       throw new Error('Get club for user failed - Server connection error');
     }
@@ -626,7 +627,6 @@ class ClubService {
       },
     });
 
-    console.log('response.data.data.clubById', response);
     if (response.status !== 200 || response.data.errors) {
       throw new Error('Get club for user failed - Server connection error');
     }
@@ -742,6 +742,32 @@ class ClubService {
     }
 
     return response.data.data.addClubMeeting;
+  }
+
+  async addCaregiverReportBackMeeting(
+    clubId: string,
+    userId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addCaregiverReportBackMeeting: boolean };
+      errors?: {};
+    }>(``, {
+      query: `mutation AddCaregiverReportBackMeeting($clubId: UUID!, $userId: String) {
+          addCaregiverReportBackMeeting(clubId: $clubId, userId: $userId) {
+          }
+        }`,
+      variables: {
+        clubId,
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add club meeting failed - Server connection error');
+    }
+
+    return response.data.data.addCaregiverReportBackMeeting;
   }
 
   async getLeaguesForCoach(input: {
@@ -936,6 +962,41 @@ class ClubService {
     }
 
     return response.data.data.activityLeaveNoOneBehindDetails;
+  }
+
+  async getActivityChildAttendanceDetails(
+    input: ActivityChildAttendanceDetailsInput
+  ): Promise<ActivityChildAttendance> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { activityChildAttendance: ActivityChildAttendance };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetActivityChildAttendance($clubId: UUID!) {
+          activityChildAttendance(clubId: $clubId) {
+              points
+              pointsColor
+              monthlyRecords {
+                  monthName
+                  points
+                  pointsColor
+              }
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get activity child attendance details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.activityChildAttendance;
   }
 
   async addFamilyDayMeeting(input: ClubMeetingInput): Promise<ClubMeeting> {

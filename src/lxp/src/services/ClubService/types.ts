@@ -35,3 +35,7 @@ export interface ActivityHostFamilyDetailsInput {
 export interface ActivityLeaveNoOneBehindDetailsInput {
   clubId: string;
 }
+
+export interface ActivityChildAttendanceDetailsInput {
+  clubId: string;
+}

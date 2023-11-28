@@ -1,10 +1,10 @@
-import { BannerWrapper, Button } from '@ecdlink/ui';
+import { BannerWrapper, Button, DialogPosition } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useHistory } from 'react-router';
 import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { Step3 } from './steps/step-3';
-import { useSnackbar } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import { Step1Props, Step2Props, Step3Props } from './index.types';
 import { ClubMeetingInput } from '@/services/ClubService/types';
 import { useSelector } from 'react-redux';
@@ -13,6 +13,7 @@ import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
+import { OfflineModal } from '../../0-components/offline-modal';
 
 export const AddAFamilyDayEvent: React.FC = () => {
   const [step1, setStep1] = useState<Step1Props>();
@@ -25,7 +26,10 @@ export const AddAFamilyDayEvent: React.FC = () => {
   const club = useSelector(clubSelectors.getClubForPractitionerSelector);
 
   const history = useHistory();
+
   const { showMessage } = useSnackbar();
+
+  const dialog = useDialog();
 
   const appDispatch = useAppDispatch();
 
@@ -81,6 +85,22 @@ export const AddAFamilyDayEvent: React.FC = () => {
     showMessage({ message: 'Event added!' });
   }, [showMessage]);
 
+  const onOffline = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return (
+          <OfflineModal
+            title="Event added! Go online to update"
+            detailText="To make sure your image is submitted to SmartStart before the deadline, please go online again as soon as possible."
+            onClose={onClose}
+          />
+        );
+      },
+    });
+  };
+
   const onSubmit = () => {
     const payload: ClubMeetingInput = {
       clubId: club?.id ?? '',
@@ -100,6 +120,7 @@ export const AddAFamilyDayEvent: React.FC = () => {
     }
 
     if (!isOnline) {
+      onOffline();
       onSuccess();
       onClose();
     }
@@ -146,6 +167,7 @@ export const AddAFamilyDayEvent: React.FC = () => {
 
   return (
     <BannerWrapper
+      renderBorder
       displayOffline={!isOnline}
       showBackground={false}
       className="flex flex-col p-4 pt-6"

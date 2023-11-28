@@ -2,6 +2,7 @@ import {
   Alert,
   BannerWrapper,
   Button,
+  DialogPosition,
   FADButton,
   StackedList,
   StackedListType,
@@ -16,8 +17,10 @@ import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { addDays, differenceInMonths, format } from 'date-fns';
 import { daysToAcceptBeingLeader } from '@/constants/club';
-import { useSnackbar } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ClubMembers: React.FC = () => {
   const history = useHistory();
@@ -32,6 +35,10 @@ export const ClubMembers: React.FC = () => {
   const nextLeader = useSelector(
     clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
+
+  const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
 
   const isClubCoach = user?.id === club?.clubCoach.userId;
 
@@ -124,6 +131,24 @@ export const ClubMembers: React.FC = () => {
           ),
       })) ?? [];
 
+  const onOffline = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return <OnlineOnlyModal onSubmit={onClose} />;
+      },
+    });
+  };
+
+  const onOnlineNavigation = (route: string) => {
+    if (isOnline) {
+      return history.push(route);
+    }
+
+    return onOffline();
+  };
+
   const onCall = useCallback(() => {
     const nextLeaderPhoneNumber = nextLeader?.phoneNumber;
     if (nextLeaderPhoneNumber) {
@@ -214,13 +239,14 @@ export const ClubMembers: React.FC = () => {
       />
     );
   }, [
-    onCall,
     hasLeader,
     isLeaderRequestSent,
+    nextLeader,
     isLeaderAcceptedAgreement,
     isLeaderAcceptedOverSixMonths,
     club?.incomingClubLeader,
-    nextLeader,
+    onCall,
+    isClubCoach,
     nextLeaderFirstName,
     dueDateNextLeader,
     currentLeader?.firstName,
@@ -258,7 +284,7 @@ export const ClubMembers: React.FC = () => {
             }
             icon="RefreshIcon"
             onClick={() =>
-              history.push(
+              onOnlineNavigation(
                 ROUTES.COMMUNITY.CLUB.LEADER[
                   isToChangeLeader ? 'EDIT' : 'ADD'
                 ].replace(':clubId', clubId)
@@ -287,7 +313,7 @@ export const ClubMembers: React.FC = () => {
             text="Move members"
             icon="ArrowsExpandIcon"
             onClick={() =>
-              history.push(
+              onOnlineNavigation(
                 ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(':clubId', clubId)
               )
             }
@@ -313,7 +339,7 @@ export const ClubMembers: React.FC = () => {
           shape="round"
           className="absolute bottom-1 right-1 z-10 m-3 px-3.5 py-2.5"
           click={() =>
-            history.push(
+            onOnlineNavigation(
               ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
             )
           }

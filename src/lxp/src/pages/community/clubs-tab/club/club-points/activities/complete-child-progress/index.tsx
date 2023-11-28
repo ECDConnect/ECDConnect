@@ -10,24 +10,32 @@ import {
 } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
-import { clubSelectors } from '@/store/club';
+import { clubActions, clubSelectors } from '@/store/club';
 import { ClubsRouteState } from '../../../../index.types';
 import ROUTES from '@/routes/routes';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
-import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
+import {
+  formatStringWithFirstLetterCapitalized,
+  useSnackbar,
+} from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { Roles } from '@/constants/roles';
-import { useEffect } from 'react';
+import { Fragment, useCallback, useEffect } from 'react';
 import { useAppDispatch } from '@/store';
-import { getActivityChildProgressDetails } from '@/store/club/club.actions';
+import {
+  ClubActions,
+  getActivityChildProgressDetails,
+  addCaregiverReportBackMeeting,
+} from '@/store/club/club.actions';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { ActivityChildProgressDetailDto } from '@/models/club/club.dto';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const CompleteChildProgressReports: React.FC = () => {
   const appDispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
 
   const { isOnline } = useOnlineStatus();
 
@@ -37,6 +45,21 @@ export const CompleteChildProgressReports: React.FC = () => {
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const points = useSelector(
     clubSelectors.getActivityChildProgressReportsSelector(clubId)
+  );
+  const lastReportBack = useSelector(
+    clubSelectors.getLastCaregiverReportBackDateForPractitioner
+  );
+
+  const date = new Date();
+  const hasLoggedCaregiverMeeting =
+    !!lastReportBack &&
+    lastReportBack.year === date.getFullYear() &&
+    ((lastReportBack.month === 6 && date.getMonth() < 7) ||
+      (lastReportBack.month === 11 && date.getMonth() > 6));
+
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_CHILD_PROGRESS_DETAILS
   );
 
   const isCoach = user?.roles?.some(
@@ -55,10 +78,44 @@ export const CompleteChildProgressReports: React.FC = () => {
 
   const history = useHistory();
 
-  const isPractitioner = user?.roles?.some(
-    (item) => item?.name === Roles.PRACTITIONER
-  );
   const activityId = 'complete-child-progress-reports';
+
+  const onSubmitCaregiverReportBack = useCallback(() => {
+    const input = { clubId: clubId, userId: user?.id! };
+
+    appDispatch(clubActions.addCaregiverReportBackMeeting(input));
+
+    if (isOnline) {
+      appDispatch(addCaregiverReportBackMeeting(input));
+
+      showMessage({
+        message: `Submitted`,
+        type: 'success',
+      });
+    } else {
+      showMessage({
+        message: `Saved, remember to sync changes next time you are online`,
+        type: 'success',
+      });
+    }
+  }, [appDispatch, clubId, user, isOnline]);
+
+  const month = new Date().getMonth();
+  const submitButton =
+    !isCoach &&
+    !hasLoggedCaregiverMeeting &&
+    ((month >= 3 && month <= 7) || month >= 10) ? (
+      <Button
+        icon="PlusCircleIcon"
+        type="filled"
+        textColor="white"
+        color="primary"
+        text="Log caregiver meeting"
+        onClick={onSubmitCaregiverReportBack}
+      />
+    ) : (
+      <></>
+    );
 
   const mapProgressCard = (
     monthRecord: ActivityChildProgressDetailDto
@@ -90,12 +147,16 @@ export const CompleteChildProgressReports: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       showBackground={false}
       className="flex flex-col p-4 pt-6"
-      size="small"
+      size="medium"
+      renderBorder={true}
+      color={'primary'}
       title={formatStringWithFirstLetterCapitalized(activityId)}
       subTitle={club?.name ?? ''}
       onBack={() => history.goBack()}
+      displayOffline={!isOnline}
       displayHelp
       onHelp={() =>
         history.push(
@@ -130,13 +191,17 @@ export const CompleteChildProgressReports: React.FC = () => {
         />
       ) : (
         <>
-          {points.monthlyRecords.map((x) => {
+          {points.monthlyRecords.map((record) => {
             return (
-              <>
-                <Typography className="mb-3" type="h1" text={x.monthName} />
-                <AlertCard className="mb-1" item={mapProgressCard(x)} />
-                <AlertCard className="mb-1" item={mapCaregiverCard(x)} />
-              </>
+              <Fragment key={record.monthName}>
+                <Typography
+                  className="mb-3"
+                  type="h1"
+                  text={record.monthName}
+                />
+                <AlertCard className="mb-1" item={mapProgressCard(record)} />
+                <AlertCard className="mb-1" item={mapCaregiverCard(record)} />
+              </Fragment>
             );
           })}
           {!isCoach && (
@@ -148,6 +213,7 @@ export const CompleteChildProgressReports: React.FC = () => {
                 'Encourage all club members to create progress reports & discuss them with caregivers in June & November.',
               ]}
               className="mt-4 mb-4"
+              button={submitButton}
             />
           )}
         </>
@@ -161,9 +227,9 @@ export const CompleteChildProgressReports: React.FC = () => {
         text="Back to club"
         onClick={() =>
           history.push(
-            isPractitioner
-              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
-              : ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+            isCoach
+              ? ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId)
+              : ROUTES.PRACTITIONER.COMMUNITY.ROOT
           )
         }
       />

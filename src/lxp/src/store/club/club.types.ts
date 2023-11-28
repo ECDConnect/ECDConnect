@@ -9,6 +9,7 @@ import {
 } from '@/services/ClubService/types';
 import {
   ActivityBeCreative,
+  ActivityChildAttendance,
   ActivityHostFamilyDays,
   ActivityLeaveNoOneBehind,
   ActivityMeetRegular,
@@ -20,6 +21,7 @@ export type Points = {
   hostFamily?: ActivityHostFamilyDays;
   leaveNoOneBehind?: ActivityLeaveNoOneBehind;
   childProgressDetails?: ActivityChildProgressDto;
+  childAttendance?: ActivityChildAttendance;
 };
 
 export type ClubState = {
@@ -29,6 +31,13 @@ export type ClubState = {
     points?: Points;
   };
   leagueForPractitioner: LeagueClubsDto | undefined;
+  practitionerLastCaregiverReportBackDate:
+    | {
+        year: number;
+        month: number;
+      }
+    | undefined;
+
   clubsForCoach: {
     [clubId: string]: {
       dateLoaded: string;
@@ -43,4 +52,5 @@ export type ClubState = {
   addClubMeetingSyncInputs?: ClubMeetingInput[];
   addBeCreativeActivitySyncInputs?: BeCreativeActivityInput[];
   addFamilyDayMeetingSyncInputs?: ClubMeetingInput[];
+  addCaregiverReportBackMeetingSyncInput?: { clubId: string; userId: string };
 };

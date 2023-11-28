@@ -960,7 +960,7 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      <div className={`${!classroom ? styles.wrapper : ''}`}>
+      <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
         <DashboardItems
           listItems={dashboardItems}
           notification={dashboardNotification}
@@ -982,7 +982,7 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && !!club && (
+        {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
             mainText={clubCard.mainText}
@@ -999,20 +999,21 @@ export const Dashboard: React.FC = () => {
             textColour={clubCard.textColour}
           />
         )}
-        {isPractitioner && !club && (
-          <div className="mt-4">
-            <TitleListItem
-              item={{
-                title: 'Community',
-                titleIcon: 'UserGroupIcon',
-                titleIconClassName: styles.communityIcon,
-                classNames: 'bg-uiBg',
-                onActionClick: () =>
-                  history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
-              }}
-            />
-          </div>
-        )}
+        {isPractitioner &&
+          (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
+            <div className="mt-1">
+              <TitleListItem
+                item={{
+                  title: !!club ? club?.name : 'Community',
+                  titleIcon: 'UserGroupIcon',
+                  titleIconClassName: styles.communityIcon,
+                  classNames: 'bg-uiBg',
+                  onActionClick: () =>
+                    history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+                }}
+              />
+            </div>
+          )}
       </div>
     </BannerWrapper>
   );

@@ -1,14 +1,10 @@
 ﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.DataAccessLayer.Services;
 using HotChocolate;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -21,50 +17,53 @@ namespace EcdLink.Api.CoreApi.Services
 {
     public class ChildrenAnonymiseService : IChildrenAnonymiseService
     {
-        private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly IDocumentManagementService _documentManagementService;
         private readonly HierarchyEngine _hierarchyEngine;
         private readonly UserManager<ApplicationUser> _userManager;
         private ILogger<ChildrenAnonymiseService> _logger;
+        private readonly AuthenticationDbContext _context;
 
         public ChildrenAnonymiseService(
             IGenericRepositoryFactory repositoryFactory,
             IDocumentManagementService documentManagementService,
             HierarchyEngine hierarchyEngine,
             [Service] UserManager<ApplicationUser> userManager,
-            ILogger<ChildrenAnonymiseService> logger)
+            ILogger<ChildrenAnonymiseService> logger,
+            [Service] AuthenticationDbContext context)
         {
-            _repositoryFactory = repositoryFactory;
             _documentManagementService = documentManagementService;
             _hierarchyEngine = hierarchyEngine;
             _userManager = userManager;
             _logger = logger;
+            _context = context;
         }
 
         public void AnonymiseChild()
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
 
-            var childRepo = _repositoryFactory.CreateRepository<Child>(userContext: adminId);
-            var learnerRepo = _repositoryFactory.CreateRepository<Learner>(userContext: adminId);
-
-            var children = GetChildrenToRemove(childRepo);
+            var children = GetChildrenToRemove();
             foreach (var child in children)
             {
                 try
                 {
                     RemoveChildDocuments(child, adminId);
-                    var learner = learnerRepo.GetAll().Where(x => x.UserId == child.UserId).ToList();
+                    var learner = _context.Learners.Where(x => x.UserId == child.UserId).ToList();
                     if (learner.Any())
                     {
                         foreach (var learnerRow in learner)
                         {
-                            learnerRepo.Delete(learnerRow.Id);
+                            _context.Remove(learnerRow);
                         }
                     }
                     _hierarchyEngine.DeleteHierarchy(child.UserId);
-                    childRepo.Delete(child.Id);
+                    _context.Remove(child);
+                    _context.SaveChanges();
                     var result = _userManager.DeleteAsync(child.User).Result;
+                    if (result.Succeeded)
+                    {
+                        _logger.LogInformation("AnonymiseChild Succeeded for child Id: {0} and UserId {1}", child.Id, child.UserId);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -81,15 +80,14 @@ namespace EcdLink.Api.CoreApi.Services
             _documentManagementService.DeleteUserDocument(child.UserId, accessUserId, FileTypeEnum.ChildRegistrationForm);
         }
 
-        private List<Child> GetChildrenToRemove(IGenericRepository<Child, Guid> childRepo)
+        private List<Child> GetChildrenToRemove()
         {
             var expiryTime = DateTime.UtcNow.AddDays(-30);
 
-            // Remove child where caregiver has not yet completed all data
-            // and they were inserted within the last 30 days
-            return childRepo.GetAll()
-                        .Where(c => c.IsActive && c.CaregiverId.Equals(null)
-                                    && c.InsertedDate <= expiryTime).Include(c => c.User).ToList();
+            // Remove child where caregiver has not yet completed all data and they were inserted within the last 30 days
+            return _context.Children.Where(c => c.IsActive && c.CaregiverId.Equals(null)
+                                   && c.InsertedDate <= expiryTime).Include(c => c.User).ToList();
+
         }
 
 

@@ -117,6 +117,7 @@ export const Login: React.FC = () => {
           .then((isAuthenticated: any) => {
             if (
               isAuthenticated &&
+              isAuthenticated?.error === undefined &&
               isAuthenticated?.payload?.response?.status !== 401
             ) {
               appDispatch(settingActions.setApplicationVersion(version));
