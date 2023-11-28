@@ -164,9 +164,9 @@ export const OnboardingTraineeDashboard: React.FC<
           type={'h2'}
           text={'Trainee onboarding'}
         />
-        {((practitioner?.isOnStipend && completedSteps.length === 7) ||
+        {((practitioner?.isOnStipend && completedSteps.length === 8) ||
           (practitioner?.isOnStipend !== true &&
-            completedSteps.length === 6)) && (
+            completedSteps.length === 7)) && (
           <>
             <div className="bg-successBg grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
               <div className="flex">
