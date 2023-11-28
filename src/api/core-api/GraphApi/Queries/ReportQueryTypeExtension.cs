@@ -1342,57 +1342,6 @@ string practitionerId)
                 }
                 #endregion
 
-                #region INCOMPLETE CHILD REGISTRATIONS
-                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
-                                        //.Include(c => c.User)
-                                        .ToListAsync().Result;
-                var childUserIds = children.Select(c => c.UserId);
-                var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true).ToList();
-                var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true
-                && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
-
-                var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
-                if (incompleteRegistrations > 0)
-                {
-                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "Child Registrations";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region ON LEAVE
-                if (absenteeDays.Any(x => x.UserId == practitioner.UserId && x.AbsentDate.Date == DateTime.Now.Date))
-                {
-                    notification.Subject = "On leave";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "On leave";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region ABSENT MORE THAN 25%
-                if (absenteeDays.Count() > 0 && absenteeDays.Count() > 4)
-                {
-                    notification.Subject = "Practitioner absent more than 25%";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "On leave";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
                 if (mode == "coach")
                 {
                     #region TRAINEE ONBOARDING INCOMPLETE (2 weeks) AND (4 weeks) (REMOVE TRAINEE) AND TRAINEE TASKS OVERDUE
@@ -1413,7 +1362,8 @@ string practitionerId)
                         if (traineeTimeline.StarterLicenseColor == null || traineeTimeline.StarterLicenseColor == warningString) warningCount++;
                         if (traineeTimeline.ThreeChildrenRegisteredColor == null || traineeTimeline.ThreeChildrenRegisteredColor == warningString) warningCount++;
 
-                        if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28))
+                        if (traineeTimeline.SmartSpaceLicenseDate < DateTime.Now.AddDays(-28) || 
+                            traineeTimeline.StarterLicenseDate < DateTime.Now.AddDays(-28))
                         {
                             if (warningCount > 0)
                             {
@@ -1507,7 +1457,6 @@ string practitionerId)
                         }
                     }
                     #endregion
-
 
                     #region FIRST PQA OVERDUE
                     if (firstPqaVisit != null && !firstPqaVisit.Attended && firstPqaVisit.PlannedVisitDate < DateTime.Now)
@@ -1683,6 +1632,57 @@ string practitionerId)
                     #endregion
                 }
 
+ #region INCOMPLETE CHILD REGISTRATIONS
+                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
+                                        //.Include(c => c.User)
+                                        .ToListAsync().Result;
+                var childUserIds = children.Select(c => c.UserId);
+                var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true).ToList();
+                var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true
+                && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
+
+                var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
+                if (incompleteRegistrations > 0)
+                {
+                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Child Registrations";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region ON LEAVE
+                if (absenteeDays.Any(x => x.UserId == practitioner.UserId && x.AbsentDate.Date == DateTime.Now.Date))
+                {
+                    notification.Subject = "On leave";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region ABSENT MORE THAN 25%
+                if (absenteeDays.Count() > 0 && absenteeDays.Count() > 4)
+                {
+                    notification.Subject = "Practitioner absent more than 25%";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
                 #region REMOVED FROM PROGRAMME
                 var removalHistory = removalRepo.GetListByUserId(practitioner.UserId)
                     .Where(x => x.IsActive)
@@ -1776,7 +1776,6 @@ string practitionerId)
                     }
                 }
                 #endregion
-
                
                 if (practitioner.IsTrainee is null || (practitioner.IsTrainee.HasValue && practitioner.IsTrainee == false))
                 {
@@ -1897,9 +1896,7 @@ string practitionerId)
                 }
                 #endregion
 
-                // STARTUP SUPPORT ENDING (3 months)
-
-              
+                // STARTUP SUPPORT ENDING (3 months)            
 
                 #region CHILDREN DID NOT PROGRESS
                 var childProgress = GetChildProgress(repoFactory, GetReportPeriodStart(previousMonthStart.Year, previousMonthStart.Month <= 7), children);
