@@ -82,7 +82,11 @@ export const OnboardingTraineeDashboard: React.FC<
     (item) => item?.subTitleColor === 'alertMain'
   );
 
-  const completedSteps = steps?.filter((item) => item?.type === 'completed');
+  const completedSteps = steps?.filter(
+    (item) =>
+      item?.type === 'completed' ||
+      item?.title === 'Consolidation meeting attended'
+  );
 
   const onboardingNotCompleted = completedSteps?.length < 8;
   const twoWeeksAgo = addDays(new Date(), -14);
