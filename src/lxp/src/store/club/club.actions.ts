@@ -64,6 +64,7 @@ export const ClubActions = {
   ACCEPT_NEW_CLUB_LEADER_ROLE: 'acceptNewClubLeaderRole',
   CHANGE_CLUB_SUPPORT_ROLE: 'changeClubSupportRole',
   ADD_CLUB_MEETING: 'addClubMeeting',
+  ADD_CAREGIVER_REPORT_BACK_MEETING: 'addCaregiverReportBackMeeting',
   ADD_BE_CREATIVE_ACTIVITY: 'addBeCreativeActivity',
   ADD_FAMILY_DAY_MEETING: 'addFamilyDayMeeting',
   UPDATE_CLUB_SUPPORT_STATUS: 'updateClubSupportStatus',
@@ -621,6 +622,49 @@ export const changeClubSupportRole = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).changeClubSupportRole(payload);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addCaregiverReportBackMeeting = createAsyncThunk<
+  boolean[],
+  { clubId: string; userId: string } | undefined,
+  ThunkApiType<RootState>
+>(
+  ClubActions.ADD_CAREGIVER_REPORT_BACK_MEETING,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      clubs: { addCaregiverReportBackMeetingSyncInput },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!input.clubId) {
+          return [
+            await new ClubService(
+              userAuth?.auth_token
+            ).addCaregiverReportBackMeeting(input.clubId, input.userId),
+          ];
+        }
+
+        if (!!addCaregiverReportBackMeetingSyncInput) {
+          return [
+            await new ClubService(
+              userAuth?.auth_token
+            ).addCaregiverReportBackMeeting(
+              addCaregiverReportBackMeetingSyncInput.clubId,
+              addCaregiverReportBackMeetingSyncInput.userId
+            ),
+          ];
+        }
+
+        return [true];
       } else {
         return rejectWithValue('no access token, profile check required');
       }

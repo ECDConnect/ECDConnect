@@ -31,6 +31,13 @@ export type ClubState = {
     points?: Points;
   };
   leagueForPractitioner: LeagueClubsDto | undefined;
+  practitionerLastCaregiverReportBackDate:
+    | {
+        year: number;
+        month: number;
+      }
+    | undefined;
+
   clubsForCoach: {
     [clubId: string]: {
       dateLoaded: string;
@@ -45,4 +52,5 @@ export type ClubState = {
   addClubMeetingSyncInputs?: ClubMeetingInput[];
   addBeCreativeActivitySyncInputs?: BeCreativeActivityInput[];
   addFamilyDayMeetingSyncInputs?: ClubMeetingInput[];
+  addCaregiverReportBackMeetingSyncInput?: { clubId: string; userId: string };
 };

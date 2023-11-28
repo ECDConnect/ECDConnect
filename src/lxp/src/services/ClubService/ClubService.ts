@@ -538,7 +538,6 @@ class ClubService {
       },
     });
 
-    console.log('response.data.data.clubsForCoach', response);
     if (response.status !== 200 || response.data.errors) {
       throw new Error('Get club for user failed - Server connection error');
     }
@@ -631,7 +630,6 @@ class ClubService {
       },
     });
 
-    console.log('response.data.data.clubById', response);
     if (response.status !== 200 || response.data.errors) {
       throw new Error('Get club for user failed - Server connection error');
     }
@@ -747,6 +745,32 @@ class ClubService {
     }
 
     return response.data.data.addClubMeeting;
+  }
+
+  async addCaregiverReportBackMeeting(
+    clubId: string,
+    userId: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addCaregiverReportBackMeeting: boolean };
+      errors?: {};
+    }>(``, {
+      query: `mutation AddCaregiverReportBackMeeting($clubId: UUID!, $userId: String) {
+          addCaregiverReportBackMeeting(clubId: $clubId, userId: $userId) {
+          }
+        }`,
+      variables: {
+        clubId,
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add club meeting failed - Server connection error');
+    }
+
+    return response.data.data.addCaregiverReportBackMeeting;
   }
 
   async getLeaguesForCoach(input: {

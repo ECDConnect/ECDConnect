@@ -3,6 +3,7 @@ import localForage from 'localforage';
 import {
   acceptNewClubLeaderRole,
   addBeCreativeActivity,
+  addCaregiverReportBackMeeting,
   addClubMeeting,
   addFamilyDayMeeting,
   addNewClub,
@@ -39,12 +40,14 @@ import {
 const initialState: ClubState = {
   clubForPractitioner: {},
   leagueForPractitioner: undefined,
+  practitionerLastCaregiverReportBackDate: undefined,
   clubsForCoach: {},
   leaguesForCoach: [],
   dateLeagueDataLoaded: undefined,
   addClubMeetingSyncInputs: [],
   addBeCreativeActivitySyncInputs: [],
   addFamilyDayMeetingSyncInputs: [],
+  addCaregiverReportBackMeetingSyncInput: undefined,
 };
 
 const clubSlice = createSlice({
@@ -69,6 +72,8 @@ const clubSlice = createSlice({
       state.clubsForCoach = initialState.clubsForCoach;
       state.clubForPractitioner = initialState.clubForPractitioner;
       state.addClubMeetingSyncInputs = initialState.addClubMeetingSyncInputs;
+      state.addCaregiverReportBackMeetingSyncInput =
+        initialState.addCaregiverReportBackMeetingSyncInput;
     },
     addClubMeeting: (state, action: PayloadAction<ClubMeetingInput>) => {
       const newMeeting = action.payload as ClubMeetingInput;
@@ -88,6 +93,16 @@ const clubSlice = createSlice({
           newMeeting,
         ];
       }
+    },
+    addCaregiverReportBackMeeting: (
+      state,
+      action: PayloadAction<{ clubId: string; userId: string }>
+    ) => {
+      state.addCaregiverReportBackMeetingSyncInput = action.payload;
+      state.practitionerLastCaregiverReportBackDate = {
+        year: new Date().getFullYear(),
+        month: new Date().getMonth() < 7 ? 6 : 11,
+      };
     },
     addBeCreativeActivity: (
       state,
@@ -434,6 +449,7 @@ const clubSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     // Practitioner
+    setThunkActionStatus(builder, addCaregiverReportBackMeeting);
     setThunkActionStatus(builder, acceptNewClubLeaderRole);
     setThunkActionStatus(builder, getClubForUser);
     setThunkActionStatus(builder, getLeagueForUser);
@@ -445,6 +461,13 @@ const clubSlice = createSlice({
     setThunkActionStatus(builder, updateClubSupportStatus);
     builder.addCase(updateClubSupportStatus.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addCaregiverReportBackMeeting.fulfilled, (state) => {
+      state.addCaregiverReportBackMeetingSyncInput = undefined;
+      state.practitionerLastCaregiverReportBackDate = {
+        year: new Date().getFullYear(),
+        month: new Date().getMonth() < 7 ? 6 : 11,
+      };
     });
     builder.addCase(addFamilyDayMeeting.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);

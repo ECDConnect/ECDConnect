@@ -116,6 +116,10 @@ export const syncOfflineData = createAsyncThunk<
       title: 'Family day meetings',
       action: clubThunkActions.addFamilyDayMeeting,
     },
+    {
+      title: 'Caregiver report back meeting',
+      action: clubThunkActions.addCaregiverReportBackMeeting,
+    },
   ];
 
   let error: Error | null = null;
@@ -267,6 +271,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       {
         title: 'Family day meetings',
         action: clubThunkActions.addFamilyDayMeeting,
+      },
+      {
+        title: 'Caregiver report back meeting',
+        action: clubThunkActions.addCaregiverReportBackMeeting,
       },
     ];
 

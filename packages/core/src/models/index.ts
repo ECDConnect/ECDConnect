@@ -35,3 +35,4 @@ export * from './dto/Consent';
 export * from './dto/Reports';
 export * from './dto/Visit';
 export * from './dto/Statements';
+export * from './dto/MessageLog';

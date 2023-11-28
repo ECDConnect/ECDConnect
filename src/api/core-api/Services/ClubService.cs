@@ -118,7 +118,7 @@ namespace EcdLink.Api.CoreApi.Services
                 MeetingTypeId = meetingTypeId,
                 MeetingNotes = input.MeetingNotes,
                 OtherDescription = input.OtherDescription == null ? "": input.OtherDescription,
-                TotalCaregiversAttended = input.TotalCaregiversAttended == null ? 0 : input.TotalCaregiversAttended,
+                TotalCaregiversAttended = input.TotalCaregiversAttended == null ? 0 : input.TotalCaregiversAttended.Value,
                 CoachAttended = input.CoachAttend == null ? false : true
             });
             
@@ -191,6 +191,83 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
             return clubMeeting;
+        }
+        
+        public void AddCaregiverReportBackMeeting(Guid clubId, string userId)
+        {
+            var practitionerId = _practitionerRepo.GetByUserId(userId).Id;
+
+            var reportsMonth = DateTime.Now.Month < 8
+                ? 7
+                : 12;
+
+            var meetingTypeId = _meetingTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.meeting_type_caregiver_meeting).Select(x => x.Id).FirstOrDefault();
+
+            var lastCaregiverMeetingForClub = _clubMeetingRepo.GetAll()
+                .Where(x => x.MeetingType.Name == Constants.ClubSettings.meeting_type_caregiver_meeting && x.ClubId == clubId)
+                .OrderByDescending(x => x.MeetingDate)
+                .Include(x => x.ClubMeetingRegister)
+                .FirstOrDefault();
+
+            //Check if we need to create a new meeting
+            if (lastCaregiverMeetingForClub == null 
+                || lastCaregiverMeetingForClub.MeetingDate.HasValue && lastCaregiverMeetingForClub.MeetingDate.Value.Year != DateTime.Now.Year
+                || lastCaregiverMeetingForClub.MeetingDate.HasValue && lastCaregiverMeetingForClub.MeetingDate.Value.Month != reportsMonth)
+            {
+                var club = _clubRepo.GetAll().Where(x => x.Id == clubId).Include(x => x.ClubMembers).Include(x => x.ClubLeaders).Include(x => x.ClubSupport).FirstOrDefault();
+                var members = new List<Guid>();
+                members.AddRange(club.ClubMembers.Where(x => x.IsActive).Select(x => x.PractitionerId));
+                members.AddRange(club.ClubLeaders.Where(x => x.IsActive).Select(x => x.PractitionerId));
+                members.AddRange(club.ClubSupport.Where(x => x.IsActive).Select(x => x.PractitionerId));
+
+
+                _clubMeetingRepo.Insert(new ClubMeeting
+                {
+                    Id = Guid.NewGuid(),
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedBy = _applicationUserId,
+                    MeetingDate = new DateTime(DateTime.Now.Year, reportsMonth, 31),
+                    Name = "Caregiver Report Back",
+                    ClubId = clubId,
+                    MeetingTypeId = meetingTypeId,
+                    MeetingNotes = "",
+                    OtherDescription = "",
+                    CoachAttended = false,    
+                    TotalCaregiversAttended = 0,
+                    ClubMeetingRegister = members.Distinct().Select(x => new ClubMeetingRegister
+                    {
+                        PractitionerId = x,
+                        Attended = x == practitionerId,
+                        IsActive = true,
+                        InsertedDate = DateTime.Now,
+                        UpdatedBy = _applicationUserId,
+                    }).ToList()
+                });
+
+                return;
+            }
+
+            // Update attended for practitioner
+            var registerForPractitioner = lastCaregiverMeetingForClub.ClubMeetingRegister.Where(x => x.PractitionerId == practitionerId).SingleOrDefault();
+
+            if (registerForPractitioner != null)
+            {
+                registerForPractitioner.Attended = true;
+            }
+            else
+            {
+                lastCaregiverMeetingForClub.ClubMeetingRegister.Add(new ClubMeetingRegister
+                {
+                    PractitionerId = practitionerId,
+                    Attended = true,
+                    IsActive = true,
+                    InsertedDate = DateTime.Now,
+                    UpdatedBy = _applicationUserId,
+                });
+            }
+
+            _clubMeetingRepo.Update(lastCaregiverMeetingForClub);
         }
 
         public bool IsClubLeader(Guid practitionerId)
@@ -578,6 +655,7 @@ namespace EcdLink.Api.CoreApi.Services
                     _clubSupportRepo.Insert(new ClubSupport()
                     {
                         Id = Guid.NewGuid(),
+                        IsNewInSupportRole = true,
                         IsActive = true,
                         InsertedDate = DateTime.Now,
                         UpdatedDate = DateTime.Now,

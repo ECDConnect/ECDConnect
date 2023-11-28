@@ -1,4 +1,5 @@
-﻿using ECDLink.Abstractrions.Constants;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
 using System;
@@ -17,5 +18,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> ExpireNotificationsTypesForUser(string userId, string templateType);
         Task<bool> MarkAsReadNotification(string notificationId);
         MessageTemplateText RemapFields(MessageTemplate template, ApplicationUser user, List<TagsReplacements> replacements);
+        Task<bool> SendGenericMessage(string to, string toGroups, string message, string subject, DateTime sendDate, MessageTemplate template, DateTime? messageEndDate = null);
+        MessageLogModel RetrieveToGroupItems(string toGroups);
     }
 }

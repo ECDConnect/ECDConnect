@@ -63,6 +63,9 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(deActivatePractitioner.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
+      state.practitioners = state.practitioners?.filter(
+        (x) => x.userId !== action.meta.arg.userId
+      );
     });
     builder.addCase(
       updatePractitionerBusinessWalkThrough.fulfilled,

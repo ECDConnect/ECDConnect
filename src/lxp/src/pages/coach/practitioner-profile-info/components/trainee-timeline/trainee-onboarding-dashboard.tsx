@@ -87,11 +87,11 @@ export const OnboardingTraineeDashboard: React.FC<
   const onboardingNotCompleted = completedSteps?.length < 8;
   const twoWeeksAgo = addDays(new Date(), -14);
   const fourWeeksAgo = addDays(new Date(), -28);
-  const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
-    ? new Date(timeline?.smartSpaceLicenseDate)
+  const starterLicenseDate = timeline?.starterLicenseDate
+    ? new Date(timeline?.starterLicenseDate)
     : new Date();
   const onboardingIncompleted =
-    onboardingNotCompleted && smartSpaceLicenseDate <= twoWeeksAgo;
+    onboardingNotCompleted && starterLicenseDate <= twoWeeksAgo;
 
   const stepperCount = timelineSteps(
     timeline!,
@@ -273,9 +273,9 @@ export const OnboardingTraineeDashboard: React.FC<
       >
         <OnboardingNotCompleted
           practitioner={practitioner}
-          starterLicenseDate={smartSpaceLicenseDate}
+          starterLicenseDate={starterLicenseDate}
           setShowOnboardingNotCompleted={setShowOnboardingNotCompleted}
-          isRemoveTrainee={smartSpaceLicenseDate < fourWeeksAgo}
+          isRemoveTrainee={starterLicenseDate < fourWeeksAgo}
         />
       </Dialog>
     </BannerWrapper>

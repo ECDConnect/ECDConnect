@@ -1197,14 +1197,22 @@ namespace EcdLink.Api.CoreApi.Services
             }
         }
 
+
         private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin = false)
         {
             var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
-            
+
             // Get new totals, sum of current month or year, plus one more score
             int monthTotal = pointsScoredThisYear.Where(x => x.Month == today.Month).Select(x => x.PointsTotal).Sum() + activity.Points;
             int ytdTotal = pointsScoredThisYear.Select(x => x.PointsTotal).Sum() + activity.Points;
-            
+
+            UpdateUserSummaryPoints(userId, activity, today, isPrincipalOrAdmin, monthTotal, ytdTotal);
+        }
+
+        private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin, int monthTotal, int ytdTotal)
+        {
+            var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
+                        
             if (isPrincipalOrAdmin)
             {
                 if (activity.MaxPointsPrincipalMonthly != 0 && monthTotal > activity.MaxPointsPrincipalMonthly)
@@ -1436,11 +1444,20 @@ namespace EcdLink.Api.CoreApi.Services
                 }
 
                 var practitioner = _practitionerRepo.GetByUserId(userId);
+
+                var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
+
+                // Get new totals, sum of current month or year, plus one more score
+                int monthTotal = (int)perc;
+                int ytdTotal = pointsScoredThisYear.Where(x => x.Month != today.Month).Select(x => x.PointsTotal).Sum() + monthTotal;
+
                 UpdateUserSummaryPoints(
-                    userId,
-                    activity,
+                    userId, 
+                    activity, 
                     today,
-                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
+                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value),
+                    monthTotal, 
+                    ytdTotal);
             }
             return true;
         }
@@ -1451,8 +1468,8 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement)
         {
-            var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            
+            var pointsMonth = new DateTime(lastStatement.Year, lastStatement.Month, 1);
+
             var statementPointsActivities = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
 
             var practitioner = _practitionerRepo.GetByUserId(userId);
@@ -1465,7 +1482,7 @@ namespace EcdLink.Api.CoreApi.Services
             UpdateUserSummaryPoints(
                 userId,
                 submitActivity,
-                currentMonth,
+                pointsMonth,
                 isPrincipalOrAdmin);
 
             // ALL CHILDREN WITH FEES POINTS
@@ -1485,10 +1502,9 @@ namespace EcdLink.Api.CoreApi.Services
                 UpdateUserSummaryPoints(
                    userId,
                    feesActivity,
-                   currentMonth,
+                   pointsMonth,
                    isPrincipalOrAdmin);
             }
-
 
             // THREE SUBMITS IN A ROW
             var timeSinceLastBonus = new TimeSpan();
@@ -1503,24 +1519,26 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 // Just use first day for easier setup, we just need to check the months diff
                 var lastBonusDate = new DateTime(lastBonus.Year, lastBonus.Month, 1);
-                timeSinceLastBonus = currentMonth - lastBonusDate;
+                timeSinceLastBonus = pointsMonth - lastBonusDate;
             }
 
             if (lastBonus == null || timeSinceLastBonus.TotalDays > 70) // At least three months
             {
-                // Check last three statements were submitted
-                var lastThreeStatementsSubmitted = _statementsIncomeStatementRepo.GetAll()
-                    .Where(x => x.UserId == userId)
-                    .OrderByDescending(x => x.InsertedDate)
-                    .Take(3)
-                    .All(x => !x.AutoSubmitted);
+                var lastMonth = pointsMonth.AddMonths(-1);
+                var previousMonth = pointsMonth.AddMonths(-2);
 
-                if (lastThreeStatementsSubmitted)
+                // Check previous two months statements were also submitted
+                var previousTwoStatementsSubmitted = _statementsIncomeStatementRepo.GetAll()
+                    .Where(x => x.UserId == userId && !x.AutoSubmitted)
+                    .Where(x => (x.Year == lastMonth.Year && x.Month == lastMonth.Month) || (x.Year == previousMonth.Year && x.Month == previousMonth.Month))
+                    .Count() == 2;
+
+                if (previousTwoStatementsSubmitted)
                 {
                     UpdateUserSummaryPoints(
                         userId,
                         consecutiveBonusActivity,
-                        currentMonth,
+                        pointsMonth,
                         isPrincipalOrAdmin);
                 }
             }
