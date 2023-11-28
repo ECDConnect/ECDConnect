@@ -1468,8 +1468,8 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement)
         {
-            var currentMonth = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
-            
+            var pointsMonth = new DateTime(lastStatement.Year, lastStatement.Month, 1);
+
             var statementPointsActivities = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
 
             var practitioner = _practitionerRepo.GetByUserId(userId);
@@ -1482,7 +1482,7 @@ namespace EcdLink.Api.CoreApi.Services
             UpdateUserSummaryPoints(
                 userId,
                 submitActivity,
-                currentMonth,
+                pointsMonth,
                 isPrincipalOrAdmin);
 
             // ALL CHILDREN WITH FEES POINTS
@@ -1502,10 +1502,9 @@ namespace EcdLink.Api.CoreApi.Services
                 UpdateUserSummaryPoints(
                    userId,
                    feesActivity,
-                   currentMonth,
+                   pointsMonth,
                    isPrincipalOrAdmin);
             }
-
 
             // THREE SUBMITS IN A ROW
             var timeSinceLastBonus = new TimeSpan();
@@ -1520,24 +1519,26 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 // Just use first day for easier setup, we just need to check the months diff
                 var lastBonusDate = new DateTime(lastBonus.Year, lastBonus.Month, 1);
-                timeSinceLastBonus = currentMonth - lastBonusDate;
+                timeSinceLastBonus = pointsMonth - lastBonusDate;
             }
 
             if (lastBonus == null || timeSinceLastBonus.TotalDays > 70) // At least three months
             {
-                // Check last three statements were submitted
-                var lastThreeStatementsSubmitted = _statementsIncomeStatementRepo.GetAll()
-                    .Where(x => x.UserId == userId)
-                    .OrderByDescending(x => x.InsertedDate)
-                    .Take(3)
-                    .All(x => !x.AutoSubmitted);
+                var lastMonth = pointsMonth.AddMonths(-1);
+                var previousMonth = pointsMonth.AddMonths(-2);
 
-                if (lastThreeStatementsSubmitted)
+                // Check previous two months statements were also submitted
+                var previousTwoStatementsSubmitted = _statementsIncomeStatementRepo.GetAll()
+                    .Where(x => x.UserId == userId && !x.AutoSubmitted)
+                    .Where(x => (x.Year == lastMonth.Year && x.Month == lastMonth.Month) || (x.Year == previousMonth.Year && x.Month == previousMonth.Month))
+                    .Count() == 2;
+
+                if (previousTwoStatementsSubmitted)
                 {
                     UpdateUserSummaryPoints(
                         userId,
                         consecutiveBonusActivity,
-                        currentMonth,
+                        pointsMonth,
                         isPrincipalOrAdmin);
                 }
             }

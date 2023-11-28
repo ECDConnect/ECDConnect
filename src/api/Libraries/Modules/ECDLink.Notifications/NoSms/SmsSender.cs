@@ -1,6 +1,7 @@
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -11,8 +12,8 @@ namespace ECDLink.Notifications.NoSms
 {
     public class SmsSender : SmsSenderBase
     {
-        public SmsSender(IMessageFactory messageFactory, TemplateProcessor templateProcessor)
-            : base(messageFactory, templateProcessor, new Message())
+        public SmsSender(IMessageFactory messageFactory, TemplateProcessor templateProcessor, ILogger<SmsSenderBase> logger)
+            : base(messageFactory, templateProcessor, new Message(), logger)
         {
         }
 

@@ -144,11 +144,11 @@ export const Form = ({
     )?.answer;
 
   const previousPqaRating =
-    timeline?.pQASiteVisits?.[timeline?.pQASiteVisits?.length - 1]
+    timeline?.pQARatings?.[timeline?.pQARatings?.length - 1]
       ?.overallRatingColor;
   const previousReaccreditationRating =
-    timeline?.reAccreditationVisits?.[
-      timeline?.reAccreditationVisits?.length - 1
+    timeline?.reAccreditationRatings?.[
+      timeline?.reAccreditationRatings?.length - 1
     ]?.overallRatingColor;
 
   const isToRemoveSmartStarter =
