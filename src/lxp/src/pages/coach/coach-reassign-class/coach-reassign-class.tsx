@@ -230,6 +230,12 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
 
       setReassignClassValue('reason', allAbsenteeClasses?.[0]?.reason);
+
+      if (allAbsenteeClasses?.[0]?.reassignedToUserId) {
+        setPrincipalOrFundaAppAdmin(
+          allAbsenteeClasses?.[0]?.reassignedToUserId as any
+        );
+      }
     }
   }, []);
 
@@ -272,7 +278,8 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           userData?.id!,
           item?.classroomId,
           endDate || new Date(selectedDate),
-          true,
+          '',
+          '',
           principalOrFundaAppAdmin
         );
       });
@@ -302,6 +309,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
 
           return;
         }
+
         setIsLoading(true);
         await new ClassroomGroupService(
           userAuth.auth_token
@@ -313,7 +321,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           userData?.id!,
           '',
           endDate || new Date(selectedDate),
-          true,
+          '',
           principalOrFundaAppAdmin
         );
       }

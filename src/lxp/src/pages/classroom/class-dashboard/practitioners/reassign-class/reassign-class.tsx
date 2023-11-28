@@ -124,6 +124,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     : '';
   const [isOneDayLeave, setIsOneDayLeave] = useState<boolean | boolean[]>();
   const [principalOrFundaAppAdmin, setPrincipalOrFundaAppAdmin] = useState();
+
   const {
     control,
     // register: reassignClassRegister,
@@ -229,7 +230,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           ? allAbsenteeClasses?.[0]?.absentDate.toString()
           : ''
       );
-      setEndDate(allAbsenteeClasses?.[0]?.absentDateEnd as Date);
+      setEndDate(new Date(allAbsenteeClasses?.[0]?.absentDateEnd as string));
 
       setReassignClassValue('reason', allAbsenteeClasses?.[0]?.reason);
     }
@@ -365,6 +366,35 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         reassignedClassroomGroups?.map(async (item) => {
           setIsLoading(true);
           if (item?.absenteeId) {
+            if (principalOrFundaAppAdmin) {
+              await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
+                item?.absenteeId,
+                false,
+                item?.practitioner,
+                reason,
+                new Date(selectedDate),
+                endDate || new Date(selectedDate),
+                true,
+                principalOrFundaAppAdmin
+              );
+
+              await refreshClassroom();
+              await appDispatch(
+                practitionerThunkActions.getAllPractitioners({})
+              ).unwrap();
+              setIsLoading(false);
+
+              if (principalPractitioner) {
+                history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+                return;
+              }
+              history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+                practitionerId,
+              });
+
+              return;
+            }
+
             await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
               item?.absenteeId,
               false,
@@ -401,7 +431,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             new Date(selectedDate),
             userData?.id!,
             item?.classroomId,
-            endDate || new Date(selectedDate)
+            endDate || new Date(selectedDate),
+            '',
+            '',
+            principalOrFundaAppAdmin
           );
         });
 
@@ -414,6 +447,35 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         const absenteeId = allAbsenteeClasses?.[0].absenteeId;
         setIsLoading(true);
         if (absenteeId) {
+          if (principalOrFundaAppAdmin) {
+            await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
+              absenteeId,
+              false,
+              practitioner2,
+              reason,
+              new Date(selectedDate),
+              endDate || new Date(selectedDate),
+              true,
+              principalOrFundaAppAdmin
+            );
+
+            await refreshClassroom();
+            await appDispatch(
+              practitionerThunkActions.getAllPractitioners({})
+            ).unwrap();
+            setIsLoading(false);
+
+            if (principalPractitioner) {
+              history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+              return;
+            }
+            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+              practitionerId,
+            });
+
+            return;
+          }
+
           await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
             absenteeId,
             false,
@@ -440,6 +502,42 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
 
           return;
         }
+        if (principalPractitioner) {
+          setIsLoading(true);
+          await new ClassroomGroupService(
+            userAuth.auth_token
+          ).updateReassignClassroomGroup(
+            practitioner,
+            practitioner2,
+            reason,
+            new Date(selectedDate),
+            userData?.id!,
+            '',
+            endDate || new Date(selectedDate),
+            '',
+            '',
+            principalOrFundaAppAdmin
+          );
+
+          await refreshClassroom();
+          await appDispatch(
+            practitionerThunkActions.getAllPractitioners({})
+          ).unwrap();
+
+          setIsLoading(false);
+
+          if (principalPractitioner) {
+            history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
+            return;
+          }
+
+          history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+            practitionerId,
+          });
+
+          return;
+        }
+
         setIsLoading(true);
         await new ClassroomGroupService(
           userAuth.auth_token
@@ -450,7 +548,10 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           new Date(selectedDate),
           userData?.id!,
           '',
-          endDate || new Date(selectedDate)
+          endDate || new Date(selectedDate),
+          '',
+          '',
+          principalOrFundaAppAdmin
         );
 
         await refreshClassroom();
@@ -559,7 +660,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                     setEndDate(date);
                   }}
                   dateFormat="EEE, dd MMM yyyy"
-                  // minDate={new Date(selectedDate as string)}
+                  minDate={new Date(selectedDate as string)}
                 />
               </>
             )}

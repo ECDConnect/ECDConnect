@@ -153,6 +153,64 @@ export const getPointsSummariesForActivity = (id: string) =>
     }
   );
 
+// Returns the last 12 months of summaries for a specific activity
+export const getPointsSummaryForYear = () =>
+  createSelector(
+    (state: RootState) => state.points.pointsSummary,
+    (state: RootState) => state.points.pointsLibrary,
+    (state: RootState) => state.practitioner.practitioner,
+    (
+      pointsSummary: PointsUserSummary[],
+      pointsLibrary: PointsLibrary[],
+      practitioner: PractitionerDto | undefined
+    ) => {
+      const pointsSummaries: PointsSummaryDto[] = [];
+      const year = new Date().getFullYear();
+
+      pointsLibrary.forEach((activity) => {
+        const activitySummaries = pointsSummary.filter(
+          (x) => x.year == year && x.pointsLibrary?.id === activity.id
+        );
+
+        const pointsForYear = Math.max(
+          ...activitySummaries.map((x) => x.pointsYTD)
+        );
+
+        const timesScored = activitySummaries.reduce((total, summary) => {
+          return (total += summary.timesScored);
+        }, 0);
+
+        if (pointsForYear > 0) {
+          pointsSummaries.push({
+            pointsLibraryId: activity.id,
+            month: -1,
+            year: year,
+
+            pointsTotal: pointsForYear,
+            pointsYTD: pointsForYear,
+            timesScored: timesScored,
+
+            activity: activity.activity || '',
+            subActivity: activity.subActivity || '',
+            description: activity.description || '',
+            todoDescription: activity.todoDescription || '',
+            maxMonthlyPoints:
+              practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+                ? activity.maxPointsPrincipalMonthly
+                : activity.maxPointsNonPrincipalMonthly,
+            maxYearlyPoints:
+              practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+                ? activity.maxPointsPrincipalYearly
+                : activity.maxPointsNonPrincipalYearly,
+            pointsPerAward: activity.points,
+          });
+        }
+      });
+
+      return pointsSummaries;
+    }
+  );
+
 export const getPointsTotalForYear = () =>
   createSelector(
     (state: RootState) => state.points.pointsSummary,
