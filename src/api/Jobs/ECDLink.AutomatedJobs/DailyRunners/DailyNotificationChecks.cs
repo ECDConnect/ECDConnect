@@ -26,7 +26,7 @@ public class DailyNotificationChecks : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
-            await service.DailyAttendanceNotTrackedNotification();
+            //await service.DailyAttendanceNotTrackedNotification(); //moved to FE function
             
             await service.DailyUnassignedClassesNotification();
             await service.DailyChildrenRegistrationsIncompleteNotification();
