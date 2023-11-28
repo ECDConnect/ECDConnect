@@ -106,13 +106,13 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const onboardingNotCompleted = completedSteps?.length < 8;
   const twoWeeksAgo = addDays(new Date(), -14);
   const fourWeeksAgo = addDays(new Date(), -28);
-  const smartSpaceLicenseDate = timeline?.smartSpaceLicenseDate
-    ? new Date(timeline?.smartSpaceLicenseDate)
+  const starterLicenseDate = timeline?.starterLicenseDate
+    ? new Date(timeline?.starterLicenseDate)
     : new Date();
   const onboardingIncompleteAfter2Weeks =
-    onboardingNotCompleted && smartSpaceLicenseDate < twoWeeksAgo;
+    onboardingNotCompleted && starterLicenseDate < twoWeeksAgo;
   const onboardingIncompleteAfter4Weeks =
-    onboardingNotCompleted && smartSpaceLicenseDate < fourWeeksAgo;
+    onboardingNotCompleted && starterLicenseDate < fourWeeksAgo;
 
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
