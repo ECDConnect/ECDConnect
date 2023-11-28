@@ -12,7 +12,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import {
   ClubActivities,
   LeagueType,
@@ -22,7 +22,7 @@ import {
 import PositiveEmoticon from '@/assets/positive-bonus-emoticon.png';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
-import { useDialog } from '@ecdlink/core';
+import { useDialog, usePrevious } from '@ecdlink/core';
 import { AddEventOrMeetingDialog } from './0-components/add-event-or-meeting-dialog';
 import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
@@ -40,11 +40,14 @@ import { useAppDispatch } from '@/store';
 import { clubSelectors, clubThunkActions } from '@/store/club';
 import { getTermNumberForCurrentMonth } from '@/utils/club';
 import { OfflineAlert } from '@/components/offline-alert';
+import { SupportRoleAlert } from './0-components/support-role-alert';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
   const user = useSelector(userSelectors.getUser);
   const coach = useSelector(coachSelectors.getCoach);
+
+  const previousClub = usePrevious(club);
 
   const clubId = club?.id ?? '';
 
@@ -136,6 +139,37 @@ export const ClubTab: React.FC = () => {
       return;
     }
   };
+
+  const showSupportRoleAlert = useCallback(() => {
+    if (
+      isSupportRole &&
+      club?.clubSupport?.isNewInSupportRole &&
+      !previousClub
+    ) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <SupportRoleAlert
+              practitionerId={club?.clubSupport?.practitionerId ?? ''}
+              onClose={onClose}
+            />
+          );
+        },
+      });
+    }
+  }, [
+    club?.clubSupport?.isNewInSupportRole,
+    club?.clubSupport?.practitionerId,
+    dialog,
+    isSupportRole,
+    previousClub,
+  ]);
+
+  useEffect(() => {
+    showSupportRoleAlert();
+  }, [showSupportRoleAlert]);
 
   useEffect(() => {
     if (isOnline && (isLeader || isSupportRole)) {

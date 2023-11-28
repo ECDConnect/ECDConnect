@@ -39,3 +39,7 @@ export interface ActivityLeaveNoOneBehindDetailsInput {
 export interface ActivityChildAttendanceDetailsInput {
   clubId: string;
 }
+
+export interface UpdateClubSupportStatusInput {
+  practitionerId: string;
+}
