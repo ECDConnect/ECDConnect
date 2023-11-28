@@ -517,6 +517,8 @@ const clubSlice = createSlice({
       state.addClubMeetingSyncInputs = [];
     });
     builder.addCase(getClubForUser.fulfilled, (state, action) => {
+      if (!action.payload) return;
+
       state.clubForPractitioner = {
         ...state.clubForPractitioner,
         dateLoaded: new Date().toLocaleDateString(),
