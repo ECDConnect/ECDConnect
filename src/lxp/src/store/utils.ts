@@ -3,31 +3,31 @@ import { Status, ThunkActionStatuses } from './types';
 
 export const setThunkActionStatus = (
   builder: ActionReducerMapBuilder<any>,
-  action: any
-) =>
-  builder
-    .addCase(action.pending, (state, currentAction) => {
-      const actionType = getActionName(currentAction.type);
+  action: any,
+  removeRejectedStatus: boolean = false
+) => {
+  builder.addCase(action.pending, (state, currentAction) => {
+    const actionType = getActionName(currentAction.type);
 
-      const previousStatus =
-        typeof state.status === 'object' ? state.status : [];
+    const previousStatus = typeof state.status === 'object' ? state.status : [];
 
-      const newStatus = previousStatus?.filter(
-        (currentStatus: Status) => currentStatus?.actionName !== actionType
-      );
+    const newStatus = previousStatus?.filter(
+      (currentStatus: Status) => currentStatus?.actionName !== actionType
+    );
 
-      const status = [
-        ...newStatus,
-        {
-          actionName: actionType,
-          value: ThunkActionStatuses.Pending,
-        },
-      ];
+    const status = [
+      ...newStatus,
+      {
+        actionName: actionType,
+        value: ThunkActionStatuses.Pending,
+      },
+    ];
 
-      state.status = status;
-      state.error = undefined;
-    })
-    .addCase(action.rejected, (state, currentAction) => {
+    state.status = status;
+    state.error = undefined;
+  });
+  if (!removeRejectedStatus) {
+    builder.addCase(action.rejected, (state, currentAction) => {
       const actionType = getActionName(currentAction.type);
 
       const previousStatus = state.status || [];
@@ -47,6 +47,8 @@ export const setThunkActionStatus = (
       state.status = status;
       state.error = currentAction?.payload?.message;
     });
+  }
+};
 
 export const getActionName = (actionType: string) => {
   const [name] = actionType.split('/');

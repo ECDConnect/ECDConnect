@@ -165,8 +165,8 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
               placeholderText="Tap to choose a date"
               selected={date}
               onChange={setDate}
-              minDate={minDate}
-              maxDate={currentDate}
+              minDate={hasMeetingHappened ? minDate : currentDate}
+              maxDate={hasMeetingHappened ? currentDate : undefined}
             />
           )}
           {hasMeetingHappened !== undefined && hasMeetingInCurrentMonth && (
