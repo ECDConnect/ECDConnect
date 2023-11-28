@@ -163,7 +163,7 @@ const clubSlice = createSlice({
           ...state.clubForPractitioner.club,
           clubSupport: {
             ...state?.clubForPractitioner?.club?.clubSupport,
-            isNewInSupportRole: true,
+            isNewInSupportRole: false,
           },
         } as DetailClubDto,
       };

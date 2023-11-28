@@ -143,7 +143,7 @@ export const ClubTab: React.FC = () => {
   const showSupportRoleAlert = useCallback(() => {
     if (
       isSupportRole &&
-      !club?.clubSupport?.isNewInSupportRole &&
+      club?.clubSupport?.isNewInSupportRole &&
       !previousClub
     ) {
       return dialog({
