@@ -117,6 +117,7 @@ export const setStep = (
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
         (notShowButtonRules || nextStep === status) &&
+        status !== franchisorAgreement &&
         status !== register3Children
           ? true
           : false,
