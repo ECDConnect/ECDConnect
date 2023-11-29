@@ -146,136 +146,83 @@ export const AddPractitioner = ({
         title={'Add practitioner'}
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
-      ></BannerWrapper>
-      <div className="wrapper-with-sticky-button">
-        <div className="flex w-full flex-wrap justify-center">
-          <div className="mt-4 flex w-11/12 flex-col gap-4">
-            <div>
-              {preferId && (
-                <FormInput<AddPractitionerModel>
-                  label={'ID number'}
-                  visible={true}
-                  nameProp={'idNumber'}
-                  register={register}
-                  error={errors['idNumber']}
-                  placeholder={'E.g. 7601010338089'}
-                />
-              )}
+      >
+        <div className="wrapper-with-sticky-button">
+          <div className="flex w-full flex-wrap justify-center">
+            <div className="mt-4 flex w-11/12 flex-col gap-4">
               <div>
-                {!preferId && (
-                  <FormInput<AddPractitionerModel>
-                    label={'Passport number'}
-                    visible={true}
-                    nameProp={'passport'}
-                    error={errors['passport']}
-                    register={register}
-                  />
-                )}
-                {!preferId && (
-                  <Button
-                    className={'mt-3 mb-2'}
-                    type="outlined"
-                    color="primary"
-                    background={'transparent'}
-                    size="small"
-                    text="Enter ID number instead"
-                    onClick={() => setValue('preferId', true)}
-                  />
-                )}
                 {preferId && (
-                  <Button
-                    className={'mt-3 mb-2'}
-                    type="outlined"
-                    color="primary"
-                    size="small"
-                    background={'transparent'}
-                    text="Enter passport number instead"
-                    onClick={() => setValue('preferId', false)}
+                  <FormInput<AddPractitionerModel>
+                    label={'ID number'}
+                    visible={true}
+                    nameProp={'idNumber'}
+                    register={register}
+                    error={errors['idNumber']}
+                    placeholder={'E.g. 7601010338089'}
                   />
                 )}
-              </div>
-            </div>
-
-            <FormInput<AddPractitionerModel>
-              label={'First name'}
-              visible={true}
-              nameProp={'firstName'}
-              placeholder="First Name"
-              error={errors['firstName']}
-              register={register}
-            />
-            <FormInput<AddPractitionerModel>
-              label={'Surname'}
-              placeholder="Surname/Family name"
-              visible={true}
-              nameProp={'surname'}
-              error={errors['surname']}
-              register={register}
-            />
-            {isValidPractitioner === false && (
-              <div className="mb-8">
-                <Alert
-                  type={'error'}
-                  title={'We do not have this practitioner on record.'}
-                  list={[
-                    'Check if the ID you entered is correct.',
-                    'Make sure the practitioner is a SmartStarter.',
-                    'If you have entered the correct information, contact the call centre or tap Skip to solve the problem later.',
-                  ]}
-                  button={
-                    <Button
-                      text="Contact call centre"
-                      icon="PhoneIcon"
-                      type={'filled'}
-                      color={'primary'}
-                      textColor={'white'}
-                      onClick={() => callForHelp()}
+                <div>
+                  {!preferId && (
+                    <FormInput<AddPractitionerModel>
+                      label={'Passport number'}
+                      visible={true}
+                      nameProp={'passport'}
+                      error={errors['passport']}
+                      register={register}
                     />
-                  }
-                />
-              </div>
-            )}
-
-            {addNote && (
-              <div>
-                <Alert
-                  type={'error'}
-                  title={addNote}
-                  list={[
-                    'Check if the ID you entered is correct.',
-                    'Make sure the practitioner is still in your programme.',
-                    'If your practitioner needs help, please contact the SmartStart call centre.',
-                  ]}
-                  button={
+                  )}
+                  {!preferId && (
                     <Button
-                      text="Contact call centre"
-                      icon="PhoneIcon"
-                      type={'filled'}
-                      color={'primary'}
-                      textColor={'white'}
-                      onClick={() => callForHelp()}
+                      className={'mt-3 mb-2'}
+                      type="outlined"
+                      color="primary"
+                      background={'transparent'}
+                      size="small"
+                      text="Enter ID number instead"
+                      onClick={() => setValue('preferId', true)}
                     />
-                  }
-                />
+                  )}
+                  {preferId && (
+                    <Button
+                      className={'mt-3 mb-2'}
+                      type="outlined"
+                      color="primary"
+                      size="small"
+                      background={'transparent'}
+                      text="Enter passport number instead"
+                      onClick={() => setValue('preferId', false)}
+                    />
+                  )}
+                </div>
               </div>
-            )}
 
-            {!addNote && isPractitionerRegistered !== undefined && (
-              <div>
-                <Alert
-                  type={isPractitionerRegistered ? 'success' : 'error'}
-                  title={
-                    isPractitionerRegistered
-                      ? 'This practitioner is registered on Funda app.'
-                      : 'This practitioner is not registered on Funda App. Ask all of your SmartStart practitioners to register.'
-                  }
-                  list={[
-                    isPractitionerRegistered
-                      ? 'Practitioner has been notified.'
-                      : 'If your practitioner needs help, please contact the SmartStart call centre.',
-                  ]}
-                  button={
-                    !isPractitionerRegistered ? (
+              <FormInput<AddPractitionerModel>
+                label={'First name'}
+                visible={true}
+                nameProp={'firstName'}
+                placeholder="First Name"
+                error={errors['firstName']}
+                register={register}
+              />
+              <FormInput<AddPractitionerModel>
+                label={'Surname'}
+                placeholder="Surname/Family name"
+                visible={true}
+                nameProp={'surname'}
+                error={errors['surname']}
+                register={register}
+              />
+              {isValidPractitioner === false && (
+                <div className="mb-8">
+                  <Alert
+                    type={'error'}
+                    title={'We do not have this practitioner on record.'}
+                    list={[
+                      'Check if the ID you entered is correct.',
+                      'Make sure the practitioner is a SmartStarter.',
+                      'If you have entered the correct information, contact the call centre or tap Skip to solve the problem later.',
+                    ]}
+                    button={
                       <Button
                         text="Contact call centre"
                         icon="PhoneIcon"
@@ -284,41 +231,95 @@ export const AddPractitioner = ({
                         textColor={'white'}
                         onClick={() => callForHelp()}
                       />
-                    ) : (
-                      <></>
-                    )
-                  }
-                />
-              </div>
-            )}
-          </div>
-          <div className="-mb-4 mt-4 w-11/12 self-end">
-            <Button
-              size="normal"
-              className="mb-4 w-full"
-              type="filled"
-              color="primary"
-              text="Save"
-              textColor="white"
-              icon="SaveIcon"
-              disabled={!isValid || isValidPractitioner === false || addNote}
-              onClick={onSubmitAddPractitioner}
-            />
-            {isValidPractitioner === false && (
+                    }
+                  />
+                </div>
+              )}
+
+              {addNote && (
+                <div>
+                  <Alert
+                    type={'error'}
+                    title={addNote}
+                    list={[
+                      'Check if the ID you entered is correct.',
+                      'Make sure the practitioner is still in your programme.',
+                      'If your practitioner needs help, please contact the SmartStart call centre.',
+                    ]}
+                    button={
+                      <Button
+                        text="Contact call centre"
+                        icon="PhoneIcon"
+                        type={'filled'}
+                        color={'primary'}
+                        textColor={'white'}
+                        onClick={() => callForHelp()}
+                      />
+                    }
+                  />
+                </div>
+              )}
+
+              {!addNote && isPractitionerRegistered !== undefined && (
+                <div>
+                  <Alert
+                    type={isPractitionerRegistered ? 'success' : 'error'}
+                    title={
+                      isPractitionerRegistered
+                        ? 'This practitioner is registered on Funda app.'
+                        : 'This practitioner is not registered on Funda App. Ask all of your SmartStart practitioners to register.'
+                    }
+                    list={[
+                      isPractitionerRegistered
+                        ? 'Practitioner has been notified.'
+                        : 'If your practitioner needs help, please contact the SmartStart call centre.',
+                    ]}
+                    button={
+                      !isPractitionerRegistered ? (
+                        <Button
+                          text="Contact call centre"
+                          icon="PhoneIcon"
+                          type={'filled'}
+                          color={'primary'}
+                          textColor={'white'}
+                          onClick={() => callForHelp()}
+                        />
+                      ) : (
+                        <></>
+                      )
+                    }
+                  />
+                </div>
+              )}
+            </div>
+            <div className="-mb-4 mt-4 w-11/12 self-end">
               <Button
                 size="normal"
                 className="mb-4 w-full"
-                type="outlined"
+                type="filled"
                 color="primary"
-                text="Skip"
-                textColor="primary"
-                icon="ArrowCircleRightIcon"
-                onClick={handleReset}
+                text="Save"
+                textColor="white"
+                icon="SaveIcon"
+                disabled={!isValid || isValidPractitioner === false || addNote}
+                onClick={onSubmitAddPractitioner}
               />
-            )}
+              {isValidPractitioner === false && (
+                <Button
+                  size="normal"
+                  className="mb-4 w-full"
+                  type="outlined"
+                  color="primary"
+                  text="Skip"
+                  textColor="primary"
+                  icon="ArrowCircleRightIcon"
+                  onClick={handleReset}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </BannerWrapper>
     </div>
   );
 };

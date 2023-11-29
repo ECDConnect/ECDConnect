@@ -712,7 +712,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
         _mappedEntities = await GetMappedEntities(null, true, true);
         int trackingDays = 2;
-        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
+        string attendanceUrl = $"{Constants.SSIntegrationSettings.SLChildAttendanceRegister}{Constants.SSIntegrationSettings.Upsert}{Constants.SSIntegrationSettings.CreateMultiple}";
         var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
 
         DateTime trackingDate = DateTime.Now;
@@ -1498,17 +1498,24 @@ public class SmartStartIntegrationService : IIntegrationService
 
                     if (childHierarchy != null)
                     {
-                        //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
-                        childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
-                        //update hierarchy not be 0.466. but 0.1.455.459.
-                        childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
-                        childHierarchy.Hierarchy = childNewHierarchy;
-                        childHierarchy.ParentId = newPractitioner.UserId;
-                        staticHierarchyRepo.Update(childHierarchy);
-                        //uppdate child record Hierarchy
-                        Child updatedChild = childRepo.GetByUserId(child.UserId);
-                        updatedChild.Hierarchy = childNewHierarchy;
-                        childRepo.Update(updatedChild);
+                        if (childHierarchy.NamedTypePath == "System.Child.")
+                        {
+                            //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
+                            childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                            //update hierarchy not be 0.466. but 0.1.455.459.
+                            childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
+                            childHierarchy.Hierarchy = childNewHierarchy;
+                            childHierarchy.ParentId = newPractitioner.UserId;
+                            staticHierarchyRepo.Update(childHierarchy);
+                            //uppdate child record Hierarchy
+                            Child updatedChild = childRepo.GetByUserId(child.UserId);
+                            updatedChild.Hierarchy = childNewHierarchy; // Why do we store a duplicate of the hierarchy on the child entry?
+                            childRepo.Update(updatedChild);
+                        }
+                        else
+                        {
+                            // TODO: Might need to handle scenario of child moving to a different practitioner
+                        }
                     }
 
                     //also align consent - CreatedByUserId must match the practitioner owning child
