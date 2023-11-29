@@ -9,6 +9,7 @@ import {
 import { CalendarState } from './calendar.types';
 import { calendarConvert } from './calendar.util';
 import { CalendarEventModelInputModel } from '@ecdlink/core';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: CalendarState = {
   events: [],
@@ -25,6 +26,7 @@ const calendarSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, updateCalendarEvent, true);
     builder.addCase(getCalendarEventTypes.fulfilled, (state, action) => {
       state.eventTypes = action.payload;
     });
@@ -34,6 +36,8 @@ const calendarSlice = createSlice({
     });
 
     builder.addCase(updateCalendarEvent.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
       if (!state.events) {
         state.events = [];
       }
