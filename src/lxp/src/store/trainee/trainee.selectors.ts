@@ -5,6 +5,7 @@ import {
   Question,
   SectionQuestions,
 } from '@/pages/trainee/trainee-onboarding/components/startup-support-agreement/startup-accept-agreement.types';
+import { useEffect } from 'react';
 
 export const getTrainee = (state: RootState): TraineeDto | undefined =>
   state.trainee.trainee;

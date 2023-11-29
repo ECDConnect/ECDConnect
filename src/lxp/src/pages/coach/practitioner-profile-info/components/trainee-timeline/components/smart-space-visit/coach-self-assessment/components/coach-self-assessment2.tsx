@@ -18,6 +18,7 @@ export const CoachSelfAssessment2: React.FC<CoachSelfAssessment1Props> = ({
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerUserId!)
   );
+
   const [uncompletedSelfAssessment] = timeline?.selfAssessmentVisits ?? [];
   const dueDate = new Date(uncompletedSelfAssessment?.plannedVisitDate);
 
@@ -29,10 +30,14 @@ export const CoachSelfAssessment2: React.FC<CoachSelfAssessment1Props> = ({
         color={'textDark'}
         className={'mt-3'}
       />
-      {dueDate && (
+      {uncompletedSelfAssessment && dueDate && (
         <Typography
           type={'body'}
-          text={dueDate ? `Due date: ${format(dueDate, 'dd MMM yyyy')}` : ``}
+          text={
+            dueDate
+              ? `Due date: ${format(new Date(dueDate), 'dd MMM yyyy')}`
+              : ``
+          }
           color={'textMid'}
           className={'mb-3'}
         />
