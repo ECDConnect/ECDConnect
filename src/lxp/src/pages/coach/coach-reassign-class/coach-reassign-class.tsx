@@ -11,10 +11,7 @@ import {
 } from '@ecdlink/ui';
 import DatePicker from 'react-datepicker';
 import { useHistory, useLocation } from 'react-router';
-import {
-  ReassignClassPageState,
-  yesNoOptions,
-} from './coach-reassign-class.types';
+import { ReassignClassPageState } from './coach-reassign-class.types';
 import ROUTES from '@routes/routes';
 import { format } from 'date-fns';
 import { useStoreSetup } from '@hooks/useStoreSetup';
@@ -143,7 +140,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       classroomGroups?.filter(
         (item) => item?.userId === absenteePractitioner?.userId
       ),
-    [absenteePractitioner, classroomGroups]
+    []
   );
   const practitionerProgramme = useMemo(
     () => practitionerClassroomGroups?.[0]?.classroom?.name,
