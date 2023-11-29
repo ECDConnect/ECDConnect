@@ -98,7 +98,7 @@ namespace ECDLink.Security.Api
         private bool checkHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
         {
 #if DEBUG
-            return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress) || hostAddress.Contains("localhost:5001");
+            return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress);
 #endif
             return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress);
         }
