@@ -23,19 +23,22 @@ namespace ECDLink.Security.Api
         private readonly IPasswordManager<ApplicationUser> _passwordManager;
         private readonly ShortUrlManager _shortUrlManager;
         private readonly SecurityNotificationManager _notificationManager;
+        private readonly SecurityManager _securityManager;
 
         public InvitationController(
           ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           ITokenManager<ApplicationUser, SecurityCodeTokenManager> securityCodeManager,
           IPasswordManager<ApplicationUser> passwordManager,
           ShortUrlManager shortUrlManager,
-          SecurityNotificationManager notificationManager)
+          SecurityNotificationManager notificationManager,
+          SecurityManager securityManager)
         {
             _invitationManager = invitationManager;
             _securityCodeManager = securityCodeManager;
             _passwordManager = passwordManager;
             _shortUrlManager = shortUrlManager;
             _notificationManager = notificationManager;
+            _securityManager = securityManager;
         }
 
         [Route("accept-invitation")]
@@ -57,7 +60,14 @@ namespace ECDLink.Security.Api
                 return BadRequest();
             }
 
-            await _passwordManager.AddPasswordAsync(user, invitationModel.Password);
+            if (string.IsNullOrWhiteSpace(user.PasswordHash))
+            {
+                await _passwordManager.AddPasswordAsync(user, invitationModel.Password);
+            } else
+            {
+                await _securityManager.ChangePasswordAsync(user, invitationModel.Password);
+            }
+          
 
             _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
 
