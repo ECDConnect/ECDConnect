@@ -49,6 +49,7 @@ import {
 } from 'date-fns';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import { clubSelectors } from '@/store/club';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -78,8 +79,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
 
-  // TODO: change this when we have the real data
-  const isAssignedToAClub = false;
+  const practitionerClub = useSelector(
+    clubSelectors.getClubByIdSelector(practitioner?.clubId || '')
+  );
 
   const timelineStepsArray = timelineSteps(
     timeline!,
@@ -509,7 +511,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   listItems?.push({
     title: 'Club',
     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-    subTitle: isAssignedToAClub ? '{clubName}' : 'Not assigned to a club',
+    subTitle: !!practitionerClub
+      ? practitionerClub.name
+      : 'Not assigned to a club',
     subTitleStyle:
       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
     menuIcon: 'UserGroupIcon',
@@ -527,7 +531,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     onActionClick: () =>
       history.push(
         ROUTES.COMMUNITY.CLUB.MEMBER[
-          isAssignedToAClub ? 'ROOT' : 'ADD'
+          !!practitionerClub ? 'ROOT' : 'ADD'
         ].replace(':practitionerId', practitionerId)
       ),
     classNames: 'bg-uiBg',
