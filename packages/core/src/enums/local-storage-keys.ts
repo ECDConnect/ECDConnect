@@ -4,6 +4,8 @@ export enum LocalStorageKeys {
   theme = 'ECDTheme',
   practitionerProfilePicture = 'PractitionerProfilePicture',
   practitionerProgrammePicture = 'PractitionerProgrammePicture',
+  hasViewedJulProgressReport = 'HasViewedJulProgressReport',
+  hasViewedDecProgressReport = 'HasViewedDecProgressReport',
   attendanceTutorialComplete = 'AttendanceTutorialComplete',
   hasClosedAttendanceSmartStartPointsMessage = 'HasClosedAttendanceSmartStartPointsMessage',
   HasTrackedChildProgressBefore = 'HasTrackedChildProgressBefore',
