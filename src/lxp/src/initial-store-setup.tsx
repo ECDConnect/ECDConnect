@@ -254,6 +254,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
     ).unwrap();
 
+    // POINTS
+    (async () =>
+      await appDispatch(
+        pointsThunkActions.getPointsLibrary({
+          userId: userData?.id!,
+        })
+      ).unwrap())();
+
     setStaticDataLoading(false);
   };
 
@@ -413,13 +421,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               userId: userData?.id!,
               startDate: oneYearAgo,
               endDate: currentDate,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsLibrary({
-              userId: userData?.id!,
             })
           ).unwrap())();
       }

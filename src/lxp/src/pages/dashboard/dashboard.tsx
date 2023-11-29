@@ -384,6 +384,13 @@ export const Dashboard: React.FC = () => {
    */
   useEffect(() => {
     if (isOnline && !!userData) {
+      (async () =>
+        await appDispatch(
+          pointsThunkActions.getPointsLibrary({
+            userId: userData?.id!,
+          })
+        ).unwrap())();
+
       if (isCoach) {
         (async () =>
           await appDispatch(
@@ -420,13 +427,6 @@ export const Dashboard: React.FC = () => {
               userId: userData?.id!,
               startDate: oneYearAgo,
               endDate: currentDate,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsLibrary({
-              userId: userData?.id!,
             })
           ).unwrap())();
 

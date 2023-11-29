@@ -153,7 +153,6 @@ export const getPointsSummariesForActivity = (id: string) =>
     }
   );
 
-// Returns the last 12 months of summaries for a specific activity
 export const getPointsSummaryForYear = () =>
   createSelector(
     (state: RootState) => state.points.pointsSummary,
@@ -230,10 +229,6 @@ export const getPointsTotalForYear = () =>
         if (!!summariesForActivity && !!summariesForActivity.length) {
           pointsForYear = Math.max(...summariesForActivity);
         }
-
-        console.log(
-          `Library: ${activity.description}, Points YTD = ${pointsForYear}`
-        );
 
         total += pointsForYear;
       });
