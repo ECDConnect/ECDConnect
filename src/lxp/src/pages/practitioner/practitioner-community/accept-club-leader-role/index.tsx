@@ -51,6 +51,11 @@ export const AcceptClubLeaderRole: React.FC = () => {
     )
   );
 
+  const { isLoading: isLoadingClub } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_CLUB_FOR_USER
+  );
+
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
     ClubActions.ACCEPT_NEW_CLUB_LEADER_ROLE
@@ -59,10 +64,12 @@ export const AcceptClubLeaderRole: React.FC = () => {
   const activityId = 'club-leader-agreement';
 
   const membersOptions: DropDownOption<string>[] =
-    club?.clubMembers.map((member) => ({
-      label: `${member.firstName} ${member.surname}`,
-      value: member.userId,
-    })) || [];
+    club?.clubMembers
+      ?.filter((member) => member.userId !== user?.id)
+      ?.map((member) => ({
+        label: `${member.firstName} ${member.surname}`,
+        value: member.userId,
+      })) || [];
 
   const onSubmit = async () => {
     await appDispatch(
@@ -111,6 +118,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoadingClub}
       showBackground={false}
       size="medium"
       renderBorder
@@ -180,6 +188,14 @@ export const AcceptClubLeaderRole: React.FC = () => {
             color="primary"
             textColor="white"
             text="Contact coach"
+            onClick={() =>
+              history.push(
+                ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH.replace(
+                  ':clubId',
+                  club?.id ?? ''
+                ).replace(':coachId', club?.clubCoach.userId!)
+              )
+            }
           />
         }
       />
