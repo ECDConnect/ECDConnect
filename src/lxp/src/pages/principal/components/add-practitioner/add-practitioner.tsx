@@ -166,41 +166,20 @@ export const AddPractitioner = ({
         title={'Add practitioner'}
         onBack={() => history.goBack()}
         displayOffline={!isOnline}
-      ></BannerWrapper>
-      <div className="wrapper-with-sticky-button">
-        <div className="flex w-full flex-wrap justify-center">
-          <div className="mt-4 flex w-11/12 flex-col gap-4">
-            <div>
-              {preferId && (
-                <div className="mt-4 flex items-center justify-between">
-                  <FormInput<AddPractitionerModel>
-                    label={'Practitioner ID number'}
-                    visible={true}
-                    nameProp={'idNumber'}
-                    register={register}
-                    error={errors['idNumber']}
-                    placeholder={'E.g. 7601010338089'}
-                    className="mr-2 w-full pb-2"
-                  />
-                  <div
-                    className={
-                      'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
-                    }
-                    onClick={handleSearch}
-                  >
-                    <SearchIcon className={'w-4 cursor-pointer text-white'} />
-                  </div>
-                </div>
-              )}
+      >
+        <div className="wrapper-with-sticky-button">
+          <div className="flex w-full flex-wrap justify-center">
+            <div className="mt-4 flex w-11/12 flex-col gap-4">
               <div>
-                {!preferId && (
+                {preferId && (
                   <div className="mt-4 flex items-center justify-between">
                     <FormInput<AddPractitionerModel>
-                      label={'Practitioner Passport number'}
+                      label={'Practitioner ID number'}
                       visible={true}
-                      nameProp={'passport'}
-                      error={errors['passport']}
+                      nameProp={'idNumber'}
                       register={register}
+                      error={errors['idNumber']}
+                      placeholder={'E.g. 7601010338089'}
                       className="mr-2 w-full pb-2"
                     />
                     <div
@@ -213,171 +192,195 @@ export const AddPractitioner = ({
                     </div>
                   </div>
                 )}
-                {!preferId && (
-                  <Button
-                    className={'mt-3 mb-2'}
-                    type="outlined"
-                    color="primary"
-                    background={'transparent'}
-                    size="small"
-                    text="Enter ID number instead"
-                    onClick={() => setValue('preferId', true)}
-                  />
-                )}
-                {preferId && (
-                  <Button
-                    className={'mt-3 mb-2'}
-                    type="outlined"
-                    color="primary"
-                    size="small"
-                    background={'transparent'}
-                    text="Enter passport number instead"
-                    onClick={() => setValue('preferId', false)}
-                  />
-                )}
-              </div>
-            </div>
-            {(addNote || isPrincipal) && (
-              <div>
-                <Alert
-                  type={'error'}
-                  title={
-                    isPrincipal
-                      ? 'This practitioner is linked to a different SmartStart programme.'
-                      : addNote
-                  }
-                  list={[
-                    'Check if the ID you entered is correct.',
-                    'Make sure the practitioner is still in your programme.',
-                    'If your practitioner needs help, please contact the SmartStart call centre.',
-                  ]}
-                  button={
+                <div>
+                  {!preferId && (
+                    <div className="mt-4 flex items-center justify-between">
+                      <FormInput<AddPractitionerModel>
+                        label={'Practitioner Passport number'}
+                        visible={true}
+                        nameProp={'passport'}
+                        error={errors['passport']}
+                        register={register}
+                        className="mr-2 w-full pb-2"
+                      />
+                      <div
+                        className={
+                          'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
+                        }
+                        onClick={handleSearch}
+                      >
+                        <SearchIcon
+                          className={'w-4 cursor-pointer text-white'}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  {!preferId && (
                     <Button
-                      text="Contact call centre"
-                      icon="PhoneIcon"
-                      type={'filled'}
-                      color={'primary'}
-                      textColor={'white'}
-                      onClick={() => callForHelp()}
+                      className={'mt-3 mb-2'}
+                      type="outlined"
+                      color="primary"
+                      background={'transparent'}
+                      size="small"
+                      text="Enter ID number instead"
+                      onClick={() => setValue('preferId', true)}
                     />
-                  }
-                />
-              </div>
-            )}
-            {isValidPractitioner === true && !addNote && (
-              <>
-                <FormInput<AddPractitionerModel>
-                  label={'First name'}
-                  visible={true}
-                  nameProp={'firstName'}
-                  placeholder="First Name"
-                  error={errors['firstName']}
-                  register={register}
-                />
-                <FormInput<AddPractitionerModel>
-                  label={'Surname'}
-                  placeholder="Surname/Family name"
-                  visible={true}
-                  nameProp={'surname'}
-                  error={errors['surname']}
-                  register={register}
-                />
-              </>
-            )}
-            {isValidPractitioner === false && !isPrincipal && (
-              <div className="mb-8">
-                <Alert
-                  type={'error'}
-                  title={'We do not have this practitioner on record.'}
-                  list={[
-                    'Check if the ID you entered is correct.',
-                    'Make sure the practitioner is a SmartStarter.',
-                    'If you have entered the correct information, contact the call centre or tap Skip to solve the problem later.',
-                  ]}
-                  button={
+                  )}
+                  {preferId && (
                     <Button
-                      text="Contact call centre"
-                      icon="PhoneIcon"
-                      type={'filled'}
-                      color={'primary'}
-                      textColor={'white'}
-                      onClick={() => callForHelp()}
+                      className={'mt-3 mb-2'}
+                      type="outlined"
+                      color="primary"
+                      size="small"
+                      background={'transparent'}
+                      text="Enter passport number instead"
+                      onClick={() => setValue('preferId', false)}
                     />
-                  }
-                />
+                  )}
+                </div>
               </div>
-            )}
-            {isValidPractitioner === true && !isPrincipal && (
-              <div className="mb-8">
-                <Alert type={'success'} title={'Practitioner found!'} />
-              </div>
-            )}
-            {!addNote &&
-              isPractitionerRegistered !== undefined &&
-              !isPrincipal && (
+              {(addNote || isPrincipal) && (
                 <div>
                   <Alert
-                    type={isPractitionerRegistered ? 'success' : 'error'}
+                    type={'error'}
                     title={
-                      isPractitionerRegistered
-                        ? 'This practitioner is registered on Funda app.'
-                        : 'This practitioner is not registered on Funda App. Ask all of your SmartStart practitioners to register.'
+                      isPrincipal
+                        ? 'This practitioner is linked to a different SmartStart programme.'
+                        : addNote
                     }
                     list={[
-                      isPractitionerRegistered
-                        ? 'Practitioner has been notified.'
-                        : 'If your practitioner needs help, please contact the SmartStart call centre.',
+                      'Check if the ID you entered is correct.',
+                      'Make sure the practitioner is still in your programme.',
+                      'If your practitioner needs help, please contact the SmartStart call centre.',
                     ]}
                     button={
-                      !isPractitionerRegistered ? (
-                        <Button
-                          text="Contact call centre"
-                          icon="PhoneIcon"
-                          type={'filled'}
-                          color={'primary'}
-                          textColor={'white'}
-                          onClick={() => callForHelp()}
-                        />
-                      ) : (
-                        <></>
-                      )
+                      <Button
+                        text="Contact call centre"
+                        icon="PhoneIcon"
+                        type={'filled'}
+                        color={'primary'}
+                        textColor={'white'}
+                        onClick={() => callForHelp()}
+                      />
                     }
                   />
                 </div>
               )}
-          </div>
-          <div className="-mb-4 mt-4 w-11/12 self-end">
-            <Button
-              size="normal"
-              className="mb-4 w-full"
-              type="filled"
-              color="primary"
-              text="Save"
-              textColor="white"
-              icon="SaveIcon"
-              disabled={
-                !isValid ||
-                isValidPractitioner === false ||
-                addNote ||
-                isPrincipal
-              }
-              onClick={onSubmitAddPractitioner}
-            />
-            {isValidPractitioner === false && (
+              {isValidPractitioner === true && !addNote && (
+                <>
+                  <FormInput<AddPractitionerModel>
+                    label={'First name'}
+                    visible={true}
+                    nameProp={'firstName'}
+                    placeholder="First Name"
+                    error={errors['firstName']}
+                    register={register}
+                  />
+                  <FormInput<AddPractitionerModel>
+                    label={'Surname'}
+                    placeholder="Surname/Family name"
+                    visible={true}
+                    nameProp={'surname'}
+                    error={errors['surname']}
+                    register={register}
+                  />
+                </>
+              )}
+              {isValidPractitioner === false && !isPrincipal && (
+                <div className="mb-8">
+                  <Alert
+                    type={'error'}
+                    title={'We do not have this practitioner on record.'}
+                    list={[
+                      'Check if the ID you entered is correct.',
+                      'Make sure the practitioner is a SmartStarter.',
+                      'If you have entered the correct information, contact the call centre or tap Skip to solve the problem later.',
+                    ]}
+                    button={
+                      <Button
+                        text="Contact call centre"
+                        icon="PhoneIcon"
+                        type={'filled'}
+                        color={'primary'}
+                        textColor={'white'}
+                        onClick={() => callForHelp()}
+                      />
+                    }
+                  />
+                </div>
+              )}
+              {isValidPractitioner === true && !isPrincipal && (
+                <div className="mb-8">
+                  <Alert type={'success'} title={'Practitioner found!'} />
+                </div>
+              )}
+              {!addNote &&
+                isPractitionerRegistered !== undefined &&
+                !isPrincipal && (
+                  <div>
+                    <Alert
+                      type={isPractitionerRegistered ? 'success' : 'error'}
+                      title={
+                        isPractitionerRegistered
+                          ? 'This practitioner is registered on Funda app.'
+                          : 'This practitioner is not registered on Funda App. Ask all of your SmartStart practitioners to register.'
+                      }
+                      list={[
+                        isPractitionerRegistered
+                          ? 'Practitioner has been notified.'
+                          : 'If your practitioner needs help, please contact the SmartStart call centre.',
+                      ]}
+                      button={
+                        !isPractitionerRegistered ? (
+                          <Button
+                            text="Contact call centre"
+                            icon="PhoneIcon"
+                            type={'filled'}
+                            color={'primary'}
+                            textColor={'white'}
+                            onClick={() => callForHelp()}
+                          />
+                        ) : (
+                          <></>
+                        )
+                      }
+                    />
+                  </div>
+                )}
+            </div>
+            <div className="-mb-4 mt-4 w-11/12 self-end">
               <Button
                 size="normal"
                 className="mb-4 w-full"
-                type="outlined"
+                type="filled"
                 color="primary"
-                text="Skip"
-                textColor="primary"
-                icon="ArrowCircleRightIcon"
-                onClick={handleReset}
+                text="Save"
+                textColor="white"
+                icon="SaveIcon"
+                disabled={
+                  !isValid ||
+                  isValidPractitioner === false ||
+                  addNote ||
+                  isPrincipal
+                }
+                onClick={onSubmitAddPractitioner}
               />
-            )}
+              {isValidPractitioner === false && (
+                <Button
+                  size="normal"
+                  className="mb-4 w-full"
+                  type="outlined"
+                  color="primary"
+                  text="Skip"
+                  textColor="primary"
+                  icon="ArrowCircleRightIcon"
+                  onClick={handleReset}
+                />
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      </BannerWrapper>
     </div>
   );
 };
