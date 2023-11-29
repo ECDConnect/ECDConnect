@@ -74,10 +74,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     useProgrammePlanningRecommendations();
   const recommendedActivities =
     getCurrentProgrammeRecommendedActivities(programme);
-  const { getAdditionalRecommendedSubCategories } =
-    useProgrammePlanningRecommendations();
-  const additionalRecommendedActivities =
-    getAdditionalRecommendedSubCategories(programme);
+  // const { getAdditionalRecommendedSubCategories } =
+  //   useProgrammePlanningRecommendations();
+  // const additionalRecommendedActivities =
+  //   getAdditionalRecommendedSubCategories(programme);
   const isCurrentDayEmpty =
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
@@ -369,14 +369,18 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     if (plannedActivities) {
       setSkillMixMessage('');
       setImproveProgrammeMessage('');
+
       // Mix skill message
-      if (plannedActivities.length > 9) {
+      if (plannedActivities.length >= 10) {
         setSkillMixMessage(
           'Good job, your programme has a good mix of skills!'
         );
       }
       // Improve programme
-      if (plannedActivities.length > 0 && plannedActivities.length < 9) {
+      if (
+        plannedActivities.length >= 10 &&
+        recommendedActivities.length !== 0
+      ) {
         setImproveProgrammeMessage('Want to improve your programme?');
       }
     }
@@ -387,6 +391,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     plannedActivities,
     setSkillMixMessage,
     setImproveProgrammeMessage,
+    selectedDate,
+    recommendedActivities,
   ]);
 
   const onEditActivityItem = (
