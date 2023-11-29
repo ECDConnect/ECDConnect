@@ -295,7 +295,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           await new ClassroomGroupService(userAuth.auth_token).editAbsentee(
             absenteeId,
             false,
-            practitioner2,
+            practitioner2 || '',
             reason,
             new Date(selectedDate),
             endDate || new Date(selectedDate),
