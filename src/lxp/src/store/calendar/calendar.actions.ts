@@ -8,46 +8,43 @@ import {
 } from '@ecdlink/core';
 import { calendarConvert } from './calendar.util';
 
+export const CalendarActions = {
+  UPDATE_CALENDAR_EVENT: 'updateCalendarEvent',
+};
+
 export const upsertCalendarEvents = createAsyncThunk<
   boolean[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  undefined,
   ThunkApiType<RootState>
->(
-  'upsertCalendarEvents',
-  // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      calendar: { events },
-    } = getState();
+>('upsertCalendarEvents', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    calendar: { events },
+  } = getState();
 
-    try {
-      let promises: Promise<boolean>[] = [];
+  try {
+    let promises: Promise<boolean>[] = [];
 
-      if (userAuth?.auth_token && !!events && events.length > 0) {
-        const service = new CalendarService(userAuth?.auth_token);
-        promises = events
-          .filter((e) => e.__changed === true)
-          .map(async (e) => {
-            return await service.syncCalendarEvent(e);
-          });
-      }
-      return Promise.all(promises);
-    } catch (err) {
-      return rejectWithValue(err);
+    if (userAuth?.auth_token && !!events && events.length > 0) {
+      const service = new CalendarService(userAuth?.auth_token);
+      promises = events
+        .filter((e) => e.__changed === true)
+        .map(async (e) => {
+          return await service.syncCalendarEvent(e);
+        });
     }
+    return Promise.all(promises);
+  } catch (err) {
+    return rejectWithValue(err);
   }
-);
+});
 
 export const getCalendarEventTypes = createAsyncThunk<
   CalendarEventTypeDto[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
   { locale: string },
   ThunkApiType<RootState>
 >(
   'getCalendarEventTypes',
-  // eslint-disable-next-line no-empty-pattern
   async ({ locale }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -80,55 +77,48 @@ export const getCalendarEventTypes = createAsyncThunk<
   }
 );
 
-//        const start = subMonths(new Date().getFullYear(), new Date().getMonth(), 0);
 export const getCalendarEvents = createAsyncThunk<
   CalendarEventModel[],
-  // eslint-disable-next-line @typescript-eslint/ban-types
   { start: Date },
   ThunkApiType<RootState>
->(
-  'getCalendarEvents',
-  // eslint-disable-next-line no-empty-pattern
-  async ({ start }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-      calendar: { events },
-    } = getState();
+>('getCalendarEvents', async ({ start }, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+    calendar: { events },
+  } = getState();
 
-    if (!events || events.length === 0) {
-      try {
-        let events: CalendarEventModel[] | undefined;
+  if (!events || events.length === 0) {
+    try {
+      let events: CalendarEventModel[] | undefined;
 
-        if (userAuth?.auth_token) {
-          const dtos = await new CalendarService(
-            userAuth?.auth_token
-          ).getCalendarEvents(start);
-          events = calendarConvert.CalendarEventDto.CalendarEventModels(dtos);
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!events) {
-          return rejectWithValue('Error getting calendar events');
-        }
-
-        return events;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        const dtos = await new CalendarService(
+          userAuth?.auth_token
+        ).getCalendarEvents(start);
+        events = calendarConvert.CalendarEventDto.CalendarEventModels(dtos);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
+
+      if (!events) {
+        return rejectWithValue('Error getting calendar events');
+      }
+
       return events;
+    } catch (err) {
+      return rejectWithValue(err);
     }
+  } else {
+    return events;
   }
-);
+});
 
 export const updateCalendarEvent = createAsyncThunk<
   CalendarEventModelInputModel,
   CalendarEventModelInputModel,
   ThunkApiType<RootState>
 >(
-  'updateCalendarEvent',
-  // eslint-disable-next-line no-empty-pattern
+  CalendarActions.UPDATE_CALENDAR_EVENT,
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
