@@ -18,7 +18,7 @@ import {
 } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 
-export default function MultiRouteWrapper() {
+export default function AttendanceWrapper() {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -113,7 +113,6 @@ export default function MultiRouteWrapper() {
                 </Button>
               </div>
             )}
-            {/* )} */}
           </div>
         </Card>
       </div>
