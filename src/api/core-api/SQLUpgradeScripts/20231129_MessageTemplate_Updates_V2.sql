@@ -1,0 +1,4 @@
+INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering") VALUES  (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NULL,'push','coach-new-trainees','Help new trainees to complete the onboarding journey.','258a15e6-3736-45ea-875c-48d9377de4c8','You have new trainees!','[[SeeTrainees]]','See trainees',NULL,'info-blue',8);
+
+update "MessageTemplate" set "NotificationColor" = 'blue'  where "TemplateType" = 'coach-new-trainees' and "Protocol" = 'hub';
+update "MessageTemplate" set "NotificationColor" = 'red'  where "TemplateType" = 'removed-from-programme' and "Protocol" = 'hub';

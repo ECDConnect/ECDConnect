@@ -10,6 +10,8 @@ using ECDLink.Api.CoreApi.Services;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Notifications;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -307,6 +309,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IAbsenteeService absenteeService,
+            [Service] INotificationService notificationService,
+            UserManager<ApplicationUser> userManager,
             string practitionerUserId, string classroomId, string reasonForPractitionerLeavingProgrammeId, string reasonDetails, DateTime dateOfRemoval, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -332,8 +336,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     return false;
                 }
-                absenteeService.AddAbsenteeForPractitioner(practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId,null,false, null,null, null, removalHistory.Id);
+                absenteeService.AddAbsenteeForPractitioner(practitionerUserId, reassignment.PractitionerId, "Practitioner removed from programme", dateOfRemoval, uId, reassignment.ClassroomGroupId, null, false, null, null, null, removalHistory.Id);
             }
+
+            List<TagsReplacements> replacements = new List<TagsReplacements>();
+            var classroomRepo = repoFactory.CreateGenericRepository<Classroom>(userContext: uId);
+            var classRoom = classroomRepo.GetById(Guid.Parse(classroomId));
+            if (classRoom != null) {
+                var principalUser = userManager.FindByIdAsync(classRoom.UserId).Result;
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "ProgrammeName",
+                    ReplacementValue = classRoom.Name
+                });
+
+                replacements.Add(new TagsReplacements()
+                {
+                    FindValue = "PrincipalName",
+                    ReplacementValue = principalUser.FirstName + " " + principalUser.Surname
+                }); 
+            }
+
+            var userToSend = userManager.FindByIdAsync(practitionerUserId).Result;
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval, userToSend, "", MessageStatusConstants.Red, replacements, null,true);
 
             return true;
         }

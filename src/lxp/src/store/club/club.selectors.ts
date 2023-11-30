@@ -43,9 +43,9 @@ export const getClubByIdSelector = (clubId: string) =>
       );
 
       if (isCoach) {
-        return state.clubs.clubsForCoach[clubId].club;
+        return state?.clubs?.clubsForCoach?.[clubId]?.club;
       } else {
-        return state.clubs.clubForPractitioner?.club;
+        return state?.clubs?.clubForPractitioner?.club;
       }
     },
     (club) => club

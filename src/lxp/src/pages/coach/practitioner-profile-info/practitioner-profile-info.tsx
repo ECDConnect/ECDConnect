@@ -46,6 +46,7 @@ import {
   isToday,
   isWeekend,
   nextMonday,
+  sub,
 } from 'date-fns';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
@@ -133,7 +134,12 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDate as string)) ||
-      isToday(new Date(item?.absentDate as string))
+      isToday(new Date(item?.absentDate as string)) ||
+      (new Date(item?.absentDateEnd as string) >=
+        sub(new Date(), {
+          days: 8,
+        }) &&
+        item?.absentDate !== item?.absentDateEnd)
   );
 
   const currentDates = validAbsenteesDates?.map((item) => {
@@ -638,6 +644,105 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                       (absence) => absence?.absentDate === item?.absentDate
                     );
 
+                  const absenceIsUntilSevenDaysPast = isPast(
+                    new Date(item?.absentDateEnd as string)
+                  );
+
+                  if (absenceIsUntilSevenDaysPast) {
+                    return (
+                      <>
+                        <Card className={'bg-uiBg mt-4 w-full rounded-xl'}>
+                          <div className={'p-4'}>
+                            <Typography
+                              type={'h1'}
+                              color="textDark"
+                              text={`${practitioner?.user?.firstName} is on leave`}
+                              className={'mt-6 ml-4'}
+                            />
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`Start date:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${format(
+                                  new Date(
+                                    handleComebackDay(item?.absentDate as Date)
+                                  ),
+                                  'd MMM yyyy'
+                                )}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`End date:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${format(
+                                  new Date(
+                                    handleComebackDay(
+                                      item?.absentDateEnd as Date
+                                    )
+                                  ),
+                                  'd MMM yyyy'
+                                )}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                weight="bold"
+                                text={`Reason:`}
+                                className={'mt-4 ml-4'}
+                              />
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`${item?.reason}`}
+                                className={'mt-4'}
+                              />
+                            </div>
+                            {isPrincipal && (
+                              <div className="flex justify-center">
+                                <Button
+                                  type="filled"
+                                  color="primary"
+                                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                                  onClick={call}
+                                >
+                                  {renderIcon(
+                                    'PencilAltIcon',
+                                    'w-5 h-5 color-white text-white mr-1'
+                                  )}
+                                  <Typography
+                                    type="body"
+                                    className="mr-4"
+                                    color="white"
+                                    text={`Contact ${practitioner?.user?.firstName}`}
+                                  ></Typography>
+                                </Button>
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      </>
+                    );
+                  }
+
                   if (absenceIsToday) {
                     return (
                       <>
@@ -1139,9 +1244,8 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   shape="normal"
                   color="secondaryAccent2"
                   type="filled"
-                  onClick={
-                    () => history.push(ROUTES.COACH.NOTES, { practitionerId })
-                    // setCreatePractitionerdNoteVisible(true)
+                  onClick={() =>
+                    history.push(ROUTES.COACH.NOTES, { practitionerId })
                   }
                 >
                   <Typography

@@ -56,6 +56,7 @@ const ROUTES = {
       USER_PROFILE: addPrefix('/user-profile', {
         COACH: '/coach/:coachId',
         LEADER: '/leader/:leaderId',
+        SUPPORT_ROLE: '/support-role/:supportRoleId',
         MEMBER: '/member/:practitionerId',
       }),
       POINTS: addPrefix('/points', {
