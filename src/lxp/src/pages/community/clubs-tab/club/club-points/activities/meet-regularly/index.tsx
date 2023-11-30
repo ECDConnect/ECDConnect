@@ -51,6 +51,7 @@ export const MeetRegularly: React.FC = () => {
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
+  console.log({ details });
   const isCelebratoryMessage =
     details?.points === ClubActivitiesPointsPerLeague.MeetRegularly.All.max;
 
@@ -134,7 +135,7 @@ export const MeetRegularly: React.FC = () => {
           title: monthName,
           subItem: isToShowPoints ? `+ ${item?.points ?? 0}` : '',
           subTitle: item?.meetingAttendancePerc
-            ? `${item?.meetingAttendancePerc}% attendance`
+            ? `${Math.round(item?.meetingAttendancePerc)}% attendance`
             : 'No register submitted',
           alertSeverity: getAlertSeverity(item?.meetingAttendanceColor ?? ''),
           titleStyle: 'text-textDark',
@@ -194,7 +195,7 @@ export const MeetRegularly: React.FC = () => {
             customIcon={<PositiveEmoticon className="w-12" />}
           />
         )}
-        {upcomingMeetings.length && (
+        {!!upcomingMeetings.length && (
           <div className="mt-4">
             <Typography className="mb-5" type="h3" text="Upcoming meetings:" />
             <StackedList
@@ -204,7 +205,7 @@ export const MeetRegularly: React.FC = () => {
             />
           </div>
         )}
-        {pastMeetings.length && (
+        {!!pastMeetings.length && (
           <div className="mt-4 mb-5">
             <Typography className="mb-5" type="h3" text="Past meetings:" />
             <StackedList
