@@ -70,7 +70,7 @@ namespace EcdLink.Api.CoreApi.Services
                 string.Equals(x.MessageTemplateType, notification.MessageTemplateType) && 
                 string.Equals(x.To, notification.To) && 
                 string.Equals(x.MessageProtocol, notification.MessageProtocol) &&
-                x.MessageDate.Value.Date == notification.MessageDate.Value.Date
+                x.MessageDate.Value.Date == notification.MessageDate.Value.Date && x.IsActive == true
             ).Any();
             //check if any exact templates for exact person for exact same date and protocol exists
         }

@@ -354,11 +354,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     FindValue = "PrincipalName",
                     ReplacementValue = principalUser.FirstName + " " + principalUser.Surname
-                }); ;
+                }); 
             }
 
             var userToSend = userManager.FindByIdAsync(practitionerUserId).Result;
-            notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7));
+            notificationService.SendNotificationAsync(null, TemplateTypeConstants.RemovedFromProgramme, dateOfRemoval, userToSend, "", MessageStatusConstants.Red, replacements, DateTime.Now.AddDays(7),true);
 
             return true;
         }
