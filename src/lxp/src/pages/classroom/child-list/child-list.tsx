@@ -1,4 +1,10 @@
-import { ChildDto, LearnerDto, useDialog, getAvatarColor } from '@ecdlink/core';
+import {
+  ChildDto,
+  LearnerDto,
+  useDialog,
+  getAvatarColor,
+  ClassroomGroupDto,
+} from '@ecdlink/core';
 import {
   DialogPosition,
   FADButton,
@@ -44,6 +50,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { coachSelectors } from '@/store/coach';
+import { UNSURE_CLASS } from '@/constants/classroom';
 
 const filterInfo: FilterInfo = {
   filterName: 'Class',
@@ -187,19 +194,21 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
       const groupedItems: SearchDropDownOption<string>[] = isPrincipal
-        ? classroomGroups?.map((groupedItem, idx) =>
-            groupedItem.name === NoPlaygroupClassroomType.name
-              ? {
-                  id: idx.toString(),
-                  label: NoPlaygroupClassroomType.title,
-                  value: groupedItem.id ?? '',
-                }
-              : {
-                  id: idx.toString(),
-                  label: groupedItem.name,
-                  value: groupedItem.id ?? '',
-                }
-          )
+        ? classroomGroups
+            .filter((item: ClassroomGroupDto) => item.name !== UNSURE_CLASS)
+            ?.map((groupedItem, idx) =>
+              groupedItem.name === NoPlaygroupClassroomType.name
+                ? {
+                    id: idx.toString(),
+                    label: NoPlaygroupClassroomType.title,
+                    value: groupedItem.id ?? '',
+                  }
+                : {
+                    id: idx.toString(),
+                    label: groupedItem.name,
+                    value: groupedItem.id ?? '',
+                  }
+            )
         : classroomGroups?.map((groupedItem, idx) =>
             groupedItem.name === NoPlaygroupClassroomType.name
               ? {
@@ -564,7 +573,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       },
     });
   };
-
   return (
     <>
       {children && children.length > 0 && (

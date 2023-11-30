@@ -98,10 +98,11 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       : item;
   });
 
+  // suppress also the unsure class for principal
   const classroomsForPrincipal = [
     ...classroomsForPractitioner,
     ...classroomsByPractitionersForPrincipal,
-  ];
+  ].filter((item: ClassroomGroupDto) => item.name !== UNSURE_CLASS);
 
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     DropDownOption<string>[]

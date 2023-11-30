@@ -37,12 +37,10 @@ export const getProgrammeType = () =>
   );
 
 export const getAllClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
-  state.classroomData.classroomGroups?.filter((x) => x.name !== 'Unsure') || [];
+  state.classroomData.classroomGroups || [];
 
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
-  state.classroomData.classroomGroups?.filter(
-    (x) => x.isActive && x.name !== 'Unsure'
-  ) || [];
+  state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
 
 export const getPrincipal = (state: RootState): PrincipalDto =>
   state.classroomData.principal || ({} as PrincipalDto);
