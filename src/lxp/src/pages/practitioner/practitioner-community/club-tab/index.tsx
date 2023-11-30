@@ -210,11 +210,12 @@ export const ClubTab: React.FC = () => {
     alertSeverity: 'none',
     hideAlertSeverity: true,
     onActionClick: () => {
-      // TODO: update user profile to handle with coach view and practitioner view
-      // history.push(
-      //   ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH
-      //     .replace(':clubId', clubId)
-      //     .replace(':coachId', coacd?.user?.id ?? ''))
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH.replace(
+          ':clubId',
+          clubId
+        ).replace(':coachId', coach?.user?.id ?? '')
+      );
     },
   };
 
@@ -231,13 +232,12 @@ export const ClubTab: React.FC = () => {
     alertSeverity: 'none',
     hideAlertSeverity: true,
     onActionClick: () => {
-      // TODO: update user profile to handle with coach view and practitioner view
-      // history.push(
-      //   ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
-      //     ':clubId',
-      //     clubId
-      //   ).replace(':leaderId', club?.clubLeader?.practitionerId ?? '')
-      // )
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+          ':clubId',
+          clubId
+        ).replace(':leaderId', club?.clubLeader?.practitionerId ?? '')
+      );
     },
   };
 
@@ -254,11 +254,12 @@ export const ClubTab: React.FC = () => {
     alertSeverity: 'none',
     hideAlertSeverity: true,
     onActionClick: () => {
-      // TODO: update user profile to handle with coach view and practitioner view
-      // history.push(
-      // ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER
-      //   .replace(':clubId', clubId)
-      //   .replace(':practitionerId', user?.id ?? ''))
+      history.push(
+        ROUTES.COMMUNITY.CLUB.USER_PROFILE.SUPPORT_ROLE.replace(
+          ':clubId',
+          clubId
+        ).replace(':supportRoleId', club?.clubSupport?.userId ?? '')
+      );
     },
   };
 
@@ -455,7 +456,7 @@ export const ClubTab: React.FC = () => {
 
     return (
       <Alert
-        className="mt-5 mb-7"
+        className="mt-5"
         type="info"
         title="This club is not in a league."
       />

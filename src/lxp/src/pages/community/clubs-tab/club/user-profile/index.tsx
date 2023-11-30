@@ -31,7 +31,7 @@ export const UserProfile: React.FC = () => {
 
   const { height } = useWindowSize();
   const { showMessage } = useSnackbar();
-  const { clubId, leaderId, practitionerId, coachId } =
+  const { clubId, leaderId, practitionerId, coachId, supportRoleId } =
     useParams<ClubsRouteState>();
 
   const { isOnline } = useOnlineStatus();
@@ -47,14 +47,17 @@ export const UserProfile: React.FC = () => {
   const isCoachProfile = !!coachId;
   const isLeaderProfile = !!leaderId;
   const isMemberProfile = !!practitionerId;
+  const isSupportRole = !!supportRoleId;
 
-  // TODO: The support role is not implemented yet; it will be added in the C3 functionality
-  const isSupportRole = false;
+  const clubMember = club?.clubMembers.find((member) => {
+    if (isSupportRole) {
+      return member.userId === supportRoleId;
+    }
 
-  const clubMember = club?.clubMembers.find(
-    (member) =>
+    return (
       member.practitionerId === (isMemberProfile ? practitionerId : leaderId)
-  );
+    );
+  });
 
   const name = isCoachProfile
     ? `${club?.clubCoach.firstName} ${club?.clubCoach.surname}`
