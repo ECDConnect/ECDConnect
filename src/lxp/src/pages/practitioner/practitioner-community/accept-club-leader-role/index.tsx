@@ -63,12 +63,16 @@ export const AcceptClubLeaderRole: React.FC = () => {
 
   const activityId = 'club-leader-agreement';
 
+  const practitionerId = club?.clubMembers?.find(
+    (member) => member.userId === user?.id
+  )?.practitionerId;
+
   const membersOptions: DropDownOption<string>[] =
     club?.clubMembers
       ?.filter((member) => member.userId !== user?.id)
       ?.map((member) => ({
         label: `${member.firstName} ${member.surname}`,
-        value: member.userId,
+        value: member.practitionerId,
       })) || [];
 
   const onSubmit = async () => {
@@ -76,7 +80,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
       acceptNewClubLeaderRole({
         clubId: club?.id ?? '',
         clubSupportPractitionerId: selectedMember ?? '',
-        practitionerId: user?.id ?? '',
+        practitionerId,
       })
     );
   };
@@ -89,6 +93,9 @@ export const AcceptClubLeaderRole: React.FC = () => {
           type: 'error',
         });
       } else {
+        showMessage({
+          message: 'You have accepted the club leader role!',
+        });
         appDispatch(notificationActions.removeNotification(notification!));
         appDispatch(
           disableBackendNotification({
