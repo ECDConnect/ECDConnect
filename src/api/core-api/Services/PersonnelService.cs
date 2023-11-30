@@ -206,7 +206,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerRecord.IsNewInSupportRole = practitioner.ClubSupport.IsNewInSupportRole;
             }
 
-            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth(), DateTime.Now.AddDays(30).Date);
+            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth());
             if (absentees.Any())
             {
                 practitionerRecord.Absentees = absentees;
