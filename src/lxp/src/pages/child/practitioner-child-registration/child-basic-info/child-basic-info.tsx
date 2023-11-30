@@ -1,4 +1,8 @@
-import { FormComponentProps, getAvatarColor } from '@ecdlink/core';
+import {
+  ClassroomGroupDto,
+  FormComponentProps,
+  getAvatarColor,
+} from '@ecdlink/core';
 import {
   Divider,
   Dropdown,
@@ -78,7 +82,12 @@ export const ChildBasicInfo: React.FC<
     ? [...classroomForPractitioner, ...classroomsByPractitionersForPrincipal]
     : allClassroomGroups;
 
-  classroomsForPrincipal = filterUniqueClassrooms(classroomsForPrincipal);
+  // suppress also the unsure class for principal
+  classroomsForPrincipal = filterUniqueClassrooms(
+    classroomsForPrincipal.filter(
+      (item: ClassroomGroupDto) => item.name !== UNSURE_CLASS
+    )
+  );
 
   const [checkChild, setCheckChild] = useState<ChildMatchingDto>();
   const [listItems, setListItems] = useState<UserAlertListDataItem[]>([]);
