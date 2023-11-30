@@ -150,10 +150,10 @@ export default function StatementsWrapper() {
                   type="filled"
                   color="primary"
                   className={'w-6/12'}
-                  icon={'SaveIcon'}
+                  // icon={'SaveIcon'}
                   onClick={() => {}}
                 >
-                  {renderIcon('XIcon', `w-5 h-5 text-white mr-2`)}
+                  {/* {renderIcon('XIcon', `w-5 h-5 text-white mr-2`)} */}
                   <Typography
                     type="help"
                     className="mr-2"
