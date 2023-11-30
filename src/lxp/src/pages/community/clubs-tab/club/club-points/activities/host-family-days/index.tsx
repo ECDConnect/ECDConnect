@@ -56,14 +56,18 @@ export const HostFamilyDays: React.FC = () => {
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
   );
+
+  // Date rules
+  const isEventDeadline = currentMonth <= 9;
   const isLeagueStarts = currentMonth >= 3;
+
   const isClubInALeague = !!club?.league;
 
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
   const isToShowFamilyDayEventButton =
-    isFromAddFamilyDayEvent || isLeader || isSupportRole;
+    (isFromAddFamilyDayEvent || isLeader || isSupportRole) && isEventDeadline;
   const isToShowPoints = isLeagueStarts && isClubInALeague;
 
   const activityId = 'host-family-days';
