@@ -27,9 +27,9 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
   const [visible, setVisible] = useState<boolean>(true);
   const calendarAddEvent = useCalendarAddEvent();
   const practitionerUserId = practitioner?.userId || '';
-  const visitId: string = options.visitId || '';
-  const visitEventId: string = options.visitEventId || '';
-  const plannedVisitDate: string = options.plannedVisitDate || '';
+  const visitId: string = options?.visitId || '';
+  const visitEventId: string = options?.visitEventId || '';
+  const plannedVisitDate: string = options?.plannedVisitDate || '';
 
   useEffect(() => {
     appDispatch(traineeActions?.resetCoachSmartSpaceVisitData());
