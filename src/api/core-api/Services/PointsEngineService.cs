@@ -45,6 +45,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
 
         private readonly IGenericRepository<Classroom, Guid> _classRepo;
+        private readonly IGenericRepository<ClassroomGroup, Guid> _classroomGroupRepo;
 
         private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsIncomeStatementRepo;
 
@@ -52,8 +53,6 @@ namespace EcdLink.Api.CoreApi.Services
 
         private readonly IGenericRepository<Club, Guid> _clubRepo;
         private readonly IGenericRepository<ClubMember, Guid> _clubMemberRepo;
-        private readonly IGenericRepository<ClubLeader, Guid> _clubLeaderRepo;
-        private readonly IGenericRepository<ClubSupport, Guid> _clubSupportRepo;
         private readonly IGenericRepository<PQARating, Guid> _pqaRatingRepo;
         private readonly IGenericRepository<ClubPoints, Guid> _clubPointsRepo;
         private readonly IGenericRepository<ClubPointsLibrary, Guid> _clubPointsLibraryRepo;
@@ -61,6 +60,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
 
         private readonly ChildAttendanceReport _childAttendanceReport;
+        private readonly MonthlyAttendanceReport _monthlyAttendanceReportService;
 
         private VisitManager _visitManager;
         private HierarchyEngine _hierarchyEngine;
@@ -72,12 +72,13 @@ namespace EcdLink.Api.CoreApi.Services
             IGenericRepositoryFactory repositoryFactory,
             ChildAttendanceReport childAttendanceReport,
             VisitManager visitManager,
-            HierarchyEngine hierarchyEngine
-            )
+            HierarchyEngine hierarchyEngine,
+            [Service] MonthlyAttendanceReport monthlyAttendanceReportService)
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
+            _monthlyAttendanceReportService = monthlyAttendanceReportService;
             _uId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
 
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
@@ -96,6 +97,7 @@ namespace EcdLink.Api.CoreApi.Services
             _statementsIncomeStatementRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
 
             _classRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
+            _classroomGroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
             _integrationAuditRepo = _repositoryFactory.CreateRepository<IntegrationAudit>(userContext: _uId);
 
             _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
@@ -103,8 +105,6 @@ namespace EcdLink.Api.CoreApi.Services
             _childAttendanceReport = childAttendanceReport;
             _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
             _clubMemberRepo = _repositoryFactory.CreateGenericRepository<ClubMember>(userContext: _uId);
-            _clubLeaderRepo = _repositoryFactory.CreateGenericRepository<ClubLeader>(userContext: _uId);
-            _clubSupportRepo = _repositoryFactory.CreateGenericRepository<ClubSupport>(userContext: _uId);
             _clubPointsRepo = _repositoryFactory.CreateGenericRepository<ClubPoints>(userContext: _uId);
             _clubPointsLibraryRepo = _repositoryFactory.CreateGenericRepository<ClubPointsLibrary>(userContext: _uId);
 
@@ -1198,7 +1198,7 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
 
-        private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin = false)
+        private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin = false, int? timeScored = null)
         {
             var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
 
@@ -1206,10 +1206,16 @@ namespace EcdLink.Api.CoreApi.Services
             int monthTotal = pointsScoredThisYear.Where(x => x.Month == today.Month).Select(x => x.PointsTotal).Sum() + activity.Points;
             int ytdTotal = pointsScoredThisYear.Select(x => x.PointsTotal).Sum() + activity.Points;
 
-            UpdateUserSummaryPoints(userId, activity, today, isPrincipalOrAdmin, monthTotal, ytdTotal);
+            if (!timeScored.HasValue)
+            {
+                var monthPointsSummary = pointsScoredThisYear.Where(x => x.Month == today.Month).FirstOrDefault();
+                timeScored = monthPointsSummary == null ? 1 : monthPointsSummary.TimesScored + 1;
+            }
+
+            UpdateUserSummaryPoints(userId, activity, today, isPrincipalOrAdmin, monthTotal, ytdTotal, timeScored.Value);
         }
 
-        private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin, int monthTotal, int ytdTotal)
+        private void UpdateUserSummaryPoints(string userId, PointsLibrary activity, DateTime today, bool isPrincipalOrAdmin, int monthTotal, int ytdTotal, int timesScored)
         {
             var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
                         
@@ -1254,7 +1260,7 @@ namespace EcdLink.Api.CoreApi.Services
                             PointsLibraryId = activity.Id,
                             PointsTotal = monthTotal,
                             PointsYTD = ytdTotal,
-                            TimesScored = 1,
+                            TimesScored = timesScored,
                         }
                     );
                 } else
@@ -1263,7 +1269,7 @@ namespace EcdLink.Api.CoreApi.Services
                     record.PointsYTD = ytdTotal;
                     record.UpdatedDate = DateTime.Now;
                     record.UpdatedBy = _uId;
-                    record.TimesScored = record.TimesScored + 1;
+                    record.TimesScored = timesScored;
 
                     UpdateIndividualSummaryUserPoints(record);
                 }
@@ -1387,62 +1393,33 @@ namespace EcdLink.Api.CoreApi.Services
         #region SS_Attendance
         public bool CalculateAttendanceSubmitted(string userId, DateTime today)
         {
-            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
-            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3).FirstOrDefault();
-            List<Classroom> classrooms = _classRepo.GetListByUserId(userId);
+            var pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
+            var activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3).FirstOrDefault();
+            
+            var classrooms = _classroomGroupRepo.GetAll()
+                .Where(x => x.UserId.HasValue && x.UserId.Value.ToString() == userId && x.IsActive)
+                .Select(x => x.Classroom)
+                .Distinct()
+                .ToList();
 
-            var totalExpectedAttendance = 0;
-            var totalChildrenAttendedSessions = 0;
-            foreach (var item in classrooms)
+            var allScores = new List<int>();
+            var timesScored = 0;
+            foreach (var classroom in classrooms)
             {
-                if (item.IsActive)
-                {
-                    var result = _childAttendanceReport.GetClassroomAttendanceOverView(item.Id, userId, today.GetStartOfMonth(), today.GetEndOfDay());
+                var monthlyReport = _monthlyAttendanceReportService.GenerateMonthlyAttendanceReport(userId, classroom, today.GetStartOfMonth(), today.GetEndOfMonth()).SingleOrDefault();
 
-                    totalExpectedAttendance += result.TotalAttendanceStatsReport.TotalSessions;
-                    totalChildrenAttendedSessions += result.TotalAttendanceStatsReport.TotalChildrenAttendedAllSessions;
-                }
+                timesScored += monthlyReport.NumberOfSessions;
+                allScores.Add(monthlyReport.PercentageAttendance);
             }
 
-            // Calculation: points awarded per the percentage of attendance registers submitted.
-            // less than 50 % = 0 points
-
             var perc = 0.0;
-            if (totalChildrenAttendedSessions != 0 && totalExpectedAttendance != 0)
+            if (allScores.Any())
             {
-               perc = Math.Round((double)(totalChildrenAttendedSessions/ (double)(totalExpectedAttendance)) * 100);
+                perc = allScores.Sum() / allScores.Count();
             }
 
             if (perc > 50)
             {
-                PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
-                if (activity_record == null)
-                {
-                    InsertIndividualUserPoints(
-                        new PointsUser
-                        {
-                            Id = Guid.NewGuid(),
-                            IsActive = true,
-                            InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
-                            Month = today.Month,
-                            Year = today.Year,
-                            Points = (int)perc,
-                            UserId = userId,
-                            PointsLibraryId = activity.Id,
-                            Comment = "Total: " + perc
-                        }
-                    );
-                }
-                else
-                {
-                    activity_record.Points = (int)perc;
-                    activity_record.UpdatedDate = DateTime.Now;
-                    activity_record.UpdatedBy = _uId;
-                    activity_record.Comment = "Total: " + perc;
-                    UpdateIndividualUserPoints(activity_record);
-                }
-
                 var practitioner = _practitionerRepo.GetByUserId(userId);
 
                 var pointsScoredThisYear = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == activity.Id).ToList();
@@ -1457,7 +1434,8 @@ namespace EcdLink.Api.CoreApi.Services
                     today,
                     (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value),
                     monthTotal, 
-                    ytdTotal);
+                    ytdTotal,
+                    timesScored);
             }
             return true;
         }
@@ -1503,7 +1481,8 @@ namespace EcdLink.Api.CoreApi.Services
                    userId,
                    feesActivity,
                    pointsMonth,
-                   isPrincipalOrAdmin);
+                   isPrincipalOrAdmin,
+                   practitionerChildrenUserIds.Count());
             }
 
             // THREE SUBMITS IN A ROW
