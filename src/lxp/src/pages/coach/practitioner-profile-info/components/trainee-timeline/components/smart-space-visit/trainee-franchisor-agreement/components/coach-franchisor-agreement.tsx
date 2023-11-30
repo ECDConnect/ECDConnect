@@ -49,10 +49,8 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
     traineeSelectors.getCoachFranchisorAgreementData
   );
   const coachVisitNextSteps = useSelector(
-    traineeSelectors?.getCoachVisitDataNextSteps
+    traineeSelectors?.getCoachFranchiseeAgreementVisitDataNextSteps
   );
-  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-  const smartSpaceVisitId = timeline?.sSCoachVisitId;
 
   const [questions, setAnswers] = useState([
     {
@@ -141,18 +139,6 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
     setAnswers(previousData);
   }, []);
 
-  const fetchSmartSpaceVisitData = useCallback(async () => {
-    await appDispatch(
-      traineeThunkActions.getCoachSmartSpaceVisitData({
-        visitId: smartSpaceVisitId,
-      })
-    );
-  }, [smartSpaceVisitId]);
-
-  useEffect(() => {
-    fetchSmartSpaceVisitData();
-  }, [fetchSmartSpaceVisitData]);
-
   return (
     <div className="p-4">
       <Typography
@@ -171,7 +157,7 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
         />
         <Typography
           type={'body'}
-          text={`• ${coachVisitNextSteps?.questionAnswer}`}
+          text={`• ${coachVisitNextSteps?.questions?.[0]?.answer}`}
           color={'textMid'}
           className={'my-3'}
         />

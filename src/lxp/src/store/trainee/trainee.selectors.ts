@@ -6,6 +6,7 @@ import {
   SectionQuestions,
 } from '@/pages/trainee/trainee-onboarding/components/startup-support-agreement/startup-accept-agreement.types';
 import { useEffect } from 'react';
+import { questions } from '@/pages/coach/coach-practitioner-journey/forms/pre-pqa-visits/programme-observations/questions';
 
 export const getTrainee = (state: RootState): TraineeDto | undefined =>
   state.trainee.trainee;
@@ -150,6 +151,21 @@ export const getCoachVisitDataNextSteps = (
   const programmeDetailsSections = visitData?.find(
     (item) =>
       item?.visitSection === 'Discuss next steps' && item?.questionAnswer !== ''
+  );
+
+  return programmeDetailsSections;
+};
+
+export const getCoachFranchiseeAgreementVisitDataNextSteps = (
+  state: RootState
+): SectionQuestions | null | undefined => {
+  const visitData = state?.trainee?.coachSmartSpaceCheckData as unknown;
+  const visitDataFormatted = visitData as SectionQuestions[];
+
+  const programmeDetailsSections = visitDataFormatted?.find(
+    (item) =>
+      item?.visitSection === 'Discuss next steps' &&
+      item?.questions[0]?.answer !== ''
   );
 
   return programmeDetailsSections;
