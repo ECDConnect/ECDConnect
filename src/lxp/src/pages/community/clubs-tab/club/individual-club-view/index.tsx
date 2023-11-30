@@ -37,7 +37,7 @@ import { addDays, differenceInMonths } from 'date-fns';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
 import { getScoreBarColor } from '../../index.filters';
-import { shouldShowPointsScreen as shouldShowPoints } from '@/utils/club';
+import { shouldShowPoints } from '@/utils/club';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { OfflineAlert } from '@/components/offline-alert';
 import { useDialog } from '@ecdlink/core';
@@ -233,7 +233,7 @@ export const Club: React.FC = () => {
     onActionClick: () => history.push(item.route),
   }));
 
-  const isToShowPointsScreen = shouldShowPoints(isPurpleLeague);
+  const isToShowPointsScreen = shouldShowPoints();
 
   const renderLeagueContent = useMemo(() => {
     if (isClubInALeague) {
@@ -327,7 +327,6 @@ export const Club: React.FC = () => {
     // TODO: integrate these items -> EC-1390, EC-1395, EC-1397 and EC-1398
     const itemsFromBackend = club?.issuesTasks?.filter(
       (item) =>
-        !item?.secondaryText?.includes(IssuesTasks.noClubLeader) &&
         !item?.secondaryText?.includes(IssuesTasks.notAcceptedClubLeader) &&
         !item?.secondaryText?.includes(IssuesTasks.notEnoughClubMembers) &&
         !item?.secondaryText?.includes(IssuesTasks.tooManyClubMembers) &&
@@ -336,7 +335,11 @@ export const Club: React.FC = () => {
     );
 
     // if there is currently no club leader assigned (ie no club leader has been chosen.)
-    if (!currentLeader && !nextLeader && !!club?.clubMembers?.length) {
+    if (
+      itemsFromBackend?.some((item) =>
+        item?.secondaryText?.includes(IssuesTasks.noClubLeader)
+      )
+    ) {
       items.push({
         showIcon: true,
         menuIcon: 'ExclamationCircleIcon',
@@ -444,7 +447,6 @@ export const Club: React.FC = () => {
     );
   }, [
     club?.issuesTasks,
-    club?.clubMembers?.length,
     currentLeader,
     nextLeader,
     isLeaderRequestSent,

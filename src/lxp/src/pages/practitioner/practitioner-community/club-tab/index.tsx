@@ -38,7 +38,7 @@ import { coachSelectors } from '@/store/coach';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
 import { clubSelectors, clubThunkActions } from '@/store/club';
-import { getTermNumberForCurrentMonth } from '@/utils/club';
+import { getTermNumberForCurrentMonth, shouldShowPoints } from '@/utils/club';
 import { OfflineAlert } from '@/components/offline-alert';
 import { SupportRoleAlert } from './0-components/support-role-alert';
 import { getAllNotifications } from '@/store/notifications/notifications.selectors';
@@ -113,6 +113,7 @@ export const ClubTab: React.FC = () => {
     )
   );
   const isSupportRole = club?.clubSupport?.userId === user?.id;
+  const isToShowPointsScreen = shouldShowPoints();
 
   // From EC-1515
   const onAddMeetingOrEvent = () => {
@@ -408,7 +409,7 @@ export const ClubTab: React.FC = () => {
   }));
 
   const renderLeagueContent = useMemo(() => {
-    if (isClubInALeague) {
+    if (isClubInALeague && isToShowPointsScreen) {
       return (
         <div className="mt-7 mb-5">
           <Typography
@@ -456,19 +457,20 @@ export const ClubTab: React.FC = () => {
 
     return (
       <Alert
-        className="mt-5"
+        className="my-5"
         type="info"
         title="This club is not in a league."
       />
     );
   }, [
-    isOnline,
-    club?.maxPointsTotal,
-    club?.pointsTotal,
-    clubId,
-    history,
     isClubInALeague,
+    isToShowPointsScreen,
+    isOnline,
     leagueCard,
+    club?.pointsTotal,
+    club?.maxPointsTotal,
+    history,
+    clubId,
   ]);
 
   const renderActivitiesContent = useMemo(() => {

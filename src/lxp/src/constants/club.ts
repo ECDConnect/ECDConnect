@@ -30,6 +30,9 @@ export const ClubActivitiesPointsPerLeague = {
   MeetRegularly: {
     All: { max: 800, green: 600, amber: 599, red: 0 },
   },
+  BeCreative: {
+    All: { max: 800, green: 600, amber: 599, red: 0 },
+  },
   HostFamilyDays: {
     All: { max: 300, green: 225, amber: 224, red: 0 },
   },

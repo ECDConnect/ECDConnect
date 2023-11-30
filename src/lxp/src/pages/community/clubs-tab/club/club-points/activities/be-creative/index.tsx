@@ -32,6 +32,8 @@ import { getAlertType } from '../0-components/alert-card/utils';
 import { ActivityBeCreativeDetail } from '@ecdlink/graphql';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { ClubActivitiesPointsPerLeague } from '@/constants/club';
+import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 
 export const BeCreative: React.FC = () => {
   const [showAlert, setShowAlert] = useState(false);
@@ -59,6 +61,8 @@ export const BeCreative: React.FC = () => {
     month: 'long',
   });
 
+  const pointsConfig = ClubActivitiesPointsPerLeague.BeCreative.All;
+
   const hasRecordInCurrentMonth = details?.monthlyRecords?.some(
     (record) =>
       record?.monthName?.toLowerCase() === currentMonthName.toLowerCase() &&
@@ -84,6 +88,15 @@ export const BeCreative: React.FC = () => {
     (isFromAddCollageEvent || isLeader || isSupportRole) &&
     !hasRecordInCurrentMonth;
 
+  const isToShowPoints = isLeagueStarts && isClubInALeague;
+  const isCelebratoryMessage = details?.points === pointsConfig.max;
+  const isInfoMessage =
+    !details?.monthlyRecords?.some(
+      (record) => record?.monthName?.toLocaleLowerCase() === 'november'
+    ) &&
+    isToShowPoints &&
+    !isLeader &&
+    !isCoach;
   const isToShowInfoCard =
     isToShowAddImageEventButton &&
     !details?.monthlyRecords?.some(
@@ -91,7 +104,6 @@ export const BeCreative: React.FC = () => {
         getAlertType(record?.documentStatusColor ?? '') === 'info' ||
         getAlertType(record?.documentStatusColor ?? '') === 'success'
     );
-  const isToShowPoints = isLeagueStarts && isClubInALeague;
 
   const activityId = 'be-creative';
 
@@ -178,11 +190,23 @@ export const BeCreative: React.FC = () => {
           mainText={String(details?.points ?? 0)}
           hint="points"
           currentPoints={details?.points || 18}
-          maxPoints={800}
+          maxPoints={pointsConfig.max}
           barBgColour="uiLight"
-          barColour={getScoreBarColor(details?.points ?? 0, 600, 599)}
+          barColour={getScoreBarColor(
+            details?.points ?? 0,
+            pointsConfig.green,
+            pointsConfig.amber
+          )}
           bgColour="uiBg"
           textColour="black"
+        />
+      )}
+      {isCelebratoryMessage && !isCoach && (
+        <Alert
+          className="mt-4"
+          type="successLight"
+          title="Wow, great job!"
+          customIcon={<PositiveEmoticon className="w-12" />}
         />
       )}
       {details?.monthlyRecords?.length ? (
@@ -196,6 +220,36 @@ export const BeCreative: React.FC = () => {
               title="How can you help your club earn points?"
               list={['Add a “Be creative” image every month.']}
               type="info"
+            />
+          )}
+          {isInfoMessage && (
+            <Alert
+              className="my-4"
+              type="info"
+              title="How can you help your club earn points?"
+              list={[
+                'Ask your club leader to organise a meeting to work on a creative project.',
+              ]}
+              button={
+                <Button
+                  text="Contact your club leader"
+                  type="filled"
+                  color="primary"
+                  textColor="white"
+                  icon="ChatIcon"
+                  onClick={() =>
+                    history.push(
+                      ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
+                        ':clubId',
+                        clubId
+                      ).replace(
+                        ':leaderId',
+                        club?.clubLeader?.practitionerId ?? ''
+                      )
+                    )
+                  }
+                />
+              }
             />
           )}
         </div>

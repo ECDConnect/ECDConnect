@@ -1,4 +1,5 @@
 import {
+  Alert,
   BannerWrapper,
   Button,
   Divider,
@@ -27,6 +28,7 @@ import { getAlertType } from '../0-components/alert-card/utils';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 
 export const HostFamilyDays: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -49,6 +51,8 @@ export const HostFamilyDays: React.FC = () => {
     ClubActions.GET_ACTIVITY_HOST_FAMILY_DETAILS
   );
 
+  const pointsConfig = ClubActivitiesPointsPerLeague.HostFamilyDays.All;
+
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
 
@@ -69,10 +73,10 @@ export const HostFamilyDays: React.FC = () => {
   const isToShowFamilyDayEventButton =
     (isFromAddFamilyDayEvent || isLeader || isSupportRole) && isEventDeadline;
   const isToShowPoints = isLeagueStarts && isClubInALeague;
+  const isCelebratoryMessage = details?.points === pointsConfig.max;
+  const isInfoMessage = !isCoach && !isLeader && isToShowPoints;
 
   const activityId = 'host-family-days';
-
-  const pointsConfig = ClubActivitiesPointsPerLeague.HostFamilyDays.All;
 
   const formatTerm = (term: ActivityHostFamilyDaysDetail): Item => ({
     title: term.termName ?? '',
@@ -142,6 +146,14 @@ export const HostFamilyDays: React.FC = () => {
           textColour="black"
         />
       )}
+      {isCelebratoryMessage && !isCoach && (
+        <Alert
+          className="mt-4"
+          type="successLight"
+          title="Wow, great job!"
+          customIcon={<PositiveEmoticon className="w-12" />}
+        />
+      )}
       {!!details?.terms?.length ? (
         <div className="mt-5">
           {details?.terms?.map((item, index) => (
@@ -150,6 +162,16 @@ export const HostFamilyDays: React.FC = () => {
               <AlertCard item={formatTerm(item!)} />
             </>
           ))}
+          {isInfoMessage && (
+            <Alert
+              className="my-4"
+              type="info"
+              title="How can you help your club earn points?"
+              list={[
+                'Work with your club & club leader to organise an event each term.',
+              ]}
+            />
+          )}
         </div>
       ) : (
         <EmptyPage
