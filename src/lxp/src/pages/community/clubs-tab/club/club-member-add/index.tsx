@@ -11,14 +11,19 @@ import { clubSelectors } from '@/store/club';
 import { useHistory, useParams } from 'react-router';
 import { ClubsRouteState } from '../../index.types';
 import { practitionerSelectors } from '@/store/practitioner';
-import { DetailClubDto } from '@/models/club/club.dto';
+import { useAppDispatch } from '@/store';
+import { NewClubMemberInput } from '@ecdlink/graphql';
+import { addNewClubMembers } from '@/store/club/club.actions';
 
 export const ClubMemberAdd: React.FC = () => {
-  const [selectedClub, setSelectedClub] = useState<DetailClubDto>();
+  const history = useHistory();
+  const appDispatch = useAppDispatch();
+
+  const [selectedClubId, setSelectedClubId] = useState<string | undefined>(
+    undefined
+  );
 
   const allClubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
-
-  const history = useHistory();
 
   const { practitionerId } = useParams<ClubsRouteState>();
 
@@ -26,6 +31,20 @@ export const ClubMemberAdd: React.FC = () => {
     practitionerSelectors.getPractitionerByUserId(practitionerId ?? '')
   );
   const firstName = practitioner?.user?.firstName ?? '';
+
+  const onSubmit = async () => {
+    if (!!selectedClubId) {
+      const payload: NewClubMemberInput = {
+        clubId: selectedClubId,
+        practitionerIds: [practitioner?.id],
+      };
+
+      await appDispatch(addNewClubMembers({ input: payload }));
+      // TODO need to refresh practitioner and club ???
+
+      history.goBack();
+    }
+  };
 
   return (
     <BannerWrapper
@@ -37,22 +56,21 @@ export const ClubMemberAdd: React.FC = () => {
       onBack={() => history.goBack()}
     >
       <Typography type="h2" text={`Add ${firstName} to a club`} />
-      <Dropdown<DetailClubDto>
-        label="Which club would you like to add Bulelwa Mahlangu to?"
+      <Dropdown<string>
+        label={`Which club would you like to add ${firstName} to?`}
         placeholder="Tap to select club..."
         list={allClubs.map((item) => ({
           label: item.name,
-          value: item,
+          value: item.id,
         }))}
-        selectedValue={selectedClub}
-        onChange={(club) => setSelectedClub?.(club)}
+        selectedValue={selectedClubId}
+        onChange={(club) => setSelectedClubId(club)}
         className="my-4"
       />
       <Alert
         type="info"
         title={`${firstName} will be added & notified immediately.`}
       />
-      {/* TODO: add backend integration */}
       <Button
         className="mt-auto"
         icon="SaveIcon"
@@ -60,8 +78,8 @@ export const ClubMemberAdd: React.FC = () => {
         color="primary"
         textColor="white"
         text="Save"
-        disabled
-        onClick={() => {}}
+        disabled={!selectedClubId}
+        onClick={onSubmit}
       />
     </BannerWrapper>
   );

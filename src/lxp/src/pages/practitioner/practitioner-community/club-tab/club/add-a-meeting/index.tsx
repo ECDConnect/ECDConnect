@@ -15,6 +15,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
 import { OfflineModal } from '../../0-components/offline-modal';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 
 export const AddMeeting: React.FC = () => {
   const [step1, setStep1] = useState<Step1Props>();
@@ -35,6 +36,8 @@ export const AddMeeting: React.FC = () => {
   const { showMessage } = useSnackbar();
 
   const { isOnline } = useOnlineStatus();
+
+  const addCalendarEvent = useCalendarAddEvent();
 
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
@@ -113,6 +116,24 @@ export const AddMeeting: React.FC = () => {
   const handleOnClick = () => {
     if (isNext) {
       setStep((prevStep) => prevStep + 1);
+    } else if (isScheduleInCalendar) {
+      const hours = new Date().toISOString().split('T')[1];
+      const formattedDate = new Date(`${step1.date}T${hours}`);
+      const start = formattedDate.toISOString();
+      formattedDate.setHours(formattedDate.getHours() + 1);
+      const end = formattedDate.toISOString();
+
+      addCalendarEvent({
+        event: {
+          eventType: 'Club Monthly Meeting',
+          start,
+          end,
+        },
+        onUpdated: () => {
+          onSuccess();
+          history.goBack();
+        },
+      });
     } else {
       onSubmit();
     }

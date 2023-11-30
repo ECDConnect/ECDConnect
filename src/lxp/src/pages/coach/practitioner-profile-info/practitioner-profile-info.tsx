@@ -49,6 +49,7 @@ import {
 } from 'date-fns';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import { clubSelectors } from '@/store/club';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -78,8 +79,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const traineeVisits = timeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
 
-  // TODO: change this when we have the real data
-  const isAssignedToAClub = false;
+  const practitionerClub = useSelector(
+    clubSelectors.getClubByIdSelector(practitioner?.clubId || '')
+  );
 
   const timelineStepsArray = timelineSteps(
     timeline!,
@@ -509,7 +511,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   listItems?.push({
     title: 'Club',
     titleStyle: 'text-textDark font-semibold text-base leading-snug',
-    subTitle: isAssignedToAClub ? '{clubName}' : 'Not assigned to a club',
+    subTitle: !!practitionerClub
+      ? practitionerClub.name
+      : 'Not assigned to a club',
     subTitleStyle:
       'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
     menuIcon: 'UserGroupIcon',
@@ -527,7 +531,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     onActionClick: () =>
       history.push(
         ROUTES.COMMUNITY.CLUB.MEMBER[
-          isAssignedToAClub ? 'ROOT' : 'ADD'
+          !!practitionerClub ? 'ROOT' : 'ADD'
         ].replace(':practitionerId', practitionerId)
       ),
     classNames: 'bg-uiBg',
@@ -682,6 +686,27 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                                 className={'mt-4'}
                               />
                             </div>
+                            {isPrincipal && (
+                              <div className="flex justify-center">
+                                <Button
+                                  type="filled"
+                                  color="primary"
+                                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                                  onClick={() => handleAbsenceModal(item)}
+                                >
+                                  {renderIcon(
+                                    'PencilAltIcon',
+                                    'w-5 h-5 color-white text-white mr-1'
+                                  )}
+                                  <Typography
+                                    type="body"
+                                    className="mr-4"
+                                    color="white"
+                                    text={'Edit absence/leave'}
+                                  ></Typography>
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </Card>
                       </>
@@ -756,6 +781,27 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                                 className={'mt-4'}
                               />
                             </div>
+                            {isPrincipal && (
+                              <div className="flex justify-center">
+                                <Button
+                                  type="filled"
+                                  color="primary"
+                                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                                  onClick={() => handleAbsenceModal(item)}
+                                >
+                                  {renderIcon(
+                                    'PencilAltIcon',
+                                    'w-5 h-5 color-white text-white mr-1'
+                                  )}
+                                  <Typography
+                                    type="body"
+                                    className="mr-4"
+                                    color="white"
+                                    text={'Edit absence/leave'}
+                                  ></Typography>
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </Card>
                       </>
@@ -827,6 +873,27 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                                 className={'mt-4'}
                               />
                             </div>
+                            {isPrincipal && (
+                              <div className="flex justify-center">
+                                <Button
+                                  type="filled"
+                                  color="primary"
+                                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                                  onClick={() => handleAbsenceModal(item)}
+                                >
+                                  {renderIcon(
+                                    'PencilAltIcon',
+                                    'w-5 h-5 color-white text-white mr-1'
+                                  )}
+                                  <Typography
+                                    type="body"
+                                    className="mr-4"
+                                    color="white"
+                                    text={'Edit absence/leave'}
+                                  ></Typography>
+                                </Button>
+                              </div>
+                            )}
                           </div>
                         </Card>
                       </>
@@ -944,32 +1011,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                     </>
                   );
                 })}
-                {/* {renderCardHeader} */}
-                {/* {allAbsenteeClasses &&
-                      allAbsenteeClasses?.length > 0 &&
-                      allAbsenteeClasses?.map((item) => {
-                        return (
-                          <div>
-                            {item?.className && (
-                              <div className="flex items-center gap-2">
-                                <Typography
-                                  type={'body'}
-                                  color="textMid"
-                                  weight="bold"
-                                  text={`${item?.className} class reassigned to:`}
-                                  className={'mt-4 ml-4'}
-                                />
-                                <Typography
-                                  type={'body'}
-                                  color="textMid"
-                                  text={`${item?.reassignedToPerson}`}
-                                  className={'mt-4'}
-                                />
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })} */}
               </div>
             )}
           </BannerWrapper>

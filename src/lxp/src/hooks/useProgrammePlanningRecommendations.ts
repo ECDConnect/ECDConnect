@@ -27,7 +27,7 @@ export const useProgrammePlanningRecommendations = () => {
     const plannedActivities = getAllGroupActivityIds(programme);
 
     // LETS MAKE SURE WE HAVE 10x ACTIVITIES SELECTED
-    if (plannedActivities.length > 9) {
+    if (plannedActivities.length >= 10) {
       const selectedActivities = activities.filter((x) =>
         plannedActivities?.includes(x.id)
       );

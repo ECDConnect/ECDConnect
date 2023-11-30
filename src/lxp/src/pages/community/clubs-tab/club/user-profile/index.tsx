@@ -20,6 +20,7 @@ import { useMemo, useState } from 'react';
 import { AboutYourselfDialog } from './about-yourself-dialog';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 
 export const UserProfile: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -39,36 +40,41 @@ export const UserProfile: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const { theme } = useTheme();
 
-  const isCoach = !!coachId;
-  const isLeader = !!leaderId;
-  const isMember = !!practitionerId;
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
+  );
+
+  const isCoachProfile = !!coachId;
+  const isLeaderProfile = !!leaderId;
+  const isMemberProfile = !!practitionerId;
 
   // TODO: The support role is not implemented yet; it will be added in the C3 functionality
   const isSupportRole = false;
 
   const clubMember = club?.clubMembers.find(
-    (member) => member.practitionerId === (isMember ? practitionerId : leaderId)
+    (member) =>
+      member.practitionerId === (isMemberProfile ? practitionerId : leaderId)
   );
 
-  const name = isCoach
+  const name = isCoachProfile
     ? `${club?.clubCoach.firstName} ${club?.clubCoach.surname}`
     : `${clubMember?.firstName} ${clubMember?.surname}`;
 
-  const whatsAppNumber = isCoach
+  const whatsAppNumber = isCoachProfile
     ? club?.clubCoach.whatsAppNumber
     : clubMember?.whatsAppNumber;
 
-  const phoneNumber = isCoach
+  const phoneNumber = isCoachProfile
     ? club?.clubCoach.phoneNumber
     : clubMember?.phoneNumber;
 
-  const headerHeight = isMember ? 254 : 300;
+  const headerHeight = isMemberProfile ? 254 : 300;
   const userRole = useMemo(() => {
-    if (isCoach) {
+    if (isCoachProfile) {
       return 'Coach';
     }
 
-    if (isLeader) {
+    if (isLeaderProfile) {
       return 'Club leader';
     }
 
@@ -77,7 +83,7 @@ export const UserProfile: React.FC = () => {
     }
 
     return '';
-  }, [isCoach, isLeader, isSupportRole]);
+  }, [isCoachProfile, isLeaderProfile, isSupportRole]);
 
   const onOffline = () => {
     return dialog({
@@ -135,11 +141,13 @@ export const UserProfile: React.FC = () => {
           hasConsent={true}
           canChangeImage={false}
           dataUrl={
-            isCoach ? user?.profileImageUrl : clubMember?.profileImageUrl ?? ''
+            isCoachProfile
+              ? user?.profileImageUrl
+              : clubMember?.profileImageUrl ?? ''
           }
           size={'header'}
         />
-        {!isMember && (
+        {!isMemberProfile && (
           <StatusChip
             backgroundColour="primary"
             borderColour="primary"
@@ -152,7 +160,7 @@ export const UserProfile: React.FC = () => {
           className="mt-4"
           type="h4"
           text={
-            isCoach
+            isCoachProfile
               ? club?.clubCoach.aboutInfo ?? ''
               : clubMember?.welcomeMessage ?? ''
           }
@@ -163,7 +171,7 @@ export const UserProfile: React.FC = () => {
         style={{ height: height - headerHeight }}
       >
         <Typography type="h3" text={name} />
-        {(!isMember || clubMember?.shareContactInfo) && (
+        {(!isMemberProfile || clubMember?.shareContactInfo) && (
           <>
             <Typography
               type="body"
@@ -172,7 +180,7 @@ export const UserProfile: React.FC = () => {
               }
               color="secondary"
             />
-            {!isCoach && (
+            {((isCoachProfile && !isCoach) || !isCoachProfile) && (
               <>
                 <div className="my-4 flex flex-wrap justify-between gap-4">
                   <Button
@@ -190,7 +198,11 @@ export const UserProfile: React.FC = () => {
                     <Typography
                       type="button"
                       text={`WhatsApp ${
-                        isLeader ? 'club leader' : 'practitioner'
+                        isLeaderProfile
+                          ? 'club leader'
+                          : isCoachProfile
+                          ? 'coach'
+                          : 'practitioner'
                       }`}
                       color="primary"
                     />
@@ -200,7 +212,13 @@ export const UserProfile: React.FC = () => {
                     icon="PhoneIcon"
                     type="outlined"
                     color="primary"
-                    text={`Call ${isLeader ? 'club leader' : 'practitioner'}`}
+                    text={`Call ${
+                      isLeaderProfile
+                        ? 'club leader'
+                        : isCoachProfile
+                        ? 'coach'
+                        : 'practitioner'
+                    }`}
                     textColor="primary"
                     onClick={onCall}
                   />
@@ -213,14 +231,14 @@ export const UserProfile: React.FC = () => {
             )}
           </>
         )}
-        {isMember && !clubMember?.shareContactInfo && (
+        {isMemberProfile && !clubMember?.shareContactInfo && (
           <Alert
             className="mt-5"
             type="info"
             title="Practitioner has not shared contact details."
           />
         )}
-        {isLeader && (
+        {isLeaderProfile && isCoach && (
           <Button
             className="mt-auto"
             icon="RefreshIcon"
@@ -235,7 +253,7 @@ export const UserProfile: React.FC = () => {
             }
           />
         )}
-        {isCoach && (
+        {isCoachProfile && isCoach && (
           <div className="mt-auto flex flex-col gap-4">
             <Button
               icon="PencilIcon"
