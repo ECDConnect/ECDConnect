@@ -103,11 +103,11 @@ export const Visits: React.FC = () => {
     });
   }, []);
 
-  const currentDate = useMemo(() => new Date(), []);
-  currentDate?.setHours(0, 0, 0, 0);
   const todayEndOfTheDay = new Date();
   todayEndOfTheDay.setHours(23, 59, 59, 999);
-  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
+  const todayDateWithoutTimeZone = getDateWithoutTimeZone(
+    todayEndOfTheDay.toISOString()
+  );
 
   const currentVisit = useMemo((): VisitDto | undefined => {
     const noAttended =
@@ -117,11 +117,11 @@ export const Visits: React.FC = () => {
         const isAttend = item.attended;
 
         if (dueDate) {
-          return !isAttend && dueDate >= todayDate!;
+          return !isAttend && dueDate >= todayDateWithoutTimeZone!;
         }
 
         if (orderDate) {
-          return !isAttend && orderDate >= todayDate!;
+          return !isAttend && orderDate >= todayDateWithoutTimeZone!;
         }
 
         return !isAttend;
@@ -129,13 +129,12 @@ export const Visits: React.FC = () => {
 
     return noAttended.length
       ? noAttended.reduce((prev, curr) =>
-          new Date(prev.orderDate).getTime() <
-          new Date(curr.orderDate).getTime()
+          (prev.visitType?.order ?? 0) < (curr.visitType?.order ?? 0)
             ? prev
             : curr
         )
       : undefined;
-  }, [todayDate, visits]);
+  }, [todayDateWithoutTimeZone, visits]);
 
   // INFO: EC-685 - only show start visit button if today falls between planned and due date for current visit
   const plannedVisitDate =
@@ -149,13 +148,15 @@ export const Visits: React.FC = () => {
   const isFirstVisit = visits
     .filter((item) => item.visitType?.name !== 'additional_visits')
     .every((item) => !item.attended);
-  const isOrderVisitDate = plannedVisitDate && currentDate >= plannedVisitDate;
-  const isDueDate = dueDate && currentDate <= dueDate;
-  const isWeekDeadline = isFirstVisit || (isOrderVisitDate && isDueDate);
+  const isOrderVisitDate =
+    plannedVisitDate && todayEndOfTheDay >= plannedVisitDate;
+  const isDueDate = dueDate && todayDateWithoutTimeZone! <= dueDate;
+  const isDeadline = isFirstVisit || (isOrderVisitDate && isDueDate);
   const previousVisit = useSelector((state: RootState) =>
     getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
+  console.log({ dueDate, todayDateWithoutTimeZone });
   const weeksPregnant = useMemo(
     () =>
       mother?.expectedDateOfDelivery
@@ -178,15 +179,14 @@ export const Visits: React.FC = () => {
         return 'completed';
       }
       if (
-        (isWeekDeadline &&
-          currentVisit?.visitType?.id === item.visitType?.id) ||
+        (isDeadline && currentVisit?.visitType?.id === item.visitType?.id) ||
         (isAdditionalVisit && previousVisit?.attended)
       ) {
         return 'inProgress';
       }
       return 'todo';
     },
-    [currentVisit?.visitType?.id, isWeekDeadline, previousVisit?.attended]
+    [currentVisit?.visitType?.id, isDeadline, previousVisit?.attended]
   );
 
   const visitSteps = useMemo(() => {
@@ -195,11 +195,11 @@ export const Visits: React.FC = () => {
       const orderDate = getDateWithoutTimeZone(item.orderDate);
       const isAttend = item.attended;
       if (dueDate) {
-        return !isAttend && dueDate >= todayDate!;
+        return !isAttend && dueDate >= todayDateWithoutTimeZone!;
       }
 
       if (orderDate) {
-        return !isAttend && orderDate >= todayDate!;
+        return !isAttend && orderDate >= todayDateWithoutTimeZone!;
       }
 
       return !isAttend;
@@ -273,7 +273,7 @@ export const Visits: React.FC = () => {
     history,
     insertedDate,
     location,
-    todayDate,
+    todayDateWithoutTimeZone,
     visits,
   ]);
 

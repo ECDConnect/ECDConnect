@@ -672,7 +672,7 @@ class ClubService {
       errors?: {};
     }>(``, {
       query: `
-        mutation AcceptNewClubLeaderRole($clubId: UUID!, $practitionerId: UUID!, $clubSupportPractitionerId: String) {
+        mutation AcceptNewClubLeaderRole($clubId: UUID!, $practitionerId: UUID!, $clubSupportPractitionerId: UUID!) {
           acceptNewClubLeaderRole(clubId: $clubId, practitionerId: $practitionerId, clubSupportPractitionerId: $clubSupportPractitionerId) {}
         }
       `,

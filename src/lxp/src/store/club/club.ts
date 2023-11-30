@@ -531,7 +531,7 @@ const clubSlice = createSlice({
                 .isNewInSupportRole !== undefined
                 ? state.clubForPractitioner?.club?.clubSupport
                     .isNewInSupportRole
-                : action.payload.clubSupport.isNewInSupportRole,
+                : action.payload?.clubSupport?.isNewInSupportRole,
           },
         },
       };

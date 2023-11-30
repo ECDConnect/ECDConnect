@@ -41,6 +41,8 @@ import { clubSelectors, clubThunkActions } from '@/store/club';
 import { getTermNumberForCurrentMonth } from '@/utils/club';
 import { OfflineAlert } from '@/components/offline-alert';
 import { SupportRoleAlert } from './0-components/support-role-alert';
+import { getAllNotifications } from '@/store/notifications/notifications.selectors';
+import { notificationTagConfig } from '@/constants/notifications';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
@@ -57,6 +59,7 @@ export const ClubTab: React.FC = () => {
   const detailsHostFamily = useSelector(
     clubSelectors.getActivityHostFamilyDetailsSelector(clubId)
   );
+  const notifications = useSelector(getAllNotifications);
 
   const history = useHistory();
 
@@ -104,7 +107,11 @@ export const ClubTab: React.FC = () => {
   const totalMembers = club?.clubMembers?.length ?? 0;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
   const isLeader = club?.clubLeader?.userId === user?.id;
-  const isLeaderRequest = isLeader && !club?.clubLeader?.dateAssigned;
+  const isLeaderRequest = notifications?.some((notification) =>
+    notification?.message?.cta?.includes(
+      notificationTagConfig.AcceptAgreement?.cta!
+    )
+  );
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
   // From EC-1515
@@ -241,8 +248,8 @@ export const ClubTab: React.FC = () => {
     titleStyle: 'text-textDark',
     profileDataUrl: '',
     profileText:
-      (club?.clubSupport?.firstName[0] || '') +
-      (club?.clubSupport?.surname[0] || ''),
+      (club?.clubSupport?.firstName?.[0] || '') +
+      (club?.clubSupport?.surname?.[0] || ''),
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
@@ -483,7 +490,7 @@ export const ClubTab: React.FC = () => {
   }, [activities, isClubInALeague, isOnline]);
 
   return (
-    <div className="h-full p-4 pt-6">
+    <div className="h-full overflow-auto p-4 pt-6">
       {isLoading ? (
         <LoadingSpinner
           className="mt-4"
@@ -524,7 +531,7 @@ export const ClubTab: React.FC = () => {
               </div>
             </>
           )}
-          {!!club?.clubLeader && !isLeader && (
+          {!!club?.clubLeader?.userId && !isLeader && (
             <>
               <Typography className="mb-2 mt-6" type="h3" text="Club leader" />
               <div>
@@ -536,8 +543,8 @@ export const ClubTab: React.FC = () => {
               </div>
             </>
           )}
-          {!!club?.clubSupport && isLeagueStarts && isClubInALeague && (
-            <>
+          {!!club?.clubSupport?.userId && isLeagueStarts && isClubInALeague && (
+            <div>
               <div className="mb-2 mt-6 flex items-center justify-between">
                 <Typography type="h3" text="Club support role" />
                 {(isLeader || isSupportRole) && (
@@ -566,12 +573,12 @@ export const ClubTab: React.FC = () => {
                 type={'UserAlertList' as StackedListType}
                 listItems={[clubSupportRole]}
               />
-            </>
+            </div>
           )}
           {renderActivitiesContent}
           <div
-            className={`mt-auto flex flex-col ${
-              isLeader || isSupportRole ? 'pb-4' : ''
+            className={`mt-auto flex flex-col pt-4 ${
+              isLeader || isSupportRole || isLeaderRequest ? 'pb-4' : ''
             }`}
           >
             {(isLeader || isSupportRole) && (

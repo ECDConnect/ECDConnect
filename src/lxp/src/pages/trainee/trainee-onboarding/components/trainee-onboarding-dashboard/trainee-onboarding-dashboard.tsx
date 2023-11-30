@@ -79,7 +79,7 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.type !== 'inProgress' &&
       item?.title !== 'SmartSpace Licence'
   );
-  console.log({ steps });
+
   const completedSteps = steps?.filter(
     (item) =>
       item?.type === 'completed' ||
@@ -101,8 +101,8 @@ export const OnboardingTraineeDashboard: React.FC<
 
   useEffect(() => {
     if (
-      (practitioner?.isOnStipend && completedSteps?.length === 7) ||
-      (practitioner?.isOnStipend !== true && completedSteps.length === 6)
+      (practitioner?.isOnStipend && completedSteps?.length === 8) ||
+      (practitioner?.isOnStipend !== true && completedSteps.length === 7)
     ) {
       setShowSteps(false);
     }
@@ -241,9 +241,9 @@ export const OnboardingTraineeDashboard: React.FC<
         )}
         {showSteps && (
           <>
-            {((practitioner?.isOnStipend && completedSteps?.length < 7) ||
+            {((practitioner?.isOnStipend && completedSteps?.length < 8) ||
               (practitioner?.isOnStipend !== true &&
-                completedSteps.length < 6)) && (
+                completedSteps.length < 7)) && (
               <StackedList
                 isFullHeight={false}
                 className={'flex flex-col gap-2'}
