@@ -47,12 +47,12 @@ import { isWorkingDay } from '@/utils/common/date.utils';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
-import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { coachSelectors } from '@/store/coach';
 import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
+import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const dialog = useDialog();
@@ -205,7 +205,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     if (practitionerIsOnLeave) {
       handleIsOnleaveModal();
     }
-  }, []);
+  }, [practitionerIsOnLeave]);
 
   useEffect(() => {
     if (!classroomGroups || classroomGroups?.length === 0) return;
@@ -388,7 +388,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   return (
     <div>
-      <MultiRouteWrapper />
+      <AttendanceWrapper />
       {attendanceComponentType && getComponentToRender(attendanceComponentType)}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
         {attendanceComponentType === 'attendance' && (
