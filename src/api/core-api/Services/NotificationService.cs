@@ -75,16 +75,21 @@ namespace EcdLink.Api.CoreApi.Services
             //check if any exact templates for exact person for exact same date and protocol exists
         }
 
-        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null)
+        public async Task<bool> SendNotificationAsync(string userType, string templatetype, DateTime messageDate, ApplicationUser user = null, string message = "", string status = MessageStatusConstants.Blue, List<TagsReplacements> replacements = null, DateTime? messageEndDate = null, bool expireOldMessagesOfType = false)
         {
             try
-            {
+            {                
                 var templates = await RetrieveTemplate(templatetype);
 
                 if (templates != null)
                 {
                     foreach (var item in templates)
                     {
+                        //expire older messages of the same type when new ones are sent
+                        if (expireOldMessagesOfType && user != null) {
+                            await this.ExpireNotificationsTypesForUser(user.Id, item.TemplateType);
+                        }
+
                         //remap all field
                         MessageTemplateText templateItem = RemapFields(item, user, replacements);
 
