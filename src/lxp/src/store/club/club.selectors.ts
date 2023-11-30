@@ -32,6 +32,10 @@ export const getLeagueForCoachSelector = (leagueId: string) =>
 export const getClubByIdSelector = (clubId: string) =>
   createSelector(
     (state: RootState) => {
+      if (!clubId || clubId === '') {
+        return undefined;
+      }
+
       const user = state.user.user;
 
       const isCoach = user?.roles?.some((role) =>

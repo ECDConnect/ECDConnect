@@ -1,5 +1,6 @@
 import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
-import { traineeSelectors } from '@/store/trainee';
+import { useAppDispatch } from '@/store';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import {
   Alert,
@@ -43,13 +44,15 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
   submitCoachFranchisorAgreement,
   coachSmartSpaceVisit2DataNotAttendedStandards,
 }) => {
+  const appDispatch = useAppDispatch();
   const visitData = useSelector(
     traineeSelectors.getCoachFranchisorAgreementData
   );
   const coachVisitNextSteps = useSelector(
     traineeSelectors?.getCoachVisitDataNextSteps
-  ) as unknown;
-  const coachVisitNextStepsFormatted = coachVisitNextSteps as SectionQuestions;
+  );
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const smartSpaceVisitId = timeline?.sSCoachVisitId;
 
   const [questions, setAnswers] = useState([
     {
@@ -138,6 +141,18 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
     setAnswers(previousData);
   }, []);
 
+  const fetchSmartSpaceVisitData = useCallback(async () => {
+    await appDispatch(
+      traineeThunkActions.getCoachSmartSpaceVisitData({
+        visitId: smartSpaceVisitId,
+      })
+    );
+  }, [smartSpaceVisitId]);
+
+  useEffect(() => {
+    fetchSmartSpaceVisitData();
+  }, [fetchSmartSpaceVisitData]);
+
   return (
     <div className="p-4">
       <Typography
@@ -156,7 +171,7 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
         />
         <Typography
           type={'body'}
-          text={`• ${coachVisitNextStepsFormatted?.questions[0]?.answer}`}
+          text={`• ${coachVisitNextSteps?.questionAnswer}`}
           color={'textMid'}
           className={'my-3'}
         />
