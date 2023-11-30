@@ -155,11 +155,12 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     });
   });
 
-  const call = () => {
+  const call = useCallback(() => {
     window.open(`tel:${coach?.user?.phoneNumber}`);
-  };
+  }, [coach?.user?.phoneNumber]);
 
   const practitionerAbsentees = practitioner?.absentees;
+
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDateEnd as string)) ||
@@ -520,7 +521,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     });
   };
 
-  const handleIsOnleaveModal = () => {
+  const handleIsOnleaveModal = useCallback(() => {
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit, onClose) => {
@@ -572,7 +573,20 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
         );
       },
     });
-  };
+  }, [
+    call,
+    coach?.user?.firstName,
+    currentAbsentee?.absentDateEnd,
+    dialog,
+    handleComebackDay,
+  ]);
+
+  useEffect(() => {
+    if (practitionerIsOnLeave) {
+      handleIsOnleaveModal();
+    }
+  }, []);
+
   return (
     <>
       {children && children.length > 0 && (
