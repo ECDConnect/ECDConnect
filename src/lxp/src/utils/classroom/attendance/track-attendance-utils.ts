@@ -166,7 +166,6 @@ export const getMissedClassAttendance = (
         return (
           isValidDay &&
           !Boolean(x.stoppedAttendance) &&
-          getDayOfYear(date) >= getDayOfYear(new Date(x.startedAttendance)) &&
           classGroups.some((item) => item.id === x.classroomGroupId)
         );
       });
