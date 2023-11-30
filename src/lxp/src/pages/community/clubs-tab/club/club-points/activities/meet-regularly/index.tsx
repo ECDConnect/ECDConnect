@@ -51,7 +51,6 @@ export const MeetRegularly: React.FC = () => {
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
-  console.log({ details });
   const isCelebratoryMessage =
     details?.points === ClubActivitiesPointsPerLeague.MeetRegularly.All.max;
 
