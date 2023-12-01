@@ -7,6 +7,7 @@ import {
   LearnerDto,
   Document,
   useDialog,
+  ClassroomGroupDto,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -70,6 +71,7 @@ import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentSelectors } from '@store/document';
 import { userSelectors } from '@store/user';
 import ROUTES from '../../../../src/routes/routes';
+import { UNSURE_CLASS } from '@/constants/classroom';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -164,9 +166,11 @@ export const EditChildInformation: React.FC = () => {
   useEffect(() => {
     if (classroomGroups) {
       const classRoomGroupDownDownList: DropDownOption<string>[] =
-        classroomGroups.map((x) => {
-          return { id: x.id, value: x.id || '', label: x.name };
-        });
+        classroomGroups
+          .filter((item: ClassroomGroupDto) => item.name !== UNSURE_CLASS)
+          .map((x) => {
+            return { id: x.id, value: x.id || '', label: x.name };
+          });
 
       setClassRoomGroupsList(classRoomGroupDownDownList);
     }
