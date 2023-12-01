@@ -244,7 +244,7 @@ export const ChildProfile: React.FC = () => {
 
   const {
     setState,
-    state: { run, stepIndex },
+    state: { run },
   } = useAppContext();
 
   const childTutorialTaken = getStorageItem(
@@ -704,9 +704,9 @@ export const ChildProfile: React.FC = () => {
     return <ChildPending child={child} childUser={childUser} />;
   }
 
-  const displayWalkthrough = () => {
-    goToChildProfileWalkhthrough();
-  };
+  // const displayWalkthrough = () => {
+  //   goToChildProfileWalkhthrough();
+  // };
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -834,7 +834,7 @@ export const ChildProfile: React.FC = () => {
           )}
         <div className={styles.profileOptionsWrapper}>
           {profileOptions.map((options, index) => (
-            <div id={`child_walkthrough_step_${index}`}>
+            <div key={`option-${index}`} id={`child_walkthrough_step_${index}`}>
               <ListItem
                 {...options}
                 key={`child-profile-option-${options.key}`}
