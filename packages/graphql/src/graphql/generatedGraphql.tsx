@@ -30,6 +30,8 @@ export type AbsenteeDetail = {
   absenteeId?: Maybe<Scalars['String']>;
   className?: Maybe<Scalars['String']>;
   classroomGroupId?: Maybe<Scalars['String']>;
+  loggedByPerson?: Maybe<Scalars['String']>;
+  loggedByUserId?: Maybe<Scalars['String']>;
   reason?: Maybe<Scalars['String']>;
   reassignedToPerson?: Maybe<Scalars['String']>;
   reassignedToUserId?: Maybe<Scalars['String']>;
@@ -5350,7 +5352,9 @@ export type MonthlyAttendanceReportModel = {
   __typename?: 'MonthlyAttendanceReportModel';
   month?: Maybe<Scalars['String']>;
   monthOfYear: Scalars['Int'];
+  numberOfSessions: Scalars['Int'];
   percentageAttendance: Scalars['Int'];
+  totalScheduledSessions: Scalars['Int'];
   year: Scalars['Int'];
 };
 
@@ -11168,6 +11172,7 @@ export type Query = {
   classroomNamesForPractitioner?: Maybe<
     Array<Maybe<PractitionerClassroomName>>
   >;
+  clubById?: Maybe<DetailClubModel>;
   clubForUser?: Maybe<ClubModel>;
   clubsForCoach?: Maybe<Array<Maybe<DetailClubModel>>>;
   clubsMembers?: Maybe<Array<Maybe<ClubMember>>>;
@@ -13073,6 +13078,10 @@ export type QueryClassroomGroupClassroomsForPractitionerArgs = {
 
 export type QueryClassroomNamesForPractitionerArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClubByIdArgs = {
+  clubId: Scalars['UUID'];
 };
 
 export type QueryClubForUserArgs = {
