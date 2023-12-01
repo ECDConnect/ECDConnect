@@ -109,10 +109,10 @@ namespace ECDLink.Api.CoreApi.Services
                 //send notifications a) Absentee, b) long leave
                 var userToSend = _userManager.FindByIdAsync(practitionerId).Result;
                 List<TagsReplacements> replacements = new List<TagsReplacements>();
-                var parentUser = _hierarchyEngine.GetUserParentUserId(practitionerId);
+                var parentUser = _userManager.FindByIdAsync(absentee.LoggedBy).Result;
                 if (parentUser != null)
                 {
-                    var parentToSend = _userManager.FindByIdAsync(parentUser).Result;
+                    var parentToSend = _userManager.FindByIdAsync(parentUser.Id).Result;
 
                     replacements.Add(new TagsReplacements()
                     {
