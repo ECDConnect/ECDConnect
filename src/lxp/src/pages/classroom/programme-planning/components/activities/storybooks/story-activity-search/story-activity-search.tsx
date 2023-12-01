@@ -308,7 +308,7 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
         >
           <SearchDropDown<number>
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 '}
+            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
             overlayTopOffset={'120'}
             className={'mr-1'}
             options={categoriesDropDownOptions}
