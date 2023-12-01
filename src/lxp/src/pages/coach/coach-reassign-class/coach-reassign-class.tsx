@@ -112,6 +112,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
   >([]);
   const [principalOrFundaAppAdmin, setPrincipalOrFundaAppAdmin] = useState();
   const [endDate, setEndDate] = useState<Date>();
+  const [otherReason, setOtherReason] = useState('');
 
   const handleReassignClassroomGroupPractitioner = useCallback(
     (classroomGroup: reassignedClassroomGroupProps) => {
@@ -134,6 +135,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
 
   const disableButton =
     !reason || !selectedDate || !endDate || !principalOrFundaAppAdmin;
+  const reasonPayload = reason === 'Other' ? otherReason : reason;
 
   const practitionerClassroomGroups = useMemo(
     () =>
@@ -250,7 +252,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             item?.absenteeId,
             false,
             item?.practitioner,
-            reason,
+            reasonPayload,
             new Date(selectedDate),
             endDate || new Date(selectedDate),
             true,
@@ -260,7 +262,10 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
           dispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
           await refreshClassroom();
           setIsLoading(false);
-          history.push(ROUTES.DASHBOARD);
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+            practitionerId: practitionerId,
+            isFromReassignView: true,
+          });
 
           return;
         }
@@ -270,7 +275,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
         ).updateReassignClassroomGroup(
           practitioner,
           item?.practitioner,
-          reason,
+          reasonPayload,
           new Date(selectedDate),
           userData?.id!,
           item?.classroomId,
@@ -293,7 +298,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             absenteeId,
             false,
             practitioner2 || '',
-            reason,
+            reasonPayload,
             new Date(selectedDate),
             endDate || new Date(selectedDate),
             true,
@@ -302,7 +307,10 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
 
           await refreshClassroom();
           setIsLoading(false);
-          history.push(ROUTES.DASHBOARD);
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+            practitionerId: practitionerId,
+            isFromReassignView: true,
+          });
 
           return;
         }
@@ -313,7 +321,7 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
         ).updateReassignClassroomGroup(
           practitioner,
           practitioner2,
-          reason,
+          reasonPayload,
           new Date(selectedDate),
           userData?.id!,
           '',
@@ -324,7 +332,10 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       }
     }
     setIsLoading(false);
-    history.push(ROUTES.DASHBOARD);
+    history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+      practitionerId: practitionerId,
+      isFromReassignView: true,
+    });
   };
 
   return (
@@ -409,8 +420,9 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
             <FormInput
               className="my-4 w-full"
               label={'Type the reason'}
-              onChange={(e) => {}}
+              onChange={(e) => setOtherReason(e.target.value)}
               textInputType="input"
+              value={otherReason}
               placeholder={'e.g. personal appointment'}
             />
           )}
