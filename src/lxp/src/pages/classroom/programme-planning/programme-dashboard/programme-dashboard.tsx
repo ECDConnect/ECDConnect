@@ -148,14 +148,13 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
       const thisYear31July = new Date(today.getFullYear(), 6, 31);
       const thisYear20Dec = new Date(today.getFullYear(), 11, 20);
       const nextYear31July = new Date(today.getFullYear() + 1, 6, 31);
-      const reportMonth =
-        today.getMonth() >= 0 && today.getMonth() <= 6 ? 'June' : 'November';
+      const reportMonth = today.getMonth() >= 6 ? 'June' : 'November';
 
       if (skills.length === 0) {
         dMessage.push('None of the children are working on skills.');
       } else {
         dMessage.push(
-          'Base on your ' +
+          'Based on your ' +
             reportMonth +
             ' progress reports, here are some areas that children are working on:'
         );
