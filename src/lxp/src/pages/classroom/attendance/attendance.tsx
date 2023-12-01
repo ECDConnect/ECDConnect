@@ -29,7 +29,7 @@ import { isWorkingDay } from '@/utils/common/date.utils';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
-import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
+import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
@@ -268,7 +268,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   return (
     <div>
-      <MultiRouteWrapper />
+      <AttendanceWrapper />
       {attendanceComponentType && getComponentToRender(attendanceComponentType)}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
         {attendanceComponentType === 'attendance' && (
