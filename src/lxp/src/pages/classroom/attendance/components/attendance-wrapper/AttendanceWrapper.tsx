@@ -1,14 +1,11 @@
-import Joyride, { CallBackProps, TooltipRenderProps } from 'react-joyride';
+import Joyride, {
+  CallBackProps,
+  TooltipRenderProps,
+  Step as StepType,
+} from 'react-joyride';
 import { useHistory } from 'react-router-dom';
 import { useAppContext } from '../../../../../walkthrougContext';
-import {
-  Button,
-  Card,
-  renderIcon,
-  SliderPagination,
-  Typography,
-} from '@ecdlink/ui';
-import { useSetState } from 'react-use';
+import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
 import WalktroughImage from '../../../../../assets/walktroughImage.png';
 import ROUTES from '../../../../../routes/routes';
 import { useSelector } from 'react-redux';
@@ -24,43 +21,39 @@ export default function AttendanceWrapper() {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const {
     setState,
-    state: { run, stepIndex, steps, attendanceStatus, enableButton },
+    state: { run, stepIndex, attendanceStatus, enableButton },
   } = useAppContext();
 
-  useSetState(() => {
-    setState({
-      steps: [
-        {
-          target: '#attendance-list',
-          content: 'All children are automatically marked present',
-          placement: 'bottom-end',
-          offset: 10,
-          disableBeacon: true,
-        },
-        {
-          target: '#attendance-list-alone',
-          content: 'Tap anywhere on this block to mark Jane absent today',
-          placement: 'bottom-end',
-          offset: 10,
-          spotlightClicks: !!attendanceStatus,
-          event: 'click',
-        },
-        {
-          target: '#attendance-list-alone',
-          content: 'Now tap again to mark Jane present.',
-          placement: 'bottom-end',
-          offset: 10,
-          spotlightClicks: !!attendanceStatus,
-        },
-        {
-          target: '#attendance-list-alone',
-          content: "Great, you're ready to start!",
-          placement: 'bottom-end',
-          offset: 10,
-        },
-      ],
-    });
-  });
+  const steps: StepType[] = [
+    {
+      target: '#attendance-list',
+      content: 'All children are automatically marked present',
+      placement: 'bottom-end',
+      offset: 10,
+      disableBeacon: true,
+    },
+    {
+      target: '#attendance-list-alone',
+      content: 'Tap anywhere on this block to mark Jane absent today',
+      placement: 'bottom-end',
+      offset: 10,
+      spotlightClicks: !!attendanceStatus,
+      event: 'click',
+    },
+    {
+      target: '#attendance-list-alone',
+      content: 'Now tap again to mark Jane present.',
+      placement: 'bottom-end',
+      offset: 10,
+      spotlightClicks: !!attendanceStatus,
+    },
+    {
+      target: '#attendance-list-alone',
+      content: "Great, you're ready to start!",
+      placement: 'bottom-end',
+      offset: 10,
+    },
+  ];
 
   function Tooltip({
     backProps,
