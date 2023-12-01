@@ -76,22 +76,25 @@ export const MeetingDetails: React.FC = () => {
       onBack={() => history.goBack()}
     >
       <Typography type="h2" text={formattedDate} />
-      {meeting?.meetingNotes && (
+      {!!meeting?.meetingNotes && (
         <div className="bg-uiBg rounded-15 my-5 p-4">
           <Typography type="h3" text="Notes" />
           <Typography type="body" color="textMid" text={meeting.meetingNotes} />
         </div>
       )}
-      {!isUpcomingVisit && meeting && (
+      {!isUpcomingVisit && !!meeting && (
         <>
           <Typography type="h2" className="mb-5" text="Attendance" />
           <div className="flex items-center gap-2">
             <p
               className={`${renderAttendanceBadgeColor(
                 (meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc
-              )} rounded-3xl px-2 py-1`}
+              )} rounded-3xl px-2 py-1 text-white`}
             >
-              {(meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc}%
+              {Math.round(
+                (meeting as ActivityMeetRegularDetail)?.meetingAttendancePerc
+              )}
+              %
             </p>
             <Typography type="h4" text="club members attended:" />
           </div>
@@ -103,7 +106,8 @@ export const MeetingDetails: React.FC = () => {
               />
             )
           )}
-          {(meeting as ActivityMeetRegularDetail)?.meetingAbsentees?.length && (
+          {!!(meeting as ActivityMeetRegularDetail)?.meetingAbsentees
+            ?.length && (
             <>
               <Typography
                 type="h4"
