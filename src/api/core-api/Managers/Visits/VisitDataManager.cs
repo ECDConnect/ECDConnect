@@ -264,7 +264,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             int safetyCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == safety && x.QuestionAnswer == "true").Count();
 
             // EC-1359 - remove spacecount which is not compulsory
-            if (programmeCount > 6 && healthCount == 7 && safetyCount == 10)
+            if (programmeCount >= 6 && healthCount == 7 && safetyCount == 10)
             {          
                
                // update the visit record to show attended/completed 
