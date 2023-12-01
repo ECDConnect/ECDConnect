@@ -51,9 +51,6 @@ export const MeetRegularly: React.FC = () => {
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
-  const isCelebratoryMessage =
-    details?.points === ClubActivitiesPointsPerLeague.MeetRegularly.All.max;
-
   const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
     'clubs',
     ClubActions.GET_ACTIVITY_MEET_REGULAR_DETAILS
@@ -77,6 +74,9 @@ export const MeetRegularly: React.FC = () => {
     (item) => item?.name === UserTypeEnum.Coach
   );
 
+  const isCelebratoryMessage =
+    !isCoach &&
+    details?.points === ClubActivitiesPointsPerLeague.MeetRegularly.All.max;
   const isToShowPoints = isLeagueStarts && isClubInALeague;
 
   useEffect(() => {
@@ -134,7 +134,7 @@ export const MeetRegularly: React.FC = () => {
           title: monthName,
           subItem: isToShowPoints ? `+ ${item?.points ?? 0}` : '',
           subTitle: item?.meetingAttendancePerc
-            ? `${item?.meetingAttendancePerc}% attendance`
+            ? `${Math.round(item?.meetingAttendancePerc)}% attendance`
             : 'No register submitted',
           alertSeverity: getAlertSeverity(item?.meetingAttendanceColor ?? ''),
           titleStyle: 'text-textDark',
@@ -194,7 +194,7 @@ export const MeetRegularly: React.FC = () => {
             customIcon={<PositiveEmoticon className="w-12" />}
           />
         )}
-        {upcomingMeetings.length && (
+        {!!upcomingMeetings.length && (
           <div className="mt-4">
             <Typography className="mb-5" type="h3" text="Upcoming meetings:" />
             <StackedList
@@ -204,7 +204,7 @@ export const MeetRegularly: React.FC = () => {
             />
           </div>
         )}
-        {pastMeetings.length && (
+        {!!pastMeetings.length && (
           <div className="mt-4 mb-5">
             <Typography className="mb-5" type="h3" text="Past meetings:" />
             <StackedList
@@ -214,20 +214,26 @@ export const MeetRegularly: React.FC = () => {
             />
           </div>
         )}
-        {isToShowPoints && (
+        {isToShowPoints && !isCoach && (
           <Alert
             className="mb-4"
             type="info"
             title="How can you help your club earn points?"
-            list={[
-              'Encourage all club members to attend meetings.',
-              'Make sure you schedule meetings at a time that works for everyone.',
-            ]}
+            list={
+              isLeader
+                ? [
+                    'Encourage all club members to attend meetings.',
+                    'Make sure you schedule meetings at a time that works for everyone.',
+                  ]
+                : ['Attend all club meetings & encourage others to attend!']
+            }
           />
         )}
       </>
     );
   }, [
+    isLeader,
+    isCoach,
     details?.pastMeetings?.length,
     details?.points,
     details?.upcomingMeetings?.length,

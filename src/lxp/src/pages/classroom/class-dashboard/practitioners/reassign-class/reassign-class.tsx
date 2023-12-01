@@ -124,6 +124,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     : '';
   const [isOneDayLeave, setIsOneDayLeave] = useState<boolean | boolean[]>();
   const [principalOrFundaAppAdmin, setPrincipalOrFundaAppAdmin] = useState();
+  const [otherReason, setOtherReason] = useState('');
 
   const {
     control,
@@ -194,7 +195,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       classroomGroups?.filter(
         (item) => item?.userId === practitioner && item?.name !== 'Unsure'
       ),
-    [classroomGroups, practitioner]
+    []
   );
 
   const disableButton =
@@ -204,6 +205,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     (practitionerClassroomGroups?.length > 0 &&
       reassignedClassroomGroups?.length !==
         practitionerClassroomGroups?.length);
+  const reasonPayload = reason === 'Other' ? otherReason : reason;
 
   useEffect(() => {
     if (principalPractitioner) {
@@ -371,7 +373,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 item?.absenteeId,
                 false,
                 item?.practitioner,
-                reason,
+                reasonPayload,
                 new Date(selectedDate),
                 endDate || new Date(selectedDate),
                 true,
@@ -399,7 +401,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               item?.absenteeId,
               false,
               item?.practitioner,
-              reason,
+              reasonPayload,
               new Date(selectedDate),
               endDate || new Date(selectedDate)
             );
@@ -427,7 +429,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           ).updateReassignClassroomGroup(
             practitioner,
             item?.practitioner,
-            reason,
+            reasonPayload,
             new Date(selectedDate),
             userData?.id!,
             item?.classroomId,
@@ -452,7 +454,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               absenteeId,
               false,
               practitioner2,
-              reason,
+              reasonPayload,
               new Date(selectedDate),
               endDate || new Date(selectedDate),
               true,
@@ -480,7 +482,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             absenteeId,
             false,
             practitioner2,
-            reason,
+            reasonPayload,
             new Date(selectedDate),
             endDate || new Date(selectedDate)
           );
@@ -509,7 +511,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           ).updateReassignClassroomGroup(
             practitioner,
             practitioner2,
-            reason,
+            reasonPayload,
             new Date(selectedDate),
             userData?.id!,
             '',
@@ -544,7 +546,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         ).updateReassignClassroomGroup(
           practitioner,
           practitioner2,
-          reason,
+          reasonPayload,
           new Date(selectedDate),
           userData?.id!,
           '',
@@ -679,12 +681,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               <FormInput
                 className="my-4 w-full"
                 label={'Type the reason'}
-                // value={}
-                onChange={(e) => {}}
+                onChange={(e) => setOtherReason(e.target.value)}
                 textInputType="input"
+                value={otherReason}
                 placeholder={'e.g. personal appointment'}
               />
             )}
+
             {principalPractitioner && isOneDayLeave === false && (
               <Dropdown
                 placeholder={'Select practitioner'}

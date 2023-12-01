@@ -156,7 +156,6 @@ export const Visits: React.FC = () => {
     getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
-  console.log({ dueDate, todayDateWithoutTimeZone });
   const weeksPregnant = useMemo(
     () =>
       mother?.expectedDateOfDelivery
@@ -242,10 +241,9 @@ export const Visits: React.FC = () => {
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
-          history.push(
-            `${location.pathname}/activities-form/${currentVisit?.id}`,
-            { editView: true }
-          ),
+          history.push(`${location.pathname}/activities-form/${item?.id}`, {
+            editView: true,
+          }),
       };
     });
 
@@ -267,7 +265,6 @@ export const Visits: React.FC = () => {
 
     return array;
   }, [
-    currentVisit,
     getSortedVisits,
     getType,
     history,

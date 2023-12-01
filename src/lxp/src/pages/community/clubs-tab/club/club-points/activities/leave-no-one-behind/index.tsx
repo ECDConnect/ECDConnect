@@ -64,11 +64,12 @@ export const LeaveNoOneBehind: React.FC = () => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
 
+  // Date rules
+  const isDecember = currentMonth === 11;
   const isLeagueStarts = currentMonth >= 3;
+
   const isClubInALeague = !!club?.league;
   const isToShowPoints = isLeagueStarts && isClubInALeague;
-
-  const isDecember = currentMonth === 11;
 
   const mapMembers = useCallback(
     (members: ClubUser[]): UserAlertListDataItem[] =>
@@ -164,7 +165,7 @@ export const LeaveNoOneBehind: React.FC = () => {
 
     if (isCoach) {
       return (
-        <div className="my-5">
+        <div className="mb-5">
           {['green', 'orange', 'red', 'comingUp'].map((item, index) => {
             const { members, color } = getMembers(item);
 
@@ -201,7 +202,7 @@ export const LeaveNoOneBehind: React.FC = () => {
 
     return (
       <div className="mb-5">
-        {membersWithGreenPqa?.length && (
+        {!!membersWithGreenPqa?.length && (
           <AlertCard
             className="mb-1"
             item={{
@@ -211,7 +212,7 @@ export const LeaveNoOneBehind: React.FC = () => {
             }}
           />
         )}
-        {membersWithOrangePqa?.length && (
+        {!!membersWithOrangePqa?.length && (
           <AlertCard
             className="mb-1"
             item={{
@@ -221,7 +222,7 @@ export const LeaveNoOneBehind: React.FC = () => {
             }}
           />
         )}
-        {membersWithRedPqa?.length && (
+        {!!membersWithRedPqa?.length && (
           <AlertCard
             className="mb-1"
             item={{
@@ -231,7 +232,7 @@ export const LeaveNoOneBehind: React.FC = () => {
             }}
           />
         )}
-        {membersWithPqaComingUp?.length && !isDecember && (
+        {!!membersWithPqaComingUp?.length && !isDecember && (
           <AlertCard
             className="mb-1"
             item={{
@@ -290,7 +291,7 @@ export const LeaveNoOneBehind: React.FC = () => {
       />
       {isToShowPoints && (
         <ScoreCard
-          className="mt-5"
+          className="my-5"
           mainText={String(details?.points ?? 0)}
           hint="points"
           currentPoints={details?.points || 8}
@@ -307,7 +308,6 @@ export const LeaveNoOneBehind: React.FC = () => {
       )}
       {details?.greenPerc === 100 && (
         <Alert
-          className="mt-5"
           type="successLight"
           title="Wow, great job!"
           customIcon={<PositiveEmoticon className="w-12" />}
