@@ -23,10 +23,8 @@ public class YearlyNotificationChecks : CronJobService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
-            var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
-
             TenancyContext.SetTenantContext(scope);
-
+            var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
             //await service.DailyAttendanceNotTrackedNotification();
 
         }
