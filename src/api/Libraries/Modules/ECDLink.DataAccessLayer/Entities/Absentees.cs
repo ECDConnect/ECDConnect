@@ -66,5 +66,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string ReassignedToPerson { get; set; }
         public string ReassignedToUserId { get; set; }
 
+        public string LoggedByPerson { get; set; }
+        public string LoggedByUserId { get; set; }
+
     }
 }

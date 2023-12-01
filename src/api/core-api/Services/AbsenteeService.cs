@@ -222,6 +222,7 @@ namespace ECDLink.Api.CoreApi.Services
                 {
                     string classRoomName = "";
                     string reassignedToPerson = "";
+                    string loggedByPerson = "";
                     if (item.ReassignedClass!= null)
                     {
                         var classRoom = classRoomRepo.GetAll().Where(c => c.Id.ToString() == item.ReassignedClass && c.Name != "Unsure").FirstOrDefault();
@@ -238,6 +239,14 @@ namespace ECDLink.Api.CoreApi.Services
                             reassignedToPerson = user.FirstName + " " + user.Surname;
                         }
                     }
+                    //get logged by details
+                    if (item.LoggedBy != null) {
+                        var loggedUser = _userManager.FindByIdAsync(item.LoggedBy).Result;                        
+                        if (loggedUser != null)
+                        {
+                            loggedByPerson = loggedUser.FirstName + " " + loggedUser.Surname;
+                        }
+                    }
 
                     absenteeDetails.Add(new AbsenteeDetail() { 
                         AbsenteeId = item.Id.ToString(),
@@ -246,11 +255,12 @@ namespace ECDLink.Api.CoreApi.Services
                         AbsentDateEnd = item.AbsentDateEnd,
                         ClassName = classRoomName,
                         ReassignedToPerson = reassignedToPerson,
-                        ReassignedToUserId = item.ReassignedToPractitioner
+                        ReassignedToUserId = item.ReassignedToPractitioner,
+                        LoggedByUserId = item.LoggedBy,
+                        LoggedByPerson = loggedByPerson
                     });
                 }
             }
-
 
             return absenteeDetails;
 
