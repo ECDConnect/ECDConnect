@@ -1,4 +1,5 @@
-﻿using ECDLink.Core.Services.Interfaces;
+﻿using ECDLink.Abstractrions.Constants;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -32,6 +33,7 @@ namespace ECDLink.Core.Services
         private readonly IGenericRepository<ClassReassignmentHistory, Guid> _reassignmentsRepo;
         private IPersonnelService __personnelService;
         private readonly IServiceProvider _services;
+        private readonly INotificationService _notificationService;
 
         public ReassignmentService(
             IHttpContextAccessor contextAccessor,
@@ -39,7 +41,8 @@ namespace ECDLink.Core.Services
             HierarchyEngine hierarchyEngine,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] AttendanceTrackingRepository attendanceRepo,
-            IServiceProvider services)
+            IServiceProvider services,
+            INotificationService notificationService)
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
@@ -51,6 +54,7 @@ namespace ECDLink.Core.Services
 
             _absenteeRepo = _repositoryFactory.CreateGenericRepository<Absentees>(userContext: _applicationUserId);
             _reassignmentsRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: _applicationUserId);
+            _notificationService = notificationService;
         }
 
         private IPersonnelService _personnelService
@@ -431,6 +435,10 @@ namespace ECDLink.Core.Services
 
                     reassignment.AssignedToDate = DateTime.Now;
                     _reassignmentsRepo.Update(reassignment);
+
+                    //remove all notifications for the users
+                    _notificationService.ExpireNotificationsTypesForUser(reassignment.UserId, TemplateTypeConstants.PractitionerMarkedAbsent);
+                    _notificationService.ExpireNotificationsTypesForUser(reassignment.ReassignedBackToUserId, TemplateTypeConstants.PractitionerMarkedAbsent);
                 }
                 return reassignment;
             } else { return null; }
