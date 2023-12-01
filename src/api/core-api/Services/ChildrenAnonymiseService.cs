@@ -47,7 +47,6 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 try
                 {
-                    RemoveChildDocuments(child, adminId);
                     var learner = _context.Learners.Where(x => x.UserId == child.UserId).ToList();
                     if (learner.Any())
                     {
@@ -57,6 +56,18 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     }
                     _hierarchyEngine.DeleteHierarchy(child.UserId);
+                    var documents = _context.Documents.Where(x => x.UserId == child.UserId).ToList();
+                    if (documents.Any())
+                    {
+                        foreach (var docRow in documents)
+                        { _context.Remove(docRow); }
+                    }
+                    var jobNotification = _context.JobNotifications.Where(x => x.UserId == child.UserId).ToList();
+                    if (jobNotification.Any())
+                    {
+                        foreach(var jobNotificationRow in jobNotification)
+                        { _context.Remove(jobNotificationRow);}
+                    }
                     _context.Remove(child);
                     _context.SaveChanges();
                     var result = _userManager.DeleteAsync(child.User).Result;
@@ -70,14 +81,6 @@ namespace EcdLink.Api.CoreApi.Services
                     _logger.LogError(ex, "AnonymiseChild Failed for child Id: {0} on {1}", child.Id, ex.Message);
                 }
             }
-        }
-
-        private void RemoveChildDocuments(Child child, string accessUserId)
-        {
-            // Remove Document,photo,birth documents
-            _documentManagementService.DeleteUserDocument(child.UserId, accessUserId, FileTypeEnum.ChildBirthCertificate);
-            _documentManagementService.DeleteUserDocument(child.UserId, accessUserId, FileTypeEnum.ChildClinicCard);
-            _documentManagementService.DeleteUserDocument(child.UserId, accessUserId, FileTypeEnum.ChildRegistrationForm);
         }
 
         private List<Child> GetChildrenToRemove()

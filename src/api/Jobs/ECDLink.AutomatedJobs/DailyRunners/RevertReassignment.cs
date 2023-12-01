@@ -22,10 +22,8 @@ public class RevertReassignment : CronJobService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
+            TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
-
-            TenancyContext.SetTenantContext(scope);            
-
             service.ReassignAbsentees();
         }
     }

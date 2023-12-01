@@ -21,10 +21,8 @@ public class ExpireInvitations : CronJobService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
-            var service = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
-
             TenancyContext.SetTenantContext(scope);
-
+            var service = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
             service.ExpireRelationshipLinks();
         }
     }
