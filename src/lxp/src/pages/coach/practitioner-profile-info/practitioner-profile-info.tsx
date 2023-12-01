@@ -28,7 +28,10 @@ import { RemovePractioner } from './components/remove-practitioner/remove-practi
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { authSelectors } from '@store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
@@ -54,6 +57,7 @@ import { clubSelectors } from '@/store/club';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
+  const appDispatchAction = useAppDispatch();
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -61,6 +65,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const practitionerId = location.state.practitionerId;
   const isFromProgrammeView = location.state.isFromProgrammeView;
+  const isFromReassignView = location?.state?.isFromReassignView;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
   const practitioner = practitioners?.find(
@@ -191,6 +196,18 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     },
     [history]
   );
+
+  const updatedUserReassigned = useCallback(async () => {
+    if (isFromReassignView) {
+      await appDispatchAction(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap();
+    }
+  }, [appDispatchAction, isFromReassignView]);
+
+  useEffect(() => {
+    updatedUserReassigned();
+  }, [updatedUserReassigned]);
 
   const handleAbsenceModal = useCallback(
     (item: AbsenteeDto) => {
