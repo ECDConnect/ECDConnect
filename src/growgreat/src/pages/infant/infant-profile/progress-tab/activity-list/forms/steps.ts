@@ -137,8 +137,8 @@ export const getPillar1Steps = ({
   isChildAfter7Days: boolean;
 }) => {
   const defaultScreens = [
-    ...(isChildAfter7Days ? [WeightAndLengthFormStep] : []),
-    ...(isChildAfter7Days ? [WeightAndLengthResultStep] : []),
+    ...(true ? [WeightAndLengthFormStep] : []),
+    ...(true ? [WeightAndLengthResultStep] : []),
     ...(isShowMuacStep ? [MidUpperArmCircumferenceFormStep] : []),
     ...(isShowMuacStep ? [MidUpperArmCircumferenceResultStep] : []),
     ...(isShowInterventionStep ? [InterventionsStep] : []),
