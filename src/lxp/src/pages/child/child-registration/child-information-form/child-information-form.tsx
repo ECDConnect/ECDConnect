@@ -98,10 +98,11 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       : item;
   });
 
+  // suppress also the unsure class for principal
   const classroomsForPrincipal = [
     ...classroomsForPractitioner,
     ...classroomsByPractitionersForPrincipal,
-  ];
+  ].filter((item: ClassroomGroupDto) => item.name !== UNSURE_CLASS);
 
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     DropDownOption<string>[]
@@ -190,7 +191,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dobDay, dobMonth, dobYear]);
 
-  // Practitioners who are not principals OR FAAs should not be able to see the “Unsure” class or add children to the unsure class
+  // Should not be able to see the “Unsure” class or add children to the unsure class
   useEffect(() => {
     if (
       !practitionerIdFromCoachView &&
@@ -201,9 +202,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
       filterUniqueClassrooms(
         classroomsForPractitionerAnyType.filter(
-          (item: ClassroomGroupDto) =>
-            (practitioner?.isTrainee && item) ||
-            (!practitioner?.isTrainee && item.name !== UNSURE_CLASS)
+          (item: ClassroomGroupDto) => item.name !== UNSURE_CLASS
         )
       ).forEach((groupedItem: any) => {
         groupedItems.push({
@@ -222,11 +221,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
           : classroomsForPractitioner;
 
       filterUniqueClassrooms(
-        currentClassroomGroups.filter(
-          (item) =>
-            ((practitioner?.isTrainee || practitioner?.isPrincipal) && item) ||
-            (!practitioner?.isTrainee && item.name !== UNSURE_CLASS)
-        )
+        currentClassroomGroups.filter((item) => item.name !== UNSURE_CLASS)
       ).forEach((groupedItem) => {
         groupedItems.push({
           label: groupedItem.name,
