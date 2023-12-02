@@ -712,7 +712,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
         _mappedEntities = await GetMappedEntities(null, true, true);
         int trackingDays = 2;
-        string attendanceUrl = $"{Constants.SSIntegrationSettings.SLChildAttendanceRegister}{Constants.SSIntegrationSettings.Upsert}{Constants.SSIntegrationSettings.CreateMultiple}";
+        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
+        //string attendanceUrl = $"{Constants.SSIntegrationSettings.SLChildAttendanceRegister}{Constants.SSIntegrationSettings.Upsert}{Constants.SSIntegrationSettings.CreateMultiple}";
         var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
 
         DateTime trackingDate = DateTime.Now;
@@ -3001,9 +3002,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                     //{
                                     string currentValue = prop.GetValue(entityUser, null) != null ? prop.GetValue(entityUser, null).ToString() : "";
 
-                                    if (localColumnChange.RemapToString)
-                                        newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
-
+                                    if (localColumnChange.RemapToString) {
+                                        if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                        {
+                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                        }
+                                    }    
                                     if (currentValue != newData)
                                     {
                                         //if the name is changed, remember to update the fullname as well
@@ -3044,9 +3048,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                     {
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(coach, null) != null ? prop.GetValue(coach, null).ToString() : "";
-                                        if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
-
+                                        if (localColumnChange.RemapToString) {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
                                         prop.SetValue(coach, model.EntityColumn);
                                         if (currentValue != newData)
                                         {
@@ -3077,8 +3084,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                     {
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(prac, null) != null ? prop.GetValue(prac, null).ToString() : "";
-                                        if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+                                        if (localColumnChange.RemapToString) {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }    
                                         if (currentValue != newData)
                                         {
                                             prop.SetValue(prac, newData);
@@ -3109,9 +3120,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(child, null) != null ? prop.GetValue(child, null).ToString() : "";
 
-                                        if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
-
+                                        if (localColumnChange.RemapToString) {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }    
                                         if (currentValue != newData)
                                         {
                                             prop.SetValue(child, newData);
@@ -3152,8 +3166,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(caregiver, null) != null ? prop.GetValue(caregiver, null).ToString() : "";
 
-                                        if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+                                         if (localColumnChange.RemapToString) {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
 
                                         if (currentValue != newData)
                                         {
@@ -3195,9 +3213,12 @@ public class SmartStartIntegrationService : IIntegrationService
 
                                         string currentValue = prop.GetValue(address, null) != null ? prop.GetValue(address, null).ToString() : "";
 
-                                        if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
-
+                                         if (localColumnChange.RemapToString) {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
                                         if (currentValue != newData)
                                         {
                                             prop.SetValue(address, model.NewData);
@@ -3228,8 +3249,12 @@ public class SmartStartIntegrationService : IIntegrationService
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(doc, null) != null ? prop.GetValue(doc, null).ToString() : "";
 
-                                        if (localColumnChange.RemapToString)
-                                            newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.LocalEntity, model.NewData);
+                                        if (localColumnChange.RemapToString) {
+                                            if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
+                                            {
+                                                newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
+                                            }
+                                        }
 
                                         if (currentValue != newData)
                                         {
@@ -3881,8 +3906,18 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 case "datetime":
                                                     jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                     break;
+                                                 case "date":
+                                                    jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
+                                                    break;    
                                                 default:
-                                                    jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                    if (valueToSend.Length <= (int)changeLine.ColumnValidationLimit)
+                                                    {
+                                                        jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                    }
+                                                    else
+                                                    {
+                                                       jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)changeLine.ColumnValidationLimit) + "\",");
+                                                    }
                                                     break;
                                             }
                                         }
@@ -4644,8 +4679,18 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 case "datetime":
                                                     jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                     break;
+                                               case "date":
+                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
+                                                    break;
                                                 default:
-                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                    if (valueToSend.Length <= (int)mappedColumnLine.ColumnValidationLimit)
+                                                    {
+                                                       jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                    }
+                                                    else
+                                                    {
+                                                       jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
+                                                    }
                                                     break;
                                             }
                                             //jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
