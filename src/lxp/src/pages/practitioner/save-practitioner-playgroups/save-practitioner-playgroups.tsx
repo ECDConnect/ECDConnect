@@ -191,7 +191,7 @@ export const EditPlaygroups: React.FC = () => {
                   ...currentPlayGroup,
                   classroomId: playGroup?.classroomId!,
                   id: playGroup?.id,
-                  programmeTypeId: playGroup?.id,
+                  programmeTypeId: programmeType?.id,
                   name: playGroup.name,
                   userId: playGroup.userId,
                   isActive: true,

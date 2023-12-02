@@ -275,7 +275,7 @@ public class IntegrationAPIManager
             List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
             //relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "SiteAddress", AllColumns = "True", Columns = "", JoinType = "Outer" });
 
-            var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLFranchisor.Replace("{{Guid}}", remoteId), columns, null, relatedConditions);
+            var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLFranchisor + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteId), columns, null, relatedConditions);
 
             return JsonConvert.DeserializeObject<MappedFranchisor>(apiResponse.ResponseString);
 
