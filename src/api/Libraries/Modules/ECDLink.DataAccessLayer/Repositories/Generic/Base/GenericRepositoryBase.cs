@@ -210,11 +210,9 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 DoAudit(entity, "Delete");
         }
 
-        public virtual bool DoAudit(T entity, string changeType = "Update", T entityBefore = null)
-        {
-            bool isValidChange = false;
-            
-            GenericRepositoryBase<IntegrationAudit> auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
+        public void DoAudit(T entity, string changeType = "Update", T entityBefore = null)
+        {            
+            var auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
             Type tA = typeof(T);
             //Populate Audit records
             switch (changeType)
@@ -231,8 +229,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                         RelatedId = entity.Id.ToString(),
                         TenantId = _tenantId
                     });
-                    isValidChange = true;
-                    break;
+                    return;
                 case "Insert":
                     auditInsertRepo.Insert(new IntegrationAudit()
                     {
@@ -242,12 +239,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                         RelatedId = entity.Id.ToString(),
                         TenantId = _tenantId
                     });
-                    isValidChange = true;
-                    break;
+                    return;
                 default:
                     List<IntegrationAudit> changesList = new List<IntegrationAudit>();
                     foreach (var prop in tA.GetProperties())
                     {
+                        bool isValidChange = false;
                         Type propType = prop.PropertyType;
                         if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType && prop.Name != "UpdatedDate") //ignore navigation types due to lazyloading And do not flag UpdatedDate as Valid change
                         {
@@ -295,17 +292,17 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                     {
                         auditInsertRepo.InsertMany(changesList);
                     }
-                    break;
-            }
-            return isValidChange;
+                    return;
+            }            
         }
 
-        public virtual bool DoAuditMany(IEnumerable<T> entityList, string changeType = "Update", IEnumerable<T> entitiesBefore = null, bool noAudit = false)
+        // TODO: Only ever used for inserts (we don't have an update many) so can probably remove most of the logic from here.
+        // Since its so similar to DoAudit, we should just reuse that anyway
+        public void DoAuditMany(IEnumerable<T> entityList, string changeType = "Update", IEnumerable<T> entitiesBefore = null, bool noAudit = false)
         {
             if (!(entityList?.Any() ?? false))
-                return false;
+                return;
 
-            bool isValidChange = false;
 
             GenericRepositoryBase<IntegrationAudit> auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
             Type tA = typeof(T);
@@ -325,8 +322,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                             UserId = _userId,
                             RelatedId = e.Id.ToString()
                         }).ToList());
-                    isValidChange = true;
-                    break;
+                    return;
                 case "Insert":
                     auditInsertRepo.InsertMany(
                         entityList.Select(e => new IntegrationAudit()
@@ -336,18 +332,18 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                             UserId = _userId,
                             RelatedId = e.Id.ToString()
                         }).ToList());
-                    isValidChange = true;
-                    break;
+                    return;
                 default:
                     List<IntegrationAudit> changesList = new List<IntegrationAudit>();
 
                     foreach (var entity in entityList)
                     {
-                        // TODO: Is this enough. Do we have entities with the same Id?
                         var beforeObj = entitiesBefore?.FirstOrDefault(b => b.Id == entity.Id);
                         if (beforeObj != null)
+                        {
                             foreach (var prop in tA.GetProperties())
                             {
+                                bool isValidChange = false;
                                 Type propType = prop.PropertyType;
                                 if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType && prop.Name != "UpdatedDate") //ignore navigation types due to lazyloading And do not flag UpdatedDate as Valid change
                                 {
@@ -383,13 +379,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                                     }
                                 }
                             }
+                        }
                     }
 
                     auditInsertRepo.InsertMany(changesList);
-                    break;
+                    return;
             }
-
-            return isValidChange;
         }
 
         public virtual bool Exists(Guid id)
