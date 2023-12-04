@@ -1,7 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useUser } from '../../hooks/useUser';
 import {
-  PermissionEnum,
   usePanel,
   LocalStorageKeys,
   AuthUser,
@@ -13,19 +11,15 @@ import {
 import MessagePanel from './components/message-panel';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
-import UiTable from '../../components/old-ui-table';
+
 import { FilterRoleList, GetAllMessageLogsForAdmin } from '@ecdlink/graphql';
 import { useQuery, useLazyQuery } from '@apollo/client';
-import {
-  SearchDropDown,
-  SearchDropDownOption,
-  Dropdown,
-  DatePicker,
-} from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { SearchDropDown, SearchDropDownOption, Dropdown } from '@ecdlink/ui';
+import { format, subDays } from 'date-fns';
+import CustomDateRangePicker from '../../components/date-picker';
+import NavigationTable from '../../components/navigation-table';
 
 export default function Messaging() {
-  const { hasPermission } = useUser();
   const panel = usePanel();
 
   const [tableData, setTableData] = useState<any[]>([]);
@@ -34,12 +28,21 @@ export default function Messaging() {
   const [roleData, setRoleData] = useState<RoleDto[]>([]);
   const [showFilter, setShowFilter] = useState(false);
   const [statusFilter, setStatusFilter] = useState('');
-  const [startDateFilter, setStartDateFilter] = useState<Date>(null);
-  const [endDateFilter, setEndDateFilter] = useState<Date>(null);
+  // const [startDateFilter, setStartDateFilter] = useState<Date>(null);
+  // const [endDateFilter, setEndDateFilter] = useState<Date>(null);
   const [selectedRoles, setSelectedRoles] = useState<RoleDto[]>([]);
   const user = localStorage.getItem(LocalStorageKeys.user);
-  const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
+  const [selectedPageSize] = useState<number>(null);
   const { setNotification } = useNotifications();
+
+  const currentDate = new Date();
+  const startDate = subDays(currentDate, 30);
+  const endDate = currentDate;
+
+  const [selectedRange, setSelectedRange] = useState<Date[]>([
+    startDate,
+    endDate,
+  ]);
 
   useEffect(() => {
     if (user) {
@@ -59,8 +62,8 @@ export default function Messaging() {
         userId: authenticatedUser?.id,
         roleIds: selectedRoles.map(({ id }) => id),
         status: statusFilter,
-        startDate: startDateFilter,
-        endDate: endDateFilter,
+        startDate: showFilter ? selectedRange[0] : null,
+        endDate: showFilter ? selectedRange[1] : null,
       },
     }
   );
@@ -69,7 +72,7 @@ export default function Messaging() {
     if (!messages) {
       getAllMessageLogsForAdmin();
     }
-  }, [messages]);
+  }, [messages, getAllMessageLogsForAdmin]);
 
   useEffect(() => {
     if (roles) {
@@ -77,7 +80,7 @@ export default function Messaging() {
     }
     if (messages) {
       const copyItems = messages.allMessageLogsForAdmin.map(
-        (item: MessageLogDto) => ({
+        (item: MessageLogDto, index: number) => ({
           ...item,
           message: item.message,
           subject: item.subject,
@@ -87,12 +90,12 @@ export default function Messaging() {
               : '',
           status:
             new Date(item.messageDate) > new Date() ? 'Scheduled' : 'Sent',
+          id: index.toString(),
         })
       );
-
       setTableData(copyItems);
     }
-  }, [roles, messages]);
+  }, [roles, messages, selectedRoles]);
 
   const displayMessagePanel = () => {
     panel({
@@ -103,6 +106,7 @@ export default function Messaging() {
           isView={false}
           messageStatus="new"
           closeDialog={(messageCreated: boolean) => {
+            console.log('messageCreated', messageCreated);
             onSubmit();
             if (messageCreated) {
               refetch();
@@ -149,35 +153,14 @@ export default function Messaging() {
     });
   };
 
-  const displayViewMessagePanel = (message: MessageLogDto) => {
-    const messageDate = new Date(message.messageDate);
-    const messageStatus = messageDate < new Date() ? 'completed' : 'pending';
-
-    panel({
-      noPadding: false,
-      title: 'View message',
-      render: (onSubmit: any) => (
-        <MessagePanel
-          isView={true}
-          messageStatus={messageStatus}
-          message={message}
-          closeDialog={(messageCreated: boolean) => {
-            onSubmit();
-          }}
-        />
-      ),
-    });
-  };
-
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
-  }, 150);
+  }, 350);
 
   const clearFilters = () => {
     setSelectedRoles([]);
     setStatusFilter('');
-    setStartDateFilter(null);
-    setEndDateFilter(null);
+    setSelectedRange([startDate, endDate]);
     getAllMessageLogsForAdmin();
   };
 
@@ -186,12 +169,17 @@ export default function Messaging() {
     getAllMessageLogsForAdmin();
   };
 
+  const handleDateChange = (range: Date[]) => {
+    setSelectedRange(range);
+    getAllMessageLogsForAdmin();
+  };
+
   return (
-    <div className="relative h-full rounded-xl bg-white p-8">
-      <div className="flex flex-col">
-        <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-          <div className="text-body w-8/12 sm:flex sm:justify-around">
-            <div className="text-body w-8/12 flex-col sm:flex sm:justify-around">
+    <div className="bg-white">
+      <div className="m-5 flex flex-col">
+        <div className="m-5 pb-5 sm:flex sm:items-center sm:justify-between">
+          <div className="text-body w-full sm:flex  ">
+            <div className="text-body w-full flex-col sm:flex sm:justify-around">
               <div className="relative w-full">
                 <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                   {searchValue === '' && (
@@ -204,123 +192,12 @@ export default function Messaging() {
                   onChange={search}
                 />
               </div>
-              {showFilter && (
-                <div className="mt-4 flex flex-row items-center justify-between sm:mt-16">
-                  <div className="mr-2 flex items-center gap-2">
-                    <SearchDropDown<any>
-                      displayMenuOverlay
-                      className={'mr-1 ml-2'}
-                      options={
-                        roleData.map((x) => {
-                          return {
-                            id: x.id ?? '',
-                            value: x,
-                            label: x.name,
-                            disabled: false,
-                          };
-                        }) || []
-                      }
-                      onChange={(value) => onRoleFilterItemsChanges(value)}
-                      placeholder={'Role'}
-                      pluralSelectionText={'Roles'}
-                      color={'secondary'}
-                      multiple
-                      selectedOptions={selectedRoles.map((x) => {
-                        return {
-                          id: x.id ?? '',
-                          value: x,
-                          label: x.name,
-                        };
-                      })}
-                      info={{
-                        name: `Filter by: Role`,
-                      }}
-                    />
-                  </div>
-                  <div className="mr-2 flex items-center gap-2">
-                    <Dropdown
-                      fillType="filled"
-                      textColor="white"
-                      fillColor="secondary"
-                      placeholder="Status"
-                      labelColor="white"
-                      selectedValue={statusFilter}
-                      list={[
-                        { label: 'Scheduled', value: 'scheduled' },
-                        { label: 'Sent', value: 'sent' },
-                      ]}
-                      onChange={(item) => {
-                        setStatusFilter(item);
-                        getAllMessageLogsForAdmin();
-                      }}
-                      className="w-48"
-                    />
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="w-full">
-                      <DatePicker
-                        placeholderText={`Start date...`}
-                        wrapperClassName="text-center w-full"
-                        className="text-textMid bg-uiBg mx-auto"
-                        selected={
-                          startDateFilter
-                            ? new Date(startDateFilter)
-                            : undefined
-                        }
-                        onChange={(date: Date) => {
-                          setStartDateFilter(
-                            new Date(
-                              date.getFullYear(),
-                              date.getMonth(),
-                              date.getDate(),
-                              1,
-                              1
-                            )
-                          );
-                          getAllMessageLogsForAdmin();
-                        }}
-                        dateFormat="EEE, dd MMM yyyy"
-                      />
-                    </span>
-                    <span className="w-full">
-                      <DatePicker
-                        placeholderText={`End date...`}
-                        wrapperClassName="text-center w-full"
-                        className="text-textMid bg-uiBg mx-auto"
-                        selected={
-                          endDateFilter ? new Date(endDateFilter) : undefined
-                        }
-                        onChange={(date: Date) => {
-                          setEndDateFilter(
-                            new Date(
-                              date.getFullYear(),
-                              date.getMonth(),
-                              date.getDate(),
-                              23,
-                              59
-                            )
-                          );
-                          getAllMessageLogsForAdmin();
-                        }}
-                        dateFormat="EEE, dd MMM yyyy"
-                      />
-                    </span>
-                  </div>
-                  <div className="w-full">
-                    <button
-                      onClick={clearFilters}
-                      type="button"
-                      className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white"
-                    >
-                      Clear All
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
+          </div>
 
-            <div className="mx-4 w-3/12">
-              <span className="w-full text-lg font-medium leading-6 text-gray-900">
+          <div className="mt-0  flex w-10/12 flex-row sm:mt-0  sm:ml-4">
+            <div className="pr-2 ">
+              <span className=" text-lg font-medium leading-6 text-gray-900">
                 <button
                   onClick={() => setShowFilter(!showFilter)}
                   id="dropdownHoverButton"
@@ -346,10 +223,8 @@ export default function Messaging() {
                 </button>
               </span>
             </div>
-          </div>
 
-          <div className="mt-3 justify-end sm:mt-0 sm:ml-4">
-            {hasPermission(PermissionEnum.create_static) && (
+            <div className="flex w-full flex-row ">
               <button
                 onClick={() => displayMessagePanel()}
                 type="button"
@@ -358,14 +233,85 @@ export default function Messaging() {
                 <MailIcon className="mr-4 h-5 w-5"></MailIcon> Send a new
                 message
               </button>
-            )}
+            </div>
           </div>
         </div>
 
-        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+        {showFilter && (
+          <div className="mb-3 flex w-full flex-row flex-wrap items-center">
+            <div className="relative inline-block pr-2 text-left">
+              <SearchDropDown<any>
+                displayMenuOverlay
+                className={'w-38 mr-1 ml-2'}
+                options={
+                  roleData.map((x) => {
+                    return {
+                      id: x.id ?? '',
+                      value: x,
+                      label: x.name,
+                      disabled: false,
+                    };
+                  }) || []
+                }
+                onChange={(value) => onRoleFilterItemsChanges(value)}
+                placeholder={'Role'}
+                pluralSelectionText={'Roles'}
+                color={'secondary'}
+                multiple
+                selectedOptions={selectedRoles.map((x) => {
+                  return {
+                    id: x.id ?? '',
+                    value: x,
+                    label: x.name,
+                  };
+                })}
+                info={{
+                  name: `Filter by: Role`,
+                }}
+              />
+            </div>
+            <div className="relative inline-block pr-2 text-left">
+              <Dropdown
+                fillType="filled"
+                textColor="white"
+                fillColor="secondary"
+                placeholder="Status"
+                labelColor="white"
+                selectedValue={statusFilter}
+                list={[
+                  { label: 'Scheduled', value: 'scheduled' },
+                  { label: 'Sent', value: 'sent' },
+                ]}
+                onChange={(item) => {
+                  setStatusFilter(item);
+                  getAllMessageLogsForAdmin();
+                }}
+                className="w-38"
+              />
+            </div>
+            <div>
+              <CustomDateRangePicker
+                handleDateChange={handleDateChange}
+                selectedRange={selectedRange}
+              />
+            </div>
+
+            <div className=" flex-end flex">
+              <button
+                onClick={clearFilters}
+                type="button"
+                className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div className="-my-2 mb-5 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-              <UiTable
+              <NavigationTable
                 columns={[
                   { field: 'message', use: 'Message text' },
                   {
@@ -377,13 +323,10 @@ export default function Messaging() {
                   { field: 'messageDate', use: 'Scheduled date' },
                 ]}
                 showSearch={false}
+                showSelect={false}
                 rows={tableData}
-                viewRow={displayViewMessagePanel}
+                viewRow={displayEditMessagePanel}
                 searchInput={searchValue}
-                editRow={
-                  hasPermission(PermissionEnum.update_system) &&
-                  displayEditMessagePanel
-                }
                 options={{
                   per_page: selectedPageSize,
                   rows: tableData?.length,
