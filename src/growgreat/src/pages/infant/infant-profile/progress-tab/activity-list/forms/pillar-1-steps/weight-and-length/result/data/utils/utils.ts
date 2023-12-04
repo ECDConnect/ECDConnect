@@ -45,12 +45,7 @@ export const getDataPerYear = (data: number[]) => {
   if (daysPerYear.length > 0) {
     daysPerYear.reduce(
       (acc, val) => {
-        let yearData = data.slice(acc[0], acc[0] + val);
-        if (yearData.length > 0) {
-          let sum = yearData.reduce((a, b) => a + b);
-          let avg = sum / val;
-          yearlyData.push(avg);
-        }
+        yearlyData.push(data[acc[0]]);
         return [acc[0] + val];
       },
       [0]

@@ -1,6 +1,6 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
-import { Alert, Colours, Divider, renderIcon, Typography } from '@ecdlink/ui';
+import { Alert, Divider, renderIcon, Typography } from '@ecdlink/ui';
 import {
   Fragment,
   useCallback,
@@ -13,7 +13,8 @@ import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { DataSetType, GrowthChart, WeightOrHeightForAgeProps } from './chart';
+import { GrowthChart } from './chart';
+import { DataSetType, WeightOrHeightForAgeProps } from './chart.types';
 
 import {
   weightLengthAndHeightFormQuestions,
@@ -60,71 +61,8 @@ import {
   findLastIndex,
 } from './data/utils/utils';
 import { GrowthMonitoring } from '../..';
-
-interface GrowthStatus {
-  length: VisitData[];
-  weight: VisitData[];
-}
-
-interface xAxisData {
-  y: any;
-  x: number;
-  name?: string;
-  date: Date;
-}
-
-const Card = ({
-  value,
-  title,
-  subTitle,
-  status,
-}: {
-  value: string;
-  title: string;
-  subTitle: string;
-  status: DataSetType;
-}) => {
-  const getColor = (): { bg: Colours; main: Colours } => {
-    switch (status) {
-      case 'SD2':
-        return { bg: 'alertBg', main: 'alertMain' };
-      case 'SD2neg':
-        return { bg: 'alertBg', main: 'alertMain' };
-      case 'SD3neg':
-        return { bg: 'errorBg', main: 'errorMain' };
-      case 'SD3':
-        if (title === 'Length') {
-          return { bg: 'successBg', main: 'successMain' };
-        } else {
-          return { bg: 'errorBg', main: 'errorMain' };
-        }
-      default:
-        return { bg: 'successBg', main: 'successMain' };
-    }
-  };
-
-  return (
-    <div
-      className={`bg-${
-        getColor().bg
-      } flex w-full flex-col items-center justify-center rounded-xl p-4`}
-    >
-      <Typography type="h4" color="textDark" text={title} />
-      <Typography
-        type="body"
-        color={getColor().main}
-        className="my-3 text-4xl font-bold"
-        text={value}
-      />
-      <Typography
-        type="body"
-        color="textMid"
-        className="text-xs font-bold"
-        text={subTitle}
-      />
-    </div>
-  );
-};
+import { Card } from './card';
+import { GrowthStatus, xAxisData } from './index.types';
 
 export const WeightAndLengthResultStep = ({
   infant,
@@ -1060,11 +998,8 @@ export const WeightAndLengthResultStep = ({
     var mapData: xAxisData[] = getMapData('Length');
 
     const dateOfBirth = infant?.user?.dateOfBirth as string;
-    const {
-      years: ageYears,
-      months: ageMonthsPart,
-      days: ageDays,
-    } = getAgeInYearsMonthsAndDays(dateOfBirth);
+    const { years: ageYears, days: ageDays } =
+      getAgeInYearsMonthsAndDays(dateOfBirth);
     const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
     const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
