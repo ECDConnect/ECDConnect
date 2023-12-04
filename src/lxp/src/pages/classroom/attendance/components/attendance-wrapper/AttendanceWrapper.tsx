@@ -15,7 +15,7 @@ import {
 } from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 
-export default function MultiRouteWrapper() {
+export default function AttendanceWrapper() {
   const history = useHistory();
   const appDispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -93,7 +93,6 @@ export default function MultiRouteWrapper() {
                   type="filled"
                   color="primary"
                   className={'w-6/12'}
-                  // icon={'SaveIcon'}
                   onClick={() => {}}
                 >
                   {/* {renderIcon('XIcon', `w-5 h-5 text-white mr-2`)} */}
