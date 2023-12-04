@@ -1,8 +1,15 @@
-import { LocalStorageKeys, UserDto, useDialog, useTheme } from '@ecdlink/core';
+import {
+  LocalStorageKeys,
+  UserDto,
+  useDialog,
+  usePrevious,
+  useTheme,
+} from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
   ActionModal,
+  Avatar,
   BannerWrapper,
   Dialog,
   DialogPosition,
@@ -10,11 +17,11 @@ import {
   StackedList,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { cloneDeep } from 'lodash';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -39,8 +46,11 @@ import { NextOfKin } from './next-of-kin/next-of-kin';
 import { coachSelectors } from '@/store/coach';
 import { contentReportSelectors } from '@/store/content/report';
 import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
+import { PractitionerAboutRouteState } from './practitioner-about.types';
+import { BackToCommunityDialog } from '@/pages/coach/coach-about/components/back-to-community-dialog/indext';
 
 export const PractitionerAbout: React.FC = () => {
+  const location = useLocation<PractitionerAboutRouteState>();
   const history = useHistory();
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
@@ -57,6 +67,9 @@ export const PractitionerAbout: React.FC = () => {
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const [editEmail, setEditEmail] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
+
+  const isFromCommunityWelcome = location?.state?.isFromCommunityWelcome;
+  const wasFromCommunityWelcome = usePrevious(isFromCommunityWelcome);
 
   useEffect(() => {
     if (!isOnline) {
@@ -84,6 +97,11 @@ export const PractitionerAbout: React.FC = () => {
       reportingPeriod.reportingDate
     )
   );
+
+  const avatar =
+    userProfilePicture?.file ||
+    user?.profileImageUrl ||
+    userProfilePicture?.reference;
 
   useEffect(() => {
     if (user) {
@@ -335,8 +353,42 @@ export const PractitionerAbout: React.FC = () => {
     setListItems(list);
   };
 
-  const displayProfilePicturePrompt = () => {
+  const displayProfilePicturePrompt = useCallback(() => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
+  }, [editProfilePictureVisible]);
+
+  const handlePicturePromptOnClose = () => {
+    console.log('log 1');
+    if (isFromCommunityWelcome) {
+      return dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onClose) => {
+          return (
+            <BackToCommunityDialog
+              hideTitle={!avatar}
+              avatar={
+                avatar ? (
+                  <Avatar dataUrl={avatar} size="header" className="mb-4" />
+                ) : undefined
+              }
+              onSubmit={() => {
+                history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT, {
+                  isFromCommunityWelcome: false,
+                } as PractitionerAboutRouteState);
+                onClose();
+              }}
+              onClose={() => {
+                displayProfilePicturePrompt();
+                onClose();
+              }}
+            />
+          );
+        },
+      });
+    }
+
+    displayProfilePicturePrompt();
   };
 
   const deleteProfilePicture = () => {
@@ -348,7 +400,9 @@ export const PractitionerAbout: React.FC = () => {
       appDispatch(userActions.updateUser(copy));
     }
 
-    setEditProfilePictureVisible(!editProfilePictureVisible);
+    if (!isFromCommunityWelcome) {
+      setEditProfilePictureVisible(!editProfilePictureVisible);
+    }
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -394,6 +448,16 @@ export const PractitionerAbout: React.FC = () => {
     }
   };
 
+  useEffect(() => {
+    if (isFromCommunityWelcome && !wasFromCommunityWelcome) {
+      displayProfilePicturePrompt();
+    }
+  }, [
+    displayProfilePicturePrompt,
+    wasFromCommunityWelcome,
+    isFromCommunityWelcome,
+  ]);
+
   return (
     <div className={styles.container}>
       <Dialog
@@ -413,21 +477,30 @@ export const PractitionerAbout: React.FC = () => {
         <NextOfKin setAddNextOfKin={setAddNextToKin} user={user} />
       </Dialog>
       <BannerWrapper
-        showBackground={true}
+        showBackground
         backgroundUrl={theme?.images.graphicOverlayUrl}
         backgroundImageColour={'primary'}
         title={'About me'}
         color={'primary'}
         size="medium"
-        renderBorder={true}
+        renderBorder
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.PRACTITIONER.PROFILE.ROOT)}
+        onBack={() => {
+          history.push(
+            isFromCommunityWelcome
+              ? ROUTES.PRACTITIONER.COMMUNITY.ROOT
+              : ROUTES.PRACTITIONER.PROFILE.ROOT,
+            {
+              isFromCommunityWelcome: false,
+            } as PractitionerAboutRouteState
+          );
+        }}
         displayOffline={!isOnline}
       >
         <div className="px-4">
           <div className={'inline-flex w-full justify-center pt-8'}>
             <ProfileAvatar
-              dataUrl={userProfilePicture?.file || user?.profileImageUrl}
+              dataUrl={avatar}
               size={'header'}
               onPressed={displayProfilePicturePrompt}
               hasConsent={true}
@@ -454,9 +527,11 @@ export const PractitionerAbout: React.FC = () => {
         <div className={'p-4'}>
           <PhotoPrompt
             title="Profile Photo"
-            onClose={displayProfilePicturePrompt}
+            onClose={handlePicturePromptOnClose}
             onAction={picturePromtOnAction}
-            onDelete={userProfilePicture ? deleteProfilePicture : undefined}
+            onDelete={
+              userProfilePicture || avatar ? deleteProfilePicture : undefined
+            }
           ></PhotoPrompt>
         </div>
       </Dialog>
