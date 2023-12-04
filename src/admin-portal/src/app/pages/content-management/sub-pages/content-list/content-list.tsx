@@ -229,7 +229,7 @@ export default function ContentList({
     return (
       <div>
         <div className="flex flex-col">
-          <div className="pb-5 sm:flex sm:items-center sm:justify-between">
+          {/* <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <h3 className="text-lg font-medium leading-6 text-white">{type}</h3>
             <div className="flex flex-row">
               <div className="flex flex-col">
@@ -255,7 +255,7 @@ export default function ContentList({
                 </div>
               </div>
             </div>
-          </div>
+          </div> */}
 
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
