@@ -376,6 +376,8 @@ class PractitionerService {
               reassignedToPerson
               reassignedToUserId
               absenteeId
+              loggedByPerson
+              loggedByUserId
           }
           }
         }
