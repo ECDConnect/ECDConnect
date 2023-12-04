@@ -348,7 +348,7 @@ export const AddPractitioner = ({
                   </div>
                 )}
             </div>
-            <div className="-mb-4 mt-4 w-11/12 self-end">
+            <div className="-mb-4 mt-4 h-full w-11/12 self-end">
               <Button
                 size="normal"
                 className="mb-4 w-full"
