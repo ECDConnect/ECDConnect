@@ -358,7 +358,6 @@ export const PractitionerAbout: React.FC = () => {
   }, [editProfilePictureVisible]);
 
   const handlePicturePromptOnClose = () => {
-    console.log('log 1');
     if (isFromCommunityWelcome) {
       return dialog({
         position: DialogPosition.Middle,

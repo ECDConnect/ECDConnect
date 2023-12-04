@@ -26,7 +26,6 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@/store/user';
-import { CommunityRouteState } from '@/pages/community/community.types';
 import { AddPhotoDialog } from '@/pages/community/welcome/add-photo-dialog';
 import { PractitionerAboutRouteState } from '../../practitioner-about/practitioner-about.types';
 import { PractitionerCommunityRouteState } from '../index.types';
@@ -37,7 +36,7 @@ export const PractitionerCommunityWelcome: React.FC = () => {
   const { theme } = useTheme();
 
   const history = useHistory();
-  const location = useLocation<CommunityRouteState>();
+  const location = useLocation<PractitionerCommunityRouteState>();
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
 
