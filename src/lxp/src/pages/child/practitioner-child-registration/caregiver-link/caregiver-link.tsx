@@ -30,6 +30,7 @@ import { getUser } from '@/store/user/user.selectors';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
+  TabsItemForPrincipal,
   TabsItems,
   TabsItemsWithAttendance,
 } from '@/pages/classroom/class-dashboard/class-dashboard.types';
@@ -110,13 +111,21 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   };
 
   const onExit = () => {
-    isPractitionerView
-      ? history.push(ROUTES.CLASSROOM.ROOT, {
+    if (isPractitionerView || isPrincipal) {
+      if (isPrincipal) {
+        history.push(ROUTES.CLASSROOM.ROOT, {
+          activeTabIndex: TabsItemForPrincipal.CHILDREN,
+        } as ClassDashboardRouteState);
+      } else {
+        history.push(ROUTES.CLASSROOM.ROOT, {
           activeTabIndex: hasAttendanceRoute
             ? TabsItemsWithAttendance.CHILDREN
             : TabsItems.CHILDREN,
-        } as ClassDashboardRouteState)
-      : history.push(ROUTES.COACH.PRACTITIONERS);
+        } as ClassDashboardRouteState);
+      }
+    } else {
+      history.push(ROUTES.COACH.PRACTITIONERS);
+    }
   };
 
   const createLink = async () => {
