@@ -29,8 +29,6 @@ public class MonthlyNotificationChecks : CronJobService
             if (DateTime.Now.Day == 1)
             { //only run on 1st of month
                 await service.MonthlyStatementsReminderAsync();
-                await service.MonthlyStartupSupportEndReminderAsync();
-
                 //specific months checks
                 if (DateTime.Now.Month == 7)
                 {
