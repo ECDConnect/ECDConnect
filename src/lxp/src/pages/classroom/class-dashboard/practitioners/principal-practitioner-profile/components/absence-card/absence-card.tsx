@@ -1,7 +1,7 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { Button, Card, Typography, renderIcon } from '@ecdlink/ui';
-import { format, isPast, isSameDay } from 'date-fns';
+import { add, format, isPast, isSameDay } from 'date-fns';
 
 interface AbsenceCardProps {
   absenceIsToday: boolean;
@@ -47,7 +47,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
         );
 
         const absenceIsUntilSevenDaysPast = isPast(
-          new Date(item?.absentDateEnd as string)
+          add(new Date(item?.absentDateEnd as string), { days: 1 })
         );
 
         if (absenceIsUntilSevenDaysPast) {
@@ -58,7 +58,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                   <Typography
                     type={'h1'}
                     color="textDark"
-                    text={`${practitioner?.user?.firstName} is on leave`}
+                    text={`Contact ${practitioner?.user?.firstName} to find out if they have returned from leave`}
                     className={'mt-6 ml-4'}
                   />
                   <div className="flex items-center gap-2">
@@ -73,7 +73,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                       type={'body'}
                       color="textMid"
                       text={`${format(
-                        new Date(handleComebackDay(item?.absentDate as Date)),
+                        new Date(item?.absentDate as Date),
                         'd MMM yyyy'
                       )}`}
                       className={'mt-4'}
@@ -112,6 +112,14 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                       color="textMid"
                       text={`${item?.reason}`}
                       className={'mt-4'}
+                    />
+                  </div>
+                  <div>
+                    <Typography
+                      type={'body'}
+                      color="textMid"
+                      text={`Contact ${practitioner?.user?.firstName} to make sure they have returned.`}
+                      className={'px-4 pt-2'}
                     />
                   </div>
                   <div className="flex justify-center">
@@ -262,7 +270,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                       type={'body'}
                       color="textMid"
                       text={`${format(
-                        new Date(handleComebackDay(item?.absentDate as Date)),
+                        new Date(item?.absentDate as Date),
                         'd MMM yyyy'
                       )}`}
                       className={'mt-4'}
@@ -482,7 +490,7 @@ export const AbsenceCard: React.FC<AbsenceCardProps> = ({
                       type={'body'}
                       color="textMid"
                       text={`${format(
-                        new Date(handleComebackDay(item?.absentDate as Date)),
+                        new Date(item?.absentDate as Date),
                         'd MMM yyyy'
                       )}`}
                       className={'mt-4'}

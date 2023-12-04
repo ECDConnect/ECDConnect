@@ -688,9 +688,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                                 type={'body'}
                                 color="textMid"
                                 text={`${format(
-                                  new Date(
-                                    handleComebackDay(item?.absentDate as Date)
-                                  ),
+                                  new Date(item?.absentDate as Date),
                                   'd MMM yyyy'
                                 )}`}
                                 className={'mt-4'}
@@ -858,9 +856,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                                 type={'body'}
                                 color="textMid"
                                 text={`${format(
-                                  new Date(
-                                    handleComebackDay(item?.absentDate as Date)
-                                  ),
+                                  new Date(item?.absentDate as Date),
                                   'd MMM yyyy'
                                 )}`}
                                 className={'mt-4'}
@@ -1044,9 +1040,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                               type={'body'}
                               color="textMid"
                               text={`${format(
-                                new Date(
-                                  handleComebackDay(item?.absentDate as Date)
-                                ),
+                                new Date(item?.absentDate as Date),
                                 'd MMM yyyy'
                               )}`}
                               className={'mt-4'}
