@@ -133,8 +133,6 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
     control: control,
   });
 
-  const disableButton =
-    !reason || !selectedDate || !endDate || !principalOrFundaAppAdmin;
   const reasonPayload = reason === 'Other' ? otherReason : reason;
 
   const practitionerClassroomGroups = useMemo(
@@ -144,6 +142,18 @@ export const CoachReassignClass: React.FC<ComponentBaseProps> = () => {
       ),
     []
   );
+
+  const disableButton =
+    !reason ||
+    !selectedDate ||
+    !endDate ||
+    (!principalOrFundaAppAdmin &&
+      principalPractitioners &&
+      principalPractitioners?.length > 0) ||
+    (practitionerClassroomGroups?.length > 0 &&
+      reassignedClassroomGroups?.length !==
+        practitionerClassroomGroups?.length &&
+      practitionersTeachList?.length > 0);
   const practitionerProgramme = useMemo(
     () => practitionerClassroomGroups?.[0]?.classroom?.name,
     [practitionerClassroomGroups]
