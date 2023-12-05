@@ -247,7 +247,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().ToList();
-            if (completedSections.Count == 4)
+            if (completedSections.Count == 3)
             {
                 MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
             }
