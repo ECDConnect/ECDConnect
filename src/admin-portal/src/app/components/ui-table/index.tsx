@@ -397,12 +397,12 @@ export default function UiTable({
           main: 'rounded-lg',
           table_head: {
             table_row: ` mb-10 border-b-2 border-secondary `,
-            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-infoBb text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
+            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-quaternary text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
           },
           table_body: {
             main: ``,
             // table_row: 'border-none bg-secondary ',
-            table_row: 'border-none py-6 bg-infoBb',
+            table_row: 'border-none py-6 bg-white',
 
             table_data:
               'truncate w-20 px-6 pt-2 pb-2 text-sm font-medium text-gray-900 border-b border-gray-100',
@@ -420,7 +420,7 @@ export default function UiTable({
         }}
         columns={makeColumns()}
         rows={makeRows()}
-        per_page={10}
+        per_page={20}
         no_content_text="-"
         striped
         bordered
