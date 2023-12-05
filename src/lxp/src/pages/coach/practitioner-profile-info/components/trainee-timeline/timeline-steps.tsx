@@ -260,7 +260,10 @@ export const timelineSteps = (
     )
   );
 
-  if (timeline?.smartSpaceLicenseNotAwardedDate) {
+  if (
+    timeline?.smartSpaceLicenseNotAwardedDate &&
+    !timeline?.smartSpaceLicenseDate
+  ) {
     steps.push(
       setStep(
         'SmartSpace Licence not awarded',
@@ -272,7 +275,10 @@ export const timelineSteps = (
     );
   }
 
-  if (timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received') {
+  if (
+    timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received' ||
+    timeline?.smartSpaceLicenseDate
+  ) {
     steps.push(
       setStep(
         'SmartSpace Licence received',
@@ -284,7 +290,10 @@ export const timelineSteps = (
     );
   }
 
-  if (timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received') {
+  if (
+    timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received' &&
+    !timeline?.smartSpaceLicenseDate
+  ) {
     steps.push(
       setStep(
         timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',

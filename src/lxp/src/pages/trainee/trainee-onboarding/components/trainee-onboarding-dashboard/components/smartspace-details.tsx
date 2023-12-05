@@ -81,7 +81,8 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
       className="h-screen pb-16"
     >
       <div className="h-screen p-4">
-        {timeline?.smartSpaceLicenseNotAwardedDate ? (
+        {timeline?.smartSpaceLicenseNotAwardedDate &&
+        !timeline?.smartSpaceLicenseDate ? (
           <Typography
             className={'my-3'}
             color={'textDark'}
@@ -96,7 +97,8 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
             text={`SmartSpace certificate awarded`}
           />
         )}
-        {!timeline?.smartSpaceLicenseNotAwardedDate && (
+        {(!timeline?.smartSpaceLicenseNotAwardedDate ||
+          timeline?.smartSpaceLicenseDate) && (
           <Alert
             className="mt-4"
             variant="outlined"
@@ -128,6 +130,7 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
         </Card>
 
         {timeline?.smartSpaceLicenseNotAwardedDate &&
+          !timeline?.smartSpaceLicenseDate &&
           (Number(visitData1Completed) < 17 ||
             visitData1Completed === undefined) && (
             <>
@@ -159,24 +162,26 @@ export const SmartSpaceDetails: React.FC<SmartSpaceLicenceReceivedProps> = ({
           {renderIcon('EyeIcon', 'mr-2 text-primary w-5')}
           <Typography type={'body'} text={'View detail'} color={'primary'} />
         </Button>
-        <div>
-          <Button
-            type="filled"
-            color="primary"
-            className="mt-4 mb-2 w-full"
-            onClick={() =>
-              setNotificationStep &&
-              setNotificationStep('SmartSpace visit from coach')
-            }
-          >
-            {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-            <Typography
-              type={'help'}
-              text={'Request a visit from coach'}
-              color={'white'}
-            />
-          </Button>
-        </div>
+        {!timeline?.smartSpaceLicenseDate && (
+          <div>
+            <Button
+              type="filled"
+              color="primary"
+              className="mt-4 mb-2 w-full"
+              onClick={() =>
+                setNotificationStep &&
+                setNotificationStep('SmartSpace visit from coach')
+              }
+            >
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography
+                type={'help'}
+                text={'Request a visit from coach'}
+                color={'white'}
+              />
+            </Button>
+          </div>
+        )}
       </div>
     </BannerWrapper>
   );
