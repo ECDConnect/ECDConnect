@@ -68,7 +68,13 @@ export const MeetRegularly: React.FC = () => {
 
   const activityId = 'meet-regularly';
 
-  const isLeagueStarts = currentMonth >= 3;
+  // SUPPRESS DATE RULES
+  /////////////////////////////////////////////////////////
+  // Date rules
+  // const isLeagueStarts = currentMonth >= 3;
+  const isLeagueStarts = true;
+  /////////////////////////////////////////////////////////
+
   const isClubInALeague = !!club?.league;
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach

@@ -94,7 +94,6 @@ export const Club: React.FC = () => {
   const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3; // TODO
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
-  // TODO: check this rule
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
 
   const onOffline = useCallback(() => {
@@ -446,6 +445,7 @@ export const Club: React.FC = () => {
       </div>
     );
   }, [
+    hasLeader,
     club?.issuesTasks,
     currentLeader,
     nextLeader,

@@ -101,8 +101,13 @@ export const ClubTab: React.FC = () => {
         ?.documentStatus?.toLocaleLowerCase() !== 'not completed'
     : false;
 
+  // SUPPRESS DATE RULES
+  /////////////////////////////////////////////////////////
   // The league starts from 1 April
-  const isLeagueStarts = currentMonth >= 3;
+  // const isLeagueStarts = currentMonth >= 3;
+  const isLeagueStarts = true;
+  /////////////////////////////////////////////////////////
+
   const isClubInALeague = !!club?.league;
   const totalMembers = club?.clubMembers?.length ?? 0;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
