@@ -29,7 +29,7 @@ export const Messages: React.FC = () => {
 
   const paging = usePaging<Notification>(notifications, 3, 0, 'accummilate');
   const appDispatch = useAppDispatch();
-  console.log({ notifications });
+
   useEffect(() => {
     if (!isOnline) {
       appDispatch(

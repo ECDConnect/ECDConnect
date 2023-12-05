@@ -86,6 +86,13 @@ export const AcceptClubLeaderRole: React.FC = () => {
   }, [history, practitioner?.isNewInClub]);
 
   const onSubmit = async () => {
+    if (!isOnline) {
+      return showMessage({
+        message: 'You are offline. Please check your internet connection.',
+        type: 'error',
+      });
+    }
+
     await appDispatch(
       acceptNewClubLeaderRole({
         clubId: club?.id ?? '',
@@ -135,8 +142,6 @@ export const AcceptClubLeaderRole: React.FC = () => {
       onBack();
     }
   }, [notification, onBack]);
-  // TODO: Add a rule to redirect to the dashboard if the user has no invitation
-  // TODO: Add an alert if the user is offline and redirect to the previous screen
 
   return (
     <BannerWrapper
