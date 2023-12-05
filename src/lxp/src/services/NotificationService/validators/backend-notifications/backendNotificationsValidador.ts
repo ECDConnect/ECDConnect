@@ -55,10 +55,9 @@ export class BackendNotificationsValidator implements NotificationValidator {
         cta: notification.cTA ?? '',
         icon: notificationConfig?.icon || 'ArrowCircleRightIcon',
         color:
-          viewType === 'Messages'
-            ? this.getMessagesColor(notification?.status ?? '')
-            : notificationConfig?.color || 'white',
-        viewType,
+          notificationConfig?.color ||
+          this.getMessagesColor(notification?.status ?? ''),
+        viewType: notificationConfig?.viewType || viewType,
         area: notificationConfig?.area || this.getDefaultArea(this.user ?? {}),
         expiryDate: notification.messageEndDate,
       });

@@ -11,6 +11,7 @@ export const notificationTagConfig: NotificationTagConfigParams = {
     routeConfig: {
       route: ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE,
     },
+    viewType: 'Both',
   },
 };
 

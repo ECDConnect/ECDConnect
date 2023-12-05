@@ -66,6 +66,7 @@ import { coachSelectors } from '@/store/coach';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
+import { notificationTagConfig } from '@/constants/notifications';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -133,6 +134,12 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
+  const isPractitionerAcceptAgreementNotification =
+    dashboardNotification?.message?.cta?.includes(
+      notificationTagConfig.AcceptAgreement.cta!
+    );
+  console.log({ dashboardNotification });
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -288,9 +295,11 @@ export const Dashboard: React.FC = () => {
       textColour: 'black',
       onClick: () =>
         history.push(
-          ROUTES.PRACTITIONER.COMMUNITY[
-            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
-          ]
+          isPractitionerAcceptAgreementNotification
+            ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+            : ROUTES.PRACTITIONER.COMMUNITY[
+                practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+              ]
         ),
     };
   }, [club, practitioner]);
@@ -1010,9 +1019,11 @@ export const Dashboard: React.FC = () => {
                   classNames: 'bg-uiBg',
                   onActionClick: () =>
                     history.push(
-                      ROUTES.PRACTITIONER.COMMUNITY[
-                        practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
-                      ]
+                      isPractitionerAcceptAgreementNotification
+                        ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+                        : ROUTES.PRACTITIONER.COMMUNITY[
+                            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+                          ]
                     ),
                 }}
               />

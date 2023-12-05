@@ -17,12 +17,19 @@ import { MessageCard } from './components/message-card';
 export const Messages: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const notifications = useSelector(
+  let notifications = useSelector(
     notificationsSelectors.getMessageBoardNotifications
   );
+
+  notifications = notifications.sort(
+    (a, b) =>
+      new Date(b.message.dateCreated).getTime() -
+      new Date(a.message.dateCreated).getTime()
+  );
+
   const paging = usePaging<Notification>(notifications, 3, 0, 'accummilate');
   const appDispatch = useAppDispatch();
-
+  console.log({ notifications });
   useEffect(() => {
     if (!isOnline) {
       appDispatch(
@@ -68,6 +75,7 @@ export const Messages: React.FC = () => {
           />
         )}
         {paging.visibleItems.map((notification, idx) => {
+          console.log({ notification });
           return (
             <MessageCard
               key={`message-card-${notification.message.reference}`}
