@@ -97,7 +97,8 @@ module.exports = {
         quatenary: '#1DBADF',
         blue: {
           accent3: '#1DBADF',
-        }
+        },
+        adminBackground: '#EFF6FA'
       },
       backgroundImage: (theme) => ({
         logo: "url('./assets/logo.svg')",

@@ -1009,7 +1009,11 @@ export const Dashboard: React.FC = () => {
                   titleIconClassName: styles.communityIcon,
                   classNames: 'bg-uiBg',
                   onActionClick: () =>
-                    history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+                    history.push(
+                      ROUTES.PRACTITIONER.COMMUNITY[
+                        practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+                      ]
+                    ),
                 }}
               />
             </div>

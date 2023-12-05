@@ -207,7 +207,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Progress categories & subcategories',
@@ -221,7 +221,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       // {
       //   title: 'Progress subcategories',
@@ -250,7 +250,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       }
     );
   } else {
@@ -268,7 +268,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Small/large group activities',
@@ -284,7 +284,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Stories',
@@ -299,7 +299,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Story Book Parts',
@@ -313,7 +313,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Story activities',
@@ -329,7 +329,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       }
     );
   }
@@ -367,7 +367,7 @@ export function ContentManagement() {
                     }}
                     className={classNames(
                       item.id === selectedTab
-                        ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
+                        ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                       'consent-tabs text-md flex h-14 items-center font-medium'
                     )}
@@ -421,10 +421,10 @@ export function ContentManagement() {
                   </div>
                 )}
                 <div
-                  className="relative h-full rounded-xl bg-white p-12"
+                  className="bg-adminPortalBg relative h-full rounded-xl p-12"
                   style={{ minHeight: '36rem' }}
                 >
-                  {specialType === '' && (
+                  {/* {specialType === '' && (
                     <div className="relative w-6/12">
                       <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                         {searchValue === '' && (
@@ -437,7 +437,7 @@ export function ContentManagement() {
                         onChange={search}
                       />
                     </div>
-                  )}
+                  )} */}
                   {selectedType &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
