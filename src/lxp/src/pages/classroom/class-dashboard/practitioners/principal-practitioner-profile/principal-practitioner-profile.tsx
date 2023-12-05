@@ -78,12 +78,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDateEnd as string)) ||
-      isToday(new Date(item?.absentDate as string)) ||
-      (new Date(item?.absentDateEnd as string) >=
-        sub(new Date(), {
-          days: 8,
-        }) &&
-        item?.absentDate !== item?.absentDateEnd)
+      isToday(new Date(item?.absentDate as string))
   );
 
   const currentDates = validAbsenteesDates?.map((item) => {
