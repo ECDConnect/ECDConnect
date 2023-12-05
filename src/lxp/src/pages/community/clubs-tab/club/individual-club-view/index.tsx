@@ -358,7 +358,7 @@ export const Club: React.FC = () => {
     }
 
     // if a new club leader was assigned
-    if (!currentLeader && isLeaderRequestSent) {
+    if (!currentLeader && !hasLeader && isLeaderRequestSent) {
       items.push({
         showIcon: true,
         menuIcon: 'ExclamationCircleIcon',
