@@ -153,55 +153,63 @@ public class SmartStartIntegrationService : IIntegrationService
         _holidayService = holidayService;
         _notificationService = notificationService;
 
-        _uId = _hierarchyEngine.GetIntegrationUserId();
-        Enum.TryParse(_options.Value.Mode, out _apiMode);
-        Enum.TryParse(_options.Value.MaskDataMode, out _maskMode);
+        if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
+        if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-        //Generic static repos
-        _mapperRepo = repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
-        _columnmapperRepo = repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
-        _auditRepo = repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
-        _siteAddressRepo = repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
+        if (!this.Enabled)
+        {
+            _uId = _hierarchyEngine.GetIntegrationUserId();
 
-        _classroomGenericRepo = repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
-        _classroomGroupGenericRepo = repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
-        _programmeTypeGenericRepo = repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
-        _staticLanguageRepo = repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
-        _staticGenderRepo = repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
-        _staticRaceRepo = repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
-        _practitionerRepo = repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
-        _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
-        _coachGenericRepo = repositoryFactory.CreateRepository<Coach>(userContext: _uId);
-        _franchisorGenericRepo = repositoryFactory.CreateRepository<Franchisor>(userContext: _uId);
-        _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
-        _programmeRepo = repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
-        _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
-        _childGenericRepo = repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
-        _caregiverRepo = repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
-        _staticRelationRepo = repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
-        _staticEducationRepo = repositoryFactory.CreateGenericRepository<Education>(userContext: _uId); ;
-        _staticGrantRepo = repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
-        _staticWorkflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
-        _docRepo = repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
-        _workflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
-        _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
-        _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
-        _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
-        _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
+            //Generic static repos
+            _mapperRepo = repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
+            _columnmapperRepo = repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
+            _auditRepo = repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
+            _siteAddressRepo = repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
 
-        _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
-        _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
+            _classroomGenericRepo = repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
+            _classroomGroupGenericRepo = repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
+            _programmeTypeGenericRepo = repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
+            _staticLanguageRepo = repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
+            _staticGenderRepo = repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
+            _staticRaceRepo = repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
+            _practitionerRepo = repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
+            _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+            _coachGenericRepo = repositoryFactory.CreateRepository<Coach>(userContext: _uId);
+            _franchisorGenericRepo = repositoryFactory.CreateRepository<Franchisor>(userContext: _uId);
+            _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
+            _programmeRepo = repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
+            _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
+            _childGenericRepo = repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+            _caregiverRepo = repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
+            _staticRelationRepo = repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
+            _staticEducationRepo = repositoryFactory.CreateGenericRepository<Education>(userContext: _uId); ;
+            _staticGrantRepo = repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
+            _staticWorkflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _docRepo = repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
+            _workflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
+            _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
+            _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
+            _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
 
-        _attendanceTrackingRepository = attendanceTrackingRepository;
-        _incomeManager = incomeManager;
-        _visitManager = visitManager;
-        _attendanceService = attendanceService;
+            _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
+            _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
+
+            _attendanceTrackingRepository = attendanceTrackingRepository;
+            _incomeManager = incomeManager;
+            _visitManager = visitManager;
+            _attendanceService = attendanceService;
+        }
     }
+
+    public bool Enabled {  get { return this._apiMode != MappingMode.None; } }
 
     #region Integration Points   
 
     public async Task<bool> IntegrationClubsData()
     {
+        if (!this.Enabled) return true;
+
         //Get only this years data and check if we have the lines in t he tables, insert if not, dont save to entity mapping, we are just gathering dates and using the same GUID that SL has, so we dont  have to create new ones and theirs work fine, would avoid clashes and reusability to avoid extra columns
         _mappedEntities = await this.GetMappedEntities();
         _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
@@ -318,6 +326,8 @@ public class SmartStartIntegrationService : IIntegrationService
     /// <returns></returns>
     public async Task<bool> PullPQAData(string franchiseeId = null)
     {
+        if (!this.Enabled) return true;
+
         await _logManager.IntegrationLog($"PullPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PullPQAData > GetPQAByFranchisee");
         int totalVisitsAdded = 0;
         int totalFollowUpVisitsAdded = 0;
@@ -430,6 +440,8 @@ public class SmartStartIntegrationService : IIntegrationService
     /// <returns></returns>
     public async Task<bool> PullSmartSpaceVisitsData()
     {
+        if (!this.Enabled) return true;
+
         // We currently don't need to create a smart space visit, and we can import the license data when importing the practitioner
         throw new NotImplementedException();
     }
@@ -485,6 +497,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task IntegrationStatementsData()
     {
+        if (!this.Enabled) return;
+
         await _logManager.IntegrationLog($"IntegrationStatementsData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationStatementsData");
 
         int statementsSent = 0;
@@ -674,6 +688,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationMonthlyAttendanceData()
     {
+        if (!this.Enabled) return true;
+
         await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
         int attendancesSent = 0;
         bool isComplete = false;
@@ -706,6 +722,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationAttendanceByDueData()
     {
+        if (!this.Enabled) return true;
+
         await _logManager.IntegrationLog($"IntegrationAttendanceByDueData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
         int attendancesSent = 0;
         bool isComplete = false;
@@ -943,6 +961,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationUpdates()
     {
+        if (!this.Enabled) return true;
+
         await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
         int historyDays = 2; //TODO: change this to look for last successfull run and do incremental calls to SL only, the overlap is extra data and gets mostly discarded anyways, plus making the payloads bigger, more room for error
         bool returnOK = false;
@@ -1015,6 +1035,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task AutoSubmitStatements()
     {
+        if (!this.Enabled) return;
+
         await _logManager.IntegrationLog($"AutoSubmitStatements started at {DateTime.Now}", null, null, LogRelatedType.Log, "AutoSubmitStatements");
 
         try
@@ -1037,6 +1059,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByTrainees()
     {
+        if (!this.Enabled) return true;
+
         _mappedEntities = await GetMappedEntities();
         foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
         {
@@ -1057,6 +1081,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByFranchisees()
     {
+        if (!this.Enabled) return true;
+
         List<SL_Ingestion_User> ids = _dbContext.SL_Ingestion_Users.ToList();
         if (ids.Count > 0)
         {
@@ -1073,6 +1099,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null, string coachId = null)
     {
+        if (!this.Enabled) return true;
+
         bool returnOK = false;
         await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
         DateTime startTime = DateTime.Now;
@@ -1264,6 +1292,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByNewCoach(string remoteCoachId)
     {
+        if (!this.Enabled) return true;
+
         _mappedEntities = await GetMappedEntities();
         var mappedCoach = _mappedEntities.Where(c => string.Equals(c.RemoteId, remoteCoachId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).FirstOrDefault();
         if (mappedCoach == null)
@@ -4363,7 +4393,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
     #region Decommisioned Code
 
-    public async Task<bool> IntegrationAttendanceDataDecommissioned()
+    private async Task<bool> IntegrationAttendanceDataDecommissioned()
     {
         await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
         int attendancesSent = 0;
