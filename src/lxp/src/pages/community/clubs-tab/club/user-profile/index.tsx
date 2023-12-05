@@ -68,8 +68,8 @@ export const UserProfile: React.FC = () => {
     : clubMember?.whatsAppNumber;
 
   const phoneNumber = isCoachProfile
-    ? club?.clubCoach.phoneNumber
-    : clubMember?.phoneNumber;
+    ? club?.clubCoach.phoneNumber || club?.clubCoach.whatsAppNumber
+    : clubMember?.phoneNumber || club?.clubCoach.whatsAppNumber;
 
   const headerHeight = isMemberProfile ? 254 : 300;
   const userRole = useMemo(() => {
