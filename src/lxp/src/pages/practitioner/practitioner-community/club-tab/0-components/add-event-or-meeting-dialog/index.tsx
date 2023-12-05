@@ -1,7 +1,9 @@
 import { HostFamilyDaysRouteState } from '@/pages/community/clubs-tab/club/club-points/activities/host-family-days/index.types';
 import ROUTES from '@/routes/routes';
+import { clubSelectors } from '@/store/club';
 import { ActionModal } from '@ecdlink/ui';
 import { QuestionMarkCircleIcon } from '@heroicons/react/solid';
+import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 
 export const AddEventOrMeetingDialog = ({
@@ -10,6 +12,8 @@ export const AddEventOrMeetingDialog = ({
   onClose: () => void;
 }) => {
   const history = useHistory();
+
+  const club = useSelector(clubSelectors.getClubForPractitionerSelector);
 
   return (
     <ActionModal
@@ -38,9 +42,15 @@ export const AddEventOrMeetingDialog = ({
           type: 'outlined',
           leadingIcon: 'CalendarIcon',
           onClick: () => {
-            history.push(ROUTES.COMMUNITY.CLUB.POINTS.HOST_FAMILY_EVENT, {
-              isFromAddFamilyDayEvent: true,
-            } as HostFamilyDaysRouteState);
+            history.push(
+              ROUTES.COMMUNITY.CLUB.POINTS.HOST_FAMILY_EVENT.replace(
+                ':clubId',
+                club?.id ?? ''
+              ),
+              {
+                isFromAddFamilyDayEvent: true,
+              } as HostFamilyDaysRouteState
+            );
             onClose();
           },
         },
