@@ -57,12 +57,8 @@ export const CompleteProfile: React.FC = () => {
   const showNotificationForPractitionerFlow =
     (hasPractitionerRole || addedByPrincipal) && notRegistered;
   if (
-    (practitioner?.isTrainee &&
-      practitioner?.isOnStipend &&
-      completedSteps?.length < 7) ||
-    (practitioner?.isTrainee &&
-      practitioner?.isOnStipend !== true &&
-      completedSteps?.length < 6)
+    (practitioner?.isOnStipend && completedSteps?.length < 7) ||
+    (practitioner?.isOnStipend !== true && completedSteps?.length < 6)
   ) {
     return (
       <div className="px-4">
