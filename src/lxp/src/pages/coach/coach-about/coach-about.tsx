@@ -409,10 +409,10 @@ export const CoachAbout: React.FC = () => {
         renderOverflow={true}
         onBack={() => {
           isFromCommunityWelcome
-            ? history.push(ROUTES.COACH.PROFILE.ROOT, {
+            ? history.goBack()
+            : history.push(ROUTES.COACH.PROFILE.ROOT, {
                 isFromCommunityWelcome: false,
-              } as CoachAboutRouteState)
-            : history.goBack();
+              } as CoachAboutRouteState);
         }}
         displayOffline={!isOnline}
         backgroundColour={'white'}
