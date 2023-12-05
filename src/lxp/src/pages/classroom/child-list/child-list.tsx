@@ -13,6 +13,7 @@ import {
   ActionModal,
 } from '@ecdlink/ui';
 import {
+  add,
   addDays,
   format,
   isBefore,
@@ -169,14 +170,16 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const currentAbsentee = validAbsenteesDates?.find(
     (item) => item?.absentDate === orderedDates?.[0]
   ) as AbsenteeDto;
-
+  console.log({ currentAbsentee });
   const practitionerIsOnLeave = useMemo(
     () =>
       isPast(new Date(currentAbsentee?.absentDate as string)) &&
-      !isPast(new Date(currentAbsentee?.absentDateEnd as string)),
+      !isPast(
+        add(new Date(currentAbsentee?.absentDateEnd as string), { days: 1 })
+      ),
     [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
-
+  console.log({ practitionerIsOnLeave });
   const handleComebackDay = useCallback((date: Date) => {
     if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
       return nextMonday(new Date(date));
@@ -535,11 +538,13 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
                   )
                 ),
                 'd MMM yyyy'
-              )}. If you believe this is a mistake please reach out to Bulelwa.`,
+              )}. If you believe this is a mistake please reach out to ${
+                currentAbsentee?.loggedByPerson
+              }.`,
             ]}
             actionButtons={[
               {
-                text: `Contact ${coach?.user?.firstName}`,
+                text: `Contact ${currentAbsentee?.loggedByPerson}`,
                 textColour: 'white',
                 colour: 'primary',
                 type: 'filled',
