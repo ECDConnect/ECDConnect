@@ -75,7 +75,6 @@ export const Messages: React.FC = () => {
           />
         )}
         {paging.visibleItems.map((notification, idx) => {
-          console.log({ notification });
           return (
             <MessageCard
               key={`message-card-${notification.message.reference}`}

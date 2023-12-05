@@ -139,7 +139,7 @@ export const Dashboard: React.FC = () => {
     dashboardNotification?.message?.cta?.includes(
       notificationTagConfig.AcceptAgreement.cta!
     );
-  console.log({ dashboardNotification });
+
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
