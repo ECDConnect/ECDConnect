@@ -1612,7 +1612,7 @@ namespace EcdLink.Api.CoreApi.Services
         // Yearly, calculate by 30 November and will be triggered by a cron job
         public bool CalculateLeaveNoOneBehind() 
         {
-            // Twice a year: by 30 November
+            // Once a year: by 30 November
             var startDate = DateTime.Now.GetStartOfYear();
 
             // Get all active purple clubs
@@ -1643,21 +1643,30 @@ namespace EcdLink.Api.CoreApi.Services
                 redRatings = 0;
                 finalRating = 0;
 
-                practitioners.AddRange(club.ClubMembers.Select(x => x.Practitioner.UserId).Distinct().ToList());
-                practitioners.AddRange(club.ClubLeaders.Select(x => x.Practitioner.UserId).Distinct().ToList());
-                practitioners.AddRange(club.ClubSupport.Select(x => x.Practitioner.UserId).Distinct().ToList());
+                if (club.ClubMembers != null)
+                {
+                    practitioners.AddRange(club.ClubMembers.Select(x => x?.Practitioner?.UserId).Distinct().ToList());
+                }
+                if (club.ClubLeaders != null)
+                {
+                    practitioners.AddRange(club.ClubLeaders.Select(x => x?.Practitioner?.UserId).Distinct().ToList());
+                }
+                if (club.ClubSupport != null)
+                {
+                    practitioners.AddRange(club.ClubSupport.Select(x => x?.Practitioner?.UserId).Distinct().ToList());
+                }
 
                 // ensure we don't have any duplicate user Ids
                 practitioners = practitioners.Distinct().ToList();
-
+                var allVisitIds = new List<Guid>();
                 if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple) 
                 {
                     clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.leave_no_one_behind && x.Type == Constants.ClubSettings.name_purple).FirstOrDefault();
                     foreach (var practitionerUserId in practitioners)
                     {
-                        
                         allVisits = _visitManager.GetReAccreditationVisitsForPractitioner(practitionerUserId);
-                        pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Where(x => x.PlannedVisitDate.Year == DateTime.Now.Year).Select(y => y.Id).Contains(x.VisitId)).ToList();
+                        allVisitIds = allVisits.Where(x => x.PlannedVisitDate.Year == startDate.Year).Select(y => y.Id).ToList();
+                        pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisitIds.Contains(x.VisitId)).ToList();
                         greenRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
                         orangeRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
                         redRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
@@ -1669,7 +1678,8 @@ namespace EcdLink.Api.CoreApi.Services
                     foreach (var practitionerUserId in practitioners)
                     {
                         allVisits = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId);
-                        pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisits.Where(x => x.PlannedVisitDate.Year == DateTime.Now.Year).Select(y => y.Id).Contains(x.VisitId)).ToList();
+                        allVisitIds = allVisits.Where(x => x.PlannedVisitDate.Year == startDate.Year).Select(y => y.Id).ToList();
+                        pqaRatings = _pqaRatingRepo.GetAll().Where(x => allVisitIds.Contains(x.VisitId)).ToList();
                         greenRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
                         orangeRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
                         redRatings += pqaRatings.Where(x => x.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();

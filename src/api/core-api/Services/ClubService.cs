@@ -1282,10 +1282,10 @@ namespace EcdLink.Api.CoreApi.Services
 
             List<Visit> allVisits = _visitRepo.GetAll()
                             .Where(x => allPractitionerIds.Contains((Guid)x.PractitionerId) &&
-                                    x.VisitType.Type == Constants.SSSettings.client_practitioner &&
+                                   x.VisitType.Type == Constants.SSSettings.client_practitioner &&
                                     (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1) &&
-                                    x.DueDate.Value.Year == today.Year &&
-                                    x.IsActive)
+                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == today.Year &&
+                                    x.IsActive && x.Attended)
                             .Include(x => x.PQARating)
                             .OrderByDescending(x => x.DueDate)
                             .ToList();
@@ -1326,8 +1326,8 @@ namespace EcdLink.Api.CoreApi.Services
                 {
 
                     attended_visit = allVisits.Where(x => x.Attended && x.PractitionerId == Id &&
-                                                     x.DueDate.Value.Date >= startYear.Date &&
-                                                     x.DueDate.Value.Date < startDecember.Date).OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
+                                                     x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
+                                                     x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
                     pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id && 
                                                     x.DueDate.Value.Date >= startYear.Date &&
                                                     x.DueDate.Value.Date < startDecember.Date).OrderByDescending(x => x.DueDate).FirstOrDefault();
@@ -1391,11 +1391,12 @@ namespace EcdLink.Api.CoreApi.Services
                     
                 }
 
+
                 activityLeaveNoOneBehind.GreenUsers.AddRange(allVisits.Where(x => x.Attended &&
                                                     x.VisitType.Name == visitType &&
                                                     x.PQARating != null && x.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() &&
-                                                    x.DueDate.Value.Date >= startYear.Date &&
-                                                    x.DueDate.Value.Date < startDecember.Date).Select(x => new ClubUser
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).Select(x => new ClubUser
                                                     {
                                                         UserId = x.Practitioner.UserId,
                                                         FirstName = x.Practitioner.User.FirstName,
@@ -1406,8 +1407,8 @@ namespace EcdLink.Api.CoreApi.Services
                 activityLeaveNoOneBehind.OrangeUsers.AddRange(allVisits.Where(x => x.Attended &&
                                                     x.VisitType.Name == visitType &&
                                                     x.PQARating != null && x.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString() &&
-                                                    x.DueDate.Value.Date >= startYear.Date &&
-                                                    x.DueDate.Value.Date < startDecember.Date).Select(x => new ClubUser
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).Select(x => new ClubUser
                                                     {
                                                         UserId = x.Practitioner.UserId,
                                                         FirstName = x.Practitioner.User.FirstName,
@@ -1418,8 +1419,8 @@ namespace EcdLink.Api.CoreApi.Services
                 activityLeaveNoOneBehind.RedUsers.AddRange(allVisits.Where(x => x.Attended &&
                                                     x.VisitType.Name == visitType &&
                                                     x.PQARating != null && x.PQARating.OverallRatingColor == MetricsColorEnum.Error.ToString() &&
-                                                    x.DueDate.Value.Date >= startYear.Date &&
-                                                    x.DueDate.Value.Date < startDecember.Date).Select(x => new ClubUser
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).Select(x => new ClubUser
                                                     {
                                                         UserId = x.Practitioner.UserId,
                                                         FirstName = x.Practitioner.User.FirstName,
@@ -1429,8 +1430,8 @@ namespace EcdLink.Api.CoreApi.Services
 
                 activityLeaveNoOneBehind.BlueUsers.AddRange(allVisits.Where(x => !x.Attended &&
                                                                     x.VisitType.Name == visitType &&
-                                                                    x.DueDate.Value.Date >= startYear.Date &&
-                                                                    x.DueDate.Value.Date < startDecember.Date).Select(x => new ClubUser
+                                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
+                                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).Select(x => new ClubUser
                                                                     {
                                                                         UserId = x.Practitioner.UserId,
                                                                         FirstName = x.Practitioner.User.FirstName,
