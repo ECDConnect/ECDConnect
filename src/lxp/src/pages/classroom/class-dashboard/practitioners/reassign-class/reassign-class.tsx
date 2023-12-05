@@ -390,9 +390,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
                 history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
                 return;
               }
-              history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-                practitionerId,
-              });
+
+              if (practitionerId) {
+                history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+                  practitionerId,
+                });
+                return;
+              }
+              history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
 
               return;
             }
@@ -416,9 +421,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
               return;
             }
-            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-              practitionerId,
-            });
+            if (practitionerId) {
+              history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+                practitionerId,
+              });
+              return;
+            }
+            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
 
             return;
           }
@@ -471,9 +480,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
               history.push(ROUTES.PRACTITIONER.PROFILE.ROOT);
               return;
             }
-            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-              practitionerId,
-            });
+            if (practitionerId) {
+              history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+                practitionerId,
+              });
+              return;
+            }
+            history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
 
             return;
           }
@@ -498,9 +511,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             return;
           }
 
-          history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-            practitionerId,
-          });
+          if (practitionerId) {
+            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+              practitionerId,
+            });
+            return;
+          }
+          history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
 
           return;
         }
@@ -533,9 +550,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
             return;
           }
 
-          history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-            practitionerId,
-          });
+          if (practitionerId) {
+            history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+              practitionerId,
+            });
+            return;
+          }
+          history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
 
           return;
         }
@@ -569,9 +590,15 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       return;
     }
 
-    history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
-      practitionerId,
-    });
+    if (practitionerId) {
+      history.push(ROUTES.PRINCIPAL.PRACTITIONER_PROFILE, {
+        practitionerId,
+      });
+      return;
+    }
+    history.push(ROUTES.CLASSROOM.ROOT, { activeTabIndex: 1 });
+
+    return;
   };
 
   return (
