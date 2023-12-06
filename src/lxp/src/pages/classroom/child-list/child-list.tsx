@@ -170,13 +170,11 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const currentAbsentee = validAbsenteesDates?.find(
     (item) => item?.absentDate === orderedDates?.[0]
   ) as AbsenteeDto;
-  console.log({ currentAbsentee });
+
   const practitionerIsOnLeave = useMemo(
     () =>
       isPast(new Date(currentAbsentee?.absentDate as string)) &&
-      !isPast(
-        add(new Date(currentAbsentee?.absentDateEnd as string), { days: 1 })
-      ),
+      !isPast(new Date(currentAbsentee?.absentDateEnd as string)),
     [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
   console.log({ practitionerIsOnLeave });
