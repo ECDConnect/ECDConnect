@@ -96,6 +96,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 }
             }
 
+            if (showOnlyStatus == null)
+            {
+                showOnlyStatus = new[] { "Active", "Inactive" };
+            }
+            docsList = docsList.Where(x => showOnlyStatus.Contains(x.ClientStatus)).ToList();
+
             if (!string.IsNullOrWhiteSpace(search))
             {
                 docsList = docsList.Where(x => (x.ClientName!= null && x.ClientName.Contains(search)) || (x.CreatedByName != null && x.CreatedByName.Contains(search))).ToList(); 
