@@ -36,6 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             IGenericRepositoryFactory repoFactory,
             string search = null,
             string[] showOnlyTypes = null,
+            string[] showOnlyStatus = null,
             PagedQueryInput pagingInput = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -80,6 +81,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     if (mother != null && mother.User != null)
                     {
                         doc.ClientName = mother.User.FirstName + " " + mother.User.Surname;
+                        doc.ClientStatus = (mother.IsActive ? "Active" : "Inactive");
                     }
                 } 
                 else if (doc.DocumentType.Name == DocumentTypeConstants.RoadToHealthBook)
@@ -89,6 +91,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     if (infant != null && infant.Caregiver != null)
                     {
                         doc.ClientName = infant.Caregiver.FirstName + " " + infant.Caregiver.Surname + " & " + infant.User.FirstName;
+                        doc.ClientStatus = (infant.Caregiver.IsActive ? "Active" : "Inactive");
                     }
                 }
             }

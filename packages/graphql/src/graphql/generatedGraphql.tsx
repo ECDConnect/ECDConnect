@@ -3217,6 +3217,7 @@ export type DisplaySetSortInput = {
 export type Document = {
   __typename?: 'Document';
   clientName?: Maybe<Scalars['String']>;
+  clientStatus?: Maybe<Scalars['String']>;
   createdByName?: Maybe<Scalars['String']>;
   createdUser?: Maybe<ApplicationUser>;
   createdUserId?: Maybe<Scalars['String']>;
@@ -3239,6 +3240,7 @@ export type Document = {
 export type DocumentFilterInput = {
   and?: InputMaybe<Array<DocumentFilterInput>>;
   clientName?: InputMaybe<StringOperationFilterInput>;
+  clientStatus?: InputMaybe<StringOperationFilterInput>;
   createdByName?: InputMaybe<StringOperationFilterInput>;
   createdUser?: InputMaybe<ApplicationUserFilterInput>;
   createdUserId?: InputMaybe<StringOperationFilterInput>;
@@ -3261,6 +3263,7 @@ export type DocumentFilterInput = {
 
 export type DocumentInput = {
   ClientName?: InputMaybe<Scalars['String']>;
+  ClientStatus?: InputMaybe<Scalars['String']>;
   CreatedByName?: InputMaybe<Scalars['String']>;
   CreatedUser?: InputMaybe<ApplicationUserInput>;
   CreatedUserId?: InputMaybe<Scalars['String']>;
@@ -3286,6 +3289,7 @@ export type DocumentModel = {
 
 export type DocumentSortInput = {
   clientName?: InputMaybe<SortEnumType>;
+  clientStatus?: InputMaybe<SortEnumType>;
   createdByName?: InputMaybe<SortEnumType>;
   createdUser?: InputMaybe<ApplicationUserSortInput>;
   createdUserId?: InputMaybe<SortEnumType>;
@@ -5591,6 +5595,7 @@ export type Mutation = {
   autoSubmitStatement?: Maybe<ResultReturnObject>;
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
+  calculateLeaveNoOneBehind: Scalars['Boolean'];
   cancelRemovalFromProgramme: Scalars['Boolean'];
   changeClubName?: Maybe<Club>;
   changeClubSupportRole: Scalars['Boolean'];
@@ -12866,6 +12871,7 @@ export type QueryAllClientRecordsArgs = {
   order?: InputMaybe<Array<DocumentSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   search?: InputMaybe<Scalars['String']>;
+  showOnlyStatus?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   showOnlyTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
