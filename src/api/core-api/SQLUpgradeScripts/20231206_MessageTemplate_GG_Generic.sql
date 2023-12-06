@@ -1,0 +1,2 @@
+INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering") VALUES
+('302f23be-5f8d-4446-9de1-eeb3d73394c0',true,'2023-09-14 03:13:37.962','2023-09-14 03:13:37.962',NULL,'push','generic-message','[[FreetextMessage]]','39077d0e-e443-4076-aaf2-978dc6805aa0','[[FreetextSubject]]','See More','See more',NULL,'blue',0);

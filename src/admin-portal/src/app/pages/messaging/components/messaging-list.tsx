@@ -31,6 +31,7 @@ export default function MessageList() {
   const user = localStorage.getItem(LocalStorageKeys.user);
   const [selectedPageSize] = useState<number>(null);
   const { setNotification } = useNotifications();
+  const messageStatus = localStorage.getItem('messageStatus');
 
   const currentDate = new Date();
   const startDate = subDays(currentDate, 30);
@@ -51,7 +52,7 @@ export default function MessageList() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getAllMessageLogsForAdmin, { data: messages, refetch }] = useLazyQuery(
+  const [getAllMessageLogsForAdmin, { data: messages }] = useLazyQuery(
     GetAllMessageLogsForAdmin,
     {
       fetchPolicy: 'cache-and-network',
@@ -102,29 +103,16 @@ export default function MessageList() {
     }
   }, [tenantData, messages]);
 
-  // const displayMessagePanel = () => {
-  //   panel({
-  //     noPadding: false,
-  //     title: 'Send a message',
-  //     render: (onSubmit: any) => (
-  //       <MessagePanel
-  //         isView={false}
-  //         messageStatus="new"
-  //         closeDialog={(messageCreated: boolean) => {
-  //           console.log('messageCreated', messageCreated);
-  //           onSubmit();
-  //           if (messageCreated) {
-  //             refetch();
-  //             setNotification({
-  //               title: 'Message scheduled',
-  //               variant: NOTIFICATION.SUCCESS,
-  //             });
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
+  useEffect(() => {
+    if (messageStatus) {
+      if (messageStatus === 'Message scheduled') {
+        setNotification({
+          title: 'Message scheduled',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      }
+    }
+  }, [messageStatus, setNotification]);
 
   const displayMessagePanel = (message: MessageLogDto) => {
     localStorage.setItem('selectedMessage', JSON.stringify(message));
@@ -136,38 +124,6 @@ export default function MessageList() {
       },
     });
   };
-
-  // const displayEditMessagePanel = (message: MessageLogDto) => {
-  //   const messageDate = new Date(message.messageDate);
-  //   const messageTitle =
-  //     messageDate < new Date() ? 'View message' : 'Edit message';
-  //   const isView = messageDate < new Date() ? true : false;
-  //   const messageStatus = messageDate < new Date() ? 'completed' : 'pending';
-
-  //   panel({
-  //     noPadding: false,
-  //     title: messageTitle,
-  //     render: (onSubmit: any) => (
-  //       <MessagePanel
-  //         isView={isView}
-  //         messageStatus={messageStatus}
-  //         message={message}
-  //         closeDialog={(messageCreated: boolean) => {
-  //           onSubmit();
-  //           if (messageCreated) {
-  //             if (!isView) {
-  //               refetch();
-  //               setNotification({
-  //                 title: 'Message scheduled',
-  //                 variant: NOTIFICATION.SUCCESS,
-  //               });
-  //             }
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');

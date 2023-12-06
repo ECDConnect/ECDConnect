@@ -165,27 +165,28 @@ const MessageForm: React.FC<MessageFormProps> = ({
             />
           </div>
           <div className="ml-4 mr-4 sm:col-span-3">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Select districts`}
-            />
-
             {
               tenantInfo && tenantInfo.organisationName === 'SmartStart' ? (
-                <FormSelectorField
-                  label="Optional - if you would like to send this message to users in a specific district only, select the district below."
-                  nameProp={'wardName'}
-                  register={register}
-                  disabled={isView}
-                  options={
-                    wardData &&
-                    wardData.map((x: WardDto, index) => {
-                      return { key: index, value: x.ward };
-                    })
-                  }
-                />
+                <>
+                  <Typography
+                    type={'body'}
+                    color="textMid"
+                    weight="bold"
+                    text={`Select districts`}
+                  />
+                  <FormSelectorField
+                    label="Optional - if you would like to send this message to users in a specific district only, select the district below."
+                    nameProp={'wardName'}
+                    register={register}
+                    disabled={isView}
+                    options={
+                      wardData &&
+                      wardData.map((x: WardDto, index) => {
+                        return { key: index, value: x.ward };
+                      })
+                    }
+                  />
+                </>
               ) : null // when districts for GG is available, we will add them here
             }
           </div>

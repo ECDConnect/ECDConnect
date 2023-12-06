@@ -219,7 +219,6 @@ export default function MessagePanel() {
   useEffect(() => {
     if (totalUsers) {
       setUserCount(totalUsers.userCountForMessageCriteria);
-      setShowSavingDialog(true);
     }
   }, [totalUsers]);
 
@@ -239,6 +238,7 @@ export default function MessagePanel() {
 
   const onShowDialog = () => {
     getUserCountForMessageCriteria();
+    setShowSavingDialog(true);
   };
 
   const onSaveMessage = async () => {
@@ -295,6 +295,7 @@ export default function MessagePanel() {
         setShowSavingDialog(false);
         setIsLoading(false);
         backToMessageList();
+        localStorage.setItem('messageStatus', 'Message scheduled');
       })
       .catch((error) => {
         console.log(error);
