@@ -78,14 +78,26 @@ namespace ECDLink.SmartStart.Services
             return learners.ToList();
         }
 
-        public List<Learner> GetAllLearnerGroupInstances(Guid classgroupId = default(Guid))
+        public List<Learner> GetAllLearnerGroupInstances(Guid classgroupId)
         {
             var learners = _dbContext.Learners
                             .Include(x => x.User)
                             .Include(x => x.ClassroomGroup)
                             .ThenInclude(x => x.ClassProgrammes)
                             .Where(l => l.IsActive && l.ClassroomGroupId == classgroupId);
+
             return learners.ToList();
+        }
+
+        public List<Learner> GetLearnersActiveDuringTimePeriod(Guid classgroupId, DateTime startDate, DateTime endTime)
+        {
+            var learners = _dbContext.Learners
+                .Include(x => x.User)
+                .Where(x => x.ClassroomGroupId == classgroupId)
+                .Where(x => x.StartedAttendance < endTime && (!x.StoppedAttendance.HasValue || x.StoppedAttendance.Value > startDate))
+                .ToList();
+
+            return learners;
         }
 
         public Classroom GetUserClassroom(string userId, Guid classroomId = default(Guid))
@@ -134,7 +146,8 @@ namespace ECDLink.SmartStart.Services
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
             var groups = _classGroupRepo.GetAll()
-                .Where(x =>x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
+                .Include(x => x.ClassProgrammes)
+                .Where(x => x.IsActive && (x.UserId.HasValue && x.UserId.ToString() == userId) && x.Name != "Unsure")                
                 .OrderBy(x => x.Id)
                 .ToList();
 
