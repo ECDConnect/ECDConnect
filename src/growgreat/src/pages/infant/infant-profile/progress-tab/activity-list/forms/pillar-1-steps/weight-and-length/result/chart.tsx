@@ -13,6 +13,7 @@ import {
   ScatterController,
 } from 'chart.js';
 import { Chart } from 'react-chartjs-2';
+import { WeightOrHeightForAgeProps, xAxisData } from './chart.types';
 
 ChartJS.register(
   ScatterController,
@@ -25,29 +26,6 @@ ChartJS.register(
   Legend,
   Filler
 );
-
-interface WeightOrHeightForAge {
-  label: string;
-  weight?: number[];
-  height?: number[];
-}
-
-interface xAxisData {
-  y: any;
-  x: number;
-  name?: string;
-}
-
-export interface WeightOrHeightForAgeProps {
-  date: number[];
-  SD3: WeightOrHeightForAge;
-  SD2: WeightOrHeightForAge;
-  median: WeightOrHeightForAge;
-  SD3neg: WeightOrHeightForAge;
-  SD2neg: WeightOrHeightForAge;
-}
-
-export type DataSetType = keyof WeightOrHeightForAgeProps;
 
 const colours = {
   severely: { primary: '#E20000', secondary: 'rgba(226, 0, 0, 0.05)' },

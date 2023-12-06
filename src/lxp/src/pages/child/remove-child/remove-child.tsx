@@ -92,15 +92,16 @@ export const RemoveChild: React.FC = () => {
         child: updatedChild,
         id: String(updatedChild.id),
       })
+    ).then(() =>
+      appDispatch(
+        childrenThunkActions.calculateChildrenRegistrationRemoval(true)
+      )
     );
+
     appDispatch(
       classroomsActions.deactivateClassroomGroupLearner(updatedChild)
     );
-    appDispatch(
-      childrenThunkActions.calculateChildrenRegistrationRemoval(
-        updatedChild.isActive
-      )
-    );
+
     if (isCoach) {
       history.push(ROUTES.COACH.PRACTITIONER_CHILD_LIST, { practitionerId });
       return;

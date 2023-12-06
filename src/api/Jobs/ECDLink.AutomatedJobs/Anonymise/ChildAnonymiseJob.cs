@@ -19,6 +19,7 @@ namespace ECDLink.AutomatedJobs.Anonymise
         }
 
         public override async Task DoWork(CancellationToken cancellationToken)
+        
         {
             using (var scope = _scopeFactory.CreateScope())
             {

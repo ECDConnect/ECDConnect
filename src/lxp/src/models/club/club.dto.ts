@@ -33,6 +33,7 @@ export type ClubMemberDto = {
   whatsAppNumber: string;
   profileImageUrl: string;
   welcomeMessage: string;
+  shareContactInfo: boolean;
 };
 export type ClubCoachDto = {
   userId: string;
@@ -40,6 +41,7 @@ export type ClubCoachDto = {
   firstName: string;
   surname: string;
   phoneNumber: string;
+  whatsAppNumber: string;
   profileImageUrl: string;
   aboutInfo: string;
 };
@@ -63,6 +65,7 @@ export type ClubSupportDto = {
   phoneNumber: string;
   profileImageUrl: string;
   dateAssigned: string;
+  isNewInSupportRole?: boolean;
 };
 
 export type IssueTask = {
@@ -74,4 +77,19 @@ export type IssueTask = {
 export type ClubActivity = {
   name: string;
   points: number;
+};
+
+export type ActivityChildProgressDto = {
+  monthlyRecords?: ActivityChildProgressDetailDto[];
+  points: number;
+  pointsColor: string;
+};
+export type ActivityChildProgressDetailDto = {
+  caregiverPerc: number;
+  caregiverPoints: number;
+  caregiverPointsColor: string;
+  monthName: string;
+  progressPerc: number;
+  progressPoints: number;
+  progressPointsColor: string;
 };

@@ -98,7 +98,7 @@ namespace ECDLink.Core.Services
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "RemovalDate",
-                        ReplacementValue = DateTime.Now.AddDays(30).ToLongDateString()
+                        ReplacementValue = DateTime.Now.AddDays(10).ToLongDateString()
                     });
                     string parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
                     var userToSend = await _userManager.FindByIdAsync(parentUserId);
@@ -414,14 +414,15 @@ namespace ECDLink.Core.Services
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
             var traineeRepo = _repositoryFactory.CreateGenericRepository<Trainee>(userContext: adminId);
-            //find all practitioners that has not yet created planning for their classes after a month of having the class
+            //find all trainees thats new in last 7 days
             var newTrainee = traineeRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7)).ToList();
             List<TagsReplacements> replacements = new List<TagsReplacements>();
             foreach (var trainee in newTrainee)
             {
                 var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
                 var userToSend = await _userManager.FindByIdAsync(parentUserId);
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(2));
+
+                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2),true);
             }
         }
 

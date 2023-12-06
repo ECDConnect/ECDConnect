@@ -17,6 +17,8 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
@@ -82,6 +84,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (input == null)
             {
                 return null;
+            }
+
+            var exisitingStatement = incomeExpenseService.GetStatements(
+                input.UserId,
+                new DateTime(input.Year, input.Month, 1),
+                new DateTime(input.Year, input.Month, DateTime.DaysInMonth(input.Year, input.Month)));
+
+            if (exisitingStatement.Any()) 
+            {
+                throw new ValidationException("User has already submitted a statement for this month");
             }
 
             var statement = incomeExpenseService.SubmitMonthlyStatement(input.Month, input.Year, input.UserId, input.IncomeItemIds, input.ExpenseItemIds);

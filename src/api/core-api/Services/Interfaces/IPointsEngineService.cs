@@ -44,12 +44,12 @@ namespace ECDLink.Core.Services.Interfaces
         /// <returns></returns>
         UserClubStandingModel GetUserClubStanding(string userId);
         // Clubs
-        bool CalculateLeaveNoOneBehind(Guid clubId, string userId, DateTime today);
+        bool CalculateLeaveNoOneBehind(); // called from cron 30 Nov
         bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
-        bool CalculateCompleteChildProgressReports(Guid clubId, string userId, DateTime today);
-        bool CalculateCaptureChildAttendance(Guid clubId, string userId, DateTime today);
+        bool CalculateCompleteChildProgressReports(); // called from cron 31 July and 30 Nov
         bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today);
         bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
+        bool CalculateClubChildAttendance(); // called from cron - end of month
 
     }
 }

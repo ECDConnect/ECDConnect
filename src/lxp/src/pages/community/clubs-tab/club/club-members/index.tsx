@@ -2,6 +2,7 @@ import {
   Alert,
   BannerWrapper,
   Button,
+  DialogPosition,
   FADButton,
   StackedList,
   StackedListType,
@@ -16,8 +17,10 @@ import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { addDays, differenceInMonths, format } from 'date-fns';
 import { daysToAcceptBeingLeader } from '@/constants/club';
-import { useSnackbar } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ClubMembers: React.FC = () => {
   const history = useHistory();
@@ -32,6 +35,12 @@ export const ClubMembers: React.FC = () => {
   const nextLeader = useSelector(
     clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
+
+  const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
+
+  const isClubCoach = user?.id === club?.clubCoach.userId;
 
   const nextLeaderFirstName = nextLeader?.firstName;
   const today = new Date().setHours(0, 0, 0, 0);
@@ -51,15 +60,19 @@ export const ClubMembers: React.FC = () => {
     dueDateNextLeader && dueDateNextLeader >= today;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isLeaderAcceptedAgreement =
-    isDueDateNextLeaderTodayOrFuture && club.incomingClubLeader?.dateAccepted;
+    isDueDateNextLeaderTodayOrFuture && club?.incomingClubLeader?.dateAccepted;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isToChangeLeader = hasLeader || isLeaderRequestSent;
 
   const coach: UserAlertListDataItem = {
-    title: `${user?.firstName || ''} ${user?.surname || ''}`,
-    profileText: `${user?.firstName || ''} ${user?.surname || ''}`,
+    title: `${club?.clubCoach.firstName || ''} ${
+      club?.clubCoach.surname || ''
+    }`,
+    profileText: `${club?.clubCoach.firstName || ''} ${
+      club?.clubCoach.surname || ''
+    }`,
     titleStyle: 'text-textDark',
-    profileDataUrl: user?.profileImageUrl || '',
+    profileDataUrl: club?.clubCoach.profileImageUrl || '',
     avatarColor: 'var(--primaryAccent2)',
     alertSeverity: 'none',
     hideAlertSeverity: true,
@@ -68,7 +81,7 @@ export const ClubMembers: React.FC = () => {
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH.replace(
           ':clubId',
           clubId
-        ).replace(':coachId', user?.id!)
+        ).replace(':coachId', club?.clubCoach.userId!)
       ),
   };
 
@@ -87,7 +100,7 @@ export const ClubMembers: React.FC = () => {
         ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
           ':clubId',
           clubId
-        ).replace(':leaderId', currentLeader?.practitionerId)
+        ).replace(':leaderId', currentLeader?.practitionerId ?? '')
       ),
   };
 
@@ -118,8 +131,23 @@ export const ClubMembers: React.FC = () => {
           ),
       })) ?? [];
 
-  console.log('club?.clubMembers', club?.clubMembers);
-  console.log('members', members);
+  const onOffline = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return <OnlineOnlyModal onSubmit={onClose} />;
+      },
+    });
+  };
+
+  const onOnlineNavigation = (route: string) => {
+    if (isOnline) {
+      return history.push(route);
+    }
+
+    return onOffline();
+  };
 
   const onCall = useCallback(() => {
     const nextLeaderPhoneNumber = nextLeader?.phoneNumber;
@@ -146,6 +174,11 @@ export const ClubMembers: React.FC = () => {
     // Scenario: there is no club leader assigned
     if (!hasLeader && !isLeaderRequestSent) {
       title = 'No club leader!';
+      list = isClubCoach
+        ? []
+        : [
+            `Reach out to your club coach and ask them to choose a new club leader.`,
+          ];
     }
 
     // Scenario: the assigned club leader has not accepted the club leader agreement yet AND there is no club leader currently assigned.
@@ -206,13 +239,14 @@ export const ClubMembers: React.FC = () => {
       />
     );
   }, [
-    onCall,
     hasLeader,
     isLeaderRequestSent,
+    nextLeader,
     isLeaderAcceptedAgreement,
     isLeaderAcceptedOverSixMonths,
-    club.incomingClubLeader,
-    nextLeader,
+    club?.incomingClubLeader,
+    onCall,
+    isClubCoach,
     nextLeaderFirstName,
     dueDateNextLeader,
     currentLeader?.firstName,
@@ -225,9 +259,7 @@ export const ClubMembers: React.FC = () => {
       className="flex flex-col p-4 pt-6 pb-20"
       size="small"
       title={`${club?.name} club`}
-      onBack={() =>
-        history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
-      }
+      onBack={() => history.goBack()}
     >
       <Typography type="h2" text={`${club?.name} club members`} />
       <Typography className="mb-4 mt-6" type="h3" text="Coach" />
@@ -240,20 +272,24 @@ export const ClubMembers: React.FC = () => {
       </div>
       <div className="mb-4 mt-6 flex items-center justify-between">
         <Typography type="h3" text="Club leader" />
-        <Button
-          type="outlined"
-          color="primary"
-          textColor="primary"
-          text={isToChangeLeader ? 'Change club leader' : 'Assign club leader'}
-          icon="RefreshIcon"
-          onClick={() =>
-            history.push(
-              ROUTES.COMMUNITY.CLUB.LEADER[
-                isToChangeLeader ? 'EDIT' : 'ADD'
-              ].replace(':clubId', clubId)
-            )
-          }
-        />
+        {isClubCoach && (
+          <Button
+            type="outlined"
+            color="primary"
+            textColor="primary"
+            text={
+              isToChangeLeader ? 'Change club leader' : 'Assign club leader'
+            }
+            icon="RefreshIcon"
+            onClick={() =>
+              onOnlineNavigation(
+                ROUTES.COMMUNITY.CLUB.LEADER[
+                  isToChangeLeader ? 'EDIT' : 'ADD'
+                ].replace(':clubId', clubId)
+              )
+            }
+          />
+        )}
       </div>
       <div>
         {renderAlert}
@@ -267,18 +303,20 @@ export const ClubMembers: React.FC = () => {
       </div>
       <div className="mb-4 mt-6 flex items-center justify-between">
         <Typography className="mb-2" type="h3" text="Club members" />
-        <Button
-          type="outlined"
-          color="primary"
-          textColor="primary"
-          text="Move members"
-          icon="ArrowsExpandIcon"
-          onClick={() =>
-            history.push(
-              ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(':clubId', clubId)
-            )
-          }
-        />
+        {isClubCoach && (
+          <Button
+            type="outlined"
+            color="primary"
+            textColor="primary"
+            text="Move members"
+            icon="ArrowsExpandIcon"
+            onClick={() =>
+              onOnlineNavigation(
+                ROUTES.COMMUNITY.CLUB.MEMBERS.EDIT.replace(':clubId', clubId)
+              )
+            }
+          />
+        )}
       </div>
       <div>
         <StackedList
@@ -288,21 +326,23 @@ export const ClubMembers: React.FC = () => {
           listItems={members}
         />
       </div>
-      <FADButton
-        title="Add club members"
-        icon="PlusIcon"
-        iconDirection="left"
-        textToggle
-        type="filled"
-        color="primary"
-        shape="round"
-        className="absolute bottom-1 right-1 z-10 m-3 px-3.5 py-2.5"
-        click={() =>
-          history.push(
-            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
-          )
-        }
-      />
+      {isClubCoach && (
+        <FADButton
+          title="Add club members"
+          icon="PlusIcon"
+          iconDirection="left"
+          textToggle
+          type="filled"
+          color="primary"
+          shape="round"
+          className="absolute bottom-1 right-1 z-10 m-3 px-3.5 py-2.5"
+          click={() =>
+            onOnlineNavigation(
+              ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
+            )
+          }
+        />
+      )}
     </BannerWrapper>
   );
 };

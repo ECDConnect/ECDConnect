@@ -22,14 +22,11 @@ public class WeeklyNotificationChecks : CronJobService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
+            TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<INotificationTasksService>();
 
-            TenancyContext.SetTenantContext(scope);
-
-            if (DateTime.Now.Hour >= 4)
-            { //run weekly attendance reminder
-                await service.WeeklyAttendancesReminderAsync();
-            }
+             //run weekly attendance reminder
+            await service.WeeklyAttendancesReminderAsync();
             await service.WeeklyCoachTraineesCheckReminderAsync();
         }
     }

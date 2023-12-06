@@ -12,6 +12,7 @@ import {
   Typography,
   UserAvatar,
   ScoreCard,
+  TitleListItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -65,6 +66,8 @@ import { coachSelectors } from '@/store/coach';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
+import { notificationTagConfig } from '@/constants/notifications';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -106,6 +109,7 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
@@ -131,6 +135,12 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
+  const isPractitionerAcceptAgreementNotification =
+    dashboardNotification?.message?.cta?.includes(
+      notificationTagConfig.AcceptAgreement.cta!
+    );
+
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -154,7 +164,7 @@ export const Dashboard: React.FC = () => {
 
     const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
-      if (current.month == currentMonth) {
+      if (current.month === currentMonth) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -246,7 +256,7 @@ export const Dashboard: React.FC = () => {
     }
   }, [completedSteps?.length]);
 
-  const leagueCard = useMemo((): ScoreCardProps => {
+  const clubCard = useMemo((): ScoreCardProps => {
     const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
       club?.pointsTotal ?? 0,
       club?.maxPointsTotal ?? 0
@@ -286,12 +296,14 @@ export const Dashboard: React.FC = () => {
       textColour: 'black',
       onClick: () =>
         history.push(
-          ROUTES.PRACTITIONER.COMMUNITY[
-            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
-          ]
+          isPractitionerAcceptAgreementNotification
+            ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+            : ROUTES.PRACTITIONER.COMMUNITY[
+                practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+              ]
         ),
     };
-  }, []);
+  }, [club, practitioner]);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -382,6 +394,13 @@ export const Dashboard: React.FC = () => {
    */
   useEffect(() => {
     if (isOnline && !!userData) {
+      (async () =>
+        await appDispatch(
+          pointsThunkActions.getPointsLibrary({
+            userId: userData?.id!,
+          })
+        ).unwrap())();
+
       if (isCoach) {
         (async () =>
           await appDispatch(
@@ -401,7 +420,13 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
       }
 
-      if (userData.roles?.some((role) => role.name === 'Practitioner')) {
+      if (
+        userData.roles?.some(
+          (role) =>
+            role.name === UserTypeEnum.Practitioner ||
+            role.name === UserTypeEnum.Principal
+        )
+      ) {
         (async () =>
           await appDispatch(
             practitionerThunkActions.getPractitionerByUserId({
@@ -418,13 +443,6 @@ export const Dashboard: React.FC = () => {
               userId: userData?.id!,
               startDate: oneYearAgo,
               endDate: currentDate,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsLibrary({
-              userId: userData?.id!,
             })
           ).unwrap())();
 
@@ -678,16 +696,15 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
-    //EC-1909 - Suppress ticket
-    // dashboardItems.push({
-    //   title: 'Calendar',
-    //   titleIcon: 'CalendarIcon',
-    //   titleIconClassName: styles.icon,
-    //   classNames: 'bg-uiBg',
-    //   onActionClick: () => {
-    //     goToCalendar();
-    //   },
-    // });
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.icon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isCoach) {
@@ -700,16 +717,16 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
-    //EC-1909 - Suppress ticket
-    // dashboardItems.push({
-    //   title: 'Calendar',
-    //   titleIcon: 'CalendarIcon',
-    //   titleIconClassName: styles.calendarIcon,
-    //   classNames: 'bg-uiBg',
-    //   onActionClick: () => {
-    //     goToCalendar();
-    //   },
-    // });
+
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isTrainee) {
@@ -959,13 +976,12 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      <div className={`${!classroom ? styles.wrapper : ''}`}>
+      <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
         <DashboardItems
           listItems={dashboardItems}
           notification={dashboardNotification}
         />
-        {/* EC-1909 - Suppress ticket */}
-        {/* {!!pointsScoreProps && !isCoach && !isTrainee && (
+        {!!pointsScoreProps && !isCoach && !isTrainee && (
           <ScoreCard
             className="mt-5 mb-1 h-20"
             progressBarClassName="flex pt-2"
@@ -982,23 +998,44 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && !!club && (
+        {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
-            mainText={leagueCard.mainText}
-            hint={leagueCard.hint}
-            hintClassName={leagueCard.hintClassName}
+            mainText={clubCard.mainText}
+            hint={clubCard.hint}
+            hintClassName={clubCard.hintClassName}
             textPosition="left"
-            currentPoints={leagueCard.currentPoints}
-            maxPoints={leagueCard.maxPoints}
-            onClick={leagueCard.onClick}
-            barBgColour={leagueCard.barBgColour}
-            barColour={leagueCard.barColour}
-            bgColour={leagueCard.bgColour}
-            image={leagueCard.image}
-            textColour={leagueCard.textColour}
+            currentPoints={clubCard.currentPoints}
+            maxPoints={clubCard.maxPoints}
+            onClick={clubCard.onClick}
+            barBgColour={clubCard.barBgColour}
+            barColour={clubCard.barColour}
+            bgColour={clubCard.bgColour}
+            image={clubCard.image}
+            textColour={clubCard.textColour}
           />
-        )} */}
+        )}
+        {isPractitioner &&
+          (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
+            <div className="mt-1">
+              <TitleListItem
+                item={{
+                  title: !!club ? club?.name : 'Community',
+                  titleIcon: 'UserGroupIcon',
+                  titleIconClassName: styles.communityIcon,
+                  classNames: 'bg-uiBg',
+                  onActionClick: () =>
+                    history.push(
+                      isPractitionerAcceptAgreementNotification
+                        ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+                        : ROUTES.PRACTITIONER.COMMUNITY[
+                            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+                          ]
+                    ),
+                }}
+              />
+            </div>
+          )}
       </div>
     </BannerWrapper>
   );

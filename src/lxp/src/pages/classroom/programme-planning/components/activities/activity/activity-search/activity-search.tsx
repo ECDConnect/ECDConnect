@@ -302,6 +302,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
         displayHelp
         onBack={onClose}
         displayOffline={!isOnline}
+        style={{ zIndex: 100 }}
       >
         <SearchHeader<ActivityDto>
           searchItems={filteredActivities}
@@ -317,7 +318,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
         >
           <SearchDropDown<number>
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 '}
+            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
             overlayTopOffset={'120'}
             className={'mr-1'}
             options={themeDropDownOptions}
@@ -326,7 +327,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             placeholder={'Theme'}
             color={'uiMidDark'}
             info={{
-              name: `Filter by:${filterInfo?.filterName}`,
+              name: `Filter by: ${filterInfo?.filterName}`,
               hint: filterInfo?.filterHint || '',
             }}
           />

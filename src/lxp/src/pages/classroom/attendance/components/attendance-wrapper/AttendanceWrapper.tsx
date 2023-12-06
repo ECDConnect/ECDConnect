@@ -93,6 +93,7 @@ export default function AttendanceWrapper() {
                   type="filled"
                   color="primary"
                   className={'w-6/12'}
+                  // icon={'SaveIcon'}
                   onClick={() => {}}
                 >
                   {/* {renderIcon('XIcon', `w-5 h-5 text-white mr-2`)} */}
@@ -105,7 +106,6 @@ export default function AttendanceWrapper() {
                 </Button>
               </div>
             )}
-            {/* )} */}
           </div>
         </Card>
       </div>

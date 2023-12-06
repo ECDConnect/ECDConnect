@@ -77,6 +77,7 @@ import { isDateWithinThreeMonths } from './timeline/utils';
 import { getReAccreditationStepData } from './timeline/re-accreditation/step';
 import { getUserPointsSummaryForCoach } from '@/store/points/points.actions';
 import { pointsConstants } from '@/constants/points';
+import ROUTES from '@/routes/routes';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
@@ -712,8 +713,7 @@ export const CoachPractitionerJourney = () => {
               listItems={[currentVisit]}
             />
           )}
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-5"
             mainText={`${userPointsTotalForYear}`}
             hint={`points earned so far in ${new Date().getFullYear()}`}
@@ -729,7 +729,15 @@ export const CoachPractitionerJourney = () => {
             }
             bgColour="uiBg"
             textColour="black"
-          /> */}
+            onClick={() =>
+              history.push(
+                ROUTES.COACH.PRACTITIONER_POINTS.replace(
+                  ':userId',
+                  practitioner?.userId || ''
+                )
+              )
+            }
+          />
           {renderAlert()}
           <Typography
             className="mt-4 mb-2"

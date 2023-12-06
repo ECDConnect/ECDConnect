@@ -45,10 +45,6 @@ export const CoachSelfAssessment: React.FC<
     setActiveStep(CoachSmartSpaceChecklistSteps.SMART_SPACE_CHECK);
   };
 
-  const saveSmartSpaceCheckData = () => {
-    appDispatch(traineeActions.saveCoachSmartSpaceCheckData(sectionQuestions));
-  };
-
   const handleBackButton = () => {
     if (activeStep <= 0) {
       history.push(ROUTES.COACH_FRANCHISE_AGREEMENT, {
@@ -63,50 +59,35 @@ export const CoachSelfAssessment: React.FC<
       case 1:
         return (
           <CoachSelfAssessment2
-            // saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             practitioner={practitioner}
-            // programmeName={programmeName}
-            // setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
           />
         );
       case 2:
         return (
           <CoachSelfAssessment3
-            // saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             practitioner={practitioner}
-            // programmeName={programmeName}
-            // setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
           />
         );
       case 3:
         return (
           <CoachSelfAssessment4
-            // saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             practitioner={practitioner}
-            // programmeName={programmeName}
-            // setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
           />
         );
       case 4:
         return (
           <CoachSelfAssessment5
-            // saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             practitioner={practitioner}
-            // programmeName={programmeName}
-            // setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
           />
         );
       case 5:
         return (
           <CoachSelfAssessment6
-            // saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             practitioner={practitioner}
-            // programmeName={programmeName}
-            // setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
           />
         );
@@ -114,18 +95,13 @@ export const CoachSelfAssessment: React.FC<
         return (
           <CoachSelfAssessment7
             practitioner={practitioner}
-            // programmeName={programmeName}
-            // setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
           />
         );
       default:
         return (
           <CoachSelfAssessment1
-            // saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             practitioner={practitioner}
-            // programmeName={programmeName}
-            // setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
           />
         );

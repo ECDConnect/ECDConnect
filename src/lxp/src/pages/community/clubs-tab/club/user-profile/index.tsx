@@ -2,13 +2,14 @@ import {
   Alert,
   BannerWrapper,
   Button,
+  DialogPosition,
   ProfileAvatar,
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { LogoSvgs, getLogo } from '@/utils/common/svg.utils';
-import { useSnackbar, useTheme } from '@ecdlink/core';
+import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import { ClubsRouteState } from '../../index.types';
 import { useWindowSize } from '@reach/window-size';
 import ROUTES from '@/routes/routes';
@@ -17,50 +18,66 @@ import { clubSelectors } from '@/store/club';
 import { userSelectors } from '@/store/user';
 import { useMemo, useState } from 'react';
 import { AboutYourselfDialog } from './about-yourself-dialog';
-import { coachSelectors } from '@/store/coach';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 
 export const UserProfile: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const history = useHistory();
 
+  const dialog = useDialog();
+
   const { height } = useWindowSize();
   const { showMessage } = useSnackbar();
-  const { clubId, leaderId, practitionerId, coachId } =
+  const { clubId, leaderId, practitionerId, coachId, supportRoleId } =
     useParams<ClubsRouteState>();
+
+  const { isOnline } = useOnlineStatus();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const user = useSelector(userSelectors.getUser);
   const { theme } = useTheme();
 
-  const isCoach = !!coachId;
-  const isLeader = !!leaderId;
-  const isMember = !!practitionerId;
-
-  // TODO: The support role is not implemented yet; it will be added in the C3 functionality
-  const isSupportRole = false;
-
-  const clubMember = club?.clubMembers.find(
-    (member) => member.practitionerId === (isMember ? practitionerId : leaderId)
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
   );
-  console.log('clubMember', clubMember);
-  console.log('practitionerId', practitionerId);
-  const name = isCoach
-    ? `${user?.firstName} ${user?.surname}`
+
+  const isCoachProfile = !!coachId;
+  const isLeaderProfile = !!leaderId;
+  const isMemberProfile = !!practitionerId;
+  const isSupportRole = !!supportRoleId;
+
+  const clubMember = club?.clubMembers.find((member) => {
+    if (isSupportRole) {
+      return member.userId === supportRoleId;
+    }
+
+    return (
+      member.practitionerId === (isMemberProfile ? practitionerId : leaderId)
+    );
+  });
+
+  const name = isCoachProfile
+    ? `${club?.clubCoach.firstName} ${club?.clubCoach.surname}`
     : `${clubMember?.firstName} ${clubMember?.surname}`;
 
-  const whatsAppNumber = isCoach
-    ? user?.whatsappNumber
+  const whatsAppNumber = isCoachProfile
+    ? club?.clubCoach.whatsAppNumber
     : clubMember?.whatsAppNumber;
-  const phoneNumber = isCoach ? user?.phoneNumber : clubMember?.phoneNumber;
 
-  const headerHeight = isMember ? 254 : 300;
+  const phoneNumber = isCoachProfile
+    ? club?.clubCoach.phoneNumber || club?.clubCoach.whatsAppNumber
+    : clubMember?.phoneNumber || clubMember?.whatsAppNumber;
+
+  const headerHeight = isMemberProfile ? 254 : 300;
   const userRole = useMemo(() => {
-    if (isCoach) {
+    if (isCoachProfile) {
       return 'Coach';
     }
 
-    if (isLeader) {
+    if (isLeaderProfile) {
       return 'Club leader';
     }
 
@@ -69,7 +86,25 @@ export const UserProfile: React.FC = () => {
     }
 
     return '';
-  }, [isCoach, isLeader, isSupportRole]);
+  }, [isCoachProfile, isLeaderProfile, isSupportRole]);
+
+  const onOffline = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return <OnlineOnlyModal onSubmit={onClose} />;
+      },
+    });
+  };
+
+  const onOnlineNavigation = (route: string) => {
+    if (isOnline) {
+      return history.push(route);
+    }
+
+    return onOffline();
+  };
 
   const onWhatsapp = () => {
     if (whatsAppNumber) {
@@ -95,6 +130,8 @@ export const UserProfile: React.FC = () => {
 
   return (
     <BannerWrapper
+      displayOffline={!isOnline}
+      renderBorder
       showBackground
       backgroundUrl={theme?.images.graphicOverlayUrl}
       className="z-10"
@@ -107,11 +144,13 @@ export const UserProfile: React.FC = () => {
           hasConsent={true}
           canChangeImage={false}
           dataUrl={
-            isCoach ? user?.profileImageUrl : clubMember?.profileImageUrl ?? ''
+            isCoachProfile
+              ? user?.profileImageUrl
+              : clubMember?.profileImageUrl ?? ''
           }
           size={'header'}
         />
-        {!isMember && (
+        {!isMemberProfile && (
           <StatusChip
             backgroundColour="primary"
             borderColour="primary"
@@ -124,7 +163,7 @@ export const UserProfile: React.FC = () => {
           className="mt-4"
           type="h4"
           text={
-            isCoach
+            isCoachProfile
               ? club?.clubCoach.aboutInfo ?? ''
               : clubMember?.welcomeMessage ?? ''
           }
@@ -135,49 +174,74 @@ export const UserProfile: React.FC = () => {
         style={{ height: height - headerHeight }}
       >
         <Typography type="h3" text={name} />
-        <Typography
-          type="body"
-          text={(phoneNumber || whatsAppNumber) ?? 'Phone number unavailable'}
-          color="secondary"
-        />
-        {!isCoach && (
+        {(!isMemberProfile || clubMember?.shareContactInfo) && (
           <>
-            <div className="my-4 flex flex-wrap justify-between gap-4">
-              <Button
-                className="flex-grow"
-                type="outlined"
-                color="primary"
-                textColor="primary"
-                onClick={onWhatsapp}
-              >
-                <img
-                  src={getLogo(LogoSvgs.whatsapp)}
-                  alt="whatsapp"
-                  className="mr-2"
-                />
-                <Typography
-                  type="button"
-                  text={`WhatsApp ${isLeader ? 'club leader' : 'practitioner'}`}
-                  color="primary"
-                />
-              </Button>
-              <Button
-                className="flex-grow"
-                icon="PhoneIcon"
-                type="outlined"
-                color="primary"
-                text={`Call ${isLeader ? 'club leader' : 'practitioner'}`}
-                textColor="primary"
-                onClick={onCall}
-              />
-            </div>
-            <Alert
-              type="info"
-              title="WhatsApps and phone calls will be charged at your standard carrier rates."
+            <Typography
+              type="body"
+              text={
+                (phoneNumber || whatsAppNumber) ?? 'Phone number unavailable'
+              }
+              color="secondary"
             />
+            {((isCoachProfile && !isCoach) || !isCoachProfile) && (
+              <>
+                <div className="my-4 flex flex-wrap justify-between gap-4">
+                  <Button
+                    className="flex-grow"
+                    type="outlined"
+                    color="primary"
+                    textColor="primary"
+                    onClick={onWhatsapp}
+                  >
+                    <img
+                      src={getLogo(LogoSvgs.whatsapp)}
+                      alt="whatsapp"
+                      className="mr-2"
+                    />
+                    <Typography
+                      type="button"
+                      text={`WhatsApp ${
+                        isLeaderProfile
+                          ? 'club leader'
+                          : isCoachProfile
+                          ? 'coach'
+                          : 'practitioner'
+                      }`}
+                      color="primary"
+                    />
+                  </Button>
+                  <Button
+                    className="flex-grow"
+                    icon="PhoneIcon"
+                    type="outlined"
+                    color="primary"
+                    text={`Call ${
+                      isLeaderProfile
+                        ? 'club leader'
+                        : isCoachProfile
+                        ? 'coach'
+                        : 'practitioner'
+                    }`}
+                    textColor="primary"
+                    onClick={onCall}
+                  />
+                </div>
+                <Alert
+                  type="info"
+                  title="WhatsApps and phone calls will be charged at your standard carrier rates."
+                />
+              </>
+            )}
           </>
         )}
-        {isLeader && (
+        {isMemberProfile && !clubMember?.shareContactInfo && (
+          <Alert
+            className="mt-5"
+            type="info"
+            title="Practitioner has not shared contact details."
+          />
+        )}
+        {isLeaderProfile && isCoach && (
           <Button
             className="mt-auto"
             icon="RefreshIcon"
@@ -186,13 +250,13 @@ export const UserProfile: React.FC = () => {
             text="Change club leader"
             textColor="white"
             onClick={() =>
-              history.push(
+              onOnlineNavigation(
                 ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(':clubId', clubId)
               )
             }
           />
         )}
-        {isCoach && (
+        {isCoachProfile && isCoach && (
           <div className="mt-auto flex flex-col gap-4">
             <Button
               icon="PencilIcon"

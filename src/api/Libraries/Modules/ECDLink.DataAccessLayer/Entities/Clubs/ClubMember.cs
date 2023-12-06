@@ -25,6 +25,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public bool? IsNewInClub { get; set; }
         public DateTime? DateClubJoined { get; set; }
         public string WelcomeMessage { get; set; }
+        public bool ShareContactInfo { get; set; }
     }
 
     public interface ClubMemberJoin<TKey>

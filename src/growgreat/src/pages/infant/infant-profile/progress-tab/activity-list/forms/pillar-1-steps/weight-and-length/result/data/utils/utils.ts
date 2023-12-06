@@ -20,21 +20,14 @@ const getDataPerTime = (data: number[], daysPerTime: number[]) => {
 };
 
 export const getDataPerMonth = (data: number[]) => {
-  const daysPerMonth = [
-    31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28, 31, 30, 31, 30, 31,
-    31, 30, 31, 30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28,
-    31, 30, 31, 30, 31, 31, 30, 31, 30, 31, 31, 28, 31, 30, 31, 30, 31, 31, 30,
-    31, 30, 31, 31,
-  ];
+  const daysPerMonth = new Array(61).fill(30);
 
   let monthlyData: number[] = [];
 
   if (daysPerMonth.length > 0) {
     daysPerMonth.reduce(
       (acc, val) => {
-        let sum = data.slice(acc[0], acc[0] + val).reduce((a, b) => a + b);
-        let avg = sum / val;
-        monthlyData.push(avg);
+        monthlyData.push(data[acc[0]]);
         return [acc[0] + val];
       },
       [0]
@@ -52,12 +45,7 @@ export const getDataPerYear = (data: number[]) => {
   if (daysPerYear.length > 0) {
     daysPerYear.reduce(
       (acc, val) => {
-        let yearData = data.slice(acc[0], acc[0] + val);
-        if (yearData.length > 0) {
-          let sum = yearData.reduce((a, b) => a + b);
-          let avg = sum / val;
-          yearlyData.push(avg);
-        }
+        yearlyData.push(data[acc[0]]);
         return [acc[0] + val];
       },
       [0]

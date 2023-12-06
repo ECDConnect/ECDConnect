@@ -26,6 +26,24 @@ export const enum ClubActivities {
   MeetRegularly = 'Meet regularly',
 }
 
+export const ClubActivitiesPointsPerLeague = {
+  MeetRegularly: {
+    All: { max: 800, green: 600, amber: 599, red: 0 },
+  },
+  BeCreative: {
+    All: { max: 800, green: 600, amber: 599, red: 0 },
+  },
+  HostFamilyDays: {
+    All: { max: 300, green: 225, amber: 224, red: 0 },
+  },
+  LeaveNoOneBehind: {
+    All: { max: 100, green: 75, amber: 74, red: 0 },
+  },
+  ChildAttendance: {
+    All: { max: 800, green: 600, amber: 599, red: 0 },
+  },
+};
+
 export const enum IssuesTasks {
   noClubLeader = 'No club leader',
   contactClubLeader = 'Contact club leader',

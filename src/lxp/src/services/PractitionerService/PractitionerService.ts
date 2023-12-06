@@ -367,6 +367,18 @@ class PractitionerService {
             isCompletedBusinessWalkThrough
             clubId
             clubName
+            absentees {
+              absentDate
+              absentDateEnd
+              className
+              classroomGroupId
+              reason
+              reassignedToPerson
+              reassignedToUserId
+              absenteeId
+              loggedByPerson
+              loggedByUserId
+          }
           }
         }
       `,
@@ -405,6 +417,7 @@ class PractitionerService {
             dateLinked
             dateAccepted
             dateToBeRemoved
+            daysAbsentLastMonth
             siteAddress {
               addressLine1
               addressLine2

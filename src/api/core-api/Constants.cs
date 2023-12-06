@@ -354,6 +354,11 @@ namespace EcdLink.Api.CoreApi
             public const string pqa_visit = "PQA Visit 1";
             public const string pqa_re_accreditation = "Re-accreditation visit";
             public const string smart_space_checklist = "SmartSpace Checklist";
+
+            public const string ss_programme = "Programme details";
+            public const string ss_health = "Health, sanitation & safety";
+            public const string ss_safety = "Safety - structure, space & area";
+
             public const string coach_smartspace_check = "Coach smartspace check";
             public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
             public const string pqa_follow_up = "Is {client} ready for a follow-up PQA observation visit?";
@@ -837,6 +842,7 @@ namespace EcdLink.Api.CoreApi
             public const string meeting_type_story_day = "story_day";
             public const string meeting_type_end_of_year_celebration = "end_of_year_celebration";
             public const string meeting_type_open_day = "open_day";
+            public const string meeting_type_caregiver_meeting = "caregiver_meeting";
             public const string meeting_type_other = "other";
 
             public const string no_club_leader = "No club leader";
@@ -871,6 +877,8 @@ namespace EcdLink.Api.CoreApi
             public const string capture_child_attendance = "Capture child attendance";
             public const string meet_regularly = "Meet regularly";
             public const string be_creative = "Be creative";
+            public const string sub_caregiver_meeting = "Caregiver meeting";
+            public const string sub_progress_tracking = "Progress tracking";
 
             public const string document_success = "Image completed";
             public const string document_no_success = "Image incompleted";
@@ -890,6 +898,7 @@ namespace EcdLink.Api.CoreApi
             public const string upload_type_be_creative = "BeCreative";
             public const string upload_type_family_days = "FamilyDays";
 
+            public const string first_reporting_period = "\"reportingPeriod\":\"First\"";
 
         }
 
