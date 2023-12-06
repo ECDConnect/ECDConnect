@@ -41,6 +41,7 @@ import ResetPassword from './components/auth/reset-password/reset-password';
 import ApplicationUsers from './pages/users/sub-pages/application-users/application-users';
 import UploadBulkUser from './pages/upload-bulk-users/upload-bulk-users';
 import TermsPage from './pages/terms/terms';
+import Messaging from './pages/messaging/messaging';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -75,6 +76,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/content-management`} component={ContentManagement}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
       <Route path={`/roles`} component={Roles}></Route>
+      <Route path={`/messaging`} component={Messaging}></Route>
     </Switch>
   );
 };

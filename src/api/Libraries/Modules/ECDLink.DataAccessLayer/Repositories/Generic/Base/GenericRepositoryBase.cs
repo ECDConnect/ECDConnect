@@ -9,10 +9,11 @@ using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
-using NPOI.POIFS.FileSystem;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
@@ -249,8 +250,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                         if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType && prop.Name != "UpdatedDate") //ignore navigation types due to lazyloading And do not flag UpdatedDate as Valid change
                         {
                             //Determine changes and convert all to string
-                            string beforeValue = entities.Entry(entityBefore).Property(prop.Name).OriginalValue != null ? entities.Entry(entityBefore).Property(prop.Name).OriginalValue.ToString() : "";
-                            string afterValue = prop.GetValue(entity, null) != null ? prop.GetValue(entity, null).ToString() : "";
+                            string beforeValue = prop.GetCustomAttribute(typeof(NotMappedAttribute), true) == null && entities.Entry(entityBefore).Property(prop.Name).OriginalValue != null ? entities.Entry(entityBefore).Property(prop.Name).OriginalValue.ToString() : "";
+                            string afterValue = prop.GetCustomAttribute(typeof(NotMappedAttribute), true) == null && prop.GetValue(entity, null) != null ? prop.GetValue(entity, null).ToString() : "";
 
                             if (beforeValue != afterValue)
                             {

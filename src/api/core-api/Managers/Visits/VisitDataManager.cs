@@ -246,8 +246,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().ToList();
-            if (completedSections.Count == 4)
+            List<string> sections = new List<string>();
+            sections.Add(Constants.SSSettings.ss_programme);
+            sections.Add(Constants.SSSettings.ss_health);
+            sections.Add(Constants.SSSettings.ss_safety);
+
+            var completedSections = _visitDataRepo.GetAll()
+                                       .Where(x => x.VisitId == Guid.Parse(input.VisitId) && 
+                                                x.VisitName == Constants.SSSettings.smart_space_checklist &&
+                                                sections.Contains(x.VisitSection))
+                                       .Select(y => y.VisitSection).Distinct().ToList();
+            if (completedSections.Count == 3)
             {
                 MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
             }
@@ -255,16 +264,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public Visit MarkChecklistVisitStatus(Guid visitId)
         {
-            var programme = "Programme details";
-            var health = "Health, sanitation & safety";
-            var safety = "Safety - structure, space & area";
-
-            int programmeCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == programme).Count();
-            int healthCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == health && x.QuestionAnswer == "true").Count();
-            int safetyCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == safety && x.QuestionAnswer == "true").Count();
+            int programmeCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == Constants.SSSettings.ss_programme).Count();
+            int healthCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == Constants.SSSettings.ss_health && x.QuestionAnswer == "true").Count();
+            int safetyCount = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.VisitName == Constants.SSSettings.smart_space_checklist && x.VisitSection == Constants.SSSettings.ss_safety && x.QuestionAnswer == "true").Count();
 
             // EC-1359 - remove spacecount which is not compulsory
-            if (programmeCount > 6 && healthCount == 7 && safetyCount == 10)
+            if (programmeCount >= 6 && healthCount == 7 && safetyCount == 10)
             {          
                
                // update the visit record to show attended/completed 
@@ -364,8 +369,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (input.VisitData.VisitName == Constants.SSSettings.smart_space_checklist)
             {
-                var completedSections = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().ToList();
-                if (completedSections.Count == 4)
+                List<string> sections = new List<string>();
+                sections.Add(Constants.SSSettings.ss_programme);
+                sections.Add(Constants.SSSettings.ss_health);
+                sections.Add(Constants.SSSettings.ss_safety);
+                var completedSections = _visitDataRepo.GetAll()
+                        .Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist &&
+                               sections.Contains(x.VisitSection)).Select(y => y.VisitSection).Distinct().ToList();
+                if (completedSections.Count == 3)
                 {
                     MarkChecklistVisitStatus(Guid.Parse(input.VisitId));
                 }

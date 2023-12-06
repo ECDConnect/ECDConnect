@@ -3,7 +3,17 @@ import * as Yup from 'yup';
 
 export type CalendarAddEventInfo = {
   id?: string;
-  eventType?: string;
+  eventType?:
+    | 'SmartSpace'
+    | 'First PQA'
+    | 'PQA follow-up'
+    | 'First site visit'
+    | 'Second site visit'
+    | 'Re-accreditation'
+    | 'General support visit'
+    | 'Coaching circle'
+    | 'Re-accreditation follow-up'
+    | 'Club Monthly Meeting';
   start?: string;
   end?: string;
   minDate?: string;

@@ -28,11 +28,13 @@ const traineeSlice = createSlice({
       state.trainee = initialState.trainee;
     },
     saveCoachSmartSpaceCheckData: (state, action) => {
-      const checkData = state.coachSmartSpaceCheckData?.filter(
-        (item) => item?.visitSection !== action.payload?.[0]?.visitSection
+      const updatedData = state.coachSmartSpaceCheckData?.filter(
+        (item) => item?.question !== action?.payload?.[0]?.question
       );
-      checkData?.push(...action?.payload);
-      state.coachSmartSpaceCheckData = checkData ? checkData : action.payload;
+      updatedData?.push(...action?.payload);
+      state.coachSmartSpaceCheckData = updatedData
+        ? updatedData
+        : action.payload;
     },
     resetCoachSmartSpaceVisitData: (state) => {
       state.coachSmartSpaceCheckData = initialState?.coachSmartSpaceCheckData;

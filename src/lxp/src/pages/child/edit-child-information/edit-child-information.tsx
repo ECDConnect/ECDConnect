@@ -81,6 +81,7 @@ export const EditChildInformation: React.FC = () => {
   const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
+  const practitionerIsOnLeave = location.state.practitionerIsOnLeave;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some((role) => role.name === 'Coach');
@@ -327,6 +328,26 @@ export const EditChildInformation: React.FC = () => {
     return '';
   };
 
+  const getAddress = () => {
+    if (caregiver?.siteAddress) {
+      let address = '';
+      if (caregiver?.siteAddress?.addressLine1 !== '') {
+        address += caregiver?.siteAddress?.addressLine1;
+      }
+      if (caregiver?.siteAddress?.addressLine2 !== '') {
+        address += ', ' + caregiver?.siteAddress?.addressLine2;
+      }
+      if (caregiver?.siteAddress?.addressLine3 !== '') {
+        address += ', ' + caregiver?.siteAddress?.addressLine3;
+      }
+      if (caregiver?.siteAddress?.ward !== '') {
+        address += ', ' + caregiver?.siteAddress?.ward;
+      }
+      return address;
+    }
+    return 'Add address';
+  };
+
   const setNewStackListItems = (child: ChildDto, caregiver?: CaregiverDto) => {
     const list: ActionListDataItem[] = [];
     if (child) {
@@ -361,7 +382,7 @@ export const EditChildInformation: React.FC = () => {
         title: 'Class',
         subTitle: learnerClassroomGroup?.name || 'No class',
         switchTextStyles: true,
-        actionName: isCoach ? undefined : 'Edit',
+        actionName: isCoach || practitionerIsOnLeave ? undefined : 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
           openChildConfirmEditClassPrompt();
@@ -411,9 +432,7 @@ export const EditChildInformation: React.FC = () => {
 
         list.push({
           title: 'Address',
-          subTitle: caregiver?.siteAddress?.ward
-            ? `${caregiver?.siteAddress?.ward} ${caregiver?.siteAddress?.addressLine1}, ${caregiver?.siteAddress?.addressLine2}`
-            : 'Add address',
+          subTitle: getAddress(),
           switchTextStyles: true,
           actionName: 'View',
           actionIcon: 'EyeIcon',

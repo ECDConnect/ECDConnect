@@ -149,7 +149,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(documentActions.resetDocumentsState());
     appDispatch(attendanceActions.resetAttendanceState());
     appDispatch(contentReportActions.resetContentReportState());
-    // appDispatch(clubActions.resetClubState());
+    appDispatch(clubActions.resetClubState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -253,6 +253,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       programmeRoutineThunkActions.getProgrammeRoutines({ locale: 'en-za' })
     ).unwrap();
+
+    // POINTS
+    (async () =>
+      await appDispatch(
+        pointsThunkActions.getPointsLibrary({
+          userId: userData?.id!,
+        })
+      ).unwrap())();
 
     setStaticDataLoading(false);
   };
@@ -413,13 +421,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               userId: userData?.id!,
               startDate: oneYearAgo,
               endDate: currentDate,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsLibrary({
-              userId: userData?.id!,
             })
           ).unwrap())();
       }

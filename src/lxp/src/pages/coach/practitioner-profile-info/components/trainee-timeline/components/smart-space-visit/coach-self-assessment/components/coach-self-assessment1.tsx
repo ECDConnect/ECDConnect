@@ -1,4 +1,6 @@
 import ROUTES from '@/routes/routes';
+import { useAppDispatch } from '@/store';
+import { traineeActions } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import { Button, Typography, renderIcon } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
@@ -12,6 +14,7 @@ export const CoachSelfAssessment1: React.FC<CoachSelfAssessment1Props> = ({
   practitioner,
   handleNextSection,
 }) => {
+  const dispatch = useAppDispatch();
   const history = useHistory();
   return (
     <div className="p-4">
@@ -59,11 +62,12 @@ export const CoachSelfAssessment1: React.FC<CoachSelfAssessment1Props> = ({
               type="outlined"
               color="primary"
               className="mt-1 mb-2 w-full"
-              onClick={() =>
+              onClick={() => {
+                dispatch(traineeActions.resetCoachSmartSpaceVisitData());
                 history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
                   practitionerId: practitioner?.userId,
-                })
-              }
+                });
+              }}
             >
               {renderIcon('DownloadIcon', 'mr-2 text-white w-5 bg-primary')}
               <Typography

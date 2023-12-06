@@ -76,7 +76,11 @@ export const PointsSummary: React.FC = () => {
     });
 
     return pointsList;
-  }, [pointsSummaryDataWithLibrary]);
+  }, [
+    pointsSummaryDataWithLibrary,
+    practitioner?.isFundaAppAdmin,
+    practitioner?.isPrincipal,
+  ]);
 
   const pointsTotal = pointsSummaryDataWithLibrary.reduce(
     (total, current) => (total += current.pointsTotal),
@@ -121,14 +125,16 @@ export const PointsSummary: React.FC = () => {
         );
       }
       if (userStanding >= 50) {
-        <CelebrationCard
-          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
-          secondaryMessage="So far this year, you have more points than most other SmartStarters in you club!"
-          primaryTextColour="secondary"
-          secondaryTextColour="black"
-          backgroundColour="infoBb"
-        />;
+        return (
+          <CelebrationCard
+            image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
+            secondaryMessage="You have more points than most other SmartStarters in you club!"
+            primaryTextColour="secondary"
+            secondaryTextColour="black"
+            backgroundColour="infoBb"
+          />
+        );
       }
       if (userStanding < 50) {
         return (
@@ -137,7 +143,7 @@ export const PointsSummary: React.FC = () => {
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
             primaryTextColour="errorMain"
             backgroundColour="errorBg"
-            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
+            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points! Earn more points to join them.`}
             secondaryTextColour="black"
           />
         );
@@ -178,7 +184,12 @@ export const PointsSummary: React.FC = () => {
         />
       );
     }
-  }, [percentageScore, userStanding]);
+  }, [
+    percentageScore,
+    pointsTotalForYear,
+    practitioner?.user?.firstName,
+    userStanding,
+  ]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);
@@ -201,8 +212,7 @@ export const PointsSummary: React.FC = () => {
             color="black"
             text={format(new Date(), 'MMM yyyy')}
           />
-          {/* EC-1909 - Suppress ticket */}
-          {/* <ScoreCard
+          <ScoreCard
             className="mt-5"
             mainText={`${pointsTotal} points`}
             currentPoints={pointsTotal}
@@ -217,7 +227,7 @@ export const PointsSummary: React.FC = () => {
             }
             bgColour="uiBg"
             textColour="black"
-          /> */}
+          />
           {celebrationCard}
           {!!pointsTodoList && !!pointsTodoList.length && (
             <Typography

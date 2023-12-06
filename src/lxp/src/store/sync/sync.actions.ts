@@ -16,6 +16,7 @@ import { practitionerThunkActions } from '../practitioner';
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 import { pqaThunkActions } from '../pqa';
 import { calendarThunkActions } from '../calendar';
+import { clubThunkActions } from '../club';
 
 type SyncStep = {
   title: string;
@@ -98,6 +99,26 @@ export const syncOfflineData = createAsyncThunk<
     {
       title: 'Analytics',
       action: analyticsThunkActions.pushAnalytics,
+    },
+    {
+      title: 'Club Support role',
+      action: clubThunkActions.changeClubSupportRole,
+    },
+    {
+      title: 'Club meetings',
+      action: clubThunkActions.addClubMeeting,
+    },
+    {
+      title: 'Club be creative activity',
+      action: clubThunkActions.addBeCreativeActivity,
+    },
+    {
+      title: 'Family day meetings',
+      action: clubThunkActions.addFamilyDayMeeting,
+    },
+    {
+      title: 'Caregiver report back meeting',
+      action: clubThunkActions.addCaregiverReportBackMeeting,
     },
   ];
 
@@ -234,6 +255,26 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       {
         title: 'ReAccreditation Follow up Visits',
         action: pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner,
+      },
+      {
+        title: 'Club Support role',
+        action: clubThunkActions.changeClubSupportRole,
+      },
+      {
+        title: 'Club meetings',
+        action: clubThunkActions.addClubMeeting,
+      },
+      {
+        title: 'Club be creative activity',
+        action: clubThunkActions.addBeCreativeActivity,
+      },
+      {
+        title: 'Family day meetings',
+        action: clubThunkActions.addFamilyDayMeeting,
+      },
+      {
+        title: 'Caregiver report back meeting',
+        action: clubThunkActions.addCaregiverReportBackMeeting,
       },
     ];
 

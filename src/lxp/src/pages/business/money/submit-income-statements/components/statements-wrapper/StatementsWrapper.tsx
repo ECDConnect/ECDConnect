@@ -104,6 +104,100 @@ export default function StatementsWrapper() {
     },
   ];
 
+  // useSetState(() => {
+  //   setState({
+  //     steps: [
+  //       {
+  //         target: '#startStatements',
+  //         content: 'Tap here to get started!',
+  //         placement: 'auto',
+  //         disableBeacon: true,
+  //         spotlightClicks: true,
+  //       },
+  //       {
+  //         target: '#createStatements',
+  //         content:
+  //           'You can choose whether you want to add income or expenses to your income statement',
+  //         placement: 'bottom',
+  //         offset: 10,
+  //         disableBeacon: true,
+  //         spotlightPadding: 16,
+  //       },
+  //       {
+  //         target: '#createIncome',
+  //         content: "Let's go through one example! Tap income",
+  //         placement: 'bottom-end',
+  //         offset: 10,
+  //         spotlightClicks: true,
+  //       },
+  //       {
+  //         target: '#incomeList',
+  //         content:
+  //           'See a list of income types. For income that is not on this list, you can choose “Other”',
+  //         placement: 'bottom-end',
+  //         offset: 10,
+  //         disableBeacon: true,
+  //       },
+  //       {
+  //         target: '#actionList0',
+  //         content:
+  //           "Let's pretend a parent gave you school fees today, tap here!",
+  //         placement: 'bottom-end',
+  //         offset: 10,
+  //         spotlightClicks: true,
+  //         disableBeacon: true,
+  //       },
+  //       {
+  //         target: '#preeschoolFee1',
+  //         content: 'You will need to fill in all the info on this screen',
+  //         placement: 'bottom-end',
+  //         offset: 20,
+  //         spotlightClicks: true,
+  //         disableBeacon: true,
+  //       },
+  //       {
+  //         target: '#savePreschoolFee',
+  //         content: "I've filled in an example for you! Now tap Save",
+  //         placement: 'top',
+  //         offset: 10,
+  //         spotlightClicks: true,
+  //         disableBeacon: true,
+  //       },
+  //       {
+  //         target: '#statementsDashboard',
+  //         content:
+  //           'Great! Your income has now been added to the summary income statement on the money tab',
+  //         placement: 'bottom-end',
+  //         offset: 60,
+  //         disableBeacon: true,
+  //       },
+  //       {
+  //         target: '#howMayDaysToSubmit',
+  //         content:
+  //           "I'll tell you how many days you have left to submit the next statement",
+  //         placement: 'bottom-end',
+  //         offset: 10,
+  //         disableBeacon: true,
+  //       },
+  //       {
+  //         target: '#submitIncomeButton',
+  //         content:
+  //           "When you're ready, you can tap here to submit the final statement to SmartStart",
+  //         placement: 'bottom-end',
+  //         offset: 10,
+  //         spotlightClicks: true,
+  //         disableBeacon: true,
+  //       },
+  //       {
+  //         target: '#lastStep',
+  //         content: "Great job, you're ready to start!",
+  //         placement: 'bottom-end',
+  //         offset: 10,
+  //       },
+  //     ],
+  //   });
+  // });
+
   function Tooltip({
     backProps,
     continuous,

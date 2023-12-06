@@ -1,13 +1,32 @@
-import { AttendanceDto, ClassroomGroupDto, LearnerDto } from '@ecdlink/core';
+import {
+  AttendanceDto,
+  ClassroomGroupDto,
+  LearnerDto,
+  useDialog,
+} from '@ecdlink/core';
 import {
   ComponentBaseProps,
   Button,
   Typography,
   renderIcon,
+  DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
-import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
+import {
+  add,
+  addDays,
+  format,
+  getDayOfYear,
+  isFriday,
+  isPast,
+  isSameDay,
+  isToday,
+  isWeekend,
+  nextMonday,
+  startOfWeek,
+} from 'date-fns';
 import getDay from 'date-fns/getDay';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { AttendanceResult } from '@models/classroom/attendance/AttendanceResult';
 import { attendanceSelectors } from '@store/attendance';
@@ -29,15 +48,21 @@ import { isWorkingDay } from '@/utils/common/date.utils';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
-import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
+import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
+import { coachSelectors } from '@/store/coach';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
+import AttendanceWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
+  const dialog = useDialog();
+  const coach = useSelector(coachSelectors.getCoach);
+  const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
   const [previousClassroomGroupId, setPreviousClassroomGroupId] =
     useState<string>('');
-
   const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
     useState<ClassroomGroupDto>();
 
@@ -86,6 +111,106 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const allChildrenInsertedBeforeToday = isAllStudentsInsertedBeforeToday(
     children ?? []
   );
+
+  const call = () => {
+    window.open(`tel:${coach?.user?.phoneNumber}`);
+  };
+
+  const practitionerAbsentees = practitioner?.absentees;
+  const validAbsenteesDates = practitionerAbsentees?.filter(
+    (item) =>
+      !isPast(new Date(item?.absentDateEnd as string)) ||
+      isToday(new Date(item?.absentDate as string))
+  );
+  const currentDates = validAbsenteesDates?.map((item) => {
+    return item?.absentDate as string;
+  });
+  const orderedDates = currentDates?.sort(function (a, b) {
+    return Date.parse(a) - Date.parse(b);
+  });
+  const currentAbsentee = validAbsenteesDates?.find(
+    (item) => item?.absentDate === orderedDates?.[0]
+  ) as AbsenteeDto;
+
+  const practitionerIsOnLeave = useMemo(
+    () =>
+      isPast(new Date(currentAbsentee?.absentDate as string)) &&
+      !isPast(
+        add(new Date(currentAbsentee?.absentDateEnd as string), { days: 1 })
+      ),
+    [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
+  );
+
+  const handleComebackDay = useCallback((date: Date) => {
+    if (isFriday(new Date(date)) || isWeekend(new Date(date))) {
+      return nextMonday(new Date(date));
+    }
+
+    return new Date(addDays(new Date(date), 1));
+  }, []);
+
+  const handleIsOnleaveModal = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onClose) => {
+        return (
+          <ActionModal
+            icon="ExclamationCircleIcon"
+            iconBorderColor="alertBg"
+            iconColor="alertMain"
+            importantText={`You are on leave and cannot use this section`}
+            paragraphs={[
+              `You are on leave from ${format(
+                new Date(
+                  (currentAbsentee?.absentDateEnd as Date) || new Date()
+                ),
+                'd MMM yyyy'
+              )} to ${format(
+                new Date(
+                  handleComebackDay(
+                    (currentAbsentee?.absentDateEnd as Date) || new Date()
+                  )
+                ),
+                'd MMM yyyy'
+              )}. If you believe this is a mistake please reach out to ${
+                currentAbsentee?.loggedByPerson
+              }.`,
+            ]}
+            actionButtons={[
+              {
+                text: `Contact ${currentAbsentee?.loggedByPerson}`,
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  call();
+                  onSubmit();
+                },
+                leadingIcon: 'PhoneIcon',
+              },
+              {
+                text: `Close`,
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  history.push(ROUTES.DASHBOARD);
+                  onClose();
+                },
+                leadingIcon: 'XCircleIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  useEffect(() => {
+    if (practitionerIsOnLeave) {
+      handleIsOnleaveModal();
+    }
+  }, [practitionerIsOnLeave]);
 
   useEffect(() => {
     if (!classroomGroups || classroomGroups?.length === 0) return;

@@ -46,7 +46,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string StipendType { get; set; }
         public int DaysAbsentLastMonth { get; set; } = 0;
         public bool IsOnLeave { get; set; } = false;
-
+        public bool IsNewInSupportRole { get; set; }
         public List<AbsenteeDetail> Absentees { get; set; }
     }
 

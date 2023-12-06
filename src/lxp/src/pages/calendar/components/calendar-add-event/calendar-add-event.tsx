@@ -48,12 +48,16 @@ import {
   sortListDataItems,
 } from '../calendar.utils';
 import { clubThunkActions } from '@/store/club';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { CalendarActions } from '@/store/calendar/calendar.actions';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
   onUpdated,
   onCancel,
 }) => {
+  const [model, setModel] = useState<CalendarEventModel>();
+
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
 
@@ -63,7 +67,20 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   const currentUser = useSelector(userSelectors.getUser) as UserDto;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
+  const { isLoading, wasLoading } = useThunkFetchCall(
+    'calendar',
+    CalendarActions.UPDATE_CALENDAR_EVENT
+  );
+
   const isNewEvent = !eventProps?.id;
+
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      if (onUpdated && !!model) {
+        onUpdated(isNewEvent, model);
+      }
+    }
+  }, [isLoading, isNewEvent, model, onUpdated, wasLoading]);
 
   const eventPropParticipants: CalendarEventParticipantModel[] | undefined =
     eventProps?.participantUserIds?.map((pid) => {
@@ -203,7 +220,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             };
           });
 
-      const model: CalendarEventModel = {
+      const currentModel: CalendarEventModel = {
         id: id,
         allDay: formValues.allDay,
         description: formValues.description,
@@ -223,14 +240,15 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           surname: currentUser.surname || '',
         },
       };
+
+      setModel(currentModel);
       appDispatch(
         calendarThunkActions.updateCalendarEvent(
-          calendarConvert.CalendarEventModel.CalendarEventModelInputModel(model)
+          calendarConvert.CalendarEventModel.CalendarEventModelInputModel(
+            currentModel
+          )
         )
       );
-      if (onUpdated) {
-        onUpdated(isNewEvent, model);
-      }
     }
   };
 
@@ -476,7 +494,8 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
               size="small"
               color="primary"
               type="filled"
-              disabled={!isValid}
+              disabled={!isValid || isLoading}
+              isLoading={isLoading}
             >
               {renderIcon('CheckCircleIcon', classNames('h-5 w-5 text-white'))}
               <Typography

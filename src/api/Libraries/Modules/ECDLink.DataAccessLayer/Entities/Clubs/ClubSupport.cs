@@ -23,7 +23,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public Guid PractitionerId { get; set; }
         public virtual Practitioner Practitioner { get; set; }
         public DateTime? DateAssigned { get; set; }
-        public DateTime? DateAccepted { get; set; }
+        public bool IsNewInSupportRole { get; set; }
     }
 
     public interface ClubSupportJoin<TKey>

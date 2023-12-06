@@ -5,22 +5,16 @@ import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
   GetTenantContext,
-  SortEnumType,
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
-import { ContentTypeDto, DocumentTypeDto } from '@ecdlink/core';
+import { ContentTypeDto } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import {
-  ArrowLeftIcon,
-  ChartBarIcon,
-  PresentationChartBarIcon,
-  SearchIcon,
-} from '@heroicons/react/solid';
+import { ArrowLeftIcon, SearchIcon } from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
 
 export function ContentManagement() {
@@ -168,7 +162,6 @@ export function ContentManagement() {
       setSelectedType(currentType);
       setSelectedContent(contentManagementView);
     });
-    console.log(contentManagementView);
   };
 
   const refreshParent = () => {
@@ -177,7 +170,6 @@ export function ContentManagement() {
   };
 
   useEffect(() => {
-    console.log(searchValue);
     getContentTypes({
       variables: {
         search: searchValue,
@@ -192,15 +184,13 @@ export function ContentManagement() {
     // getCountUsers({
     //   variables: getUserCountQueryVariables
     // });
-  }, [searchValue]);
+  }, []);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
-  }, 150);
+  }, 500);
 
   const listItems: StackedListItemType[] = [];
-
-  console.log(dataTypes?.contentTypes);
 
   if (specialType === 'Progress') {
     listItems.push(
@@ -217,10 +207,10 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
-        title: 'Progress categories',
+        title: 'Progress categories & subcategories',
         description: 'Development areas',
         titleIcon: 'PresentationChartBarIcon',
         titleIconClassName: 'bg-secondary text-white',
@@ -231,23 +221,23 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
-      {
-        title: 'Progress subcategories',
-        description: 'Development areas',
-        titleIcon: 'PresentationChartBarIcon',
-        titleIconClassName: 'bg-secondary text-white',
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) =>
-              type.name === 'ProgressTrackingSubCategory'
-          );
-          showGroupContentTypes(selectedTypeObject);
-        },
-        classNames: 'bg-uiBg',
-      },
+      // {
+      //   title: 'Progress subcategories',
+      //   description: 'Development areas',
+      //   titleIcon: 'PresentationChartBarIcon',
+      //   titleIconClassName: 'bg-secondary text-white',
+      //   onActionClick: () => {
+      //     setSpecialType('');
+      //     const selectedTypeObject = dataTypes?.contentTypes.find(
+      //       (type: ContentTypeDto) =>
+      //         type.name === 'ProgressTrackingSubCategory'
+      //     );
+      //     showGroupContentTypes(selectedTypeObject);
+      //   },
+      //   classNames: 'bg-uiBg',
+      // },
       {
         title: 'Progress tool',
         description: 'Edit the skills shown in the progress tracker',
@@ -260,7 +250,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       }
     );
   } else {
@@ -278,7 +268,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Small/large group activities',
@@ -294,7 +284,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Stories',
@@ -309,7 +299,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Story Book Parts',
@@ -323,7 +313,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Story activities',
@@ -339,7 +329,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       }
     );
   }
@@ -376,7 +366,7 @@ export function ContentManagement() {
                     }}
                     className={classNames(
                       item.id === selectedTab
-                        ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
+                        ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                       'consent-tabs text-md flex h-14 items-center font-medium'
                     )}
@@ -411,7 +401,9 @@ export function ContentManagement() {
                     <button
                       onClick={() => {
                         setSelectedType(null);
-                        setSpecialType('Programmes');
+                        setSpecialType(
+                          selectedTab === 2 ? 'Progress' : 'Programmes'
+                        );
                       }}
                       type="button"
                       className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
@@ -419,7 +411,7 @@ export function ContentManagement() {
                       <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
                         {' '}
                       </ArrowLeftIcon>
-                      {selectedTab === 2 ? 'Progress' : 'Programme'}
+                      {selectedTab === 2 ? 'Progress' : 'Programmes'}
                       <span className="px-1 text-gray-400">
                         {' '}
                         / {selectedType?.name}
@@ -428,10 +420,10 @@ export function ContentManagement() {
                   </div>
                 )}
                 <div
-                  className="relative h-full rounded-xl bg-white p-12"
+                  className="bg-adminPortalBg relative h-full rounded-xl p-12"
                   style={{ minHeight: '36rem' }}
                 >
-                  {specialType === '' && (
+                  {/* {specialType === '' && (
                     <div className="relative w-6/12">
                       <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                         {searchValue === '' && (
@@ -444,7 +436,7 @@ export function ContentManagement() {
                         onChange={search}
                       />
                     </div>
-                  )}
+                  )} */}
                   {selectedType &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
@@ -455,6 +447,7 @@ export function ContentManagement() {
                         viewContent={getContentValues}
                         refreshParent={() => refreshParent()}
                         selectedTab={selectedTab}
+                        searchValue={searchValue}
                       ></ContentList>
                     )}
                   {specialType === 'Programmes' && (

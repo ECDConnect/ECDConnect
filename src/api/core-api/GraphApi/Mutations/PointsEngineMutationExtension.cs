@@ -49,6 +49,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              return false;
          }
 
+        public bool CalculateLeaveNoOneBehind([Service] IPointsEngineService pointsEngineService)
+        {
+            return pointsEngineService.CalculateLeaveNoOneBehind();
+        }
+
 
     }
 }

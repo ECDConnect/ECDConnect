@@ -15,7 +15,7 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal, LogoutModal } from '../../../modals';
@@ -31,6 +31,7 @@ import { PractitionerJourney } from './practitioner-journey';
 import { usePrevious } from 'react-use';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
+import { PractitionerProfileRouteState } from './practitioner-profile.types';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
@@ -50,9 +51,14 @@ export const PractitionerProfile: React.FC = () => {
   const history = useHistory();
   const dialog = useDialog();
 
+  const location = useLocation<PractitionerProfileRouteState>();
+
   const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
 
-  const selectedTab = wasJourneyFormOpen && !isJourneyFormOpen ? 1 : undefined;
+  const selectedTab =
+    wasJourneyFormOpen && !isJourneyFormOpen
+      ? 1
+      : location.state?.tabIndex || undefined;
   // const sync = async () => {
   //   if (practitioner?.isPrincipal === true) {
   //     await appDispatch(syncThunkActions.syncOfflineData({}));
@@ -296,9 +302,7 @@ export const PractitionerProfile: React.FC = () => {
     {
       title: 'Journey',
       initActive: false,
-      // EC-1909 - Suppress ticket
-      //child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
-      child: 'Coming Soon!',
+      child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
     },
   ];
 

@@ -14,6 +14,7 @@ import {
   DialogServiceProvider,
   SnackbarProvider,
   useDialog,
+  usePrevious,
 } from '@ecdlink/core';
 import { DialogPosition } from '@ecdlink/ui';
 
@@ -36,6 +37,8 @@ function App() {
   const applicationSettings = useSelector(
     settingSelectors.getApplicationSettings
   );
+
+  const wasUserExpired = usePrevious(userExpired);
 
   const clearSiteData = useClearSiteData();
 
@@ -76,7 +79,7 @@ function App() {
   }, [applicationSettings]);
 
   useEffect(() => {
-    if (userExpired) {
+    if (userExpired && userExpired !== wasUserExpired) {
       dialog({
         blocking: true,
         position: DialogPosition.Middle,
@@ -85,7 +88,7 @@ function App() {
         },
       });
     }
-  });
+  }, [dialog, userExpired, wasUserExpired]);
 
   useEffect(() => {
     if (!user) {

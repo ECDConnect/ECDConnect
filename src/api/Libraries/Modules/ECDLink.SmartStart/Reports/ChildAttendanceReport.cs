@@ -146,7 +146,16 @@ namespace ECDLink.SmartStart.Reports
                                     {
                                         if (existingReport.Attendance.ContainsKey(item.Key))
                                         {
-                                            existingReport.Attendance[item.Key] = existingReport.Attendance[item.Key] + item.Value;
+                                            existingReport.Attendance[item.Key] = 
+                                                existingReport.Attendance[item.Key] == 1 || item.Value == 1 
+                                                    ? 1 
+                                                    : existingReport.Attendance[item.Key] == 0 || item.Value == 0
+                                                        ? 0
+                                                        : null;
+                                        }
+                                        else
+                                        {
+                                            existingReport.Attendance.Add(item.Key, item.Value);
                                         }
                                     }
                                 }

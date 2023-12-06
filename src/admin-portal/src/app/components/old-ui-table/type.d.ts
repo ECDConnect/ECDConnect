@@ -9,6 +9,7 @@ interface UiTableProps {
   deleteRow?: any;
   searchInput?: any;
   component?: any;
+  showSearch?: boolean;
 }
 
 interface Iprop {

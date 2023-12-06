@@ -2,13 +2,8 @@
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.PostgresTenancy.Services;
-using ECDLink.Tenancy.Context;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,10 +23,8 @@ public class RevertReassignment : CronJobService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
+            TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
-
-            TenancyContext.SetTenantContext(scope);            
-
             service.ReassignAbsentees();
         }
     }

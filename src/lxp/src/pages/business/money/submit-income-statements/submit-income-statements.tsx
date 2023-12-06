@@ -190,7 +190,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     if (isThisMonthSubmitted) {
       return format(getNextMonth(date), 'MMM yyyy');
     }
-
     if (
       !isLastMonthSubmitted &&
       date.getDate() <= IncomeStatementDates.SubmitEndDay

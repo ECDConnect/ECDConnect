@@ -6,6 +6,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -28,6 +29,7 @@ using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -64,12 +66,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private VisitManager _visitManager;
         private UserLicenseManager _userLicenseManager;
         private UserManager<ApplicationUser> _userManager;
-        private IReassignmentService _reassignmentService;
         private HierarchyEngine _hierarchyEngine;
         private INotificationService _notificationService;
         private IClubService _clubService;
         private IAbsenteeService _absenteeService;
         private ILogger<UserMutationExtension> _logger;
+        private IReassignmentService __reassignmentService;
+        private IServiceProvider _services;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -78,13 +81,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             VisitDataManager visitDataManager,
             VisitManager visitManager,
             UserLicenseManager userLicenseManager,
-            [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
             [Service] IClubService clubService,
             [Service] IAbsenteeService absenteeService,
             UserManager<ApplicationUser> userManager,
             [Service] HierarchyEngine hierarchyEngine,
-            [Service] ILogger<UserMutationExtension> logger)
+            [Service] ILogger<UserMutationExtension> logger,
+            IServiceProvider services
+            )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -111,13 +115,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
             _userLicenseManager = userLicenseManager;
-            _reassignmentService = reassignmentService;
             _userManager = userManager;
             _hierarchyEngine = hierarchyEngine;
             _notificationService = notificationService;
             _clubService = clubService;
             _absenteeService = absenteeService;
             _logger = logger;
+            _services = services;
+        }
+
+        private IReassignmentService _reassignmentService
+        {
+            get
+            {
+                if (__reassignmentService == null) __reassignmentService = (IReassignmentService)_services.GetService<IReassignmentService>();
+                return __reassignmentService;
+            }
         }
 
 
@@ -179,7 +192,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             practitionerRecord.StipendType = practitioner.StipendType;
 
             ClubMember clubMember = _clubService.GetClubForPractitioner(practitioner.Id);
-            if (clubMember != null)
+            if (practitionerRecord != null)
             {
                 practitionerRecord.ClubId = clubMember?.Club?.Id;
                 practitionerRecord.ClubName = clubMember?.Club?.Name;
@@ -188,7 +201,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
             }
 
-            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.AddDays(30).Date);
+            if (practitioner.ClubSupport != null)
+            {
+                practitionerRecord.IsNewInSupportRole = practitioner.ClubSupport.IsNewInSupportRole;
+            }
+
+            List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth());
             if (absentees.Any())
             {
                 practitionerRecord.Absentees = absentees;
@@ -412,7 +430,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 var unsureClassroomGroup = _classGroupRepo.GetListByUserId(practitionerToDemote.UserId).Where(x => x.Name == "Unsure").FirstOrDefault();
                 if(unsureClassroomGroup != null)
                 {
-                    _reassignmentService.AddReassignmentForPractitioner(_applicationUserId, practitionerToDemote.UserId, practitionerToPromote.UserId, "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
+                    _reassignmentService.AddReassignmentForPractitioner(practitionerToDemote.UserId, practitionerToPromote.UserId, "New principal/administrator", DateTime.Now, _applicationUserId, unsureClassroomGroup.Id.ToString(), true);
                 }
 
                 //now add user to principal
@@ -529,6 +547,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             return practitionerToDemote;
+        }
+        public Practitioner MarkFAA(string userId, bool isFAA = false)
+        {
+            var practitioner = _practiRepo.GetByUserId(userId);
+            if (practitioner != null)
+            {
+                practitioner.IsFundaAppAdmin = isFAA;
+                _practiRepo.Update(practitioner);
+            }
+
+            return practitioner;
         }
 
         public Principal MapPractitionerToPrincipal(Practitioner practitioner)
@@ -806,6 +835,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 user.LockoutEnd = DateTime.MaxValue;
                 var userResult = await _userManager.UpdateAsync(user);
 
+                // Archive club member/leader/support
+                _clubService.ArchiveClubUser(practitioner.Id);
+
                 // Remove any roles
                 var roles = _userManager.GetRolesAsync(user).Result;
                 foreach (var role in roles)
@@ -824,7 +856,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
             practitioner.IsCompletedBusinessWalkThrough = true;
             practitioner.UpdatedBy = _applicationUserId;
-            practitioner.UpdatedDate = DateTime.UtcNow;
+            practitioner.UpdatedDate = DateTime.Now;
             _practiGenericRepo.Update(practitioner);
             return true;
         }
@@ -837,6 +869,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public Trainee ScheduleConsolidationMeetingDate(string userId, DateTime? scheduledDate)
         {
             Trainee trainee = _traineeRepo.GetByUserId(userId);
+            if (trainee == null) return null;
+
             trainee.ScheduledConsolidationMeetingDate = scheduledDate;
 
             _traineeRepo.Update(trainee);
@@ -847,6 +881,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public Trainee UpdateCommunitySupport(string userId, bool? haveCommunitySupport)
         {
             Trainee trainee = _traineeRepo.GetByUserId(userId);
+            if (trainee == null) return null;
+
             trainee.HaveCommunitySupport = haveCommunitySupport;
             if (haveCommunitySupport == true)
             {
@@ -862,6 +898,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var timeline = new TraineeOnBoardTimeline();
             Trainee trainee = _traineeRepo.GetByUserId(userId);
+
             timeline.TraineeVisits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_trainee);
 
             // StarterLicense
@@ -895,6 +932,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     timeline.SmartSpaceLicenseNotAwardedDate = smartSpaceLicense?.DeclinedDate;
                     timeline.SmartSpaceLicenseNotAwardedSteps = smartSpaceLicense?.DeclinedCommentsSteps;
                     timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                    timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
                     timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
                 }
                 else
@@ -951,14 +989,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // SmartSpaceChecklist
-            Visit visit = _visitManager.GetVisitForUserForType(trainee?.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
-            if (visit != null)
+            if (trainee != null)
             {
-                if (visit?.Attended == true)
+                Visit visit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
+                if (visit != null)
                 {
-                    timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
-                    timeline.SmartSpaceChecklistColor = MetricsColorEnum.Success.ToString();
-                    timeline.SmartSpaceChecklistDate = visit.UpdatedDate;
+                    if (visit?.Attended == true)
+                    {
+                        timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
+                        timeline.SmartSpaceChecklistColor = MetricsColorEnum.Success.ToString();
+                        timeline.SmartSpaceChecklistDate = visit.UpdatedDate;
+                    }
                 }
             }
 
@@ -973,33 +1014,38 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
             }
 
-            // ThreeChildrenRegistered
-            var allChildren = GetAllChildrenForPractitioner(trainee?.Practitioner.UserId.ToString());
-            if (allChildren.Count >= 3)
+            Visit coachVisit = null;
+            if (trainee != null)
             {
-                timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
-                timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
-                timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
+                // ThreeChildrenRegistered
+                var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
+                if (allChildren.Count >= 3)
+                {
+                    timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
+                    timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
+                    timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
+                }
+
+                // SSCoachVisit - normally this visit is linked to a coach id and a trainee id
+                coachVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_trainee_visit);
+                if (coachVisit != null)
+                {
+                    timeline.SSCoachVisitStatus = Constants.SSSettings.coach_visit;
+                    timeline.SSCoachVisitColor = coachVisit.ActualVisitDate.HasValue && coachVisit.Attended ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.None.ToString();
+                    timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
+                    timeline.SSCoachVisitDeadlineDate = coachVisit.PlannedVisitDate;
+                    timeline.SSCoachVisitId = coachVisit.Id;
+                    timeline.SSCoachVisitDone = coachVisit.ActualVisitDate.HasValue && coachVisit.Attended;
+                    timeline.SSCoachVisitEventId = coachVisit.EventId;
+                }
             }
 
-            // SSCoachVisit - normally this visit is linked to a coach id and a trainee id
-            Visit coachVisit = _visitManager.GetVisitForUserForType(trainee?.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_trainee_visit);
-            if (coachVisit != null)
-            {
-                timeline.SSCoachVisitStatus =  Constants.SSSettings.coach_visit;
-                timeline.SSCoachVisitColor = coachVisit.ActualVisitDate.HasValue && coachVisit.Attended ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.None.ToString();
-                timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
-                timeline.SSCoachVisitDeadlineDate = coachVisit.PlannedVisitDate;
-                timeline.SSCoachVisitId = coachVisit.Id;
-                timeline.SSCoachVisitDone = coachVisit.ActualVisitDate.HasValue && coachVisit.Attended;
-                timeline.SSCoachVisitEventId = coachVisit.EventId;
-            }
             // SSCoachVisit deadline date 
             // SmartSpace visit from coach = date when steps 1 though 6 are complete + 7 days (in future, this will also link to calendar functionality)
             List<string> sections = trainee != null ? _visitDataManager.GetVisitStatusForSSChecklist(trainee.Id) : new List<string>();
             List<DateTime> dates = new List<DateTime>();
             if (coachVisit == null)
-            { 
+            {
                 if (trainee?.AttendedStartUpTraining == true)
                 {
                     if (trainee?.StartDate != null)
@@ -1024,28 +1070,31 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 {
                     var latestDate = dates.OrderDescending().First();
                     latestDate = latestDate.AddDays(7);
-                    Coach coach = _coachRepo.GetByUserId(trainee?.Practitioner.CoachHierarchy.ToString());
+                    if (trainee != null)
+                    {
+                        Coach coach = _coachRepo.GetByUserId(trainee.Practitioner.CoachHierarchy.ToString());
 
-                    VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
+                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
 
-                    VisitModel input = new VisitModel();
-                    input.VisitType = visitType;
-                    input.Attended = false;
-                    input.CoachId = coach.Id;
-                    input.TraineeId = trainee?.Id;
-                    input.PlannedVisitDate = Convert.ToDateTime(latestDate, CultureInfo.InvariantCulture);
+                        VisitModel input = new VisitModel();
+                        input.VisitType = visitType;
+                        input.Attended = false;
+                        input.CoachId = coach.Id;
+                        input.TraineeId = trainee.Id;
+                        input.PlannedVisitDate = Convert.ToDateTime(latestDate, CultureInfo.InvariantCulture);
 
-                    coachVisit = _visitManager.AddVisitForCoach(input);
-                    timeline.SSCoachVisitStatus = Constants.SSSettings.coach_visit;
-                    timeline.SSCoachVisitColor = MetricsColorEnum.None.ToString();
-                    timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
-                    timeline.SSCoachVisitDeadlineDate = coachVisit.PlannedVisitDate;
-                    timeline.SSCoachVisitId = coachVisit.Id;
-                    timeline.SSCoachVisitDone = false;
-                    timeline.SSCoachVisitEventId = null;
+                        coachVisit = _visitManager.AddVisitForCoach(input);
+                        timeline.SSCoachVisitStatus = Constants.SSSettings.coach_visit;
+                        timeline.SSCoachVisitColor = MetricsColorEnum.None.ToString();
+                        timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
+                        timeline.SSCoachVisitDeadlineDate = coachVisit.PlannedVisitDate;
+                        timeline.SSCoachVisitId = coachVisit.Id;
+                        timeline.SSCoachVisitDone = false;
+                        timeline.SSCoachVisitEventId = null;
+                    }
                 }
             }
-                
+
 
             // SignFranchiseeAgreement
             UserConsent franchiseeAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_franchisee).FirstOrDefault();
@@ -1072,14 +1121,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // Startup Support
-            StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
-            if (startupSupport != null)
+            if (trainee != null)
             {
-                timeline.StartUpSupportStartDate = startupSupport?.StartDate;
-                timeline.StartUpSupportEndDate = startupSupport?.EndDate;
-                timeline.StartUpSupportAmount = startupSupport?.Amount;
+                StatementsStartupSupport startupSupport = _statementStartupSupportRepo.GetAll().Where(x => x.UserId == trainee.UserId && x.IsActive == true).OrderByDescending(x => x.StartDate).FirstOrDefault();
+                if (startupSupport != null)
+                {
+                    timeline.StartUpSupportStartDate = startupSupport?.StartDate;
+                    timeline.StartUpSupportEndDate = startupSupport?.EndDate;
+                    timeline.StartUpSupportAmount = startupSupport?.Amount;
+                }
             }
-
 
             return timeline;
         }

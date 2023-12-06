@@ -14,7 +14,7 @@
     date,
     median: {
       label: 'median',
-      weight: median,
+      weight: median // getDataPerMonth(median),
     },
     SD2: {
       label: '2 SD',

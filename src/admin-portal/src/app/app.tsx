@@ -98,13 +98,13 @@ const App: React.FC = () => {
   if (authenticatedUser && client) {
     return (
       <ApolloProvider client={client}>
-        <PanelServiceProvider>
-          <DialogServiceProvider>
+        <DialogServiceProvider>
+          <PanelServiceProvider>
             <UserProvider userId={authenticatedUser.id}>
               <MainRoutes />
             </UserProvider>
-          </DialogServiceProvider>
-        </PanelServiceProvider>
+          </PanelServiceProvider>
+        </DialogServiceProvider>
       </ApolloProvider>
     );
   } else {

@@ -96,7 +96,6 @@ namespace ECDLink.SmartStart.Services
                 .Where(x => x.ClassroomGroupId == classgroupId)
                 .Where(x => x.StartedAttendance < endTime && (!x.StoppedAttendance.HasValue || x.StoppedAttendance.Value > startDate))
                 .ToList();
-
             return learners;
         }
 

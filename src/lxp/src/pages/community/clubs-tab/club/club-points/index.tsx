@@ -25,7 +25,7 @@ export const ClubPoints: React.FC = () => {
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
-  const isPurpleLeague = club.league.leagueTypeName === LeagueType.Purple;
+  const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
 
   const history = useHistory();
 
@@ -149,18 +149,17 @@ export const ClubPoints: React.FC = () => {
         color="textMid"
         text={format(new Date(), 'MMMM yyyy')}
       />
-      {/* EC-1909 - Suppress ticket */}
-      {/* <ScoreCard
+      <ScoreCard
         className="mt-5"
-        mainText={String(club.pointsTotal || 0)}
+        mainText={String(club?.pointsTotal || 0)}
         hint="points"
-        currentPoints={club.pointsTotal ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)
-        maxPoints={club.maxPointsTotal ?? 0}
+        currentPoints={club?.pointsTotal ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)
+        maxPoints={club?.maxPointsTotal ?? 0}
         barBgColour="uiLight"
-        barColour={getScoreBarColor(club.pointsTotal ?? 0, 1500, 1499)}
+        barColour={getScoreBarColor(club?.pointsTotal ?? 0, 1500, 1499)}
         bgColour="uiBg"
         textColour="black"
-      /> */}
+      />
       <div className="mt-7 mb-5">
         <Typography className="mb-2" type="h3" text="Activities:" />
         <StackedList

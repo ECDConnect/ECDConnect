@@ -13,6 +13,8 @@ import {
   Typography,
   Card,
   ActionModal,
+  MenuListDataItem,
+  StackedList,
 } from '@ecdlink/ui';
 import {
   ClassroomMetricReport,
@@ -38,6 +40,7 @@ import { ClassroomGroupService } from '@/services/ClassroomGroupService';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   addDays,
+  format,
   getMonth,
   isFriday,
   isPast,
@@ -45,12 +48,14 @@ import {
   isToday,
   isWeekend,
   nextMonday,
+  sub,
 } from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import { AbsenceCard } from './components/absence-card/absence-card';
+import { AbsencesView } from './components/absences-view/absences-view';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -65,9 +70,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
+  const daysAbsentLastMonth = practitioner?.daysAbsentLastMonth;
   const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
 
   const practitionerAbsentees = practitioner?.absentees;
+
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDateEnd as string)) ||
@@ -89,6 +96,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     (item) => item?.absentDate === currentAbsentee?.absentDate
   );
 
+  const classesWithAbsence =
+    validAbsenteesDates &&
+    Object.values(
+      validAbsenteesDates?.reduce(
+        (acc, obj) => ({ ...acc, [obj.absentDate as string]: obj }),
+        {}
+      )
+    );
+
+  classesWithAbsence?.sort(function (a, b) {
+    return a?.absentDate?.localeCompare(b?.absentDate);
+  });
+
   const isOnLeave =
     isPast(new Date(currentAbsentee?.absentDate as string)) &&
     !isPast(new Date(currentAbsentee?.absentDateEnd as string));
@@ -101,6 +121,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
     [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
+  const lastMonth = sub(new Date(), {
+    months: 1,
+  });
+  const [showAbsences, setShowAbsences] = useState(false);
 
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
     return item?.userId === practitionerUserId;
@@ -121,7 +145,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const handleReassignClass = useCallback(
     (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
-      const isPrincipal = practitionerUser?.isPrincipal;
+      const isPrincipal = practitioner?.isPrincipal;
 
       if (isPrincipal) {
         if (allAbsenteeClasses) {
@@ -132,10 +156,12 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           });
           return;
         }
-        history.push('practitioner-reassign-class', {
-          practitionerId,
-          // principalPractitioner: practitionerUser,
-        });
+        if (allAbsenteeClasses)
+          history.push('practitioner-reassign-class', {
+            practitionerId,
+            allAbsenteeClasses,
+            // principalPractitioner: practitionerUser,
+          });
 
         return;
       }
@@ -152,7 +178,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         practitionerId,
       });
     },
-    [history]
+    [history, practitionerUser]
   );
 
   const handleComebackDay = useCallback((date: Date) => {
@@ -163,43 +189,50 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     return new Date(addDays(new Date(date), 1));
   }, []);
 
-  const handleAbsenceModal = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`What would you like to edit?`}
-          actionButtons={[
-            {
-              text: 'Edit this absence',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                handleReassignClass(practitionerUserId, allAbsenteeClasses);
-                onSubmit();
+  const handleAbsenceModal = useCallback(
+    (item: AbsenteeDto) => {
+      const absenceClasses = validAbsenteesDates?.filter(
+        (absence) => absence?.absenteeId === item?.absenteeId
+      );
+
+      dialog({
+        position: DialogPosition.Middle,
+        render: (onSubmit, onCancel) => (
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`What would you like to edit?`}
+            actionButtons={[
+              {
+                text: 'Edit this absence',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  handleReassignClass(practitionerUserId, absenceClasses);
+                  onSubmit();
+                },
+                leadingIcon: 'PencilAltIcon',
               },
-              leadingIcon: 'PencilAltIcon',
-            },
-            {
-              text: 'Add a new leave/absence',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                handleReassignClass(practitionerUserId);
-                onSubmit();
+              {
+                text: 'Add a new leave/absence',
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  handleReassignClass(practitionerUserId);
+                  onSubmit();
+                },
+                leadingIcon: 'PlusIcon',
               },
-              leadingIcon: 'PlusIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [allAbsenteeClasses, dialog, handleReassignClass, practitionerUserId]);
+            ]}
+          />
+        ),
+      });
+    },
+    [dialog, handleReassignClass, practitionerUserId, validAbsenteesDates]
+  );
 
   useEffect(() => {
     if (!!classMetrics && !!classMetrics?.length) {
@@ -269,6 +302,24 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     ).cancelRemovePractitionerFromProgramme(existingRemoval?.id);
     setExisitingRemoval(undefined);
   };
+
+  const notificationItem: MenuListDataItem[] = [
+    {
+      showIcon: true,
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'border-0',
+      iconColor: 'white',
+      title: `${daysAbsentLastMonth} ${
+        daysAbsentLastMonth && Number(daysAbsentLastMonth) > 1 ? 'days' : 'day'
+      } absent last month`,
+      titleStyle: 'text-textDark semibold whitespace-normal',
+      subTitle: format(lastMonth, 'MMMM yyyy'),
+      subTitleStyle: 'text-textMid',
+      iconBackgroundColor: 'alertMain',
+      backgroundColor: 'alertBg',
+      onActionClick: () => setShowAbsences(true),
+    },
+  ];
 
   return (
     <>
@@ -408,6 +459,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Card>
             )}
+            {!currentAbsentee &&
+              daysAbsentLastMonth &&
+              Number(daysAbsentLastMonth) > 0 && (
+                <div className="my-4 flex w-11/12 justify-center">
+                  <StackedList
+                    isFullHeight={false}
+                    className={'flex w-11/12 flex-col gap-2'}
+                    listItems={notificationItem}
+                    type={'MenuList'}
+                  />
+                </div>
+              )}
             <AbsenceCard
               absenceIsToday={absenceIsToday}
               currentAbsentee={currentAbsentee}
@@ -415,10 +478,14 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               practitioner={practitioner!}
               isOnLeave={isOnLeave}
               handleReassignClass={handleReassignClass}
-              handleAbsenceModal={handleAbsenceModal}
+              handleAbsenceModal={(item: AbsenteeDto) =>
+                handleAbsenceModal(item)
+              }
               isLeave={isLeave}
               allAbsenteeClasses={allAbsenteeClasses}
               practitionerUserId={practitionerUserId}
+              classesWithAbsence={classesWithAbsence}
+              practitionerAbsentees={practitionerAbsentees}
             />
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
@@ -780,6 +847,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           </>
         </div>
       )}
+      <Dialog
+        stretch={true}
+        visible={showAbsences}
+        position={DialogPosition.Full}
+      >
+        <AbsencesView
+          practitioner={practitioner!}
+          setShowAbsences={setShowAbsences}
+          lastMonth={lastMonth}
+          absences={practitionerAbsentees}
+        />
+      </Dialog>
       <Dialog
         className={'mb-16 px-4'}
         stretch={true}
