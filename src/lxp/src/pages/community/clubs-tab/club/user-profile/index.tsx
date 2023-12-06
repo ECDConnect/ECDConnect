@@ -14,20 +14,29 @@ import { ClubsRouteState } from '../../index.types';
 import { useWindowSize } from '@reach/window-size';
 import ROUTES from '@/routes/routes';
 import { useSelector } from 'react-redux';
-import { clubSelectors } from '@/store/club';
+import { clubSelectors, clubThunkActions } from '@/store/club';
 import { userSelectors } from '@/store/user';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AboutYourselfDialog } from './about-yourself-dialog';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ClubActions } from '@/store/club/club.actions';
+import { ShareContactDialog } from './share-contact-dialog';
 
 export const UserProfile: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isShareContactInfoDialogOpen, setShareContactInfoDialogOpen] =
+    useState(false);
 
   const history = useHistory();
 
   const dialog = useDialog();
+
+  const appDispatch = useAppDispatch();
 
   const { height } = useWindowSize();
   const { showMessage } = useSnackbar();
@@ -38,11 +47,24 @@ export const UserProfile: React.FC = () => {
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const { theme } = useTheme();
+
+  const {
+    isLoading: isLoadingWelcomeMessage,
+    wasLoading: wasLoadingWelcomeMessage,
+    isRejected: isRejectedWelcomeMessage,
+    error: errorWelcomeMessage,
+  } = useThunkFetchCall('clubs', ClubActions.SAVE_WELCOME_MESSAGE);
 
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
   );
+  const isLeader = club?.clubLeader?.userId === user?.id;
+  const isMember =
+    practitionerId === user?.id ||
+    (practitionerId === practitioner?.id &&
+      user?.idNumber === practitioner?.user?.idNumber);
 
   const isCoachProfile = !!coachId;
   const isLeaderProfile = !!leaderId;
@@ -128,6 +150,41 @@ export const UserProfile: React.FC = () => {
     });
   };
 
+  const onUpdateShareContactInfo = async (shareContactInfo: boolean) => {
+    await appDispatch(
+      clubThunkActions.saveWelcomeMessage({
+        clubId,
+        practitionerId: practitioner?.id,
+        welcomeMessage: clubMember?.welcomeMessage ?? '',
+        shareContactInfo,
+      })
+    );
+  };
+
+  const handleUpdateAboutInfo = () => {
+    if (clubMember?.shareContactInfo) {
+      return onUpdateShareContactInfo(false);
+    }
+
+    return setShareContactInfoDialogOpen(true);
+  };
+
+  useEffect(() => {
+    if (wasLoadingWelcomeMessage && !isLoadingWelcomeMessage) {
+      if (isRejectedWelcomeMessage) {
+        showMessage({ message: errorWelcomeMessage, type: 'error' });
+      } else {
+        setShareContactInfoDialogOpen(false);
+      }
+    }
+  }, [
+    errorWelcomeMessage,
+    isLoadingWelcomeMessage,
+    isRejectedWelcomeMessage,
+    showMessage,
+    wasLoadingWelcomeMessage,
+  ]);
+
   return (
     <BannerWrapper
       displayOffline={!isOnline}
@@ -174,16 +231,45 @@ export const UserProfile: React.FC = () => {
         style={{ height: height - headerHeight }}
       >
         <Typography type="h3" text={name} />
-        {(!isMemberProfile || clubMember?.shareContactInfo) && (
+        {(clubMember?.shareContactInfo || isMember) && (
+          <Typography
+            type="body"
+            text={(phoneNumber && whatsAppNumber) ?? 'Phone number unavailable'}
+            color="secondary"
+          />
+        )}
+        {isMember && (
+          <Alert
+            className="mt-5"
+            type={clubMember?.shareContactInfo ? 'info' : 'warning'}
+            title={
+              clubMember?.shareContactInfo
+                ? 'You are sharing your contact details with club members.'
+                : 'You are not sharing your contact details with club members.'
+            }
+            button={
+              <Button
+                isLoading={isLoadingWelcomeMessage}
+                disabled={isLoadingWelcomeMessage}
+                type="filled"
+                color="primary"
+                textColor="white"
+                icon={clubMember?.shareContactInfo ? 'XIcon' : 'ShareIcon'}
+                text={
+                  clubMember?.shareContactInfo
+                    ? 'Stop sharing'
+                    : 'Start sharing'
+                }
+                onClick={handleUpdateAboutInfo}
+              />
+            }
+          />
+        )}
+        {clubMember?.shareContactInfo && !isMember && (
           <>
-            <Typography
-              type="body"
-              text={
-                (phoneNumber || whatsAppNumber) ?? 'Phone number unavailable'
-              }
-              color="secondary"
-            />
-            {((isCoachProfile && !isCoach) || !isCoachProfile) && (
+            {((isCoachProfile && !isCoach) ||
+              (isMemberProfile && !isMember) ||
+              (isLeaderProfile && !isLeader)) && (
               <>
                 <div className="my-4 flex flex-wrap justify-between gap-4">
                   <Button
@@ -234,7 +320,7 @@ export const UserProfile: React.FC = () => {
             )}
           </>
         )}
-        {isMemberProfile && !clubMember?.shareContactInfo && (
+        {!clubMember?.shareContactInfo && !isMember && (
           <Alert
             className="mt-5"
             type="info"
@@ -256,7 +342,9 @@ export const UserProfile: React.FC = () => {
             }
           />
         )}
-        {isCoachProfile && isCoach && (
+        {((isCoachProfile && isCoach) ||
+          (isMemberProfile && isMember) ||
+          (isLeaderProfile && isLeader)) && (
           <div className="mt-auto flex flex-col gap-4">
             <Button
               icon="PencilIcon"
@@ -272,14 +360,28 @@ export const UserProfile: React.FC = () => {
               color="primary"
               text="Edit my profile"
               textColor="primary"
-              onClick={() => history.push(ROUTES.COACH.ABOUT.ROOT)}
+              onClick={() =>
+                history.push(
+                  isCoach
+                    ? ROUTES.COACH.ABOUT.ROOT
+                    : ROUTES.PRACTITIONER.ABOUT.ROOT
+                )
+              }
             />
           </div>
         )}
       </div>
       <AboutYourselfDialog
         visible={isDialogOpen}
+        clubId={clubId}
+        shareContactInfo={!!clubMember?.shareContactInfo}
         onClose={() => setIsDialogOpen(false)}
+      />
+      <ShareContactDialog
+        isLoading={isLoadingWelcomeMessage}
+        visible={isShareContactInfoDialogOpen}
+        onClose={() => setShareContactInfoDialogOpen(false)}
+        onShare={() => onUpdateShareContactInfo(true)}
       />
     </BannerWrapper>
   );

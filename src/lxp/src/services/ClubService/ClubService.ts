@@ -437,6 +437,7 @@ class ClubService {
               whatsAppNumber
               profileImageUrl
               welcomeMessage
+              shareContactInfo
             }
           }
         }`,
@@ -521,6 +522,7 @@ class ClubService {
               whatsAppNumber
               profileImageUrl
               welcomeMessage
+              shareContactInfo
             }
             clubActivities {
               name
@@ -613,6 +615,7 @@ class ClubService {
               whatsAppNumber
               profileImageUrl
               welcomeMessage
+              shareContactInfo
             }
             clubActivities {
               name
