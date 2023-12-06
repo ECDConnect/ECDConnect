@@ -28,8 +28,10 @@ public class IntegrationChanges : CronJobService
         {
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
-
-            await service.IntegrationUpdates();
+            if (service != null && service.Enabled)
+            {
+                await service.IntegrationUpdates();
+            }
         }
     }
 }

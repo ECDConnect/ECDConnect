@@ -67,6 +67,7 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
 import { notificationTagConfig } from '@/constants/notifications';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -419,7 +420,13 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
       }
 
-      if (userData.roles?.some((role) => role.name === 'Practitioner')) {
+      if (
+        userData.roles?.some(
+          (role) =>
+            role.name === UserTypeEnum.Practitioner ||
+            role.name === UserTypeEnum.Principal
+        )
+      ) {
         (async () =>
           await appDispatch(
             practitionerThunkActions.getPractitionerByUserId({

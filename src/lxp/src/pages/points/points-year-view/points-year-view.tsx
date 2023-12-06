@@ -64,8 +64,20 @@ export const PointsYearView: React.FC = () => {
     setLoadNextMonthDisabled(nextMonthToLoad === 0);
   }, [monthsLoaded, setMonthsLoaded, setLoadNextMonthDisabled]);
 
-  //TODO - Update this to use club data to set messages when available
   const celebrationCard = useMemo(() => {
+    if (pointsTotalForYear === 0) {
+      return (
+        <CelebrationCard
+          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+          primaryMessage="No points earned yet"
+          secondaryMessage="Keep going to earn points."
+          primaryTextColour="alertMain"
+          secondaryTextColour="alertMain"
+          backgroundColour="alertBg"
+        />
+      );
+    }
+
     if (!!userStanding) {
       if (userStanding === 100) {
         return (
@@ -115,18 +127,7 @@ export const PointsYearView: React.FC = () => {
       }
     }
 
-    if (pointsTotalForYear === 0) {
-      return (
-        <CelebrationCard
-          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
-          primaryMessage="No points earned yet"
-          secondaryMessage="Keep going to earn points."
-          primaryTextColour="alertMain"
-          secondaryTextColour="alertMain"
-          backgroundColour="alertBg"
-        />
-      );
-    } else if (percentageScore < 60) {
+    if (percentageScore < 60) {
       return (
         <CelebrationCard
           image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}

@@ -98,7 +98,7 @@ namespace ECDLink.Core.Services
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "RemovalDate",
-                        ReplacementValue = DateTime.Now.AddDays(30).ToLongDateString()
+                        ReplacementValue = DateTime.Now.AddDays(10).ToLongDateString()
                     });
                     string parentUserId = _hierarchyEngine.GetUserParentUserId(child.User.Id);
                     var userToSend = await _userManager.FindByIdAsync(parentUserId);
