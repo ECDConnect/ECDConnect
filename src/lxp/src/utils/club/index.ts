@@ -1,5 +1,8 @@
 // EC-1400: show this screen only for clubs who are in a league, starting 1 April and stop showing this screen after 31 December.
 export const shouldShowPoints = (): boolean => {
+  return true;
+  // SUPPRESS DATE RULES
+  /////////////////////////////////////////////////////////
   const currentDate = new Date();
 
   // if the current date is between April 1st and December 31st
@@ -7,6 +10,7 @@ export const shouldShowPoints = (): boolean => {
   const december31st = new Date(currentDate.getFullYear(), 11, 31);
 
   return currentDate >= april1st && currentDate <= december31st;
+  /////////////////////////////////////////////////////////
 };
 
 export const getTermNumberForCurrentMonth = () => {
@@ -15,7 +19,11 @@ export const getTermNumberForCurrentMonth = () => {
   // Get the current month (ranges from 0 to 11, where 0 is January and 11 is December)
   const currentMonth = currentDate.getMonth();
 
-  let term = undefined;
+  // SUPPRESS DATE RULES
+  /////////////////////////////////////////////////////////
+  // let term = undefined;
+  let term = 3;
+  /////////////////////////////////////////////////////////
 
   // Term 1: January to April
   if (currentMonth >= 0 && currentMonth <= 3) {

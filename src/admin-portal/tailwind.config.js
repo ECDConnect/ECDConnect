@@ -71,7 +71,9 @@ module.exports = {
         infoMain: 'var(--infoMain)',
         infoDark: 'var(--infoDark)',
         infoBb: 'var(--infoBb)',
-        darkBackground: 'var(--darkBackground)'
+        darkBackground: 'var(--darkBackground)',
+        adminPortalBg: '#EFF6FA',
+        quaternary: "#D2F1F9"
       },      
       animation: {
         spinner: 'spin 1.5s linear infinite',
