@@ -777,6 +777,7 @@ namespace EcdLink.Api.CoreApi
             public const string CreateSingular = "/";
             public const string DocumentSendLength = "20";
             public const string IntegrationSystem = "Smartlink";
+            public const string Upsert = "/Upsert";
 
         }
 
