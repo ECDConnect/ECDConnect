@@ -48,6 +48,8 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
         public string ClientName { get; set; }
         [NotMapped]
         public string CreatedByName { get; set; }
+        [NotMapped]
+        public string ClientStatus { get; set; }
 
 
     }
