@@ -166,19 +166,15 @@ export default function NavigationTable({
         const roleNames = display_value.split(', ');
         const getColor = (value) => {
           switch (value) {
-            case 'Administrator':
+            case 'Trainees':
               return 'bg-primary';
-            case 'Coach':
+            case 'Practitioners - principals':
               return 'bg-tertiary';
-            case 'Franchisor':
+            case 'Practitioners - non-principals':
               return 'bg-secondary';
-            case 'Practitioner':
+            case 'Coaches':
               return 'bg-successMain';
-            case 'Principal':
-              return 'bg-gray-500';
-            case 'Child':
-              return 'bg-infoMain';
-            case 'Community Health Worker':
+            case 'CHWs':
               return 'bg-primary';
             case 'Team Lead':
               return 'bg-tertiary';

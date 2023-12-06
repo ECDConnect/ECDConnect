@@ -1,15 +1,12 @@
 import { useQuery } from '@apollo/client';
 import { UseFormRegister } from 'react-hook-form';
-import {
-  GetAllProvince,
-  FilterRoleList,
-  GetTenantContext,
-} from '@ecdlink/graphql';
+import { GetAllProvince, GetTenantContext } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
-import { ProvinceDto, RoleDto, TenantDto, WardDto } from '@ecdlink/core';
+import { ProvinceDto, TenantDto, WardDto } from '@ecdlink/core';
 import { DatePicker, FormInput, Typography } from '@ecdlink/ui';
 import FormField from '../../../components/form-field/form-field';
 import FormSelectorField from '../../../components/form-selector-field/form-selector-field';
+import { MessageRoleDto, ggRoles, ssRoles } from './message';
 
 export interface MessageFormProps {
   formKey: string;
@@ -17,8 +14,9 @@ export interface MessageFormProps {
   register: UseFormRegister<any>;
   messageSetValue: any;
   panelSetRoles: any;
+  panelSetDate: any;
   editMessageDate: Date;
-  editRoles: RoleDto[];
+  editRoles: MessageRoleDto[];
   wardData: WardDto[];
   isView?: boolean;
 }
@@ -29,14 +27,15 @@ const MessageForm: React.FC<MessageFormProps> = ({
   register,
   messageSetValue,
   panelSetRoles,
+  panelSetDate,
   editMessageDate,
   editRoles,
   wardData,
   isView,
 }) => {
   const [provinceData, setProvinceData] = useState<ProvinceDto[]>([]);
-  const [roleData, setRoleData] = useState<RoleDto[]>([]);
-  const [selectedRoles, setSelectedRoles] = useState<RoleDto[]>([]);
+  const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
   const [tenantInfo, setTenantInfo] = useState<TenantDto>();
   const [messageDate, setMessageDate] = useState<Date>(editMessageDate);
   const [messageText, setMessageText] = useState('');
@@ -47,10 +46,6 @@ const MessageForm: React.FC<MessageFormProps> = ({
   });
 
   const { data: tenantData } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const { data: roles } = useQuery(FilterRoleList, {
     fetchPolicy: 'cache-and-network',
   });
 
@@ -65,18 +60,28 @@ const MessageForm: React.FC<MessageFormProps> = ({
       copyItems.unshift(newProvince);
       setProvinceData(copyItems);
     }
-    if (roles) {
-      setRoleData(roles.roles);
-    }
 
     if (tenantData) {
       setTenantInfo(tenantData?.tenantContext);
+      if (
+        tenantData &&
+        tenantData.tenantContext &&
+        tenantData.tenantContext.applicationName === 'GrowGreat'
+      ) {
+        setRoleData(ggRoles);
+      } else {
+        setRoleData(ssRoles);
+      }
     }
 
     if (editRoles) {
       setSelectedRoles(editRoles);
     }
-  }, [provinces, roles, tenantData, editRoles]);
+
+    if (editMessageDate) {
+      setMessageDate(editMessageDate);
+    }
+  }, [provinces, tenantData, editRoles, editMessageDate]);
 
   const onRoleSelectionChange = (item) => {
     if (!isView) {
@@ -129,7 +134,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
                       className="focus:ring-primary text-primary h-4 w-4 rounded border-gray-300"
                     />
                     <Typography
-                      text={item.name}
+                      text={item.label}
                       type="body"
                       color={'textMid'}
                       className="ml-2 p-1 text-sm font-medium text-gray-900"
@@ -168,7 +173,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
             />
 
             {
-              tenantInfo && tenantInfo.organisationName == 'SmartStart' ? (
+              tenantInfo && tenantInfo.organisationName === 'SmartStart' ? (
                 <FormSelectorField
                   label="Optional - if you would like to send this message to users in a specific district only, select the district below."
                   nameProp={'wardName'}
@@ -204,6 +209,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
                   onChange={(date: Date) => {
                     setMessageDate(date);
                     messageSetValue('messageDate', date);
+                    panelSetDate(date);
                   }}
                   minDate={new Date()}
                   dateFormat="EEE, dd MMM yyyy"
