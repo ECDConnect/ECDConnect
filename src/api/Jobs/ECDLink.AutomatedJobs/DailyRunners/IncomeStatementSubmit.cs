@@ -29,8 +29,10 @@ public class IncomeStatementSubmit : CronJobService
         {
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
-
-            await service.IntegrationStatementsData();
+            if (service != null && service.Enabled)
+            {
+                await service.IntegrationStatementsData();
+            }
         }
     }
 }
