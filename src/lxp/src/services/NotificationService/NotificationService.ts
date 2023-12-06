@@ -70,6 +70,7 @@ export class NotificationService {
 
       validator.lastCheckTimestamp = new Date().valueOf();
     }
+
     return notifications;
   };
 
