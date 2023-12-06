@@ -172,11 +172,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
                   )
                 ),
                 'd MMM yyyy'
-              )}. If you believe this is a mistake please reach out to Bulelwa.`,
+              )}. If you believe this is a mistake please reach out to ${
+                currentAbsentee?.loggedByPerson
+              }.`,
             ]}
             actionButtons={[
               {
-                text: `Contact ${coach?.user?.firstName}`,
+                text: `Contact ${currentAbsentee?.loggedByPerson}`,
                 textColour: 'white',
                 colour: 'primary',
                 type: 'filled',
