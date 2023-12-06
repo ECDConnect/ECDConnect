@@ -13,6 +13,7 @@ import {
   ActionModal,
 } from '@ecdlink/ui';
 import {
+  add,
   addDays,
   format,
   getDayOfYear,
@@ -134,7 +135,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const practitionerIsOnLeave = useMemo(
     () =>
       isPast(new Date(currentAbsentee?.absentDate as string)) &&
-      !isPast(new Date(currentAbsentee?.absentDateEnd as string)),
+      !isPast(
+        add(new Date(currentAbsentee?.absentDateEnd as string), { days: 1 })
+      ),
     [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
 
