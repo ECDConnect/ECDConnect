@@ -88,7 +88,11 @@ export const SubmitIncomeStatements: React.FC = () => {
       date.getDate() <= IncomeStatementDates.SubmitEndDay &&
       !isLastMonthSubmitted
     ) {
-      const nextSubmit = new Date(date.getFullYear(), date.getMonth(), 7);
+      const nextSubmit = new Date(
+        date.getFullYear(),
+        date.getMonth(),
+        IncomeStatementDates.SubmitEndDay
+      );
       setDaysUntilFinalSubmission(differenceInDays(nextSubmit, date));
     } else {
       const nextMonth = getNextMonth(date);
@@ -251,10 +255,10 @@ export const SubmitIncomeStatements: React.FC = () => {
   }, [stepIndex]);
 
   // POINTS LOGIC
-  const [
-    pointsSubmitStatementsMessageDismissed,
-    setPointsSubmitStatementsMessageDismissed,
-  ] = useState<boolean>(false);
+  const [pointsMessageDismissedDate, setPointsMessageDismissedDate] = useState<
+    string | undefined
+  >(undefined);
+
   const submitStatementConsecutivePointLibrary = useSelector(
     pointsSelectors.getPointsLibraryById(
       SmartStartPointsLibrary.SUBMIT_STATEMENTS_CONSECUTIVE
@@ -278,34 +282,81 @@ export const SubmitIncomeStatements: React.FC = () => {
   );
 
   useEffect(() => {
-    const storageItem = getStorageItem<number>(
+    const storageItem = getStorageItem<string>(
       LocalStorageKeys.pointsSubmitStatementsMessageDismissed
     );
 
-    if (!!storageItem && currentDate.getMonth() === storageItem) {
-      setPointsSubmitStatementsMessageDismissed(true);
-    } else {
-      setPointsSubmitStatementsMessageDismissed(false);
-    }
+    setPointsMessageDismissedDate(storageItem);
   }, []);
 
   const onDismissCelebration = useCallback(() => {
+    const dismissedDate = new Date().toDateString();
     setStorageItem(
-      new Date().getMonth(),
+      dismissedDate,
       LocalStorageKeys.pointsSubmitStatementsMessageDismissed
     );
-    setPointsSubmitStatementsMessageDismissed(true);
+    setPointsMessageDismissedDate(dismissedDate);
   }, []);
 
   const celebrationCard = useMemo<JSX.Element>(() => {
-    if (!isThisMonthSubmitted || pointsSubmitStatementsMessageDismissed) {
-      console.log('No message to display');
+    const messageDismissedDate = !!pointsMessageDismissedDate
+      ? new Date(pointsMessageDismissedDate)
+      : undefined;
+
+    if (
+      currentDate.getDate() < IncomeStatementDates.SubmitStartDay &&
+      currentDate.getDate() > IncomeStatementDates.SubmitEndDay
+    ) {
       return <></>;
     }
 
+    if (
+      currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
+      isThisMonthSubmitted
+    ) {
+      return <></>;
+    }
+
+    if (
+      currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
+      isThisMonthSubmitted &&
+      !!messageDismissedDate &&
+      messageDismissedDate.getMonth() === currentDate.getMonth() &&
+      messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay
+    ) {
+      return <></>;
+    }
+
+    if (
+      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay &&
+      !isLastMonthSubmitted
+    ) {
+      return <></>;
+    }
+
+    if (
+      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay &&
+      isLastMonthSubmitted &&
+      !!messageDismissedDate &&
+      ((messageDismissedDate.getMonth() ==
+        getPreviousMonth(currentDate).getMonth() &&
+        messageDismissedDate.getDate() > IncomeStatementDates.SubmitStartDay) ||
+        (messageDismissedDate.getMonth() == currentDate.getMonth() &&
+          messageDismissedDate.getDate() < IncomeStatementDates.SubmitEndDay))
+    ) {
+      return <></>;
+    }
+
+    // Check depending on window if we need to try display last months message
+    // We can just add an offset of 1 to the logic below to ignore this months points if we want to show for last month
+    var offset =
+      currentDate.getDate() <= IncomeStatementDates.SubmitEndDay
+        ? 1 // Last month
+        : 0; // Current month
+
     let submittedMonthsInARow = 0;
     for (
-      let i = 0;
+      let i = offset;
       i < submitStatementPoints.length &&
       submitStatementPoints[i].pointsTotal !== 0;
       i++
@@ -319,7 +370,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
     let monthsSinceConsecutiveBonus = 0;
     for (
-      let i = 0;
+      let i = offset;
       i < submitStatementConsecutivePoints.length &&
       submitStatementConsecutivePoints[i].pointsTotal === 0;
       i++
@@ -327,11 +378,11 @@ export const SubmitIncomeStatements: React.FC = () => {
       monthsSinceConsecutiveBonus++;
     }
 
-    const submittedPointsThisMonth = submitStatementPoints[0].pointsTotal;
+    const submittedPointsThisMonth = submitStatementPoints[offset].pointsTotal;
     const submittedWithFeesPointsThisMonth =
-      submitPreschoolFeesPoints[0].pointsTotal;
+      submitPreschoolFeesPoints[offset].pointsTotal;
     const submitConsecutiveBonusPointsThisMonth =
-      submitStatementConsecutivePoints[0]?.pointsTotal;
+      submitStatementConsecutivePoints[offset]?.pointsTotal;
     const monthTotal =
       submittedPointsThisMonth +
       submittedWithFeesPointsThisMonth +
@@ -366,7 +417,7 @@ export const SubmitIncomeStatements: React.FC = () => {
         <CelebrationCard
           image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
           primaryMessage={`Great jobl! You have submitted your ${format(
-            new Date(),
+            offset === 0 ? new Date() : getPreviousMonth(new Date()),
             'MMMM'
           )} statement${
             submittedWithFeesPointsThisMonth > 0 ? preschoolFeesMessage : ''
@@ -407,7 +458,7 @@ export const SubmitIncomeStatements: React.FC = () => {
       />
     );
   }, [
-    pointsSubmitStatementsMessageDismissed,
+    pointsMessageDismissedDate,
     submitStatementPoints,
     submitPreschoolFeesPoints,
     submitStatementConsecutivePoints,
