@@ -57,7 +57,13 @@ const MessageForm: React.FC<MessageFormProps> = ({
         description: 'Click to choose a province',
         enumId: '',
       };
+      const unknown: ProvinceDto = {
+        id: 'Unknown',
+        description: 'Unknown',
+        enumId: '',
+      };
       copyItems.unshift(newProvince);
+      copyItems.push(unknown);
       setProvinceData(copyItems);
     }
 
@@ -118,7 +124,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
             />
 
             {roleData &&
-              roleData.map((item: any) => (
+              roleData.map((item: MessageRoleDto) => (
                 <div key={item.id} className="mt-1 ml-4 mr-4 flex items-center">
                   <div
                     className="bg-uiBg relative flex w-full items-center rounded p-1"
@@ -166,7 +172,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
           </div>
           <div className="ml-4 mr-4 sm:col-span-3">
             {
-              tenantInfo && tenantInfo.organisationName === 'SmartStart' ? (
+              tenantInfo && tenantInfo?.organisationName === 'SmartStart' ? (
                 <>
                   <Typography
                     type={'body'}
@@ -182,7 +188,7 @@ const MessageForm: React.FC<MessageFormProps> = ({
                     options={
                       wardData &&
                       wardData.map((x: WardDto, index) => {
-                        return { key: index, value: x.ward };
+                        return { key: x.ward, value: x.ward };
                       })
                     }
                   />

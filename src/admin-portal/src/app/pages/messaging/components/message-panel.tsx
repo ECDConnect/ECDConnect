@@ -109,9 +109,12 @@ export default function MessagePanel() {
   });
 
   useEffect(() => {
-    if (user !== 'null') {
+    if (user) {
       setAuthenticatedUser(JSON.parse(user));
     }
+  }, [user]);
+
+  useEffect(() => {
     if (tenantData) {
       if (
         tenantData &&
@@ -123,16 +126,28 @@ export default function MessagePanel() {
         setRoleData(ssRoles);
       }
     }
+  }, [tenantData]);
 
+  useEffect(() => {
     if (wards) {
       const copyItems = Object.assign([], wards.allWards);
       const newWard: WardDto = {
         provinceId: '',
         ward: 'Click to choose a district',
       };
+      const unknown: WardDto = {
+        provinceId: 'Unknown',
+        ward: 'Unknown',
+      };
       copyItems.unshift(newWard);
-      setWardData(wards.allWards);
+      copyItems.push(unknown);
+      setWardData(copyItems);
+      setWardName(copyItems[0].ward);
+      messageSetValue('wardName', copyItems[0].ward);
     }
+  }, [wards, messageSetValue]);
+
+  useEffect(() => {
     if (currentMessage) {
       if (currentMessage.roleIds.length !== 0) {
         if (roleData) {
@@ -192,16 +207,7 @@ export default function MessagePanel() {
         shouldValidate: true,
       });
     }
-  }, [
-    user,
-    wards,
-    currentMessage,
-    messageSetValue,
-    wardData,
-    wardName,
-    roleData,
-    tenantData,
-  ]);
+  }, [currentMessage, messageSetValue, wardData, wardName, roleData]);
 
   const [getUserCountForMessageCriteria, { data: totalUsers }] = useLazyQuery(
     GetUserCountForMessageCriteria,
@@ -311,10 +317,14 @@ export default function MessagePanel() {
   };
 
   useEffect(() => {
-    if (messageForm) {
-      if (messageForm.wardName !== '' && messageForm.wardName !== '-1') {
-        const wardIndex = +messageGetValues('wardName');
-        setWardName(wardData[wardIndex].ward);
+    if (messageForm.wardName) {
+      if (messageForm.wardName === 'Click to choose a district') {
+        setWardName(wardData[0].ward);
+      } else {
+        if (messageForm.wardName !== '' && messageForm.wardName !== '-1') {
+          const wardIndex = +messageGetValues('wardName');
+          setWardName(wardData[wardIndex].ward);
+        }
       }
     }
   }, [messageForm, messageGetValues, wardData]);
