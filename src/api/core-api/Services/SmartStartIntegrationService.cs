@@ -45,6 +45,12 @@ using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.SmartStart.Services;
 using Microsoft.Extensions.Logging;
+using EcdLink.Api.CoreApi.GraphApi.Mutations;
+using Microsoft.AspNetCore.Http;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using ECDLink.Security.Managers;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.Services;
 public partial class SmartStartIntegrationService : IIntegrationService
@@ -90,6 +96,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<License, Guid> _licenseRepo;
     private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
 
+    private IAttendancePdfService _attendancePdfService;
     IHolidayService<Holiday> _holidayService;
     private IntegrationLogManager _logManager;
     private IntegrationAPIManager _apiManager;
@@ -118,6 +125,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
     public static string scheduledTask = "SmartLinkIntegrationDataSync";
     private INotificationService _notificationService;
 
+    private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
+    private readonly InvitationNotificationManager _notificationManager;
+    private readonly IHttpContextAccessor _accessor; 
+
     public SmartStartIntegrationService(
         IGenericRepositoryFactory repositoryFactory,
         ISystemSetting<IntegrationDelayOptions> integrationDelay,
@@ -135,7 +146,11 @@ public partial class SmartStartIntegrationService : IIntegrationService
          [Service] INotificationService notificationService,
          VisitManager visitManager,
          [Service] AttendanceService attendanceService,
-         Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> logger
+         [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+         [Service] InvitationNotificationManager notificationManager,
+         [Service] IHttpContextAccessor accessor,
+         Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> logger,
+        IAttendancePdfService attendancePdfService
         )
     {
         _logger = logger;
@@ -152,6 +167,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
         _apiManager = apiManager;
         _holidayService = holidayService;
         _notificationService = notificationService;
+        _notificationManager = notificationManager;
+        _invitationManager = invitationManager;
+        _accessor = accessor; 
+        _attendancePdfService = attendancePdfService;
 
         if (Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
         if (Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
@@ -682,40 +701,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
             }
         }
         await _logManager.IntegrationLog($"IntegrationStatementsData Completed at {DateTime.Now}", $"statements sent {statementsSent}", null, LogRelatedType.Log, "IntegrationStatementsData");
-    }
-
-    public async Task<bool> IntegrationMonthlyAttendanceData()
-    {
-        if (!this.Enabled) return true;
-
-        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
-        int attendancesSent = 0;
-        bool isComplete = false;
-        DateTime startPeriod = DateTime.Now.GetStartOfMonth();
-        _mappedEntities = await GetMappedEntities();
-        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= startPeriod)).ToList();
-
-        var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
-        var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("AttendancePDF")).FirstOrDefault();
-
-        //var allRequiredAttendance =
-        //    (
-        //        from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
-        //        join entityData in entityRepo.GetAll().Where(p => p.IsActive.Equals(true) && p.LastAttendanceSubmittedDate <= startPeriod && p.LocalEntity.Equals("Practitioner")) on classroomGroupData.UserId.ToString() equals entityData.UserId
-        //        join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= startPeriod && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
-        //        select new { classroomGroupData, entityData }
-        //    ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
-        //foreach (var requiredAttendance in allRequiredAttendance)
-        //{
-        //    var docs = docRepo.GetAll().Where(d => d.UserId.Equals(requiredAttendance.entityData.UserId) && d.DocumentTypeId.Equals(attendancePDF.Id)).ToList();
-        //    //TODO: finish gathering docs and sending to SL
-
-
-        //}
-
-
-        return isComplete;
     }
 
     public async Task<bool> IntegrationUpdates()
@@ -1723,6 +1708,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             mapperLine.IsComplete = true;
                             //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                             _mapperRepo.Insert(mapperLine);
+
+                            //send sms to new practitioner
+                            SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+                            await invite.SendInviteToApplication(_invitationManager, _notificationManager, _userManager, _accessor, userId);
 
                             return newPractitioner;
                         }
