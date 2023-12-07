@@ -294,7 +294,7 @@ export default function Documents() {
                     { field: 'createdByName', use: 'CHW' },
                     { field: 'type', use: 'type' },
                     { field: 'insertedDate', use: 'Date added' },
-                    { field: 'status', use: 'Client status' },
+                    { field: 'clientStatus', use: 'Client status' },
                   ]}
                   rows={tableData}
                   editRow={
