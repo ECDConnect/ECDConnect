@@ -1041,7 +1041,7 @@ namespace EcdLink.Api.CoreApi.Services
             // set meetings
             foreach (var item in allMeetings)
             {
-                int totalAttended = item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive).Count();
+                int totalAttended = item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive && x.ClubMeetingId == item.Id).Count();
                 string meetingAttendanceColor = MetricsColorEnum.Error.ToString();
                 double meetingAttendancePerc = allMemberIds.Count == 0.0 ? 0 :((double)totalAttended / (double)allMemberIds.Count) * 100;
 
