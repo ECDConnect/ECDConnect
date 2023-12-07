@@ -42,6 +42,8 @@ import ApplicationUsers from './pages/users/sub-pages/application-users/applicat
 import UploadBulkUser from './pages/upload-bulk-users/upload-bulk-users';
 import TermsPage from './pages/terms/terms';
 import Messaging from './pages/messaging/messaging';
+import MessagePanel from './pages/messaging/components/message-panel';
+import MessageList from './pages/messaging/components/messaging-list';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -77,6 +79,15 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/Reports`} component={Reports}></Route>
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/messaging`} component={Messaging}></Route>
+    </Switch>
+  );
+};
+
+const MessageRoutes: React.FC = () => {
+  return (
+    <Switch>
+      <Route path={`/messaging/list-messages`} component={MessageList}></Route>
+      <Route path={`/messaging/view-message`} component={MessagePanel}></Route>
     </Switch>
   );
 };
@@ -148,4 +159,5 @@ export {
   SettingsRoutes,
   StaticDataRoutes,
   UserRoutes,
+  MessageRoutes,
 };

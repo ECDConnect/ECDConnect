@@ -195,56 +195,6 @@ export default function UiTable({
           {display_value && display_value[0].statusValue}
         </span>
       );
-    } else if (column.type === 'messageStatus') {
-      rowValue =
-        display_value === 'Scheduled' ? (
-          <div className="text-primary text-sm font-medium font-bold">
-            {display_value}
-          </div>
-        ) : (
-          <div className="text-successMain text-sm font-medium font-bold">
-            {display_value}
-          </div>
-        );
-    } else if (column.type === 'roleNames') {
-      if (display_value) {
-        const roleNames = display_value.split(', ');
-        const getColor = (value) => {
-          switch (value) {
-            case 'Administrator':
-              return 'bg-primary';
-            case 'Coach':
-              return 'bg-tertiary';
-            case 'Franchisor':
-              return 'bg-secondary';
-            case 'Practitioner':
-              return 'bg-successMain';
-            case 'Principal':
-              return 'bg-gray-500';
-            case 'Child':
-              return 'bg-infoMain';
-            case 'Community Health Worker':
-              return 'bg-primary';
-            case 'Team Lead':
-              return 'bg-tertiary';
-            default:
-              return '';
-          }
-        };
-        rowValue = roleNames.map((item: string) => (
-          <div className="ml-1 flex" key={item}>
-            <div
-              className={
-                `flex ` +
-                getColor(item) +
-                ` mt-1 inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`
-              }
-            >
-              <span>{item}</span>
-            </div>
-          </div>
-        ));
-      }
     } else {
       rowValue =
         typeof display_value === 'string' ? (
