@@ -112,7 +112,7 @@ export const Step2ReAccreditation = ({
     const classroomDetails = (await new PractitionerService(
       userAuth?.auth_token!
     ).getClassroomGroupClassroomsForPractitioner(
-      smartStarter?.userId!
+      smartStarter?.userId! || smartStarter?.id!
     )) as unknown;
 
     setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
