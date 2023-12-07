@@ -215,7 +215,7 @@ export default function UiTable({
       return column.field === columns[0].field ? display_value : <></>;
     }
     let rowValue: any;
-    console.log(column?.field);
+
     const checkboxCell = (
       <input
         type="checkbox"
