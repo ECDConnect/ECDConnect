@@ -69,10 +69,10 @@ export const UserProfile: React.FC = () => {
   const isCoachProfile = !!coachId;
   const isLeaderProfile = !!leaderId;
   const isMemberProfile = !!practitionerId;
-  const isSupportRole = !!supportRoleId;
+  const isSupportRoleProfile = !!supportRoleId;
 
   const clubMember = club?.clubMembers.find((member) => {
-    if (isSupportRole) {
+    if (isSupportRoleProfile) {
       return member.userId === supportRoleId;
     }
 
@@ -103,12 +103,12 @@ export const UserProfile: React.FC = () => {
       return 'Club leader';
     }
 
-    if (isSupportRole) {
+    if (isSupportRoleProfile) {
       return 'Club support role';
     }
 
     return '';
-  }, [isCoachProfile, isLeaderProfile, isSupportRole]);
+  }, [isCoachProfile, isLeaderProfile, isSupportRoleProfile]);
 
   const onOffline = () => {
     return dialog({
@@ -202,7 +202,7 @@ export const UserProfile: React.FC = () => {
           canChangeImage={false}
           dataUrl={
             isCoachProfile
-              ? user?.profileImageUrl
+              ? club?.clubCoach?.profileImageUrl
               : clubMember?.profileImageUrl ?? ''
           }
           size={'header'}
@@ -231,7 +231,11 @@ export const UserProfile: React.FC = () => {
         style={{ height: height - headerHeight }}
       >
         <Typography type="h3" text={name} />
-        {(clubMember?.shareContactInfo || isMember) && (
+        {(clubMember?.shareContactInfo ||
+          isMember ||
+          isCoachProfile ||
+          isLeaderProfile ||
+          isSupportRoleProfile) && (
           <Typography
             type="body"
             text={(phoneNumber && whatsAppNumber) ?? 'Phone number unavailable'}
@@ -265,9 +269,13 @@ export const UserProfile: React.FC = () => {
             }
           />
         )}
-        {clubMember?.shareContactInfo && !isMember && (
+        {((clubMember?.shareContactInfo && !isMember) ||
+          isCoachProfile ||
+          isLeaderProfile ||
+          isSupportRoleProfile) && (
           <>
             {((isCoachProfile && !isCoach) ||
+              (isSupportRoleProfile && !isMember) ||
               (isMemberProfile && !isMember) ||
               (isLeaderProfile && !isLeader)) && (
               <>
@@ -320,13 +328,16 @@ export const UserProfile: React.FC = () => {
             )}
           </>
         )}
-        {!clubMember?.shareContactInfo && !isMember && (
-          <Alert
-            className="mt-5"
-            type="info"
-            title="Practitioner has not shared contact details."
-          />
-        )}
+        {!clubMember?.shareContactInfo &&
+          !isMember &&
+          !isCoachProfile &&
+          !isLeaderProfile && (
+            <Alert
+              className="mt-5"
+              type="info"
+              title="Practitioner has not shared contact details."
+            />
+          )}
         {isLeaderProfile && isCoach && (
           <Button
             className="mt-auto"
