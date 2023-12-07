@@ -984,15 +984,24 @@ namespace EcdLink.Api.CoreApi.Services
             List<ActivityMeetRegularDetail> pastMeetings = new List<ActivityMeetRegularDetail>();
             List<ClubUser> meetingParticipants = new List<ClubUser>();
             List<ClubUser> absentees = new List<ClubUser>();
+            ClubPointsLibrary libraryItem = new ClubPointsLibrary();
 
-            ClubPointsLibrary libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly).FirstOrDefault();
             Club club = _clubRepo.GetAll()
                 .Where(x => x.Id == clubId)
-                .Include(x => x.ClubPoints.Where(x => x.Year == year && x.ClubPointsLibraryId == libraryItem.Id))
-                .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
-                .Include(x => x.ClubLeaders.Where(x => x.IsActive && x.DateAccepted.HasValue)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
-                .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
+                .Include(x => x.ClubPoints.Where(x => x.Year == year))
+                .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
+                .Include(x => x.ClubLeaders.Where(x => x.IsActive && x.DateAccepted.HasValue)).ThenInclude(x => x.Practitioner)
+                .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
                 .FirstOrDefault();
+
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type == Constants.ClubSettings.name_purple).FirstOrDefault();
+            }
+            else
+            {
+                libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type != Constants.ClubSettings.name_purple).FirstOrDefault();
+            }
 
             // get all member ids so that we can find absentees
             List<string> allMemberIds = new List<string>();
@@ -1008,11 +1017,11 @@ namespace EcdLink.Api.CoreApi.Services
                 .Include(x => x.ClubMeetingRegister.Where(x => x.IsActive))
                 .ToList();
 
-            var clubPoints = club.ClubPoints.Select(x => x.Points).Sum();
+            var clubPoints = club.ClubPoints.Where(x => x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).Sum();
 
             if (month != 0)
             {
-                clubPoints = club.ClubPoints.Where(x => x.Month == month).Select(x => x.Points).Sum();
+                clubPoints = club.ClubPoints.Where(x => x.Month == month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).Sum();
                 allMeetings = allMeetings.Where(x => x.MeetingDate.Value.Month <= month).ToList();
             }
             
