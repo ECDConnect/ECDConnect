@@ -883,6 +883,8 @@ namespace EcdLink.Api.CoreApi
             public const string document_success = "Image completed";
             public const string document_no_success = "Image incompleted";
 
+            public const string not_completed = "Not completed";
+
             public static readonly int[] allowed_months = { 4,5,6,7,8,9,10,11 };
 
             public const int warning_start_800 = 1;

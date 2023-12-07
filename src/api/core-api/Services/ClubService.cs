@@ -1130,7 +1130,7 @@ namespace EcdLink.Api.CoreApi.Services
                         {
                             MonthName = date.ToString("MMMM"),
                             DocumentStatusColor = MetricsColorEnum.Error.ToString(),
-                            DocumentStatus = Constants.ClubSettings.document_no_success,
+                            DocumentStatus = Constants.ClubSettings.not_completed,
                             Points = 0,
                             ImageRating = 0
                         }
@@ -1146,7 +1146,7 @@ namespace EcdLink.Api.CoreApi.Services
                             DocumentName = clubBeCreative?.Document?.Name,
                             ImageApproved = clubBeCreative?.ImageApproved,
                             DocumentStatusColor = (bool)clubBeCreative?.ImageApproved ? MetricsColorEnum.Warning.ToString() : MetricsColorEnum.Error.ToString(),
-                            DocumentStatus = (bool)clubBeCreative?.ImageApproved ? Constants.ClubSettings.document_success : Constants.ClubSettings.document_no_success,
+                            DocumentStatus = (bool)clubBeCreative?.ImageApproved ? Constants.ClubSettings.document_success : Constants.ClubSettings.not_completed,
                             Points = 0, // pending - will implemented when integration is done
                             ImageRating = clubBeCreative.ImageRating
                         }
