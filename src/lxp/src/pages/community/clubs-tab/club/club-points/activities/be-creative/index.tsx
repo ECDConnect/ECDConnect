@@ -46,6 +46,10 @@ export const BeCreative: React.FC = () => {
     clubSelectors.getActivityBeCreativeDetailsSelector(clubId)
   );
 
+  const descendingMonthlyRecords = [
+    ...(details?.monthlyRecords || []),
+  ]?.reverse();
+
   const history = useHistory();
 
   const location = useLocation<BeCreativeRouteState>();
@@ -209,10 +213,13 @@ export const BeCreative: React.FC = () => {
           customIcon={<PositiveEmoticon className="w-12" />}
         />
       )}
-      {details?.monthlyRecords?.length ? (
+      {descendingMonthlyRecords?.length ? (
         <div className="mt-5">
-          {details.monthlyRecords.map((item) => (
-            <AlertCard item={formatMonthlyRecord(item!)} />
+          {descendingMonthlyRecords.map((item) => (
+            <AlertCard
+              key={item?.monthName}
+              item={formatMonthlyRecord(item!)}
+            />
           ))}
           {isToShowInfoCard && (
             <Alert

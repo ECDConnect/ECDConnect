@@ -125,14 +125,16 @@ export const PointsSummary: React.FC = () => {
         );
       }
       if (userStanding >= 50) {
-        <CelebrationCard
-          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
-          secondaryMessage="So far this year, you have more points than most other SmartStarters in you club!"
-          primaryTextColour="secondary"
-          secondaryTextColour="black"
-          backgroundColour="infoBb"
-        />;
+        return (
+          <CelebrationCard
+            image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
+            secondaryMessage="You have more points than most other SmartStarters in you club!"
+            primaryTextColour="secondary"
+            secondaryTextColour="black"
+            backgroundColour="infoBb"
+          />
+        );
       }
       if (userStanding < 50) {
         return (
@@ -141,7 +143,7 @@ export const PointsSummary: React.FC = () => {
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
             primaryTextColour="errorMain"
             backgroundColour="errorBg"
-            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
+            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points! Earn more points to join them.`}
             secondaryTextColour="black"
           />
         );

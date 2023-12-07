@@ -127,7 +127,7 @@ export const AddCollageEvent: React.FC = () => {
       <ol className="mb-2 list-decimal pl-4">
         {[
           'the material used',
-          'lub making the resource',
+          'club making the resource',
           'the final product',
         ].map((item) => (
           <li className="text-textMid text-14">{item}</li>

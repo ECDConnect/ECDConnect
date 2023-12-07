@@ -1,4 +1,3 @@
-import { BeCreativeRouteState } from '@/pages/community/clubs-tab/club/club-points/activities/be-creative/index.types';
 import ROUTES from '@/routes/routes';
 import { ActionModal } from '@ecdlink/ui';
 import { CheckCircleIcon } from '@heroicons/react/solid';
@@ -20,9 +19,9 @@ export const AddCollageDialog = ({ onClose }: { onClose: () => void }) => {
           type: 'filled',
           leadingIcon: 'PhotographIcon',
           onClick: () => {
-            history.push(ROUTES.COMMUNITY.CLUB.POINTS.BE_CREATIVE, {
-              isFromAddCollageEvent: true,
-            } as BeCreativeRouteState);
+            history.push(
+              ROUTES.PRACTITIONER.COMMUNITY.CLUB.COLLAGE_EVENT.ADD_EVENT
+            );
             onClose();
           },
         },
@@ -33,7 +32,6 @@ export const AddCollageDialog = ({ onClose }: { onClose: () => void }) => {
           type: 'outlined',
           leadingIcon: 'ClockIcon',
           onClick: () => {
-            // TODO: add integration
             onClose();
           },
         },

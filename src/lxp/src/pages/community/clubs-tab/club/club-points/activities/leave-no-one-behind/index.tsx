@@ -162,7 +162,7 @@ export const LeaveNoOneBehind: React.FC = () => {
       return (
         <EmptyPage
           image={AlienImage}
-          title="This club has not submitted any family days yet this year!"
+          title="No SmartStarters in this club have a First PQA visit deadline this year"
           subTitle=""
         />
       );

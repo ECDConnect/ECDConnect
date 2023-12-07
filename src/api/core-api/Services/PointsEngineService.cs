@@ -1468,7 +1468,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Fetch all children for principal
             var practitionerChildrenUserIds = _childRepo.GetAll()
-                .Where(x => x.User.IsActive == false && x.Hierarchy.StartsWith(practitioner.Hierarchy))
+                .Where(x => x.User.IsActive && x.Hierarchy.StartsWith(practitioner.Hierarchy))
                 .Select(x => x.UserId)
                 .ToList();
 
@@ -1581,8 +1581,15 @@ namespace EcdLink.Api.CoreApi.Services
                 .Select(x => new { UserId = x.First().UserId, PointsSummaries = x.Select(y => new { y.Month, y.PointsTotal }) })
                 .ToList();
 
-            var usersByMonth = usersPoints.Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Where(y => y.Month == DateTime.Now.Month).Sum(z => z.PointsTotal) }).ToList();
-            var usersByYear = usersPoints.Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Sum(y => y.PointsTotal) }).ToList();
+            var usersByMonth = usersPoints
+                .Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Where(y => y.Month == DateTime.Now.Month).Sum(z => z.PointsTotal) })
+                .OrderByDescending(x => x.PointsTotal)
+                .ToList();
+
+            var usersByYear = usersPoints
+                .Select(x => new { x.UserId, PointsTotal = x.PointsSummaries.Sum(y => y.PointsTotal) })
+                .OrderByDescending(x => x.PointsTotal)
+                .ToList();
 
             var userMonthPosition = usersByMonth.FindIndex(x => x.UserId == userId);
             var userYearPosition = usersByYear.FindIndex(x => x.UserId == userId);
@@ -1592,11 +1599,20 @@ namespace EcdLink.Api.CoreApi.Services
             var totalMembers = clubUserIds.Count();
 
             // Check for first place tie
-            var standingForCurrentMonth = userMonthPosition == 0 && usersByMonth.Count() > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal
+            var isUserTiedFirstThisMonth = usersByMonth.Count() < 2
+                ? false
+                : usersByMonth[0] == usersByMonth[1] && usersByMonth[0].PointsTotal == usersByMonth[userMonthPosition].PointsTotal;
+
+            var isUserTiedFirstThisYear = usersByYear.Count() < 2
+                ? false
+                : usersByYear[0] == usersByYear[1] && usersByYear[0].PointsTotal == usersByYear[userYearPosition].PointsTotal;
+
+
+            var standingForCurrentMonth = isUserTiedFirstThisMonth
                     ? 99
                     : (totalMembers - userMonthPosition) * 100 / totalMembers;
 
-            var standingForCurrentYear = userYearPosition == 0 && usersByYear.Count() > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal
+            var standingForCurrentYear = isUserTiedFirstThisYear
                     ? 99
                     : (totalMembers - userYearPosition) * 100 / totalMembers;
 

@@ -438,6 +438,7 @@ namespace ECDLink.Core.Services
 
                     //remove all notifications for the users
                     _notificationService.ExpireNotificationsTypesForUser(reassignment.UserId, TemplateTypeConstants.PractitionerMarkedAbsent);
+                    _notificationService.ExpireNotificationsTypesForUser(reassignment.UserId, TemplateTypeConstants.PractitionerMarkedOnLeave);
                     _notificationService.ExpireNotificationsTypesForUser(reassignment.ReassignedBackToUserId, TemplateTypeConstants.PractitionerMarkedAbsent);
                 }
                 return reassignment;
