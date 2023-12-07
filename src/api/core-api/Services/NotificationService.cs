@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -325,6 +326,7 @@ namespace EcdLink.Api.CoreApi.Services
             var districtId = "";
             var roleIds = new List<string>();
             var savedRoles = "";
+            var roleNames = new List<string>();
 
             foreach (var toGroup in toGroupsItems)
             {
@@ -347,13 +349,40 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     savedRoles = toGroup.Split(':')[1];
                     roleIds = savedRoles.Split(",").ToList();
-
+                    foreach (var item in roleIds)
+                    {
+                        if (item == "trainees")
+                        {
+                            roleNames.Add("Trainees");
+                        }
+                        if (item == "practitioners_principals")
+                        {
+                            roleNames.Add("Practitioners - principals");
+                        }
+                        if (item == "practitioners_non_principals")
+                        {
+                            roleNames.Add("Practitioners - non-principals");
+                        }
+                        if (item == "coaches")
+                        {
+                            roleNames.Add("Coaches");
+                        }
+                        if (item == "chw")
+                        {
+                            roleNames.Add("CHWs");
+                        }
+                        if (item == "team_lead")
+                        {
+                            roleNames.Add("Team Lead");
+                        }
+                    }
                 }
             }
             model.ProvinceId = provinceId;
             model.WardName = wardName;
             model.DistrictId = districtId;
             model.RoleIds = roleIds;
+            model.RoleNames = string.Join(", ", roleNames);
 
             return model;
 

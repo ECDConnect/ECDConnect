@@ -5,6 +5,7 @@ import {
   ActionModal,
   Dialog,
   DialogPosition,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { CalendarIcon } from '@heroicons/react/solid';
 import { useQuery, useLazyQuery, useMutation } from '@apollo/client';
@@ -12,8 +13,8 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as Yup from 'yup';
 import {
-  FilterRoleList,
   GetAllWards,
+  GetTenantContext,
   GetUserCountForMessageCriteria,
   SaveBulkMessagesForAdmin,
 } from '@ecdlink/graphql';
@@ -21,22 +22,16 @@ import {
   AuthUser,
   LocalStorageKeys,
   MessageLogDto,
-  RoleDto,
   WardDto,
 } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { XIcon } from '@heroicons/react/solid';
 import MessageForm from './message-form';
-export interface PanelProps {
-  message?: MessageLogDto;
-  closeDialog: (value: boolean) => void;
-  setFormIsDirty?: (value: boolean) => void;
-  isView?: boolean;
-  messageStatus?: string;
-}
+import { useHistory } from 'react-router';
+import { MessageRoleDto, ggRoles, ssRoles } from './message';
 
-export default function MessagePanel(props: PanelProps) {
+export default function MessagePanel() {
   const messageSchema = Yup.object().shape({
     subject: Yup.string()
       .required('Message title is required')
@@ -44,8 +39,8 @@ export default function MessagePanel(props: PanelProps) {
     message: Yup.string()
       .required('Message text is required')
       .max(160, 'Message text too long'),
-    messageDate: Yup.date(), //.required('Message date is required'),
-    messageTime: Yup.string(), //.required('Message time is required'),
+    messageDate: Yup.date().required('Message date is required'),
+    messageTime: Yup.string().required('Message time is required'),
     roleIds: Yup.array()
       .min(1, 'Choose at least 1 role')
       .required('Roles are required'),
@@ -58,7 +53,7 @@ export default function MessagePanel(props: PanelProps) {
   const initialMessageValues: MessageLogDto = {
     subject: '',
     message: '',
-    messageDate: new Date(),
+    messageDate: undefined,
     messageTime: '',
     toGroups: '',
     provinceId: '',
@@ -89,28 +84,46 @@ export default function MessagePanel(props: PanelProps) {
     isDirty,
   } = messageFormState;
 
+  const history = useHistory();
   const user = localStorage.getItem(LocalStorageKeys.user);
+  const message = localStorage.getItem('selectedMessage');
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [showSavingDialog, setShowSavingDialog] = useState(false);
+  const [isView, setIsView] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [messageStatus, setMessageStatus] = useState('');
   const [userCount, setUserCount] = useState(0);
-  const [selectedRoles, setSelectedRoles] = useState<RoleDto[]>([]);
+  const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
   const [authenticatedUser, setAuthenticatedUser] = useState<AuthUser>();
+  const [currentMessage, setCurrentMessage] = useState<MessageLogDto>();
   const [wardData, setWardData] = useState<WardDto[]>([]);
   const [wardName, setWardName] = useState('');
-  const [currentMessage, setCurrentMessage] = useState(props.message);
+  const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
 
   const { data: wards } = useQuery(GetAllWards, {
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: roles } = useQuery(FilterRoleList, {
+  const { data: tenantData } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
 
   useEffect(() => {
-    if (user) {
+    if (user !== 'null') {
       setAuthenticatedUser(JSON.parse(user));
     }
+    if (tenantData) {
+      if (
+        tenantData &&
+        tenantData.tenantContext &&
+        tenantData.tenantContext.applicationName === 'GrowGreat'
+      ) {
+        setRoleData(ggRoles);
+      } else {
+        setRoleData(ssRoles);
+      }
+    }
+
     if (wards) {
       const copyItems = Object.assign([], wards.allWards);
       const newWard: WardDto = {
@@ -121,14 +134,12 @@ export default function MessagePanel(props: PanelProps) {
       setWardData(wards.allWards);
     }
     if (currentMessage) {
-      if (currentMessage.roleIds.length != 0) {
-        if (roles) {
-          const availableRoles = Object.assign([], roles.roles);
-          const messageRoles = [];
-
+      if (currentMessage.roleIds.length !== 0) {
+        if (roleData) {
+          const messageRoles: MessageRoleDto[] = [];
           currentMessage.roleIds.forEach((roleId) => {
             messageRoles.push(
-              availableRoles.find((item) => item.id.indexOf(roleId) !== -1)
+              roleData.find((item) => item.id.indexOf(roleId) !== -1)
             );
           });
           setSelectedRoles(messageRoles);
@@ -138,7 +149,7 @@ export default function MessagePanel(props: PanelProps) {
         }
       }
 
-      if (currentMessage.wardName != '') {
+      if (currentMessage.wardName !== '') {
         const wardIndex = wardData.findIndex((item) =>
           item.ward.indexOf(currentMessage.wardName)
         );
@@ -181,7 +192,16 @@ export default function MessagePanel(props: PanelProps) {
         shouldValidate: true,
       });
     }
-  }, [user, wards, currentMessage, roles]);
+  }, [
+    user,
+    wards,
+    currentMessage,
+    messageSetValue,
+    wardData,
+    wardName,
+    roleData,
+    tenantData,
+  ]);
 
   const [getUserCountForMessageCriteria, { data: totalUsers }] = useLazyQuery(
     GetUserCountForMessageCriteria,
@@ -202,7 +222,17 @@ export default function MessagePanel(props: PanelProps) {
     }
   }, [totalUsers]);
 
-  const [isEdit, setEdit] = useState(props.message ? true : false);
+  useEffect(() => {
+    if (message !== 'null') {
+      const parsedMessage = JSON.parse(message);
+      const messageDate = new Date(parsedMessage.messageDate);
+      setIsView(messageDate < new Date() ? true : false);
+      setMessageStatus(messageDate < new Date() ? 'completed' : 'pending');
+      setCurrentMessage(parsedMessage);
+    }
+  }, [message]);
+
+  const [isEdit] = useState(currentMessage ? true : false);
   const [saveBulkMessagesForAdmin] = useMutation(SaveBulkMessagesForAdmin);
   const messageForm = messageGetValues();
 
@@ -213,18 +243,19 @@ export default function MessagePanel(props: PanelProps) {
 
   const onSaveMessage = async () => {
     const formValues = messageGetValues();
+    setIsLoading(true);
 
     let toGroups = '';
-    if (formValues.districtId != '') {
+    if (formValues.districtId !== '') {
       toGroups += 'District:' + formValues.districtId + '|';
     }
-    if (wardName != '') {
+    if (wardName !== '') {
       toGroups += 'Ward:' + wardName + '|';
     }
-    if (formValues.provinceId != '') {
+    if (formValues.provinceId !== '') {
       toGroups += 'Province:' + formValues.provinceId + '|';
     }
-    if (selectedRoles.length != 0) {
+    if (selectedRoles.length !== 0) {
       toGroups += 'Role:' + selectedRoles.map(({ id }) => id);
     }
 
@@ -261,15 +292,22 @@ export default function MessagePanel(props: PanelProps) {
       },
     })
       .then((response) => {
-        props.closeDialog(true);
+        setShowSavingDialog(false);
+        setIsLoading(false);
+        backToMessageList();
+        localStorage.setItem('messageStatus', 'Message scheduled');
       })
       .catch((error) => {
         console.log(error);
       });
   };
 
-  const panelSetRoles = async (roles: RoleDto[]) => {
+  const panelSetRoles = async (roles: MessageRoleDto[]) => {
     setSelectedRoles(roles);
+  };
+
+  const panelSetDate = async (date: Date) => {
+    messageSetValue('messageDate', date);
   };
 
   useEffect(() => {
@@ -279,30 +317,78 @@ export default function MessagePanel(props: PanelProps) {
         setWardName(wardData[wardIndex].ward);
       }
     }
-  }, [messageForm]);
+  }, [messageForm, messageGetValues, wardData]);
 
   const getIsValid = () => {
     return isMessageValid ? true : false;
   };
 
+  const getFormattedDate = () => {
+    if (messageGetValues('messageDate') !== undefined) {
+      return (
+        `Schedule message for ` +
+        format(messageGetValues('messageDate'), 'dd MMMM') +
+        ` at ` +
+        messageGetValues('messageTime') +
+        ` ?`
+      );
+    }
+
+    return '';
+  };
+
+  const backToMessageList = () => {
+    history.push({
+      pathname: '/messaging/list-messages',
+      state: {
+        component: 'messaging',
+      },
+    });
+  };
+
+  const showDisgardPopup = () => {
+    if (isDirty) {
+      setDisplayFormIsDirty(true);
+    } else {
+      setDisplayFormIsDirty(false);
+      backToMessageList();
+    }
+  };
+
+  const getTitle = () => {
+    if (currentMessage) {
+      const messageDate = new Date(currentMessage.messageDate);
+
+      return messageDate < new Date() ? 'View message' : 'Edit message';
+    }
+    return 'Send a message';
+  };
+
   const getComponent = () => {
     return (
       <>
-        {isDirty && (
-          <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
-            <button
-              className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
-              onClick={() => setDisplayFormIsDirty(true)}
-            >
-              <span className="sr-only">Close panel</span>
-              <XIcon className="h-6 w-6" aria-hidden="true" />
-            </button>
-          </div>
-        )}
         <div>
           <div className="pb-2">
+            <div className="flex">
+              <Typography
+                type={'h2'}
+                color="textMid"
+                weight="bold"
+                text={getTitle()}
+                className={'mt-4 mb-4 w-full'}
+              />
+              <div className="absolute top-20 right-20 ">
+                <button
+                  className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+                  onClick={() => showDisgardPopup()}
+                >
+                  <span className="sr-only">Close panel</span>
+                  <XIcon className="h-6 w-6" aria-hidden="true" />
+                </button>
+              </div>
+            </div>
             <hr className="border-b border-dashed border-gray-500 px-2" />
-            {props.messageStatus == 'completed' ? (
+            {messageStatus === 'completed' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You can view the sent message but you cannot edit.`}
@@ -326,10 +412,11 @@ export default function MessagePanel(props: PanelProps) {
             errors={messageFormErrors}
             messageSetValue={messageSetValue}
             panelSetRoles={panelSetRoles}
-            editMessageDate={currentMessage?.messageDate ?? undefined}
+            panelSetDate={panelSetDate}
+            editMessageDate={messageGetValues('messageDate')}
             editRoles={selectedRoles}
             wardData={wardData}
-            isView={props.isView}
+            isView={isView}
           />
 
           <Button
@@ -337,7 +424,7 @@ export default function MessagePanel(props: PanelProps) {
             type="filled"
             color="secondary"
             onClick={onShowDialog}
-            disabled={!getIsValid() || props.isView}
+            disabled={!getIsValid() || isView}
           >
             <CalendarIcon color="white" className="mr-6 h-6 w-6" />
             <Typography
@@ -374,7 +461,7 @@ export default function MessagePanel(props: PanelProps) {
                 colour: 'secondary',
                 type: 'filled',
                 onClick: () => {
-                  props.closeDialog(false);
+                  backToMessageList();
                 },
                 leadingIcon: 'TrashIcon',
               },
@@ -388,23 +475,25 @@ export default function MessagePanel(props: PanelProps) {
           visible={showSavingDialog}
           position={DialogPosition.Middle}
         >
+          {isLoading && (
+            <LoadingSpinner
+              size="medium"
+              className="mt-4"
+              spinnerColor="primary"
+              backgroundColor="uiLight"
+            />
+          )}
           <ActionModal
             icon={'InformationCircleIcon'}
             iconColor="alertMain"
             iconBorderColor="alertBg"
-            importantText={
-              `Schedule message for ` +
-              format(messageGetValues('messageDate'), 'dd MMMM') +
-              ` at ` +
-              messageGetValues('messageTime') +
-              ` ?`
-            }
+            importantText={getFormattedDate()}
             detailText={
               `This message will be sent to ` +
               userCount +
               ` people (` +
               selectedRoles.map((x) => {
-                return x.name;
+                return x.label;
               }) +
               `).`
             }
