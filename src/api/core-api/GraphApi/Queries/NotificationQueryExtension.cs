@@ -347,19 +347,20 @@ IGenericRepositoryFactory repoFactory, string templateId)
 
 
             // Currently we don't have districts in the system, but this will change after the development in December 23
-            if (provinceId != "" || wardName != "")
+            
+            if (provinceId == "Unknown" || provinceId != "" || wardName != "")
             {
 
                 if (isTrainee || isPrincipal || isNonPractitioner)
                 {
-                    if (provinceId != "" && wardName == "")
+                    if (provinceId != "Unknown" && provinceId != "" && wardName == "")
                     {
                         messageUserIds.AddRange(practitioners
                             .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId?.ToString() == provinceId)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
-                    else if (provinceId == "" && wardName != "")
+                    else if (provinceId == "Unknown" && provinceId == "" && wardName != "")
                     {
                         messageUserIds.AddRange(practitioners
                             .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == wardName)
@@ -376,14 +377,14 @@ IGenericRepositoryFactory repoFactory, string templateId)
                 }
                 if (isCoach)
                 {
-                    if (provinceId != "" && wardName == "")
+                    if (provinceId != "Unknown" && provinceId != "" && wardName == "")
                     {
                         messageUserIds.AddRange(coaches
                             .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == provinceId)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
-                    else if (provinceId == "" && wardName != "")
+                    else if (provinceId == "Unknown" && provinceId == "" && wardName != "")
                     {
                         messageUserIds.AddRange(coaches
                             .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == wardName)
