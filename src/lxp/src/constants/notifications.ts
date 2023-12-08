@@ -4,6 +4,7 @@ import { Message } from '@models/messages/messages';
 interface NotificationTagConfigParams {
   [key: string]: Partial<Message>;
   AcceptAgreement: Partial<Message>;
+  GetStartedTrainee: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AcceptAgreement: {
