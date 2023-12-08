@@ -28,23 +28,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         {
             return await integrationService.PullPQAData();
         }
-        public async Task<bool> IntegrationStatementsData([Service] IIntegrationService integrationService)
+        public async Task<bool> IntegrationStatementsData([Service] IIntegrationService integrationService)//IIntegrationService
         {
             await integrationService.IntegrationStatementsData();
             return true;
         }
-        public async Task<bool> IntegrationAttendanceByDueData([Service] IIntegrationService integrationService)
+
+        public async Task<bool> IntegrationAttendanceByDueData([Service] IIntegrationService integrationService)//IIntegrationService
         {
             await integrationService.IntegrationAttendanceByDueData();
             return true;
         }
-
-        public async Task<bool> IntegrationMonthlyAttendancePdf([Service] IIntegrationService integrationService)
-        {
-            await integrationService.PushMonthlyAttendancePdf();
-            return true;
-        }
-
+        
         public async Task<bool> IntegrationUpdates([Service] IIntegrationService integrationService)
          {
             return await integrationService.IntegrationUpdates();

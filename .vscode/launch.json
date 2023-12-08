@@ -30,48 +30,6 @@
           "name": ".NET Core Attach",
           "type": "coreclr",
           "request": "attach"
-      },
-      {
-        "type": "node-terminal",
-        "name": "Run FE",
-        "request": "launch",
-        "command": "yarn fe",
-        "cwd": "${workspaceFolder}"
-      },
-      {
-          "type": "node-terminal",
-          "name": "Run GG",
-          "request": "launch",
-          "command": "yarn fe-gg",
-          "cwd": "${workspaceFolder}"
-      },
-      {
-          "type": "node-terminal",
-          "name": "Run Portal",
-          "request": "launch",
-          "command": "yarn portal",
-          "cwd": "${workspaceFolder}"
-      },
-      {
-        "type": "node-terminal",
-        "name": "Run Portal GG",
-        "request": "launch",
-        "command": "yarn portal-gg",
-        "cwd": "${workspaceFolder}"
-    },
-      {
-        "type": "node-terminal",
-        "name": "Generate",
-        "request": "launch",
-        "command": "yarn codegen",
-        "cwd": "${workspaceFolder}"
-    },
-      {
-        "type": "chrome",
-        "request": "launch",
-        "name": "Launch Chrome against localhost",
-        "url": "http://localhost:3000",
-        "webRoot": "${workspaceFolder}"
       }
   ]
 }

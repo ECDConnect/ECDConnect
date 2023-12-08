@@ -48,9 +48,6 @@ using ECDLink.AutomatedJobs.Services.Interfaces;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.SmartStart.Services.Interfaces;
 using Castle.Core.Logging;
-using DinkToPdf.Contracts;
-using DinkToPdf;
-using EcdLink.Api.CoreApi.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -235,13 +232,6 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<DocumentManager>();
             services.AddTransient<INotificationService, NotificationService>();
             services.AddTransient<INotificationTasksService, NotificationTasksService>();
-
-            services.AddSingleton<IConverter, SynchronizedConverter>(serviceProvider =>
-            {
-                return new SynchronizedConverter(new PdfTools());
-            });
-
-            services.AddTransient<IAttendancePdfService, AttendancePdfService>();
             services.AddControllers();
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);

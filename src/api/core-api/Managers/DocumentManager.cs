@@ -233,12 +233,6 @@ namespace EcdLink.Api.CoreApi.Managers
                 // First validate if document is already in db
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
                 
-                if (doc != null)
-                {
-                    // remove previous file on file server
-                    await _fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
-                }
-
                 // Upload the document
                 var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
                 try
@@ -262,6 +256,9 @@ namespace EcdLink.Api.CoreApi.Managers
                     }
                     else
                     {
+                        // remove previous file on file server
+                        await _fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
+
                         doc.Name = input.FileName;
                         doc.UpdatedBy = input.CreatedUserId;
                         doc.Reference = document.Url.TrimEnd('/');
