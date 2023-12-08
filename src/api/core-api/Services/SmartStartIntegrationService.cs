@@ -45,6 +45,11 @@ using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.SmartStart.Services;
 using Microsoft.Extensions.Logging;
+using EcdLink.Api.CoreApi.GraphApi.Mutations;
+using Microsoft.AspNetCore.Http;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using ECDLink.Security.Managers;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.Services;
@@ -120,6 +125,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
     public static string scheduledTask = "SmartLinkIntegrationDataSync";
     private INotificationService _notificationService;
 
+    private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
+    private readonly InvitationNotificationManager _notificationManager;
+    private readonly IHttpContextAccessor _accessor; 
+
     public SmartStartIntegrationService(
         IGenericRepositoryFactory repositoryFactory,
         ISystemSetting<IntegrationDelayOptions> integrationDelay,
@@ -137,6 +146,9 @@ public partial class SmartStartIntegrationService : IIntegrationService
          [Service] INotificationService notificationService,
          VisitManager visitManager,
          [Service] AttendanceService attendanceService,
+         [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+         [Service] InvitationNotificationManager notificationManager,
+         [Service] IHttpContextAccessor accessor,
          Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> logger,
         IAttendancePdfService attendancePdfService
         )
@@ -155,6 +167,9 @@ public partial class SmartStartIntegrationService : IIntegrationService
         _apiManager = apiManager;
         _holidayService = holidayService;
         _notificationService = notificationService;
+        _notificationManager = notificationManager;
+        _invitationManager = invitationManager;
+        _accessor = accessor; 
         _attendancePdfService = attendancePdfService;
 
         if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
@@ -1695,6 +1710,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             mapperLine.IsComplete = true;
                             //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                             _mapperRepo.Insert(mapperLine);
+
+                            //send sms to new practitioner
+                            SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+                            await invite.SendInviteToApplication(_invitationManager, _notificationManager, _userManager, _accessor, userId);
 
                             return newPractitioner;
                         }
