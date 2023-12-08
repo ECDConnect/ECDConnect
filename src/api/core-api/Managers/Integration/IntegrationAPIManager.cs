@@ -122,7 +122,16 @@ public class IntegrationAPIManager
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "DateTimeStamp", Operator = "GreaterOrEqual", Value = startDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") });
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "DateTimeStamp", Operator = "LessOrEqual", Value = endDate.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") });
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLRecordChange + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, null);
-            return JsonConvert.DeserializeObject<List<RecordChange>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<RecordChange>>(apiResponse.ResponseString);
+            } 
+            else
+            {
+                 await _logManager.IntegrationLog("GetRecordChangesBetweenDates failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetRecordChangesBetweenDates > " + startDate + " " + endDate);
+                 return null;
+            }
         }
         catch (Exception e)
         {
@@ -165,7 +174,17 @@ public class IntegrationAPIManager
             };
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLColumnChange + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, relatedConditions);
-            return JsonConvert.DeserializeObject<List<ColumnChange>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<ColumnChange>>(apiResponse.ResponseString);
+            }
+            else
+            {
+               await _logManager.IntegrationLog("GetColumnChangesBetweenDates failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetColumnChangesBetweenDates > " + startDate + " " + endDate);
+               return null; 
+            }
+            
         }
         catch (Exception e)
         {
@@ -236,7 +255,16 @@ public class IntegrationAPIManager
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Franchisor", Operator = "Equals", Value = remoteFranchisorId });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLCoach + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, null);
-            return JsonConvert.DeserializeObject<List<MappedCoach>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedCoach>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetCoaches failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetCoaches > " + remoteFranchisorId);
+                return null;
+            }    
         }
         catch (Exception e)
         {
@@ -258,7 +286,16 @@ public class IntegrationAPIManager
             }
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLCoach + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
-            return JsonConvert.DeserializeObject<List<MappedCoach>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedCoach>>(apiResponse.ResponseString);
+            }
+            else 
+            {
+                await _logManager.IntegrationLog("GetCoachesAll failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetCoachesAll > " + remoteCoachId);
+                return null;
+            }   
         }
         catch (Exception e)
         {
@@ -277,7 +314,15 @@ public class IntegrationAPIManager
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLFranchisor + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteId), columns, null, relatedConditions);
 
-            return JsonConvert.DeserializeObject<MappedFranchisor>(apiResponse.ResponseString);
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<MappedFranchisor>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetFranchiseesById failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetFranchiseesById > " + remoteId);
+                return null;
+            }    
 
         }
         catch (Exception e)
@@ -300,7 +345,16 @@ public class IntegrationAPIManager
             relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "SiteAddress", AllColumns = "True", Columns = null, JoinType = "Outer" });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLPractitionerQueryAll,columns, optionConditions, relatedConditions);
-            return JsonConvert.DeserializeObject<List<MappedFranchisee>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedFranchisee>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetFranchiseesByCoach failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetFranchiseesByCoach > " + remoteCoachId);
+                return null;
+            }    
 
         }
         catch (Exception e)
@@ -321,9 +375,16 @@ public class IntegrationAPIManager
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLPractitionerQueryByGuid.Replace("{{Guid}}", remoteId), columns, null, relatedConditions);
 
-            var franchisee = JsonConvert.DeserializeObject<MappedFranchisee>(apiResponse.ResponseString);
-
-            return new List<MappedFranchisee> { franchisee };
+            if (apiResponse.Success) //success
+            {
+                   var franchisee = JsonConvert.DeserializeObject<MappedFranchisee>(apiResponse.ResponseString);
+                   return new List<MappedFranchisee> { franchisee };
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetFranchiseesById failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetFranchiseesById > " + remoteId);
+                return null;
+            }    
 
         }
         catch (Exception e)
@@ -350,7 +411,17 @@ public class IntegrationAPIManager
             //relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Fra", AllColumns = "True", Columns = "", JoinType = "Outer" });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SSTrainee + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, null);
-            return JsonConvert.DeserializeObject<List<MappedTrainee>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+                 return JsonConvert.DeserializeObject<List<MappedTrainee>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetTraineesByCoach failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetTraineesByCoach > " + remoteCoachId);
+                return null;
+            }    
+           
 
         }
         catch (Exception e)
@@ -370,8 +441,15 @@ public class IntegrationAPIManager
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLTrainee + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteId),columns, null, null);
 
-            return JsonConvert.DeserializeObject<MappedTrainee>(apiResponse.ResponseString);
-
+            if (apiResponse.Success) //success
+            {
+                 return JsonConvert.DeserializeObject<MappedTrainee>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetTraineesById failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetTraineesById > " + remoteId);
+                return null;
+            }    
         }
         catch (Exception e)
         {
@@ -393,7 +471,17 @@ public class IntegrationAPIManager
             relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Caregiver", AllColumns = "True", Columns = null, JoinType = "Outer" });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);
-            return JsonConvert.DeserializeObject<List<MappedChild>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+               return JsonConvert.DeserializeObject<List<MappedChild>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetChildren failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetChildren > " + remoteFranchiseeId);
+                return null;
+            }    
+           
         }
         catch (Exception e)
         {
@@ -408,11 +496,19 @@ public class IntegrationAPIManager
         {
             string[] columns = null;
             List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
-            relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Caregiver", AllColumns = "True", Columns = null });
-
+            relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Caregiver", AllColumns = "True", Columns = null, JoinType = "Outer" });
+            
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteChildId),columns, null, relatedConditions);
 
-            return JsonConvert.DeserializeObject<MappedChild>(apiResponse.ResponseString);
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<MappedChild>(apiResponse.ResponseString);
+            }        
+            else    
+            {
+                await _logManager.IntegrationLog("GetChildById failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetChildById > " + remoteChildId);
+                return null; 
+            }
         }
         catch (Exception e)
         {
@@ -431,7 +527,16 @@ public class IntegrationAPIManager
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = Constants.SSIntegrationSettings.SLPractitioner, Operator = "Equals", Value = remoteFranchiseeId });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
-            return JsonConvert.DeserializeObject<List<MappedCaregiver>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+               return JsonConvert.DeserializeObject<List<MappedCaregiver>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetCareGiversByFranchisee failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetCareGiversByFranchisee > " + remoteFranchiseeId);
+                return null;
+            }   
         }
         catch (Exception e)
         {
@@ -452,7 +557,16 @@ public class IntegrationAPIManager
             relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "DocumentType", AllColumns = "True", Columns = null });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);
-            return JsonConvert.DeserializeObject<List<MappedDocument>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+               return JsonConvert.DeserializeObject<List<MappedDocument>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetFranchiseeDocuments failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetFranchiseeDocuments > " + remoteFranchiseeId);
+                return null;
+            }   
         }
         catch (Exception e)
         {
@@ -473,7 +587,16 @@ public class IntegrationAPIManager
             relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "DocumentType", AllColumns = "False", Columns = new[] { "Name" } });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);
-            return JsonConvert.DeserializeObject<List<MappedDocument>>(apiResponse.ResponseString);
+
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedDocument>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetChildDocuments failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetChildDocuments > " + remoteChildId);
+                return null;
+            }  
         }
         catch (Exception e)
         {
@@ -492,7 +615,15 @@ public class IntegrationAPIManager
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteDocId), columns, null, relatedConditions);
 
-            return JsonConvert.DeserializeObject<MappedDocument>(apiResponse.ResponseString);
+            if (apiResponse.Success) //success
+            {
+               return JsonConvert.DeserializeObject<MappedDocument>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GeDocumentsById failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GeDocumentsById > " + remoteDocId);
+                return null;
+            }     
         }
         catch (Exception e)
         {
@@ -514,8 +645,16 @@ public class IntegrationAPIManager
             //relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Club", AllColumns = "True", Columns = "Coach", Operator = "Equals", Value = remoteCoachId });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SSClub + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, null);
-            return JsonConvert.DeserializeObject<List<MappedClub>>(apiResponse.ResponseString);
 
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedClub>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetClubsByCoach failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetClubsByCoach > " + remoteCoachId);
+                return null;
+            }     
         }
         catch (Exception e)
         {
@@ -542,8 +681,16 @@ public class IntegrationAPIManager
 
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLClubMeeting + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, relatedConditions);
-            return JsonConvert.DeserializeObject<List<MappedClubMeeting>>(apiResponse.ResponseString);
 
+            if (apiResponse.Success) //success
+            {
+               return JsonConvert.DeserializeObject<List<MappedClubMeeting>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetClubMeetingByCoach failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetClubMeetingByCoach > " + remoteCoachId);
+                return null;
+            }     
         }
         catch (Exception e)
         {
@@ -569,8 +716,16 @@ public class IntegrationAPIManager
 
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLClubMeetingRegister + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, relatedConditions);
-            return JsonConvert.DeserializeObject<List<MappedClubMeetingRegister>>(apiResponse.ResponseString);
 
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedClubMeetingRegister>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetClubMeetingRegisterByFranchisee failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetClubMeetingRegisterByFranchisee > " + remoteFranchiseeId);
+                return null;
+            }     
         }
         catch (Exception e)
         {
@@ -591,8 +746,16 @@ public class IntegrationAPIManager
             relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Club", AllColumns = "True", Columns = new[] { "Coach" }, Operator = "Equals", Value = remoteCoachId });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLClubMeetingRegister + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);
-            return JsonConvert.DeserializeObject<List<MappedClubMeetingRegister>>(apiResponse.ResponseString);
 
+            if (apiResponse.Success) //success
+            {
+              return JsonConvert.DeserializeObject<List<MappedClubMeetingRegister>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetClubMeetingRegisterByCoach failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetClubMeetingRegisterByCoach > " + remoteCoachId);
+                return null;
+            }     
         }
         catch (Exception e)
         {
@@ -611,7 +774,15 @@ public class IntegrationAPIManager
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLAddress + Constants.SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteAddressId), columns, null, null);
 
-            return JsonConvert.DeserializeObject<MappedAddress>(apiResponse.ResponseString);
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<MappedAddress>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetAddressById failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetAddressById > " + remoteAddressId);
+                return null;
+            }   
         }
         catch (Exception e)
         {
@@ -646,8 +817,16 @@ public class IntegrationAPIManager
             };
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLPQA + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
-            return JsonConvert.DeserializeObject<List<MappedPQA>>(apiResponse.ResponseString);
 
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedPQA>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetPQAByFranchisee failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetPQAByFranchisee > " + remoteFranchiseeId);
+                return null;
+            }   
         }
         catch (Exception e)
         {
@@ -668,8 +847,16 @@ public class IntegrationAPIManager
             };
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
-            return JsonConvert.DeserializeObject<List<MappedSmartSpaceVisits>>(apiResponse.ResponseString);
 
+            if (apiResponse.Success) //success
+            {
+               return JsonConvert.DeserializeObject<List<MappedSmartSpaceVisits>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetPQAByFranchisee failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetPQAByFranchisee > " + remoteFranchiseeId);
+                return null;
+            }   
         }
         catch (Exception e)
         {

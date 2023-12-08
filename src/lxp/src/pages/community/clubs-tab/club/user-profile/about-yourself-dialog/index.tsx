@@ -17,21 +17,40 @@ import { useSelector } from 'react-redux';
 import ROUTES from '@/routes/routes';
 import { useHistory, useLocation } from 'react-router';
 import { CommunityRouteState } from '../../../../community.types';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
+import { practitionerSelectors } from '@/store/practitioner';
 
 interface AboutYourselfDialogProps {
   visible: boolean;
+  clubId: string;
+  shareContactInfo: boolean;
   onClose: () => void;
 }
 export const AboutYourselfDialog = ({
+  clubId,
+  shareContactInfo,
   onClose,
   visible,
 }: AboutYourselfDialogProps) => {
   const [value, setValue] = useState('');
 
-  const { isLoading, wasLoading, isRejected, error } = useThunkFetchCall(
-    'clubs',
-    ClubActions.UPDATE_COACH_ABOUT_INFO
-  );
+  const {
+    isLoading: isLoadingCoach,
+    wasLoading: wasLoadingCoach,
+    isRejected: isRejectedCoach,
+    error: errorCoach,
+  } = useThunkFetchCall('clubs', ClubActions.UPDATE_COACH_ABOUT_INFO);
+  const {
+    isLoading: isLoadingMember,
+    wasLoading: wasLoadingMember,
+    isRejected: isRejectedMember,
+    error: errorMember,
+  } = useThunkFetchCall('clubs', ClubActions.SAVE_WELCOME_MESSAGE);
+
+  const isLoading = isLoadingCoach || isLoadingMember;
+  const wasLoading = wasLoadingCoach || wasLoadingMember;
+  const isRejected = isRejectedCoach || isRejectedMember;
+  const error = errorCoach || errorMember;
 
   const appDispatch = useAppDispatch();
   const history = useHistory();
@@ -39,18 +58,34 @@ export const AboutYourselfDialog = ({
   const { showMessage } = useSnackbar();
 
   const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
-  const onUpdateCoachAboutInfo = async () => {
-    await appDispatch(
-      clubThunkActions.updateCoachAboutInfo({
-        aboutInfo: value,
-        userId: user?.id,
-      })
-    );
+  const isCoach = user?.roles?.some(
+    (item) => item?.name === UserTypeEnum.Coach
+  );
 
-    history.push(ROUTES.COMMUNITY.ROOT, {
-      ...location.state,
-    } as CommunityRouteState);
+  const onUpdateAboutInfo = async () => {
+    if (isCoach) {
+      await appDispatch(
+        clubThunkActions.updateCoachAboutInfo({
+          aboutInfo: value,
+          userId: user?.id,
+        })
+      );
+
+      history.push(ROUTES.COMMUNITY.ROOT, {
+        ...location.state,
+      } as CommunityRouteState);
+    } else {
+      await appDispatch(
+        clubThunkActions.saveWelcomeMessage({
+          clubId,
+          practitionerId: practitioner?.id,
+          welcomeMessage: value,
+          shareContactInfo,
+        })
+      );
+    }
   };
 
   useEffect(() => {
@@ -82,6 +117,7 @@ export const AboutYourselfDialog = ({
 
         <FormInput
           placeholder="..."
+          maxCharacters={value ? 125 : undefined}
           value={value}
           onChange={(event) => setValue(event.target.value)}
         />
@@ -93,7 +129,7 @@ export const AboutYourselfDialog = ({
           textColor="white"
           isLoading={isLoading}
           disabled={!value || isLoading}
-          onClick={onUpdateCoachAboutInfo}
+          onClick={onUpdateAboutInfo}
         />
       </div>
     </Dialog>

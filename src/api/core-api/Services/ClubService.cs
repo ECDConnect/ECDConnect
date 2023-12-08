@@ -984,15 +984,24 @@ namespace EcdLink.Api.CoreApi.Services
             List<ActivityMeetRegularDetail> pastMeetings = new List<ActivityMeetRegularDetail>();
             List<ClubUser> meetingParticipants = new List<ClubUser>();
             List<ClubUser> absentees = new List<ClubUser>();
+            ClubPointsLibrary libraryItem = new ClubPointsLibrary();
 
-            ClubPointsLibrary libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly).FirstOrDefault();
             Club club = _clubRepo.GetAll()
                 .Where(x => x.Id == clubId)
-                .Include(x => x.ClubPoints.Where(x => x.Year == year && x.ClubPointsLibraryId == libraryItem.Id))
-                .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
-                .Include(x => x.ClubLeaders.Where(x => x.IsActive && x.DateAccepted.HasValue)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
-                .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner).ThenInclude(x => x.User)
+                .Include(x => x.ClubPoints.Where(x => x.Year == year))
+                .Include(x => x.ClubMembers.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
+                .Include(x => x.ClubLeaders.Where(x => x.IsActive && x.DateAccepted.HasValue)).ThenInclude(x => x.Practitioner)
+                .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
                 .FirstOrDefault();
+
+            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            {
+                libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type == Constants.ClubSettings.name_purple).FirstOrDefault();
+            }
+            else
+            {
+                libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type != Constants.ClubSettings.name_purple).FirstOrDefault();
+            }
 
             // get all member ids so that we can find absentees
             List<string> allMemberIds = new List<string>();
@@ -1008,11 +1017,11 @@ namespace EcdLink.Api.CoreApi.Services
                 .Include(x => x.ClubMeetingRegister.Where(x => x.IsActive))
                 .ToList();
 
-            var clubPoints = club.ClubPoints.Select(x => x.Points).Sum();
+            var clubPoints = club.ClubPoints.Where(x => x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).Sum();
 
             if (month != 0)
             {
-                clubPoints = club.ClubPoints.Where(x => x.Month == month).Select(x => x.Points).Sum();
+                clubPoints = club.ClubPoints.Where(x => x.Month == month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).Sum();
                 allMeetings = allMeetings.Where(x => x.MeetingDate.Value.Month <= month).ToList();
             }
             
@@ -1032,7 +1041,7 @@ namespace EcdLink.Api.CoreApi.Services
             // set meetings
             foreach (var item in allMeetings)
             {
-                int totalAttended = item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive).Count();
+                int totalAttended = item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive && x.ClubMeetingId == item.Id).Count();
                 string meetingAttendanceColor = MetricsColorEnum.Error.ToString();
                 double meetingAttendancePerc = allMemberIds.Count == 0.0 ? 0 :((double)totalAttended / (double)allMemberIds.Count) * 100;
 
@@ -1130,7 +1139,7 @@ namespace EcdLink.Api.CoreApi.Services
                         {
                             MonthName = date.ToString("MMMM"),
                             DocumentStatusColor = MetricsColorEnum.Error.ToString(),
-                            DocumentStatus = Constants.ClubSettings.document_no_success,
+                            DocumentStatus = Constants.ClubSettings.not_completed,
                             Points = 0,
                             ImageRating = 0
                         }
@@ -1146,7 +1155,7 @@ namespace EcdLink.Api.CoreApi.Services
                             DocumentName = clubBeCreative?.Document?.Name,
                             ImageApproved = clubBeCreative?.ImageApproved,
                             DocumentStatusColor = (bool)clubBeCreative?.ImageApproved ? MetricsColorEnum.Warning.ToString() : MetricsColorEnum.Error.ToString(),
-                            DocumentStatus = (bool)clubBeCreative?.ImageApproved ? Constants.ClubSettings.document_success : Constants.ClubSettings.document_no_success,
+                            DocumentStatus = (bool)clubBeCreative?.ImageApproved ? Constants.ClubSettings.document_success : Constants.ClubSettings.not_completed,
                             Points = 0, // pending - will implemented when integration is done
                             ImageRating = clubBeCreative.ImageRating
                         }

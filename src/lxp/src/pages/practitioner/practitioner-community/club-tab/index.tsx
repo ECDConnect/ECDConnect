@@ -571,11 +571,7 @@ export const ClubTab: React.FC = () => {
             </div>
           )}
           {renderActivitiesContent}
-          <div
-            className={`mt-auto flex flex-col pt-4 ${
-              isLeader || isSupportRole || isLeaderRequest ? 'pb-4' : ''
-            }`}
-          >
+          <div className={`mt-auto flex flex-col py-4`}>
             {(isLeader || isSupportRole) && (
               <Button
                 icon="PlusCircleIcon"
