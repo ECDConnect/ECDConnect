@@ -245,7 +245,7 @@ export default function Documents() {
                 onChange={onChange}
                 startDate={startDate}
                 endDate={endDate}
-                selectsRange={true}
+                // selectsRange={true}
                 inline
                 shouldCloseOnSelect={true}
               />
