@@ -462,13 +462,18 @@ const clubSlice = createSlice({
     builder.addCase(updateClubSupportStatus.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
-    builder.addCase(addCaregiverReportBackMeeting.fulfilled, (state) => {
-      state.addCaregiverReportBackMeetingSyncInput = undefined;
-      state.practitionerLastCaregiverReportBackDate = {
-        year: new Date().getFullYear(),
-        month: new Date().getMonth() < 7 ? 6 : 11,
-      };
-    });
+    builder.addCase(
+      addCaregiverReportBackMeeting.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+
+        state.addCaregiverReportBackMeetingSyncInput = undefined;
+        state.practitionerLastCaregiverReportBackDate = {
+          year: new Date().getFullYear(),
+          month: new Date().getMonth() < 7 ? 6 : 11,
+        };
+      }
+    );
     builder.addCase(addFamilyDayMeeting.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
