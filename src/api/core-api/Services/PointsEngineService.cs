@@ -1747,7 +1747,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             int totalClubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == today.Year && x.ClubPointsLibraryId == clubPointsLibrary.Id).Select(x => x.Points).Sum();
-            if (totalClubPoints < (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
+            if (clubPointsLibrary.MaxPointsYearly <= (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
             {
                 totalClubPoints += clubPointsLibrary.Points;
                 _clubPointsRepo.Insert(new ClubPoints()
@@ -1862,7 +1862,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var points = (int)Math.Round(totalPerc, 0);
                     int totalClubPoints = club.ClubPoints.Select(x => x.Points).Sum();
-                    if (totalClubPoints <= (cplProgress.MaxPointsYearly - points))
+                    if (cplProgress.MaxPointsYearly <= (cplProgress.MaxPointsYearly - points))
                     {
                         totalClubPoints += points;
                         _clubPointsRepo.Insert(new ClubPoints()
@@ -1901,7 +1901,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             int totalClubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == today.Year && x.ClubPointsLibraryId == clubPointsLibrary.Id).Select(x => x.Points).Sum();
-            if (totalClubPoints <= (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
+            if (clubPointsLibrary.MaxPointsYearly >= (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
             {
                 totalClubPoints += clubPointsLibrary.Points;
                 _clubPointsRepo.Insert(new ClubPoints()
@@ -1937,7 +1937,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             int totalClubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == today.Year && x.ClubPointsLibraryId == clubPointsLibrary.Id).Select(x => x.Points).Sum();
-            if (totalClubPoints <= (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
+            if (clubPointsLibrary.MaxPointsYearly >= (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
             {
                 totalClubPoints += clubPointsLibrary.Points;
                 _clubPointsRepo.Insert(new ClubPoints()

@@ -109,7 +109,11 @@ export const SupportRoleEdit: React.FC = () => {
       />
       <fieldset className="mb-4 flex flex-col gap-2">
         {club?.clubMembers
-          ?.filter((member) => member?.userId !== club?.clubSupport?.userId)
+          ?.filter(
+            (member) =>
+              member?.userId !== club?.clubSupport?.userId &&
+              member?.userId !== club?.clubLeader?.userId
+          )
           ?.map((member) => (
             <Radio
               key={member?.userId}

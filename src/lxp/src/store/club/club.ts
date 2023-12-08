@@ -545,6 +545,30 @@ const clubSlice = createSlice({
     });
     builder.addCase(saveWelcomeMessage.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
+
+      const practitionerId = action.meta.arg.practitionerId;
+      const welcomeMessage = action.meta.arg.welcomeMessage || '';
+      const shareContactInfo = action.meta.arg.shareContactInfo;
+
+      if (state.clubForPractitioner?.club) {
+        state.clubForPractitioner.club.id =
+          state.clubForPractitioner.club.id || '';
+
+        state.clubForPractitioner.club.clubMembers = state.clubForPractitioner
+          .club.clubMembers
+          ? state.clubForPractitioner.club.clubMembers.map((member) => {
+              if (member.practitionerId === practitionerId) {
+                return {
+                  ...member,
+                  welcomeMessage,
+                  shareContactInfo,
+                };
+              } else {
+                return member;
+              }
+            })
+          : [];
+      }
     });
     builder.addCase(acceptNewClubLeaderRole.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
