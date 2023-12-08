@@ -92,6 +92,7 @@ export default function MessagePanel() {
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [showSavingDialog, setShowSavingDialog] = useState(false);
   const [isView, setIsView] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [messageStatus, setMessageStatus] = useState('');
   const [userCount, setUserCount] = useState(0);
@@ -178,6 +179,7 @@ export default function MessagePanel() {
       }
 
       if (currentMessage.messageDate != null) {
+        setIsEdit(true);
         const messageDate = new Date(currentMessage.messageDate);
         const messageHours =
           (messageDate.getHours() < 10 ? '0' : '') + messageDate.getHours();
@@ -248,7 +250,6 @@ export default function MessagePanel() {
     }
   }, [message]);
 
-  const [isEdit] = useState(currentMessage ? true : false);
   const [saveBulkMessagesForAdmin] = useMutation(SaveBulkMessagesForAdmin);
   const messageForm = messageGetValues();
 
