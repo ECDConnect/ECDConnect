@@ -767,7 +767,7 @@ export const CoachPractitionerJourney = () => {
             textColor="primary"
             icon="LocationMarkerIcon"
             text="Start support visit"
-            onClick={onSupportVisit}
+            onClick={() => onSupportVisit('')}
           />
           {!!timeline && (
             <Steps
