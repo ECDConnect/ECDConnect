@@ -232,7 +232,7 @@ export const timelineSteps = (
 
   if (
     timeline?.smartSpaceLicenseNotAwardedDate &&
-    !timeline?.smartSpaceLicenseDate
+    timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence not received'
   ) {
     steps.push(
       setStep(
@@ -247,7 +247,8 @@ export const timelineSteps = (
 
   if (
     timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received' &&
-    !timeline?.smartSpaceLicenseDate
+    (!timeline?.smartSpaceLicenseDate ||
+      timeline?.smartSpaceLicenseNotAwardedDate)
   ) {
     steps.push(
       setStep(
@@ -260,7 +261,10 @@ export const timelineSteps = (
       )
     );
   }
-  if (timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received') {
+  if (
+    timeline?.smartSpaceLicenseDate &&
+    timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received'
+  ) {
     steps.push(
       setStep(
         timeline?.smartSpaceLicenseStatus || 'SmartSpace Licence received',
@@ -273,7 +277,7 @@ export const timelineSteps = (
       )
     );
   }
-
+  /*
   if (
     timeline?.smartSpaceLicenseDate &&
     timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received'
@@ -289,7 +293,7 @@ export const timelineSteps = (
         timeline?.smartSpaceLicenseStatus
       )
     );
-  }
+  }*/
   steps.push(
     setStep(
       timeline?.signFranchiseeAgreementStatus || 'Sign franchisee agreement',
