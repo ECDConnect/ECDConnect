@@ -172,8 +172,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
         _accessor = accessor; 
         _attendancePdfService = attendancePdfService;
 
-        if (Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
-        if (Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
+        if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
+        if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
         if (this.Enabled)
         {
