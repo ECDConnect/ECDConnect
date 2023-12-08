@@ -1,11 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  LocalStorageKeys,
-  AuthUser,
-  MessageLogDto,
-  useNotifications,
-  NOTIFICATION,
-} from '@ecdlink/core';
+import { LocalStorageKeys, AuthUser, MessageLogDto } from '@ecdlink/core';
 import { MailIcon, SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
 
@@ -30,8 +24,6 @@ export default function MessageList() {
   const [selectedRoles, setSelectedRoles] = useState<MessageRoleDto[]>([]);
   const user = localStorage.getItem(LocalStorageKeys.user);
   const [selectedPageSize] = useState<number>(null);
-  const { setNotification } = useNotifications();
-  const messageStatus = localStorage.getItem('messageStatus');
 
   const currentDate = new Date();
   const startDate = subDays(currentDate, 30);
@@ -72,6 +64,11 @@ export default function MessageList() {
     }
   }, [messages, getAllMessageLogsForAdmin]);
 
+  const getFormattedDate = (mDate: Date) => {
+    const date = new Date(mDate);
+    return new Date(date.toString().slice(0, -1));
+  };
+
   useEffect(() => {
     if (tenantData) {
       if (
@@ -92,27 +89,18 @@ export default function MessageList() {
           subject: item.subject,
           messageDate:
             item.messageDate !== null
-              ? format(new Date(item.messageDate), 'dd MMM yyyy hh:mm')
+              ? format(getFormattedDate(item.messageDate), 'dd MMM yyyy hh:mm')
               : '',
           status:
-            new Date(item.messageDate) > new Date() ? 'Scheduled' : 'Sent',
+            getFormattedDate(item.messageDate) > new Date()
+              ? 'Scheduled'
+              : 'Sent',
           id: index.toString(),
         })
       );
       setTableData(copyItems);
     }
   }, [tenantData, messages]);
-
-  useEffect(() => {
-    if (messageStatus) {
-      if (messageStatus === 'Message scheduled') {
-        setNotification({
-          title: 'Message scheduled',
-          variant: NOTIFICATION.SUCCESS,
-        });
-      }
-    }
-  }, [messageStatus, setNotification]);
 
   const displayMessagePanel = (message: MessageLogDto) => {
     localStorage.setItem('selectedMessage', JSON.stringify(message));

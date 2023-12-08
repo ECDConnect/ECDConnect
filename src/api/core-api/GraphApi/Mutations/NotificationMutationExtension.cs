@@ -238,14 +238,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (isTrainee || isPrincipal || isNonPractitioner)
                 {
-                    if (input.ProvinceId != "Unknown" && input.ProvinceId != "" && input.WardName == "")
+                    if (input.ProvinceId != "" && input.WardName == "")
                     {
                         messageUserIds.AddRange(practitioners
                             .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
-                    else if (input.ProvinceId == "Unknown" && input.ProvinceId == "" && input.WardName != "")
+                    else if (input.ProvinceId == "" && input.WardName != "")
                     {
                         messageUserIds.AddRange(practitioners
                             .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
@@ -262,14 +262,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
                 if (isCoach)
                 {
-                    if (input.ProvinceId != "Unknown" && input.ProvinceId != "" && input.WardName == "")
+                    if (input.ProvinceId != "" && input.WardName == "")
                     {
                         messageUserIds.AddRange(coaches
                             .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
-                    else if (input.ProvinceId == "Unknown" && input.ProvinceId == "" && input.WardName != "")
+                    else if (input.ProvinceId == "" && input.WardName != "")
                     {
                         messageUserIds.AddRange(coaches
                             .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
