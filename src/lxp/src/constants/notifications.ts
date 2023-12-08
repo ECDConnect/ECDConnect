@@ -13,6 +13,13 @@ export const notificationTagConfig: NotificationTagConfigParams = {
     },
     viewType: 'Both',
   },
+  GetStartedTrainee: {
+    cta: 'GetStartedTrainee',
+    routeConfig: {
+      route: ROUTES.TRAINEE.TRAINEE_ONBOARDING,
+    },
+    viewType: 'Both',
+  },
 };
 
 export const enum MessageStatusConstants {
