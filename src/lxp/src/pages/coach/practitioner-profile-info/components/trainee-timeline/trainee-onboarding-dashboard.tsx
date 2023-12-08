@@ -17,6 +17,7 @@ import { PractitionerDto } from '@ecdlink/core';
 import { OverdueSteps } from './components/overdue-steps/overdue-steps';
 import { OnboardingNotCompleted } from './components/onboarding-not-completed/onboarding-not-completed';
 import { addDays } from 'date-fns';
+import { DateFormats } from '../../../../../constants/Dates';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: (notificationStep: string, options?: any) => void;
@@ -154,12 +155,16 @@ export const OnboardingTraineeDashboard: React.FC<
         ? 'Has not completed onboarding'
         : `${overdueSteps?.length} onboarding steps overdue`,
       titleStyle: 'text-textDark semibold',
-      subTitle:
-        checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0
-          ? `${String(
-              checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date)
-            )} days overdue`
-          : filteredUncompletedSteps?.[0]?.subTitle,
+      subTitle: onboardingIncompleted
+        ? `Due ${addDays(
+            new Date(timeline?.starterLicenseDate),
+            28
+          ).toLocaleString('en-ZA', DateFormats.standardDate)}`
+        : checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0
+        ? `${String(
+            checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date)
+          )} days overdue`
+        : filteredUncompletedSteps?.[0]?.subTitle,
       subTitleStyle: 'text-textMid',
       iconBackgroundColor:
         checkOverdueDate(filteredUncompletedSteps?.[0]?.extraData?.date) > 0

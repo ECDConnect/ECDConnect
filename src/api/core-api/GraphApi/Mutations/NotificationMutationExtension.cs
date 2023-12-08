@@ -167,19 +167,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<bool> SaveBulkMessagesForAdmin(
             [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
-            [Service] RoleManager<ApplicationIdentityRole> roleManager,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] INotificationService notificationService,
             [Service] UserManager<ApplicationUser> userManager,
             IGenericRepositoryFactory repoFactory,
             MessageLogModel input)
         {
-            var tenantId = TenantExecutionContext.Tenant.Id;
             AuthenticationDbContext context = dbContextFactory.CreateDbContext();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: uId);
+            var hcwRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             var messageTemplateRepo = repoFactory.CreateGenericRepository<MessageTemplate>(userContext: uId);
             var messageLogRepo = repoFactory.CreateGenericRepository<MessageLog>(userContext: uId);
 
@@ -188,118 +187,104 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
-            var roles = roleManager.Roles.Where(x => input.RoleIds.Contains(x.Id) && (x.TenantId == null || x.TenantId == tenantId)).ToList();
-            List<string> userIds = (from user in context.Users.Where(x => x.IsActive == true)
-                                    join userRoles in context.UserRoles on user.Id equals userRoles.UserId
-                                    join role in context.Roles.Where(x => input.RoleIds.Contains(x.Id)) on userRoles.RoleId equals role.Id
-                                    select user.Id).ToList();
-
+            List<string> userIds = new List<string>();
+            List<Practitioner> practitioners = new List<Practitioner>();
+            List<Coach> coaches = new List<Coach>();
             List<string> messageUserIds = new List<string>();
+
+            var isTrainee = input.RoleIds.FindIndex(x => x == "trainees") != -1;
+            var isPrincipal = input.RoleIds.FindIndex(x => x == "practitioners_principals") != -1;
+            var isNonPractitioner = input.RoleIds.FindIndex(x => x == "practitioners_non_principals") != -1;
+            var isCoach = input.RoleIds.FindIndex(x => x == "coaches") != -1;
+            var isCHW = input.RoleIds.FindIndex(x => x == "chw") != -1;
+            var isTeamLead = input.RoleIds.FindIndex(x => x == "team_lead") != -1;
+
+            if (isTrainee || isPrincipal || isNonPractitioner)
+            {
+                practitioners = practitionerRepo.GetAll().Where(x => x.IsActive == true).ToList();
+            }
+
+            // SS roles
+            if (isTrainee)
+            {
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsTrainee == true).Select(x => x.UserId).Distinct().ToList());
+            }
+            if (isPrincipal)
+            {
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId).Distinct().ToList());
+            }
+            if (isNonPractitioner)
+            {
+                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId).Distinct().ToList());
+            }
+            if (isCoach)
+            {
+                coaches = coachRepo.GetAll().Where(x => x.IsActive == true).ToList();
+                userIds.AddRange(coaches.Select(x => x.UserId).Distinct().ToList());
+            }
+            // GG roles
+            if (isCHW)
+            {
+                userIds.AddRange(hcwRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId).Distinct().ToList());
+            }
+            if (isTeamLead)
+            {
+                userIds.AddRange(teamLeadRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId).Distinct().ToList());
+            }
 
             // Finding users for criteria
             if (input.ProvinceId != "" || input.WardName != "")
             {
-                var practitionerCount = roles.Where(x => x.Name == Roles.PRACTITIONER).Count();
-                var coachCount = roles.Where(x => x.Name == Roles.COACH).Count();
-                var principalCount = roles.Where(x => x.Name == Roles.PRINCIPAL).Count();
-                var franchisorCount = roles.Where(x => x.Name == Roles.FRANCHISOR).Count();
 
-                if (practitionerCount > 0)
+                if (isTrainee || isPrincipal || isNonPractitioner)
                 {
                     if (input.ProvinceId != "" && input.WardName == "")
                     {
-                        messageUserIds.AddRange(practitionerRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == input.ProvinceId)
+                        messageUserIds.AddRange(practitioners
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else if (input.ProvinceId == "" && input.WardName != "")
                     {
-                        messageUserIds.AddRange(practitionerRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.Ward == input.WardName)
+                        messageUserIds.AddRange(practitioners
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else
                     {
-                        messageUserIds.AddRange(practitionerRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress.Ward == input.WardName)
+                        messageUserIds.AddRange(practitioners
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                 }
-                if (coachCount > 0)
+                if (isCoach)
                 {
                     if (input.ProvinceId != "" && input.WardName == "")
                     {
-                        messageUserIds.AddRange(coachRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == input.ProvinceId)
+                        messageUserIds.AddRange(coaches
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else if (input.ProvinceId == "" && input.WardName != "")
                     {
-                        messageUserIds.AddRange(coachRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.Ward == input.WardName)
+                        messageUserIds.AddRange(coaches
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == input.WardName)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else
                     {
-                        messageUserIds.AddRange(coachRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress.Ward == input.WardName)
+                        messageUserIds.AddRange(coaches
+                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress?.Ward == input.WardName)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                 }
-                if (principalCount > 0)
-                {
-                    if (input.ProvinceId != "" && input.WardName == "")
-                    {
-                        messageUserIds.AddRange(practitionerRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.ProvinceId.ToString() == input.ProvinceId)
-                            .Select(x => x.UserId)
-                            .Distinct().ToList());
-                    }
-                    else if (input.ProvinceId == "" && input.WardName != "")
-                    {
-                        messageUserIds.AddRange(practitionerRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.Ward == input.WardName)
-                            .Select(x => x.UserId)
-                            .Distinct().ToList());
-                    }
-                    else
-                    {
-                        messageUserIds.AddRange(practitionerRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.IsPrincipal == true && x.SiteAddress.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress.Ward == input.WardName)
-                            .Select(x => x.UserId)
-                            .Distinct().ToList());
-                    }
-                }
-                if (franchisorCount > 0)
-                {
-                    if (input.ProvinceId != "" && input.WardName == "")
-                    {
-                        messageUserIds.AddRange(franchisorRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == input.ProvinceId)
-                            .Select(x => x.UserId)
-                            .Distinct().ToList());
-                    }
-                    else if (input.ProvinceId == "" && input.WardName != "")
-                    {
-                        messageUserIds.AddRange(franchisorRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.Ward == input.WardName)
-                            .Select(x => x.UserId)
-                            .Distinct().ToList());
-                    }
-                    else
-                    {
-                        messageUserIds.AddRange(franchisorRepo.GetAll()
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress.ProvinceId.ToString() == input.ProvinceId && x.SiteAddress.Ward == input.WardName)
-                            .Select(x => x.UserId)
-                            .Distinct().ToList());
-                    }
-                }
+                
             } else
             {
                 messageUserIds = userIds;

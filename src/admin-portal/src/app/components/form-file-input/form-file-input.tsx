@@ -238,8 +238,8 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         }}
       >
         {contentUrl && !fileName ? (
-          <div className="bg-uiBg relative">
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
+          <div className="bg-adminPortalBg relative">
+            <div className="bg-adminPortalBg absolute inset-0 z-10 flex flex-col items-center justify-center bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
               <UploadIcon className={classNames(iconBaseStyle, 'text-black')} />
             </div>
             <div className="relative">
@@ -265,7 +265,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           </div>
         ) : (
           <div
-            className="flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
+            className="bg-adminPortalBg flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
             style={
               file
                 ? {

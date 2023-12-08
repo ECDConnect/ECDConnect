@@ -13,6 +13,7 @@ import {
   ActionModal,
 } from '@ecdlink/ui';
 import {
+  add,
   addDays,
   format,
   getDayOfYear,
@@ -134,7 +135,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const practitionerIsOnLeave = useMemo(
     () =>
       isPast(new Date(currentAbsentee?.absentDate as string)) &&
-      !isPast(new Date(currentAbsentee?.absentDateEnd as string)),
+      !isPast(
+        add(new Date(currentAbsentee?.absentDateEnd as string), { days: 1 })
+      ),
     [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
 
@@ -169,11 +172,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
                   )
                 ),
                 'd MMM yyyy'
-              )}. If you believe this is a mistake please reach out to Bulelwa.`,
+              )}. If you believe this is a mistake please reach out to ${
+                currentAbsentee?.loggedByPerson
+              }.`,
             ]}
             actionButtons={[
               {
-                text: `Contact ${coach?.user?.firstName}`,
+                text: `Contact ${currentAbsentee?.loggedByPerson}`,
                 textColour: 'white',
                 colour: 'primary',
                 type: 'filled',

@@ -673,7 +673,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                             <Typography
                               type={'h1'}
                               color="textDark"
-                              text={`${practitioner?.user?.firstName} is on leave`}
+                              text={`Contact ${practitioner?.user?.firstName} to find out if they have returned from leave`}
                               className={'mt-6 ml-4'}
                             />
                             <div className="flex items-center gap-2">
@@ -731,27 +731,33 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                                 className={'mt-4'}
                               />
                             </div>
-                            {isPrincipal && (
-                              <div className="flex justify-center">
-                                <Button
-                                  type="filled"
-                                  color="primary"
-                                  className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                                  onClick={call}
-                                >
-                                  {renderIcon(
-                                    'PencilAltIcon',
-                                    'w-5 h-5 color-white text-white mr-1'
-                                  )}
-                                  <Typography
-                                    type="body"
-                                    className="mr-4"
-                                    color="white"
-                                    text={`Contact ${practitioner?.user?.firstName}`}
-                                  ></Typography>
-                                </Button>
-                              </div>
-                            )}
+                            <div>
+                              <Typography
+                                type={'body'}
+                                color="textMid"
+                                text={`Contact ${practitioner?.user?.firstName} to make sure they have returned.`}
+                                className={'px-4 pt-2'}
+                              />
+                            </div>
+                            <div className="flex justify-center">
+                              <Button
+                                type="filled"
+                                color="primary"
+                                className={'mt-6 mb-6 w-11/12 rounded-2xl'}
+                                onClick={call}
+                              >
+                                {renderIcon(
+                                  'PencilAltIcon',
+                                  'w-5 h-5 color-white text-white mr-1'
+                                )}
+                                <Typography
+                                  type="body"
+                                  className="mr-4"
+                                  color="white"
+                                  text={`Contact ${practitioner?.user?.firstName}`}
+                                ></Typography>
+                              </Button>
+                            </div>
                           </div>
                         </Card>
                       </>

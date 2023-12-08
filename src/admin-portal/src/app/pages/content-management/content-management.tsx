@@ -207,7 +207,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Progress categories & subcategories',
@@ -221,7 +221,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       // {
       //   title: 'Progress subcategories',
@@ -250,7 +250,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       }
     );
   } else {
@@ -268,7 +268,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Small/large group activities',
@@ -284,7 +284,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Stories',
@@ -299,7 +299,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Story Book Parts',
@@ -313,7 +313,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       },
       {
         title: 'Story activities',
@@ -329,7 +329,7 @@ export function ContentManagement() {
           );
           showGroupContentTypes(selectedTypeObject);
         },
-        classNames: 'bg-uiBg',
+        classNames: 'bg-white',
       }
     );
   }
@@ -367,7 +367,7 @@ export function ContentManagement() {
                     }}
                     className={classNames(
                       item.id === selectedTab
-                        ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
+                        ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2  '
                         : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
                       'consent-tabs text-md flex h-14 items-center font-medium'
                     )}
@@ -425,15 +425,15 @@ export function ContentManagement() {
                   style={{ minHeight: '36rem' }}
                 >
                   {specialType === '' && (
-                    <div className="relative w-6/12">
+                    <div className="relative w-6/12 py-8">
                       <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                         {searchValue === '' && (
                           <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
                         )}
                       </span>
                       <input
-                        className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                        placeholder="      Search by type..."
+                        className="bg-adminPortalBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                        placeholder="      Search by title, section or content..."
                         onChange={search}
                       />
                     </div>

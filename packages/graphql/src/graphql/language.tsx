@@ -6,6 +6,7 @@ export const GetAllLanguage = gql`
       id
       description
       locale
+      isActive
     }
   }
 `;
@@ -16,6 +17,7 @@ export const GetLanguageById = gql`
       id
       description
       locale
+      isActive
     }
   }
 `;

@@ -28,6 +28,7 @@ import {
 } from '@/store/club/club.actions';
 import { useSnackbar } from '@ecdlink/core';
 import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const AcceptClubLeaderRole: React.FC = () => {
   const [selectedMember, setSelectedMember] = useState<string>();
@@ -41,6 +42,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
 
   const { showMessage } = useSnackbar();
 
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const user = useSelector(userSelectors.getUser);
   const club = useSelector(clubSelectors.getClubForPractitionerSelector);
   const notification = useSelector(
@@ -75,7 +77,22 @@ export const AcceptClubLeaderRole: React.FC = () => {
         value: member.practitionerId,
       })) || [];
 
+  const onBack = useCallback(() => {
+    history.push(
+      ROUTES.PRACTITIONER.COMMUNITY[
+        practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+      ]
+    );
+  }, [history, practitioner?.isNewInClub]);
+
   const onSubmit = async () => {
+    if (!isOnline) {
+      return showMessage({
+        message: 'You are offline. Please check your internet connection.',
+        type: 'error',
+      });
+    }
+
     await appDispatch(
       acceptNewClubLeaderRole({
         clubId: club?.id ?? '',
@@ -120,8 +137,11 @@ export const AcceptClubLeaderRole: React.FC = () => {
     onCallback();
   }, [onCallback]);
 
-  // TODO: Add a rule to redirect to the dashboard if the user has no invitation
-  // TODO: Add an alert if the user is offline and redirect to the previous screen
+  useEffect(() => {
+    if (!notification) {
+      onBack();
+    }
+  }, [notification, onBack]);
 
   return (
     <BannerWrapper
@@ -133,7 +153,7 @@ export const AcceptClubLeaderRole: React.FC = () => {
       subTitle={club?.name}
       color="primary"
       className="flex flex-col p-4 pt-6"
-      onBack={() => history.goBack()}
+      onBack={onBack}
       displayOffline={!isOnline}
     >
       <Typography type="h2" text="Accept the club leader agreement" />

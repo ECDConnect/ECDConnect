@@ -10,6 +10,7 @@ interface UiTableProps {
   searchInput?: any;
   component?: any;
   showSearch?: boolean;
+  showSelect?: boolean;
 }
 
 interface Iprop {

@@ -61,9 +61,14 @@ export const HostFamilyDays: React.FC = () => {
     (item) => item?.name === UserTypeEnum.Coach
   );
 
+  // SUPPRESS DATE RULES
+  /////////////////////////////////////////////////////////
   // Date rules
-  const isEventDeadline = currentMonth <= 9;
-  const isLeagueStarts = currentMonth >= 3;
+  // const isEventDeadline = currentMonth <= 9;
+  // const isLeagueStarts = currentMonth >= 3;
+  const isEventDeadline = true;
+  const isLeagueStarts = true;
+  /////////////////////////////////////////////////////////
 
   const isClubInALeague = !!club?.league;
 

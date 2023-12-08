@@ -101,8 +101,6 @@ export const ClubTab: React.FC = () => {
         ?.documentStatus?.toLocaleLowerCase() !== 'not completed'
     : false;
 
-  // The league starts from 1 April
-  const isLeagueStarts = currentMonth >= 3;
   const isClubInALeague = !!club?.league;
   const totalMembers = club?.clubMembers?.length ?? 0;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
@@ -455,13 +453,7 @@ export const ClubTab: React.FC = () => {
       );
     }
 
-    return (
-      <Alert
-        className="my-5"
-        type="info"
-        title="This club is not in a league."
-      />
-    );
+    return <></>;
   }, [
     isClubInALeague,
     isToShowPointsScreen,
@@ -522,9 +514,9 @@ export const ClubTab: React.FC = () => {
           </div>
           {leaderAlert}
           {renderLeagueContent}
-          {!!coach && isLeagueStarts && isClubInALeague && (
+          {!!coach && (
             <>
-              <Typography className="mb-2" type="h3" text="Coach" />
+              <Typography className="my-2" type="h3" text="Coach" />
               <div>
                 <StackedList
                   isFullHeight={false}
@@ -546,7 +538,7 @@ export const ClubTab: React.FC = () => {
               </div>
             </>
           )}
-          {!!club?.clubSupport?.userId && isLeagueStarts && isClubInALeague && (
+          {!!club?.clubSupport?.userId && (
             <div>
               <div className="mb-2 mt-6 flex items-center justify-between">
                 <Typography type="h3" text="Club support role" />
@@ -579,11 +571,7 @@ export const ClubTab: React.FC = () => {
             </div>
           )}
           {renderActivitiesContent}
-          <div
-            className={`mt-auto flex flex-col pt-4 ${
-              isLeader || isSupportRole || isLeaderRequest ? 'pb-4' : ''
-            }`}
-          >
+          <div className={`mt-auto flex flex-col py-4`}>
             {(isLeader || isSupportRole) && (
               <Button
                 icon="PlusCircleIcon"

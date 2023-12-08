@@ -94,7 +94,6 @@ export const Club: React.FC = () => {
   const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3; // TODO
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
-  // TODO: check this rule
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
 
   const onOffline = useCallback(() => {
@@ -358,7 +357,7 @@ export const Club: React.FC = () => {
     }
 
     // if a new club leader was assigned
-    if (!currentLeader && isLeaderRequestSent) {
+    if (!currentLeader && !hasLeader && isLeaderRequestSent) {
       items.push({
         showIcon: true,
         menuIcon: 'ExclamationCircleIcon',
@@ -446,6 +445,7 @@ export const Club: React.FC = () => {
       </div>
     );
   }, [
+    hasLeader,
     club?.issuesTasks,
     currentLeader,
     nextLeader,

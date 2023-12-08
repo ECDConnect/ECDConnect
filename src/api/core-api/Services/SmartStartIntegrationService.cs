@@ -45,9 +45,15 @@ using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.SmartStart.Services;
 using Microsoft.Extensions.Logging;
+using EcdLink.Api.CoreApi.GraphApi.Mutations;
+using Microsoft.AspNetCore.Http;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using ECDLink.Security.Managers;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi.Services;
-public class SmartStartIntegrationService : IIntegrationService
+public partial class SmartStartIntegrationService : IIntegrationService
 {
     private readonly IGenericRepositoryFactory _repositoryFactory;
     private readonly ISystemSetting<IntegrationDelayOptions> _integrationDelay;
@@ -90,6 +96,7 @@ public class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<License, Guid> _licenseRepo;
     private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
 
+    private IAttendancePdfService _attendancePdfService;
     IHolidayService<Holiday> _holidayService;
     private IntegrationLogManager _logManager;
     private IntegrationAPIManager _apiManager;
@@ -118,6 +125,10 @@ public class SmartStartIntegrationService : IIntegrationService
     public static string scheduledTask = "SmartLinkIntegrationDataSync";
     private INotificationService _notificationService;
 
+    private readonly ITokenManager<ApplicationUser, InvitationTokenManager> _invitationManager;
+    private readonly InvitationNotificationManager _notificationManager;
+    private readonly IHttpContextAccessor _accessor; 
+
     public SmartStartIntegrationService(
         IGenericRepositoryFactory repositoryFactory,
         ISystemSetting<IntegrationDelayOptions> integrationDelay,
@@ -135,7 +146,11 @@ public class SmartStartIntegrationService : IIntegrationService
          [Service] INotificationService notificationService,
          VisitManager visitManager,
          [Service] AttendanceService attendanceService,
-         Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> logger
+         [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+         [Service] InvitationNotificationManager notificationManager,
+         [Service] IHttpContextAccessor accessor,
+         Microsoft.Extensions.Logging.ILogger<SmartStartIntegrationService> logger,
+        IAttendancePdfService attendancePdfService
         )
     {
         _logger = logger;
@@ -152,56 +167,68 @@ public class SmartStartIntegrationService : IIntegrationService
         _apiManager = apiManager;
         _holidayService = holidayService;
         _notificationService = notificationService;
+        _notificationManager = notificationManager;
+        _invitationManager = invitationManager;
+        _accessor = accessor; 
+        _attendancePdfService = attendancePdfService;
 
-        _uId = _hierarchyEngine.GetIntegrationUserId();
-        Enum.TryParse(_options.Value.Mode, out _apiMode);
-        Enum.TryParse(_options.Value.MaskDataMode, out _maskMode);
+        if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
+        if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-        //Generic static repos
-        _mapperRepo = repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
-        _columnmapperRepo = repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
-        _auditRepo = repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
-        _siteAddressRepo = repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
+        if (this.Enabled)
+        {
+            _uId = _hierarchyEngine.GetIntegrationUserId();
 
-        _classroomGenericRepo = repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
-        _classroomGroupGenericRepo = repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
-        _programmeTypeGenericRepo = repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
-        _staticLanguageRepo = repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
-        _staticGenderRepo = repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
-        _staticRaceRepo = repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
-        _practitionerRepo = repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
-        _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
-        _coachGenericRepo = repositoryFactory.CreateRepository<Coach>(userContext: _uId);
-        _franchisorGenericRepo = repositoryFactory.CreateRepository<Franchisor>(userContext: _uId);
-        _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
-        _programmeRepo = repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
-        _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
-        _childGenericRepo = repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
-        _caregiverRepo = repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
-        _staticRelationRepo = repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
-        _staticEducationRepo = repositoryFactory.CreateGenericRepository<Education>(userContext: _uId); ;
-        _staticGrantRepo = repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
-        _staticWorkflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
-        _docRepo = repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
-        _workflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
-        _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
-        _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
-        _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
-        _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
+            //Generic static repos
+            _mapperRepo = repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
+            _columnmapperRepo = repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
+            _auditRepo = repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
+            _siteAddressRepo = repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
 
-        _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
-        _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
+            _classroomGenericRepo = repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
+            _classroomGroupGenericRepo = repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
+            _programmeTypeGenericRepo = repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
+            _staticLanguageRepo = repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
+            _staticGenderRepo = repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
+            _staticRaceRepo = repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
+            _practitionerRepo = repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
+            _practitionerGenericRepo = repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+            _coachGenericRepo = repositoryFactory.CreateRepository<Coach>(userContext: _uId);
+            _franchisorGenericRepo = repositoryFactory.CreateRepository<Franchisor>(userContext: _uId);
+            _traineeRepo = repositoryFactory.CreateGenericRepository<Trainee>(userContext: _uId);
+            _programmeRepo = repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
+            _childRepo = repositoryFactory.CreateRepository<Child>(userContext: _uId);
+            _childGenericRepo = repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+            _caregiverRepo = repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
+            _staticRelationRepo = repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
+            _staticEducationRepo = repositoryFactory.CreateGenericRepository<Education>(userContext: _uId); ;
+            _staticGrantRepo = repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
+            _staticWorkflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _docRepo = repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
+            _workflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
+            _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
+            _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
+            _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
 
-        _attendanceTrackingRepository = attendanceTrackingRepository;
-        _incomeManager = incomeManager;
-        _visitManager = visitManager;
-        _attendanceService = attendanceService;
+            _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
+            _licenseTypeRepo = repositoryFactory.CreateGenericRepository<LicenseType>(userContext: _uId);
+
+            _attendanceTrackingRepository = attendanceTrackingRepository;
+            _incomeManager = incomeManager;
+            _visitManager = visitManager;
+            _attendanceService = attendanceService;
+        }
     }
+
+    public bool Enabled {  get { return this._apiMode != MappingMode.None; } }
 
     #region Integration Points   
 
     public async Task<bool> IntegrationClubsData()
     {
+        if (!this.Enabled) return true;
+
         //Get only this years data and check if we have the lines in t he tables, insert if not, dont save to entity mapping, we are just gathering dates and using the same GUID that SL has, so we dont  have to create new ones and theirs work fine, would avoid clashes and reusability to avoid extra columns
         _mappedEntities = await this.GetMappedEntities();
         _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
@@ -318,6 +345,8 @@ public class SmartStartIntegrationService : IIntegrationService
     /// <returns></returns>
     public async Task<bool> PullPQAData(string franchiseeId = null)
     {
+        if (!this.Enabled) return true;
+
         await _logManager.IntegrationLog($"PullPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PullPQAData > GetPQAByFranchisee");
         int totalVisitsAdded = 0;
         int totalFollowUpVisitsAdded = 0;
@@ -430,6 +459,8 @@ public class SmartStartIntegrationService : IIntegrationService
     /// <returns></returns>
     public async Task<bool> PullSmartSpaceVisitsData()
     {
+        if (!this.Enabled) return true;
+
         // We currently don't need to create a smart space visit, and we can import the license data when importing the practitioner
         throw new NotImplementedException();
     }
@@ -485,6 +516,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task IntegrationStatementsData()
     {
+        if (!this.Enabled) return;
+
         await _logManager.IntegrationLog($"IntegrationStatementsData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationStatementsData");
 
         int statementsSent = 0;
@@ -672,277 +705,10 @@ public class SmartStartIntegrationService : IIntegrationService
         await _logManager.IntegrationLog($"IntegrationStatementsData Completed at {DateTime.Now}", $"statements sent {statementsSent}", null, LogRelatedType.Log, "IntegrationStatementsData");
     }
 
-    public async Task<bool> IntegrationMonthlyAttendanceData()
-    {
-        await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
-        int attendancesSent = 0;
-        bool isComplete = false;
-        DateTime startPeriod = DateTime.Now.GetStartOfMonth();
-        _mappedEntities = await GetMappedEntities();
-        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= startPeriod)).ToList();
-
-        var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
-        var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("AttendancePDF")).FirstOrDefault();
-
-        //var allRequiredAttendance =
-        //    (
-        //        from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name != "Unsure" && x.IsActive.Equals(true) && x.UserId != null) //do not count the default unsurae classes                    
-        //        join entityData in entityRepo.GetAll().Where(p => p.IsActive.Equals(true) && p.LastAttendanceSubmittedDate <= startPeriod && p.LocalEntity.Equals("Practitioner")) on classroomGroupData.UserId.ToString() equals entityData.UserId
-        //        join learnerData in learnerRepo.GetAll().Where(l => l.StoppedAttendance == null && l.StartedAttendance <= startPeriod && l.IsActive == true) on classroomGroupData.Id equals learnerData.ClassroomGroupId
-        //        select new { classroomGroupData, entityData }
-        //    ).OrderByDescending(y => y.classroomGroupData.InsertedDate).ToList();
-        //foreach (var requiredAttendance in allRequiredAttendance)
-        //{
-        //    var docs = docRepo.GetAll().Where(d => d.UserId.Equals(requiredAttendance.entityData.UserId) && d.DocumentTypeId.Equals(attendancePDF.Id)).ToList();
-        //    //TODO: finish gathering docs and sending to SL
-
-
-        //}
-
-
-        return isComplete;
-    }
-
-    public async Task<bool> IntegrationAttendanceByDueData()
-    {
-        await _logManager.IntegrationLog($"IntegrationAttendanceByDueData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
-        int attendancesSent = 0;
-        bool isComplete = false;
-
-        _mappedEntities = await GetMappedEntities(null, true, true);
-        int trackingDays = 2;
-        string attendanceUrl = Constants.SSIntegrationSettings.SLChildAttendanceRegister + Constants.SSIntegrationSettings.CreateMultiple;
-        var attendancesDueList = _mappedEntities.Where(x => string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSPractitioner) && (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-trackingDays))).ToList();//.Where(x => string.Equals(x.UserId, "3f69013c-07dc-42ab-88ac-01a555488315"))
-
-        DateTime trackingDate = DateTime.Now;
-
-        DateTime trackingWeekDate = trackingDate.AddDays(-trackingDays).StartOfWeek(DayOfWeek.Monday);
-        DateTime followingWeekDate = trackingDate.AddDays((-trackingDays)+7).StartOfWeek(DayOfWeek.Monday);
-
-        string absent = "Absent";
-        string nosession = "No Session";
-        string unknown = "Unknown";
-        string present = "Present";
-        string pholiday = "Public Holiday";
-        var holidays = _holidayService.GetHolidays(trackingWeekDate, followingWeekDate, "en-za").ToList();//get holidays to determine which days are falling on holidays
-        int trackingWeekOfYear = trackingWeekDate.GetWeekOfYear();        
-       
-        foreach (var parent in attendancesDueList)
-        {
-            DateTime nextDay = trackingWeekDate;
-
-            Dictionary<string, bool> meetingDays = new Dictionary<string, bool>();
-            List<AttendanceList> attendances = new List<AttendanceList>();
-            List<Learner> allLearners = new List<Learner>();
-
-            var classroomGroups = _attendanceService.GetUserClassroomGroups(parent.UserId);
-
-            //check if they even have classes, then check if they should be having attendance                    
-            if (classroomGroups.Any())
-            {
-                foreach (var classroomGroup in classroomGroups)
-                {
-                    List<Learner> learners = _attendanceService.GetAllLearnerGroupInstances(classroomGroup.Id);
-                    if (learners.Any())
-                    {
-                        allLearners.AddRange(learners);
-                    } else
-                    {                        
-                        continue;
-                    }
-
-                    var programmeDays = _programmeRepo.GetAll().Where(d => d.ClassroomGroupId.Equals(classroomGroup.Id)).ToList();
-                    while (nextDay < followingWeekDate && (int)nextDay.DayOfWeek < 6) //skip weekends
-                    {
-                        if (programmeDays.Any(x => x.MeetingDay == (int)nextDay.DayOfWeek))
-                        {
-                            meetingDays.Add(nextDay.DayOfWeek.ToString(), true);
-                        }
-                        else
-                        {
-                            meetingDays.Add(nextDay.DayOfWeek.ToString(), false);
-                        }
-
-                        nextDay = nextDay.AddDays(1);
-                    }
-                }
-
-                if (allLearners.Count > 0)
-                {
-                    var weeklyBaseAttendanceList = new Dictionary<string, string>();
-                    foreach (var meetDay in meetingDays)
-                    {
-                        // Group did not meet on this day
-                        if (!meetingDays[meetDay.Key])
-                        {
-                            weeklyBaseAttendanceList.Add(meetDay.Key, nosession);
-                        }
-                        // Check for public holiday
-                        else if (holidays.Any(x => meetDay.Key == x.Day.ToString("dddd")))
-                        {
-                            weeklyBaseAttendanceList.Add(meetDay.Key, pholiday);
-                        }
-                        // Otherwise unknown and we will update with attended/absent
-                        else
-                        {
-                            weeklyBaseAttendanceList.Add(meetDay.Key, unknown);
-                        }
-                    }
-
-                    //start building up AttendanceList objects for each practitioner, and each class and learner, even if theres no attendance for a child, we will still have a list at the ready to send
-                    foreach (var learner in allLearners)
-                    {
-                        //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
-                        string learnerRemoteId = "";
-                        var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId,learner.UserId) && string.Equals(x.LocalEntity, Constants.SSIntegrationSettings.SSChild)).FirstOrDefault();
-                        if (mappedChild != null)
-                        {
-                            learnerRemoteId = mappedChild.RemoteId;
-                        }
-
-                        attendances.Add(new AttendanceList()
-                        {
-                            //ClassroomGroupId = classroomGroup.Id.ToString(),
-                            LearnerRemoteId = learnerRemoteId,
-                            PractitionerUserId = parent.UserId,
-                            PractitionerRemoterId = parent.RemoteId,
-                            LearnerUserId = learner.UserId,
-                            WeeklyAttendance = weeklyBaseAttendanceList.Copy() //set the basic list back to object                        
-                        });
-                    }
-                }
-            }
-
-            if (allLearners.Count > 0)
-            {
-                //now get the actual attendances available and set that back to objkect aswell
-                IEnumerable<Attendance> weeklyAttendance = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, parent.UserId, trackingWeekDate.Year, null, trackingWeekOfYear);
-                if (weeklyAttendance.Any())
-                {
-                    try
-                    {
-                        //get list of children
-                        List<string> children = weeklyAttendance.Select(x => x.UserId).Distinct().ToList();
-                        foreach (var child in children)
-                        {
-                            //map the attendance up with the learner list and populate
-                            var learnerAttendance = attendances.Where(a => a.LearnerUserId == child).FirstOrDefault();
-                            if (learnerAttendance == null || string.IsNullOrWhiteSpace(learnerAttendance.LearnerRemoteId)) //if this child is not in list then continue to next
-                                continue;
-
-                            int daysPresent = 0;
-                            int daysAbsent = 0;
-
-                            var childAttendances = weeklyAttendance.Where(x => string.Equals(x.UserId, child)).OrderBy(x => x.AttendanceDate).ToList();
-
-                            foreach (var attendance in childAttendances)
-                            {
-                                string attendedKey = attendance.AttendanceDate.ToString("dddd");
-                                if (learnerAttendance.WeeklyAttendance.ContainsKey(attendedKey))
-                                {
-                                    learnerAttendance.WeeklyAttendance[attendedKey] = attendance.Attended ? present : absent;
-                                    if (attendance.Attended)
-                                    {
-                                        daysPresent++;
-                                        learnerAttendance.WeeklyAttendance[attendedKey] = present;
-                                    }
-                                    else
-                                    {
-                                        daysAbsent++;
-                                        learnerAttendance.WeeklyAttendance[attendedKey] = absent;
-                                    }
-                                }
-                            }
-                            learnerAttendance.daysAbsent = daysAbsent;
-                            learnerAttendance.daysPresent = daysPresent;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        await _logManager.IntegrationLog("WeeklyAttendance by Child Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
-                    }
-                }
-
-                //now build up the strings to push
-                try
-                {
-                    var jsonAttendanceString = new StringBuilder();
-                    jsonAttendanceString.AppendLine("[");
-
-                    bool validAttendance = false;
-                    foreach (var attendance in attendances)
-                    {
-                        if (!string.IsNullOrWhiteSpace(attendance.LearnerRemoteId))
-                        {                            
-                            int absentDays = attendance.daysPresent == 0 && attendance.daysAbsent == 0 
-                                ? meetingDays.Values.Where(x => x).Count() 
-                                : attendance.daysAbsent;
-
-                            jsonAttendanceString.AppendLine("{");
-                            jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + attendance.daysPresent + ",");
-                            jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + absentDays + ",");
-                            foreach (var item in attendance.WeeklyAttendance)
-                            {
-                                jsonAttendanceString.AppendLine("\"" + item.Key + "\":\"" + item.Value + "\",");
-                            }
-                            jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + attendance.PractitionerRemoterId + "\"},");
-                            jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + attendance.LearnerRemoteId + "\"}");
-                            jsonAttendanceString.AppendLine("},");
-
-                            validAttendance = true;
-                        }
-                    }
-                    jsonAttendanceString.AppendLine("]");
-
-                    if (validAttendance)
-                    {
-                        try
-                        {
-                           //now send to API call <entity type>/Multiple
-                           var apiResponse = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
-                           if (!string.IsNullOrEmpty(apiResponse.ResponseString))
-                           {
-                               var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(apiResponse.ResponseString);
-                               if (returnObj != null)
-                               {
-                                   var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
-                                   isComplete = true;
-                                   //mark mapped parent practitioner of last date attendance was sent
-                                   parent.LastAttendanceSubmittedDate = DateTime.Now;
-                                   _mapperRepo.Update(parent);
-
-                                   attendancesSent++;
-                               }
-                               else //error empty response received
-                               {
-                                   await _logManager.IntegrationLog("Data Push Fail: " + apiResponse.ResponseString, jsonAttendanceString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > GetAPIHandlerResponse");
-                               }
-                           }
-                        }
-                        catch (Exception e)
-                        {
-                           await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAtIntegrationAttendanceByDueDatatendanceData > GetAPIHandlerResponse");
-                        }
-                    }
-                }
-                catch (Exception e)
-                {
-                    await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceByDueData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
-                }
-            }
-        }
-    
-        await _logManager.IntegrationLog("IntegrationAttendanceByDueData", $"Attendances sent {attendancesSent}", null, LogRelatedType.Log, "IntegrationAttendanceByDueData");
-        return isComplete;
-    }
-
-
-    
-
     public async Task<bool> IntegrationUpdates()
     {
+        if (!this.Enabled) return true;
+
         await _logManager.IntegrationLog($"IntegrationUpdates Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationUpdates");
         int historyDays = 2; //TODO: change this to look for last successfull run and do incremental calls to SL only, the overlap is extra data and gets mostly discarded anyways, plus making the payloads bigger, more room for error
         bool returnOK = false;
@@ -1015,6 +781,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task AutoSubmitStatements()
     {
+        if (!this.Enabled) return;
+
         await _logManager.IntegrationLog($"AutoSubmitStatements started at {DateTime.Now}", null, null, LogRelatedType.Log, "AutoSubmitStatements");
 
         try
@@ -1037,6 +805,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByTrainees()
     {
+        if (!this.Enabled) return true;
+
         _mappedEntities = await GetMappedEntities();
         foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList())
         {
@@ -1057,6 +827,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByFranchisees()
     {
+        if (!this.Enabled) return true;
+
         List<SL_Ingestion_User> ids = _dbContext.SL_Ingestion_Users.ToList();
         if (ids.Count > 0)
         {
@@ -1073,6 +845,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null, string coachId = null)
     {
+        if (!this.Enabled) return true;
+
         bool returnOK = false;
         await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
         DateTime startTime = DateTime.Now;
@@ -1264,6 +1038,8 @@ public class SmartStartIntegrationService : IIntegrationService
 
     public async Task<bool> IntegrationByNewCoach(string remoteCoachId)
     {
+        if (!this.Enabled) return true;
+
         _mappedEntities = await GetMappedEntities();
         var mappedCoach = _mappedEntities.Where(c => string.Equals(c.RemoteId, remoteCoachId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).FirstOrDefault();
         if (mappedCoach == null)
@@ -1498,17 +1274,24 @@ public class SmartStartIntegrationService : IIntegrationService
 
                     if (childHierarchy != null)
                     {
-                        //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
-                        childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
-                        //update hierarchy not be 0.466. but 0.1.455.459.
-                        childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
-                        childHierarchy.Hierarchy = childNewHierarchy;
-                        childHierarchy.ParentId = newPractitioner.UserId;
-                        staticHierarchyRepo.Update(childHierarchy);
-                        //uppdate child record Hierarchy
-                        Child updatedChild = childRepo.GetByUserId(child.UserId);
-                        updatedChild.Hierarchy = childNewHierarchy;
-                        childRepo.Update(updatedChild);
+                        if (childHierarchy.NamedTypePath == "System.Child.")
+                        {
+                            //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
+                            childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                            //update hierarchy not be 0.466. but 0.1.455.459.
+                            childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
+                            childHierarchy.Hierarchy = childNewHierarchy;
+                            childHierarchy.ParentId = newPractitioner.UserId;
+                            staticHierarchyRepo.Update(childHierarchy);
+                            //uppdate child record Hierarchy
+                            Child updatedChild = childRepo.GetByUserId(child.UserId);
+                            updatedChild.Hierarchy = childNewHierarchy; // Why do we store a duplicate of the hierarchy on the child entry?
+                            childRepo.Update(updatedChild);
+                        }
+                        else
+                        {
+                            // TODO: Might need to handle scenario of child moving to a different practitioner
+                        }
                     }
 
                     //also align consent - CreatedByUserId must match the practitioner owning child
@@ -1927,6 +1710,10 @@ public class SmartStartIntegrationService : IIntegrationService
                             mapperLine.IsComplete = true;
                             //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                             _mapperRepo.Insert(mapperLine);
+
+                            //send sms to new practitioner
+                            SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
+                            await invite.SendInviteToApplication(_invitationManager, _notificationManager, _userManager, _accessor, userId);
 
                             return newPractitioner;
                         }
@@ -4356,7 +4143,7 @@ public class SmartStartIntegrationService : IIntegrationService
 
     #region Decommisioned Code
 
-    public async Task<bool> IntegrationAttendanceDataDecommissioned()
+    private async Task<bool> IntegrationAttendanceDataDecommissioned()
     {
         await _logManager.IntegrationLog($"IntegrationAttendanceData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationAttendanceData");
         int attendancesSent = 0;

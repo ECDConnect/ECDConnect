@@ -64,9 +64,14 @@ export const LeaveNoOneBehind: React.FC = () => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
 
+  // SUPPRESS DATE RULES
+  /////////////////////////////////////////////////////////
   // Date rules
-  const isDecember = currentMonth === 11;
-  const isLeagueStarts = currentMonth >= 3;
+  // const isDecember = currentMonth === 11;
+  // const isLeagueStarts = currentMonth >= 3;
+  const isDecember = false;
+  const isLeagueStarts = true;
+  /////////////////////////////////////////////////////////
 
   const isClubInALeague = !!club?.league;
   const isToShowPoints = isLeagueStarts && isClubInALeague;
@@ -157,7 +162,7 @@ export const LeaveNoOneBehind: React.FC = () => {
       return (
         <EmptyPage
           image={AlienImage}
-          title="This club has not submitted any family days yet this year!"
+          title="No SmartStarters in this club have a First PQA visit deadline this year"
           subTitle=""
         />
       );

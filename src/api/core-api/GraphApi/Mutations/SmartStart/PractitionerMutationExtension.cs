@@ -108,7 +108,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if ((bool)input.IsTrainee)
                         {
                             var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
-                            var trainee = traineeRepo.GetByUserId(input.UserId);
+                            var trainee = traineeRepo.GetByUserId(practitioner.UserId);
                             if (trainee == null)
                             {
                                 //create Trainee record

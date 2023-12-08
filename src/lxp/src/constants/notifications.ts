@@ -11,6 +11,14 @@ export const notificationTagConfig: NotificationTagConfigParams = {
     routeConfig: {
       route: ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE,
     },
+    viewType: 'Both',
+  },
+  GetStartedTrainee: {
+    cta: 'GetStartedTrainee',
+    routeConfig: {
+      route: ROUTES.TRAINEE.TRAINEE_ONBOARDING,
+    },
+    viewType: 'Both',
   },
 };
 

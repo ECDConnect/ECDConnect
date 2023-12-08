@@ -1,8 +1,18 @@
 import { gql } from '@apollo/client';
 
 export const PersonalRecordsList = gql`
-  query GetAllClientRecords($pagingInput: PagedQueryInput, $search: String) {
-    allClientRecords(pagingInput: $pagingInput, search: $search) {
+  query GetAllClientRecords(
+    $showOnlyTypes: [String]
+    $showOnlyStatus: [String]
+    $pagingInput: PagedQueryInput
+    $search: String
+  ) {
+    allClientRecords(
+      showOnlyTypes: $showOnlyTypes
+      showOnlyStatus: $showOnlyStatus
+      pagingInput: $pagingInput
+      search: $search
+    ) {
       id
       user {
         firstName
@@ -17,6 +27,7 @@ export const PersonalRecordsList = gql`
         surname
         __typename
       }
+      clientStatus
       userId
       reference
       name
