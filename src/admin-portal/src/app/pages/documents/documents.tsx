@@ -13,7 +13,8 @@ import { useUser } from '../../hooks/useUser';
 import DocumentPanel from './components/document-panel/document-panel';
 import { SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
-import { DatePicker, Dropdown } from '@ecdlink/ui';
+import { Dropdown } from '@ecdlink/ui';
+import DatePicker from 'react-datepicker';
 
 export default function Documents() {
   const { hasPermission } = useUser();
@@ -245,7 +246,7 @@ export default function Documents() {
                 onChange={onChange}
                 startDate={startDate}
                 endDate={endDate}
-                // selectsRange={true}
+                selectsRange={true}
                 inline
                 shouldCloseOnSelect={true}
               />
