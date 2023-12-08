@@ -1120,7 +1120,7 @@ namespace EcdLink.Api.CoreApi.Services
             // Populate months for year
             for (int i = 1; i <= today.Month; i++)
             {
-                if (i > 4 && i < 12)
+                if (i > 4 && i <= 12)
                 {
                     yearMonths.Add(new DateTime(today.Year, i, 1));
                 }
