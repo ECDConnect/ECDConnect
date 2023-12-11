@@ -95,7 +95,8 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         item?.question ===
           'Do you own the property where you will run your SmartStart programme?' ||
         item?.question === 'Do you have the Title Deeds for the property?' ||
-        item?.question === 'Do you live at the property?'
+        item?.question === 'Do you live at the property?' ||
+        item?.question === 'Is the property on un-proclaimed land?'
     );
 
   const propertyOwnAnswer = useMemo(() => {
