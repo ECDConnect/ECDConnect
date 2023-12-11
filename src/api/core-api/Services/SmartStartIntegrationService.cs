@@ -334,8 +334,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
         var success = true;
         var mappedPractitioners = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner, true);//await GetMappedEntitiesTestUsers(); //
-        var mappedCoaches = await GetMappedEntities(Constants.SSIntegrationSettings.SSCoach);
-        var coaches = _coachGenericRepo.GetAll().Where(x => mappedCoaches.Select(y => y.UserId).Contains(x.UserId)).ToList();
         var pqaVisit1TypeId = _visitTypeRepo.GetAll().First(x => x.Name == Constants.SSSettings.visitType_pqa_visit_1).Id;
 
         int maxScore = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
@@ -360,7 +358,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
                 var existingVisits = _visitsRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).ToList();
 
-
                 // For any we haven't created, create a new visit
                 var createdVisits = new List<Visit>();
                 var createdRatings = new List<PQARating>();
@@ -372,12 +369,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     }
 
                     // Create visit
-                    var mappedCoach = mappedCoaches.FirstOrDefault(x => x.RemoteId == slPQA.Coach.Guid);
                     var visit = new Visit()
                     {
                         Id = Guid.Parse(slPQA.Guid),
                         ActualVisitDate = slPQA.DateOfVisit,
-                        CoachId = mappedCoach != null ? coaches.FirstOrDefault(x => x.UserId == mappedCoach.UserId)?.Id : null, // Coach might not be mapped yet
                         HasAnswerData = false,
                         VisitTypeId = pqaVisit1TypeId,
                         TenantId = _tenantId,
@@ -385,6 +380,9 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         DueDate = slPQA.DateOfVisit,
                         PlannedVisitDate = slPQA.DateOfVisit,
                         PractitionerId = practitionerId,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = _uId,
                         Risk = Constants.GGSettings.normal_risk, // GG only field, but non nullable in the database
                     };
 
@@ -397,7 +395,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         OverallRatingStars = GetNumberOfStarsForPQA(slPQA.TotalScore, slPQA.StatusOutcome),
                         OverallScore = slPQA.TotalScore,
                         VisitName = Constants.SSSettings.visitType_pqa_visit_1,
-                        TenantId = _tenantId
+                        TenantId = _tenantId,
+                        InsertedDate = DateTime.Now,
+                        UpdatedDate = DateTime.Now,
+                        UpdatedBy = _uId
                     };
 
                     createdRatings.Add(pqaRating);

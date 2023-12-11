@@ -261,15 +261,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return visit;
         }
 
-        // This function is here for adding visits 'manually' via postman for a practitioner, but is also called from GetAllPractitionersForCoach
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public bool ValidateDefaultVisitsForPractitioner(
-            [Service] VisitManager visitManager,
-            string userId)
-        {
-            return visitManager.ValidateDefaultVisitsForPractitioner(userId);
-        }
-
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddSelfAssessmentForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
