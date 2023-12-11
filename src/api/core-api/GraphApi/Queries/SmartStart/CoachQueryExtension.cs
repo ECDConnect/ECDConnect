@@ -45,20 +45,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             foreach (var practitioner in practitioners)
             {
-                var coachPractitioner = new CoachPractitioner
+                // validate default visits for smartSpace license
+                visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId, practitioner.Id);
+
+                coachPractitioners.Add(new CoachPractitioner
                 {
                     Id = practitioner.Id,
                     UserId = practitioner.UserId,
-                    ProgrammeType = practitioner.ProgrammeType
-                };
-
-                // let's make sure that the default visits are added when the smartSpace license is available
-                var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(practitioner.UserId);
-                if (isAdded)
-                {
-                    coachPractitioner.timeline = personnelService.GetPractitionerTimeline(practitioner.UserId);
-                }
-                coachPractitioners.Add(coachPractitioner);
+                    ProgrammeType = practitioner.ProgrammeType,
+                    timeline = personnelService.GetPractitionerTimeline(practitioner.UserId)
+                });
             }
 
             return coachPractitioners;
