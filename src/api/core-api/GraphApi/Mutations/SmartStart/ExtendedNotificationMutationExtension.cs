@@ -38,7 +38,7 @@ string templateType, string userId = null, List<TagsReplacements> replacements =
   [Service] INotificationService notificationService, string userId, string programmeName)
         {
             var userToSend = await userManager.FindByIdAsync(userId);
-            return await notificationService.SendNotificationAsync(null, "added-to-programme", DateTime.Now, userToSend, "", MessageStatusConstants.Blue, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName } });
+            return await notificationService.SendNotificationAsync(null, TemplateTypeConstants.AddedToProgramme, DateTime.Now, userToSend, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName } });
         }
         public async Task<bool> SendDemotedAsPrincipalFAAProgrammeNotification(
 [Service] UserManager<ApplicationUser> userManager,
