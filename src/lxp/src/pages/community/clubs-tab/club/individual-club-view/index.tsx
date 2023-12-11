@@ -91,7 +91,7 @@ export const Club: React.FC = () => {
     dueDateNextLeader && dueDateNextLeader >= today;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isClubInALeague = !!club?.league?.id;
-  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3; // TODO
+  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3;
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;

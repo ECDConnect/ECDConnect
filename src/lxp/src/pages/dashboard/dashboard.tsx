@@ -130,7 +130,7 @@ export const Dashboard: React.FC = () => {
     a();
   }, []);
 
-  const isFirstTimeCommunitySection = !coach?.clickedClubTab;
+  const isFirstTimeCommunitySection = coach?.clickedClubTab;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification

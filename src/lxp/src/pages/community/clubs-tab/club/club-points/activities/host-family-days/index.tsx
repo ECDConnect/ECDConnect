@@ -161,7 +161,7 @@ export const HostFamilyDays: React.FC = () => {
       )}
       {!!details?.terms?.length ? (
         <div className="mt-5">
-          {details?.terms?.map((item, index) => (
+          {[...(details?.terms ?? [])].reverse()?.map((item, index) => (
             <>
               {index !== 0 && <Divider dividerType="dashed" className="mb-4" />}
               <AlertCard item={formatTerm(item!)} />
