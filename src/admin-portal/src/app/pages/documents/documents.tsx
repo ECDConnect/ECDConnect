@@ -6,29 +6,50 @@ import {
   WorkflowStatusDto,
 } from '@ecdlink/core';
 import { GetAllWorkflowStatus, PersonalRecordsList } from '@ecdlink/graphql';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ContentLoader } from '../../components/content-loader/content-loader';
 import UiTable from '../../components/ui-table';
 import { useUser } from '../../hooks/useUser';
 import DocumentPanel from './components/document-panel/document-panel';
 import { SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
-import { Dropdown } from '@ecdlink/ui';
+import { Dropdown, SearchDropDownOption } from '@ecdlink/ui';
+
 import DatePicker from 'react-datepicker';
+import SearchDropDown from '../../components/dropdown/search-dropdown/search-dropdown';
+import { format } from 'date-fns';
+
+export const sortByTypeOptions: SearchDropDownOption<string>[] = [
+  'MaternalCaseRecord',
+  'RoadToHealthBook',
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
+
+export const sortByClientStatusOptions: SearchDropDownOption<string>[] = [
+  'Active',
+  'Inactive',
+].map((item) => ({
+  id: item,
+  label: item,
+  value: item,
+}));
 
 export default function Documents() {
   const { hasPermission } = useUser();
   const [searchValue, setSearchValue] = useState('');
   const [showFilter, setShowFilter] = useState(false);
-  const [types, setTypes] = useState([
-    'MaternalCaseRecord',
-    'RoadToHealthBook',
-  ]);
-  const [clientStatusValues, setClientStatusValues] = useState([
-    'Active',
-    'Inactive',
-  ]);
+  const [types, setTypes] = useState<SearchDropDownOption<string>[]>();
+  const [clientStatusValues, setClientStatusValues] =
+    useState<SearchDropDownOption<string>[]>();
   const [filterDateAdded, setFilterDateAdded] = useState(false);
+  const typesMapped = useMemo(() => types?.map((item) => item?.value), [types]);
+  const clientStatusMapped = useMemo(
+    () => clientStatusValues?.map((item) => item?.value),
+    [clientStatusValues]
+  );
 
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
@@ -38,12 +59,23 @@ export default function Documents() {
     setEndDate(end);
   };
 
+  const dateDropdownValue = useMemo(
+    () =>
+      startDate && endDate
+        ? `${format(startDate, 'd MMM yy')} - ${format(endDate, 'd MMM yy')}`
+        : '',
+    [endDate, startDate]
+  );
+
   const { data: workflowStatuses } = useQuery(GetAllWorkflowStatus, {
     fetchPolicy: 'cache-and-network',
   });
   const { data: newData, refetch } = useQuery(PersonalRecordsList, {
     variables: {
-      showOnlyTypes: types,
+      showOnlyTypes:
+        typesMapped?.length > 0
+          ? typesMapped
+          : ['MaternalCaseRecord', 'RoadToHealthBook'],
       order: [{ updatedDate: 'DESC' }],
       pagingInput: {
         filterBy: [
@@ -60,22 +92,10 @@ export default function Documents() {
         ],
       },
       search: searchValue,
-      showOnlyStatus: clientStatusValues,
-      // TODO: Use date filter and pagination:
-      // {
-      // filterBy: [
-      //   {
-      //     fieldName: "insertedDate",
-      //     filterType: "LESS_THAN_OR_EQUAL",
-      //     value: "2023-06-06T00:00:00.000+02:00"
-      //   },
-      // {
-      //   fieldName: "insertedDate",
-      //   filterType: "GREATER_THAN_OR_EQUAL",
-      //   value: "2023-06-04T00:00:00.000+02:00"
-      // }
-      //   ]
-      // }
+      showOnlyStatus:
+        clientStatusMapped?.length > 0
+          ? clientStatusMapped
+          : ['Active', 'Inactive'],
     },
     fetchPolicy: 'cache-and-network',
   });
@@ -137,10 +157,11 @@ export default function Documents() {
   };
 
   const clearFilters = () => {
-    setTypes(['MaternalCaseRecord', 'RoadToHealthBook']);
-    setClientStatusValues(['Active', 'Inactive']);
+    setTypes([]);
+    setClientStatusValues([]);
     setEndDate(null);
     setStartDate(null);
+    setFilterDateAdded(false);
   };
 
   const displayDocument = (document: DocumentDto) => {
@@ -198,45 +219,38 @@ export default function Documents() {
         {showFilter && (
           <div className="my-8 flex flex-row items-center justify-between sm:mt-16">
             <div className="mr-2 flex items-center gap-2">
-              <Dropdown<string[]>
-                fillType="filled"
-                textColor="textMid"
-                fillColor="adminPortalBg"
-                placeholder="Document type"
-                labelColor="textMid"
-                selectedValue={types}
-                list={[
-                  { label: 'RoadToHealthBook', value: ['RoadToHealthBook'] },
-                  {
-                    label: 'MaternalCaseRecord',
-                    value: ['MaternalCaseRecord'],
-                  },
-                ]}
-                onChange={(item) => {
-                  // setStatusFilter(item);
-                  setTypes(item);
+              <SearchDropDown<string>
+                displayMenuOverlay={true}
+                className={'mr-1'}
+                menuItemClassName={
+                  'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                }
+                overlayTopOffset={'120'}
+                options={sortByTypeOptions}
+                selectedOptions={types}
+                onChange={setTypes}
+                placeholder={'Document type'}
+                multiple={true}
+                color={'secondary'}
+                info={{
+                  name: `Document type:`,
                 }}
-                className="w-52"
               />
             </div>
             {!filterDateAdded && (
               <div
-                className="mr-2 flex items-center gap-2"
+                className="min-w mr-2 flex items-center gap-2"
                 onClick={() => setFilterDateAdded(!filterDateAdded)}
               >
                 <Dropdown
                   fillType="filled"
-                  textColor="textMid"
+                  textColor="textLight"
                   fillColor="adminPortalBg"
-                  placeholder="Date added"
+                  placeholder={dateDropdownValue || 'Date added'}
                   labelColor="textMid"
-                  // selectedValue={statusFilter}
                   list={[]}
-                  onChange={(item) => {
-                    // setStatusFilter(item);
-                    // getAllMessageLogsForAdmin();
-                  }}
-                  className="w-48"
+                  onChange={(item) => {}}
+                  className="text-textLight w-56 text-sm"
                 />
               </div>
             )}
@@ -252,22 +266,22 @@ export default function Documents() {
               />
             )}
             <div className="mr-2 flex items-center gap-2">
-              <Dropdown
-                fillType="filled"
-                textColor="textMid"
-                fillColor="adminPortalBg"
-                placeholder="Client status"
-                labelColor="textMid"
-                // selectedValue={statusFilter}
-                list={[
-                  { label: 'Active', value: 'Active' },
-                  { label: 'Inactive', value: 'Inactive' },
-                ]}
-                onChange={(item) => {
-                  setClientStatusValues([item]);
-                  // getAllMessageLogsForAdmin();
+              <SearchDropDown<string>
+                displayMenuOverlay={true}
+                className={'mr-1'}
+                menuItemClassName={
+                  'w-11/12 left-4 h-60 overflow-y-scroll bg-adminPortalBg'
+                }
+                overlayTopOffset={'120'}
+                options={sortByClientStatusOptions}
+                selectedOptions={clientStatusValues}
+                onChange={setClientStatusValues}
+                placeholder={'Client Status'}
+                multiple={true}
+                color={'secondary'}
+                info={{
+                  name: `Client Status:`,
                 }}
-                className="w-48"
               />
             </div>
             <div className="flex items-center gap-2">
