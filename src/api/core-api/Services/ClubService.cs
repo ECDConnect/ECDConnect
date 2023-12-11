@@ -1003,13 +1003,6 @@ namespace EcdLink.Api.CoreApi.Services
                 libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type != Constants.ClubSettings.name_purple).FirstOrDefault();
             }
 
-            // get all member ids so that we can find absentees
-            List<string> allMemberIds = new List<string>();
-            allMemberIds.AddRange(club.ClubMembers.Select(x => x.PractitionerId.ToString()).ToList());
-            allMemberIds.AddRange(club.ClubLeaders.Select(x => x.PractitionerId.ToString()).ToList());
-            allMemberIds.AddRange(club.ClubSupport.Select(x => x.PractitionerId.ToString()).ToList());
-            allMemberIds = allMemberIds.Distinct().ToList();
-
             List<ClubMeeting> allMeetings = _clubMeetingRepo.GetAll().
                 Where(x => x.ClubId == clubId && x.IsActive && x.MeetingDate.HasValue &&
                       x.MeetingDate.Value.Year == year &&
@@ -1038,12 +1031,18 @@ namespace EcdLink.Api.CoreApi.Services
                 activityMeetRegular.PointsColor = MetricsColorEnum.Success.ToString();
             }
 
+            List<string> absentIds = new List<string>();
+            List<string> participantIds = new List<string>();
+            int totalAttended = 0;
+            string meetingAttendanceColor = "";
+            double meetingAttendancePerc = 0.0;
             // set meetings
             foreach (var item in allMeetings)
             {
-                int totalAttended = item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive && x.ClubMeetingId == item.Id).Count();
-                string meetingAttendanceColor = MetricsColorEnum.Error.ToString();
-                double meetingAttendancePerc = allMemberIds.Count == 0.0 ? 0 :((double)totalAttended / (double)allMemberIds.Count) * 100;
+                totalAttended = item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive && x.ClubMeetingId == item.Id).Count();
+                absentIds = item.ClubMeetingRegister.Where(x => x.Attended == false && x.IsActive && x.ClubMeetingId == item.Id).Select(x => x.PractitionerId.ToString()).ToList();
+                meetingAttendanceColor = MetricsColorEnum.Error.ToString();
+                meetingAttendancePerc = totalAttended == 0 ? 0 :((double)absentIds.Count/ (double)totalAttended) * 100;
 
                 if (meetingAttendancePerc >= 80)
                 {
@@ -1052,30 +1051,15 @@ namespace EcdLink.Api.CoreApi.Services
                     meetingAttendanceColor = MetricsColorEnum.Warning.ToString();
                 }
                 meetingParticipants = item.ClubMeetingRegister
-                    .Where(x => x.Attended)
+                    .Where(x => x.Attended == true)
                     .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl})
                     .OrderBy(x => x.FirstName).ToList();
 
-                // get participant ids for absentees list
-                List<string> participantIds = item.ClubMeetingRegister.Select(x => x.PractitionerId.ToString()).ToList();
-                List<string> absentIds = allMemberIds.Except(participantIds).ToList();
-
-                // Build absentees list for meeting
-                absentees.AddRange(club.ClubMembers
-                    .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
+                absentees = item.ClubMeetingRegister
+                    .Where(x => x.Attended == false)
                     .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
-                    .OrderBy(x => x.FirstName).ToList());
-
-                absentees.AddRange(club.ClubLeaders
-                    .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
-                    .OrderBy(x => x.FirstName).ToList());
-
-                absentees.AddRange(club.ClubSupport
-                    .Where(x => absentIds.Contains(x.PractitionerId.ToString()))
-                    .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
-                    .OrderBy(x => x.FirstName).ToList());
-
+                    .OrderBy(x => x.FirstName).ToList();
+                
                 pastMeetings.Add(new ActivityMeetRegularDetail()
                 {
                     MeetingDate = (DateTime)item.MeetingDate,
