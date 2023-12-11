@@ -120,24 +120,24 @@ namespace ECDLink.Core.Services
             var unassignedChildren =
             (
                 from classroomGroupData in classroomGroupRepo.GetAll().Where(x => x.Name == "Unsure")
-                join learnerData in learnerRepo.GetAll() on classroomGroupData.Id equals learnerData.ClassroomGroupId
+                join learnerData in learnerRepo.GetAll() on classroomGroupData.Id equals learnerData.ClassroomGroupId where learnerData.InsertedDate.Date <= learnerData.InsertedDate.Date.AddDays(-7)
                 join childData in childRepo.GetAll() on learnerData.UserId equals childData.UserId
                 join classroomData in classroomRepo.GetAll() on classroomGroupData.ClassroomId equals classroomData.Id
                 join principalData in principalRepo.GetAll().Where(p => (p.IsPrincipal == true || p.IsFundaAppAdmin == true)) on classroomData.UserId equals principalData.UserId
-                select new { classroomData, principalData.User }
+                select new { classroomData, principalData, childData }
             ).OrderByDescending(y => y.classroomData.InsertedDate).ToList();
 
             foreach (var child in unassignedChildren)
             {
-                if (child.User != null)
+                if (child.childData.User != null)
                 {
                     List<TagsReplacements> replacements = new List<TagsReplacements>();
                     replacements.Add(new TagsReplacements()
                     {
                         FindValue = "ChildsName",
-                        ReplacementValue = child.User != null ? child.User.FirstName + " " + child.User.Surname : "Child"
+                        ReplacementValue = child.childData.User != null ? child.childData.User.FirstName + " " + child.childData.User.Surname : "Child"
                     });
-                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now, child.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.ChildNotAssignedToClass, DateTime.Now, child.principalData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
                 }
             }
         }
