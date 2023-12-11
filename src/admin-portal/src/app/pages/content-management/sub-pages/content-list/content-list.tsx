@@ -187,8 +187,6 @@ export default function ContentList({
     });
   };
 
-  console.log({ tableData });
-
   const viewSelectedRow = (item?: any) => {
     const model: ContentManagementView = {
       content: item,
