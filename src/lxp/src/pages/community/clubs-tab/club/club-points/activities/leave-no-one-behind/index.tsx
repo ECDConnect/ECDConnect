@@ -162,7 +162,9 @@ export const LeaveNoOneBehind: React.FC = () => {
       return (
         <EmptyPage
           image={AlienImage}
-          title="No SmartStarters in this club have a re-accreditation visit deadline this year"
+          title={`No SmartStarters in this club have a ${
+            isCoach ? 'First PQA/re-accreditation' : 're-accreditation'
+          }  visit deadline this year`}
           subTitle=""
         />
       );
@@ -184,7 +186,7 @@ export const LeaveNoOneBehind: React.FC = () => {
                 <p className="text-18 text-textDark mb-3 font-semibold">
                   SmartStarters with{' '}
                   {item.includes('coming') ? (
-                    'PQAs coming up later this year'
+                    'PQAs/re-accreditations coming up later this year'
                   ) : (
                     <>
                       <span className={`text-${color}`}>{item}</span> PQA
@@ -294,12 +296,12 @@ export const LeaveNoOneBehind: React.FC = () => {
         imageUrl={inclusiveIcon}
         title={formatStringWithFirstLetterCapitalized(activityId)}
       />
-      {isToShowPoints && (
+      {isToShowPoints && hasItems && (
         <ScoreCard
           className="my-5"
           mainText={String(details?.points ?? 0)}
           hint="points"
-          currentPoints={details?.points || 8}
+          currentPoints={details?.points || 2}
           maxPoints={pointsConfig.max}
           barBgColour="uiLight"
           barColour={getScoreBarColor(

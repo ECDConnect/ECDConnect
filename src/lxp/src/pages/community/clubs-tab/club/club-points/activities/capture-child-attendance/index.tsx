@@ -18,6 +18,8 @@ import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { ClubActivitiesPointsPerLeague } from '@/constants/club';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
 import { addMonths, format } from 'date-fns';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ClubActions } from '@/store/club/club.actions';
 
 export const CaptureChildAttendance: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -33,6 +35,11 @@ export const CaptureChildAttendance: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const { isOnline } = useOnlineStatus();
+
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_ACTIVITY_CHILD_ATTENDANCE_DETAILS
+  );
 
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
@@ -66,6 +73,7 @@ export const CaptureChildAttendance: React.FC = () => {
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       showBackground={false}
       className="flex flex-col p-4 pt-6"
       size="small"

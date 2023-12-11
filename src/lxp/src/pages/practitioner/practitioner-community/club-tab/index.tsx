@@ -112,6 +112,7 @@ export const ClubTab: React.FC = () => {
   );
   const isSupportRole = club?.clubSupport?.userId === user?.id;
   const isToShowPointsScreen = shouldShowPoints();
+  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3;
 
   // From EC-1515
   const onAddMeetingOrEvent = () => {
@@ -318,7 +319,7 @@ export const ClubTab: React.FC = () => {
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
             className="absolute z-0 h-auto w-auto"
-            fill={`var(--${true ? 'successMain' : 'secondary'})`}
+            fill={`var(--${isTop25Percent ? 'successMain' : 'secondary'})`}
           />
           <Typography
             className="relative z-10"
@@ -328,9 +329,9 @@ export const ClubTab: React.FC = () => {
           />
         </div>
       ),
-      backgroundColor: true ? 'successBg' : 'infoBb',
+      backgroundColor: isTop25Percent ? 'successBg' : 'infoBb',
     }),
-    [club?.league?.name, club?.leagueRanking]
+    [club?.league?.name, club?.leagueRanking, isTop25Percent]
   );
 
   const activities: MenuListDataItem[] = [
