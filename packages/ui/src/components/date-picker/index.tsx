@@ -4,9 +4,14 @@ import { renderIcon } from '../../utils';
 
 interface DatePickerProps extends ReactDatePickerProps {
   label?: string;
+  hideCalendarIcon?: boolean;
 }
 
-export const DatePicker: React.FC<DatePickerProps> = ({ label, ...props }) => {
+export const DatePicker: React.FC<DatePickerProps> = ({
+  label,
+  hideCalendarIcon,
+  ...props
+}) => {
   return (
     <>
       {label && (
@@ -18,10 +23,11 @@ export const DatePicker: React.FC<DatePickerProps> = ({ label, ...props }) => {
           wrapperClassName="w-full"
           {...props}
         />
-        {renderIcon(
-          'CalendarIcon',
-          'absolute z-0 text-primary top-3 right-4 w-6 h-6'
-        )}
+        {!hideCalendarIcon &&
+          renderIcon(
+            'CalendarIcon',
+            'absolute z-0 text-primary top-3 right-4 w-6 h-6'
+          )}
       </div>
     </>
   );
