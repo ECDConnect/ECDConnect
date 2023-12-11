@@ -162,7 +162,7 @@ export const LeaveNoOneBehind: React.FC = () => {
       return (
         <EmptyPage
           image={AlienImage}
-          title="No SmartStarters in this club have a First PQA visit deadline this year"
+          title="No SmartStarters in this club have a re-accreditation visit deadline this year"
           subTitle=""
         />
       );

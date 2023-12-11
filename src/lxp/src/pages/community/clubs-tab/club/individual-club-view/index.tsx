@@ -337,7 +337,8 @@ export const Club: React.FC = () => {
     if (
       itemsFromBackend?.some((item) =>
         item?.secondaryText?.includes(IssuesTasks.noClubLeader)
-      )
+      ) &&
+      !isLeaderRequestSent
     ) {
       items.push({
         showIcon: true,
@@ -366,6 +367,7 @@ export const Club: React.FC = () => {
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'errorMain',
+        iconColor: 'white',
         backgroundColor: 'errorBg',
         onActionClick: () =>
           history.push(
@@ -387,6 +389,7 @@ export const Club: React.FC = () => {
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'errorMain',
+        iconColor: 'white',
         backgroundColor: 'errorBg',
         onActionClick: () =>
           onOnlineNavigation(
@@ -405,6 +408,7 @@ export const Club: React.FC = () => {
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'errorMain',
+        iconColor: 'white',
         backgroundColor: 'errorBg',
         onActionClick: () =>
           onOnlineNavigation(
@@ -423,6 +427,7 @@ export const Club: React.FC = () => {
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'alertMain',
+        iconColor: 'white',
         backgroundColor: 'alertBg',
         onActionClick: () =>
           onOnlineNavigation(

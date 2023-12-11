@@ -3,39 +3,39 @@ import {
   AlertType,
   BannerWrapper,
   Button,
-  Colours,
   EmptyPage,
   ScoreCard,
   Typography,
 } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
-import { clubActions, clubSelectors } from '@/store/club';
+import { clubSelectors } from '@/store/club';
 import { ClubsRouteState } from '../../../../index.types';
 import ROUTES from '@/routes/routes';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { AlertCard, Item } from '../0-components/alert-card';
 import { Header } from '../0-components/header';
-import {
-  formatStringWithFirstLetterCapitalized,
-  useSnackbar,
-} from '@ecdlink/core';
+import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
-import { Fragment, useCallback, useEffect } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { useAppDispatch } from '@/store';
 import {
   ClubActions,
   getActivityChildProgressDetails,
-  addCaregiverReportBackMeeting,
 } from '@/store/club/club.actions';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { ActivityChildProgressDetailDto } from '@/models/club/club.dto';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { CaregiverMeeting } from '../0-components/caregiver-meeting';
+import { ClubActivitiesPointsPerLeague } from '@/constants/club';
+import PositiveEmoticon from '@/assets/positive-bonus-emoticon.png';
+import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
 
 export const CompleteChildProgressReports: React.FC = () => {
+  const [isLogCaregiverMeeting, setIsLogCaregiverMeeting] = useState(false);
+
   const appDispatch = useAppDispatch();
-  const { showMessage } = useSnackbar();
 
   const { isOnline } = useOnlineStatus();
 
@@ -80,27 +80,20 @@ export const CompleteChildProgressReports: React.FC = () => {
 
   const activityId = 'complete-child-progress-reports';
 
-  const onSubmitCaregiverReportBack = useCallback(() => {
-    const input = { clubId: clubId, userId: user?.id! };
-
-    appDispatch(clubActions.addCaregiverReportBackMeeting(input));
-
-    if (isOnline) {
-      appDispatch(addCaregiverReportBackMeeting(input));
-
-      showMessage({
-        message: `Submitted`,
-        type: 'success',
-      });
-    } else {
-      showMessage({
-        message: `Saved, remember to sync changes next time you are online`,
-        type: 'success',
-      });
-    }
-  }, [appDispatch, clubId, user, isOnline]);
-
   const month = new Date().getMonth();
+
+  const pointsConfig =
+    ClubActivitiesPointsPerLeague.CompleteChildProgressReports.All;
+
+  const isAfterJuly = month > 6;
+
+  const isToShowWellDoneMessage =
+    points?.monthlyRecords?.find((record) =>
+      record.monthName.includes(isAfterJuly ? 'November' : 'June')
+    )?.progressPerc === 100;
+
+  const isCelebratoryMessage = points?.points === pointsConfig.max;
+
   const submitButton =
     !isCoach &&
     !hasLoggedCaregiverMeeting &&
@@ -111,7 +104,7 @@ export const CompleteChildProgressReports: React.FC = () => {
         textColor="white"
         color="primary"
         text="Log caregiver meeting"
-        onClick={onSubmitCaregiverReportBack}
+        onClick={() => setIsLogCaregiverMeeting(true)}
       />
     ) : (
       <></>
@@ -176,13 +169,41 @@ export const CompleteChildProgressReports: React.FC = () => {
         className="mt-5 mb-5"
         mainText={`${points?.points || 0}`}
         hint="points"
-        currentPoints={points?.points || 0}
-        maxPoints={200}
+        currentPoints={points?.points || 8}
+        maxPoints={
+          ClubActivitiesPointsPerLeague.CompleteChildProgressReports.All.max
+        }
         barBgColour="uiLight"
-        barColour={(points?.pointsColor as Colours) || 'errorMain'}
+        barColour={getScoreBarColor(
+          points?.points ?? 0,
+          pointsConfig.green,
+          pointsConfig.amber
+        )}
         bgColour="uiBg"
         textColour="black"
       />
+      {isCelebratoryMessage && !isCoach && (
+        <Alert
+          className="mb-4"
+          type="successLight"
+          title={
+            hasLoggedCaregiverMeeting
+              ? `Great job ${user?.firstName}!`
+              : 'Wow, great job!'
+          }
+          message={
+            hasLoggedCaregiverMeeting
+              ? 'You completed all child progress reports and met with caregivers.'
+              : ''
+          }
+          messageColor="textDark"
+          customIcon={
+            <div className="h-12 w-14">
+              <img src={PositiveEmoticon} alt="positive emoticon" />
+            </div>
+          }
+        />
+      )}
       {!points || !points.monthlyRecords || !points.monthlyRecords.length ? (
         <EmptyPage
           image={AlienImage}
@@ -204,7 +225,7 @@ export const CompleteChildProgressReports: React.FC = () => {
               </Fragment>
             );
           })}
-          {!isCoach && (
+          {!isCoach && !isCelebratoryMessage && (
             <Alert
               type={'info'}
               title={'How can you help your club earn points?'}
@@ -233,6 +254,12 @@ export const CompleteChildProgressReports: React.FC = () => {
           )
         }
       />
+      {isLogCaregiverMeeting && (
+        <CaregiverMeeting
+          isToShowWellDoneMessage={isToShowWellDoneMessage}
+          onClose={() => setIsLogCaregiverMeeting(false)}
+        />
+      )}
     </BannerWrapper>
   );
 };
