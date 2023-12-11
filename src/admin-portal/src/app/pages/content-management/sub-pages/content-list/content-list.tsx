@@ -59,7 +59,7 @@ export default function ContentList({
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
   }
-  console.log({ tableData });
+
   useEffect(() => {
     if (contentType && contentType.fields) {
       const displayFields: ContentTypeFieldDto[] = [];
@@ -133,7 +133,6 @@ export default function ContentList({
       }));
 
       if (selectedTab === 1) {
-        console.log('tab 1');
         let clientProfileData = moreInforItems.filter(
           (item: { type: string }) =>
             item.type === 'client profile' ||
@@ -161,7 +160,7 @@ export default function ContentList({
         const copyItems = contentData[getAllCall].map((item: any) => ({
           ...item,
         }));
-        console.log({ copyItems });
+
         setTableData(copyItems);
       }
     }
