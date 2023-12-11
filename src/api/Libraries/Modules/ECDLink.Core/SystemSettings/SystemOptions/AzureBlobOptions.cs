@@ -6,5 +6,9 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
     public class AzureBlobOptions
     {
         public string BlobStorageConnection { get; set; }
+
+        public string BlobStorageDisplayUrl { get; set; }
+
+        public string BlobStorageActualUrl { get; set; }
     }
 }
