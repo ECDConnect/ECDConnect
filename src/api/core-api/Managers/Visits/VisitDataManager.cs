@@ -321,6 +321,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 if (smartSpaceLicense == null)
                 {
                     _userLicenseManager.AddSmartSpaceLicense(trainee.UserId, DateTime.Now);
+                } else
+                {
+                    _userLicenseManager.UpdateSmartSpaceLicense(trainee.UserId, DateTime.Now);
                 }
 
                 // update the visit record to show attended/completed 

@@ -94,6 +94,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             return null;
         }
 
+        public License UpdateSmartSpaceLicense(string userId, DateTime dateAwarded)
+        {
+            License userLicense = GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            if (userLicense != null)
+            {
+                //license might have previously been declined but is now awarded
+                if (userLicense.DeclinedDate != null && userLicense.DeclinedDate < dateAwarded)
+                {
+                    userLicense.DeclinedDate = null;
+                    userLicense.DeclinedCommentsSteps = null;
+                    userLicense.LicenseDate = dateAwarded;
+                    userLicense.UpdatedDate = DateTime.UtcNow;
+                    return _licenseRepo.Update(userLicense);
+                }
+            }
+
+            return null;
+        }
+
         public License DeclineSmartSpaceLicense(string userId, DateTime dateDeclined, string NextStepsComments)
         {
             LicenseType licenseType = _licenseTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.ss_smart_space_licence).FirstOrDefault();
