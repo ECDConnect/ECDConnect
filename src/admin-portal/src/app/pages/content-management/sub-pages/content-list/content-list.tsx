@@ -59,7 +59,7 @@ export default function ContentList({
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
   }
-
+  console.log({ tableData });
   useEffect(() => {
     if (contentType && contentType.fields) {
       const displayFields: ContentTypeFieldDto[] = [];
@@ -133,9 +133,12 @@ export default function ContentList({
       }));
 
       if (selectedTab === 1) {
+        console.log('tab 1');
         let clientProfileData = moreInforItems.filter(
           (item: { type: string }) =>
-            item.type === 'client profile' || item.type === 'Info Page'
+            item.type === 'client profile' ||
+            item.type === 'Info Page' ||
+            item?.type === 'Income Statements'
         );
         setTableData(
           clientProfileData?.length > 0 ? clientProfileData : moreInforItems
