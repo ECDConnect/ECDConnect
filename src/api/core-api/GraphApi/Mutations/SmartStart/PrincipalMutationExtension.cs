@@ -79,8 +79,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     classroomGroupRepo.Update(group);
                                     if (classroom != null) {
                                         classroomIds.Add(classroom.Id);
-                                    }
-                                    programmeName = classroom.Name;
+                                        programmeName = classroom.Name;
+                                    }                                    
                                 }
                             }
                             if (classroomIds != null && classroomIds.Count() > 0)
