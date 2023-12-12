@@ -23,6 +23,13 @@ import ROUTES from '@/routes/routes';
 import { CoachVisitInfo } from './components/coach-visit-info';
 import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
 import { PractitionerDto } from '@ecdlink/core';
+import { useAppDispatch } from '@/store';
+import { notificationTagConfig } from '@/constants/notifications';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@/store/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
@@ -36,13 +43,21 @@ export const OnboardingTraineeDashboard: React.FC<
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const today = format(new Date(), 'EEEE, d LLLL');
-
+  const appDispatch = useAppDispatch();
   const { width } = useWindowSize();
   const [showInfo, setShowInfo] = useState(false);
 
   const displayTutorial = (type?: string) => {
     setShowInfo(true);
   };
+
+  const notification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) =>
+    item?.message?.cta?.includes(
+      notificationTagConfig?.GetStartedTrainee.cta ?? ''
+    )
+  );
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const [showSteps, setShowSteps] = useState(true);
@@ -205,10 +220,18 @@ export const OnboardingTraineeDashboard: React.FC<
                 color="primary"
                 className="mt-4 mb-2 w-full"
                 onClick={() => {
+                  appDispatch(
+                    notificationActions.removeNotification(notification!)
+                  );
+                  appDispatch(
+                    disableBackendNotification({
+                      notificationId: notification?.message?.reference ?? '',
+                    })
+                  );
                   history.push(ROUTES.DASHBOARD, {
                     isFromTraineeFlow: true,
                   });
-                  window.location.reload();
+                  //window.location.reload();
                 }}
               >
                 {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}

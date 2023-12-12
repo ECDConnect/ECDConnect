@@ -91,7 +91,7 @@ export const Club: React.FC = () => {
     dueDateNextLeader && dueDateNextLeader >= today;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isClubInALeague = !!club?.league?.id;
-  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3; // TODO
+  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3;
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
@@ -337,7 +337,8 @@ export const Club: React.FC = () => {
     if (
       itemsFromBackend?.some((item) =>
         item?.secondaryText?.includes(IssuesTasks.noClubLeader)
-      )
+      ) &&
+      !isLeaderRequestSent
     ) {
       items.push({
         showIcon: true,
@@ -366,6 +367,7 @@ export const Club: React.FC = () => {
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'errorMain',
+        iconColor: 'white',
         backgroundColor: 'errorBg',
         onActionClick: () =>
           history.push(
@@ -387,6 +389,7 @@ export const Club: React.FC = () => {
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'errorMain',
+        iconColor: 'white',
         backgroundColor: 'errorBg',
         onActionClick: () =>
           onOnlineNavigation(
@@ -405,6 +408,7 @@ export const Club: React.FC = () => {
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'errorMain',
+        iconColor: 'white',
         backgroundColor: 'errorBg',
         onActionClick: () =>
           onOnlineNavigation(
@@ -423,6 +427,7 @@ export const Club: React.FC = () => {
         subTitleStyle: 'text-textDark',
         titleStyle: 'text-textMid whitespace-normal',
         iconBackgroundColor: 'alertMain',
+        iconColor: 'white',
         backgroundColor: 'alertBg',
         onActionClick: () =>
           onOnlineNavigation(

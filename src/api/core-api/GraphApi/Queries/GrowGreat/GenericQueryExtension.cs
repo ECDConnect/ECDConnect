@@ -104,7 +104,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                docsList = docsList.Where(x => (x.ClientName!= null && x.ClientName.Contains(search)) || (x.CreatedByName != null && x.CreatedByName.Contains(search))).ToList(); 
+                docsList = docsList.Where(x => (x.ClientName!= null && x.ClientName.Contains(search, StringComparison.OrdinalIgnoreCase)) || (x.CreatedByName != null && x.CreatedByName.Contains(search, StringComparison.OrdinalIgnoreCase))).ToList(); 
             }
 
             return docsList;

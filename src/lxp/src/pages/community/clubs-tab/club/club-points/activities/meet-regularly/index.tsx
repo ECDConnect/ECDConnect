@@ -39,6 +39,7 @@ import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emot
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { OfflineAlert } from '@/components/offline-alert';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
+import { ActivityMeetRegularDetail, Maybe } from '@ecdlink/graphql';
 
 export const MeetRegularly: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
@@ -84,6 +85,56 @@ export const MeetRegularly: React.FC = () => {
     !isCoach &&
     details?.points === ClubActivitiesPointsPerLeague.MeetRegularly.All.max;
   const isToShowPoints = isLeagueStarts && isClubInALeague;
+
+  function populateMissingMonths(
+    meetingArray: Maybe<Maybe<ActivityMeetRegularDetail>[]>
+  ) {
+    const monthsToPopulate = [
+      '04',
+      '05',
+      '06',
+      '07',
+      '08',
+      '09',
+      '10',
+      '11',
+      '12',
+    ];
+
+    const mutableMeetingArray = [...(meetingArray ?? [])];
+
+    const year = new Date().getFullYear();
+
+    for (const month of monthsToPopulate) {
+      // Check if a meeting for the current month already exists in the mutableMeetingArray
+      const existingMeeting = mutableMeetingArray?.find((item) => {
+        // Extract the month from the item's meetingDate
+        const itemMonth = item?.meetingDate.slice(5, 7);
+
+        return itemMonth === month;
+      });
+
+      if (!existingMeeting) {
+        const date = `${year}-${month}-10T00:00:00.000Z`;
+
+        mutableMeetingArray?.push({
+          meetingAbsentees: [],
+          meetingAttendanceColor: 'Error',
+          meetingAttendancePerc: 0,
+          meetingDate: date,
+          meetingNotes: '',
+          meetingParticipants: [],
+          points: 0,
+        });
+      }
+    }
+
+    mutableMeetingArray?.sort((a, b) =>
+      a?.meetingDate > b?.meetingDate ? 1 : -1
+    );
+
+    return mutableMeetingArray;
+  }
 
   useEffect(() => {
     if (isOnline) {
@@ -131,30 +182,34 @@ export const MeetRegularly: React.FC = () => {
 
   const pastMeetings: UserAlertListDataItem[] = useMemo(
     () =>
-      details?.pastMeetings?.map((item) => {
-        const { meetingId, monthName } = getPointsActivityDateDetails(
-          item?.meetingDate ?? ''
-        );
+      [...(populateMissingMonths(details?.pastMeetings ?? []) ?? [])]
+        ?.reverse()
+        ?.map((item) => {
+          const { meetingId, monthName } = getPointsActivityDateDetails(
+            item?.meetingDate ?? ''
+          );
 
-        return {
-          title: monthName,
-          subItem: isToShowPoints ? `+ ${item?.points ?? 0}` : '',
-          subTitle: item?.meetingAttendancePerc
-            ? `${Math.round(item?.meetingAttendancePerc)}% attendance`
-            : 'No register submitted',
-          alertSeverity: getAlertSeverity(item?.meetingAttendanceColor ?? ''),
-          titleStyle: 'text-textDark',
-          avatarColor: '',
-          hideAvatar: true,
-          onActionClick: () =>
-            history.push(
-              ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS.replace(
-                ':meetingId',
-                meetingId!
-              ).replace(':clubId', clubId)
-            ),
-        };
-      }) ?? [],
+          return {
+            title: monthName,
+            subItem: isToShowPoints ? `+ ${item?.points ?? 0}` : '',
+            subTitle: item?.meetingAttendancePerc
+              ? `${Math.round(item?.meetingAttendancePerc)}% attendance`
+              : 'No register submitted',
+            alertSeverity: getAlertSeverity(item?.meetingAttendanceColor ?? ''),
+            titleStyle: 'text-textDark',
+            avatarColor: '',
+            hideAvatar: true,
+            ...(!!item?.meetingAttendancePerc && {
+              onActionClick: () =>
+                history.push(
+                  ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS.replace(
+                    ':meetingId',
+                    meetingId!
+                  ).replace(':clubId', clubId)
+                ),
+            }),
+          };
+        }) ?? [],
     [clubId, details?.pastMeetings, history, isToShowPoints]
   );
 
