@@ -227,27 +227,27 @@ namespace ECDLink.Core.Services
             }
         }
 
-        public async Task MonthlyStartupSupportEndReminderAsync()
-        {
-            var adminId = _hierarchyEngine.GetAdminUserId();
-            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
-            var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && (x.IsPrincipal.Equals(true) || x.IsFundaAppAdmin.Equals(true))).ToList();
-            List<TagsReplacements> replacements = new List<TagsReplacements>();
-            //replacements.Add(new TagsReplacements()
-            //{
-            //    FindValue = "EndMonth",
-            //    ReplacementValue = startupsupportEndDate.Month.ToString("ddd")
-            //});
-            //replacements.Add(new TagsReplacements()
-            //{
-            //    FindValue = "EndYear",
-            //    ReplacementValue = startupsupportEndDate.Year.ToString()
-            //});
-            foreach (var pracData in practitioners)
-            {
-                await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.StartupSupportEndingIn2Months, DateTime.Now, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
-            }
-        }
+        //public async Task MonthlyStartupSupportEndReminderAsync()
+        //{
+        //    var adminId = _hierarchyEngine.GetAdminUserId();
+        //    var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: adminId);
+        //    var practitioners = practitionerRepo.GetAll().Where(x => x.IsActive.Equals(true) && (x.IsPrincipal.Equals(true) || x.IsFundaAppAdmin.Equals(true))).ToList();
+        //    List<TagsReplacements> replacements = new List<TagsReplacements>();
+        //    //replacements.Add(new TagsReplacements()
+        //    //{
+        //    //    FindValue = "EndMonth",
+        //    //    ReplacementValue = startupsupportEndDate.Month.ToString("ddd")
+        //    //});
+        //    //replacements.Add(new TagsReplacements()
+        //    //{
+        //    //    FindValue = "EndYear",
+        //    //    ReplacementValue = startupsupportEndDate.Year.ToString()
+        //    //});
+        //    foreach (var pracData in practitioners)
+        //    {
+        //        await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.StartupSupportEndingIn2Months, DateTime.Now, pracData.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+        //    }
+        //}
         public async Task MonthlyPlanningReminderAsync()
         {
             var adminId = _hierarchyEngine.GetAdminUserId();
