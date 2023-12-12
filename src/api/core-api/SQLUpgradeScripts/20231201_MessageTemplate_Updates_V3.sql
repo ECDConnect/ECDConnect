@@ -5,3 +5,7 @@ INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","Upd
 INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering") VALUES
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NULL,'push','marked-onleave','You will be on leave from [[AbsentStartDate]] to [[AbsentEndDate]]. If you believe this is a mistake, please reach out to [[PrincipalName]]','258a15e6-3736-45ea-875c-48d9377de4c8','[[PrincipalName]] has marked you on leave from [[AbsentStartDate]] to [[AbsentEndDate]]','[[ContactPrincipal]]','Contact [[PrincipalName]]',NULL,'amber',16);
 update "MessageTemplate" set "Subject" = 'Registration incomplete for [[ChildsName]]',"Message" = 'If you do not complete the registration form, the profile for [[ChildsName]] will be removed on [[RemovalDate]].',"NotificationColor" = 'red'  where "TemplateType" = 'child-reg-incomplete';	
+update "MessageTemplate" set "TypeCode"  = 15  where "TemplateType" = 'added-to-programme' and  "Protocol" = 'sms';
+UPDATE public."MessageTemplate"
+	SET "TemplateType"='ProgrammeInvitation'
+	WHERE "TemplateType" = 'added-to-programme';
