@@ -60,8 +60,8 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
         public async Task<List<MessageTemplate>> RetrieveTemplate(string template)
-        {
-            return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).ToList();
+        {            
+            return _templateRepo.GetAll().Where(x => string.Equals(x.TemplateType, template) && x.IsActive == true).OrderBy(x => x.Protocol).ToList();
         }
 
         public async Task<bool> NotificationExists(Notification notification)
@@ -156,13 +156,13 @@ namespace EcdLink.Api.CoreApi.Services
 
         private async Task SendSMSAsync(Notification notification, ApplicationUser user,  MessageTemplate template)
         {
+            await CommitNotification(notification, template); //commit first, entities are null after sms has been sent
             //convert str to enum
             TemplateTypeEnum templateType = (TemplateTypeEnum)Enum.Parse(typeof(TemplateTypeEnum), template.TypeCode.ToString());
             var notificationProvider = _notificationProviderFactory.Create(user);
             await notificationProvider
               .SetMessageMapped(templateType, notification.Subject, notification.Message)
               .SendMessageAsync();
-            await CommitNotification(notification, template);
         }
 
         private async Task SendHubMessageAsync(Notification notification, ApplicationUser user, MessageTemplate template)

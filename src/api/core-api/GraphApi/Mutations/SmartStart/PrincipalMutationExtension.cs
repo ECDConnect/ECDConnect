@@ -42,8 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
-            string programmeName = "";
-
+ 
             if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
             {
                 if (practitionerUser != null)
@@ -79,7 +78,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     classroomGroupRepo.Update(group);
                                     if (classroom != null) {
                                         classroomIds.Add(classroom.Id);
-                                        programmeName = classroom.Name;
                                     }                                    
                                 }
                             }
@@ -96,8 +94,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                         userManager.UpdateAsync(user);
 
+                        string programmeName = principalClassRoom != null ? principalClassRoom.Name : "Programme";
                         //send message of invitation
-                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.AddedToProgramme, DateTime.Now, user, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName }  });
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now, user, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName }  });
 
                         return practitioner;
                     }
