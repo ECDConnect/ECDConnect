@@ -1685,16 +1685,19 @@ namespace EcdLink.Api.CoreApi.Services
 
                 // ensure we don't have any duplicate user Ids
                 practitioners = practitioners.Distinct().ToList();
-                var allVisitIds = new List<Guid>();
                 if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple) 
                 {
                     clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.leave_no_one_behind && x.Type == Constants.ClubSettings.name_purple).FirstOrDefault();
                     foreach (var practitionerUserId in practitioners)
                     {
-                        allVisits = _visitManager.GetReAccreditationVisitsForPractitioner(practitionerUserId).Where(x => x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == startDate.Year).ToList();
-                        greenRatings += allVisits.Where(x => x.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
-                        orangeRatings += allVisits.Where(x => x.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
-                        redRatings += allVisits.Where(x => x.PQARating.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
+                        Visit latestVisit = _visitManager.GetReAccreditationVisitsForPractitioner(practitionerUserId)
+                            .Where(x => x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == startDate.Year)
+                            .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
+
+                        greenRatings += (latestVisit.PQARating.OverallRating == MetricsColorEnum.Success.ToString() ? 1 : 0);
+                        orangeRatings += (latestVisit.PQARating.OverallRating == MetricsColorEnum.Warning.ToString() ? 1 : 0);
+                        redRatings += (latestVisit.PQARating.OverallRating == MetricsColorEnum.Error.ToString() ? 1 : 0);
+
                     }
                 } 
                 else 
@@ -1702,10 +1705,13 @@ namespace EcdLink.Api.CoreApi.Services
                     clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.leave_no_one_behind && x.Type != Constants.ClubSettings.name_purple).FirstOrDefault();
                     foreach (var practitionerUserId in practitioners)
                     {
-                        allVisits = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId).Where(x => x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == startDate.Year).ToList();
-                        greenRatings += allVisits.Where(x => x.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString()).Count();
-                        orangeRatings += allVisits.Where(x => x.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString()).Count();
-                        redRatings += allVisits.Where(x => x.PQARating.OverallRatingColor == MetricsColorEnum.Error.ToString()).Count();
+                        Visit latestVisit = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId)
+                            .Where(x => x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == startDate.Year)
+                            .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
+
+                        greenRatings += (latestVisit.PQARating.OverallRating == MetricsColorEnum.Success.ToString() ? 1 : 0);
+                        orangeRatings += (latestVisit.PQARating.OverallRating == MetricsColorEnum.Warning.ToString() ? 1 : 0);
+                        redRatings += (latestVisit.PQARating.OverallRating == MetricsColorEnum.Error.ToString() ? 1 : 0);
                     }
                 }
 
