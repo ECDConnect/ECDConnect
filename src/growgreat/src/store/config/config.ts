@@ -18,6 +18,7 @@ import {
 } from '../analytics/analytics';
 
 import { authPersistConfig, authReducer } from '../auth';
+import { calendarPersistConfig, calendarReducer } from '../calendar/calendar';
 import {
   caregiverPersistConfig,
   caregiverReducer,
@@ -57,6 +58,7 @@ import {
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
   auth: persistReducer(authPersistConfig, authReducer),
+  calendar: persistReducer(calendarPersistConfig, calendarReducer),
   caregivers: persistReducer(caregiverPersistConfig, caregiverReducer),
   contentConsentData: contentConsentReducer,
   healthCareWorker: persistReducer(
