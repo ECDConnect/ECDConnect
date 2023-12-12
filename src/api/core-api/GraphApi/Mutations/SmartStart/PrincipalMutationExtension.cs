@@ -28,6 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     [Service] UserManager<ApplicationUser> userManager,
     [Service] PersonnelService personnelManager,
     IGenericRepositoryFactory repoFactory,
+    [Service] INotificationService notificationService,
     string firstName,
     string lastName,
     string idNumber,
@@ -41,6 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
+            string programmeName = "";
 
             if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
             {
@@ -77,7 +79,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     classroomGroupRepo.Update(group);
                                     if (classroom != null) {
                                         classroomIds.Add(classroom.Id);
-                                    }    
+                                        programmeName = classroom.Name;
+                                    }                                    
                                 }
                             }
                             if (classroomIds != null && classroomIds.Count() > 0)
@@ -92,6 +95,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         user.NickFullName = firstName + " " + lastName;
 
                         userManager.UpdateAsync(user);
+
+                        //send message of invitation
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.AddedToProgramme, DateTime.Now, user, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName }  });
+
                         return practitioner;
                     }
                     else return null;
