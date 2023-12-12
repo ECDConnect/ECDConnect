@@ -31,7 +31,7 @@ public class ClubPointsCalculation : CronJobService
             } else if (DateTime.Now.Month == 11 && DateTime.Now.Day == 30)
             {
                 service.CalculateCompleteChildProgressReports();
-                service.CalculateLeaveNoOneBehind();
+                service.CalculateLeaveNoOneBehind(Guid.Empty);
             }
            
         }
