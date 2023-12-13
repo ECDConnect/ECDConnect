@@ -259,7 +259,9 @@ export const ClubMembers: React.FC = () => {
       className="flex flex-col p-4 pt-6 pb-20"
       size="small"
       title={`${club?.name} club`}
-      onBack={() => history.goBack()}
+      onBack={() =>
+        history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+      }
     >
       <Typography type="h2" text={`${club?.name} club members`} />
       <Typography className="mb-4 mt-6" type="h3" text="Coach" />
