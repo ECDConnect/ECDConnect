@@ -908,9 +908,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
                 timeline.StarterLicenseDate = starterLicense?.LicenseDate;
                 timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
-
-                timeline.SignFranchiseeAgreementDeadlineDate = starterLicense?.LicenseDate.Value.AddDays(7);
-                timeline.SignStartUpSupportAgreementDeadlineDate = starterLicense?.LicenseDate.Value.AddDays(7);
             } else
             {
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_not_received;
@@ -924,6 +921,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
                 timeline.SmartSpaceLicenseColor = MetricsColorEnum.Success.ToString();
+
+                timeline.SignFranchiseeAgreementDeadlineDate = smartSpaceLicense?.LicenseDate.Value.AddDays(7);
+                timeline.SignStartUpSupportAgreementDeadlineDate = smartSpaceLicense?.LicenseDate.Value.AddDays(7);
             }
             else
             {

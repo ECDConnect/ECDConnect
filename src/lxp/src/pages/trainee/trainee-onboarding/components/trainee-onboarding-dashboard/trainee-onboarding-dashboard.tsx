@@ -51,12 +51,18 @@ export const OnboardingTraineeDashboard: React.FC<
     setShowInfo(true);
   };
 
-  const notification = useSelector(
+  const getStartedNotification = useSelector(
     notificationsSelectors.getAllNotifications
   ).find((item) =>
     item?.message?.cta?.includes(
       notificationTagConfig?.GetStartedTrainee.cta ?? ''
     )
+  );
+
+  const startJourneyNotification = useSelector(
+    notificationsSelectors.getAllNotifications
+  ).find((item) =>
+    item?.message?.cta?.includes(notificationTagConfig?.StartJourney.cta ?? '')
   );
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
@@ -220,14 +226,32 @@ export const OnboardingTraineeDashboard: React.FC<
                 color="primary"
                 className="mt-4 mb-2 w-full"
                 onClick={() => {
-                  appDispatch(
-                    notificationActions.removeNotification(notification!)
-                  );
-                  appDispatch(
-                    disableBackendNotification({
-                      notificationId: notification?.message?.reference ?? '',
-                    })
-                  );
+                  if (getStartedNotification) {
+                    appDispatch(
+                      notificationActions.removeNotification(
+                        getStartedNotification
+                      )
+                    );
+                    appDispatch(
+                      disableBackendNotification({
+                        notificationId:
+                          getStartedNotification?.message?.reference ?? '',
+                      })
+                    );
+                  }
+                  if (startJourneyNotification) {
+                    appDispatch(
+                      notificationActions.removeNotification(
+                        startJourneyNotification
+                      )
+                    );
+                    appDispatch(
+                      disableBackendNotification({
+                        notificationId:
+                          startJourneyNotification?.message?.reference ?? '',
+                      })
+                    );
+                  }
                   history.push(ROUTES.DASHBOARD, {
                     isFromTraineeFlow: true,
                   });
