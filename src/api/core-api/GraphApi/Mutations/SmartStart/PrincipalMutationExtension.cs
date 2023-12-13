@@ -130,6 +130,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
+            [Service] INotificationService notificationService,
+            [Service] UserManager<ApplicationUser> userManager,
             string userId, string principalId)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -141,6 +143,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 practitioner.PrincipalHierarchy = null;
                 practitioner.ShareInfo = false;
                 practitionerRepo.Update(practitioner);
+            }
+            //principaluser to send
+            var userToSend = userManager.FindByIdAsync(principalId).Result;
+            if (userToSend != null && practitioner != null && practitioner.User != null)
+            {
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } });
             }
 
             return practitioner;
