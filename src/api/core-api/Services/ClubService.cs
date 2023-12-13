@@ -1148,13 +1148,16 @@ namespace EcdLink.Api.CoreApi.Services
                             //iii) if the image was submitted and the club received 100 points for the item, show ""Image verified"", green;
                             documentStatus = Constants.ClubSettings.document_verified;
                             documentColor = MetricsColorEnum.Success.ToString();
-                        } else if (clubBeCreative.ImageRating == 0)
-                        {
-                            //iv) if the image was uploaded to Funda App but has not been scored yet, show ""Image uploaded, waiting for verification"", blue.
-                            documentStatus = Constants.ClubSettings.document_waiting_verified;
-                            documentColor = MetricsColorEnum.None.ToString();
                         }
                     } 
+
+                    if (clubBeCreative.ImageRating == 0)
+                    {
+                        //iv) if the image was uploaded to Funda App but has not been scored yet, show ""Image uploaded, waiting for verification"", blue.
+                        documentStatus = Constants.ClubSettings.document_waiting_verified;
+                        documentColor = MetricsColorEnum.None.ToString();
+                    }
+
                     activityBeCreative.MonthlyRecords.Add(
                         new ActivityBeCreativeDetail()
                         {
