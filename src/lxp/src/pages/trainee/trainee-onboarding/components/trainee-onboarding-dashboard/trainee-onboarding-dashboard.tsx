@@ -252,9 +252,7 @@ export const OnboardingTraineeDashboard: React.FC<
                       })
                     );
                   }
-                  history.push(ROUTES.DASHBOARD, {
-                    isFromTraineeFlow: true,
-                  });
+                  history.push(ROUTES.PRINCIPAL.SETUP_PROFILE);
                   //window.location.reload();
                 }}
               >
