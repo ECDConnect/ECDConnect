@@ -45,6 +45,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public virtual List<CoachingClub> CoachingClubs { get; set; }
     }
 
+    public class ClubMeetingCoachInfo
+    {
+        public bool HasMissed3MonthsMeetings { get; set; }
+        public string LastMeetingAttended { get; set; }
+    }
+
     public class CoachingClubBase
     {
         public Guid Id { get; set; }
