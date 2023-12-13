@@ -315,7 +315,10 @@ const clubSlice = createSlice({
               ...state.clubsForCoach[clubId],
               points: {
                 ...state.clubsForCoach[clubId]?.points,
-                meetRegularly: action.payload,
+                meetRegularly: {
+                  dataLoaded: new Date().toISOString(),
+                  data: action.payload,
+                },
               },
             },
           };
@@ -324,7 +327,10 @@ const clubSlice = createSlice({
             ...state.clubForPractitioner,
             points: {
               ...state.clubForPractitioner?.points,
-              meetRegularly: action.payload,
+              meetRegularly: {
+                dataLoaded: new Date().toISOString(),
+                data: action.payload,
+              },
             },
           };
         }

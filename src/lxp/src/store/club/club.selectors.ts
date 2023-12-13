@@ -71,9 +71,9 @@ export const getActivityMeetRegularDetailsSelector = (clubId: string) =>
       );
 
       if (isCoach) {
-        return state.clubs.clubsForCoach[clubId].points?.meetRegularly;
+        return state.clubs.clubsForCoach[clubId].points?.meetRegularly?.data;
       } else {
-        return state.clubs.clubForPractitioner?.points?.meetRegularly;
+        return state.clubs.clubForPractitioner?.points?.meetRegularly?.data;
       }
     },
     (meetRegularly) => meetRegularly
