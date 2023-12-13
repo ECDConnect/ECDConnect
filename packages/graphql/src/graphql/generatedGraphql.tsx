@@ -5870,13 +5870,14 @@ export type Mutation = {
   importHealthCareWorkers?: Maybe<UserImportModel>;
   importTeamLeads?: Maybe<UserImportModel>;
   integrationAttendanceByDueData: Scalars['Boolean'];
-  integrationAttendanceData: Scalars['Boolean'];
   integrationByFranchisees: Scalars['Boolean'];
   integrationByMappedCoach: Scalars['Boolean'];
   integrationByNewCoach: Scalars['Boolean'];
   integrationByTrainees: Scalars['Boolean'];
   integrationClubsData: Scalars['Boolean'];
+  integrationMonthlyAttendancePdf: Scalars['Boolean'];
   integrationPQASmartSpaceVisitsData: Scalars['Boolean'];
+  integrationStatementsData: Scalars['Boolean'];
   integrationUpdates: Scalars['Boolean'];
   moveClubMembers: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
@@ -6359,6 +6360,10 @@ export type MutationBulkDeleteUserArgs = {
 
 export type MutationCalculateChildrenRegistrationRemovalArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationCalculateLeaveNoOneBehindArgs = {
+  clubId: Scalars['UUID'];
 };
 
 export type MutationCancelRemovalFromProgrammeArgs = {
@@ -11171,7 +11176,6 @@ export type Query = {
   classroomAttendanceReport?: Maybe<
     Array<Maybe<ClassroomGroupChildAttendanceReportModel>>
   >;
-  classroomAttendanceReportPDFFile?: Maybe<Document>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomNamesForPractitioner?: Maybe<
@@ -13061,13 +13065,6 @@ export type QueryClassroomAttendanceOverviewReportArgs = {
 };
 
 export type QueryClassroomAttendanceReportArgs = {
-  classgroupId: Scalars['UUID'];
-  endDate: Scalars['DateTime'];
-  startDate: Scalars['DateTime'];
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryClassroomAttendanceReportPdfFileArgs = {
   classgroupId: Scalars['UUID'];
   endDate: Scalars['DateTime'];
   startDate: Scalars['DateTime'];
@@ -16667,7 +16664,7 @@ export type VisitVideosInput = {
 
 export type WardModel = {
   __typename?: 'WardModel';
-  provinceId?: Maybe<Scalars['UUID']>;
+  provinceId?: Maybe<Scalars['String']>;
   ward?: Maybe<Scalars['String']>;
 };
 
