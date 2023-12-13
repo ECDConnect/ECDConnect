@@ -14,6 +14,10 @@ const notificationsState = createSlice({
   name: 'notifications',
   initialState,
   reducers: {
+    resetNotificationState: (state) => {
+      state.notifications = initialState.notifications;
+      state.notificationReferences = initialState.notificationReferences;
+    },
     resetFrontendNotificationState: (state) => {
       const backendNotifications = state.notifications.filter(
         (item) => item.message.isFromBackend
