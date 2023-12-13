@@ -58,12 +58,10 @@ export const Club: React.FC = () => {
 
   const history = useHistory();
 
-  const { isLoading: isLoadingClubs } = useThunkFetchCall(
+  const { isLoading } = useThunkFetchCall(
     'clubs',
     ClubActions.GET_CLUBS_FOR_COACH
   );
-
-  const isLoading = isLoadingClubs;
 
   const { clubId } = useParams<ClubsRouteState>();
 
