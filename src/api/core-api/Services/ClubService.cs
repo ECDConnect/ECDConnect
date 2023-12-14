@@ -1121,7 +1121,7 @@ namespace EcdLink.Api.CoreApi.Services
                     MeetingNotes = item.MeetingNotes,
                     MeetingParticipants = meetingParticipants,
                     MeetingAbsentees = absentees,
-                    Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.Year == item.MeetingDate.Value.Year).Select(x => x.Points).Sum()
+                    Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.Year == item.MeetingDate.Value.Year && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).Sum()
                 });
             }
 
