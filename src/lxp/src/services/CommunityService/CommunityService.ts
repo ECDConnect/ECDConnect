@@ -3,11 +3,9 @@ import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
 
 class CommunityService {
-  // _locale: string;
   _accessToken: string;
 
   constructor(accessToken: string) {
-    // this._locale = locale;
     this._accessToken = accessToken;
   }
 

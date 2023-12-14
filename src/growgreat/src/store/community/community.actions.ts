@@ -3,10 +3,6 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
 
-export interface CommunityConnectDataForGGWithLocale {
-  locale: string;
-}
-
 export const CommunityActions = {
   GET_ALL_CONNECT: 'getAllConnect',
   GET_ALL_CONNECT_ITEM: 'getAllConnectItem',
