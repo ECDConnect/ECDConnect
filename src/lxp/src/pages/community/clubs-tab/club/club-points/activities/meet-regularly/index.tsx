@@ -150,7 +150,7 @@ export const MeetRegularly: React.FC = () => {
 
   useEffect(() => {
     if (wasLoading && !isLoading && isRejected) {
-      showMessage(error);
+      showMessage({ message: error, type: 'error' });
     }
   }, [error, isRejected, showMessage, isLoading, wasLoading]);
 
