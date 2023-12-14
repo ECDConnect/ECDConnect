@@ -890,6 +890,7 @@ class ClubService {
                   documentStatus
                   documentStatusColor
                   points
+                  meetingParticipantsPractitionerIds
               }
           }
         }

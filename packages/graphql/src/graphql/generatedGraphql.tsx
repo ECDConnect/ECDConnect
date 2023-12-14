@@ -212,6 +212,7 @@ export type ActivityHostFamilyDaysDetail = {
   documentStatus?: Maybe<Scalars['String']>;
   documentStatusColor?: Maybe<Scalars['String']>;
   eventName?: Maybe<Scalars['String']>;
+  meetingParticipantsPractitionerIds?: Maybe<Array<Scalars['UUID']>>;
   points: Scalars['Int'];
   termName?: Maybe<Scalars['String']>;
   termNr: Scalars['Int'];
@@ -1309,6 +1310,12 @@ export type ChildProgressReportSummaryModel = {
   reportDateCreated?: Maybe<Scalars['String']>;
   reportId: Scalars['UUID'];
   reportPeriod?: Maybe<Scalars['String']>;
+};
+
+export type ChildProgressReportsStatus = {
+  __typename?: 'ChildProgressReportsStatus';
+  completedReports: Scalars['Int'];
+  numberOfChildren: Scalars['Int'];
 };
 
 export type ChildSortInput = {
@@ -11237,6 +11244,7 @@ export type Query = {
     Array<Maybe<ChildProgressReportSummaryModel>>
   >;
   childProgressReports?: Maybe<Array<Maybe<ChildProgressReportDetailedModel>>>;
+  childProgressReportsStatus?: Maybe<ChildProgressReportsStatus>;
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
@@ -13124,6 +13132,10 @@ export type QueryChildProgressReportSummaryArgs = {
 
 export type QueryChildProgressReportsArgs = {
   count: Scalars['Int'];
+};
+
+export type QueryChildProgressReportsStatusArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryChildrenAttendedVsAbsentMetricsArgs = {

@@ -1047,7 +1047,7 @@ namespace EcdLink.Api.CoreApi.Services
                 .Include(x => x.ClubSupport.Where(x => x.IsActive)).ThenInclude(x => x.Practitioner)
                 .FirstOrDefault();
 
-            if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
+            if (club?.League?.LeagueType?.Name == Constants.ClubSettings.name_purple)
             {
                 libraryItem = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type == Constants.ClubSettings.name_purple).FirstOrDefault();
             }
@@ -1296,37 +1296,38 @@ namespace EcdLink.Api.CoreApi.Services
             var documentStatus = "";
             var documentStatusColor = "";
             var termPoints = 0;
-            foreach (var item in clubMeetings)
+            foreach (var meeting in clubMeetings)
             {
-                clubActivityUpload = clubUploads.Where(x => x.Month == item.MeetingDate.Value.Month && x.Year == item.MeetingDate.Value.Year).FirstOrDefault();
+                clubActivityUpload = clubUploads.Where(x => x.Month == meeting.MeetingDate.Value.Month && x.Year == meeting.MeetingDate.Value.Year).FirstOrDefault();
                 documentStatus = clubActivityUpload != null ? "Attendance register uploaded" : "Not completed";
                 documentStatusColor = clubActivityUpload != null ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Error.ToString();
                 termPoints = clubActivityUpload != null ? 100 : 0;
 
-                if (item.MeetingDate >= term1Start && item.MeetingDate <= term1End)
+                if (meeting.MeetingDate >= term1Start && meeting.MeetingDate <= term1End)
                 {
                     term = terms.GetItemByIndex(0);
-                    term.EventName = item.MeetingType.NormalizedName;
-                    term.Description = item.MeetingNotes;
+                    term.EventName = meeting.MeetingType.NormalizedName;
+                    term.Description = meeting.MeetingNotes;
                     term.Points = termPoints;
                     term.DocumentStatus = documentStatus;
                     term.DocumentStatusColor = documentStatusColor;
+                    term.MeetingParticipantsPractitionerIds = meeting.ClubMeetingRegister.Where(x => x.Attended && x.PractitionerId != null).Select(x => x.PractitionerId.Value).ToList();
 
                 } 
-                else if (item.MeetingDate >= term2Start && item.MeetingDate <= term2End)
+                else if (meeting.MeetingDate >= term2Start && meeting.MeetingDate <= term2End)
                 {
                     term = terms.GetItemByIndex(1);
-                    term.EventName = item.MeetingType.NormalizedName;
-                    term.Description = item.MeetingNotes;
+                    term.EventName = meeting.MeetingType.NormalizedName;
+                    term.Description = meeting.MeetingNotes;
                     term.Points = termPoints;
                     term.DocumentStatus = documentStatus;
                     term.DocumentStatusColor = documentStatusColor;
                 }
-                else if (item.MeetingDate >= term3Start && item.MeetingDate <= term3End)
+                else if (meeting.MeetingDate >= term3Start && meeting.MeetingDate <= term3End)
                 {
                     term = terms.GetItemByIndex(2);
-                    term.EventName = item.MeetingType.NormalizedName;
-                    term.Description = item.MeetingNotes;
+                    term.EventName = meeting.MeetingType.NormalizedName;
+                    term.Description = meeting.MeetingNotes;
                     term.Points = termPoints;
                     term.DocumentStatus = documentStatus;
                     term.DocumentStatusColor = documentStatusColor;
