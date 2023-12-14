@@ -20,9 +20,11 @@ using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -58,6 +60,9 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly IGenericRepository<ClubPointsLibrary, Guid> _clubPointsLibraryRepo;
 
         private readonly IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
+
+        private readonly IGenericRepository<ClubMeeting, Guid> _clubMeetingRepo;
+        private readonly IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
 
         private readonly ChildAttendanceReport _childAttendanceReport;
         private readonly MonthlyAttendanceReport _monthlyAttendanceReportService;
@@ -111,6 +116,9 @@ namespace EcdLink.Api.CoreApi.Services
             _childProgressReportRepo = _repositoryFactory.CreateGenericRepository<ChildProgressReport>(userContext: _uId);
 
             _pqaRatingRepo = _repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
+
+            _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _uId);
+            _clubMeetingRegisterRepo = _repositoryFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _uId);
 
             _childAttendanceReport = childAttendanceReport;
             _visitManager = visitManager;
@@ -1917,8 +1925,9 @@ namespace EcdLink.Api.CoreApi.Services
             // TODO: Caregiver meeting points
             return true;
         }
-        public bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today)
+        public bool CalculateMeetRegularly(Guid clubId)
         {
+            DateTime today = new DateTime();
             Club club = _clubRepo.GetById(clubId);
             ClubPointsLibrary clubPointsLibrary = new ClubPointsLibrary();
             if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
@@ -1930,15 +1939,32 @@ namespace EcdLink.Api.CoreApi.Services
                 clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.meet_regularly && x.Type != Constants.ClubSettings.name_purple).FirstOrDefault();
             }
 
-            int totalClubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == today.Year && x.ClubPointsLibraryId == clubPointsLibrary.Id).Select(x => x.Points).Sum();
-            if (clubPointsLibrary.MaxPointsYearly >= (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
+            List<ClubMeeting> allMeetings = _clubMeetingRepo.GetAll().
+               Where(x => x.ClubId == clubId && x.IsActive == true && 
+                     x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting &&
+                     x.MeetingDate.Value.Year == today.Year 
+                )
+               .Include(x => x.ClubMeetingRegister.Where(x => x.IsActive))
+               .ToList();
+
+            int totalAbsent = 0;
+            int totalAttended = 0;
+            double meetingAttendancePerc = 0.0;
+            foreach (var item in allMeetings)
+            {
+                totalAttended += item.ClubMeetingRegister.Where(x => x.Attended && x.IsActive && x.ClubMeetingId == item.Id).Count();
+                totalAbsent += item.ClubMeetingRegister.Where(x => x.Attended == false && x.IsActive && x.ClubMeetingId == item.Id).Select(x => x.PractitionerId.ToString()).Count();
+            }
+            meetingAttendancePerc = Math.Round((totalAttended + totalAbsent) == 0 ? 0 : ((double)totalAttended / (double)(totalAttended + totalAbsent)) * 100, 0);
+            int totalClubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == today.Year && x.ClubPointsLibraryId == clubPointsLibrary.Id && x.IsActive == true).Select(x => x.Points).Sum();
+            if (clubPointsLibrary.MaxPointsYearly >= (clubPointsLibrary.MaxPointsYearly - meetingAttendancePerc))
             {
                 totalClubPoints += clubPointsLibrary.Points;
                 _clubPointsRepo.Insert(new ClubPoints()
                 {
                     Id = Guid.NewGuid(),
                     ClubId = clubId,
-                    UserId = userId,
+                    UserId = _uId,
                     InsertedDate = DateTime.Now,
                     UpdatedDate = DateTime.Now,
                     UpdatedBy = _uId,
@@ -1946,7 +1972,7 @@ namespace EcdLink.Api.CoreApi.Services
                     ClubPointsLibraryId = clubPointsLibrary.Id,
                     Month = today.Month,
                     Year = today.Year,
-                    Points = clubPointsLibrary.Points,
+                    Points = (int)meetingAttendancePerc,
                     PointsYTD = totalClubPoints
                 });
             }

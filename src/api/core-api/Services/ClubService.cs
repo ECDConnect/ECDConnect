@@ -145,7 +145,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 if (clubMeeting.MeetingDate.HasValue && clubMeeting.MeetingDate.Value.Date <= DateTime.Now.Date)
                 {
-                    _pointsEngineService.CalculateMeetRegularly(input.ClubId, _applicationUserId, DateTime.Now);
+                    _pointsEngineService.CalculateMeetRegularly(input.ClubId);
                 }
             }
 
