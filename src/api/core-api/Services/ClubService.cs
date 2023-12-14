@@ -1175,7 +1175,7 @@ namespace EcdLink.Api.CoreApi.Services
             IntegrationAudit documentSubmitted = new IntegrationAudit();
             foreach (DateTime date in yearMonths)
             {
-                clubBeCreative = clubActivities.Where(x => x.ClubId == clubId && x.IsActive && x.Year == date.Year && x.Month == date.Month).FirstOrDefault();
+                clubBeCreative = clubActivities.Where(x => x.Year == date.Year && x.Month == date.Month).FirstOrDefault();
 
                 if (clubBeCreative == null)
                 {
@@ -1196,28 +1196,24 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (club.LeagueId.HasValue)
                     {
-                        documentSubmitted = _integrationAuditRepo.GetAll().Where(x => x.RelatedId == clubBeCreative.Id.ToString() && x.IsActive == true && x.Submitted.HasValue).FirstOrDefault();
-                        if (documentSubmitted != null)
-                        {
-                            if (clubBeCreative.ImageRating < 100)
-                            {
-                                //ii) if the image was submitted but the score was less than 100, show ""Image incomplete"", amber, and the number of points awarded;
-                                documentStatus = Constants.ClubSettings.document_in_complete;
-                                documentColor = MetricsColorEnum.Warning.ToString();
-                            } else if (clubBeCreative.ImageRating >= 100)
-                            {
-                                //iii) if the image was submitted and the club received 100 points for the item, show ""Image verified"", green;
-                                documentStatus = Constants.ClubSettings.document_verified;
-                                documentColor = MetricsColorEnum.Success.ToString();
-                            }
-                        }
-
                         if (clubBeCreative.ImageRating == 0)
                         {
-                            //iv) if the image was uploaded to Funda App but has not been scored yet, show ""Image uploaded, waiting for verification"", blue.
+                            //if the image was uploaded to Funda App but has not been scored yet, show ""Image uploaded, waiting for verification"", blue.
                             documentStatus = Constants.ClubSettings.document_waiting_verified;
                             documentColor = MetricsColorEnum.None.ToString();
+                        } else if (clubBeCreative.ImageRating > 0 && clubBeCreative.ImageRating < 100)
+                        {
+                            //if the image was submitted but the score was less than 100, show ""Image incomplete"", amber, and the number of points awarded;
+                            documentStatus = Constants.ClubSettings.document_in_complete;
+                            documentColor = MetricsColorEnum.Warning.ToString();
                         }
+                        else if (clubBeCreative.ImageRating >= 100)
+                        {
+                            //if the image was submitted and the club received 100 points for the item, show ""Image verified"", green;
+                            documentStatus = Constants.ClubSettings.document_verified;
+                            documentColor = MetricsColorEnum.Success.ToString();
+                        }
+
                     } else
                     {
                         // green(if form in use case 14 was submitted) -"Images added"
