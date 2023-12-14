@@ -1,11 +1,8 @@
-import { CommunitySectionSs, CommunitySectionItemSs } from '@ecdlink/graphql';
+import { Connect, ConnectItem } from '@ecdlink/graphql';
 import { RootState } from '../types';
 
-export const getCommunityConnectDataForSSSelector = (
-  state: RootState
-): CommunitySectionSs[] | undefined => state.community.connectSectionData;
+export const getConnectData = (state: RootState): Connect[] | undefined =>
+  state.community.connect;
 
-export const GetCommunitySectionItemsSSSelector = (
-  state: RootState
-): CommunitySectionItemSs[] | undefined =>
-  state.community.connectSectionItemData;
+export const GetConnectItems = (state: RootState): ConnectItem[] | undefined =>
+  state.community.connectItem;
