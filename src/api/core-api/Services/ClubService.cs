@@ -836,7 +836,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 if (club.LeagueId != null)
                 {
-                    firstInLeague = ValidateClubFirstPositionInLeague(club, today);
+                    firstInLeague = ValidateClubFirstPositionInLeague(club, today); // TODO - This needs to be way more efficient
                     pointsEarned = GetClubEarningsPercForMonth(club, prevMonth);
                 }
 
@@ -1718,7 +1718,13 @@ namespace EcdLink.Api.CoreApi.Services
                     ? Constants.ClubSettings.purple_club_max_points
                     : Constants.ClubSettings.non_purple_club_max_points;
 
-            return new ClubModel(club, coach, pointsTotal, maxPointsTotal, GetClubLeagueRankPosition(club, DateTime.Now));
+            var clubsInLeague = 0;
+            if (club.LeagueId.HasValue)
+            {
+                clubsInLeague = _clubRepo.GetAll().Where(x => x.LeagueId == club.LeagueId).Count();
+            }
+
+            return new ClubModel(club, coach, pointsTotal, maxPointsTotal, GetClubLeagueRankPosition(club, DateTime.Now), clubsInLeague);
         }
 
         public DetailClubModel GetClubById(Guid clubId)
@@ -1757,19 +1763,27 @@ namespace EcdLink.Api.CoreApi.Services
                     ? Constants.ClubSettings.purple_club_max_points
                     : Constants.ClubSettings.non_purple_club_max_points;
 
+            var clubsInLeague = 0;
+            if (club.LeagueId.HasValue)
+            {
+                clubsInLeague = _clubRepo.GetAll().Where(x => x.LeagueId == club.LeagueId).Count();
+            }
+
             return new DetailClubModel(
                 club, 
                 coach,
                 pointsTotal, 
                 maxPointsTotal, 
-                GetClubLeagueRankPosition(club, DateTime.Now), 
+                GetClubLeagueRankPosition(club, DateTime.Now),
+                clubsInLeague,
                 GetTasksForClub(clubId, club.ClubLeaders, club.ClubMembers),
                 GetClubActivities(club, DateTime.Now.Year));
         }
 
-
         public IEnumerable<DetailClubModel> GetClubsForCoach(string coachUserId)
         {
+            var leaguesForCoach = GetLeaguesForCoach(coachUserId);
+
             var clubs = _clubRepo.GetAll()
                 .Where(x => x.UserId == coachUserId && x.IsActive) // Do we need to check the club is active too?
                 //Points
@@ -1805,12 +1819,23 @@ namespace EcdLink.Api.CoreApi.Services
                         ? Constants.ClubSettings.purple_club_max_points
                         : Constants.ClubSettings.non_purple_club_max_points;
 
+                // Rank
+                var rank = 0;
+                var clubsInLeague = 0;
+                if (club.LeagueId != null)
+                {
+                    var league = leaguesForCoach.Where(x => x.Id == club.LeagueId).FirstOrDefault();
+                    rank = league.Clubs.First(x => x.ClubId == club.Id).LeagueRank;
+                    clubsInLeague = league.Clubs.Count();
+                }
+
                 yield return new DetailClubModel(
                     club,
                     coach,
                     pointsTotal,
                     maxPointsTotal,
-                    GetClubLeagueRankPosition(club, DateTime.Now),
+                    rank,
+                    clubsInLeague,
                     GetTasksForClub(club.Id, club.ClubLeaders, club.ClubMembers),
                     club.League != null ? GetClubActivities(club, DateTime.Now.Year) : new List<ClubActivity>());
             }
@@ -1818,10 +1843,17 @@ namespace EcdLink.Api.CoreApi.Services
 
         public IEnumerable<LeagueClubsModel> GetLeaguesForCoach(string coachUserId)
         {
-            var clubsForCoach = _clubRepo.GetAll()
+            var leaguesForCoach = _clubRepo.GetAll()
                 .Where(x => x.UserId == coachUserId && x.LeagueId != null)
+                .Select(x => x.LeagueId.Value)
+                .Distinct()
+                .ToList();
+
+            var clubsForCoach = _clubRepo.GetAll()
+                .Where(x => x.LeagueId.HasValue && leaguesForCoach.Contains(x.LeagueId.Value))
                 .Include(x => x.League)
                 .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
+                .Include(x => x.User)
                 .ToList();
 
             foreach(var league in clubsForCoach.Select(x => x.League).Distinct())
@@ -1871,6 +1903,7 @@ namespace EcdLink.Api.CoreApi.Services
                         ClubId = club.Id,
                         ClubName = club.Name,
                         PointsTotal = pointsTotal,
+                        CoachName = $"{club.User.FirstName} {club.User.Surname}",
                         LeagueRank = 0
                     });
             }
@@ -2143,7 +2176,7 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
 
-private static int CompareClubsByPoints(ClubPointsSummaryModel x, ClubPointsSummaryModel y)
+        private static int CompareClubsByPoints(ClubPointsSummaryModel x, ClubPointsSummaryModel y)
         {
             if (x.PointsTotal == y.PointsTotal)
             {

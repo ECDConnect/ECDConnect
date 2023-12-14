@@ -397,6 +397,7 @@ class ClubService {
               name
               leagueTypeId
               leagueTypeName
+              numberOfClubsInLeague
             }
             clubCoach {
               userId
@@ -471,6 +472,7 @@ class ClubService {
               name
               leagueTypeId
               leagueTypeName
+              numberOfClubsInLeague
             }
             clubCoach {
               userId
@@ -565,6 +567,7 @@ class ClubService {
               name
               leagueTypeId
               leagueTypeName
+              numberOfClubsInLeague
             }
             clubCoach {
               userId
@@ -795,6 +798,7 @@ class ClubService {
               clubName
               leagueRank
               pointsTotal
+              coachName
             }
           }
         }`,

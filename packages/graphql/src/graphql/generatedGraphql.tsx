@@ -2502,6 +2502,7 @@ export type ClubPointsSummaryModel = {
   __typename?: 'ClubPointsSummaryModel';
   clubId: Scalars['UUID'];
   clubName?: Maybe<Scalars['String']>;
+  coachName?: Maybe<Scalars['String']>;
   leagueRank: Scalars['Int'];
   pointsTotal: Scalars['Int'];
 };
@@ -4658,6 +4659,7 @@ export type LeagueModel = {
   leagueTypeId: Scalars['UUID'];
   leagueTypeName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  numberOfClubsInLeague: Scalars['Int'];
 };
 
 export type LeagueSortInput = {
