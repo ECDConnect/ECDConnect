@@ -1138,20 +1138,25 @@ namespace EcdLink.Api.CoreApi.Services
             ActivityBeCreative activityBeCreative = new ActivityBeCreative();
             activityBeCreative.MonthlyRecords = new List<ActivityBeCreativeDetail>();
 
-            int points = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
-                                                        x.Year == today.Year &&
-                                                        x.ClubPointsLibrary.Activity == Constants.ClubSettings.be_creative).Select(x => x.Points).Sum();
+            var club = _clubRepo.GetAll()
+                .Where(x => x.Id == clubId && x.IsActive)
+                .Include(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year && x.ClubPointsLibrary.Activity == Constants.ClubSettings.be_creative))
+                .SingleOrDefault();
 
-            activityBeCreative.Points = points;
-            activityBeCreative.PointsColor = MetricsColorEnum.Error.ToString();
+            if (club.LeagueId.HasValue)
+            {
+                int points = club.ClubPoints.Select(x => x.Points).Sum();
+                activityBeCreative.Points = points;
+                activityBeCreative.PointsColor = MetricsColorEnum.Error.ToString();
             
-            if (activityBeCreative.Points >= Constants.ClubSettings.warning_start_800 && activityBeCreative.Points <= Constants.ClubSettings.warning_end_800)
-            {
-                activityBeCreative.PointsColor = MetricsColorEnum.Warning.ToString();
-            }
-            else if (activityBeCreative.Points >= Constants.ClubSettings.success_start_800 && activityBeCreative.Points <= Constants.ClubSettings.success_end_800)
-            {
-                activityBeCreative.PointsColor = MetricsColorEnum.Success.ToString();
+                if (activityBeCreative.Points >= Constants.ClubSettings.warning_start_800 && activityBeCreative.Points <= Constants.ClubSettings.warning_end_800)
+                {
+                    activityBeCreative.PointsColor = MetricsColorEnum.Warning.ToString();
+                }
+                else if (activityBeCreative.Points >= Constants.ClubSettings.success_start_800 && activityBeCreative.Points <= Constants.ClubSettings.success_end_800)
+                {
+                    activityBeCreative.PointsColor = MetricsColorEnum.Success.ToString();
+                }
             }
 
             // Populate months for year
@@ -1170,11 +1175,11 @@ namespace EcdLink.Api.CoreApi.Services
             IntegrationAudit documentSubmitted = new IntegrationAudit();
             foreach (DateTime date in yearMonths)
             {
-                clubBeCreative = clubActivities.Where(x => x.ClubId == clubId && x.IsActive && x.Year == date.Year && x.Month == date.Month).FirstOrDefault();
+                clubBeCreative = clubActivities.Where(x => x.Year == date.Year && x.Month == date.Month).FirstOrDefault();
 
                 if (clubBeCreative == null)
                 {
-                    //i) if no image was submitted for the month, show red ""Not completed"" with 0 points;
+                    //i) if no image was submitted for the month, show red ""Not completed"" with 0 points - league or no league clubs
                     activityBeCreative.MonthlyRecords.Add(
                         new ActivityBeCreativeDetail()
                         {
@@ -1188,27 +1193,32 @@ namespace EcdLink.Api.CoreApi.Services
                 } 
                 else
                 {
-                    documentSubmitted = _integrationAuditRepo.GetAll().Where(x => x.RelatedId == clubBeCreative.Id.ToString() && x.IsActive == true && x.Submitted.HasValue).FirstOrDefault();
-                    if (documentSubmitted != null)
+
+                    if (club.LeagueId.HasValue)
                     {
-                        if (clubBeCreative.ImageRating < 100)
+                        if (clubBeCreative.ImageRating == 0)
                         {
-                            //ii) if the image was submitted but the score was less than 100, show ""Image incomplete"", amber, and the number of points awarded;
+                            //if the image was uploaded to Funda App but has not been scored yet, show ""Image uploaded, waiting for verification"", blue.
+                            documentStatus = Constants.ClubSettings.document_waiting_verified;
+                            documentColor = MetricsColorEnum.None.ToString();
+                        } else if (clubBeCreative.ImageRating > 0 && clubBeCreative.ImageRating < 100)
+                        {
+                            //if the image was submitted but the score was less than 100, show ""Image incomplete"", amber, and the number of points awarded;
                             documentStatus = Constants.ClubSettings.document_in_complete;
                             documentColor = MetricsColorEnum.Warning.ToString();
-                        } else if (clubBeCreative.ImageRating >= 100)
+                        }
+                        else if (clubBeCreative.ImageRating >= 100)
                         {
-                            //iii) if the image was submitted and the club received 100 points for the item, show ""Image verified"", green;
+                            //if the image was submitted and the club received 100 points for the item, show ""Image verified"", green;
                             documentStatus = Constants.ClubSettings.document_verified;
                             documentColor = MetricsColorEnum.Success.ToString();
                         }
-                    } 
 
-                    if (clubBeCreative.ImageRating == 0)
+                    } else
                     {
-                        //iv) if the image was uploaded to Funda App but has not been scored yet, show ""Image uploaded, waiting for verification"", blue.
-                        documentStatus = Constants.ClubSettings.document_waiting_verified;
-                        documentColor = MetricsColorEnum.None.ToString();
+                        // green(if form in use case 14 was submitted) -"Images added"
+                        documentStatus = Constants.ClubSettings.document_images_add;
+                        documentColor = MetricsColorEnum.Success.ToString();
                     }
 
                     activityBeCreative.MonthlyRecords.Add(
@@ -2067,16 +2077,20 @@ namespace EcdLink.Api.CoreApi.Services
                                                                                         Month = input.DateUploaded.Month,
                                                                                         Year = input.DateUploaded.Year
                                                                                     });
-
-                // Add integration record
-                _integrationAuditRepo.Insert(new IntegrationAudit()
+                Club club = _clubRepo.GetById(input.ClubId);
+                if (club.LeagueId.HasValue)
                 {
-                    ChangeType = "Insert",
-                    Entity = "ClubActivityUpload",
-                    UserId = _applicationUserId,
-                    RelatedId = uploadedRecord.Id.ToString(),
-                    TenantId = TenantExecutionContext.Tenant.Id
-                });
+                    // Add integration record
+                    _integrationAuditRepo.Insert(new IntegrationAudit()
+                    {
+                        ChangeType = "Insert",
+                        Entity = "ClubActivityUpload",
+                        UserId = _applicationUserId,
+                        RelatedId = uploadedRecord.Id.ToString(),
+                        TenantId = TenantExecutionContext.Tenant.Id
+                    });
+
+                }
                 return true;
             }
 

@@ -886,6 +886,7 @@ namespace EcdLink.Api.CoreApi
             public const string document_verified = "Image verified";
             public const string document_in_complete = "Image incomplete";
             public const string document_waiting_verified = "Image uploaded, waiting for verification";
+            public const string document_images_add = "Images added";
 
             public const string not_completed = "Not completed";
 
