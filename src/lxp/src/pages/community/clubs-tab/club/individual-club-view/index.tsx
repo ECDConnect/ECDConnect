@@ -25,7 +25,7 @@ import partnershipIcon from '@/assets/icon/partnership.svg';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { ClubsRouteState } from '../../index.types';
 import { useSelector } from 'react-redux';
-import { clubSelectors } from '@/store/club';
+import { clubSelectors, clubThunkActions } from '@/store/club';
 import {
   ClubActivities,
   LeagueType,
@@ -45,6 +45,8 @@ import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { IssuesAndTasks } from './issues-and-tasks';
 import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
 import { ReactComponent as NeutralEmoticon } from '@/assets/neutral-emoticon.svg';
+import { useAppDispatch } from '@/store';
+import { userSelectors } from '@/store/user';
 
 export function isCurrentPointsAtLeast80PercentOfTotal(
   currentPoints: number,
@@ -70,6 +72,8 @@ export const Club: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
 
+  const user = useSelector(userSelectors.getUser);
+  const leagues = useSelector(clubSelectors.getLeaguesForCoachSelector);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
     clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
@@ -77,8 +81,13 @@ export const Club: React.FC = () => {
   const nextLeader = useSelector(
     clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
+  const clubRankingPercentage = useSelector(
+    clubSelectors.getCoachClubRankingPercentageSelector(clubId)
+  );
 
   const dialog = useDialog();
+
+  const appDispatch = useAppDispatch();
 
   const totalMembers = club?.clubMembers?.length || 0;
   const monthsSinceCurrentLeaderAccepted = differenceInMonths(
@@ -97,8 +106,9 @@ export const Club: React.FC = () => {
     !!dueDateNextLeader && dueDateNextLeader >= todayWithZeroHours;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isClubInALeague = !!club?.league?.id;
-  // TODO: check if club is in top 25% of league
-  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3;
+  const isTop25Percent =
+    (club?.leagueRanking && club?.leagueRanking <= 3) ||
+    (clubRankingPercentage && clubRankingPercentage <= 25);
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
@@ -128,6 +138,25 @@ export const Club: React.FC = () => {
     [history, isOnline, onOffline]
   );
 
+  const onLeagueNavigation = useCallback(() => {
+    if (!leagues?.length && isOnline) {
+      appDispatch(
+        clubThunkActions.getLeaguesForCoach({ coachUserId: user?.id ?? '' })
+      );
+    }
+
+    history.push(
+      ROUTES.COMMUNITY.LEAGUE.ROOT.replace(':leagueId', club?.league?.id ?? '')
+    );
+  }, [
+    appDispatch,
+    club?.league?.id,
+    history,
+    isOnline,
+    leagues?.length,
+    user?.id,
+  ]);
+
   const leader: UserAlertListDataItem = {
     title: `${currentLeader?.firstName ?? ''} ${currentLeader?.surname ?? ''}`,
     titleStyle: 'text-textDark',
@@ -149,8 +178,9 @@ export const Club: React.FC = () => {
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: club?.league?.name ?? '',
+      title: `in ${club?.league?.name} league`,
       titleStyle: 'text-textDark',
+      onActionClick: onLeagueNavigation,
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
@@ -167,7 +197,12 @@ export const Club: React.FC = () => {
       ),
       backgroundColor: isTop25Percent ? 'successBg' : 'infoBb',
     }),
-    [isTop25Percent, club]
+    [
+      club?.league?.name,
+      club?.leagueRanking,
+      isTop25Percent,
+      onLeagueNavigation,
+    ]
   );
 
   const activities: MenuListDataItem[] = [
@@ -464,7 +499,7 @@ export const Club: React.FC = () => {
           />
           {!!totalMembers ? (
             <>
-              {isDecember ? renderEndOfYearMessage : renderLeagueContent}
+              {!isDecember ? renderEndOfYearMessage : renderLeagueContent}
               <Typography className="mb-2" type="h3" text="Club leader" />
               {hasLeader && (
                 <div>

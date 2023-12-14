@@ -81,22 +81,27 @@ export const CompleteChildProgressReports: React.FC = () => {
   const activityId = 'complete-child-progress-reports';
 
   const month = new Date().getMonth();
+  const isAfterJuly = month > 6;
 
   const pointsConfig =
     ClubActivitiesPointsPerLeague.CompleteChildProgressReports.All;
 
-  const isAfterJuly = month > 6;
+  const monthlyRecords = points?.monthlyRecords?.find((record) =>
+    record.monthName.includes(isAfterJuly ? 'November' : 'June')
+  );
 
   const isToShowWellDoneMessage =
-    points?.monthlyRecords?.find((record) =>
-      record.monthName.includes(isAfterJuly ? 'November' : 'June')
-    )?.progressPerc === 100;
+    monthlyRecords?.caregiverPerc === 100 &&
+    monthlyRecords?.progressPerc === 100;
+  const isToShowCaregiverMeetingButton =
+    monthlyRecords?.caregiverPerc !== 0 && monthlyRecords?.progressPerc !== 0;
 
   const isCelebratoryMessage = points?.points === pointsConfig.max;
 
   const submitButton =
     !isCoach &&
     !hasLoggedCaregiverMeeting &&
+    isToShowCaregiverMeetingButton &&
     ((month >= 3 && month <= 7) || month >= 10) ? (
       <Button
         icon="PlusCircleIcon"
