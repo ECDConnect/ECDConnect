@@ -29,7 +29,7 @@ class CalendarService {
     const response = await apiInstance.post<any>(``, {
       query: `
       query GetAllCalendarEventType($locale: String) {
-        GetAllCalendarEventTypeGG(locale: $locale) {
+        GetAllCalendarEventType(locale: $locale) {
           id
           name
           colour
