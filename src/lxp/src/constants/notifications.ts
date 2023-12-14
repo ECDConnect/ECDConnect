@@ -5,6 +5,7 @@ interface NotificationTagConfigParams {
   [key: string]: Partial<Message>;
   AcceptAgreement: Partial<Message>;
   GetStartedTrainee: Partial<Message>;
+  StartJourney: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AcceptAgreement: {
@@ -16,6 +17,13 @@ export const notificationTagConfig: NotificationTagConfigParams = {
   },
   GetStartedTrainee: {
     cta: 'GetStartedTrainee',
+    routeConfig: {
+      route: ROUTES.TRAINEE.TRAINEE_ONBOARDING,
+    },
+    viewType: 'Both',
+  },
+  StartJourney: {
+    cta: 'StartJourney',
     routeConfig: {
       route: ROUTES.TRAINEE.TRAINEE_ONBOARDING,
     },
