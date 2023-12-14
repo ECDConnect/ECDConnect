@@ -50,24 +50,28 @@ export const Messages: React.FC = () => {
   }, []);
 
   const messageActioned = (notification: Notification) => {
-    if (notification.message.routeConfig) {
-      history.push(
-        notification.message.routeConfig.route,
-        notification.message.routeConfig.params
+    if (notification.message?.isFromBackend) {
+      appDispatch(
+        disableBackendNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
       );
     }
+    appDispatch(notificationActions.removeNotification(notification));
+
     for (const [key, value] of Object.entries(notificationTagConfig)) {
       if (value.cta === notification.message.cta && value.routeConfig!) {
         history.push(value?.routeConfig?.route);
         break;
       }
     }
-    appDispatch(
-      disableBackendNotification({
-        notificationId: notification?.message?.reference ?? '',
-      })
-    );
-    appDispatch(notificationActions.removeNotification(notification));
+
+    if (notification.message.routeConfig) {
+      history.push(
+        notification.message.routeConfig.route,
+        notification.message.routeConfig.params
+      );
+    }
   };
 
   return (
