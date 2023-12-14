@@ -5,6 +5,7 @@ export const GetAllEducation = gql`
     GetAllEducation {
       id
       description
+      isActive
     }
   }
 `;
