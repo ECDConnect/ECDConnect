@@ -1,10 +1,9 @@
-import { BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
+import { Alert, BannerWrapper, Button, Divider, Typography } from '@ecdlink/ui';
 import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import ROUTES from '@/routes/routes';
 import { ClubsRouteState } from '@/pages/community/clubs-tab/index.types';
-import { useEffect } from 'react';
 import { getPointsActivityDateDetails } from '@/pages/community/clubs-tab/index.filters';
 import { ActivityMeetRegularDetail } from '@ecdlink/graphql';
 
@@ -48,17 +47,6 @@ export const MeetingDetails: React.FC = () => {
     return badgeColor;
   };
 
-  useEffect(() => {
-    if (!details) {
-      history.push(
-        ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
-          ':clubId',
-          clubId
-        )
-      );
-    }
-  }, [clubId, details, history]);
-
   const Item = ({ name }: { name: string }) => (
     <>
       <Typography type="body" className="py-2" text={name} />
@@ -75,6 +63,7 @@ export const MeetingDetails: React.FC = () => {
       subTitle={formattedDate}
       onBack={() => history.goBack()}
     >
+      {!meeting && <Alert type="info" title="No meeting details available" />}
       <Typography type="h2" text={formattedDate} />
       {!!meeting?.meetingNotes && (
         <div className="bg-uiBg rounded-15 my-5 p-4">

@@ -16,7 +16,10 @@ import {
 } from '@ecdlink/graphql';
 
 export type Points = {
-  meetRegularly?: ActivityMeetRegular;
+  meetRegularly?: {
+    dataLoaded?: string;
+    data: ActivityMeetRegular;
+  };
   beCreative?: ActivityBeCreative;
   hostFamily?: ActivityHostFamilyDays;
   leaveNoOneBehind?: ActivityLeaveNoOneBehind;
