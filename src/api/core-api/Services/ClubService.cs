@@ -1340,8 +1340,8 @@ namespace EcdLink.Api.CoreApi.Services
         public ActivityLeaveNoOneBehind GetActivityLeaveNoOneBehindDetails(Guid clubId)
         {
             DateTime today = DateTime.Now;
-            DateTime startYear = today.GetStartOfYear();
-            DateTime startDecember = new DateTime(today.Year, 12, 1);
+            DateTime startOfYear = today.GetStartOfYear();
+            DateTime endNovember = new DateTime(today.Year, 11, 30);
 
             ActivityLeaveNoOneBehind activityLeaveNoOneBehind = new ActivityLeaveNoOneBehind();
             activityLeaveNoOneBehind.GreenUsers = new List<ClubUser>();
@@ -1365,16 +1365,16 @@ namespace EcdLink.Api.CoreApi.Services
             allPractitionerIds = allPractitionerIds.Distinct().ToList();
 
             List<Visit> allVisits = _visitRepo.GetAll()
-                            .Where(x => allPractitionerIds.Contains((Guid)x.PractitionerId) &&
+                            .Where(x => allPractitionerIds.Contains((Guid)x.PractitionerId) && x.IsActive &&
                                    x.VisitType.Type == Constants.SSSettings.client_practitioner &&
-                                    (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1) &&
-                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == today.Year &&
-                                    x.IsActive && x.Attended)
+                                   (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 || x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1) &&
+                                   ((x.Attended && x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == today.Year) ||
+                                   (!x.Attended && (x.PlannedVisitDate.Year == today.Year || x.DueDate.HasValue && x.DueDate.Value.Year == today.Year))))
                             .Include(x => x.PQARating)
                             .OrderByDescending(x => x.DueDate)
                             .ToList();
 
-
+            // Points for the year
             activityLeaveNoOneBehind.Points = club.ClubPoints.Select(x => x.Points).Sum();
             activityLeaveNoOneBehind.PointsColor = MetricsColorEnum.Error.ToString();
 
@@ -1410,11 +1410,12 @@ namespace EcdLink.Api.CoreApi.Services
                 {
 
                     attended_visit = allVisits.Where(x => x.Attended && x.PractitionerId == Id &&
-                                                     x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
-                                                     x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
-                    pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id && 
-                                                    x.DueDate.Value.Date >= startYear.Date &&
-                                                    x.DueDate.Value.Date < startDecember.Date).OrderByDescending(x => x.DueDate).FirstOrDefault();
+                                                     x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year >= today.Year)
+                                            .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
+                    pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id &&
+                                                    (x.PlannedVisitDate.Date >= startOfYear.Date || x.DueDate.HasValue && x.DueDate.Value.Date >= startOfYear.Date) &&
+                                                    (x.PlannedVisitDate.Date <= endNovember.Date || x.DueDate.HasValue && x.DueDate.Value.Date <= endNovember.Date))
+                                            .OrderByDescending(x => x.DueDate).FirstOrDefault();
 
 
                     if (attended_visit != null && attended_visit.PQARating != null)
@@ -1472,15 +1473,12 @@ namespace EcdLink.Api.CoreApi.Services
                     blueText = "club members have PQAs coming up later this year";
 
                     visitType = Constants.SSSettings.visitType_pqa_visit_1;
-                    
                 }
-
 
                 activityLeaveNoOneBehind.GreenUsers.AddRange(allVisits.Where(x => x.Attended &&
                                                     x.VisitType.Name == visitType &&
                                                     x.PQARating != null && x.PQARating.OverallRatingColor == MetricsColorEnum.Success.ToString() &&
-                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
-                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).Select(x => new ClubUser
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year >= today.Year).Select(x => new ClubUser
                                                     {
                                                         UserId = x.Practitioner.UserId,
                                                         FirstName = x.Practitioner.User.FirstName,
@@ -1491,8 +1489,7 @@ namespace EcdLink.Api.CoreApi.Services
                 activityLeaveNoOneBehind.OrangeUsers.AddRange(allVisits.Where(x => x.Attended &&
                                                     x.VisitType.Name == visitType &&
                                                     x.PQARating != null && x.PQARating.OverallRatingColor == MetricsColorEnum.Warning.ToString() &&
-                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
-                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).Select(x => new ClubUser
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year >= today.Year).Select(x => new ClubUser
                                                     {
                                                         UserId = x.Practitioner.UserId,
                                                         FirstName = x.Practitioner.User.FirstName,
@@ -1503,8 +1500,7 @@ namespace EcdLink.Api.CoreApi.Services
                 activityLeaveNoOneBehind.RedUsers.AddRange(allVisits.Where(x => x.Attended &&
                                                     x.VisitType.Name == visitType &&
                                                     x.PQARating != null && x.PQARating.OverallRatingColor == MetricsColorEnum.Error.ToString() &&
-                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
-                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).Select(x => new ClubUser
+                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year >= today.Year).Select(x => new ClubUser
                                                     {
                                                         UserId = x.Practitioner.UserId,
                                                         FirstName = x.Practitioner.User.FirstName,
@@ -1512,17 +1508,19 @@ namespace EcdLink.Api.CoreApi.Services
                                                         ProfileImageUrl = x.Practitioner.User.ProfileImageUrl
                                                     }).Distinct().ToList());
 
-                activityLeaveNoOneBehind.BlueUsers.AddRange(allVisits.Where(x => !x.Attended &&
-                                                                    x.VisitType.Name == visitType &&
-                                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date >= startYear.Date &&
-                                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Date < startDecember.Date).Select(x => new ClubUser
-                                                                    {
-                                                                        UserId = x.Practitioner.UserId,
-                                                                        FirstName = x.Practitioner.User.FirstName,
-                                                                        Surname = x.Practitioner.User.Surname,
-                                                                        ProfileImageUrl = x.Practitioner.User.ProfileImageUrl
-                                                                    }).Distinct().ToList());
-
+                if (today.Date <= endNovember.Date)
+                {
+                    activityLeaveNoOneBehind.BlueUsers.AddRange(allVisits.Where(x => !x.Attended &&
+                                                                        x.VisitType.Name == visitType &&
+                                                                        (x.PlannedVisitDate.Date >= startOfYear || x.DueDate.HasValue && x.DueDate.Value.Date >= startOfYear) &&
+                                                                        (x.PlannedVisitDate.Date <= endNovember.Date || x.DueDate.HasValue && x.DueDate.Value.Date <= endNovember.Date)).Select(x => new ClubUser
+                                                                        {
+                                                                            UserId = x.Practitioner.UserId,
+                                                                            FirstName = x.Practitioner.User.FirstName,
+                                                                            Surname = x.Practitioner.User.Surname,
+                                                                            ProfileImageUrl = x.Practitioner.User.ProfileImageUrl
+                                                                        }).Distinct().ToList());
+                }
             }
 
             if (totalPractitioners != 0)
