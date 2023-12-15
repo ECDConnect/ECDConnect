@@ -1412,9 +1412,13 @@ namespace EcdLink.Api.CoreApi.Services
                     attended_visit = allVisits.Where(x => x.Attended && x.PractitionerId == Id &&
                                                      x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year >= today.Year)
                                             .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
-                    pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id &&
+                    // EC-1525 Comment out the deadline date for blue users for Kim to test
+                    /*pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id &&
                                                     (x.PlannedVisitDate.Date >= startOfYear.Date || x.DueDate.HasValue && x.DueDate.Value.Date >= startOfYear.Date) &&
                                                     (x.PlannedVisitDate.Date <= endNovember.Date || x.DueDate.HasValue && x.DueDate.Value.Date <= endNovember.Date))
+                                            .OrderByDescending(x => x.DueDate).FirstOrDefault();*/
+                    pending_visit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id &&
+                                                    (x.PlannedVisitDate.Date.Year >= today.Year || x.DueDate.HasValue && x.DueDate.Value.Year >= today.Year))
                                             .OrderByDescending(x => x.DueDate).FirstOrDefault();
 
 
@@ -1508,8 +1512,9 @@ namespace EcdLink.Api.CoreApi.Services
                                                         ProfileImageUrl = x.Practitioner.User.ProfileImageUrl
                                                     }).Distinct().ToList());
 
-                if (today.Date <= endNovember.Date)
-                {
+                // EC-1525 Comment out the deadline date for blue users for Kim to test
+                //if (today.Date <= endNovember.Date)
+                //{
                     activityLeaveNoOneBehind.BlueUsers.AddRange(allVisits.Where(x => !x.Attended &&
                                                                         x.VisitType.Name == visitType &&
                                                                         (x.PlannedVisitDate.Date >= startOfYear || x.DueDate.HasValue && x.DueDate.Value.Date >= startOfYear) &&
@@ -1520,7 +1525,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                             Surname = x.Practitioner.User.Surname,
                                                                             ProfileImageUrl = x.Practitioner.User.ProfileImageUrl
                                                                         }).Distinct().ToList());
-                }
+                //}
             }
 
             if (totalPractitioners != 0)
