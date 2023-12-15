@@ -76,7 +76,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         return CreateRace;
       case 'GetAllProgrammeAttendanceReason':
         return CreateProgrammeAttendanceReason;
-      case 'DeleteLanguage':
+      case 'GetAllLanguage':
         return CreateLanguage;
       case 'GetAllProvince':
         return CreateProvince;
@@ -122,7 +122,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         return DeleteRace;
       case 'GetAllProgrammeAttendanceReason':
         return DeleteProgrammeAttendanceReason;
-      case 'DeleteLanguage':
+      case 'GetAllLanguage':
         return DeleteLanguage;
       case 'GetAllProvince':
         return DeleteProvince;
@@ -152,7 +152,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         return GetAllRace;
       case 'GetAllProgrammeAttendanceReason':
         return GetAllProgrammeAttendanceReason;
-      case 'DeleteLanguage':
+      case 'GetAllLanguage':
         return GetAllLanguage;
       case 'GetAllProvince':
         return GetAllProvince;
@@ -468,7 +468,9 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         type={'body'}
         color={'textMid'}
         className="pt-2"
-        text={'You must include a minimum of 1 and maximum of 10 options.'}
+        text={`You must include a minimum of 1 and maximum of ${
+          query === 'GetAllLanguage' ? '20' : '10'
+        } options.`}
       />
 
       {dataValues &&
