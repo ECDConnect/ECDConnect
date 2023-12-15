@@ -69,102 +69,74 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
   section,
 }) => {
   const handleCreateQuery = (query) => {
-    if (query === 'GetAllGender') {
-      return CreateGender;
+    switch (query) {
+      case 'GetAllGender':
+        return CreateGender;
+      case 'GetAllRace':
+        return CreateRace;
+      case 'GetAllProgrammeAttendanceReason':
+        return CreateProgrammeAttendanceReason;
+      case 'DeleteLanguage':
+        return CreateLanguage;
+      case 'GetAllProvince':
+        return CreateProvince;
+      case 'GetAllGrant':
+        return CreateGrant;
+      case 'GetAllEducation':
+        return CreateEducation;
+      case 'GetAllRelation':
+        return CreateRelation;
+      default:
+        return CreateReasonForLeaving;
     }
-    if (query === 'GetAllRace') {
-      return CreateRace;
-    }
-    if (query === 'GetAllProgrammeAttendanceReason') {
-      return CreateProgrammeAttendanceReason;
-    }
-    if (query === 'GetAllLanguage') {
-      return CreateLanguage;
-    }
-    if (query === 'GetAllProvince') {
-      return CreateProvince;
-    }
-    if (query === 'GetAllGrant') {
-      return CreateGrant;
-    }
-
-    if (query === 'GetAllEducation') {
-      return CreateEducation;
-    }
-    if (query === 'GetAllRelation') {
-      return CreateRelation;
-    }
-    if (query === 'GetAllReasonForLeaving') {
-      return CreateReasonForLeaving;
-    }
-    return null;
   };
 
   const handleUpdateQuery = (query) => {
-    if (query === 'GetAllGender') {
-      return UpdateGender;
+    switch (query) {
+      case 'GetAllGender':
+        return UpdateGender;
+      case 'GetAllRace':
+        return UpdateRace;
+      case 'GetAllProgrammeAttendanceReason':
+        return UpdateProgrammeAttendanceReason;
+      case 'GetAllLanguage':
+        return UpdateLanguage;
+      case 'GetAllProvince':
+        return UpdateProvince;
+      case 'GetAllGrant':
+        return UpdateGrant;
+      case 'GetAllEducation':
+        return UpdateEducation;
+      case 'GetAllRelation':
+        return UpdateRelation;
+      default:
+        return UpdateReasonForLeaving;
     }
-    if (query === 'GetAllRace') {
-      return UpdateRace;
-    }
-    if (query === 'GetAllProgrammeAttendanceReason') {
-      return UpdateProgrammeAttendanceReason;
-    }
-    if (query === 'GetAllLanguage') {
-      return UpdateLanguage;
-    }
-    if (query === 'GetAllProvince') {
-      return UpdateProvince;
-    }
-    if (query === 'GetAllGrant') {
-      return UpdateGrant;
-    }
-
-    if (query === 'GetAllEducation') {
-      return UpdateEducation;
-    }
-    if (query === 'GetAllRelation') {
-      return UpdateRelation;
-    }
-    if (query === 'GetAllReasonForLeaving') {
-      return UpdateReasonForLeaving;
-    }
-    return null;
   };
 
   const handleDeleteQuery = (query) => {
-    if (query === 'GetAllGender') {
-      return DeleteGender;
+    switch (query) {
+      case 'GetAllGender':
+        return DeleteGender;
+      case 'GetAllRace':
+        return DeleteRace;
+      case 'GetAllProgrammeAttendanceReason':
+        return DeleteProgrammeAttendanceReason;
+      case 'DeleteLanguage':
+        return DeleteLanguage;
+      case 'GetAllProvince':
+        return DeleteProvince;
+      case 'GetAllGrant':
+        return DeleteGrant;
+      case 'GetAllEducation':
+        return DeleteEducation;
+      case 'GetAllRelation':
+        return DeleteRelation;
+      default:
+        return DeleteReasonForLeaving;
     }
-    if (query === 'GetAllRace') {
-      return DeleteRace;
-    }
-    if (query === 'GetAllProgrammeAttendanceReason') {
-      return DeleteProgrammeAttendanceReason;
-    }
-    if (query === 'GetAllLanguage') {
-      return DeleteLanguage;
-    }
-    if (query === 'GetAllProvince') {
-      return DeleteProvince;
-    }
-    if (query === 'GetAllGrant') {
-      return DeleteGrant;
-    }
-
-    if (query === 'GetAllEducation') {
-      return DeleteEducation;
-    }
-    if (query === 'GetAllRelation') {
-      return DeleteRelation;
-    }
-    if (query === 'GetAllReasonForLeaving') {
-      return DeleteReasonForLeaving;
-    }
-    return null;
   };
 
-  const dialog = useDialog();
   const { setNotification } = useNotifications();
   const [isLoading, setIsLoading] = useState(false);
   const [create] = useMutation(handleCreateQuery(query));
@@ -173,35 +145,26 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
   const [deleteMutation] = useMutation(handleDeleteQuery(query));
 
   const findQuery = (query) => {
-    if (query === 'GetAllGender') {
-      return GenderList;
+    switch (query) {
+      case 'GetAllGender':
+        return GenderList;
+      case 'GetAllRace':
+        return GetAllRace;
+      case 'GetAllProgrammeAttendanceReason':
+        return GetAllProgrammeAttendanceReason;
+      case 'DeleteLanguage':
+        return GetAllLanguage;
+      case 'GetAllProvince':
+        return GetAllProvince;
+      case 'GetAllGrant':
+        return GetAllGrant;
+      case 'GetAllEducation':
+        return GetAllEducation;
+      case 'GetAllRelation':
+        return GetAllRelation;
+      default:
+        return GetAllReasonForLeaving;
     }
-    if (query === 'GetAllRace') {
-      return GetAllRace;
-    }
-    if (query === 'GetAllProgrammeAttendanceReason') {
-      return GetAllProgrammeAttendanceReason;
-    }
-    if (query === 'GetAllLanguage') {
-      return GetAllLanguage;
-    }
-    if (query === 'GetAllProvince') {
-      return GetAllProvince;
-    }
-    if (query === 'GetAllGrant') {
-      return GetAllGrant;
-    }
-
-    if (query === 'GetAllEducation') {
-      return GetAllEducation;
-    }
-    if (query === 'GetAllRelation') {
-      return GetAllRelation;
-    }
-    if (query === 'GetAllReasonForLeaving') {
-      return GetAllReasonForLeaving;
-    }
-    return GetAllReasonForLeaving;
   };
 
   const { data, refetch } = useQuery(findQuery(query), {
@@ -389,11 +352,14 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
             );
           })
         : dataValues?.filter((o1) => {
-            return data?.[key].every(
-              (o2) =>
-                (o2.description !== o1.description && o1?.description !== '') ||
-                (o1?.description === '' && o1?.id)
-            );
+            return data?.[key]
+              ?.filter((item) => item?.isActive !== false)
+              .every(
+                (o2) =>
+                  (o2.description !== o1.description &&
+                    o1?.description !== '') ||
+                  (o1?.description === '' && o1?.id)
+              );
           }),
     [data, dataValues, key, query]
   );
@@ -510,7 +476,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         dataValues?.map((item, idx: number) => {
           if (query === 'GetAllLanguage') {
             return (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2" key={idx}>
                 <FormInput
                   className="bg-adminPortalBg my-4 w-9/12"
                   id={item?.id}
@@ -534,6 +500,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
           }
           return (
             <FormInput
+              key={idx}
               className="bg-adminPortalBg my-4"
               id={item?.id}
               value={item?.reason || item?.description}
