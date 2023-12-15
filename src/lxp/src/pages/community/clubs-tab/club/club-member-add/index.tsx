@@ -10,14 +10,20 @@ import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
 import { useHistory, useParams } from 'react-router';
 import { ClubsRouteState } from '../../index.types';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerActions,
+  practitionerSelectors,
+} from '@/store/practitioner';
 import { useAppDispatch } from '@/store';
 import { NewClubMemberInput } from '@ecdlink/graphql';
-import { addNewClubMembers } from '@/store/club/club.actions';
+import { ClubActions, addNewClubMembers } from '@/store/club/club.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useSnackbar } from '@ecdlink/core';
 
 export const ClubMemberAdd: React.FC = () => {
   const history = useHistory();
   const appDispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
 
   const [selectedClubId, setSelectedClubId] = useState<string | undefined>(
     undefined
@@ -33,18 +39,41 @@ export const ClubMemberAdd: React.FC = () => {
   const firstName = practitioner?.user?.firstName ?? '';
 
   const onSubmit = async () => {
-    if (!!selectedClubId) {
+    if (!!selectedClubId && !!practitioner) {
       const payload: NewClubMemberInput = {
         clubId: selectedClubId,
-        practitionerIds: [practitioner?.id],
+        practitionerIds: [practitioner.id],
       };
 
-      await appDispatch(addNewClubMembers({ input: payload }));
-      // TODO need to refresh practitioner and club ???
+      appDispatch(addNewClubMembers({ input: payload })).then((result) => {
+        if (result.meta.requestStatus === 'rejected') {
+          showMessage({
+            message: `Error adding ${firstName} to club`,
+            type: 'error',
+          });
+        } else {
+          showMessage({
+            message: `${firstName} added to club`,
+            type: 'success',
+          });
 
-      history.goBack();
+          appDispatch(
+            practitionerActions.updateClubForPractitioner({
+              practitionerId: practitioner.id!,
+              clubId: selectedClubId,
+            })
+          );
+
+          history.goBack();
+        }
+      });
     }
   };
+
+  const { isLoading: isLoadingAddMember } = useThunkFetchCall(
+    'clubs',
+    ClubActions.ADD_NEW_CLUB_MEMBERS
+  );
 
   return (
     <BannerWrapper
@@ -78,7 +107,7 @@ export const ClubMemberAdd: React.FC = () => {
         color="primary"
         textColor="white"
         text="Save"
-        disabled={!selectedClubId}
+        disabled={!selectedClubId || isLoadingAddMember}
         onClick={onSubmit}
       />
     </BannerWrapper>

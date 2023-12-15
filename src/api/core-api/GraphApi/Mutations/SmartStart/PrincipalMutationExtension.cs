@@ -28,6 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     [Service] UserManager<ApplicationUser> userManager,
     [Service] PersonnelService personnelManager,
     IGenericRepositoryFactory repoFactory,
+    [Service] INotificationService notificationService,
     string firstName,
     string lastName,
     string idNumber,
@@ -41,7 +42,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: userId);
             var classroomGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: uId);
             var principalUser = practitionerRepo.GetByUserId(userId);
-
+ 
             if (principalUser != null && (principalUser.IsPrincipal == true || principalUser.IsFundaAppAdmin == true)) //make sure the principal user exists and is a principal or a FAA
             {
                 if (practitionerUser != null)
@@ -77,7 +78,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     classroomGroupRepo.Update(group);
                                     if (classroom != null) {
                                         classroomIds.Add(classroom.Id);
-                                    }    
+                                    }                                    
                                 }
                             }
                             if (classroomIds != null && classroomIds.Count() > 0)
@@ -92,6 +93,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         user.NickFullName = firstName + " " + lastName;
 
                         userManager.UpdateAsync(user);
+
+                        string programmeName = principalClassRoom != null ? principalClassRoom.Name : "Programme";
+                        //send message of invitation
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.ProgrammeInvitation, DateTime.Now, user, "", MessageStatusConstants.Amber, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName }  });
+
                         return practitioner;
                     }
                     else return null;
@@ -101,8 +107,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return null;
         }
 
-        public ApplicationUser UpdatePractitionerContactInfo([Service] IHttpContextAccessor contextAccessor,
-            [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+        public ApplicationUser UpdatePractitionerContactInfo([Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             [Service] UserManager<ApplicationUser> userManager,
             string practitionerId, string firstName, string lastName, string phoneNumber, string email)
         {
@@ -124,6 +129,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public Practitioner DeletePractitionerFromPrincipal([Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
+            [Service] INotificationService notificationService,
+            [Service] UserManager<ApplicationUser> userManager,
             string userId, string principalId)
         {
             using var scope = dbFactory.CreateDbContext();
@@ -135,6 +142,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 practitioner.PrincipalHierarchy = null;
                 practitioner.ShareInfo = false;
                 practitionerRepo.Update(practitioner);
+            }
+            //principaluser to send
+            var userToSend = userManager.FindByIdAsync(principalId).Result;
+            if (userToSend != null && practitioner != null && practitioner.User != null)
+            {
+                notificationService.SendNotificationAsync(null, TemplateTypeConstants.PractitionerRemovedFromProgramme, DateTime.Now, userToSend, "", MessageStatusConstants.Red, new List<TagsReplacements>() { new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FirstName } }, DateTime.Now.AddDays(7));
             }
 
             return practitioner;
@@ -167,7 +180,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public bool SwitchPrincipal([Service] PersonnelService personnelManager,
-            [Service] UserManager<ApplicationUser> userManager,
             string oldPrincipalUserId,
             string newPrincipalUserId)
         {
@@ -176,7 +188,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager,
-            [Service] UserManager<ApplicationUser> userManager,
              string userId)
         {
             Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userId);
@@ -184,7 +195,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Practitioner DemotePractitionerAsPrincipal([Service] PersonnelService personnelManager,
-             [Service] UserManager<ApplicationUser> userManager,
              string userId)
         {
             Practitioner practitionerToDemote = personnelManager.DemotePractitionerAsPrincipal(userId);

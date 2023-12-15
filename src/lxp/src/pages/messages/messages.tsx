@@ -13,6 +13,8 @@ import {
 } from '@store/notifications';
 import { IconInformationIndicator } from '../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { MessageCard } from './components/message-card';
+import { notificationTagConfig } from '@/constants/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
@@ -54,6 +56,17 @@ export const Messages: React.FC = () => {
         notification.message.routeConfig.params
       );
     }
+    for (const [key, value] of Object.entries(notificationTagConfig)) {
+      if (value.cta === notification.message.cta && value.routeConfig!) {
+        history.push(value?.routeConfig?.route);
+        break;
+      }
+    }
+    appDispatch(
+      disableBackendNotification({
+        notificationId: notification?.message?.reference ?? '',
+      })
+    );
     appDispatch(notificationActions.removeNotification(notification));
   };
 

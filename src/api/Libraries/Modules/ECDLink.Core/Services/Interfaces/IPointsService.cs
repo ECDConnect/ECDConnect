@@ -1,9 +1,11 @@
-﻿namespace ECDLink.Core.Services.Interfaces
+﻿using System;
+
+namespace ECDLink.Core.Services.Interfaces
 {
     public interface IPointsService
     {
         public bool CalculateCompleteChildProgressReports();
-        public bool CalculateLeaveNoOneBehind();
+        public bool CalculateLeaveNoOneBehind(Guid clubId);
         public bool CalculateClubChildAttendance();
     }
 }

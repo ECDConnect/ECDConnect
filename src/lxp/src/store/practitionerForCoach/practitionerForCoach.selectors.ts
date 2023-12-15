@@ -159,3 +159,12 @@ export const getPointsTotalForYear = (userId: string) =>
       return total;
     }
   );
+
+export const getChildProgressReportsStatusForUser = (userId: string) =>
+  createSelector(
+    (state: RootState) =>
+      state.practitionerForCoach.childProgressReportStatusForPractitionerUser[
+        userId
+      ],
+    (reportsStatus) => reportsStatus
+  );

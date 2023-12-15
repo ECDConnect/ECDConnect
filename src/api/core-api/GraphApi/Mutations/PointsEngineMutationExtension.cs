@@ -49,9 +49,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              return false;
          }
 
-        public bool CalculateLeaveNoOneBehind([Service] IPointsEngineService pointsEngineService)
+        public bool CalculateLeaveNoOneBehind([Service] IPointsEngineService pointsEngineService, Guid clubId)
         {
-            return pointsEngineService.CalculateLeaveNoOneBehind();
+            return pointsEngineService.CalculateLeaveNoOneBehind(clubId);
         }
 
 

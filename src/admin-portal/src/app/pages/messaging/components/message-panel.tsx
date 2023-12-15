@@ -22,7 +22,9 @@ import {
   AuthUser,
   LocalStorageKeys,
   MessageLogDto,
+  NOTIFICATION,
   WardDto,
+  useNotifications,
 } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { format } from 'date-fns';
@@ -90,6 +92,7 @@ export default function MessagePanel() {
   const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
   const [showSavingDialog, setShowSavingDialog] = useState(false);
   const [isView, setIsView] = useState(false);
+  const [isEdit, setIsEdit] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [messageStatus, setMessageStatus] = useState('');
   const [userCount, setUserCount] = useState(0);
@@ -99,6 +102,7 @@ export default function MessagePanel() {
   const [wardData, setWardData] = useState<WardDto[]>([]);
   const [wardName, setWardName] = useState('');
   const [roleData, setRoleData] = useState<MessageRoleDto[]>([]);
+  const { setNotification } = useNotifications();
 
   const { data: wards } = useQuery(GetAllWards, {
     fetchPolicy: 'cache-and-network',
@@ -175,6 +179,7 @@ export default function MessagePanel() {
       }
 
       if (currentMessage.messageDate != null) {
+        setIsEdit(true);
         const messageDate = new Date(currentMessage.messageDate);
         const messageHours =
           (messageDate.getHours() < 10 ? '0' : '') + messageDate.getHours();
@@ -214,9 +219,15 @@ export default function MessagePanel() {
     {
       fetchPolicy: 'cache-and-network',
       variables: {
-        provinceId: messageGetValues('provinceId'),
+        provinceId:
+          messageGetValues('provinceId') === 'Unknown'
+            ? ''
+            : messageGetValues('provinceId'),
         districtId: messageGetValues('districtId'),
-        wardName: wardName,
+        wardName:
+          wardName === 'Unknown' || wardName === 'Click to choose a district'
+            ? ''
+            : wardName,
         roleIds: selectedRoles.map(({ id }) => id),
       },
     }
@@ -225,6 +236,7 @@ export default function MessagePanel() {
   useEffect(() => {
     if (totalUsers) {
       setUserCount(totalUsers.userCountForMessageCriteria);
+      setIsLoading(false);
     }
   }, [totalUsers]);
 
@@ -238,11 +250,12 @@ export default function MessagePanel() {
     }
   }, [message]);
 
-  const [isEdit] = useState(currentMessage ? true : false);
   const [saveBulkMessagesForAdmin] = useMutation(SaveBulkMessagesForAdmin);
   const messageForm = messageGetValues();
 
   const onShowDialog = () => {
+    setUserCount(0);
+    setIsLoading(true);
     getUserCountForMessageCriteria();
     setShowSavingDialog(true);
   };
@@ -255,10 +268,14 @@ export default function MessagePanel() {
     if (formValues.districtId !== '') {
       toGroups += 'District:' + formValues.districtId + '|';
     }
-    if (wardName !== '') {
+    if (
+      wardName !== '' &&
+      wardName !== 'Click to choose a district' &&
+      wardName !== 'Unknown'
+    ) {
       toGroups += 'Ward:' + wardName + '|';
     }
-    if (formValues.provinceId !== '') {
+    if (formValues.provinceId !== '' && formValues.provinceId !== 'Unknown') {
       toGroups += 'Province:' + formValues.provinceId + '|';
     }
     if (selectedRoles.length !== 0) {
@@ -272,8 +289,12 @@ export default function MessagePanel() {
 
     const inputModel: MessageLogDto = {
       districtId: formValues.districtId,
-      wardName: wardName,
-      provinceId: formValues.provinceId,
+      wardName:
+        wardName === 'Unknown' || wardName === 'Click to choose a district'
+          ? ''
+          : wardName,
+      provinceId:
+        formValues.provinceId !== 'Unknown' ? formValues.provinceId : '',
       toGroups: toGroups,
       sendByUserId: authenticatedUser.id,
       message: formValues.message,
@@ -301,7 +322,10 @@ export default function MessagePanel() {
         setShowSavingDialog(false);
         setIsLoading(false);
         backToMessageList();
-        localStorage.setItem('messageStatus', 'Message scheduled');
+        setNotification({
+          title: 'Message scheduled',
+          variant: NOTIFICATION.SUCCESS,
+        });
       })
       .catch((error) => {
         console.log(error);

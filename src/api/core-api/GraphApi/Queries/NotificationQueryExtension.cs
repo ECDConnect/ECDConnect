@@ -320,15 +320,15 @@ IGenericRepositoryFactory repoFactory, string templateId)
             // SS roles
             if (isTrainee)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && x.IsTrainee == true).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => x.IsTrainee == true).Select(x => x.UserId).Distinct().ToList());
             }
             if (isPrincipal)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true)).Select(x => x.UserId).Distinct().ToList());
             }
             if (isNonPractitioner)
             {
-                userIds.AddRange(practitioners.Where(x => x.IsActive == true && (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId).Distinct().ToList());
+                userIds.AddRange(practitioners.Where(x => (x.IsPrincipal == false && x.IsFundaAppAdmin == false)).Select(x => x.UserId).Distinct().ToList());
             }
             if (isCoach)
             {
@@ -345,56 +345,53 @@ IGenericRepositoryFactory repoFactory, string templateId)
                 userIds.AddRange(teamLeadRepo.GetAll().Where(x => x.IsActive == true).Select(x => x.UserId).Distinct().ToList());
             }
 
-
             // Currently we don't have districts in the system, but this will change after the development in December 23
-            
-            if (provinceId == "Unknown" || provinceId != "" || wardName != "")
+            if (provinceId != "" || wardName != "")
             {
-
                 if (isTrainee || isPrincipal || isNonPractitioner)
                 {
-                    if (provinceId != "Unknown" && provinceId != "" && wardName == "")
+                    if (provinceId != "" && wardName == "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId?.ToString() == provinceId)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId?.ToString() == provinceId)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
-                    else if (provinceId == "Unknown" && provinceId == "" && wardName != "")
+                    else if (provinceId == "" && wardName != "")
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == wardName)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.Ward == wardName)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(practitioners
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == provinceId && x.SiteAddress?.Ward == wardName)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId.ToString() == provinceId && x.SiteAddress?.Ward == wardName)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                 }
                 if (isCoach)
                 {
-                    if (provinceId != "Unknown" && provinceId != "" && wardName == "")
+                    if (provinceId != "" && wardName == "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == provinceId)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId.ToString() == provinceId)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
-                    else if (provinceId == "Unknown" && provinceId == "" && wardName != "")
+                    else if (provinceId == "" && wardName != "")
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.Ward == wardName)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.Ward == wardName)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }
                     else
                     {
                         messageUserIds.AddRange(coaches
-                            .Where(x => userIds.Contains(x.UserId) && x.IsActive == true && x.SiteAddress?.ProvinceId.ToString() == provinceId && x.SiteAddress?.Ward == wardName)
+                            .Where(x => userIds.Contains(x.UserId) && x.SiteAddress?.ProvinceId.ToString() == provinceId && x.SiteAddress?.Ward == wardName)
                             .Select(x => x.UserId)
                             .Distinct().ToList());
                     }

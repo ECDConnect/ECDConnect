@@ -16,6 +16,10 @@ import {
   MonthlyAttendanceReportQueryParams,
 } from './attendance.types';
 
+export const AttendanceActions = {
+  GET_MONTHLY_ATTENDANCE_REPORT: 'getMonthlyAttendanceReport',
+};
+
 export const getAttendance = createAsyncThunk<
   AttendanceDto[],
   AttendanceQueryParams,
@@ -89,7 +93,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
 >(
   'getMonthlyAttendanceReport',
   async (
-    { classroomId, startDate, endDate },
+    { userId, classroomId, startDate, endDate },
     { getState, rejectWithValue }
   ) => {
     const {
@@ -102,12 +106,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
       if (userAuth?.auth_token) {
         reportData = await new AttendanceService(
           userAuth?.auth_token
-        ).getMonthlyAttendanceReport(
-          userAuth.id,
-          classroomId,
-          startDate,
-          endDate
-        );
+        ).getMonthlyAttendanceReport(userId, classroomId, startDate, endDate);
       }
 
       if (!reportData) {

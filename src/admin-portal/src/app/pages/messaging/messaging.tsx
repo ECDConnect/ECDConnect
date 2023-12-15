@@ -7,7 +7,6 @@ export default function Messaging() {
 
   useEffect(() => {
     localStorage.removeItem('selectedMessage');
-    localStorage.removeItem('messageStatus');
 
     async function init() {
       history.push({
@@ -17,7 +16,6 @@ export default function Messaging() {
         },
       });
     }
-
     init().catch(console.error);
   }, [history]);
 

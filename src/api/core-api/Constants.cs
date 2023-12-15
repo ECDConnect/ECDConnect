@@ -76,22 +76,22 @@ namespace EcdLink.Api.CoreApi
 
             public const string step2_q2 = "Learning space";
             public const string step2_q2_a1 = "0 - The space was not divided into interest areas.";
-            public const string step2_q2_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
+            public const string step2_q2_a2 = "1 - The space was divided into two interest areas.";
             public const string step2_q2_a3 = "2 - The space was divided into 3 or more interest areas.";
 
             public const string step2_q3 = "Using the toy kit";
             public const string step2_q3_a1 = "0 - The play kit was not unpacked into the learning space.";
-            public const string step2_q3_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
+            public const string step2_q3_a2 = "1 - The play kit was only unpacked and available for children's use for a short time (less than 40 mins of the session).";
             public const string step2_q3_a3 = "2 - The play kit was unpacked and the materials were available for children's play for more than 40 mins of the session.";
 
             public const string step2_q4 = "Labelling (symbols or words)";
             public const string step2_q4_a1 = "0 - Interest areas and materials were not labelled.";
-            public const string step2_q4_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
+            public const string step2_q4_a2 = "1 - Some interest areas and play materials were labelled.";
             public const string step2_q4_a3 = "2 - All interest areas and play materials were labelled.";
 
             public const string step2_q5 = "Toys & storybooks";
             public const string step2_q5_a1 = "0 - Toys and storybooks were kept out of children's reach.";
-            public const string step2_q5_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
+            public const string step2_q5_a2 = "1 - Children could reach and get out some toys and storybooks without adult help.";
             public const string step2_q5_a3 = "2 - Children could reach and get out most of the toys and storybooks without adult help.";
 
             public const string step2_q6 = "Displays";
@@ -292,7 +292,7 @@ namespace EcdLink.Api.CoreApi
             public const string step13_q1_a4 = "The venue has good natural ventilation (windows or doors that can open).";
             public const string step13_q1_a5 = "The programme does not exceed the maximum child number per programme type.";
 
-            public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}’s venue?";
+            public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}ï¿½s venue?";
             public const string step14_success = "{client} venue meets all the basic SmartSpace standards as well as the additional standards.";
             public const string step14_not_reissue = "You cannot reissue {client}'s SmartSpace Licence.";
             public const string step14_not_meet = "{client}'s venue does not meet the basic SmartSpace standards.";
@@ -312,7 +312,7 @@ namespace EcdLink.Api.CoreApi
             public const string step8_re_accreditation_a1 = "Supervision: children are supervised at all times.";
             public const string step8_re_accreditation_a2 = "Learning space: the space is divided into 3 or more interest areas, which are labelled.";
             public const string step8_re_accreditation_a3 = "Using the toy kit: the play kit is unpacked and children can reach toys and story books.";
-            public const string step8_re_accreditation_a4 = "Displays: the learning space is interesting with posters and children’s work on the walls.";
+            public const string step8_re_accreditation_a4 = "Displays: the learning space is interesting with posters and childrenï¿½s work on the walls.";
             public const string step8_re_accreditation_a5 = "SmartStart routine: the SmartStart routine is displayed at a height that children can reach.";
             public const string step8_re_accreditation_a6 = "SmartStart activities: all the activities in the SmartStart routine (below) were included today.";
             public const string step8_re_accreditation_a7 = "Free play: at least 45 minutes was set aside for free play.";
@@ -331,7 +331,7 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation_q5 = "Children are involved in solving conflicts.";
             public const string step_10_re_accreditation_q6 = "Adults create opportunities to talk with children, and listen and respond to their questions and ideas.";
             public const string step_10_re_accreditation_q7 = "Adults encourage children to make their own choices during the session and to do things for themselves where they can.";
-            public const string step_10_re_accreditation_q8 = "Adults join in as a partner in children’s play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
+            public const string step_10_re_accreditation_q8 = "Adults join in as a partner in childrenï¿½s play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
             public const string step_10_re_accreditation_q9 = "Adults use appropriate activities and materials for the different ages and stages of children.";
             public const string step_10_re_accreditation_q10 = "During story time there is lots of conversation and children are encouraged to take part and ask questions.";
 
@@ -868,6 +868,8 @@ namespace EcdLink.Api.CoreApi
             public const string name_rising_stars = "Rising Stars";
             public const string top_of_the_league = "Top of the league";
             public const string points_earned = " points earned in ";
+            public const string coach_meeting_attended = ", Attend club meeting";
+            public const string first_meeting_attended = ", Attended first club meeting";
             public const int purple_club_max_points = 2200;
             public const int non_purple_club_max_points = 2000;
 
@@ -881,7 +883,10 @@ namespace EcdLink.Api.CoreApi
             public const string sub_progress_tracking = "Progress tracking";
 
             public const string document_success = "Image completed";
-            public const string document_no_success = "Image incompleted";
+            public const string document_verified = "Image verified";
+            public const string document_in_complete = "Image incomplete";
+            public const string document_waiting_verified = "Image uploaded, waiting for verification";
+            public const string document_images_add = "Images added";
 
             public const string not_completed = "Not completed";
 

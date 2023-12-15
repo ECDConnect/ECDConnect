@@ -1,6 +1,13 @@
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
+import { getLatestPqaOrReacreditationRatingByUserId as getLatestPqaOrReaccreditationRatingByUserId } from '../pqa/pqa.selectors';
+import { getPractitionerByUserId } from '../practitioner/practitioner.selectors';
+import { getClassroomGroupsForUser } from '../classroom/classroom.selectors';
+import { getAttendanceReportsForUser } from '../attendance/attendance.selectors';
+import { LeagueType } from '@/constants/club';
+import { getChildProgressReportsStatusForUser } from '../practitionerForCoach/practitionerForCoach.selectors';
+import { ActionItem } from '@/models/club/actionItem';
 
 // Practitioner
 export const getClubForPractitionerSelector = (state: RootState) =>
@@ -193,4 +200,291 @@ export const getActivityChildAttendanceDetailsSelector = (clubId: string) =>
       }
     },
     (childAttendance) => childAttendance
+  );
+
+export const getClubActionItemsForPractitionerSelector = (
+  userId: string,
+  clubId: string
+) =>
+  createSelector(
+    getPractitionerByUserId(userId),
+    getActivityMeetRegularDetailsSelector(clubId),
+    getActivityHostFamilyDetailsSelector(clubId),
+    getNextClubLeaderByClubIdSelector(clubId),
+    (
+      practitioner,
+      meetRegularlyPoints,
+      hostFamilyDayPoints,
+      nextClubLeader
+    ) => {
+      if (!practitioner || !practitioner.clubId) {
+        return [];
+      }
+
+      let actionItems: ActionItem[] = [];
+
+      // Meet regulary
+      const meetings = meetRegularlyPoints?.pastMeetings;
+
+      if (!!meetings && !!meetings.length) {
+        const meetingsAttended =
+          meetings?.filter(
+            (meeting) =>
+              !!meeting?.meetingParticipants?.find(
+                (practitioner) => practitioner?.userId === userId
+              )
+          ).length || 0;
+
+        const attendancePercentage = meetingsAttended / meetings.length;
+
+        if (attendancePercentage <= 0.6) {
+          actionItems.push({
+            title: `Missed ${meetings.length - meetingsAttended} club meetings`,
+            subTitle: `Contact ${practitioner.user?.firstName}`,
+            type: 'MeetRegularly',
+            details: {
+              meetingsAttended: meetingsAttended,
+              meetingsTotal: meetings.length,
+            },
+          });
+        }
+      }
+
+      // family days
+      if (!!hostFamilyDayPoints && !!hostFamilyDayPoints.terms) {
+        const familyDaysHeld =
+          hostFamilyDayPoints.terms?.filter(
+            (term) =>
+              !!term?.meetingParticipantsPractitionerIds &&
+              !!term?.meetingParticipantsPractitionerIds.length
+          ).length || 0;
+
+        if (familyDaysHeld > 0) {
+          const familyDaysAttendanded = hostFamilyDayPoints?.terms?.reduce(
+            (count, term) =>
+              term?.meetingParticipantsPractitionerIds?.some(
+                (practitionerId) => practitionerId === practitioner?.id
+              )
+                ? (count += 1)
+                : count,
+            0
+          );
+
+          const attendancePercentage = familyDaysAttendanded / familyDaysHeld;
+
+          if (attendancePercentage <= 0.6) {
+            actionItems.push({
+              title: `Missed ${
+                familyDaysHeld - familyDaysAttendanded
+              } club events`,
+              subTitle: `Contact ${practitioner.user?.firstName}`,
+              type: 'HostFamilyDays',
+              details: {
+                meetingsAttended: familyDaysAttendanded,
+                meetingsTotal: familyDaysHeld,
+              },
+            });
+          }
+        }
+      }
+
+      // accepted club leader
+      if (
+        !!nextClubLeader &&
+        nextClubLeader.userId === userId &&
+        !nextClubLeader.dateAccepted
+      ) {
+        actionItems.push({
+          title: `Has not accepted club leader agreement`,
+          subTitle: `Contact ${practitioner.user?.firstName}`,
+          type: 'AcceptLeaderRole',
+          details: {
+            dateAssigned: new Date(nextClubLeader.dateAssigned),
+          },
+        });
+      }
+
+      return actionItems;
+    }
+  );
+
+// TODO: Should this be split into separate selectors?
+export const getClubContributionsForPractitionerSelector = (
+  userId: string,
+  clubId: string
+) =>
+  createSelector(
+    getPractitionerByUserId(userId),
+    getClubByIdSelector(clubId),
+    getClassroomGroupsForUser(userId),
+    getActivityMeetRegularDetailsSelector(clubId),
+    getAttendanceReportsForUser(userId),
+    getActivityHostFamilyDetailsSelector(clubId),
+    getLatestPqaOrReaccreditationRatingByUserId(userId),
+    getChildProgressReportsStatusForUser(userId),
+    (
+      practitioner,
+      club,
+      userClassroomGroups,
+      meetRegularlyPoints,
+      attendanceReports,
+      hostFamilyDayPoints,
+      currentRating,
+      progressReportsStatus
+    ) => {
+      if (!practitioner || !club) {
+        return [];
+      }
+
+      let contributions = [];
+
+      // Meet regulary
+      const meetings = meetRegularlyPoints?.pastMeetings;
+
+      if (!!meetings && !!meetings.length) {
+        const meetingsAttended =
+          meetings?.filter(
+            (meeting) =>
+              !!meeting?.meetingParticipants?.find(
+                (practitioner) => practitioner?.userId === userId
+              )
+          ).length || 0;
+
+        const attendancePercentage = meetingsAttended / meetings.length;
+
+        contributions.push({
+          title: `Attended ${meetingsAttended} of ${meetings.length} club meetings`,
+          subTitle: `Contact ${practitioner.user?.firstName}`,
+          positiveState: attendancePercentage > 0.6 ? true : false,
+        });
+      } else {
+        contributions.push({
+          title: 'Meet Regularly',
+          subTitle: `No meetings submitted for ${club.name} club yet`,
+          positiveState: false,
+        });
+      }
+
+      // Capture child attendance - only for purple leagues
+      if (!!club.league && club.league.leagueTypeName === LeagueType.Purple) {
+        if (!!userClassroomGroups.length) {
+          if (!!attendanceReports) {
+            const attendance = attendanceReports.reduce(
+              (sums, report) => {
+                return {
+                  totalMonths: sums.totalMonths + 1,
+                  fullAttendanceMonths:
+                    report.percentageAttendance === 100
+                      ? sums.fullAttendanceMonths + 1
+                      : sums.fullAttendanceMonths,
+                };
+              },
+              { totalMonths: 0, fullAttendanceMonths: 0 }
+            );
+
+            contributions.push({
+              title: 'Capture child attendance',
+              subTitle: `Submitted all attendance registers for ${attendance.fullAttendanceMonths} of ${attendance.totalMonths} months`,
+              positiveState:
+                attendance.fullAttendanceMonths / attendance.totalMonths >=
+                0.75,
+            });
+          }
+        } else {
+          contributions.push({
+            title: 'Capture child attendance',
+            subTitle: `Not assigned to a class`,
+            positiveState: false,
+          });
+        }
+      }
+
+      // family days
+      const familyDaysHeld =
+        hostFamilyDayPoints?.terms?.filter(
+          (term) =>
+            !!term?.meetingParticipantsPractitionerIds &&
+            !!term?.meetingParticipantsPractitionerIds.length
+        ).length || 0;
+
+      if (familyDaysHeld > 0) {
+        const familyDaysAttendanded =
+          hostFamilyDayPoints?.terms?.reduce(
+            (count, term) =>
+              term?.meetingParticipantsPractitionerIds?.some(
+                (practitionerId) => practitionerId === practitioner?.id
+              )
+                ? (count += 1)
+                : count,
+            0
+          ) || 0;
+
+        const attendancePercentage = familyDaysAttendanded / familyDaysHeld;
+
+        contributions.push({
+          title: 'Host family days',
+          subTitle: `Attended ${familyDaysAttendanded} of ${familyDaysHeld} family day events`,
+          positiveStatus: attendancePercentage <= 0.6,
+        });
+      } else {
+        contributions.push({
+          title: 'Host family days',
+          subTitle: `No events held yet`,
+          positiveState: false,
+        });
+      }
+
+      // Complete child progress - after June for purple leagues only
+      if (
+        new Date().getMonth() >= 6 &&
+        !!club.league &&
+        club.league.leagueTypeName === LeagueType.Purple
+      ) {
+        if (!practitioner.attendedChildProgress) {
+          contributions.push({
+            title: 'Complete child progress reports',
+            subTitle: `${practitioner.user?.firstName} has not completed the child progress training yet`,
+            positiveState: false,
+          });
+        } else {
+          if (
+            !!progressReportsStatus &&
+            progressReportsStatus.numberOfChildren > 0
+          ) {
+            const percentageCompleted =
+              (progressReportsStatus.completedReports /
+                progressReportsStatus.numberOfChildren) *
+              100;
+            contributions.push({
+              title: 'Complete child progress reports',
+              subTitle: `Completed ${percentageCompleted}% of child progress reports`,
+              positiveState: percentageCompleted >= 100,
+            });
+          }
+        }
+      }
+
+      // Leave no one behind
+      if (!!currentRating) {
+        const ratingText =
+          currentRating.overallRatingColor === 'Success'
+            ? 'a green'
+            : currentRating.overallRatingColor === 'Warning'
+            ? 'an orange'
+            : 'a red';
+        contributions.push({
+          title: 'Leave no one behind',
+          subTitle: `${practitioner.user?.firstName} has ${ratingText} PQA`, // TODO need to figure out how to tell if PQA or reaccreditation
+          positiveState: currentRating.overallRatingColor === 'Success',
+        });
+      } else {
+        contributions.push({
+          title: 'Leave no one behind',
+          subTitle: `${practitioner.user?.firstName} does not have a PQA rating or re-accreditation rating yet`,
+          positiveState: false,
+        });
+      }
+
+      return contributions;
+    }
   );

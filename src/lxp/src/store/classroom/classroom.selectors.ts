@@ -42,6 +42,19 @@ export const getAllClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
   state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
 
+export const getClassroomGroupsForUser = (userId: string) =>
+  createSelector(
+    (state: RootState) => state.classroomData?.classroomGroups,
+    (classroomGroups) => {
+      return (
+        classroomGroups?.filter(
+          (classroomGroup) =>
+            classroomGroup.isActive && classroomGroup.userId === userId
+        ) || []
+      );
+    }
+  );
+
 export const getPrincipal = (state: RootState): PrincipalDto =>
   state.classroomData.principal || ({} as PrincipalDto);
 

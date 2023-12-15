@@ -191,6 +191,10 @@
             public const string AzureGroupBase = "General.Azure";
 
             public const string BlobStorageConnection = "General.Azure.BlobStorageConnection";
+
+            public const string BlobStorageDisplayUrl = "General.Azure.BlobStorageDisplayUrl";
+
+            public const string BlobStorageActualUrl = "General.Azure.BlobStorageActualUrl";
         }
 
         public static class Invitation

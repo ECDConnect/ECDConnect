@@ -2,7 +2,7 @@
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
-    public class BulkDeactivateResult : IBulkInvitationResult
+    public class BulkDeactivateResult : IBulkDeactivateResult
     {
         public IList<string> Success { get; set; }
         public IList<string> Failed { get; set; }
