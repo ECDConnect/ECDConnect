@@ -4,6 +4,7 @@ import { ListDataItem } from '../calendar.types';
 
 export type CalendarAddEventInfo = {
   id?: string;
+  eventTypeDisabled?: boolean;
   eventType?:
     | 'SmartSpace'
     | 'First PQA'

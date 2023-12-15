@@ -163,6 +163,7 @@ export const AddMeeting: React.FC = () => {
       addCalendarEvent({
         guests: [coachGuest, ...guests],
         event: {
+          eventTypeDisabled: true,
           eventType: 'Club Monthly Meeting',
           start,
           end,

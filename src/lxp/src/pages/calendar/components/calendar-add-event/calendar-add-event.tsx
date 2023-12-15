@@ -428,7 +428,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             fillType="clear"
             fullWidth={true}
             label={'Choose event type'}
-            disabled={!!eventProps}
+            disabled={eventProps?.eventTypeDisabled}
             selectedValue={getEventFormValues().eventType}
             onChange={(item: string) => {
               setEventFormValue('eventType', item);
