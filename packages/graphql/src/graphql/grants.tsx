@@ -5,6 +5,7 @@ export const GetAllGrant = gql`
     GetAllGrant {
       id
       description
+      isActive
     }
   }
 `;

@@ -5,6 +5,7 @@ export const GetAllRelation = gql`
     GetAllRelation {
       id
       description
+      isActive
     }
   }
 `;

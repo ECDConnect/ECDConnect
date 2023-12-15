@@ -5,6 +5,7 @@ export const GetAllProgrammeAttendanceReason = gql`
     GetAllProgrammeAttendanceReason {
       id
       reason
+      isActive
     }
   }
 `;
