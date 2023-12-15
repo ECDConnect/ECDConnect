@@ -143,7 +143,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
   const [update] = useMutation(handleUpdateQuery(query));
   const key = query as string;
   const [deleteMutation] = useMutation(handleDeleteQuery(query));
-  console.log({ query });
+
   const findQuery = (query) => {
     switch (query) {
       case 'GetAllGender':
