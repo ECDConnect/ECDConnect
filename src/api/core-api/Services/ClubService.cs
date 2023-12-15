@@ -1513,19 +1513,19 @@ namespace EcdLink.Api.CoreApi.Services
                                                     }).Distinct().ToList());
 
                 // EC-1525 Comment out the deadline date for blue users for Kim to test
-                //if (today.Date <= endNovember.Date)
-                //{
                     activityLeaveNoOneBehind.BlueUsers.AddRange(allVisits.Where(x => !x.Attended &&
                                                                         x.VisitType.Name == visitType &&
-                                                                        (x.PlannedVisitDate.Date >= startOfYear || x.DueDate.HasValue && x.DueDate.Value.Date >= startOfYear) &&
-                                                                        (x.PlannedVisitDate.Date <= endNovember.Date || x.DueDate.HasValue && x.DueDate.Value.Date <= endNovember.Date)).Select(x => new ClubUser
+                                                                        (x.PlannedVisitDate.Year >= today.Year || x.DueDate.HasValue && x.DueDate.Value.Year >= today.Year)
+                                                                        //(x.PlannedVisitDate.Date >= startOfYear || x.DueDate.HasValue && x.DueDate.Value.Date >= startOfYear) &&
+                                                                        //(x.PlannedVisitDate.Date <= endNovember.Date || x.DueDate.HasValue && x.DueDate.Value.Date <= endNovember.Date)
+                                                                        )
+                                                                        .Select(x => new ClubUser
                                                                         {
                                                                             UserId = x.Practitioner.UserId,
                                                                             FirstName = x.Practitioner.User.FirstName,
                                                                             Surname = x.Practitioner.User.Surname,
                                                                             ProfileImageUrl = x.Practitioner.User.ProfileImageUrl
                                                                         }).Distinct().ToList());
-                //}
             }
 
             if (totalPractitioners != 0)
