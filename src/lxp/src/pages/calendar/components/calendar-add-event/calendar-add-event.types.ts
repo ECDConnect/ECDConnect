@@ -1,5 +1,6 @@
 import { CalendarEventModel } from '@ecdlink/core';
 import * as Yup from 'yup';
+import { ListDataItem } from '../calendar.types';
 
 export type CalendarAddEventInfo = {
   id?: string;
@@ -38,6 +39,7 @@ export type CalendarEditEventInfo = {
 
 export interface CalendarAddEventProps {
   event?: CalendarAddEventInfo;
+  guests?: ListDataItem[];
   onUpdated: (isNew: boolean, event: CalendarEventModel) => void;
   onCancel: () => void;
 }
@@ -78,6 +80,7 @@ export const CalendarAddEventFormSchema = Yup.object().shape({
 
 export interface CalendarAddEventOptions {
   event: CalendarAddEventInfo;
+  guests?: ListDataItem[];
   onUpdated?: (isNew: boolean, event: CalendarEventModel) => void;
   onCancel?: () => void;
 }

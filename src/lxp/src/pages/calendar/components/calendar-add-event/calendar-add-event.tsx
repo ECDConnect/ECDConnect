@@ -8,7 +8,7 @@ import {
   CalendarAddEventParticipantFormModel,
 } from './calendar-add-event.types';
 import { useSelector } from 'react-redux';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -53,6 +53,7 @@ import { CalendarActions } from '@/store/calendar/calendar.actions';
 
 export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   event: eventProps,
+  guests,
   onUpdated,
   onCancel,
 }) => {
@@ -81,6 +82,13 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       }
     }
   }, [isLoading, isNewEvent, model, onUpdated, wasLoading]);
+
+  const filteredGuests = useMemo(
+    () =>
+      guests?.filter((guest) => guest.extraData?.userId !== currentUser.id) ??
+      [],
+    [currentUser.id, guests]
+  );
 
   const eventPropParticipants: CalendarEventParticipantModel[] | undefined =
     eventProps?.participantUserIds?.map((pid) => {
@@ -269,6 +277,11 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
   const onSearchParticipantDone = useCallback(
     async (participantUsers: CalendarAddEventParticipantFormModel[]) => {
+      if (!!filteredGuests?.length) {
+        setSearchParticipantsVisible(false);
+        return setEventFormValue('participants', participantUsers);
+      }
+
       const clubIds: string[] = participantUsers
         .filter((x) => x.isClub)
         .map((x) => x.userId);
@@ -301,7 +314,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       setSearchParticipantsVisible(false);
       setEventFormValue('participants', participantUsers);
     },
-    [setEventFormValue]
+    [appDispatch, filteredGuests, setEventFormValue]
   );
 
   const onAddParticipant = useCallback(() => {
@@ -327,6 +340,18 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     (
       participantUsers: CalendarAddEventParticipantFormModel[]
     ): ListDataItem[] => {
+      const mappedCurrentUser = mapUserToListDataItem(currentUser);
+      mappedCurrentUser.noClick = true;
+
+      if (!!filteredGuests?.length) {
+        return [
+          mappedCurrentUser,
+          ...(filteredGuests?.filter((participant) =>
+            participantUsers.some((user) => user.userId === participant.id)
+          ) ?? []),
+        ];
+      }
+
       const list: ListDataItem[] = [];
       if (!!practitioners) {
         list.push(
@@ -340,11 +365,10 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         list.forEach((x) => (x.rightIcon = 'XIcon'));
         sortListDataItems(list);
       }
-      const cu = mapUserToListDataItem(currentUser);
-      cu.noClick = true;
-      return [cu, ...list];
+
+      return [mappedCurrentUser, ...list];
     },
-    [practitioners, currentUser]
+    [currentUser, filteredGuests, practitioners]
   );
 
   const formValue_end = getEventFormValues().end;
@@ -404,6 +428,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
             fillType="clear"
             fullWidth={true}
             label={'Choose event type'}
+            disabled={!!eventProps}
             selectedValue={getEventFormValues().eventType}
             onChange={(item: string) => {
               setEventFormValue('eventType', item);
@@ -545,6 +570,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         position={DialogPosition.Full}
       >
         <CalendarSearchParticipant
+          customList={filteredGuests}
           currentParticipantUsers={getEventFormValues().participants}
           onBack={onSearchParticipantClose}
           onDone={onSearchParticipantDone}
@@ -565,6 +591,7 @@ export const useCalendarAddEvent = (): ((
         return (
           <CalendarAddEvent
             event={options.event}
+            guests={options.guests}
             onUpdated={(isNew: boolean, event: CalendarEventModel) => {
               if (!!options.onUpdated) options.onUpdated(isNew, event);
               onSubmit();
