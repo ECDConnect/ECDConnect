@@ -122,7 +122,8 @@ namespace EcdLink.Api.CoreApi.Services
                 MeetingNotes = input.MeetingNotes,
                 OtherDescription = input.OtherDescription == null ? "": input.OtherDescription,
                 TotalCaregiversAttended = input.TotalCaregiversAttended == null ? 0 : input.TotalCaregiversAttended.Value,
-                CoachAttended = input.CoachAttend == null ? false : true
+                CoachAttended = input.CoachAttend == null ? false : true,
+                EventId = input.EventId
             });
             
             // insert participants for club meeting
