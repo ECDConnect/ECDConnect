@@ -27,6 +27,7 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   placeholder?: string;
   value?: string | number;
   hint?: string;
+  isAdminPortalField?: boolean;
   register?: UseFormRegister<T>;
   maxLength?: number;
   min?: number;
@@ -57,6 +58,7 @@ export const FormInput = <T extends FieldValues>({
   hint,
   maxLength,
   prefixIcon,
+  isAdminPortalField,
   ...restProps
 }: FormFieldProps<T>) => {
   const getInputStyle = () => {
@@ -163,6 +165,7 @@ export const FormInput = <T extends FieldValues>({
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
                 paddingLeft: prefixIcon ? 20 : 16,
+                backgroundColor: isAdminPortalField ? 'adminPortalBg' : '',
               }}
               {...restProps}
             />
