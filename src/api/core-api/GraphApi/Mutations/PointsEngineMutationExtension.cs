@@ -54,6 +54,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return pointsEngineService.CalculateLeaveNoOneBehind(clubId);
         }
 
+        public bool CalculateMeetRegularly([Service] IPointsEngineService pointsEngineService, Guid clubId, Guid clubMeetingId)
+        {
+            return pointsEngineService.CalculateMeetRegularly(clubId, clubMeetingId);
+        }
 
     }
 }
