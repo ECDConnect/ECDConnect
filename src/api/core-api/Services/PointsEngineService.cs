@@ -1994,7 +1994,6 @@ namespace EcdLink.Api.CoreApi.Services
                     PointsYTD = totalYearPoints
                 });
             }
-
             return true;
         }
         public bool CalculateBeCreative(Guid clubId, string userId, DateTime today)
