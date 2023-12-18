@@ -156,7 +156,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
         if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-        if (!this.Enabled)
+        if (this.Enabled)
         {
             _uId = _hierarchyEngine.GetIntegrationUserId();
 
@@ -202,7 +202,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         }
     }
 
-    public bool Enabled {  get { return this._apiMode != MappingMode.None; } }
+    public bool Enabled { get { return this._apiMode != MappingMode.None; } }
 
     #region Integration Points   
 
@@ -504,18 +504,18 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
         int statementsSent = 0;
         var submitPeriod = IncomeExpenseService.GetStatementPeriod(); //from the 25th of the previous month is open submission time
-                                                                      
+
         if (DateTime.Now.Date > submitPeriod.Start || DateTime.Now.Date < submitPeriod.End)//only run task daily withing submit window
         {
             ////[{"Month": "January","Year": "2023","StartupSupport": 10.0,"Fees": 0.0,"Donations": 10.0,"FundRaising": 10.0,"OtherIncome": 10.0,"Rent": 10.0,"Utilities": 10.0,"Food": 10.0,"Salary": 10.0,"Transport": 10.0,"OtherExpenses": 10.0,"Franchisee": {"Guid": "4778287e-073f-e711-80e0-005056815442"},"Document": {"Guid": "9c029379-3996-ec11-834e-00155dee5a05"}}]
-            var statementsUrl = Constants.SSIntegrationSettings.SLIncomeStatementIncome + Constants.SSIntegrationSettings.CreateMultiple;            
+            var statementsUrl = Constants.SSIntegrationSettings.SLIncomeStatementIncome + Constants.SSIntegrationSettings.CreateMultiple;
             var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
             var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("IncomeStatementPDF")).FirstOrDefault();
             var _mappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
 
             var allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
 
-            var practitionersWithDueStatements = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start) ).ToList();
+            var practitionersWithDueStatements = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start)).ToList();
             foreach (var prac in practitionersWithDueStatements)
             {
                 // TODO - This call should never return multiple
@@ -640,7 +640,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 {
                                     if (returnObj[0].Guid != null)
                                     {
-                                        remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;                                        
+                                        remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
 
                                         //update entity to note its statements has been sent
                                         prac.LastIncomeSubmittedDate = DateTime.Now;
@@ -731,7 +731,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(historyDays * -1), DateTime.Now);
         _mappedEntities = await GetMappedEntities(null, true, true);
         _mappedColumns = await GetMappedColumns();
-       
+
         if (changedColumns != null)
         {
             //run all inserts
@@ -892,7 +892,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
             if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
             {
-                _mappedEntities = await this.GetMappedEntities(null, true);
+                _mappedEntities = await this.GetMappedEntities(null, true, true);
 
                 _mappedColumns = await this.GetMappedColumns();
 
@@ -900,8 +900,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 //-------------------
                 //3. Iterate through all known coaches to get information below hierarchy
                 //-------------------
-                var mappedCoaches = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach)).ToList();
-                if (coachId!=null)
+                var mappedCoaches = _mappedEntities.Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.IsActive == true).ToList();
+                if (coachId != null)
                 {
                     mappedCoaches = mappedCoaches.Where(c => string.Equals(c.UserId, coachId)).ToList();
                 }
@@ -1057,7 +1057,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         if (!this.Enabled) return true;
 
         _mappedEntities = await GetMappedEntities();
-        var mappedCoach = _mappedEntities.Where(c => string.Equals(c.RemoteId, remoteCoachId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).FirstOrDefault();
+        var mappedCoach = _mappedEntities.Where(c => string.Equals(c.RemoteId, remoteCoachId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach && c.IsActive == true).FirstOrDefault();
         if (mappedCoach == null)
         {
             List<MappedCoach> remoteCoaches = await _apiManager.GetCoachesAll(remoteCoachId);
@@ -1098,7 +1098,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     }
                 }
             }
-        } else
+        }
+        else
         {
             await IntegrationByMappedCoach(null, mappedCoach.UserId);
         }
@@ -1452,7 +1453,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             StipendType = entity.StipendType,
                             StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
                             IsOnStipend = entity.StipendType != null && entity.StipendType != "None" ? true : false,
-                            SetupTraineeInitiated = true                                                    
+                            SetupTraineeInitiated = true
                         };
 
                         var newTrainee = new Trainee
@@ -1507,8 +1508,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             UserName = validUserName,
                             IdNumber = entity.IdNumber,
                             Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
-                            IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
-                            VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
+                            IsSouthAfricanCitizen = entity.IsSouthAfricanCitizen != null ? (bool)entity.IsSouthAfricanCitizen: false,
+                            VerifiedByHomeAffairs = entity.VerifiedByHomeAffairs != null ? (bool)entity.VerifiedByHomeAffairs : false,
                             DateOfBirth = Convert.ToDateTime(entity.BirthDate).Date,
                             FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
                             Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
@@ -2657,7 +2658,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     mapperLine.IsComplete = true;
                     //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                     _mapperRepo.Insert(mapperLine);
-                } else
+                }
+                else
                 {
                     coach = _coachGenericRepo.GetById(userId);
                 }
@@ -2793,12 +2795,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     //{
                                     string currentValue = prop.GetValue(entityUser, null) != null ? prop.GetValue(entityUser, null).ToString() : "";
 
-                                    if (localColumnChange.RemapToString) {
+                                    if (localColumnChange.RemapToString)
+                                    {
                                         if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
                                         {
                                             newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
                                         }
-                                    }    
+                                    }
                                     if (currentValue != newData)
                                     {
                                         //if the name is changed, remember to update the fullname as well
@@ -2839,7 +2842,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     {
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(coach, null) != null ? prop.GetValue(coach, null).ToString() : "";
-                                        if (localColumnChange.RemapToString) {
+                                        if (localColumnChange.RemapToString)
+                                        {
                                             if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
                                             {
                                                 newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
@@ -2875,12 +2879,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     {
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(prac, null) != null ? prop.GetValue(prac, null).ToString() : "";
-                                        if (localColumnChange.RemapToString) {
+                                        if (localColumnChange.RemapToString)
+                                        {
                                             if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
                                             {
                                                 newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
                                             }
-                                        }    
+                                        }
                                         if (currentValue != newData)
                                         {
                                             prop.SetValue(prac, newData);
@@ -2911,12 +2916,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(child, null) != null ? prop.GetValue(child, null).ToString() : "";
 
-                                        if (localColumnChange.RemapToString) {
+                                        if (localColumnChange.RemapToString)
+                                        {
                                             if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
                                             {
                                                 newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
                                             }
-                                        }    
+                                        }
                                         if (currentValue != newData)
                                         {
                                             prop.SetValue(child, newData);
@@ -2957,7 +2963,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(caregiver, null) != null ? prop.GetValue(caregiver, null).ToString() : "";
 
-                                         if (localColumnChange.RemapToString) {
+                                        if (localColumnChange.RemapToString)
+                                        {
                                             if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
                                             {
                                                 newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
@@ -3004,7 +3011,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
                                         string currentValue = prop.GetValue(address, null) != null ? prop.GetValue(address, null).ToString() : "";
 
-                                         if (localColumnChange.RemapToString) {
+                                        if (localColumnChange.RemapToString)
+                                        {
                                             if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
                                             {
                                                 newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
@@ -3040,7 +3048,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                         string newData = model.NewData;
                                         string currentValue = prop.GetValue(doc, null) != null ? prop.GetValue(doc, null).ToString() : "";
 
-                                        if (localColumnChange.RemapToString) {
+                                        if (localColumnChange.RemapToString)
+                                        {
                                             if (localColumnChange.RemapEntity != null && !string.IsNullOrEmpty(newData))
                                             {
                                                 newData = await _integrationHelperManager.RemapStaticStringToGuid(localColumnChange.RemapEntity, model.NewData);
@@ -3318,7 +3327,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         List<IntegrationAudit> completedAudits = new List<IntegrationAudit>();
 
         //Child user entities push with caregivers, finish first
-        var childrenInserted = inserts.Where(a => string.Equals(a.Entity,"Child"));
+        var childrenInserted = inserts.Where(a => string.Equals(a.Entity, "Child"));
         foreach (var childAudit in childrenInserted)
         {
             var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
@@ -3697,9 +3706,9 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                                 case "datetime":
                                                     jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                     break;
-                                                 case "date":
+                                                case "date":
                                                     jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
-                                                    break;    
+                                                    break;
                                                 default:
                                                     if (valueToSend.Length <= (int)changeLine.ColumnValidationLimit)
                                                     {
@@ -3707,7 +3716,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                                     }
                                                     else
                                                     {
-                                                       jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)changeLine.ColumnValidationLimit) + "\",");
+                                                        jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)changeLine.ColumnValidationLimit) + "\",");
                                                     }
                                                     break;
                                             }
@@ -4126,16 +4135,18 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         await _logManager.IntegrationLog(e.Message + " - " + apiResponse.ResponseString, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushInserts > Update Child > GetAPIHandlerResponse");
                     }
 
-                } else
+                }
+                else
                 {
                     //child doesnt exist yet or didnt map properly, and needs remapping
                     await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver no mapping exist" + cgChild.UserId.ToString(), cgChild.UserId.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver > Missing Child mapping in mappings");
                     await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver");
                 }
-            } else
+            }
+            else
             {
                 //end child check, if no child exists for this caregiver then dont need to send to SL, but a caregiver shouldnt exist without a child, so a different issue
-                await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString() , null, LogRelatedType.Error, "PushInserts > Create Caregiver");
+                await _logManager.IntegrationLog("Caregiver not created, child doesnt exist for caregiver" + newCG.Id.ToString(), newCG.Id.ToString(), null, LogRelatedType.Error, "PushInserts > Create Caregiver");
             }
         }
         return cgRemoteId;
@@ -4470,17 +4481,17 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                                 case "datetime":
                                                     jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                     break;
-                                               case "date":
+                                                case "date":
                                                     jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
                                                     break;
                                                 default:
                                                     if (valueToSend.Length <= (int)mappedColumnLine.ColumnValidationLimit)
                                                     {
-                                                       jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                                     }
                                                     else
                                                     {
-                                                       jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
                                                     }
                                                     break;
                                             }

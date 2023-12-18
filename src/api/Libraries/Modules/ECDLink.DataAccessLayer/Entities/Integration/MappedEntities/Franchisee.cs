@@ -11,7 +11,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         //public string SiteName { get; set; }        
         public string BirthDate { get; set; }
         public string CountryOfCitizenship { get; set; }
-        public bool IsSouthAfricanCitizen { get; set; }
+        public bool? IsSouthAfricanCitizen { get; set; }
         public string Age { get; set; }
         public string ProgrammeType { get; set; }
         public string EthnicGroup { get; set; }
