@@ -146,7 +146,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 if (clubMeeting.MeetingDate.HasValue && clubMeeting.MeetingDate.Value.Date <= DateTime.Now.Date)
                 {
-                    _pointsEngineService.CalculateMeetRegularly(input.ClubId, _applicationUserId, DateTime.Now);
+                    _pointsEngineService.CalculateMeetRegularly(input.ClubId, clubMeeting.Id);
                 }
             }
 
@@ -1122,7 +1122,7 @@ namespace EcdLink.Api.CoreApi.Services
                     MeetingNotes = item.MeetingNotes,
                     MeetingParticipants = meetingParticipants,
                     MeetingAbsentees = absentees,
-                    Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.Year == item.MeetingDate.Value.Year).Select(x => x.Points).Sum()
+                    Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
                 });
             }
 
