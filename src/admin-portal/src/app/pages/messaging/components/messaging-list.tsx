@@ -6,7 +6,7 @@ import debounce from 'lodash.debounce';
 import { GetAllMessageLogsForAdmin, GetTenantContext } from '@ecdlink/graphql';
 import { useQuery, useLazyQuery } from '@apollo/client';
 import { SearchDropDown, SearchDropDownOption, Dropdown } from '@ecdlink/ui';
-import { format, subDays } from 'date-fns';
+import { format, parseISO, subDays } from 'date-fns';
 import CustomDateRangePicker from '../../../components/date-picker';
 import NavigationTable from '../../../components/navigation-table';
 import { useHistory } from 'react-router';
@@ -66,7 +66,13 @@ export default function MessageList() {
 
   const getFormattedDate = (mDate: Date) => {
     const date = new Date(mDate);
-    return new Date(date.toString().slice(0, -1));
+    return new Date(date.toISOString());
+  };
+
+  const getFormattedDateString = (mDate: Date) => {
+    const date = new Date(mDate).toISOString();
+    const dateItems = date.split('T');
+    return dateItems[0] + '  ' + dateItems[1].slice(0, 5);
   };
 
   useEffect(() => {
@@ -89,7 +95,7 @@ export default function MessageList() {
           subject: item.subject,
           messageDate:
             item.messageDate !== null
-              ? format(getFormattedDate(item.messageDate), 'dd MMM yyyy hh:mm')
+              ? getFormattedDateString(item.messageDate)
               : '',
           status:
             getFormattedDate(item.messageDate) > new Date()
