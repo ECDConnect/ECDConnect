@@ -5,6 +5,7 @@ export const GenderList = gql`
     GetAllGender {
       id
       description
+      isActive
     }
   }
 `;

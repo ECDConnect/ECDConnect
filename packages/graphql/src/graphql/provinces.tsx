@@ -5,6 +5,7 @@ export const GetAllProvince = gql`
     GetAllProvince {
       id
       description
+      isActive
     }
   }
 `;

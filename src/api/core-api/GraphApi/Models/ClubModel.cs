@@ -20,7 +20,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public ClubSupportModel ClubSupport { get; set; }
         public List<ClubMemberModel> ClubMembers { get; set; }        
 
-        public ClubModel(Club club, Coach coach, int pointsTotal, int maxPointsTotal, int leagueRanking)
+        public ClubModel(Club club, Coach coach, int pointsTotal, int maxPointsTotal, int leagueRanking, int numberOfClubsInLeague)
         {
             var clubLeader = club.ClubLeaders.Where(x => x.IsActive && x.DateAccepted.HasValue && x.DateAssigned.HasValue).FirstOrDefault();
 
@@ -30,7 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             MaxPointsTotal = maxPointsTotal;
             LeagueRanking = leagueRanking;
             ClubCoach = new ClubCoachModel(coach);
-            League = club.League != null ? new LeagueModel(club.League) : null;
+            League = club.League != null ? new LeagueModel(club.League, numberOfClubsInLeague) : null;
             ClubMembers = club.ClubMembers.Select(x => new ClubMemberModel(x)).ToList();
             ClubLeader = clubLeader != null
                 ? new ClubLeaderModel(clubLeader) 
@@ -49,8 +49,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public List<IssueTask> IssuesTasks { get; set; }
         public List<ClubActivity> ClubActivities { get; set; }
 
-        public DetailClubModel(Club club, Coach coach, int pointsTotal, int maxPointsTotal, int leagueRanking, List<IssueTask> tasks, List<ClubActivity> activities)
-            : base(club, coach, pointsTotal, maxPointsTotal, leagueRanking)
+        public DetailClubModel(Club club, Coach coach, int pointsTotal, int maxPointsTotal, int leagueRanking, int numberOfClubsInLeague, List<IssueTask> tasks, List<ClubActivity> activities)
+            : base(club, coach, pointsTotal, maxPointsTotal, leagueRanking, numberOfClubsInLeague)
         {
             var incomingCLubLeader = club.ClubLeaders.Where(x => x.IsActive && !x.DateAccepted.HasValue && x.DateAssigned.HasValue).FirstOrDefault();
 

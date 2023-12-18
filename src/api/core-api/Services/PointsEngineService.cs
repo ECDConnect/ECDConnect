@@ -1629,6 +1629,7 @@ namespace EcdLink.Api.CoreApi.Services
                 PercentileStandingForCurrentYear = standingForCurrentYear,
             };
         }
+       
         #region Clubs
 
         // Yearly, calculate by 30 November and will be triggered by a cron job

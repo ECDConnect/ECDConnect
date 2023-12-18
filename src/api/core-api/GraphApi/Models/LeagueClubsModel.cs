@@ -19,5 +19,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string ClubName { get; set; }
         public int LeagueRank { get; set; }
         public int PointsTotal { get; set; }
+        public string CoachName { get; set; }
     }
 }

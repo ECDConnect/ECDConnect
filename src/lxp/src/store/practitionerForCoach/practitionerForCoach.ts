@@ -2,6 +2,7 @@ import { PractitionerDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  getChildProgressReportsStatusForUser,
   getPractitionerById,
   getPractitionersForCoach,
   getUserExpensesForCoach,
@@ -10,12 +11,14 @@ import {
 } from './practitionerForCoach.actions';
 import { PractitionerForCoachState } from './practitionerForCoach.types';
 import { getUserPointsSummaryForCoach } from '../points/points.actions';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: PractitionerForCoachState = {
   practitionerForCoach: undefined,
   practitionersForCoach: undefined,
   pointsForPractitionerUser: {},
   statementsForPractitionerUser: {},
+  childProgressReportStatusForPractitionerUser: {},
 };
 
 const practitionerForCoachSlice = createSlice({
@@ -34,6 +37,8 @@ const practitionerForCoachSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, getChildProgressReportsStatusForUser);
+
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitionerForCoach = action.payload;
     });
@@ -91,6 +96,17 @@ const practitionerForCoachSlice = createSlice({
         },
       };
     });
+
+    builder.addCase(
+      getChildProgressReportsStatusForUser.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+        state.childProgressReportStatusForPractitionerUser = {
+          ...state.childProgressReportStatusForPractitionerUser,
+          [action.meta.arg.userId]: action.payload,
+        };
+      }
+    );
   },
 });
 

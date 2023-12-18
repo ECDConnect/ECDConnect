@@ -141,7 +141,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
-        public virtual List<ActivityHostFamilyDaysDetail> Terms { get; set; }
+        public List<ActivityHostFamilyDaysDetail> Terms { get; set; }
     }
 
     public class ActivityHostFamilyDaysDetail
@@ -153,6 +153,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string DocumentStatus { get; set; } = "Not completed";
         public string DocumentStatusColor { get; set; } = MetricsColorEnum.Error.ToString();
         public int Points { get; set; } = 0;
+        public List<Guid> MeetingParticipantsPractitionerIds { get; set; }
     }
 
     public class ActivityLeaveNoOneBehind

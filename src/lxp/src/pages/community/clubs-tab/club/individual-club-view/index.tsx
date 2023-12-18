@@ -2,6 +2,7 @@ import { Tag } from '@/components/tag';
 import ROUTES from '@/routes/routes';
 import {
   Alert,
+  AlertType,
   BannerWrapper,
   Button,
   DialogPosition,
@@ -42,6 +43,8 @@ import { OfflineAlert } from '@/components/offline-alert';
 import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 import { IssuesAndTasks } from './issues-and-tasks';
+import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
+import { ReactComponent as NeutralEmoticon } from '@/assets/neutral-emoticon.svg';
 
 export function isCurrentPointsAtLeast80PercentOfTotal(
   currentPoints: number,
@@ -82,7 +85,7 @@ export const Club: React.FC = () => {
     new Date(),
     new Date(currentLeader?.dateAccepted ?? '')
   );
-  const today = new Date().setHours(0, 0, 0, 0);
+  const todayWithZeroHours = new Date().setHours(0, 0, 0, 0);
   const dueDateNextLeader = nextLeader
     ? addDays(
         new Date(nextLeader.dateAssigned),
@@ -91,13 +94,18 @@ export const Club: React.FC = () => {
     : undefined;
 
   const isDueDateNextLeaderTodayOrFuture =
-    !!dueDateNextLeader && dueDateNextLeader >= today;
+    !!dueDateNextLeader && dueDateNextLeader >= todayWithZeroHours;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isClubInALeague = !!club?.league?.id;
+  // TODO: check if club is in top 25% of league
   const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3;
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
+
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const isDecember = currentMonth === 11;
 
   const onOffline = useCallback(() => {
     return dialog({
@@ -323,6 +331,90 @@ export const Club: React.FC = () => {
     );
   }, [isOnline, activities, isClubInALeague]);
 
+  const renderEndOfYearMessage = useMemo(() => {
+    if (!isClubInALeague) return <></>;
+
+    if (!isOnline) return <OfflineAlert />;
+
+    let type: AlertType = 'warning';
+    let ordinalAbbreviation = 'th';
+    let message = `The ${club?.name} club ended the year in ${club?.leagueRanking}th place - encourage them to try harder next year!`;
+    let Icon = NeutralEmoticon;
+
+    if (club?.leagueRanking === 1) {
+      type = 'success';
+      ordinalAbbreviation = 'st';
+      message = `Congratulations to the ${club?.name} club for ending the year in the top position in their league!`;
+      Icon = PositiveEmoticon;
+    }
+
+    if (club?.leagueRanking === 2) {
+      type = 'success';
+      ordinalAbbreviation = 'nd';
+      message = `Well done to the ${club?.name} club for ending the year in the second position in their league!`;
+      Icon = PositiveEmoticon;
+    }
+
+    if (club?.leagueRanking === 3) {
+      type = 'success';
+      ordinalAbbreviation = 'rd';
+      message = `Well done to the ${club?.name} club for ending the year in the third position in their league!`;
+      Icon = PositiveEmoticon;
+    }
+
+    if (isTop25Percent && club?.leagueRanking > 3) {
+      type = 'success';
+      message = `The ${club?.name} club ended the year in ${club?.leagueRanking}th place - good effort!`;
+      Icon = PositiveEmoticon;
+    }
+
+    return (
+      <Alert
+        className="my-4"
+        type={type}
+        title={`${club?.leagueRanking}${ordinalAbbreviation} place`}
+        titleColor="textDark"
+        message={message}
+        messageColor="textDark"
+        customIcon={
+          <div>
+            <Icon className="h-12 w-12" />
+          </div>
+        }
+        button={
+          <>
+            <Typography
+              type="help"
+              color="textMid"
+              text={`They earned ${club?.pointsTotal} points!`}
+            />
+            <Button
+              className="mt-2"
+              color="primary"
+              type="filled"
+              textColor="white"
+              text="See points"
+              onClick={() => {
+                history.push(
+                  ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(':clubId', clubId)
+                );
+              }}
+            />
+          </>
+        }
+      />
+    );
+  }, [
+    club?.leagueRanking,
+    club?.name,
+    club?.pointsTotal,
+    clubId,
+    history,
+    isClubInALeague,
+    isOnline,
+    isTop25Percent,
+  ]);
+
   return (
     <BannerWrapper
       displayOffline={!isOnline}
@@ -372,7 +464,7 @@ export const Club: React.FC = () => {
           />
           {!!totalMembers ? (
             <>
-              {renderLeagueContent}
+              {isDecember ? renderEndOfYearMessage : renderLeagueContent}
               <Typography className="mb-2" type="h3" text="Club leader" />
               {hasLeader && (
                 <div>
