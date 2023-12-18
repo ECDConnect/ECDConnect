@@ -212,6 +212,7 @@ export type ActivityHostFamilyDaysDetail = {
   documentStatus?: Maybe<Scalars['String']>;
   documentStatusColor?: Maybe<Scalars['String']>;
   eventName?: Maybe<Scalars['String']>;
+  meetingParticipantsPractitionerIds?: Maybe<Array<Scalars['UUID']>>;
   points: Scalars['Int'];
   termName?: Maybe<Scalars['String']>;
   termNr: Scalars['Int'];
@@ -1309,6 +1310,12 @@ export type ChildProgressReportSummaryModel = {
   reportDateCreated?: Maybe<Scalars['String']>;
   reportId: Scalars['UUID'];
   reportPeriod?: Maybe<Scalars['String']>;
+};
+
+export type ChildProgressReportsStatus = {
+  __typename?: 'ChildProgressReportsStatus';
+  completedReports: Scalars['Int'];
+  numberOfChildren: Scalars['Int'];
 };
 
 export type ChildSortInput = {
@@ -2495,6 +2502,7 @@ export type ClubPointsSummaryModel = {
   __typename?: 'ClubPointsSummaryModel';
   clubId: Scalars['UUID'];
   clubName?: Maybe<Scalars['String']>;
+  coachName?: Maybe<Scalars['String']>;
   leagueRank: Scalars['Int'];
   pointsTotal: Scalars['Int'];
 };
@@ -2715,54 +2723,6 @@ export type CoachingClubBase = {
   secondaryTextColor?: Maybe<Scalars['String']>;
   secondaryTextPriority: Scalars['Int'];
   userId?: Maybe<Scalars['String']>;
-};
-
-export type CommunitySectionGg = {
-  __typename?: 'CommunitySectionGG';
-  id?: Maybe<Scalars['Int']>;
-  name?: Maybe<Scalars['String']>;
-};
-
-export type CommunitySectionGgInput = {
-  name?: InputMaybe<Scalars['String']>;
-};
-
-export type CommunitySectionItemGg = {
-  __typename?: 'CommunitySectionItemGG';
-  buttonText?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  link?: Maybe<Scalars['String']>;
-  linkedSection?: Maybe<Array<Maybe<CommunitySectionGg>>>;
-};
-
-export type CommunitySectionItemGgInput = {
-  buttonText?: InputMaybe<Scalars['String']>;
-  link?: InputMaybe<Scalars['String']>;
-  linkedSection?: InputMaybe<Scalars['String']>;
-};
-
-export type CommunitySectionItemSs = {
-  __typename?: 'CommunitySectionItemSS';
-  buttonText?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  link?: Maybe<Scalars['String']>;
-  linkedSection?: Maybe<Array<Maybe<CommunitySectionSs>>>;
-};
-
-export type CommunitySectionItemSsInput = {
-  buttonText?: InputMaybe<Scalars['String']>;
-  link?: InputMaybe<Scalars['String']>;
-  linkedSection?: InputMaybe<Scalars['String']>;
-};
-
-export type CommunitySectionSs = {
-  __typename?: 'CommunitySectionSS';
-  id?: Maybe<Scalars['Int']>;
-  name?: Maybe<Scalars['String']>;
-};
-
-export type CommunitySectionSsInput = {
-  name?: InputMaybe<Scalars['String']>;
 };
 
 export type ComparableDateTimeOperationFilterInput = {
@@ -4699,6 +4659,7 @@ export type LeagueModel = {
   leagueTypeId: Scalars['UUID'];
   leagueTypeName?: Maybe<Scalars['String']>;
   name?: Maybe<Scalars['String']>;
+  numberOfClubsInLeague: Scalars['Int'];
 };
 
 export type LeagueSortInput = {
@@ -5652,10 +5613,6 @@ export type Mutation = {
   createClubSupport?: Maybe<ClubSupport>;
   createCoach?: Maybe<Coach>;
   createCoachingCircleTopics?: Maybe<Scalars['String']>;
-  createCommunitySectionGG?: Maybe<Scalars['String']>;
-  createCommunitySectionItemGG?: Maybe<Scalars['String']>;
-  createCommunitySectionItemSS?: Maybe<Scalars['String']>;
-  createCommunitySectionSS?: Maybe<Scalars['String']>;
   createConnect?: Maybe<Scalars['String']>;
   createConnectItem?: Maybe<Scalars['String']>;
   createConsent?: Maybe<Scalars['String']>;
@@ -5781,10 +5738,6 @@ export type Mutation = {
   deleteCoach?: Maybe<Scalars['Boolean']>;
   deleteCoachForFranchisor?: Maybe<Coach>;
   deleteCoachingCircleTopics?: Maybe<Scalars['Boolean']>;
-  deleteCommunitySectionGG?: Maybe<Scalars['Boolean']>;
-  deleteCommunitySectionItemGG?: Maybe<Scalars['Boolean']>;
-  deleteCommunitySectionItemSS?: Maybe<Scalars['Boolean']>;
-  deleteCommunitySectionSS?: Maybe<Scalars['Boolean']>;
   deleteConnect?: Maybe<Scalars['Boolean']>;
   deleteConnectItem?: Maybe<Scalars['Boolean']>;
   deleteConsent?: Maybe<Scalars['Boolean']>;
@@ -6047,10 +6000,6 @@ export type Mutation = {
   updateCoachAboutInfo?: Maybe<Coach>;
   updateCoachClubClicked: Scalars['Boolean'];
   updateCoachingCircleTopics?: Maybe<CoachingCircleTopics>;
-  updateCommunitySectionGG?: Maybe<CommunitySectionGg>;
-  updateCommunitySectionItemGG?: Maybe<CommunitySectionItemGg>;
-  updateCommunitySectionItemSS?: Maybe<CommunitySectionItemSs>;
-  updateCommunitySectionSS?: Maybe<CommunitySectionSs>;
   updateCommunitySupport?: Maybe<Trainee>;
   updateConnect?: Maybe<Connect>;
   updateConnectItem?: Maybe<ConnectItem>;
@@ -6525,30 +6474,6 @@ export type MutationCreateCoachArgs = {
 
 export type MutationCreateCoachingCircleTopicsArgs = {
   input: CoachingCircleTopicsInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateCommunitySectionGgArgs = {
-  input: CommunitySectionGgInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateCommunitySectionItemGgArgs = {
-  input: CommunitySectionItemGgInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateCommunitySectionItemSsArgs = {
-  input: CommunitySectionItemSsInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateCommunitySectionSsArgs = {
-  input: CommunitySectionSsInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -7100,30 +7025,6 @@ export type MutationDeleteCoachForFranchisorArgs = {
 };
 
 export type MutationDeleteCoachingCircleTopicsArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteCommunitySectionGgArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteCommunitySectionItemGgArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteCommunitySectionItemSsArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationDeleteCommunitySectionSsArgs = {
   id: Scalars['String'];
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
@@ -8357,34 +8258,6 @@ export type MutationUpdateCoachClubClickedArgs = {
 export type MutationUpdateCoachingCircleTopicsArgs = {
   id: Scalars['String'];
   input: CoachingCircleTopicsInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateCommunitySectionGgArgs = {
-  id: Scalars['String'];
-  input: CommunitySectionGgInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateCommunitySectionItemGgArgs = {
-  id: Scalars['String'];
-  input: CommunitySectionItemGgInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateCommunitySectionItemSsArgs = {
-  id: Scalars['String'];
-  input: CommunitySectionItemSsInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateCommunitySectionSsArgs = {
-  id: Scalars['String'];
-  input: CommunitySectionSsInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -10926,10 +10799,6 @@ export type Query = {
   GetAllClubSupport?: Maybe<Array<Maybe<ClubSupport>>>;
   GetAllCoach?: Maybe<Array<Maybe<Coach>>>;
   GetAllCoachingCircleTopics: Array<Maybe<CoachingCircleTopics>>;
-  GetAllCommunitySectionGG: Array<Maybe<CommunitySectionGg>>;
-  GetAllCommunitySectionItemGG: Array<Maybe<CommunitySectionItemGg>>;
-  GetAllCommunitySectionItemSS: Array<Maybe<CommunitySectionItemSs>>;
-  GetAllCommunitySectionSS: Array<Maybe<CommunitySectionSs>>;
   GetAllConnect: Array<Maybe<Connect>>;
   GetAllConnectItem: Array<Maybe<ConnectItem>>;
   GetAllConsent: Array<Maybe<Consent>>;
@@ -11067,10 +10936,6 @@ export type Query = {
   GetClubSupportById?: Maybe<ClubSupport>;
   GetCoachById?: Maybe<Coach>;
   GetCoachingCircleTopicsById: Array<Maybe<CoachingCircleTopics>>;
-  GetCommunitySectionGGById: Array<Maybe<CommunitySectionGg>>;
-  GetCommunitySectionItemGGById: Array<Maybe<CommunitySectionItemGg>>;
-  GetCommunitySectionItemSSById: Array<Maybe<CommunitySectionItemSs>>;
-  GetCommunitySectionSSById: Array<Maybe<CommunitySectionSs>>;
   GetConnectById: Array<Maybe<Connect>>;
   GetConnectItemById: Array<Maybe<ConnectItem>>;
   GetConsentById: Array<Maybe<Consent>>;
@@ -11237,6 +11102,7 @@ export type Query = {
     Array<Maybe<ChildProgressReportSummaryModel>>
   >;
   childProgressReports?: Maybe<Array<Maybe<ChildProgressReportDetailedModel>>>;
+  childProgressReportsStatus?: Maybe<ChildProgressReportsStatus>;
   childrenAttendedVsAbsentMetrics?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   childrenByClassroomId?: Maybe<Array<Maybe<Child>>>;
   childrenMetrics?: Maybe<ChildrenMetricReport>;
@@ -11631,26 +11497,6 @@ export type QueryGetAllCoachArgs = {
 };
 
 export type QueryGetAllCoachingCircleTopicsArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllCommunitySectionGgArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllCommunitySectionItemGgArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllCommunitySectionItemSsArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllCommunitySectionSsArgs = {
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
 };
@@ -12322,30 +12168,6 @@ export type QueryGetCoachByIdArgs = {
 };
 
 export type QueryGetCoachingCircleTopicsByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetCommunitySectionGgByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetCommunitySectionItemGgByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetCommunitySectionItemSsByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetCommunitySectionSsByIdArgs = {
   id?: InputMaybe<Scalars['Int']>;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
@@ -13124,6 +12946,10 @@ export type QueryChildProgressReportSummaryArgs = {
 
 export type QueryChildProgressReportsArgs = {
   count: Scalars['Int'];
+};
+
+export type QueryChildProgressReportsStatusArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryChildrenAttendedVsAbsentMetricsArgs = {

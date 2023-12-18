@@ -53,7 +53,8 @@ import {
 } from 'date-fns';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
-import { clubSelectors } from '@/store/club';
+import { clubSelectors, clubThunkActions } from '@/store/club';
+import { getActivityMeetRegularDetails } from '@/store/club/club.actions';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -285,6 +286,27 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     getTraineeVisitDate();
   }, [appDispatch, practitioner?.userId, traineeCurrentVisit?.id]);
 
+  // Load club points, we need them so we can calculate action items for this practitioner
+  useEffect(() => {
+    if (isOnline && !!practitioner && !!practitioner.clubId) {
+      appDispatch(
+        clubThunkActions.getActivityHostFamilyDetails({
+          clubId: practitioner.clubId,
+        })
+      );
+
+      appDispatch(
+        getActivityMeetRegularDetails({
+          clubId: practitioner.clubId,
+          month: 0, // Fetch the whole year. TODO: figure out how to handle the actual points page overwriting this with just the current month :(
+          year: new Date().getFullYear(),
+        })
+      );
+    }
+  }, [appDispatch, isOnline, practitioner?.clubId]);
+
+  // TODO - This should be saved to the store
+  // Actually might be in the store, why are we fetching it, to bascially just check if they have a class
   const classroomsDetailsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
       userAuth?.auth_token!
@@ -553,9 +575,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     text: '',
     onActionClick: () =>
       history.push(
-        ROUTES.COMMUNITY.CLUB.MEMBER[
-          !!practitionerClub ? 'ROOT' : 'ADD'
-        ].replace(':practitionerId', practitionerId)
+        ROUTES.COMMUNITY.CLUB.MEMBER[!!practitionerClub ? 'ROOT' : 'ADD']
+          .replace(':practitionerId', practitionerId)
+          .replace(':clubId', practitioner?.clubId || 'new')
       ),
     classNames: 'bg-uiBg',
   });

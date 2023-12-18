@@ -131,12 +131,14 @@ class AttendanceService {
           userId: $userId
           classroomId: $classroomId
           startMonth: $startMonth
-          endMonth: $endMonth
+          endMonth: $endMonth          
         ) {
           month
           monthOfYear
           year
           percentageAttendance
+          numberOfSessions
+          totalScheduledSessions
         }
       }
       `,

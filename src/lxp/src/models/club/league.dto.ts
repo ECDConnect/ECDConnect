@@ -11,4 +11,5 @@ export type ClubPointsSummaryDto = {
   clubName: string;
   leagueRank: number;
   pointsTotal: number;
+  coachName: string;
 };

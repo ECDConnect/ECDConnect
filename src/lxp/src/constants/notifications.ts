@@ -6,6 +6,7 @@ interface NotificationTagConfigParams {
   AcceptAgreement: Partial<Message>;
   GetStartedTrainee: Partial<Message>;
   StartJourney: Partial<Message>;
+  AddedToProgramme: Partial<Message>;
 }
 export const notificationTagConfig: NotificationTagConfigParams = {
   AcceptAgreement: {
@@ -28,6 +29,13 @@ export const notificationTagConfig: NotificationTagConfigParams = {
       route: ROUTES.TRAINEE.TRAINEE_ONBOARDING,
     },
     viewType: 'Both',
+  },
+  AddedToProgramme: {
+    cta: '[[EditProfile]]',
+    routeConfig: {
+      route: ROUTES.PRACTITIONER.PROFILE.EDIT,
+    },
+    viewType: 'Messages',
   },
 };
 
