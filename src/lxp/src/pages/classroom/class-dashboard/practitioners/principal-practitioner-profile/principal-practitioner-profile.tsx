@@ -814,8 +814,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               </Dialog>
             </div>
             <Divider dividerType="dashed" className="my-4" />
-            {/*
-            // EC-1909 - Suppress ticket
             {!existingRemoval && (
               <div className="flex w-full justify-center">
                 <Button
@@ -844,7 +842,6 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </Button>
               </div>
             )}
-                  */}
           </>
         </div>
       )}
