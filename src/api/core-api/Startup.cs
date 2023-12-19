@@ -169,6 +169,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
+            services.AddTransient<IPointsService, PointsEngineService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IntegrationAPIManager>();
