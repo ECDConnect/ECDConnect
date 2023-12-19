@@ -95,7 +95,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
-        public virtual List<ClubMeeting> UpcomingMeetings { get; set; }
+        public virtual List<ActivityMeetRegularDetail> UpcomingMeetings { get; set; }
         public virtual List<ActivityMeetRegularDetail> PastMeetings { get; set; }
     }
 
@@ -108,6 +108,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public List<ClubUser> MeetingParticipants { get; set; }
         public List<ClubUser> MeetingAbsentees { get; set; }
         public int Points { get; set; }
+        public Guid? EventId { get; set; }
+        public string Name { set; get; }
     }
 
     public class ClubUser
