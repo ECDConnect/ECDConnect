@@ -230,7 +230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     status.AcceptedDate = null;
                     int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
                     //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
-                    if (practitioner.DateToBeRemoved != null)
+                    if (practitioner.DateToBeRemoved != null || practitioner.IsRegistered == null)
                     {
                         practitioner.DateToBeRemoved = DateTime.Now;
                         practitioner.DateAccepted = null;
