@@ -71,6 +71,11 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     history.push(ROUTES.CHILD_REGISTRATION, {
       step: ChildRegistrationSteps.registrationForm,
       childId: child.id,
+      childDetails: {
+        playgroupId: classroomGroupId,
+        firstName: childUser?.firstName,
+        surname: childUser?.surname,
+      },
     });
   };
 
