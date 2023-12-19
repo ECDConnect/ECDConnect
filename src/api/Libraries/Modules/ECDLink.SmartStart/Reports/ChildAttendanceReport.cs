@@ -36,12 +36,12 @@ namespace ECDLink.SmartStart.Reports
             return _attendanceService.GetMonthlyReport(monthlyAttendance);
         }
 
-        public List<ClassroomGroupChildAttendanceReportModel> GetClassroomAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
+        public List<ClassroomGroupChildAttendanceReportModel> GetClassroomAttendance(Guid classroomId, string userId, DateTime startMonth, DateTime endMonth)
         {
             var classReports = new List<ClassroomGroupChildAttendanceReportModel>();
 
             //get classroom
-            var classroom = _attendanceService.GetUserClassroom(userId, classgroupId);
+            var classroom = _attendanceService.GetUserClassroom(userId, classroomId);
 
             if (!classroom.ClassroomGroups.Any())
             {
@@ -185,24 +185,34 @@ namespace ECDLink.SmartStart.Reports
             return classReports;
         }
 
-        public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView( Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
+        public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView(Guid classroomId, string userId, DateTime startMonth, DateTime endMonth)
         {
             var overviewReport = new ClassroomGroupChildAttendanceReportOverviewModel();
             endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
-            overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
+            overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(classroomId, userId, startMonth, endMonth);
 
             var totalAttendance = new SortedDictionary<int, int>();
             int totalExpectedAttendance = 0;
 
+            var sessions = new HashSet<int>();
             foreach (var report in overviewReport.ClassroomAttendanceReport)
             {
                 totalExpectedAttendance += report.TotalExpectedAttendance;
                 foreach (var dayAttendance in report.Attendance)
                 {
                     if (totalAttendance.ContainsKey(dayAttendance.Key))
+                    {
                         totalAttendance[dayAttendance.Key] = totalAttendance[dayAttendance.Key] + (dayAttendance.Value.HasValue ? dayAttendance.Value.Value : 0);
+                    }
                     else
+                    {
                         totalAttendance.Add(dayAttendance.Key, dayAttendance.Value.HasValue ? dayAttendance.Value.Value : 0);
+                    }
+                    
+                    if (dayAttendance.Value.HasValue)
+                    {
+                        sessions.Add(dayAttendance.Key);
+                    }
                 }
 
             }
@@ -211,9 +221,7 @@ namespace ECDLink.SmartStart.Reports
             var stats = new TotalAttendanceStatsReport();
 
             // We should get this from the programme details, but just taking the first record now
-            stats.TotalSessions = overviewReport.ClassroomAttendanceReport.Any()
-                ? overviewReport.ClassroomAttendanceReport.First().TotalExpectedAttendance
-                : 0;  
+            stats.TotalSessions = sessions.Count();  
 
             // Total children who were not absent on any day
             stats.TotalChildrenAttendedAllSessions = overviewReport.ClassroomAttendanceReport.Where(x => x.Attendance.All(y => !y.Value.HasValue || y.Value.Value != 0)).Select(x => x.ChildUserId).Distinct().Count();

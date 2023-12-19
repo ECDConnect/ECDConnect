@@ -73,6 +73,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   const location = useLocation<PractitionerChildRegisterState>();
 
   const practitionerIdFromCoachView = location?.state?.practitionerId;
+  const childDetails = location?.state?.childDetails;
 
   const [provideReason, setProvideReason] = useState(false);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -126,6 +127,8 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   const practitioner =
     practitionerFromPractitionerView || practitionerFromCoachView;
+
+  const isTrainee = practitioner?.isTrainee;
 
   useEffect(() => {
     if (classroomsForPractitionerFromPractitionerFlow) {
@@ -221,7 +224,12 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
           : classroomsForPractitioner;
 
       filterUniqueClassrooms(
-        currentClassroomGroups.filter((item) => item.name !== UNSURE_CLASS)
+        currentClassroomGroups.filter(
+          (item) =>
+            (isTrainee && item) ||
+            (!isTrainee && item.name !== UNSURE_CLASS) ||
+            childDetails?.playgroupId! === item.classroomId
+        )
       ).forEach((groupedItem) => {
         groupedItems.push({
           label: groupedItem.name,

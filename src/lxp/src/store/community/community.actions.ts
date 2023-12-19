@@ -1,4 +1,4 @@
-import { CommunitySectionItemSs, CommunitySectionSs } from '@ecdlink/graphql';
+import { Connect, ConnectItem } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { CommunityService } from '@/services/CommunityService';
@@ -8,28 +8,28 @@ export interface CommunityConnectDataForGGWithLocale {
 }
 
 export const CommunityActions = {
-  GET_ALL_COMMUNITY_CONNECT_DATA_FOR_SS: 'GetAllCommunitySectionSS',
-  GET_ALL_COMMUNITY_SECTION_ITEM_SS: 'GetAllCommunitySectionItemSS',
+  GET_ALL_CONNECT: 'getAllConnect',
+  GET_ALL_CONNECT_ITEM: 'getAllConnectItem',
 };
 
-export const getCommunitySectionSS = createAsyncThunk<
-  CommunitySectionSs[],
+export const getAllConnect = createAsyncThunk<
+  Connect[],
   { locale: string },
   ThunkApiType<RootState>
 >(
-  CommunityActions.GET_ALL_COMMUNITY_CONNECT_DATA_FOR_SS,
+  CommunityActions.GET_ALL_CONNECT,
   async ({ locale }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
 
     try {
-      let content: CommunitySectionSs[] | undefined = undefined;
+      let content: Connect[] | undefined = undefined;
 
       if (userAuth?.auth_token) {
         content = await new CommunityService(
           userAuth?.auth_token ?? ''
-        ).GetAllCommunitySectionSS(locale);
+        ).getAllConnect(locale);
         return content;
       } else {
         return rejectWithValue('no access token, profile check required');
@@ -40,24 +40,24 @@ export const getCommunitySectionSS = createAsyncThunk<
   }
 );
 
-export const getAllCommunitySectionItemSS = createAsyncThunk<
-  CommunitySectionItemSs[],
+export const getAllConnectItem = createAsyncThunk<
+  ConnectItem[],
   { locale: string },
   ThunkApiType<RootState>
 >(
-  CommunityActions.GET_ALL_COMMUNITY_SECTION_ITEM_SS,
+  CommunityActions.GET_ALL_CONNECT_ITEM,
   async ({ locale }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
 
     try {
-      let content: CommunitySectionItemSs[] | undefined = undefined;
+      let content: ConnectItem[] | undefined = undefined;
 
       if (userAuth?.auth_token) {
         content = await new CommunityService(
           userAuth?.auth_token ?? ''
-        ).GetAllCommunitySectionItemSS(locale);
+        ).getAllConnectItem(locale);
 
         return content;
       } else {

@@ -11,6 +11,8 @@ import { NotificationHeaderCard } from '../notification-header-card/notification
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { notificationTagConfig } from '@/constants/notifications';
+import { disableBackendNotification } from '@/store/notifications/notifications.actions';
 
 interface DashboardItemsProps extends ComponentBaseProps {
   listItems: StackedListItemType[];
@@ -46,6 +48,15 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       return showOnlineOnly();
     }
 
+    if (notification.message?.isFromBackend) {
+      appDispatch(
+        disableBackendNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+    }
+    appDispatch(notificationActions.removeNotification(notification));
+
     if (notification.message.routeConfig) {
       history.push(
         notification.message.routeConfig.route,
@@ -53,8 +64,11 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       );
     }
 
-    if (!notification.message?.isFromBackend) {
-      appDispatch(notificationActions.removeNotification(notification));
+    for (const [key, value] of Object.entries(notificationTagConfig)) {
+      if (value.cta === notification.message.cta && value.routeConfig!) {
+        history.push(value?.routeConfig?.route);
+        break;
+      }
     }
   };
 

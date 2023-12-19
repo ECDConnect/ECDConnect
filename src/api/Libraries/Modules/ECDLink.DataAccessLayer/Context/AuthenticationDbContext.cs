@@ -98,6 +98,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Mother> Mothers { get; set; }
         public DbSet<Infant> Infants { get; set; }
         public DbSet<Trainee> Trainees { get; set; }
+        public DbSet<TeamLead> TeamLead {  get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }

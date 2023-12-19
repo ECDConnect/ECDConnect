@@ -12,6 +12,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> PullSmartSpaceVisitsData();
         Task IntegrationStatementsData();
         Task IntegrationAttendanceByDueData();
+        Task PushMonthlyAttendancePdf();
         Task<bool> IntegrationUpdates();
         Task<bool> IntegrationByTrainees();
         Task AutoSubmitStatements();

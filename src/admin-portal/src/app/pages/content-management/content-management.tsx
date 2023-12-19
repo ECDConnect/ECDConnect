@@ -420,23 +420,23 @@ export function ContentManagement() {
                   </div>
                 )}
                 <div
-                  className="bg-adminPortalBg relative h-full rounded-xl p-12"
+                  className="relative h-full rounded-xl bg-white p-12"
                   style={{ minHeight: '36rem' }}
                 >
-                  {/* {specialType === '' && (
-                    <div className="relative w-6/12">
+                  {specialType === '' && (
+                    <div className="relative w-6/12 py-8">
                       <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                         {searchValue === '' && (
                           <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
                         )}
                       </span>
                       <input
-                        className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                        placeholder="      Search by type..."
+                        className="bg-adminPortalBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                        placeholder="      Search by title, section or content..."
                         onChange={search}
                       />
                     </div>
-                  )} */}
+                  )}
                   {selectedType &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (

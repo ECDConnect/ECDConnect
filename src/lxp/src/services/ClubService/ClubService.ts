@@ -261,32 +261,48 @@ class ClubService {
       errors?: {};
     }>(``, {
       query: `
-        query GetActivityMeetRegularDetails($clubId: UUID!, $month: Int!, $year: Int!) {
-          activityMeetRegularDetails(clubId: $clubId, month: $month, year: $year) {
+      query GetActivityMeetRegularDetails($clubId: UUID!, $month: Int!, $year: Int!) {
+        activityMeetRegularDetails(clubId: $clubId, month: $month, year: $year) {
+        points
+        pointsColor
+        upcomingMeetings {
+            name
+            eventId
+            meetingDate
+            meetingNotes
+            meetingAttendancePerc
+            meetingAttendanceColor
             points
-            pointsColor
-            upcomingMeetings {
-              meetingDate
+            meetingParticipants {
+            userId
+            firstName
+            surname
             }
-            pastMeetings {
-              meetingDate
-              meetingNotes
-              meetingAttendancePerc
-              meetingAttendanceColor
-              points
-              meetingParticipants {
-                userId
-                firstName
-                surname
-              }
-              meetingAbsentees {
-                userId
-                firstName
-                surname
-              }
-            } 
-          }     
-        }`,
+            meetingAbsentees {
+            userId
+            firstName
+            surname
+            }
+        }
+        pastMeetings {
+            meetingDate
+            meetingNotes
+            meetingAttendancePerc
+            meetingAttendanceColor
+            points
+            meetingParticipants {
+            userId
+            firstName
+            surname
+            }
+            meetingAbsentees {
+            userId
+            firstName
+            surname
+            }
+        } 
+        }     
+    }`,
       variables: {
         ...input,
       },
@@ -397,6 +413,7 @@ class ClubService {
               name
               leagueTypeId
               leagueTypeName
+              numberOfClubsInLeague
             }
             clubCoach {
               userId
@@ -437,6 +454,7 @@ class ClubService {
               whatsAppNumber
               profileImageUrl
               welcomeMessage
+              shareContactInfo
             }
           }
         }`,
@@ -470,6 +488,7 @@ class ClubService {
               name
               leagueTypeId
               leagueTypeName
+              numberOfClubsInLeague
             }
             clubCoach {
               userId
@@ -521,6 +540,7 @@ class ClubService {
               whatsAppNumber
               profileImageUrl
               welcomeMessage
+              shareContactInfo
             }
             clubActivities {
               name
@@ -563,6 +583,7 @@ class ClubService {
               name
               leagueTypeId
               leagueTypeName
+              numberOfClubsInLeague
             }
             clubCoach {
               userId
@@ -613,6 +634,7 @@ class ClubService {
               whatsAppNumber
               profileImageUrl
               welcomeMessage
+              shareContactInfo
             }
             clubActivities {
               name
@@ -792,6 +814,7 @@ class ClubService {
               clubName
               leagueRank
               pointsTotal
+              coachName
             }
           }
         }`,
@@ -887,6 +910,7 @@ class ClubService {
                   documentStatus
                   documentStatusColor
                   points
+                  meetingParticipantsPractitionerIds
               }
           }
         }

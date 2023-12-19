@@ -215,7 +215,7 @@ export default function UiTable({
       return column.field === columns[0].field ? display_value : <></>;
     }
     let rowValue: any;
-    console.log(column?.field);
+
     const checkboxCell = (
       <input
         type="checkbox"
@@ -422,7 +422,7 @@ export default function UiTable({
         rows={makeRows()}
         per_page={20}
         no_content_text="-"
-        striped
+        striped={false}
         bordered
       />
     </div>

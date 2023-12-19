@@ -118,9 +118,9 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
                 }; Cellphone: ${
                   practitioner?.user?.phoneNumber || '000000000000'
                 }) have set up my own enterprise and am committed to providing early childhood development services to a maximum of 6 children, from 8am - 6pm, Monday to Friday for the the term agreed upon at the site, ${
-                  coach?.siteAddress?.addressLine1
-                }, ${coach?.siteAddress?.addressLine2}, ${
-                  coach?.siteAddress?.addressLine3
+                  practitioner?.siteAddress?.addressLine1
+                }, ${practitioner?.siteAddress?.addressLine2}, ${
+                  practitioner?.siteAddress?.addressLine3
                 }.`}
                 type="body"
                 color="textMid"

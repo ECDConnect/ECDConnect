@@ -139,20 +139,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public List<PractitionerModel> GetAllPractitioners()
         {
             ApplicationUser currentUser = (ApplicationUser)_contextAccessor.HttpContext.GetUser();
+
             List<Practitioner> practitioners = new List<Practitioner>();
+
             if (currentUser.coachObjectData != null)
             {
                 practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
-            } else if (currentUser.practitionerObjectData != null && currentUser.practitionerObjectData.IsPrincipal.HasValue && currentUser.practitionerObjectData.IsPrincipal.Value)
+            }
+            else if (currentUser.practitionerObjectData != null && currentUser.practitionerObjectData.IsPrincipal.HasValue && currentUser.practitionerObjectData.IsPrincipal.Value)
             {
                 practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
             }
 
             List<PractitionerModel> practitionerList = new List<PractitionerModel>();
+
             foreach (var practitioner in practitioners)
             {
                 practitionerList.Add(GetPractitionerDetails(practitioner));
             }
+
             return practitionerList;
         }
 
@@ -196,14 +201,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 practitionerRecord.ClubId = clubMember?.Club?.Id;
                 practitionerRecord.ClubName = clubMember?.Club?.Name;
-                practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
-                practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
-            }
-
-            if (practitioner.ClubSupport != null)
-            {
-                practitionerRecord.IsNewInSupportRole = practitioner.ClubSupport.IsNewInSupportRole;
             }
 
             List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth());
@@ -908,9 +906,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
                 timeline.StarterLicenseDate = starterLicense?.LicenseDate;
                 timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
-
-                timeline.SignFranchiseeAgreementDeadlineDate = starterLicense?.LicenseDate.Value.AddDays(7);
-                timeline.SignStartUpSupportAgreementDeadlineDate = starterLicense?.LicenseDate.Value.AddDays(7);
             } else
             {
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_not_received;
@@ -924,6 +919,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
                 timeline.SmartSpaceLicenseColor = MetricsColorEnum.Success.ToString();
+
+                timeline.SignFranchiseeAgreementDeadlineDate = smartSpaceLicense?.LicenseDate.Value.AddDays(7);
+                timeline.SignStartUpSupportAgreementDeadlineDate = smartSpaceLicense?.LicenseDate.Value.AddDays(7);
             }
             else
             {

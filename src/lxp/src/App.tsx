@@ -25,6 +25,12 @@ import { differenceInHours, getTime, isSameDay } from 'date-fns';
 import { syncThunkActions } from './store/sync';
 import { useAppDispatch } from './store';
 import { practitionerSelectors } from './store/practitioner';
+import { AppErrorHandler } from '@ecdlink/core';
+import { stopReportingRuntimeErrors } from 'react-error-overlay';
+
+if (process.env.NODE_ENV === 'development') {
+  stopReportingRuntimeErrors();
+}
 
 const App: React.FC = () => {
   const dialog = useDialog();
@@ -178,7 +184,9 @@ const App: React.FC = () => {
   return (
     <IonApp className="m-auto max-w-4xl bg-white">
       <IonReactRouter>
-        <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
+        <AppErrorHandler>
+          <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
+        </AppErrorHandler>
       </IonReactRouter>
     </IonApp>
   );

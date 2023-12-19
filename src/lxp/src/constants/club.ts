@@ -36,6 +36,9 @@ export const ClubActivitiesPointsPerLeague = {
   HostFamilyDays: {
     All: { max: 300, green: 225, amber: 224, red: 0 },
   },
+  CompleteChildProgressReports: {
+    All: { max: 200, green: 150, amber: 149, red: 0 },
+  },
   LeaveNoOneBehind: {
     All: { max: 100, green: 75, amber: 74, red: 0 },
   },

@@ -1,5 +1,6 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -39,11 +40,13 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -885,9 +888,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<ClassReassignmentDisplay>> GetActionItemClassReassignmentHistory(
-IGenericRepositoryFactory repoFactory,
-[Service] UserManager<ApplicationUser> userManager,
-string practitionerId)
+            IGenericRepositoryFactory repoFactory,
+            [Service] UserManager<ApplicationUser> userManager,
+            string practitionerId)
         {
             DateTime currentDate = DateTime.Now;
 
@@ -1121,6 +1124,42 @@ string practitionerId)
             var weekendDays = new List<DayOfWeek>() { DayOfWeek.Saturday, DayOfWeek.Sunday };
 
             return days.Where(d => !weekendDays.Contains(d.DayOfWeek));
+        }
+
+        public ChildProgressReportsStatus GetChildProgressReportsStatus(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            HierarchyEngine hierarchyEngine,
+            string userId)
+        {
+            var user = contextAccessor.HttpContext.GetUser();
+            var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
+
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+
+
+            var practitioner = practRepo.GetByUserId(userId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(userId);
+
+            var classroomGroups = classroomGroupRepo.GetAll()
+                .Where(c => c.UserId.HasValue && c.UserId.Value == Guid.Parse(userId)).ToList();
+
+            var childCount = childRepo.GetAll()
+               .Where(c => c.IsActive == true
+                   && c.Hierarchy.StartsWith(practitionerHieracry))
+               .Include(c => c.User)
+               .Count();
+
+            // Notifications for child progress reports
+            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, uId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), DateTime.Now);
+
+            return new ChildProgressReportsStatus
+            {
+                CompletedReports = reportCounts.dueReportsSubmitted,
+                NumberOfChildren = childCount
+            };
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]

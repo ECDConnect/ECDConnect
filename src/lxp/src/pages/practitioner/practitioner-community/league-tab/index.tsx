@@ -119,7 +119,7 @@ export const PractitionerLeagueView: React.FC = () => {
                   Math.max(userLeaguePosition - showAbove, 0),
                   userLeaguePosition + showBelow + 1
                 )
-                .map((club, index) => (
+                .map((club) => (
                   <div key={club.clubId}>
                     <PointsDetailsCard
                       pointsEarned={club.pointsTotal}

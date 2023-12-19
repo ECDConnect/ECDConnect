@@ -54,6 +54,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var visit = GetVisitFromInputModel(input);
             return _visitRepo.Insert(visit);
         }
+        
         private Visit GetVisitFromInputModel(VisitModel input)
         {
             if (input == null)
@@ -79,16 +80,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 LinkedVisitId = input.LinkedVisitId != null ? input.LinkedVisitId : null
             };
         }
+        
         public Visit AddAdditionalVisit(VisitModel input)
         {
             var visit = GetAdditionalVisitFromInputModel(input);
             return _visitRepo.Insert(visit);
         }
+        
         public Visit AddVisitForPractitioner(VisitModel input)
         {
             var visit = GetPractitionerVisitFromInputModel(input);
             return _visitRepo.Insert(visit);
         }
+        
         private Visit GetPractitionerVisitFromInputModel(VisitModel input)
         {
             if (input == null)
@@ -178,6 +182,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 PlannedVisitDate = input.PlannedVisitDate
             };
         }
+        
         private Visit GetAdditionalVisitFromInputModel(VisitModel input)
         {
             if (input == null)
@@ -231,6 +236,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return message;
         }
+        
         public string GetNextVisitLessThan7DaysAway(Guid Id, string type, bool withinWeek)
         {
             var message = "";
@@ -288,6 +294,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return message;
         }
+        
         public string GetNextVisitMoreThan7DaysAway(Guid Id, string type)
         {
             var message = "";
@@ -323,6 +330,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return message;
         }
+        
         public int GetMissedVisitsForHCWCount(string HCWId, string type)
         {
             var visitCount = 0;
@@ -339,6 +347,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return visitCount;
         }
+        
         public int GetVisitsDueForHCWCount(string HCWId, string type)
         {
             var visitCount = 0;
@@ -357,6 +366,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return visitCount;
         }
+        
         public DateTime? GetClientsNextVisitDate(Guid Id, string type)
         {
             Visit nextVisit = null;
@@ -938,6 +948,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return visitId;
         }
+        
         public Visit GetVisitForUserForType(string id, string userType, string vType)
         {
             if (userType == Constants.SSSettings.client_trainee)
@@ -962,16 +973,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         public List<Visit> GetPQAVisitsForPractitioner(string userId)
         {
-           return _visitRepo.GetAll().Where(x => x.Practitioner.UserId == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.Attended == true &&
-                                                (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 ||
-                                                x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)).OrderByDescending(x => x.PlannedVisitDate).ToList();
+            return _visitRepo.GetAll().Where(x => 
+                x.Practitioner.UserId == userId 
+                && x.VisitType.Type == Constants.SSSettings.client_practitioner 
+                && x.Attended == true 
+                && (x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1 ||
+                    x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up))
+                .OrderByDescending(x => x.PlannedVisitDate)
+                .ToList();
         }
 
         public List<Visit> GetReAccreditationVisitsForPractitioner(string userId)
         {
-            return _visitRepo.GetAll().Where(x => x.Practitioner.UserId == userId && x.VisitType.Type == Constants.SSSettings.client_practitioner && x.Attended == true &&
-                                                 (x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 ||
-                                                 x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)).OrderByDescending(x => x.PlannedVisitDate).ToList();
+            return _visitRepo.GetAll().Where(x => 
+                x.Practitioner.UserId == userId 
+                && x.VisitType.Type == Constants.SSSettings.client_practitioner 
+                && x.Attended == true 
+                && (x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1 ||
+                    x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up))
+                .OrderByDescending(x => x.PlannedVisitDate)
+                .ToList();
         }
 
         #endregion
@@ -1039,6 +1060,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     addNewPQAVisit = true;
                 }
 
+                // TODO - I don't think this code can ever run, its inside an if block checking for a different visist type
+                // Is it meant to check the new visits type (visitType) not the linked visit?
                 if (linkedVisit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
                 {
                     if (totalVisits < 3) { 
@@ -1594,6 +1617,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
+        
         public Visit UpdateVisitPlannedVisitDate(UpdateVisitPlannedVisitDateModel input)
         {
             var visit = _visitRepo.GetById(input.VisitId);

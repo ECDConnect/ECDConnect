@@ -845,6 +845,8 @@ namespace EcdLink.Api.CoreApi
             public const string meeting_type_caregiver_meeting = "caregiver_meeting";
             public const string meeting_type_other = "other";
 
+            public const string calendar_meeting_type = "Club Monthly Meeting";
+
             public const string no_club_leader = "No club leader";
             public const string contact_club_leader = "Contact club leader";
             public const string contact_club_leader_name = "Contact ";
@@ -868,6 +870,8 @@ namespace EcdLink.Api.CoreApi
             public const string name_rising_stars = "Rising Stars";
             public const string top_of_the_league = "Top of the league";
             public const string points_earned = " points earned in ";
+            public const string coach_meeting_attended = ", Attend club meeting";
+            public const string first_meeting_attended = ", Attended first club meeting";
             public const int purple_club_max_points = 2200;
             public const int non_purple_club_max_points = 2000;
 
@@ -881,7 +885,12 @@ namespace EcdLink.Api.CoreApi
             public const string sub_progress_tracking = "Progress tracking";
 
             public const string document_success = "Image completed";
-            public const string document_no_success = "Image incompleted";
+            public const string document_verified = "Image verified";
+            public const string document_in_complete = "Image incomplete";
+            public const string document_waiting_verified = "Image uploaded, waiting for verification";
+            public const string document_images_add = "Images added";
+
+            public const string not_completed = "Not completed";
 
             public static readonly int[] allowed_months = { 4,5,6,7,8,9,10,11 };
 
