@@ -19,6 +19,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string? FileType { get; set; }
         public string? OtherDescription { get; set; }
         public int? TotalCaregiversAttended { get; set; }
+        public Guid? EventId { get; set; }
 
     }
 
