@@ -136,6 +136,31 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         #region Practitioners
 
+        public List<PractitionerModel> GetAllPractitioners()
+        {
+            ApplicationUser currentUser = (ApplicationUser)_contextAccessor.HttpContext.GetUser();
+
+            List<Practitioner> practitioners = new List<Practitioner>();
+
+            if (currentUser.coachObjectData != null)
+            {
+                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
+            }
+            else if (currentUser.practitionerObjectData != null && currentUser.practitionerObjectData.IsPrincipal.HasValue && currentUser.practitionerObjectData.IsPrincipal.Value)
+            {
+                practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
+            }
+
+            List<PractitionerModel> practitionerList = new List<PractitionerModel>();
+
+            foreach (var practitioner in practitioners)
+            {
+                practitionerList.Add(GetPractitionerDetails(practitioner));
+            }
+
+            return practitionerList;
+        }
+
         public PractitionerModel GetPractitionerDetails(Practitioner practitioner)
         {
             PractitionerModel practitionerRecord = new PractitionerModel();
