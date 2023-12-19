@@ -150,9 +150,11 @@ export const RemovePractitionerFromProgramme: React.FC<
     useState<ClassroomGroupDto[]>();
 
   const classroomsGroupsForPractitioner = async () => {
-    const classroomDetails = classroomGroups?.filter((item: any) => {
-      return item?.userId === practitioner?.userId;
-    });
+    const classroomDetails = classroomGroups?.filter(
+      (item: ClassroomGroupDto) => {
+        return item?.userId === practitioner?.userId;
+      }
+    );
 
     setPractitionerClassroomGroups(classroomDetails);
     var mappedClasses = classroomDetails.reduce((obj, val) => {
