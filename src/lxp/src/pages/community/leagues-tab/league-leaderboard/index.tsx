@@ -68,6 +68,7 @@ export const LeagueLeaderBoard: React.FC = () => {
                 pointsEarned={club.pointsTotal}
                 activityCount={club.leagueRank}
                 title={club.clubName}
+                description={club.coachName}
                 size="medium"
                 className="mb-1"
                 colour={club.leagueRank <= 3 ? 'successBg' : 'uiBg'}

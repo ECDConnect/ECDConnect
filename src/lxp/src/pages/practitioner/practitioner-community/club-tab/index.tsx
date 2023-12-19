@@ -61,6 +61,9 @@ export const ClubTab: React.FC = () => {
     clubSelectors.getActivityHostFamilyDetailsSelector(clubId)
   );
   const notifications = useSelector(getAllNotifications);
+  const clubRankingPercentage = useSelector(
+    clubSelectors.getClubRankingPercentageSelector(clubId)
+  );
 
   const history = useHistory();
 
@@ -113,8 +116,9 @@ export const ClubTab: React.FC = () => {
   );
   const isSupportRole = club?.clubSupport?.userId === user?.id;
   const isToShowPointsScreen = shouldShowPoints();
-  // TODO: add backend support for top 25% calculation
-  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3;
+  const isTop25Percent =
+    (club?.leagueRanking && club?.leagueRanking <= 3) ||
+    (clubRankingPercentage && clubRankingPercentage <= 25);
 
   // From EC-1515
   const onAddMeetingOrEvent = () => {

@@ -422,7 +422,7 @@ export default function UiTable({
         rows={makeRows()}
         per_page={20}
         no_content_text="-"
-        striped
+        striped={false}
         bordered
       />
     </div>

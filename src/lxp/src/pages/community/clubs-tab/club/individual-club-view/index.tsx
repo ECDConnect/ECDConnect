@@ -82,7 +82,7 @@ export const Club: React.FC = () => {
     clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
   const clubRankingPercentage = useSelector(
-    clubSelectors.getCoachClubRankingPercentageSelector(clubId)
+    clubSelectors.getClubRankingPercentageSelector(clubId)
   );
 
   const dialog = useDialog();
