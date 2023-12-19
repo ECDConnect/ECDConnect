@@ -1,5 +1,5 @@
 import { DocumentNode, useMutation, useQuery } from '@apollo/client';
-import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
+import { NOTIFICATION, useNotifications } from '@ecdlink/core';
 import {
   CreateEducation,
   CreateGender,
@@ -48,7 +48,10 @@ import {
   UpdateRelation,
 } from '@ecdlink/graphql';
 import {
+  ActionModal,
   Button,
+  Dialog,
+  DialogPosition,
   Divider,
   FormInput,
   Typography,
@@ -56,6 +59,7 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { newGuid } from '../../../../utils/uuid.utils';
+import { XIcon } from '@heroicons/react/solid';
 
 interface EditStaticDataProps {
   query: string | DocumentNode;
@@ -143,6 +147,9 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
   const [update] = useMutation(handleUpdateQuery(query));
   const key = query as string;
   const [deleteMutation] = useMutation(handleDeleteQuery(query));
+  const [formIsDirty, setFormIsDirty] = useState(false);
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
+  const [displaySaveForm, setDisplaySaveForm] = useState(false);
 
   const findQuery = (query) => {
     switch (query) {
@@ -185,6 +192,9 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
   });
   const [dataValues, setDataValues] = useState(
     data?.[key]?.filter((item) => item?.isActive === true)
+  );
+  const dataValuesDescriptionLength = dataValues?.filter(
+    (item) => item?.description !== ''
   );
 
   const handleInputModels = useCallback((item: any) => {
@@ -282,6 +292,13 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
 
   const onChange = (e, idx) => {
     let newArray = [...dataValues];
+    if (query === 'GetAllProgrammeAttendanceReason') {
+      newArray[idx] = { ...newArray[idx], reason: e.target.value };
+
+      setDataValues(newArray);
+
+      return;
+    }
     newArray[idx] = { ...newArray[idx], description: e.target.value };
 
     setDataValues(newArray);
@@ -363,7 +380,8 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
           }),
     [data, dataValues, key, query]
   );
-  const disabled = filteredArr?.length === 0;
+  const disabled =
+    filteredArr?.length === 0 || dataValuesDescriptionLength?.length === 0;
 
   const onSubmit = async () => {
     filteredArr?.map(async (item) => {
@@ -442,8 +460,27 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
     });
   };
 
+  useEffect(() => {
+    if (filteredArr?.length > 0) {
+      setFormIsDirty(true);
+    } else {
+      setFormIsDirty(false);
+    }
+  }, [filteredArr?.length]);
+  console.log({ displayFormIsDirty });
   return (
     <div className="w-full p-4">
+      {formIsDirty && (
+        <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+          <button
+            className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+            onClick={() => setDisplayFormIsDirty(true)}
+          >
+            <span className="sr-only">Close panel</span>
+            <XIcon className="h-6 w-6" aria-hidden="true" />
+          </button>
+        </div>
+      )}
       <Typography
         weight="semibold"
         type={'h1'}
@@ -478,46 +515,75 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         dataValues?.map((item, idx: number) => {
           if (query === 'GetAllLanguage') {
             return (
-              <div className="flex items-center gap-2" key={idx}>
-                <FormInput
-                  className="bg-adminPortalBg my-4 w-9/12"
-                  id={item?.id}
-                  value={item?.reason || item?.description}
-                  // disabled={isViewAnswers}
-                  onChange={(e) => onChange(e, idx)}
-                  textInputType="input"
-                  placeholder={'Add a response...'}
-                />
-                <FormInput
-                  className="bg-adminPortalBg my-4 w-3/12"
-                  id={item?.id}
-                  value={item?.locale}
-                  // disabled={isViewAnswers}
-                  onChange={(e) => onLocaleChange(e, idx)}
-                  textInputType="input"
-                  placeholder={'Add a code...'}
-                />
+              <div>
+                <div className="flex items-center gap-2" key={idx}>
+                  <FormInput
+                    className="bg-adminPortalBg my-4 w-9/12"
+                    id={item?.id}
+                    value={item?.reason || item?.description}
+                    // disabled={isViewAnswers}
+                    onChange={(e) => onChange(e, idx)}
+                    textInputType="input"
+                    placeholder={'Add a response...'}
+                    error={
+                      dataValuesDescriptionLength?.length === 0 && idx === 0
+                        ? 'This field is required'
+                        : ('' as any)
+                    }
+                  />
+
+                  <FormInput
+                    className="bg-adminPortalBg my-4 w-3/12"
+                    id={item?.id}
+                    value={item?.locale}
+                    // disabled={isViewAnswers}
+                    onChange={(e) => onLocaleChange(e, idx)}
+                    textInputType="input"
+                    placeholder={'Add a code...'}
+                  />
+                </div>
+                {dataValuesDescriptionLength?.length === 0 && idx === 0 && (
+                  <Typography
+                    type={'help'}
+                    color={'errorMain'}
+                    text={`This field is required`}
+                  />
+                )}
               </div>
             );
           }
           return (
-            <FormInput
-              key={idx}
-              className="bg-adminPortalBg my-4"
-              id={item?.id}
-              value={item?.reason || item?.description}
-              // disabled={isViewAnswers}
-              onChange={(e) => onChange(e, idx)}
-              textInputType="input"
-              placeholder={'Add a response...'}
-            />
+            <div>
+              <FormInput
+                key={idx}
+                className="bg-adminPortalBg my-4"
+                id={item?.id}
+                value={item?.reason || item?.description}
+                // disabled={isViewAnswers}
+                onChange={(e) => onChange(e, idx)}
+                textInputType="input"
+                placeholder={'Add a response...'}
+                error={
+                  dataValuesDescriptionLength?.length === 0 && idx === 0
+                    ? 'This field is required'
+                    : ('' as any)
+                }
+              />
+              {dataValuesDescriptionLength?.length === 0 && idx === 0 && (
+                <Typography
+                  type={'help'}
+                  color={'errorMain'}
+                  text={`This field is required`}
+                />
+              )}
+            </div>
           );
         })}
       <Button
         type="filled"
         color="secondary"
         className={'mx-auto mt-8 w-full rounded-2xl'}
-        onClick={onSubmit}
+        onClick={() => setDisplaySaveForm(true)}
         disabled={disabled}
         isLoading={isLoading}
       >
@@ -529,6 +595,79 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
           text={'Save'}
         ></Typography>
       </Button>
+
+      <Dialog
+        className="px-60"
+        stretch
+        visible={displayFormIsDirty}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Discard unsaved changes?`}
+          detailText={'If you leave now, you will lose all of your changes.'}
+          buttonClass="rounded-2xl"
+          actionButtons={[
+            {
+              text: 'Keep editing',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => setDisplayFormIsDirty(false),
+              leadingIcon: 'PencilIcon',
+            },
+            {
+              text: 'Discard changes',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () => {
+                onCancel();
+              },
+              leadingIcon: 'TrashIcon',
+            },
+          ]}
+        />
+      </Dialog>
+      <Dialog
+        className="px-60"
+        stretch
+        visible={displaySaveForm}
+        position={DialogPosition.Middle}
+      >
+        <ActionModal
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Are you sure you want to update the ${section?.name} field?`}
+          detailText={
+            'This will change what users see on the app and will affect reports and dashboards.'
+          }
+          buttonClass="rounded-2xl"
+          actionButtons={[
+            {
+              text: 'Yes, confirm',
+              textColour: 'white',
+              colour: 'secondary',
+              type: 'filled',
+              onClick: () => {
+                onSubmit();
+              },
+              leadingIcon: 'CheckIcon',
+            },
+            {
+              text: 'No, continue editing',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => setDisplaySaveForm(false),
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      </Dialog>
     </div>
   );
 };

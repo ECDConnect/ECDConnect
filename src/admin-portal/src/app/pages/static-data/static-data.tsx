@@ -16,6 +16,8 @@ import EducationLevelView from './sub-pages/education-levels/education-levels';
 import RelationsView from './sub-pages/relations/relations';
 import ReasonForLeavingView from './sub-pages/reason-for-leaving/reason-for-leaving';
 import { EditStaticData } from './sub-pages/edit-static-data/edit-static-data';
+import { SearchIcon } from '@heroicons/react/solid';
+import debounce from 'lodash.debounce';
 
 export declare enum SiteDataSections {
   Sex = 'Sex',
@@ -120,11 +122,28 @@ export function StaticData() {
       },
     });
   };
+  const [searchValue, setSearchValue] = useState('');
 
+  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value || '');
+  }, 150);
+  console.log({ searchValue });
   return (
     <div>
       <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+          <div className="relative w-6/12 py-8">
+            {searchValue === '' && (
+              <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+              </span>
+            )}
+            <input
+              className="bg-adminPortalBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+              placeholder="      Search by field or app section..."
+              onChange={search}
+            />
+          </div>
           <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
             <UiTable
               columns={[
@@ -134,6 +153,7 @@ export function StaticData() {
               rows={navigation}
               component={'cms'}
               viewRow={openEditDialog}
+              searchInput={searchValue}
             />
           </div>
         </div>
