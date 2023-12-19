@@ -412,7 +412,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     // Only the last month submitted
-    // EC-1909 - Suppress ticket
     if (submittedMonthsInARow === 1) {
       return (
         <CelebrationCard
@@ -435,7 +434,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     // Multiple months, but less than 12
-    // EC-1909 - Suppress ticket
     return (
       <CelebrationCard
         image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}

@@ -332,10 +332,8 @@ export const PractitionerProfile: React.FC = () => {
           type={'error'}
         />
       )}
-      {/*
       {practitioner?.isPrincipal && (
-        // EC-1909 - Suppress ticket
-        {/* <Card className={'bg-uiBg mt-4 ml-4 mb-8 w-11/12 rounded-xl pt-2'}>
+        <Card className={'bg-uiBg mt-4 ml-4 mb-8 w-11/12 rounded-xl pt-2'}>
           <div className={'mt-6 ml-4'}>
             <Typography
               type={'h1'}
@@ -370,9 +368,7 @@ export const PractitionerProfile: React.FC = () => {
             </div>
           </div>
         </Card>
-         
-    )}
-     */}
+      )}
     </BannerWrapper>
   );
 };
