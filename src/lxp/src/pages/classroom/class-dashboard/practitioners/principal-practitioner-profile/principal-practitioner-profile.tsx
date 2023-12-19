@@ -328,6 +328,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         <PractitionerNotRegistered
           practitioner={practitioner}
           classroom={classroom}
+          existingRemoval={existingRemoval}
         />
       ) : (
         <div className={styles.contentWrapper}>
