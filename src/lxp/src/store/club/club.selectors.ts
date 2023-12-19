@@ -58,6 +58,18 @@ export const getClubByIdSelector = (clubId: string) =>
     (club) => club
   );
 
+export const getClubRankingPercentageSelector = (clubId: string) =>
+  createSelector(getClubByIdSelector(clubId), (club) => {
+    if (!club?.leagueRanking || !club?.league?.numberOfClubsInLeague) {
+      return undefined;
+    }
+
+    const clubRankingPercentage =
+      (club?.leagueRanking / club?.league?.numberOfClubsInLeague) * 100;
+
+    return clubRankingPercentage;
+  });
+
 //TODO figure out how to set return type for these so we can include undefined
 export const getCurrentClubLeaderByClubIdSelector = (clubId: string) =>
   createSelector(getClubByIdSelector(clubId), (club) => club?.clubLeader);
