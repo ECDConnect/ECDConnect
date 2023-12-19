@@ -47,13 +47,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              }
 
              return false;
-         }
-
-        public bool CalculateLeaveNoOneBehind([Service] IPointsEngineService pointsEngineService, Guid clubId)
-        {
-            return pointsEngineService.CalculateLeaveNoOneBehind(clubId);
         }
 
+        public bool CalculateLeaveNoOneBehind([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateLeaveNoOneBehind();
+            return true;
+        }
+        
+        public bool CalculateMeetRegularly([Service] IPointsEngineService pointsEngineService, Guid clubId, Guid clubMeetingId)
+        {
+            return pointsEngineService.CalculateMeetRegularly(clubId, clubMeetingId);
+        }
 
+        public bool CalculateProgressReports([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateCompleteChildProgressReports();
+            return true;
+        }
+
+        public bool CalculateCaregiverReportBack([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateCompleteCaregiverReportBack();
+            return true;
+        }
+
+        public bool CalculateClubChildAttendance([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateClubChildAttendance();
+            return true;
+        }
     }
 }

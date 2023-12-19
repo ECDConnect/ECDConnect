@@ -482,8 +482,7 @@ export const ChildRegistration: React.FC = () => {
                   ? `${existingChildUser.firstName}'s registration is complete, great job!`
                   : `This child's registration is complete, great job!`
               }
-              // EC-1909 - Suppress ticket
-              //detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
+              detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
               actionButtons={[
                 {
                   colour: 'primary',

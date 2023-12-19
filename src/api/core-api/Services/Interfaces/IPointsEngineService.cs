@@ -10,7 +10,7 @@ namespace ECDLink.Core.Services.Interfaces
     {
 
         // Points library
-        List<PointsLibrary> GetPointsLibraryForActivity(string activity);
+        List<PointsLibrary> GetPointsLibraryForActivity(string activity, string subActivity = null);
         List<PointsLibrary> GetPointsLibraryForTenant();
         List<PointsUser> GetIndividualUserPoints(Guid pointsLibraryId, string userId, int month, int year);
         List<PointsUserSummary> GetSummaryUserPoints(string userId, DateTime startDate, DateTime? endDate = null);
@@ -44,12 +44,8 @@ namespace ECDLink.Core.Services.Interfaces
         /// <returns></returns>
         UserClubStandingModel GetUserClubStanding(string userId);
         // Clubs
-        bool CalculateLeaveNoOneBehind(Guid clubId); // called from cron 30 Nov
         bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
-        bool CalculateCompleteChildProgressReports(); // called from cron 31 July and 30 Nov
-        bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today);
+        bool CalculateMeetRegularly(Guid clubId, Guid clubMeetingId);
         bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
-        bool CalculateClubChildAttendance(); // called from cron - end of month
-
     }
 }
