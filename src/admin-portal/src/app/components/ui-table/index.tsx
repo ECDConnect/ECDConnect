@@ -133,8 +133,6 @@ export default function UiTable({
 
   const getSearchResults = useCallback(() => {
     if (!searchValue) {
-      console.log('entrouuuuuu');
-      console.log({ rows });
       return rows;
     }
     return fuse.current.search(searchValue).map((result) => result.item);
