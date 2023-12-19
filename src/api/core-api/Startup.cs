@@ -50,6 +50,7 @@ using ECDLink.SmartStart.Services.Interfaces;
 using Castle.Core.Logging;
 using DinkToPdf.Contracts;
 using DinkToPdf;
+using EcdLink.Api.CoreApi.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -168,6 +169,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IPointsEngineService, PointsEngineService>();
+            services.AddTransient<IPointsService, PointsEngineService>();
             services.AddTransient<IAbsenteeService, AbsenteeService>();
             services.AddTransient<IClubService, ClubService>();
             services.AddTransient<IntegrationAPIManager>();
@@ -182,6 +184,7 @@ namespace EcdLink.Api.CoreApi
                 return new SynchronizedConverter(new PdfTools());
             });
 
+            services.AddTransient<IAttendancePdfService, AttendancePdfService>();
             services.AddControllers();
 
             ECDLink.AutomatedJobs.AutomatedJobsStartup.ConfigureServices(services, Configuration);

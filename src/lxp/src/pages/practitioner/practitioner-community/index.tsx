@@ -1,9 +1,15 @@
-import { BannerWrapper, EmptyPage, TabItem, TabList } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  EmptyPage,
+  LoadingSpinner,
+  TabItem,
+  TabList,
+} from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { PractitionerCommunityRouteState } from './index.types';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { ClubTab } from './club-tab';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -14,6 +20,7 @@ import { AskToJoin } from './club-tab/0-components/ask-to-join';
 import { PractitionerLeagueView } from './league-tab';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { useWindowSize } from '@reach/window-size';
+import { practitionerSelectors } from '@/store/practitioner';
 
 export const PractitionerCommunity: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -29,6 +36,7 @@ export const PractitionerCommunity: React.FC = () => {
   const header_height = 121;
 
   const club = useSelector(getClubForPractitionerSelector);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const { isLoading } = useThunkFetchCall(
     'clubs',
     ClubActions.GET_CLUB_FOR_USER
@@ -38,26 +46,30 @@ export const PractitionerCommunity: React.FC = () => {
     {
       title: 'Club',
       initActive: true,
-      child: isLoading || !!club ? <ClubTab /> : <AskToJoin />,
+      child: !practitioner?.clubId ? <AskToJoin /> : <ClubTab />,
     },
     {
       title: 'League',
       initActive: false,
-      child:
-        isLoading || !!club ? (
-          !!club?.league ? (
-            <PractitionerLeagueView />
-          ) : (
-            <EmptyPage
-              className="mx-4"
-              image={AlienImage}
-              title="Your club is not in a league"
-              subTitle="Clubs are added to leagues from 1 April every year."
-            />
-          )
-        ) : (
-          <AskToJoin />
-        ),
+      child: !practitioner?.clubId ? (
+        <AskToJoin />
+      ) : isLoading ? (
+        <LoadingSpinner
+          className="mt-4"
+          size="medium"
+          spinnerColor="primary"
+          backgroundColor="uiLight"
+        />
+      ) : !!club?.league ? (
+        <PractitionerLeagueView />
+      ) : (
+        <EmptyPage
+          className="mx-4"
+          image={AlienImage}
+          title="Your club is not in a league"
+          subTitle="Clubs are added to leagues from 1 April every year."
+        />
+      ),
     },
     {
       title: 'Connect',
@@ -66,9 +78,18 @@ export const PractitionerCommunity: React.FC = () => {
     },
   ];
 
-  function setTabSelected(tab: TabItem, tabIndex: number) {
+  const setSelectedTab = (tabIndex: number) => {
     setSelectedTabIndex(tabIndex);
-  }
+    history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT, {
+      activeTabIndex: tabIndex,
+    } as PractitionerCommunityRouteState);
+  };
+
+  useEffect(() => {
+    if (state?.activeTabIndex !== selectedTabIndex) {
+      setSelectedTabIndex(state?.activeTabIndex || 0);
+    }
+  }, [selectedTabIndex, state?.activeTabIndex]);
 
   return (
     <BannerWrapper
@@ -86,9 +107,7 @@ export const PractitionerCommunity: React.FC = () => {
           className="bg-uiBg"
           tabItems={tabItems}
           setSelectedIndex={selectedTabIndex}
-          tabSelected={(tab: TabItem, tabIndex: number) =>
-            setTabSelected(tab, tabIndex)
-          }
+          tabSelected={(_, tabIndex: number) => setSelectedTab(tabIndex)}
         />
       </div>
     </BannerWrapper>

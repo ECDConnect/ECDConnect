@@ -45,6 +45,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public virtual List<CoachingClub> CoachingClubs { get; set; }
     }
 
+    public class ClubMeetingCoachInfo
+    {
+        public bool HasMissed3MonthsMeetings { get; set; }
+        public string LastMeetingAttended { get; set; }
+    }
+
     public class CoachingClubBase
     {
         public Guid Id { get; set; }
@@ -89,7 +95,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
-        public virtual List<ClubMeeting> UpcomingMeetings { get; set; }
+        public virtual List<ActivityMeetRegularDetail> UpcomingMeetings { get; set; }
         public virtual List<ActivityMeetRegularDetail> PastMeetings { get; set; }
     }
 
@@ -102,6 +108,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public List<ClubUser> MeetingParticipants { get; set; }
         public List<ClubUser> MeetingAbsentees { get; set; }
         public int Points { get; set; }
+        public Guid? EventId { get; set; }
+        public string Name { set; get; }
     }
 
     public class ClubUser
@@ -135,7 +143,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     {
         public int Points { get; set; }
         public string PointsColor { get; set; }
-        public virtual List<ActivityHostFamilyDaysDetail> Terms { get; set; }
+        public List<ActivityHostFamilyDaysDetail> Terms { get; set; }
     }
 
     public class ActivityHostFamilyDaysDetail
@@ -147,6 +155,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string DocumentStatus { get; set; } = "Not completed";
         public string DocumentStatusColor { get; set; } = MetricsColorEnum.Error.ToString();
         public int Points { get; set; } = 0;
+        public List<Guid> MeetingParticipantsPractitionerIds { get; set; }
     }
 
     public class ActivityLeaveNoOneBehind

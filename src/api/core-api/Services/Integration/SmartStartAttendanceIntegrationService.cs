@@ -23,6 +23,61 @@ namespace EcdLink.Api.CoreApi.Services
         private const string _present = "Present";
         private const string _publicHoliday = "Public Holiday";
 
+        public async Task PushMonthlyAttendancePdf()
+        {
+            if (!this.Enabled) return;
+
+            await _logManager.IntegrationLog($"PushMonthlyAttendancePdf started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushMonthlyAttendancePdf");
+
+            var startPeriod = DateTime.Now.GetStartOfMonth();
+            _mappedEntities = await this.GetMappedEntities();
+            var mappedPractitioners = _mappedEntities.Where(x => x.LocalEntity == Constants.SSIntegrationSettings.SSPractitioner); 
+            
+            // Get start and end of last month
+            var startDate = DateTime.Now.AddMonths(-1).GetStartOfMonth();
+            var endDate = DateTime.Now.AddMonths(-1).GetEndOfMonth();
+
+            foreach (var mappedPractitioner  in _mappedEntities)
+            {
+                try
+                {
+                    // Create the pdf
+                    // Just pass in the default Guid, it then ends up fetching the class based on the userId or their principal. TODO: Make it a nullable parameter
+                    var document = await _attendancePdfService.GetClassroomAttendanceReportPDFFile(mappedPractitioner.UserId, new Guid(), startDate, endDate);
+
+                    // Fetch any audit logs, we might have already sent the document
+                    var auditLogs = _auditRepo.GetAll().Where(x => x.RelatedId == document.Id.ToString()).ToList(); // Could be a list if we updated it at any point
+
+                    // Send document to smart link, if we haven't already
+                    if (!auditLogs.Any(x => x.Submitted.HasValue))
+                    {
+                        var remoteDocId = await PushNewDocument(document);
+                    }
+
+                    // Mark the audit logs as submitted so we don't resend it
+                    foreach (var auditLog in auditLogs)
+                    {
+                        auditLog.UpdatedDate = DateTime.Now;
+                        auditLog.UpdatedBy = _uId;
+                        auditLog.Submitted = DateTime.Now;
+
+                        _auditRepo.Update(auditLog);
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog(
+                        $"Error: {e.Message}", 
+                        e.InnerException != null ? e.InnerException.ToString() : null, 
+                        mappedPractitioner.UserId,
+                        LogRelatedType.Error, 
+                        "PushMonthlyAttendancePdf");
+                }                
+            }
+
+            await _logManager.IntegrationLog($"PushMonthlyAttendancePdf completed at {DateTime.Now}", null, null, LogRelatedType.Log, "PushMonthlyAttendancePdf");
+        }
+
         /// <summary>
         /// Pushes weekly attendance data to Smart Link
         /// </summary>

@@ -93,7 +93,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
         public async Task<List<ClassroomGroupChildAttendanceReportModel>> ClassroomAttendanceReport(
              [Service] ChildAttendanceReport report,
              string userId,
-             Guid classgroupId,
+             Guid classgroupId, // TODO - rename to classroomId
              DateTime startDate,
              DateTime endDate)
         {
@@ -108,7 +108,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
         public async Task<ClassroomGroupChildAttendanceReportOverviewModel> ClassroomAttendanceOverviewReport(
             [Service] ChildAttendanceReport report,
             string userId,
-            Guid classgroupId,
+            Guid classgroupId, // TODO - rename to classroomId
             DateTime startDate,
             DateTime endDate)
         {

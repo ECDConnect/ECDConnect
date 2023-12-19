@@ -1,15 +1,9 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Visits;
-using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Documents;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -36,6 +30,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             IGenericRepositoryFactory repoFactory,
             string search = null,
             string[] showOnlyTypes = null,
+            string[] showOnlyStatus = null,
             PagedQueryInput pagingInput = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -80,6 +75,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     if (mother != null && mother.User != null)
                     {
                         doc.ClientName = mother.User.FirstName + " " + mother.User.Surname;
+                        doc.ClientStatus = (mother.IsActive ? "Active" : "Inactive");
                     }
                 } 
                 else if (doc.DocumentType.Name == DocumentTypeConstants.RoadToHealthBook)
@@ -89,13 +85,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     if (infant != null && infant.Caregiver != null)
                     {
                         doc.ClientName = infant.Caregiver.FirstName + " " + infant.Caregiver.Surname + " & " + infant.User.FirstName;
+                        doc.ClientStatus = (infant.Caregiver.IsActive ? "Active" : "Inactive");
                     }
                 }
             }
 
+            if (showOnlyStatus == null)
+            {
+                showOnlyStatus = new[] { "Active", "Inactive" };
+            }
+            docsList = docsList.Where(x => showOnlyStatus.Contains(x.ClientStatus)).ToList();
+
             if (!string.IsNullOrWhiteSpace(search))
             {
-                docsList = docsList.Where(x => (x.ClientName!= null && x.ClientName.Contains(search)) || (x.CreatedByName != null && x.CreatedByName.Contains(search))).ToList(); 
+                docsList = docsList.Where(x => (x.ClientName!= null && x.ClientName.Contains(search, StringComparison.OrdinalIgnoreCase)) || (x.CreatedByName != null && x.CreatedByName.Contains(search, StringComparison.OrdinalIgnoreCase))).ToList(); 
             }
 
             return docsList;

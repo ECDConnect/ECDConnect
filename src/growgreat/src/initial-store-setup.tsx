@@ -23,6 +23,8 @@ import {
   healthCareWorkerThunkActions,
 } from './store/healthCareWorker';
 import useClearSiteData from '@ecdlink/core/lib/hooks/useClearSiteData';
+import { calendarActions, calendarThunkActions } from './store/calendar';
+import { subMonths } from 'date-fns';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -121,6 +123,7 @@ function InitialStoreSetup(props: Props) {
     await appDispatch(documentActions.resetDocumentsState());
     await appDispatch(motherActions.resetMotherState());
     await appDispatch(infantActions.resetInfantState());
+    await appDispatch(calendarActions.resetCalendarState());
   };
 
   async function initStoreSetup() {
@@ -143,6 +146,14 @@ function InitialStoreSetup(props: Props) {
       appDispatch(userThunkActions.getUser({})).unwrap(),
       appDispatch(userThunkActions.getUserConsents({})).unwrap(),
       appDispatch(documentThunkActions.getDocumentsForHCW()).unwrap(),
+      appDispatch(
+        calendarThunkActions.getCalendarEvents({
+          start: subMonths(
+            new Date(new Date().getFullYear(), new Date().getMonth(), 0),
+            1
+          ),
+        })
+      ),
     ];
     // SPECIFIC DATA
     setOtherLoading(true);
@@ -171,6 +182,9 @@ function InitialStoreSetup(props: Props) {
       appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
       appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
+      appDispatch(
+        calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
+      ).unwrap(),
     ];
 
     setStaticDataLoading(true);

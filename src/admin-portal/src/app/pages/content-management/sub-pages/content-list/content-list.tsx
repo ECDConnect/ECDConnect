@@ -135,7 +135,9 @@ export default function ContentList({
       if (selectedTab === 1) {
         let clientProfileData = moreInforItems.filter(
           (item: { type: string }) =>
-            item.type === 'client profile' || item.type === 'Info Page'
+            item.type === 'client profile' ||
+            item.type === 'Info Page' ||
+            item?.type === 'Income Statements'
         );
         setTableData(
           clientProfileData?.length > 0 ? clientProfileData : moreInforItems
@@ -158,7 +160,7 @@ export default function ContentList({
         const copyItems = contentData[getAllCall].map((item: any) => ({
           ...item,
         }));
-        console.log({ copyItems });
+
         setTableData(copyItems);
       }
     }
@@ -183,8 +185,6 @@ export default function ContentList({
       localeId: languageId.toString(),
     });
   };
-
-  console.log({ tableData });
 
   const viewSelectedRow = (item?: any) => {
     const model: ContentManagementView = {

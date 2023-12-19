@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
@@ -13,7 +14,6 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.POIFS.Properties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -34,6 +34,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
         private IGenericRepository<Trainee, Guid> _traineeRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
         private UserLicenseManager _userLicenseManager;
         private VisitManager _visitManager;
@@ -65,6 +66,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
             _pqaRatingRepo = _repoFactory.CreateGenericRepository<PQARating>(userContext: _applicationUserId);
             _traineeRepo = _repoFactory.CreateRepository<Trainee>(userContext: _applicationUserId);
+            _practitionerRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
         }
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
@@ -321,6 +323,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 if (smartSpaceLicense == null)
                 {
                     _userLicenseManager.AddSmartSpaceLicense(trainee.UserId, DateTime.Now);
+                } else
+                {
+                    _userLicenseManager.UpdateSmartSpaceLicense(trainee.UserId, DateTime.Now);
                 }
 
                 // update the visit record to show attended/completed 
@@ -333,7 +338,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
-
         public bool EditVisitData(CMSVisitDataInputModel input)
         {
             if (input.VisitData.Sections == null)
@@ -384,7 +388,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return true;
         }
-
         public bool AddSupportVisitData(CMSVisitDataInputModel input)
         {
             if (input.VisitData.Sections == null)
@@ -428,7 +431,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return true;
         }
-
         private VisitData GetVisitDataFromInputModel(CMSQuestion input, string visitId, string visitName, string visitSection)
         {
             if (input == null)
@@ -811,6 +813,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 pqaVisit.Rating = rating.OverallRatingColor;
                 _visitRepo.Update(pqaVisit);
             }
+
             return rating;
         }
         
@@ -987,7 +990,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 RAVisit.Rating = rating.OverallRatingColor;
                 _visitRepo.Update(RAVisit);
             }
-            
+
             return rating;
         }
         

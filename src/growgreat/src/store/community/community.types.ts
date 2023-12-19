@@ -1,6 +1,6 @@
-import { CommunitySectionGg, CommunitySectionItemGg } from '@ecdlink/graphql';
+import { Connect, ConnectItem } from '@ecdlink/graphql';
 
 export interface CommunityState {
-  connectSectionData?: CommunitySectionGg[];
-  connectSectionItemData?: CommunitySectionItemGg[];
+  connect?: Connect[];
+  connectItem?: ConnectItem[];
 }

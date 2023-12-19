@@ -1,30 +1,23 @@
-import {
-  CommunitySectionGg,
-  CommunitySectionItemGg,
-} from '@ecdlink/graphql/lib';
+import { Connect, ConnectItem } from '@ecdlink/graphql/lib';
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
 
 class CommunityService {
-  // _locale: string;
   _accessToken: string;
 
   constructor(accessToken: string) {
-    // this._locale = locale;
     this._accessToken = accessToken;
   }
 
-  async GetAllCommunitySectionGG(
-    locale: string
-  ): Promise<CommunitySectionGg[]> {
+  async getAllConnect(locale: string): Promise<Connect[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { GetAllCommunitySectionGG: CommunitySectionGg[] };
+      data: { GetAllCommunityConnect: Connect[] };
       errors?: {};
     }>(``, {
       query: `
-      query GetAllCommunitySectionGG($locale: String) {
-        GetAllCommunitySectionGG(locale: $locale){
+      query GetAllConnect($locale: String) {
+        GetAllConnect(locale: $locale){
           id
           name
         }
@@ -36,27 +29,23 @@ class CommunityService {
     });
 
     if (response.status !== 200) {
-      throw new Error(
-        'Get All Community SectionGG Failed - Server connection error'
-      );
+      throw new Error('Get All Connect Failed - Server connection error');
     }
-    return response.data.data.GetAllCommunitySectionGG;
+    return response.data.data.GetAllCommunityConnect;
   }
 
-  async GetAllCommunitySectionItemGG(
-    locale: string
-  ): Promise<CommunitySectionItemGg[]> {
+  async getAllConnectItem(locale: string): Promise<ConnectItem[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { GetAllCommunitySectionItemGG: CommunitySectionItemGg[] };
+      data: { GetAllConnectItem: ConnectItem[] };
       errors?: {};
     }>(``, {
       query: `
-      query GetAllCommunitySectionItemGG($locale: String) {
-        GetAllCommunitySectionItemGG(locale: $locale){
+      query GetAllConnectItem($locale: String) {
+        GetAllConnectItem(locale: $locale){
           buttonText
           link
-          linkedSection {
+          linkedConnect {
             name
           }
         }
@@ -68,11 +57,9 @@ class CommunityService {
     });
 
     if (response.status !== 200) {
-      throw new Error(
-        'Get All Community Section Item GG Failed - Server connection error'
-      );
+      throw new Error('Get All Connect Item Failed - Server connection error');
     }
-    return response.data.data.GetAllCommunitySectionItemGG;
+    return response.data.data.GetAllConnectItem;
   }
 }
 

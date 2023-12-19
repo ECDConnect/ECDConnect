@@ -43,6 +43,7 @@ import { OfflineAlert } from '@/components/offline-alert';
 import { SupportRoleAlert } from './0-components/support-role-alert';
 import { getAllNotifications } from '@/store/notifications/notifications.selectors';
 import { notificationTagConfig } from '@/constants/notifications';
+import { PractitionerCommunityRouteState } from '../index.types';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
@@ -60,6 +61,9 @@ export const ClubTab: React.FC = () => {
     clubSelectors.getActivityHostFamilyDetailsSelector(clubId)
   );
   const notifications = useSelector(getAllNotifications);
+  const clubRankingPercentage = useSelector(
+    clubSelectors.getClubRankingPercentageSelector(clubId)
+  );
 
   const history = useHistory();
 
@@ -112,6 +116,9 @@ export const ClubTab: React.FC = () => {
   );
   const isSupportRole = club?.clubSupport?.userId === user?.id;
   const isToShowPointsScreen = shouldShowPoints();
+  const isTop25Percent =
+    (club?.leagueRanking && club?.leagueRanking <= 3) ||
+    (clubRankingPercentage && clubRankingPercentage <= 25);
 
   // From EC-1515
   const onAddMeetingOrEvent = () => {
@@ -311,14 +318,18 @@ export const ClubTab: React.FC = () => {
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: club?.league?.name ?? '',
+      title: 'in the league',
       titleStyle: 'text-textDark',
-      onActionClick: () => {}, // TODO: add integration
+      onActionClick: () => {
+        history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT, {
+          activeTabIndex: 1,
+        } as PractitionerCommunityRouteState);
+      },
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
             className="absolute z-0 h-auto w-auto"
-            fill={`var(--${true ? 'successMain' : 'secondary'})`}
+            fill={`var(--${isTop25Percent ? 'successMain' : 'secondary'})`}
           />
           <Typography
             className="relative z-10"
@@ -328,9 +339,9 @@ export const ClubTab: React.FC = () => {
           />
         </div>
       ),
-      backgroundColor: true ? 'successBg' : 'infoBb',
+      backgroundColor: isTop25Percent ? 'successBg' : 'infoBb',
     }),
-    [club?.league?.name, club?.leagueRanking]
+    [club?.leagueRanking, history, isTop25Percent]
   );
 
   const activities: MenuListDataItem[] = [
@@ -571,11 +582,7 @@ export const ClubTab: React.FC = () => {
             </div>
           )}
           {renderActivitiesContent}
-          <div
-            className={`mt-auto flex flex-col pt-4 ${
-              isLeader || isSupportRole || isLeaderRequest ? 'pb-4' : ''
-            }`}
-          >
+          <div className={`mt-auto flex flex-col py-4`}>
             {(isLeader || isSupportRole) && (
               <Button
                 icon="PlusCircleIcon"

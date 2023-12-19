@@ -22,6 +22,7 @@ export type LeagueDto = {
   name: string;
   leagueTypeId: string;
   leagueTypeName: string;
+  numberOfClubsInLeague: number;
 };
 
 export type ClubMemberDto = {

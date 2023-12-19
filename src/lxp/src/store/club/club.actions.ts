@@ -302,9 +302,34 @@ export const getActivityMeetRegularDetails = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      clubs: { clubsForCoach, clubForPractitioner },
     } = getState();
 
     try {
+      if (!!clubForPractitioner?.points?.meetRegularly?.data) {
+        const daysSinceLoad = differenceInDays(
+          new Date(),
+          new Date(clubForPractitioner?.points?.meetRegularly?.dataLoaded!)
+        );
+
+        if (daysSinceLoad < 1) {
+          return clubForPractitioner?.points?.meetRegularly?.data!;
+        }
+      }
+
+      if (!!clubsForCoach[input.clubId]?.points?.meetRegularly?.data) {
+        const daysSinceLoad = differenceInDays(
+          new Date(),
+          new Date(
+            clubsForCoach[input.clubId]?.points?.meetRegularly?.dataLoaded!
+          )
+        );
+
+        if (daysSinceLoad < 1) {
+          return clubsForCoach[input.clubId]?.points?.meetRegularly?.data!;
+        }
+      }
+
       if (userAuth?.auth_token) {
         return await new ClubService(
           userAuth?.auth_token

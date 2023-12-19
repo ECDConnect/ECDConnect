@@ -58,6 +58,7 @@ namespace ECDLink.SmartStart.Reports
                         
                         if(daysOfClass.Count() > 0)
                         {
+                            // TODO - I think this needs to check the year as well
                             var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id

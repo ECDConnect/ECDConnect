@@ -2,6 +2,7 @@ import { Tag } from '@/components/tag';
 import ROUTES from '@/routes/routes';
 import {
   Alert,
+  AlertType,
   BannerWrapper,
   Button,
   DialogPosition,
@@ -15,7 +16,7 @@ import {
   UserAlertListDataItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useHistory, useParams } from 'react-router';
 import familyIcon from '@/assets/icon/family.svg';
 import inclusiveIcon from '@/assets/icon/inclusive.svg';
@@ -24,10 +25,9 @@ import partnershipIcon from '@/assets/icon/partnership.svg';
 import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import { ClubsRouteState } from '../../index.types';
 import { useSelector } from 'react-redux';
-import { clubSelectors } from '@/store/club';
+import { clubSelectors, clubThunkActions } from '@/store/club';
 import {
   ClubActivities,
-  IssuesTasks,
   LeagueType,
   MAX_MEMBERS_IN_CLUB,
   MIN_MEMBERS_IN_CLUB,
@@ -42,6 +42,11 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { OfflineAlert } from '@/components/offline-alert';
 import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { IssuesAndTasks } from './issues-and-tasks';
+import { ReactComponent as PositiveEmoticon } from '@/assets/positive-green-emoticon.svg';
+import { ReactComponent as NeutralEmoticon } from '@/assets/neutral-emoticon.svg';
+import { useAppDispatch } from '@/store';
+import { userSelectors } from '@/store/user';
 
 export function isCurrentPointsAtLeast80PercentOfTotal(
   currentPoints: number,
@@ -53,6 +58,9 @@ export function isCurrentPointsAtLeast80PercentOfTotal(
 }
 
 export const Club: React.FC = () => {
+  const [currentIssuesAndTasks, setCurrentIssuesAndTasks] =
+    useState<MenuListDataItem[]>();
+
   const history = useHistory();
 
   const { isLoading } = useThunkFetchCall(
@@ -64,6 +72,8 @@ export const Club: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
 
+  const user = useSelector(userSelectors.getUser);
+  const leagues = useSelector(clubSelectors.getLeaguesForCoachSelector);
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
     clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
@@ -71,15 +81,20 @@ export const Club: React.FC = () => {
   const nextLeader = useSelector(
     clubSelectors.getNextClubLeaderByClubIdSelector(clubId)
   );
+  const clubRankingPercentage = useSelector(
+    clubSelectors.getClubRankingPercentageSelector(clubId)
+  );
 
   const dialog = useDialog();
+
+  const appDispatch = useAppDispatch();
 
   const totalMembers = club?.clubMembers?.length || 0;
   const monthsSinceCurrentLeaderAccepted = differenceInMonths(
     new Date(),
     new Date(currentLeader?.dateAccepted ?? '')
   );
-  const today = new Date().setHours(0, 0, 0, 0);
+  const todayWithZeroHours = new Date().setHours(0, 0, 0, 0);
   const dueDateNextLeader = nextLeader
     ? addDays(
         new Date(nextLeader.dateAssigned),
@@ -88,13 +103,19 @@ export const Club: React.FC = () => {
     : undefined;
 
   const isDueDateNextLeaderTodayOrFuture =
-    dueDateNextLeader && dueDateNextLeader >= today;
+    !!dueDateNextLeader && dueDateNextLeader >= todayWithZeroHours;
   const isLeaderAcceptedOverSixMonths = monthsSinceCurrentLeaderAccepted > 6;
   const isClubInALeague = !!club?.league?.id;
-  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3; // TODO
+  const isTop25Percent =
+    (club?.leagueRanking && club?.leagueRanking <= 3) ||
+    (clubRankingPercentage && clubRankingPercentage <= 25);
   const hasLeader = !!currentLeader;
   const isLeaderRequestSent = !!nextLeader && isDueDateNextLeaderTodayOrFuture;
   const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
+
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth();
+  const isDecember = currentMonth === 11;
 
   const onOffline = useCallback(() => {
     return dialog({
@@ -117,6 +138,25 @@ export const Club: React.FC = () => {
     [history, isOnline, onOffline]
   );
 
+  const onLeagueNavigation = useCallback(() => {
+    if (!leagues?.length && isOnline) {
+      appDispatch(
+        clubThunkActions.getLeaguesForCoach({ coachUserId: user?.id ?? '' })
+      );
+    }
+
+    history.push(
+      ROUTES.COMMUNITY.LEAGUE.ROOT.replace(':leagueId', club?.league?.id ?? '')
+    );
+  }, [
+    appDispatch,
+    club?.league?.id,
+    history,
+    isOnline,
+    leagues?.length,
+    user?.id,
+  ]);
+
   const leader: UserAlertListDataItem = {
     title: `${currentLeader?.firstName ?? ''} ${currentLeader?.surname ?? ''}`,
     titleStyle: 'text-textDark',
@@ -138,8 +178,9 @@ export const Club: React.FC = () => {
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: club?.league?.name ?? '',
+      title: `in ${club?.league?.name} league`,
       titleStyle: 'text-textDark',
+      onActionClick: onLeagueNavigation,
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
@@ -156,7 +197,12 @@ export const Club: React.FC = () => {
       ),
       backgroundColor: isTop25Percent ? 'successBg' : 'infoBb',
     }),
-    [isTop25Percent, club]
+    [
+      club?.league?.name,
+      club?.leagueRanking,
+      isTop25Percent,
+      onLeagueNavigation,
+    ]
   );
 
   const activities: MenuListDataItem[] = [
@@ -320,141 +366,88 @@ export const Club: React.FC = () => {
     );
   }, [isOnline, activities, isClubInALeague]);
 
-  const renderIssuesAndTasksContent = useMemo(() => {
-    const items: MenuListDataItem[] = [];
+  const renderEndOfYearMessage = useMemo(() => {
+    if (!isClubInALeague) return <></>;
 
-    // TODO: integrate these items -> EC-1390, EC-1395, EC-1397 and EC-1398
-    const itemsFromBackend = club?.issuesTasks?.filter(
-      (item) =>
-        !item?.secondaryText?.includes(IssuesTasks.notAcceptedClubLeader) &&
-        !item?.secondaryText?.includes(IssuesTasks.notEnoughClubMembers) &&
-        !item?.secondaryText?.includes(IssuesTasks.tooManyClubMembers) &&
-        !item?.secondaryText?.includes(IssuesTasks.clubLeaderMonths) &&
-        !item?.secondaryText?.includes(IssuesTasks.assignClubLeader)
-    );
+    if (!isOnline) return <OfflineAlert />;
 
-    // if there is currently no club leader assigned (ie no club leader has been chosen.)
-    if (
-      itemsFromBackend?.some((item) =>
-        item?.secondaryText?.includes(IssuesTasks.noClubLeader)
-      )
-    ) {
-      items.push({
-        showIcon: true,
-        menuIcon: 'ExclamationCircleIcon',
-        iconColor: 'white',
-        title: 'No club leader assigned',
-        subTitle: 'Assign club leader',
-        subTitleStyle: 'text-textDark',
-        titleStyle: 'text-textMid whitespace-normal',
-        iconBackgroundColor: 'errorMain',
-        backgroundColor: 'errorBg',
-        onActionClick: () =>
-          onOnlineNavigation(
-            ROUTES.COMMUNITY.CLUB.LEADER.ADD.replace(':clubId', clubId)
-          ),
-      });
+    let type: AlertType = 'warning';
+    let ordinalAbbreviation = 'th';
+    let message = `The ${club?.name} club ended the year in ${club?.leagueRanking}th place - encourage them to try harder next year!`;
+    let Icon = NeutralEmoticon;
+
+    if (club?.leagueRanking === 1) {
+      type = 'success';
+      ordinalAbbreviation = 'st';
+      message = `Congratulations to the ${club?.name} club for ending the year in the top position in their league!`;
+      Icon = PositiveEmoticon;
     }
 
-    // if a new club leader was assigned
-    if (!currentLeader && !hasLeader && isLeaderRequestSent) {
-      items.push({
-        showIcon: true,
-        menuIcon: 'ExclamationCircleIcon',
-        title: 'Club leader has not accepted agreement',
-        subTitle: `Contact ${nextLeader?.firstName}`,
-        subTitleStyle: 'text-textDark',
-        titleStyle: 'text-textMid whitespace-normal',
-        iconBackgroundColor: 'errorMain',
-        backgroundColor: 'errorBg',
-        onActionClick: () =>
-          history.push(
-            ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER.replace(
-              ':clubId',
-              clubId
-            ).replace(':leaderId', nextLeader?.practitionerId)
-          ),
-      });
+    if (club?.leagueRanking === 2) {
+      type = 'success';
+      ordinalAbbreviation = 'nd';
+      message = `Well done to the ${club?.name} club for ending the year in the second position in their league!`;
+      Icon = PositiveEmoticon;
     }
 
-    // if there are less than 4 practitioners in the club
-    if (totalMembers < MIN_MEMBERS_IN_CLUB) {
-      items.push({
-        showIcon: true,
-        menuIcon: 'ExclamationCircleIcon',
-        title: 'Not enough club members',
-        subTitle: 'Add members',
-        subTitleStyle: 'text-textDark',
-        titleStyle: 'text-textMid whitespace-normal',
-        iconBackgroundColor: 'errorMain',
-        backgroundColor: 'errorBg',
-        onActionClick: () =>
-          onOnlineNavigation(
-            ROUTES.COMMUNITY.CLUB.MEMBERS.ADD.replace(':clubId', clubId)
-          ),
-      });
+    if (club?.leagueRanking === 3) {
+      type = 'success';
+      ordinalAbbreviation = 'rd';
+      message = `Well done to the ${club?.name} club for ending the year in the third position in their league!`;
+      Icon = PositiveEmoticon;
     }
 
-    // if there are more than 17 practitioners in the club
-    if (totalMembers > MAX_MEMBERS_IN_CLUB) {
-      items.push({
-        showIcon: true,
-        menuIcon: 'ExclamationCircleIcon',
-        title: 'Too many club members',
-        subTitle: 'Create an additional club',
-        subTitleStyle: 'text-textDark',
-        titleStyle: 'text-textMid whitespace-normal',
-        iconBackgroundColor: 'errorMain',
-        backgroundColor: 'errorBg',
-        onActionClick: () =>
-          onOnlineNavigation(
-            ROUTES.COMMUNITY.CLUB.ADD.replace(':clubId', 'new')
-          ),
-      });
+    if (isTop25Percent && club?.leagueRanking > 3) {
+      type = 'success';
+      message = `The ${club?.name} club ended the year in ${club?.leagueRanking}th place - good effort!`;
+      Icon = PositiveEmoticon;
     }
-
-    // if there the current club leader has been in the role for 6 months or more
-    if (isLeaderAcceptedOverSixMonths) {
-      items.push({
-        showIcon: true,
-        menuIcon: 'ExclamationIcon',
-        title: 'Choose a new club leader',
-        subTitle: `${currentLeader?.firstName} has been a club leader for 6 or more months`,
-        subTitleStyle: 'text-textDark',
-        titleStyle: 'text-textMid whitespace-normal',
-        iconBackgroundColor: 'alertMain',
-        backgroundColor: 'alertBg',
-        onActionClick: () =>
-          onOnlineNavigation(
-            ROUTES.COMMUNITY.CLUB.LEADER.EDIT.replace(':clubId', clubId)
-          ),
-      });
-    }
-
-    if (!items.length) return <></>;
 
     return (
-      <div>
-        <Typography className="mb-2 mt-4" type="h3" text="Issues & tasks" />
-        <StackedList
-          className="flex flex-col gap-2"
-          isFullHeight={false}
-          type={'MenuList' as StackedListType}
-          listItems={items}
-        />
-      </div>
+      <Alert
+        className="my-4"
+        type={type}
+        title={`${club?.leagueRanking}${ordinalAbbreviation} place`}
+        titleColor="textDark"
+        message={message}
+        messageColor="textDark"
+        customIcon={
+          <div>
+            <Icon className="h-12 w-12" />
+          </div>
+        }
+        button={
+          <>
+            <Typography
+              type="help"
+              color="textMid"
+              text={`They earned ${club?.pointsTotal} points!`}
+            />
+            <Button
+              className="mt-2"
+              color="primary"
+              type="filled"
+              textColor="white"
+              text="See points"
+              onClick={() => {
+                history.push(
+                  ROUTES.COMMUNITY.CLUB.POINTS.ROOT.replace(':clubId', clubId)
+                );
+              }}
+            />
+          </>
+        }
+      />
     );
   }, [
-    hasLeader,
-    club?.issuesTasks,
-    currentLeader,
-    nextLeader,
-    isLeaderRequestSent,
-    totalMembers,
-    isLeaderAcceptedOverSixMonths,
-    onOnlineNavigation,
+    club?.leagueRanking,
+    club?.name,
+    club?.pointsTotal,
     clubId,
     history,
+    isClubInALeague,
+    isOnline,
+    isTop25Percent,
   ]);
 
   return (
@@ -493,10 +486,20 @@ export const Club: React.FC = () => {
               }
             />
           </div>
-          {renderIssuesAndTasksContent}
+          <IssuesAndTasks
+            issuesAndTasks={currentIssuesAndTasks ?? []}
+            setIssuesAndTasks={setCurrentIssuesAndTasks}
+            club={club}
+            currentLeader={currentLeader}
+            nextLeader={nextLeader}
+            totalMembers={totalMembers}
+            onOnlineNavigation={onOnlineNavigation}
+            isLeaderRequestSent={isLeaderRequestSent}
+            isLeaderAcceptedOverSixMonths={isLeaderAcceptedOverSixMonths}
+          />
           {!!totalMembers ? (
             <>
-              {renderLeagueContent}
+              {!isDecember ? renderEndOfYearMessage : renderLeagueContent}
               <Typography className="mb-2" type="h3" text="Club leader" />
               {hasLeader && (
                 <div>

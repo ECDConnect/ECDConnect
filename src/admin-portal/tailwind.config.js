@@ -73,7 +73,8 @@ module.exports = {
         infoBb: 'var(--infoBb)',
         darkBackground: 'var(--darkBackground)',
         adminPortalBg: '#EFF6FA',
-        quaternary: "#D2F1F9"
+        quaternary: "#D2F1F9",
+        quetenaryMain: "#1DBADF"
       },      
       animation: {
         spinner: 'spin 1.5s linear infinite',

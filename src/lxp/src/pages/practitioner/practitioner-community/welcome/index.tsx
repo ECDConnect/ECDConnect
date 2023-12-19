@@ -84,7 +84,7 @@ export const PractitionerCommunityWelcome: React.FC = () => {
           render: (onClose) => (
             <AddPhotoDialog
               onClose={() => {
-                history.push(ROUTES.COMMUNITY.ROOT);
+                history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT);
                 onClose();
               }}
               onSubmit={() => {

@@ -173,11 +173,6 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
           text={data?.[0]?.description}
           color={'textDark'}
         />
-        <Alert
-          className="my-2"
-          type="info"
-          title={`You will get 100 Top Me Up points for every income statement you submit!`}
-        />
         <Typography
           type="markdown"
           fontSize={'16'}

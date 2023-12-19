@@ -11,8 +11,6 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
     public interface IClubService
     {
         public PractitionerAttendance GetPractitionerAttendance(Guid practitionerId, DateTime date, string meetingType);
-        public double GetClubAttendancePercForMonth(Guid clubId, DateTime date);
-        public bool HasAttendanceRegisterForMonth(Guid clubId, DateTime date);
         public List<ClubMember> GetClubMembers(Guid clubId);
         public List<ClubMember> GetClubsMembers(Guid[] clubId);
         public List<CoachingClubBase> GetAllClubsForCoachSimple(string userId);
@@ -45,7 +43,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         IEnumerable<DetailClubModel> GetClubsForCoach(string coachUserId);
         DetailClubModel GetClubById(Guid clubId);
         public bool AddBeCreativeActivity(BeCreativeUpload input);
-        public bool ArchiveClubUser(Guid practitionerId);
+        public void ArchiveClubUser(Guid practitionerId);
         public LeagueClubsModel GetLeagueForUser(string userId);
         public ClubSupport UpdateClubSupportStatus(Guid practitionerId);
     }

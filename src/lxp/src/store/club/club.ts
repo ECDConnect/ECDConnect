@@ -315,7 +315,10 @@ const clubSlice = createSlice({
               ...state.clubsForCoach[clubId],
               points: {
                 ...state.clubsForCoach[clubId]?.points,
-                meetRegularly: action.payload,
+                meetRegularly: {
+                  dataLoaded: new Date().toISOString(),
+                  data: action.payload,
+                },
               },
             },
           };
@@ -324,7 +327,10 @@ const clubSlice = createSlice({
             ...state.clubForPractitioner,
             points: {
               ...state.clubForPractitioner?.points,
-              meetRegularly: action.payload,
+              meetRegularly: {
+                dataLoaded: new Date().toISOString(),
+                data: action.payload,
+              },
             },
           };
         }
@@ -462,13 +468,18 @@ const clubSlice = createSlice({
     builder.addCase(updateClubSupportStatus.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
-    builder.addCase(addCaregiverReportBackMeeting.fulfilled, (state) => {
-      state.addCaregiverReportBackMeetingSyncInput = undefined;
-      state.practitionerLastCaregiverReportBackDate = {
-        year: new Date().getFullYear(),
-        month: new Date().getMonth() < 7 ? 6 : 11,
-      };
-    });
+    builder.addCase(
+      addCaregiverReportBackMeeting.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+
+        state.addCaregiverReportBackMeetingSyncInput = undefined;
+        state.practitionerLastCaregiverReportBackDate = {
+          year: new Date().getFullYear(),
+          month: new Date().getMonth() < 7 ? 6 : 11,
+        };
+      }
+    );
     builder.addCase(addFamilyDayMeeting.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
 
@@ -545,6 +556,30 @@ const clubSlice = createSlice({
     });
     builder.addCase(saveWelcomeMessage.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
+
+      const practitionerId = action.meta.arg.practitionerId;
+      const welcomeMessage = action.meta.arg.welcomeMessage || '';
+      const shareContactInfo = action.meta.arg.shareContactInfo;
+
+      if (state.clubForPractitioner?.club) {
+        state.clubForPractitioner.club.id =
+          state.clubForPractitioner.club.id || '';
+
+        state.clubForPractitioner.club.clubMembers = state.clubForPractitioner
+          .club.clubMembers
+          ? state.clubForPractitioner.club.clubMembers.map((member) => {
+              if (member.practitionerId === practitionerId) {
+                return {
+                  ...member,
+                  welcomeMessage,
+                  shareContactInfo,
+                };
+              } else {
+                return member;
+              }
+            })
+          : [];
+      }
     });
     builder.addCase(acceptNewClubLeaderRole.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);

@@ -308,6 +308,29 @@ export const getLastCoachAttendedFollowUpVisitByUserId = (
     }, null);
   });
 
+export const getLatestPqaOrReacreditationRatingByUserId = (userId: string) =>
+  createSelector(getPractitionerTimelineByIdSelector(userId), (timeline) => {
+    const ratings = [
+      ...(timeline?.pQARatings || []),
+      ...(timeline?.reAccreditationRatings || []),
+    ];
+
+    if (ratings.length === 0) {
+      return null;
+    }
+
+    return ratings?.reduce((mostRecentRating, rating) => {
+      if (
+        !mostRecentRating ||
+        new Date(rating?.insertedDate) > new Date(mostRecentRating.insertedDate)
+      ) {
+        return rating;
+      }
+
+      return mostRecentRating;
+    }, null);
+  });
+
 export const getCalendarEventLinkedVisit = (id: string) =>
   createSelector(
     (state: RootState) => state.pqa.coachPractitionersTimeline,

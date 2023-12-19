@@ -34,6 +34,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         public bool CoachAttended { get; set; }
         public string? OtherDescription { get; set; }
         public int TotalCaregiversAttended { get; set; }
+        public Guid? EventId { get; set; }
     }
 
     public interface ClubMeetingJoin<TKey>
