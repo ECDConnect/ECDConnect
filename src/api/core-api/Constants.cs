@@ -845,6 +845,8 @@ namespace EcdLink.Api.CoreApi
             public const string meeting_type_caregiver_meeting = "caregiver_meeting";
             public const string meeting_type_other = "other";
 
+            public const string calendar_meeting_type = "Club Monthly Meeting";
+
             public const string no_club_leader = "No club leader";
             public const string contact_club_leader = "Contact club leader";
             public const string contact_club_leader_name = "Contact ";
