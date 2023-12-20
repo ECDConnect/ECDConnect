@@ -47,7 +47,7 @@ const navigation = [
     query: 'GetAllRace',
   },
   {
-    name: 'Child Attending Reasons',
+    name: 'Older child attending reasons',
     section: 'Child registration',
     href: '/data/attending-reasons',
     query: 'GetAllProgrammeAttendanceReason',
@@ -70,7 +70,7 @@ const navigation = [
     query: 'GetAllGrant',
   },
   {
-    name: 'Education Levels',
+    name: 'Education levels',
     section: 'Child registration',
     href: '/data/education-levels',
     query: 'GetAllEducation',
