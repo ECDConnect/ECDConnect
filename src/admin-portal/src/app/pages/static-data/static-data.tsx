@@ -148,7 +148,7 @@ export function StaticData() {
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
-  console.log({ searchValue });
+
   return (
     <div>
       <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
