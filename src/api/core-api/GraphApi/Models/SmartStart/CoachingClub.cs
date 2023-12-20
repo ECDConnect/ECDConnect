@@ -29,7 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string TotalClubPointsColor { get; set; }
         public int MaxClubPoints { get; set; }
         public ICollection<ClubActivity> ClubActivities { get; set; }
-        public ICollection<IssueTask> IssuesTasks { get; set; }
+        public IssueTask IssueTask { get; set; }
     }
 
     public class IssueTask

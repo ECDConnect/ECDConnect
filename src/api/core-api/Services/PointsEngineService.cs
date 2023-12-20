@@ -1632,7 +1632,6 @@ namespace EcdLink.Api.CoreApi.Services
        
         #region Clubs
 
-        // Yearly, calculate by 30 November and will be triggered by a cron job
         public bool CalculateLeaveNoOneBehind(Guid clubId) 
         {
             // Once a year: by 30 November
@@ -1709,11 +1708,13 @@ namespace EcdLink.Api.CoreApi.Services
                 } 
                 else 
                 {
+                    // For First PQA can we please make sure that the club isn’t penalised if the First PQA was done in a previous year?
+                    // So (in line w. my comments below) - count all users who currently have a green First PQA (so the latest First PQA visit was green).
                     clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.leave_no_one_behind && x.Type != Constants.ClubSettings.name_purple).FirstOrDefault();
                     foreach (var practitionerUserId in practitioners)
                     {
                         Visit latestVisit = _visitManager.GetPQAVisitsForPractitioner(practitionerUserId)
-                            .Where(x => x.ActualVisitDate.HasValue && x.ActualVisitDate.Value.Year == startDate.Year)
+                            .Where(x => x.ActualVisitDate.HasValue && (x.ActualVisitDate.Value.Year == startDate.Year || x.ActualVisitDate.Value.Year == startDate.Year - 1))
                             .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
 
                         greenRatings += (latestVisit.PQARating.OverallRating == MetricsColorEnum.Success.ToString() ? 1 : 0);

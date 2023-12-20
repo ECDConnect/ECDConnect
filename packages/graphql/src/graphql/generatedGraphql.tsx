@@ -253,17 +253,19 @@ export type ActivityMeetRegular = {
   pastMeetings?: Maybe<Array<Maybe<ActivityMeetRegularDetail>>>;
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
-  upcomingMeetings?: Maybe<Array<Maybe<ClubMeeting>>>;
+  upcomingMeetings?: Maybe<Array<Maybe<ActivityMeetRegularDetail>>>;
 };
 
 export type ActivityMeetRegularDetail = {
   __typename?: 'ActivityMeetRegularDetail';
+  eventId?: Maybe<Scalars['UUID']>;
   meetingAbsentees?: Maybe<Array<Maybe<ClubUser>>>;
   meetingAttendanceColor?: Maybe<Scalars['String']>;
   meetingAttendancePerc: Scalars['Float'];
   meetingDate: Scalars['DateTime'];
   meetingNotes?: Maybe<Scalars['String']>;
   meetingParticipants?: Maybe<Array<Maybe<ClubUser>>>;
+  name?: Maybe<Scalars['String']>;
   points: Scalars['Int'];
 };
 
@@ -5587,6 +5589,7 @@ export type Mutation = {
   bulkDeleteUser?: Maybe<BulkDeactivateResult>;
   calculateChildrenRegistrationRemoval: Scalars['Boolean'];
   calculateLeaveNoOneBehind: Scalars['Boolean'];
+  calculateMeetRegularly: Scalars['Boolean'];
   cancelRemovalFromProgramme: Scalars['Boolean'];
   changeClubName?: Maybe<Club>;
   changeClubSupportRole: Scalars['Boolean'];
@@ -6352,6 +6355,11 @@ export type MutationCalculateChildrenRegistrationRemovalArgs = {
 
 export type MutationCalculateLeaveNoOneBehindArgs = {
   clubId: Scalars['UUID'];
+};
+
+export type MutationCalculateMeetRegularlyArgs = {
+  clubId: Scalars['UUID'];
+  clubMeetingId: Scalars['UUID'];
 };
 
 export type MutationCancelRemovalFromProgrammeArgs = {
@@ -11069,7 +11077,6 @@ export type Query = {
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClientRecords?: Maybe<Array<Maybe<Document>>>;
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
-  allClubsForCoach?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allClubsForCoachSimple?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allCoachingCircleClubsForCoach?: Maybe<CircleTabClubs>;
@@ -12797,10 +12804,6 @@ export type QueryAllClientRecordsArgs = {
   search?: InputMaybe<Scalars['String']>;
   showOnlyStatus?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   showOnlyTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export type QueryAllClubsForCoachArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllClubsForCoachSimpleArgs = {
