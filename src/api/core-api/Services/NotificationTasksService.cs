@@ -19,6 +19,7 @@ using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.SmartStart.Services.Interfaces;
 
 namespace ECDLink.Core.Services
 {
@@ -29,6 +30,7 @@ namespace ECDLink.Core.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly INotificationService _notificationService;
         private readonly IIncomeExpenseService _incomeService;
+        private readonly IPersonnelService _personnelService;
         private readonly AttendanceTrackingRepository _attendanceTrackingRepository;
         IHolidayService<Holiday> _holidayService;
 
@@ -39,7 +41,8 @@ namespace ECDLink.Core.Services
             [Service] IIncomeExpenseService incomeService,
             HierarchyEngine hierarchyEngine, 
             [Service] AttendanceTrackingRepository attendanceTrackingRepository, 
-            IHolidayService<Holiday> holidayService)
+            IHolidayService<Holiday> holidayService,
+            IPersonnelService personnelService)
         {
             _repositoryFactory = repositoryFactory;
             _hierarchyEngine = hierarchyEngine;
@@ -48,6 +51,7 @@ namespace ECDLink.Core.Services
             _attendanceTrackingRepository = attendanceTrackingRepository;
             _holidayService = holidayService;
             _incomeService = incomeService;
+            _personnelService = personnelService;
         }
 
         public async Task DailyUnassignedClassesNotification()
@@ -425,6 +429,50 @@ namespace ECDLink.Core.Services
                 await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2),true);
             }
         }
+
+
+        public async Task DailyCoachChecksNotification()
+        {
+            //to be completed
+            //var adminId = _hierarchyEngine.GetAdminUserId();
+            //var traineeRepo = _repositoryFactory.CreateGenericRepository<Trainee>(userContext: adminId);
+            ////1) check trainees ready for smartspace visits - SendCoachTraineeReadySmartspaceCheckNotification
+
+            //var newTrainee = traineeRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7)).ToList();
+            //List<TagsReplacements> replacements = new List<TagsReplacements>();
+            //foreach (var trainee in newTrainee)
+            //{
+            //    var traineeTimeline = _personnelService.GetOnBoardTraineeTimeline(trainee.UserId);
+
+            //    var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
+            //    var userToSend = await _userManager.FindByIdAsync(parentUserId);
+
+            //    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
+            //}
+
+            //2) Trainees not completed onboarding - 2 weeks
+
+            //3) Trainees not completed onboarding - 4 weeks
+
+            //4) Practitioner not completed self assessment form
+
+            //5) Overdue visits
+
+            //5) Practitioner requested visit - find button from FE
+
+
+
+            ////find all trainees thats new in last 7 days
+            //var newTrainee = traineeRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7)).ToList();
+            //List<TagsReplacements> replacements = new List<TagsReplacements>();
+            //foreach (var trainee in newTrainee)
+            //{
+            //    var parentUserId = trainee.CoachHierarchy != null ? trainee.CoachHierarchy.ToString() : _hierarchyEngine.GetUserParentUserId(trainee.UserId);
+            //    var userToSend = await _userManager.FindByIdAsync(parentUserId);
+
+            //    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
+            //}
+            }
 
 
 

@@ -5143,6 +5143,7 @@ export type MeetingTypeSortInput = {
 
 export type MessageLog = {
   __typename?: 'MessageLog';
+  action?: Maybe<Scalars['String']>;
   cTA?: Maybe<Scalars['String']>;
   cTAText?: Maybe<Scalars['String']>;
   from?: Maybe<Scalars['String']>;
@@ -5167,6 +5168,7 @@ export type MessageLog = {
 };
 
 export type MessageLogFilterInput = {
+  action?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<MessageLogFilterInput>>;
   cTA?: InputMaybe<StringOperationFilterInput>;
   cTAText?: InputMaybe<StringOperationFilterInput>;
@@ -5193,6 +5195,7 @@ export type MessageLogFilterInput = {
 };
 
 export type MessageLogInput = {
+  Action?: InputMaybe<Scalars['String']>;
   CTA?: InputMaybe<Scalars['String']>;
   CTAText?: InputMaybe<Scalars['String']>;
   From?: InputMaybe<Scalars['String']>;
@@ -5250,6 +5253,7 @@ export type MessageLogModelInput = {
 };
 
 export type MessageLogSortInput = {
+  action?: InputMaybe<SortEnumType>;
   cTA?: InputMaybe<SortEnumType>;
   cTAText?: InputMaybe<SortEnumType>;
   from?: InputMaybe<SortEnumType>;
@@ -5275,6 +5279,7 @@ export type MessageLogSortInput = {
 
 export type MessageTemplate = {
   __typename?: 'MessageTemplate';
+  action?: Maybe<Scalars['String']>;
   cTA?: Maybe<Scalars['String']>;
   cTAText?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
@@ -5291,6 +5296,7 @@ export type MessageTemplate = {
 };
 
 export type MessageTemplateFilterInput = {
+  action?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<MessageTemplateFilterInput>>;
   cTA?: InputMaybe<StringOperationFilterInput>;
   cTAText?: InputMaybe<StringOperationFilterInput>;
@@ -5309,6 +5315,7 @@ export type MessageTemplateFilterInput = {
 };
 
 export type MessageTemplateInput = {
+  Action?: InputMaybe<Scalars['String']>;
   CTA?: InputMaybe<Scalars['String']>;
   CTAText?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -5323,6 +5330,7 @@ export type MessageTemplateInput = {
 };
 
 export type MessageTemplateSortInput = {
+  action?: InputMaybe<SortEnumType>;
   cTA?: InputMaybe<SortEnumType>;
   cTAText?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
@@ -9142,6 +9150,7 @@ export type NoteTypeSortInput = {
 
 export type Notification = {
   __typename?: 'Notification';
+  action?: Maybe<Scalars['String']>;
   cTA?: Maybe<Scalars['String']>;
   cTAText?: Maybe<Scalars['String']>;
   from?: Maybe<Scalars['String']>;
@@ -9175,6 +9184,7 @@ export type NotificationDisplay = {
 };
 
 export type NotificationSortInput = {
+  action?: InputMaybe<SortEnumType>;
   cTA?: InputMaybe<SortEnumType>;
   cTAText?: InputMaybe<SortEnumType>;
   from?: InputMaybe<SortEnumType>;

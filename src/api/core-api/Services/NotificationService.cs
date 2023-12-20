@@ -107,7 +107,8 @@ namespace EcdLink.Api.CoreApi.Services
                             To = (user != null ? user.Id : userType),
                             Status = status,
                             CTA = templateItem.CTA,
-                            CTAText = templateItem.CTAText
+                            CTAText = templateItem.CTAText,
+                            Action = item.Action
                         };
                         if (messageEndDate != null)
                         {
