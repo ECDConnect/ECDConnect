@@ -13,7 +13,6 @@ import {
 } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import LanguageSelector from '../../../../components/language-selector/language-selector';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
@@ -21,7 +20,7 @@ import {
   FieldType,
 } from '../../content-management-models';
 import ContentCreate from './components/content-create/content-create';
-import { PlusIcon } from '@heroicons/react/solid';
+import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -30,6 +29,7 @@ export interface ContentListProps {
   languages: LanguageDto[];
   viewContent: (content?: ContentManagementView) => void;
   refreshParent: () => void;
+  onSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   searchValue?: string;
 }
 
@@ -40,6 +40,7 @@ export default function ContentList({
   optionDefinitions,
   viewContent,
   refreshParent,
+  onSearch,
   searchValue,
 }: ContentListProps) {
   const { hasPermission } = useUser();
@@ -52,7 +53,7 @@ export default function ContentList({
   const [languageId, setLanguageId] = useState<string>();
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
-  console.log({ displayFields });
+
   function filterByValue(array, value) {
     return array.filter(
       (data) =>
@@ -119,7 +120,11 @@ export default function ContentList({
       }
   `;
 
-  const { data: contentData, refetch: refetchContent } = useQuery(query, {
+  const {
+    data: contentData,
+    refetch: refetchContent,
+    loading: loadingContent,
+  } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: languageId,
@@ -242,25 +247,37 @@ export default function ContentList({
               </div>
               <div className="flex flex-col">
                 <div className="mt-1 ml-4">
-                  {hasPermission(PermissionEnum.create_static) && (
-                    <button
-                      onClick={() => displayCreatePanel()}
-                      type="button"
-                      className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                    >
-                      <PlusIcon width="22px" className="pl-1" />
-                      Add {camelCaseToSentanceCase(contentType.name)}
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
           </div> */}
-
+          <div className="mb-8 flex flex-col items-center gap-2 md:justify-between lg:flex-row">
+            <div className="bg-adminPortalBg relative w-full rounded-md lg:w-6/12">
+              <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                <SearchIcon className="text-textMid h-5 w-5" />
+              </span>
+              <input
+                className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
+                placeholder="Search by title, section or content..."
+                onChange={onSearch}
+              />
+            </div>
+            {hasPermission(PermissionEnum.create_static) && (
+              <button
+                onClick={() => displayCreatePanel()}
+                type="button"
+                className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
+              >
+                <PlusIcon width="22px" className="pl-1" />
+                Add {camelCaseToSentanceCase(contentType.name)}
+              </button>
+            )}
+          </div>
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
+                  isLoading={!tableData.length && loadingContent}
                   columns={displayFields.map((item) => {
                     return {
                       field:
