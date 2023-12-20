@@ -1,4 +1,5 @@
 export const ContentManagementTabs = {
+  PROCESS: { id: 2, name: 'Progress' },
   PROGRAMMES: { id: 3, name: 'Programmes' },
   COMMUNITY: { id: 4, name: 'Community' },
 };

@@ -125,14 +125,14 @@ export function ContentManagement() {
           id: 1,
         },
         {
-          name: 'Progress',
+          name: ContentManagementTabs.PROCESS.name,
           // href: '/',
-          id: 2,
+          id: ContentManagementTabs.PROCESS.id,
         },
         {
-          name: 'Programmes',
+          name: ContentManagementTabs.PROGRAMMES.name,
           // href: '/',
-          id: 3,
+          id: ContentManagementTabs.PROGRAMMES.id,
         },
         {
           name: ContentManagementTabs.COMMUNITY.name,
@@ -198,7 +198,7 @@ export function ContentManagement() {
   }, 500);
 
   const handleSubTabs = useCallback(() => {
-    if (specialType === 'Progress') {
+    if (specialType === ContentManagementTabs.PROCESS.name) {
       return setSubTabs([
         {
           title: 'Levels',
@@ -285,11 +285,7 @@ export function ContentManagement() {
           titleIcon: 'PuzzleIcon',
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
-            // setSpecialType('');
-            // const selectedTypeObject = dataTypes?.contentTypes.find(
-            //   (type: ContentTypeDto) => type.name === 'Activity'
-            // );
-            // showGroupContentTypes(selectedTypeObject);
+            // TODO: Add handling for connect tab
           },
           classNames: 'bg-white',
         },
