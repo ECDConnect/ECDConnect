@@ -82,7 +82,7 @@ const navigation = [
     query: 'GetAllRelation',
   },
   {
-    name: 'Reasons for leaving',
+    name: 'Child reasons for leaving',
     section: 'Child registration',
     href: '/data/reasons-for-leaving',
     query: 'GetAllReasonForLeaving',
