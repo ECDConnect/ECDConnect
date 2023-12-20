@@ -39,7 +39,7 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public ActivityLeaveNoOneBehind GetActivityLeaveNoOneBehindDetails(Guid clubId);
         public ActivityChildAttendance GetActivityChildAttendance(Guid clubId);
         public ActivityChildProgress GetActivityChildProgress(Guid clubId);
-        ClubModel GetClubForUser(string userId);
+        DetailClubModel GetClubForUser(string userId);
         IEnumerable<DetailClubModel> GetClubsForCoach(string coachUserId);
         DetailClubModel GetClubById(Guid clubId);
         public bool AddBeCreativeActivity(BeCreativeUpload input);

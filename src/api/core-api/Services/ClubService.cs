@@ -1281,7 +1281,7 @@ namespace EcdLink.Api.CoreApi.Services
             DateTime term2End = new DateTime(today.Year, 07, 31);
 
             DateTime term3Start = new DateTime(today.Year, 08, 01);
-            DateTime term3End = new DateTime(today.Year, 10, 31);
+            DateTime term3End = new DateTime(today.Year, 12, 31); // TODO: reset date after testing!!! SUPPRESS
 
             ActivityHostFamilyDays activityHostFamilyDays = new ActivityHostFamilyDays();
             List<ActivityHostFamilyDaysDetail> terms = new List<ActivityHostFamilyDaysDetail>
@@ -1633,7 +1633,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                         x.Year == today.Year &&
                                                         x.ClubPointsLibrary.Activity == Constants.ClubSettings.child_progress_reports).ToList();
 
-            activityChildProgress.Points = clubPoints.Select(x => x.Points).Sum(); ;
+            activityChildProgress.Points = clubPoints.Select(x => x.Points).Sum();
             activityChildProgress.PointsColor = MetricsColorEnum.Error.ToString();
             // set the color for points
             if (activityChildProgress.Points >= 1 && activityChildProgress.Points <= 149)
@@ -1659,7 +1659,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     MonthName = new DateTime(today.Year, 11, 1).ToString("MMMM") + " reports",
                     ProgressPoints = progressPoints,
-                    ProgressPerc = progressPoints / maxProgressTotal * 100,
+                    ProgressPerc = (int)Math.Round(progressPoints / (double)maxProgressTotal * 100),
                     ProgressPointsColor = progressPoints == 0
                         ? MetricsColorEnum.Error.ToString()
                         : progressPoints < 38
@@ -1667,7 +1667,7 @@ namespace EcdLink.Api.CoreApi.Services
                             : MetricsColorEnum.Success.ToString(),
 
                     CaregiverPoints = caregiverPoints,
-                    CaregiverPerc = caregiverPoints / maxCaregiverTotal * 100,
+                    CaregiverPerc = (int)Math.Round(caregiverPoints / (double)maxCaregiverTotal * 100),
                     CaregiverPointsColor = caregiverPoints == 0
                         ? MetricsColorEnum.Error.ToString()
                         : caregiverPoints < 38
@@ -1686,7 +1686,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     MonthName = new DateTime(today.Year, 6, 1).ToString("MMMM") + " reports",
                     ProgressPoints = progressPoints,
-                    ProgressPerc = progressPoints / (maxProgressTotal / 2) * 100,
+                    ProgressPerc = (int)Math.Round(progressPoints / (double)maxProgressTotal * 100),
                     ProgressPointsColor = progressPoints == 0
                         ? MetricsColorEnum.Error.ToString()
                         : progressPoints < 38
@@ -1694,7 +1694,7 @@ namespace EcdLink.Api.CoreApi.Services
                             : MetricsColorEnum.Success.ToString(),
 
                     CaregiverPoints = caregiverPoints,
-                    CaregiverPerc = caregiverPoints / (maxCaregiverTotal / 2) * 100,
+                    CaregiverPerc = (int)Math.Round(caregiverPoints / (double)maxCaregiverTotal * 100),
                     CaregiverPointsColor = caregiverPoints == 0
                         ? MetricsColorEnum.Error.ToString()
                         : caregiverPoints < 38
@@ -1706,58 +1706,21 @@ namespace EcdLink.Api.CoreApi.Services
             return activityChildProgress;
         }
 
-        public ClubModel GetClubForUser(string userId)
+        public DetailClubModel GetClubForUser(string userId)
         {
             // Get practitioner since we need the practitioner id (TODO remove this once we are set up to use userId everywhere)
             var practitioner = _practitionerRepo.GetByUserId(userId);
 
-            var club = _clubMemberRepo.GetAll()
-                .Where(x => x.PractitionerId == practitioner.Id && x.IsActive) // Do we need to check the club is active too?
-                //Points
-                .Include(x => x.Club)
-                .ThenInclude(x => x.ClubPoints.Where(x => x.Year == DateTime.Now.Year))
-                //League
-                .Include(x => x.Club)
-                .ThenInclude(x => x.League)
-                .ThenInclude(x => x.LeagueType)
-                //Club Members
-                .Include(x => x.Club)
-                .ThenInclude(x => x.ClubMembers.Where(x => x.IsActive))
-                .ThenInclude(x => x.Practitioner)
-                .ThenInclude(x => x.User)
-                //Club leaders
-                .Include(x => x.Club)
-                .ThenInclude(x => x.ClubLeaders.Where(x => x.IsActive))
-                .ThenInclude(x => x.Practitioner)
-                .ThenInclude(x => x.User)
-                // Club Support
-                .Include(x => x.Club)
-                .ThenInclude(x => x.ClubSupport.Where(x => x.IsActive))
-                .ThenInclude(x => x.Practitioner)
-                .ThenInclude(x => x.User)
-                .Select(x => x.Club)
+            var clubMembership = _clubMemberRepo.GetAll()
+                .Where(x => x.PractitionerId == practitioner.Id && x.IsActive) 
                 .FirstOrDefault();
 
-            if (club == null) return null;
-
-            var coach = _coachRepo.GetAll().Include(x => x.User).First(x => x.UserId == club.UserId);
-
-            // Get points total for club
-            var pointsTotal = club.ClubPoints.Select(x => x.Points).Sum();
-
-            var maxPointsTotal = club.League == null
-                ? 0
-                : club.League?.LeagueType?.Name == Constants.ClubSettings.name_purple
-                    ? Constants.ClubSettings.purple_club_max_points
-                    : Constants.ClubSettings.non_purple_club_max_points;
-
-            var clubsInLeague = 0;
-            if (club.LeagueId.HasValue)
+            if (clubMembership == null)
             {
-                clubsInLeague = _clubRepo.GetAll().Where(x => x.LeagueId == club.LeagueId).Count();
+                return null;
             }
 
-            return new ClubModel(club, coach, pointsTotal, maxPointsTotal, GetClubLeagueRankPosition(club, DateTime.Now), clubsInLeague);
+            return GetClubById(clubMembership.Club.Id);
         }
 
         public DetailClubModel GetClubById(Guid clubId)
