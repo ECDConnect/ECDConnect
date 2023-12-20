@@ -604,15 +604,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = Constants.GGSettings.has_csg2.Replace("{client}", firstName);
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
                     }
-                    else if (vData.QuestionAnswer == Constants.GGSettings.answer_no)
-                    {
-                        comment = Constants.GGSettings.has_csg3;
-                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.sassa_refferals, false);
-                    }
-
                 }
                 else if (vData.Question == Constants.GGSettings.q_csg_not_applied)
                 {
+                    comment = Constants.GGSettings.has_csg3;
+                    AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.sassa_refferals, false);
+
                     comment = Constants.GGSettings.has_csg3;
                     AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
                 }
