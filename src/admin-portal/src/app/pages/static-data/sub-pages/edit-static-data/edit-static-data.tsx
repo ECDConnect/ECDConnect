@@ -467,7 +467,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
       setFormIsDirty(false);
     }
   }, [filteredArr?.length]);
-  console.log({ displayFormIsDirty });
+
   return (
     <div className="w-full p-4">
       {formIsDirty && (
