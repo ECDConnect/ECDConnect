@@ -11049,7 +11049,6 @@ export type Query = {
   allClassroomsForPrincipal?: Maybe<Array<Maybe<Classroom>>>;
   allClientRecords?: Maybe<Array<Maybe<Document>>>;
   allClinics?: Maybe<Array<Maybe<Clinic>>>;
-  allClubsForCoach?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allClubsForCoachSimple?: Maybe<Array<Maybe<CoachingClubBase>>>;
   allCoachesForFranchisor?: Maybe<Array<Maybe<Coach>>>;
   allCoachingCircleClubsForCoach?: Maybe<CircleTabClubs>;
@@ -12777,10 +12776,6 @@ export type QueryAllClientRecordsArgs = {
   search?: InputMaybe<Scalars['String']>;
   showOnlyStatus?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   showOnlyTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export type QueryAllClubsForCoachArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryAllClubsForCoachSimpleArgs = {
