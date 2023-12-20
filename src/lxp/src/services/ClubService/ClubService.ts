@@ -471,7 +471,6 @@ class ClubService {
       throw new Error('Get club for user failed - Server connection error');
     }
 
-    console.log('response.data.data.clubForUser', response);
     return response.data.data.clubForUser;
   }
 
@@ -661,7 +660,6 @@ class ClubService {
       throw new Error('Get club for user failed - Server connection error');
     }
 
-    console.log('response.data.data.clubById', response);
     return response.data.data.clubById;
   }
 
@@ -932,7 +930,6 @@ class ClubService {
       );
     }
 
-    console.log('response.data.data.activityHostFamilyDetails', response);
     return response.data.data.activityHostFamilyDetails;
   }
 

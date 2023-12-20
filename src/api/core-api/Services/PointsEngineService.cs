@@ -2036,7 +2036,8 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     meetingAttendancePerc = clubPointsLibrary.MaxPointsYearly - totalYearPoints;
                     totalYearPoints = clubPointsLibrary.MaxPointsYearly;
-                } else
+                } 
+                else
                 {
                     totalYearPoints = totalYearPoints + (int)meetingAttendancePerc;
                 }
