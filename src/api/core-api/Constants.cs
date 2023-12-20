@@ -567,6 +567,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_csg_receiving = "Is {client} receiving the CSG?";
             public const string q_csg_applied = "Has {client} applied for a CSG?";
             public const string q_csg_qualify = "Does {client} qualify for CSG?";
+            public const string q_csg_not_applied = "Why has {client} not applied for a CSG?";
 
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
