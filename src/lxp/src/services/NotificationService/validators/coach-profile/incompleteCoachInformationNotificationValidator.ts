@@ -40,10 +40,9 @@ export class IncompleteCoachInformationNotificationValidator
       isCoach &&
       (!userState?.user?.firstName ||
         !userState?.user?.surname ||
-        !userState?.user?.phoneNumber ||
         !userState?.user?.email);
 
-    if (!userState?.user || showNotification) {
+    if (showNotification) {
       return [
         {
           reference: `coach-profile`,

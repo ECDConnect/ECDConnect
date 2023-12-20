@@ -466,8 +466,6 @@ class PractitionerService {
             usePhotoInReport
             isOnStipend
             isCompletedBusinessWalkThrough
-            isClubLeader
-            isClubSupport
             clubId
             absentees {
               absentDate

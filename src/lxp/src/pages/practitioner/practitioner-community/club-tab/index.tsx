@@ -43,6 +43,7 @@ import { OfflineAlert } from '@/components/offline-alert';
 import { SupportRoleAlert } from './0-components/support-role-alert';
 import { getAllNotifications } from '@/store/notifications/notifications.selectors';
 import { notificationTagConfig } from '@/constants/notifications';
+import { PractitionerCommunityRouteState } from '../index.types';
 
 export const ClubTab: React.FC = () => {
   const club = useSelector(getClubForPractitionerSelector);
@@ -60,6 +61,9 @@ export const ClubTab: React.FC = () => {
     clubSelectors.getActivityHostFamilyDetailsSelector(clubId)
   );
   const notifications = useSelector(getAllNotifications);
+  const clubRankingPercentage = useSelector(
+    clubSelectors.getClubRankingPercentageSelector(clubId)
+  );
 
   const history = useHistory();
 
@@ -112,7 +116,9 @@ export const ClubTab: React.FC = () => {
   );
   const isSupportRole = club?.clubSupport?.userId === user?.id;
   const isToShowPointsScreen = shouldShowPoints();
-  const isTop25Percent = club?.leagueRanking && club?.leagueRanking <= 3;
+  const isTop25Percent =
+    (club?.leagueRanking && club?.leagueRanking <= 3) ||
+    (clubRankingPercentage && clubRankingPercentage <= 25);
 
   // From EC-1515
   const onAddMeetingOrEvent = () => {
@@ -312,9 +318,13 @@ export const ClubTab: React.FC = () => {
 
   const leagueCard: MenuListDataItem = useMemo(
     () => ({
-      title: club?.league?.name ?? '',
+      title: 'in the league',
       titleStyle: 'text-textDark',
-      onActionClick: () => {}, // TODO: add integration
+      onActionClick: () => {
+        history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT, {
+          activeTabIndex: 1,
+        } as PractitionerCommunityRouteState);
+      },
       customIcon: (
         <div className="relative mr-4 flex h-11 w-11 items-center justify-center">
           <Badge
@@ -331,7 +341,7 @@ export const ClubTab: React.FC = () => {
       ),
       backgroundColor: isTop25Percent ? 'successBg' : 'infoBb',
     }),
-    [club?.league?.name, club?.leagueRanking, isTop25Percent]
+    [club?.leagueRanking, history, isTop25Percent]
   );
 
   const activities: MenuListDataItem[] = [

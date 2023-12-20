@@ -30,6 +30,12 @@ import { LoginModal } from '@/pages/auth/login-modal/login-modal';
 
 import '@/styles.css';
 
+import { AppErrorHandler } from '@ecdlink/core';
+import { stopReportingRuntimeErrors } from 'react-error-overlay';
+if (process.env.NODE_ENV === 'development') {
+  stopReportingRuntimeErrors();
+}
+
 function App() {
   const dialog = useDialog();
   const user = useSelector(authSelectors.getAuthUser);
@@ -99,7 +105,9 @@ function App() {
   return (
     <IonApp className="m-auto max-w-4xl bg-white">
       <IonReactRouter>
-        <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
+        <AppErrorHandler>
+          <IonRouterOutlet>{getRoutes()}</IonRouterOutlet>
+        </AppErrorHandler>
       </IonReactRouter>
     </IonApp>
   );
