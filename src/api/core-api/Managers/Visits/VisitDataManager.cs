@@ -814,27 +814,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 _visitRepo.Update(pqaVisit);
             }
 
-            // Club Points integration
-            if (pqaVisit.PractitionerId != null)
-            {
-                Practitioner practitioner = _practitionerRepo.GetById((Guid)pqaVisit.PractitionerId);
-                
-                if (practitioner.ClubLeader != null || practitioner.ClubMember != null || practitioner.ClubSupport != null)
-                {
-                    Club club = practitioner.ClubLeader != null ? practitioner.ClubLeader.Club :
-                                practitioner.ClubMember != null ? practitioner.ClubMember.Club :
-                                practitioner.ClubSupport != null ? practitioner.ClubSupport.Club : null;
-
-                    if (club != null)
-                    {
-                        if (club.LeagueId.HasValue)
-                        {
-                            _pointsEngineService.CalculateLeaveNoOneBehind(club.Id);
-                        }
-                    }
-                }
-            }
-
             return rating;
         }
         
@@ -1010,27 +989,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 RAVisit.Rating = rating.OverallRatingColor;
                 _visitRepo.Update(RAVisit);
-            }
-
-            // Club Points integration
-            if (RAVisit.PractitionerId != null)
-            {
-                Practitioner practitioner = _practitionerRepo.GetById((Guid)RAVisit.PractitionerId);
-
-                if (practitioner.ClubLeader != null || practitioner.ClubMember != null || practitioner.ClubSupport != null)
-                {
-                    Club club = practitioner.ClubLeader != null ? practitioner.ClubLeader.Club :
-                                practitioner.ClubMember != null ? practitioner.ClubMember.Club :
-                                practitioner.ClubSupport != null ? practitioner.ClubSupport.Club : null;
-
-                    if (club != null)
-                    {
-                        if (club.LeagueId.HasValue)
-                        {
-                            _pointsEngineService.CalculateLeaveNoOneBehind(club.Id);
-                        }
-                    }
-                }
             }
 
             return rating;

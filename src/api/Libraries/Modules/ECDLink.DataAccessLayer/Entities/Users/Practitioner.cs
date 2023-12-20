@@ -78,10 +78,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? AttendedFirstAidCourse { get; set; }
         public bool? SetupTraineeInitiated { get; set; }
         public bool? IsCompletedBusinessWalkThrough { get; set; }
-
-        public virtual ClubMember ClubMember { get; set; }
-        public virtual ClubLeader ClubLeader { get; set; }
-        public virtual ClubSupport ClubSupport { get; set; }
     }
 
     public interface PractitionerJoin<TKey>

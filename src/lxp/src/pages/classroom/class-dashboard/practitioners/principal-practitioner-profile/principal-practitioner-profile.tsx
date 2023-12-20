@@ -328,6 +328,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         <PractitionerNotRegistered
           practitioner={practitioner}
           classroom={classroom}
+          existingRemoval={existingRemoval}
         />
       ) : (
         <div className={styles.contentWrapper}>
@@ -460,7 +461,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
               </Card>
             )}
             {!currentAbsentee &&
-              daysAbsentLastMonth &&
+              !!daysAbsentLastMonth &&
               Number(daysAbsentLastMonth) > 0 && (
                 <div className="my-4 flex w-11/12 justify-center">
                   <StackedList

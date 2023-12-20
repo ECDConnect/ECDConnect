@@ -1,11 +1,17 @@
 import { LeagueType } from '@/constants/club';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { LeagueClubsDto } from '@/models/club/league.dto';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 import { clubSelectors } from '@/store/club';
-import { getLeaguesForCoach } from '@/store/club/club.actions';
+import { ClubActions, getLeaguesForCoach } from '@/store/club/club.actions';
 import { userSelectors } from '@/store/user';
-import { MenuListDataItem, StackedList, StackedListType } from '@ecdlink/ui';
+import {
+  LoadingSpinner,
+  MenuListDataItem,
+  StackedList,
+  StackedListType,
+} from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
@@ -17,6 +23,10 @@ export const LeaguesTab = () => {
   const leagues = useSelector(clubSelectors.getLeaguesForCoachSelector);
   const user = useSelector(userSelectors.getUser);
 
+  const { isLoading } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_LEAGUES_FOR_COACH
+  );
   // Reload league data
   useEffect(() => {
     if (!!user && !!user.id) {
@@ -54,6 +64,16 @@ export const LeaguesTab = () => {
   const otherLeagues = leagues
     .filter((league) => league.leagueTypeName !== LeagueType.Purple)
     .map(mapLeague);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="primary"
+        backgroundColor="uiLight"
+      />
+    );
+  }
 
   return (
     <div className="p-4">

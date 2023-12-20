@@ -9,7 +9,7 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { PractitionerCommunityRouteState } from './index.types';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { ClubTab } from './club-tab';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -78,9 +78,18 @@ export const PractitionerCommunity: React.FC = () => {
     },
   ];
 
-  function setTabSelected(tab: TabItem, tabIndex: number) {
+  const setSelectedTab = (tabIndex: number) => {
     setSelectedTabIndex(tabIndex);
-  }
+    history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT, {
+      activeTabIndex: tabIndex,
+    } as PractitionerCommunityRouteState);
+  };
+
+  useEffect(() => {
+    if (state?.activeTabIndex !== selectedTabIndex) {
+      setSelectedTabIndex(state?.activeTabIndex || 0);
+    }
+  }, [selectedTabIndex, state?.activeTabIndex]);
 
   return (
     <BannerWrapper
@@ -98,9 +107,7 @@ export const PractitionerCommunity: React.FC = () => {
           className="bg-uiBg"
           tabItems={tabItems}
           setSelectedIndex={selectedTabIndex}
-          tabSelected={(tab: TabItem, tabIndex: number) =>
-            setTabSelected(tab, tabIndex)
-          }
+          tabSelected={(_, tabIndex: number) => setSelectedTab(tabIndex)}
         />
       </div>
     </BannerWrapper>

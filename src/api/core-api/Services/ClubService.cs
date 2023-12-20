@@ -251,8 +251,6 @@ namespace EcdLink.Api.CoreApi.Services
                         UpdatedBy = _applicationUserId,
                     }).ToList()
                 });
-
-                return;
             }
 
             // Update attended for practitioner
@@ -2068,43 +2066,45 @@ namespace EcdLink.Api.CoreApi.Services
         }
 
         // Called from PersonnelServices
-        public bool ArchiveClubUser(Guid practitionerId)
+        public void ArchiveClubUser(Guid practitionerId)
         {
-            Practitioner practitioner = _practitionerRepo.GetById(practitionerId);
-
-            if (practitioner != null)
+            var clubMemberships = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == practitionerId).ToList();
+            foreach (var membership in clubMemberships)
             {
-                if (practitioner.ClubMember != null)
-                {
-                    practitioner.ClubMember.IsActive = false;
-                    practitioner.ClubMember.UpdatedBy = _applicationUserId;
-                    practitioner.ClubMember.UpdatedDate = DateTime.Now;
-                    _clubMemberRepo.Update(practitioner.ClubMember);
-                }
-
-                if (practitioner.ClubLeader != null)
-                {
-                    practitioner.ClubLeader.IsActive = false;
-                    practitioner.ClubLeader.UpdatedBy = _applicationUserId;
-                    practitioner.ClubLeader.UpdatedDate = DateTime.Now;
-                    _clubLeaderRepo.Update(practitioner.ClubLeader);
-                }
-
-                if (practitioner.ClubSupport != null)
-                {
-                    practitioner.ClubSupport.IsActive = false;
-                    practitioner.ClubSupport.UpdatedBy = _applicationUserId;
-                    practitioner.ClubSupport.UpdatedDate = DateTime.Now;
-                    _clubSupportRepo.Update(practitioner.ClubSupport);
-                }
+                membership.IsActive = false;
+                membership.UpdatedBy = _applicationUserId;
+                membership.UpdatedDate = DateTime.Now;
+                _clubMemberRepo.Update(membership);
             }
 
-            return true;
+            var clubLeaderships = _clubLeaderRepo.GetAll().Where(x => x.PractitionerId == practitionerId).ToList();
+            foreach (var membership in clubLeaderships)
+            {
+                membership.IsActive = false;
+                membership.UpdatedBy = _applicationUserId;
+                membership.UpdatedDate = DateTime.Now;
+                _clubLeaderRepo.Update(membership);
+            }
+
+            var clubSupportRoles = _clubSupportRepo.GetAll().Where(x => x.PractitionerId == practitionerId).ToList();
+            foreach (var membership in clubSupportRoles)
+            {
+                membership.IsActive = false;
+                membership.UpdatedBy = _applicationUserId;
+                membership.UpdatedDate = DateTime.Now;
+                _clubSupportRepo.Update(membership);
+            }
         }
 
         public ClubSupport UpdateClubSupportStatus(Guid practitionerId)
         {
-            ClubSupport clubSupport = _practitionerRepo.GetById(practitionerId).ClubSupport;
+            var clubSupport = _clubSupportRepo.GetAll().Where(x => x.PractitionerId == practitionerId).FirstOrDefault();
+
+            if (clubSupport == null)
+            {
+                return null;
+            }
+
             clubSupport.IsNewInSupportRole = false;
             clubSupport.UpdatedBy = _applicationUserId;
             clubSupport.UpdatedDate = DateTime.Now;
