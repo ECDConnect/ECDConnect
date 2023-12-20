@@ -255,12 +255,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return clubService.GetAllClubsForCoachSimple(userId);
         }
 
-        // TODO this is used on the coach redux store, but then not anywhere else. Investigate and remove
-        public List<CoachingClubBase> GetAllClubsForCoach([Service] IClubService clubService, string userId)
-        {
-            return clubService.GetAllClubsForCoach(userId);
-        }
-
         public List<ClubMember> GetClubsMembers([Service] IClubService clubService, Guid[] clubIds)
         {
             return clubService.GetClubsMembers(clubIds);
