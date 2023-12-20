@@ -41,12 +41,14 @@ export const ChildExtraInformationForm: React.FC<
     if (languages) {
       const languageListToAdd: ButtonGroupOption<string>[] = [];
 
-      languages.forEach((language) => {
-        languageListToAdd.push({
-          text: language.description ?? '',
-          value: language.id ?? '',
+      languages
+        ?.filter((item) => item?.isActive === true)
+        ?.forEach((language) => {
+          languageListToAdd.push({
+            text: language.description ?? '',
+            value: language.id ?? '',
+          });
         });
-      });
       setLanguagesList(languageListToAdd);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,7 +114,7 @@ export const ChildExtraInformationForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg pt-2 pb-4 px-4'}>
+    <div className={'bg-uiBg px-4 pt-2 pb-4'}>
       <Typography type={'h1'} text={childName} color={'primary'} />
       <Typography type={'h2'} text={'Extra Information'} color={'textMid'} />
       <div>
@@ -135,9 +137,11 @@ export const ChildExtraInformationForm: React.FC<
           <ButtonGroup<string>
             options={
               (gender &&
-                gender?.map((x) => {
-                  return { text: x.description, value: x.id ?? '' };
-                })) ||
+                gender
+                  ?.filter((item) => item?.isActive === true)
+                  ?.map((x) => {
+                    return { text: x.description, value: x.id ?? '' };
+                  })) ||
               []
             }
             onOptionSelected={(value: string | string[]) => {
@@ -155,7 +159,7 @@ export const ChildExtraInformationForm: React.FC<
         <label className={classNames(styles.label, 'mt-4')}>
           {`${childName}’s home language(s)?`}
         </label>
-        <label className="mt-2 text-sm text-textLight">
+        <label className="text-textLight mt-2 text-sm">
           You can choose more than one
         </label>
         <div className={'mt-2'}>

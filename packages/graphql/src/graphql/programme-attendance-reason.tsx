@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GetAllProgrammeAttendanceReason = gql`
-  {
-    GetAllProgrammeAttendanceReason {
+  query GetAllProgrammeAttendanceReason($pagingInput: PagedQueryInput) {
+    GetAllProgrammeAttendanceReason(pagingInput: $pagingInput) {
       id
       reason
       isActive

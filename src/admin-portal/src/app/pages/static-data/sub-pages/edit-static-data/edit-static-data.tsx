@@ -179,9 +179,9 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
       pagingInput: {
         filterBy: [
           {
-            fieldName: 'description',
+            fieldName: 'isActive',
             filterType: 'EQUALS',
-            value: 'Male',
+            value: 'true',
           },
         ],
         pageNumber: 0,

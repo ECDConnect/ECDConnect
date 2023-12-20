@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GetAllProvince = gql`
-  {
-    GetAllProvince {
+  query GetAllProvince($pagingInput: PagedQueryInput) {
+    GetAllProvince(pagingInput: $pagingInput) {
       id
       description
       isActive

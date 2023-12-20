@@ -18,6 +18,8 @@ import ReasonForLeavingView from './sub-pages/reason-for-leaving/reason-for-leav
 import { EditStaticData } from './sub-pages/edit-static-data/edit-static-data';
 import { SearchIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
+import { useQuery } from '@apollo/client';
+import { GetTenantContext } from '@ecdlink/graphql';
 
 export declare enum SiteDataSections {
   Sex = 'Sex',
@@ -32,12 +34,12 @@ export declare enum SiteDataSections {
 }
 
 const navigation = [
-  {
-    name: 'Sex',
-    section: 'Child registration',
-    href: '/data/sex',
-    query: 'GetAllGender',
-  },
+  // {
+  //   name: 'Sex',
+  //   section: 'Child registration',
+  //   href: '/data/sex',
+  //   query: 'GetAllGender',
+  // },
   {
     name: 'Race',
     section: 'Child registration',
@@ -56,11 +58,11 @@ const navigation = [
     href: '/data/languages',
     query: 'GetAllLanguage',
   },
-  {
-    name: 'Provinces',
-    href: '/data/provinces',
-    query: 'GetAllProvince',
-  },
+  // {
+  //   name: 'Provinces',
+  //   href: '/data/provinces',
+  //   query: 'GetAllProvince',
+  // },
   {
     name: 'Grants',
     section: 'Child registration',
@@ -87,6 +89,21 @@ const navigation = [
   },
 ];
 
+const growgreatNavigation = [
+  {
+    name: 'Relationship to child',
+    section: 'Client registration (child)',
+    href: '/data/relations',
+    query: 'GetAllRelation',
+  },
+  {
+    name: 'Languages',
+    section: 'ChHW registration',
+    href: '/data/languages',
+    query: 'GetAllLanguage',
+  },
+];
+
 export function StaticData() {
   const history = useHistory();
   const panel = usePanel();
@@ -100,6 +117,10 @@ export function StaticData() {
     init().catch(console.error);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const { data } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
 
   const renderSection = (section: any, onCancel: () => void) => {
     switch (section?.name) {
@@ -150,7 +171,13 @@ export function StaticData() {
                 { field: 'name', use: 'Field' },
                 { field: 'section', use: 'App section' },
               ]}
-              rows={navigation}
+              rows={
+                data &&
+                data.tenantContext &&
+                data.tenantContext.applicationName === 'GrowGreat'
+                  ? growgreatNavigation
+                  : navigation
+              }
               component={'cms'}
               viewRow={openEditDialog}
               searchInput={searchValue}
