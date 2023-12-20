@@ -1610,7 +1610,7 @@ namespace EcdLink.Api.CoreApi.Services
                 maxPointsTotal,
                 rank,
                 clubsInLeague,
-                GetTaskForClub(club, rank, pointsTotal, maxPointsTotal),
+                GetTasksForClub(club, rank, pointsTotal, maxPointsTotal),
                 GetClubActivities(club, DateTime.Now.Year));
         }
 
@@ -1670,7 +1670,7 @@ namespace EcdLink.Api.CoreApi.Services
                     maxPointsTotal,
                     rank,
                     clubsInLeague,
-                    GetTaskForClub(club, rank, pointsTotal, maxPointsTotal),
+                    GetTasksForClub(club, rank, pointsTotal, maxPointsTotal),
                     club.League != null ? GetClubActivities(club, DateTime.Now.Year) : new List<ClubActivity>());
             }
         }
@@ -1761,7 +1761,7 @@ namespace EcdLink.Api.CoreApi.Services
             return leagueModel;
         }
 
-        private List<IssueTask> GetTaskForClub(Club club, int rank, int pointsTotal, int maxPointsTotal)
+        private List<IssueTask> GetTasksForClub(Club club, int rank, int pointsTotal, int maxPointsTotal)
         {
             var prevMonth = DateTime.Now.AddMonths(-1);
             var monthName = prevMonth.ToString("MMM");
