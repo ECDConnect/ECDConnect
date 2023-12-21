@@ -61,10 +61,13 @@ export function ContentManagement() {
       fetchPolicy: 'cache-and-network',
     }
   );
-
+  console.log({ dataTypes });
   useEffect(() => {
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
-      setSelectedType(dataTypes.contentTypes[0]);
+      const defaultType = dataTypes.contentTypes?.find(
+        (item) => item?.name === 'Consent'
+      );
+      setSelectedType(defaultType);
     } else if (dataTypes && dataTypes.contentTypes && selectedType) {
       const currentSelectedContent = dataTypes.contentTypes.find(
         (x) => x.id === selectedType.id
