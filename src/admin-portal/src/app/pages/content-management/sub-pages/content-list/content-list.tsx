@@ -91,6 +91,14 @@ export default function ContentList({
         x.fieldType.dataType !== FieldType.StaticLink
       )
         return x.fieldName;
+      else if (x?.fieldName === 'subCategories')
+        return `
+        ${x.fieldName} {
+          id
+          name
+          imageUrl
+        }
+        `;
       else if (
         x.fieldType.dataType === FieldType.Link &&
         x?.displayMainTable === true

@@ -34,4 +34,5 @@ export type Colours =
   | 'quatenary'
   | 'quatenaryMain'
   | 'darkBackground'
-  | 'adminPortalBg';
+  | 'adminPortalBg'
+  | 'darkBlue';
