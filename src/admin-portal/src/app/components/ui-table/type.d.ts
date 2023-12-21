@@ -1,4 +1,6 @@
-interface UiTableProps {
+export type BulkActionStatus = 'success' | 'failed';
+
+export interface UiTableProps {
   rows: any;
   columns: any;
   options?: any;
@@ -10,6 +12,7 @@ interface UiTableProps {
   searchInput?: any;
   component?: any;
   isLoading?: boolean;
+  onBulkActionCallback?: (status: BulkActionStatus) => void;
 }
 
 interface Iprop {
