@@ -64,7 +64,10 @@ export function ContentManagement() {
 
   useEffect(() => {
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
-      setSelectedType(dataTypes.contentTypes[0]);
+      const defaultType = dataTypes.contentTypes?.find(
+        (item) => item?.name === 'Consent'
+      );
+      setSelectedType(defaultType);
     } else if (dataTypes && dataTypes.contentTypes && selectedType) {
       const currentSelectedContent = dataTypes.contentTypes.find(
         (x) => x.id === selectedType.id
