@@ -376,12 +376,16 @@ namespace EcdLink.Api.CoreApi.Services
             return rank;
         }
 
-        public PractitionerAttendance GetPractitionerAttendance(Guid practitionerId, DateTime date, string meetingType)
+        public PractitionerAttendance GetPractitionerAttendance(Guid practitionerId, string meetingType)
         {
-            List<ClubMeetingRegister> practitionerAttendance = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitionerId &&
-                                                                                                       x.ClubMeeting.MeetingDate.Value.Year == date.Year &&
-                                                                                                       x.ClubMeeting.MeetingType.Name == meetingType)
-                                                                                                    .OrderByDescending(x => x.ClubMeeting.MeetingDate).ToList();
+            var startOfYear = new DateTime(DateTime.Now.Year, 1, 1);
+            var practitionerAttendance = _clubMeetingRegisterRepo.GetAll()
+                .Where(x => x.PractitionerId == practitionerId 
+                    && x.ClubMeeting.MeetingDate.HasValue
+                    && x.ClubMeeting.MeetingDate > startOfYear
+                    && x.ClubMeeting.MeetingType.Name == meetingType)
+                .OrderByDescending(x => x.ClubMeeting.MeetingDate).ToList();
+
             PractitionerAttendance attendance = new PractitionerAttendance();
             if (practitionerAttendance.Count > 0)
             {
