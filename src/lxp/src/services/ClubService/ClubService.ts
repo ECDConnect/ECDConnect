@@ -456,6 +456,10 @@ class ClubService {
               welcomeMessage
               shareContactInfo
             }
+            clubActivities {
+              name
+              points
+            }   
           }
         }`,
       variables: {

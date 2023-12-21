@@ -8,6 +8,7 @@ import { getAttendanceReportsForUser } from '../attendance/attendance.selectors'
 import { LeagueType } from '@/constants/club';
 import { getChildProgressReportsStatusForUser } from '../practitionerForCoach/practitionerForCoach.selectors';
 import { ActionItem } from '@/models/club/actionItem';
+import { Contribution } from '@/models/club/contribution';
 
 // Practitioner
 export const getClubForPractitionerSelector = (state: RootState) =>
@@ -322,7 +323,7 @@ export const getClubContributionsForPractitionerSelector = (
         return [];
       }
 
-      let contributions = [];
+      let contributions: Contribution[] = [];
 
       // Meet regulary
       const meetings = meetRegularlyPoints?.pastMeetings;
@@ -339,15 +340,15 @@ export const getClubContributionsForPractitionerSelector = (
         const attendancePercentage = meetingsAttended / meetings.length;
 
         contributions.push({
-          title: `Attended ${meetingsAttended} of ${meetings.length} club meetings`,
-          subTitle: `Contact ${practitioner.user?.firstName}`,
-          positiveState: attendancePercentage > 0.6 ? true : false,
+          title: 'Meet Regularly',
+          subTitle: `Attended ${meetingsAttended} of ${meetings.length} club meetings`,
+          positiveStatus: attendancePercentage > 0.6 ? true : false,
         });
       } else {
         contributions.push({
           title: 'Meet Regularly',
           subTitle: `No meetings submitted for ${club.name} club yet`,
-          positiveState: false,
+          positiveStatus: false,
         });
       }
 
@@ -371,7 +372,7 @@ export const getClubContributionsForPractitionerSelector = (
             contributions.push({
               title: 'Capture child attendance',
               subTitle: `Submitted all attendance registers for ${attendance.fullAttendanceMonths} of ${attendance.totalMonths} months`,
-              positiveState:
+              positiveStatus:
                 attendance.fullAttendanceMonths / attendance.totalMonths >=
                 0.75,
             });
@@ -380,7 +381,7 @@ export const getClubContributionsForPractitionerSelector = (
           contributions.push({
             title: 'Capture child attendance',
             subTitle: `Not assigned to a class`,
-            positiveState: false,
+            positiveStatus: false,
           });
         }
       }
@@ -416,7 +417,7 @@ export const getClubContributionsForPractitionerSelector = (
         contributions.push({
           title: 'Host family days',
           subTitle: `No events held yet`,
-          positiveState: false,
+          positiveStatus: false,
         });
       }
 
@@ -430,7 +431,7 @@ export const getClubContributionsForPractitionerSelector = (
           contributions.push({
             title: 'Complete child progress reports',
             subTitle: `${practitioner.user?.firstName} has not completed the child progress training yet`,
-            positiveState: false,
+            positiveStatus: false,
           });
         } else {
           if (
@@ -444,7 +445,7 @@ export const getClubContributionsForPractitionerSelector = (
             contributions.push({
               title: 'Complete child progress reports',
               subTitle: `Completed ${percentageCompleted}% of child progress reports`,
-              positiveState: percentageCompleted >= 100,
+              positiveStatus: percentageCompleted >= 100,
             });
           }
         }
@@ -461,13 +462,13 @@ export const getClubContributionsForPractitionerSelector = (
         contributions.push({
           title: 'Leave no one behind',
           subTitle: `${practitioner.user?.firstName} has ${ratingText} PQA`, // TODO need to figure out how to tell if PQA or reaccreditation
-          positiveState: currentRating.overallRatingColor === 'Success',
+          positiveStatus: currentRating.overallRatingColor === 'Success',
         });
       } else {
         contributions.push({
           title: 'Leave no one behind',
           subTitle: `${practitioner.user?.firstName} does not have a PQA rating or re-accreditation rating yet`,
-          positiveState: false,
+          positiveStatus: false,
         });
       }
 

@@ -9,6 +9,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
@@ -130,19 +131,18 @@ export default function UiTable({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows]);
 
-  useEffect(() => {
-    setSearchRows(getSearchResults());
-    setLastUpdate(Date.now());
-    setSearchValue(searchInput);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput]);
-
-  const getSearchResults = () => {
+  const getSearchResults = useCallback(() => {
     if (!searchValue) {
       return rows;
     }
     return fuse.current.search(searchValue).map((result) => result.item);
-  };
+  }, [rows, searchValue]);
+
+  useEffect(() => {
+    setSearchRows(getSearchResults());
+    setLastUpdate(Date.now());
+    setSearchValue(searchInput);
+  }, [getSearchResults, searchInput]);
 
   const makeColumns = (cols: any[] = []) => {
     const selectColumn = {

@@ -133,16 +133,24 @@ export const MomActivityList: React.FC = () => {
 
   useLayoutEffect(() => {
     if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
+      !!previousCurrentVisit &&
+      previousCurrentVisit?.id !== currentVisit?.id &&
       !!currentVisit
-    )
+    ) {
       appDispatch(
         visitThunkActions.getPreviousVisitInformationForMother({
-          visitId: currentVisit?.id,
+          visitId: previousCurrentVisit?.id,
         })
       );
+    } else {
+      if (!previousCurrentVisit && !!currentVisit) {
+        appDispatch(
+          visitThunkActions.getPreviousVisitInformationForMother({
+            visitId: currentVisit?.id,
+          })
+        );
+      }
+    }
   }, [
     appDispatch,
     visitId,
