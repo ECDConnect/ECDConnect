@@ -232,7 +232,7 @@ export const VisitsTab: React.FC = () => {
       return {
         title: isAdditionalVisit
           ? 'Other visit'
-          : item.visitType?.normalizedName || 'Visit',
+          : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: getSubTitle(item, isAdditionalVisit, date),
         ...(isAdditionalVisit && {
           subTitleColor: 'alertDark',

@@ -33,6 +33,8 @@ public class DailyNotificationChecks : CronJobService
             await service.DailyChildrenNotAssignedToClassNotification();
             await service.DailyUnassignedProgrammesNotification();
 
+            await service.DailyCoachChecksNotification();
+
             //await service.MonthlyStartupSupportEndReminderAsync(); //not complete until the startup support enddates are available
             //await service.Daily3WeekLogonCheck(); //deprecated
 

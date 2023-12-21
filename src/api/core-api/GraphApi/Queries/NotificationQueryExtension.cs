@@ -85,7 +85,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 List<TagsReplacements> replacements = new List<TagsReplacements>();                
                 foreach (var item in typeLogs)
                 {
-
                     //replace any mapped values in the message that is addressed to the group. -  applicationName ,organisationName, firstName are the basics that gets replaced automatically
                     MessageTemplateText templateItem = notificationService.RemapFields(item.MessageTemplate, user, replacements);
                     item.Message = templateItem.Message;
@@ -94,6 +93,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     logs.Add(item);
                 }
+                //TO BE COMPLETED - RESERVED FOR TAG REPLACEMENT IN ACTION
+
             }
 
             logs.AddRange(dbRepo.GetAll().Where(x => string.Equals(x.To, userId) && x.IsActive == true).ToList());//&& (x.MessageEndDate >= DateTime.Now.Date || x.MessageEndDate == null) --FE needs to make teh decision to not show, because user might have been offline for a long time and the emssages are still relevant
@@ -115,7 +116,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     toGroups = item.ToGroups.Replace("Region:", "").Replace("Province:", "").Replace("Role:", ""); //Clean out group text for display
                 }
-                notifications.Add(new Notification() { From = item.From, FromUserId = item.FromUserId, Id = item.Id, Message = item.Message, MessageProtocol = item.MessageProtocol, To = item.To, SentByUserId = item.SentByUserId, Subject = item.Subject, MessageTemplateType = item.MessageTemplateType, MessageTemplate = template, CTA = item.CTA, CTAText = item.CTAText, MessageDate = item.MessageDate, MessageEndDate = item.MessageEndDate, Status = item.Status, ToGroups = item.ToGroups, ReadDate = item.ReadDate, Ordering = template.Ordering  });
+                notifications.Add(new Notification() { From = item.From, FromUserId = item.FromUserId, Id = item.Id, Message = item.Message, MessageProtocol = item.MessageProtocol, To = item.To, SentByUserId = item.SentByUserId, Subject = item.Subject, MessageTemplateType = item.MessageTemplateType, MessageTemplate = template, CTA = item.CTA, CTAText = item.CTAText, MessageDate = item.MessageDate, MessageEndDate = item.MessageEndDate, Status = item.Status, ToGroups = item.ToGroups, ReadDate = item.ReadDate, Ordering = template.Ordering, Action = item.Action  });
 
             }
 

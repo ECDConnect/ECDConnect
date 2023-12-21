@@ -21,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public ClubModel GetClubForUser(
+        public DetailClubModel GetClubForUser(
             [Service] IClubService clubService,
             string userId)
         {
