@@ -21,7 +21,7 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
   return (
     <div
       style={{ backgroundColor: '#583f99' }}
-      className="flex flex-col top-0 bottom-0 left-0 right-0 items-center justify-between w-full h-full overflow-hidden z-50"
+      className="top-0 bottom-0 left-0 right-0 z-50 flex h-full w-full flex-col items-center justify-between overflow-hidden"
     >
       <div className="flex flex-col items-center justify-center"></div>
       <div className="flex flex-col items-center justify-center">
@@ -34,7 +34,7 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
           text={loadingMessage}
         />
       </div>
-      <div className="px-4 py-4 flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center px-4 py-4">
         {showIssue && (
           <Alert
             message={
@@ -47,8 +47,8 @@ const Loader = ({ loadingMessage = 'Loading . . .' }) => {
                 type="filled"
                 size="small"
                 onClick={async () => {
-                  await resetAuth();
                   await resetAppStore();
+                  await resetAuth();
                   history.push(ROUTES.LOGIN);
                 }}
               >
