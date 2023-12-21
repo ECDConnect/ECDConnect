@@ -83,7 +83,7 @@ const navigation = [
   },
   {
     name: 'Child reasons for leaving',
-    section: 'Child registration',
+    section: 'Remove child',
     href: '/data/reasons-for-leaving',
     query: 'GetAllReasonForLeaving',
   },

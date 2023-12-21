@@ -193,9 +193,13 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
   const [dataValues, setDataValues] = useState(
     data?.[key]?.filter((item) => item?.isActive === true)
   );
-  const dataValuesDescriptionLength = dataValues?.filter(
-    (item) => item?.description !== ''
-  );
+
+  const dataValuesDescriptionLength =
+    query === 'GetAllProgrammeAttendanceReason'
+      ? dataValues?.filter(
+          (item) => item?.reason !== '' && item?.reason !== null
+        )
+      : dataValues?.filter((item) => item?.description !== '');
 
   const handleInputModels = useCallback((item: any) => {
     if (query === 'GetAllGender') {
@@ -339,6 +343,19 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
           return;
         }
 
+        if (query === 'GetAllProgrammeAttendanceReason') {
+          for (let i = 0; i < inputLimit; i++) {
+            emptyArray?.push({
+              reason: '',
+              id: '',
+              __typename: '',
+            });
+            setDataValues([...activeItems, ...emptyArray]);
+          }
+
+          return;
+        }
+
         for (let i = 0; i < inputLimit; i++) {
           emptyArray?.push({
             description: '',
@@ -368,6 +385,16 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
                 (o1?.description === '' && o1?.id)
             );
           })
+        : query === 'GetAllProgrammeAttendanceReason'
+        ? dataValues?.filter((o1) => {
+            return data?.[key]
+              ?.filter((item) => item?.isActive !== false)
+              .every(
+                (o2) =>
+                  (o2.reason !== o1.reason && o1?.reason !== '') ||
+                  (o1?.reason === '' && o1?.id)
+              );
+          })
         : dataValues?.filter((o1) => {
             return data?.[key]
               ?.filter((item) => item?.isActive !== false)
@@ -380,6 +407,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
           }),
     [data, dataValues, key, query]
   );
+
   const disabled =
     filteredArr?.length === 0 || dataValuesDescriptionLength?.length === 0;
 
@@ -389,7 +417,9 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
       setIsLoading(true);
       if (
         (item?.id && item?.description === '') ||
-        (item?.id && item?.description === '')
+        (item?.id &&
+          query === 'GetAllProgrammeAttendanceReason' &&
+          (item?.reason === '' || item?.reason === null))
       ) {
         deleteMutation({
           variables: {
@@ -402,7 +432,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
               refetch();
               onCancel();
               setNotification({
-                title: `Successfully Deleted ${section?.name}`,
+                title: `Changes saved`,
                 variant: NOTIFICATION.SUCCESS,
               });
             }
@@ -424,7 +454,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
           .then((response) => {
             if (response.data && response.data) {
               setNotification({
-                title: `Successfully Created ${section?.name}!`,
+                title: `Changes saved`,
                 variant: NOTIFICATION.SUCCESS,
               });
               // setEdit(true);
@@ -446,7 +476,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
         })
           .then((response) => {
             setNotification({
-              title: `Successfully Updated ${section?.name}!`,
+              title: `Changes saved!`,
               variant: NOTIFICATION.SUCCESS,
             });
             onCancel();
