@@ -177,6 +177,7 @@ export type ActivityChildAttendance = {
 export type ActivityChildAttendanceDetail = {
   __typename?: 'ActivityChildAttendanceDetail';
   monthName?: Maybe<Scalars['String']>;
+  percentageMembersSubmittedAllRegisters: Scalars['Int'];
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
 };
