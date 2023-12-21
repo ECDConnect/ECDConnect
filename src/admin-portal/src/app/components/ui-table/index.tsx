@@ -12,7 +12,6 @@ import {
   useCallback,
 } from 'react';
 import Table from 'react-tailwind-table';
-import Icon from '../icon';
 import { Link, useHistory } from 'react-router-dom';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import {
@@ -271,9 +270,42 @@ export default function UiTable({
           {formatDate(display_value)}
         </span>
       );
+    } else if (display_value === 'Small group') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-darkBlue inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (display_value === 'Large group') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (
+      column.field === 'subCategories' &&
+      (column?.use === 'GT - Skills' || column?.use === 'Skills')
+    ) {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div className="ml-1 flex cursor-pointer">
+              <div
+                className={`bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+              >
+                <img alt="skill" src={item?.imageUrl} className="h-6 w-6" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
     } else if (column.field === 'subCategories') {
       rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
             <div
               key={item?.id}
