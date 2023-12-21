@@ -1,4 +1,4 @@
-import { Button, Typography, classNames } from '@ecdlink/ui';
+import { Button, LoadingSpinner, Typography, classNames } from '@ecdlink/ui';
 import Fuse from 'fuse.js';
 import {
   ChangeEvent,
@@ -9,6 +9,7 @@ import {
   useEffect,
   useRef,
   useState,
+  useCallback,
 } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
@@ -30,6 +31,7 @@ export default function UiTable({
   searchInput,
   component,
   viewRow,
+  isLoading,
 }: UiTableProps) {
   const history = useHistory();
   const [inviteRows, setInviteRows] = useState<boolean>(false);
@@ -130,19 +132,18 @@ export default function UiTable({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [rows]);
 
-  useEffect(() => {
-    setSearchRows(getSearchResults());
-    setLastUpdate(Date.now());
-    setSearchValue(searchInput);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchInput]);
-
-  const getSearchResults = () => {
+  const getSearchResults = useCallback(() => {
     if (!searchValue) {
       return rows;
     }
     return fuse.current.search(searchValue).map((result) => result.item);
-  };
+  }, [rows, searchValue]);
+
+  useEffect(() => {
+    setSearchRows(getSearchResults());
+    setLastUpdate(Date.now());
+    setSearchValue(searchInput);
+  }, [getSearchResults, searchInput]);
 
   const makeColumns = (cols: any[] = []) => {
     const selectColumn = {
@@ -339,6 +340,17 @@ export default function UiTable({
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="infoMain"
+        backgroundColor="uiBg"
+        className="my-4"
+      />
+    );
+  }
 
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">

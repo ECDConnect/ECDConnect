@@ -67,6 +67,14 @@ export const BreastfeedingIssuesStep = ({
     { name: breastfeedingIssuesCheckboxOptions.noneOption },
   ];
 
+  const [optionList, setOptionList] = useState<
+    {
+      name: string;
+      disabled?: boolean;
+      description?: string;
+    }[]
+  >(checkboxOptions);
+
   const buttonGroupOptions = [
     { text: 'Yes', value: true },
     { text: 'No', value: false },
@@ -100,42 +108,6 @@ export const BreastfeedingIssuesStep = ({
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
-        if (
-          (event.value === breastfeedingIssuesCheckboxOptions.noneOption &&
-            checkboxAnswers?.length) ||
-          checkboxAnswers?.includes(
-            breastfeedingIssuesCheckboxOptions.noneOption
-          )
-        ) {
-          return dialog({
-            blocking: false,
-            position: DialogPosition.Middle,
-            color: 'bg-white',
-            render: (onClose) => {
-              return (
-                <ActionModal
-                  className="z-50"
-                  icon="ExclamationCircleIcon"
-                  iconColor="alertMain"
-                  iconClassName="h-10 w-10"
-                  title="You can only select “None of the above” if there are no danger signs"
-                  detailText={`If ${caregiverName} is not experiencing any danger signs, first deselect all danger signs before selecting “None of the above”.`}
-                  actionButtons={[
-                    {
-                      colour: 'primary',
-                      text: 'Close',
-                      textColour: 'primary',
-                      type: 'outlined',
-                      leadingIcon: 'XIcon',
-                      onClick: onClose,
-                    },
-                  ]}
-                />
-              );
-            },
-          });
-        }
-
         const currentAnswers = checkboxAnswers
           ? [...checkboxAnswers, event.value]
           : [event.value];
@@ -167,6 +139,45 @@ export const BreastfeedingIssuesStep = ({
     onOptionsChange();
   }, [onOptionsChange, questions, setEnableButton]);
 
+  const handleOnChangeSelectedOptions = useCallback(() => {
+    if (
+      !checkboxAnswers?.includes(
+        breastfeedingIssuesCheckboxOptions.noneOption
+      ) &&
+      checkboxAnswers?.length
+    ) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.name === breastfeedingIssuesCheckboxOptions.noneOption) {
+            return { ...item, disabled: true };
+          }
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    if (
+      checkboxAnswers?.includes(breastfeedingIssuesCheckboxOptions.noneOption)
+    ) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.name !== breastfeedingIssuesCheckboxOptions.noneOption) {
+            return { ...item, disabled: true };
+          }
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    return setOptionList((prevState) =>
+      prevState.map((item) => ({ ...item, disabled: false }))
+    );
+  }, [checkboxAnswers]);
+
+  useEffect(() => {
+    handleOnChangeSelectedOptions();
+  }, [handleOnChangeSelectedOptions]);
+
   return (
     <>
       <Header
@@ -184,7 +195,7 @@ export const BreastfeedingIssuesStep = ({
           )}
           color="black"
         />
-        {checkboxOptions.map((option, index) => (
+        {optionList.map((option, index) => (
           <CheckboxGroup
             checkboxColor="primary"
             className="mt-2"
@@ -194,6 +205,7 @@ export const BreastfeedingIssuesStep = ({
             checked={checkboxAnswers?.some((item) => item === option.name)}
             value={option.name}
             onChange={onCheckboxChange}
+            disabled={option.disabled}
           />
         ))}
         <Divider dividerType="dashed" className="mt-5 mb-4" />

@@ -533,7 +533,8 @@ export const InfantRegisterForm: React.FC = () => {
       dialog({
         position: DialogPosition.Middle,
         color: 'bg-transparent',
-        render(onSubmit, onClose) {
+        blocking: true,
+        render(onSubmit) {
           return (
             <Card
               shadowSize={'lg'}
@@ -581,7 +582,7 @@ export const InfantRegisterForm: React.FC = () => {
                     history.push(ROUTES.CLIENTS.ROOT, {
                       activeTabIndex: CLIENT_TABS.CLIENT,
                     });
-                    onClose();
+                    onSubmit();
                   }}
                 />
               </div>

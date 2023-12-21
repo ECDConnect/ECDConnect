@@ -567,6 +567,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_csg_receiving = "Is {client} receiving the CSG?";
             public const string q_csg_applied = "Has {client} applied for a CSG?";
             public const string q_csg_qualify = "Does {client} qualify for CSG?";
+            public const string q_csg_not_applied = "Why has {client} not applied for a CSG?";
 
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
@@ -847,7 +848,7 @@ namespace EcdLink.Api.CoreApi
             public const string meeting_type_caregiver_meeting = "caregiver_meeting";
             public const string meeting_type_other = "other";
 
-            public const string calendar_meeting_type = "Club Monthly Meeting";
+            public const string calendar_club_monthly_meeting = "Club Monthly Meeting";
 
             public const string no_club_leader = "No club leader";
             public const string contact_club_leader = "Contact club leader";
@@ -873,6 +874,7 @@ namespace EcdLink.Api.CoreApi
             public const string top_of_the_league = "Top of the league";
             public const string points_earned = " points earned in ";
             public const string coach_meeting_attended = ", Attend club meeting";
+            public const string coach_attend_first_meeting = ", Attend first club meeting";
             public const string first_meeting_attended = ", Attended first club meeting";
             public const int purple_club_max_points = 2200;
             public const int non_purple_club_max_points = 2000;

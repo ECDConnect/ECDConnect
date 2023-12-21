@@ -77,7 +77,15 @@ export const getCareForMomSteps = (
   isMaternalDistressFollowUp: boolean,
   isMaternalDistressScreening: boolean
 ) => [
-  CareForMomStep,
+  ...(isShowClinicCheckUps ||
+  isDangerSignsFollowUp ||
+  isChildBefore49Days ||
+  isSelfCareAndSupport ||
+  isMaternalDistress ||
+  isMaternalDistressFollowUp ||
+  isMaternalDistressScreening
+    ? [CareForMomStep]
+    : []),
   ...(isShowClinicCheckUps ? [ClinicCheckupStep] : []),
   ...(isDangerSignsFollowUp ? [DangerSignsFollowUpStep] : []),
   ...(isChildBefore49Days ? [DangerSignsStep] : []),

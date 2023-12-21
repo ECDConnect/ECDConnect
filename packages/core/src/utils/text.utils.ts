@@ -1,9 +1,13 @@
 export const camelCaseToSentanceCase = (text: string): string => {
-  const result = text.replace(/([A-Z])/g, ' $1');
-  let finalResult = result.charAt(0).toUpperCase() + result.slice(1);
+  if (!text) {
+    return '';
+  }
 
-  if (finalResult.charAt(0) === ' ') {
-    finalResult = finalResult.substring(1);
+  const result = text?.replace(/([A-Z])/g, ' $1');
+  let finalResult = result?.charAt(0)?.toUpperCase() + result?.slice(1);
+
+  if (finalResult?.charAt(0) === ' ') {
+    finalResult = finalResult?.substring(1);
   }
 
   return finalResult;

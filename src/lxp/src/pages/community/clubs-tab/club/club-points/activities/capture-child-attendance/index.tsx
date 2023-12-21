@@ -56,6 +56,10 @@ export const CaptureChildAttendance: React.FC = () => {
     record: ActivityChildAttendanceDetail
   ): Item => ({
     title: record.monthName ?? '',
+    leftChip:
+      record.percentageMembersSubmittedAllRegisters >= 0
+        ? `${record.percentageMembersSubmittedAllRegisters}%`
+        : undefined,
     rightChip: `+ ${record.points}`,
     alert: {
       title: 'club members submitted all registers',

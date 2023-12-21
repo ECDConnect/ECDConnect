@@ -47,21 +47,22 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string SelfAssessmentColor { get; set; }
         public DateTime? SelfAssessmentDate { get; set; }
 
-        public virtual ICollection<Visit> PrePQASiteVisits { get; set; }
-        public virtual ICollection<Visit> PQASiteVisits { get; set; }
-        public virtual ICollection<Visit> SupportVisits { get; set; }
-        public virtual ICollection<Visit> ReAccreditationVisits { get; set; }
-        public virtual ICollection<Visit> RequestedCoachVisits { get; set; }
-        public virtual ICollection<Visit> SelfAssessmentVisits { get; set; }
-        public virtual PractitionerAttendance CoachCircles { get; set; }
-        public virtual ICollection<PQARating> PQARatings { get; set; }
-        public virtual ICollection<PQARating> ReAccreditationRatings { get; set; }
-        public virtual PQARating PQARating1 { get; set; }
-        public virtual PQARating PQARating2 { get; set; }
-        public virtual PQARating PQARating3 { get; set; }
-        public virtual PQARating ReAccreditationRating1 { get; set; }
-        public virtual PQARating ReAccreditationRating2 { get; set; }
-        public virtual PQARating ReAccreditationRating3 { get; set; }
+        public ICollection<Visit> PrePQASiteVisits { get; set; }
+        public ICollection<Visit> PQASiteVisits { get; set; }
+        public ICollection<Visit> SupportVisits { get; set; }
+        public ICollection<Visit> ReAccreditationVisits { get; set; }
+        public ICollection<Visit> RequestedCoachVisits { get; set; }
+        public ICollection<Visit> SelfAssessmentVisits { get; set; }
+        public PractitionerAttendance CoachCircles { get; set; }
+        public PractitionerAttendance ClubMeetings { get; set; }
+        public ICollection<PQARating> PQARatings { get; set; }
+        public ICollection<PQARating> ReAccreditationRatings { get; set; }
+        public PQARating PQARating1 { get; set; }
+        public PQARating PQARating2 { get; set; }
+        public PQARating PQARating3 { get; set; }
+        public PQARating ReAccreditationRating1 { get; set; }
+        public PQARating ReAccreditationRating2 { get; set; }
+        public PQARating ReAccreditationRating3 { get; set; }
     }
 
     public class PractitionerAttendance
@@ -71,7 +72,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public double PercAttended { get; set; }
         public string AttendanceText { get; set; } // date on which the most recent coaching circle was held
         public string AttendanceColor { get; set; } // 60% or more - green & 60% less - amber
-        public virtual ICollection<ClubMeetingRegister> MeetingRegister { get; set; }
+        public ICollection<ClubMeetingRegister> MeetingRegister { get; set; }
 
     }
     public class PractitionerNotes
@@ -79,6 +80,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string VisitName { get; set; }
         public DateTime? ActualVisitDate { get; set; }
         public DateTime? PlannedVisitDate { get; set; }
-        public virtual ICollection<VisitData> Answers { get; set; }
+        public ICollection<VisitData> Answers { get; set; }
     }
 }
