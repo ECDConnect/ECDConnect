@@ -1,4 +1,4 @@
-import { Button, Typography, classNames } from '@ecdlink/ui';
+import { Button, LoadingSpinner, Typography, classNames } from '@ecdlink/ui';
 import Fuse from 'fuse.js';
 import {
   ChangeEvent,
@@ -31,6 +31,7 @@ export default function UiTable({
   searchInput,
   component,
   viewRow,
+  isLoading,
 }: UiTableProps) {
   const history = useHistory();
   const [inviteRows, setInviteRows] = useState<boolean>(false);
@@ -339,6 +340,17 @@ export default function UiTable({
       </div>
     );
   };
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="infoMain"
+        backgroundColor="uiBg"
+        className="my-4"
+      />
+    );
+  }
 
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
