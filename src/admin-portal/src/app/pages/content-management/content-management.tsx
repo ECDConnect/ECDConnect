@@ -61,7 +61,7 @@ export function ContentManagement() {
       fetchPolicy: 'cache-and-network',
     }
   );
-  console.log({ dataTypes });
+
   useEffect(() => {
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
       const defaultType = dataTypes.contentTypes?.find(
