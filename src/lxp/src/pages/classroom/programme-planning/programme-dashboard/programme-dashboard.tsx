@@ -194,7 +194,6 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
             showProgressReportDialog(dMessage);
           }
         } else if (today >= thisYear20Dec && today < nextYear31July) {
-          setStorageItem(0, LocalStorageKeys.hasViewedDecProgressReport);
           if (!storageItemDecember || storageItemDecember === 0) {
             showProgressReportDialog(dMessage);
             setStorageItem(

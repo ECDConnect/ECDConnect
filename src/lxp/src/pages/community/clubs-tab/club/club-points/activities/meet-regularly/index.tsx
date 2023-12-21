@@ -141,7 +141,7 @@ export const MeetRegularly: React.FC = () => {
       appDispatch(
         getActivityMeetRegularDetails({
           clubId,
-          month: currentMonth + 1,
+          month: 0,
           year: currentYear,
         })
       );

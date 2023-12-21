@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GetAllRace = gql`
-  {
-    GetAllRace {
+  query GetAllRace($pagingInput: PagedQueryInput) {
+    GetAllRace(pagingInput: $pagingInput) {
       id
       description
       isActive
