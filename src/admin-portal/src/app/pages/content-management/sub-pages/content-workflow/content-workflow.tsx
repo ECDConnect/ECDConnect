@@ -116,24 +116,26 @@ export default function ContentWorkflow({
       <div className="flex flex-col">
         <div className="mb-6 flex flex-row gap-2 overflow-auto rounded-md bg-white px-2">
           {!isCompareMode &&
-            languages.map((item: LanguageDto, index: number) => (
-              <div className={'w-3/12'}>
-                <a
-                  key={index}
-                  onClick={() => {
-                    setSelectedLanguageId(item.id ?? '');
-                  }}
-                  className={classNames(
-                    selectedLanguageId === item.id
-                      ? 'bg-infoBb text-secondary border-b-secondary border-b-2   '
-                      : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
-                    'users-tabs text-md flex h-14 items-center font-medium'
-                  )}
-                >
-                  {item.description}
-                </a>
-              </div>
-            ))}
+            languages
+              ?.filter((item) => item?.isActive === true)
+              .map((item: LanguageDto, index: number) => (
+                <div className={'w-3/12'}>
+                  <a
+                    key={index}
+                    onClick={() => {
+                      setSelectedLanguageId(item.id ?? '');
+                    }}
+                    className={classNames(
+                      selectedLanguageId === item.id
+                        ? 'bg-infoBb text-secondary border-b-secondary border-b-2   '
+                        : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
+                      'users-tabs text-md flex h-14 items-center font-medium'
+                    )}
+                  >
+                    {item.description}
+                  </a>
+                </div>
+              ))}
         </div>
         <div className="min-w-0 flex-1 rounded xl:flex">
           {!isCompareMode ? (
