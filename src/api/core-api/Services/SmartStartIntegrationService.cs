@@ -3263,8 +3263,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     if (!completedList.Contains(entityToUpdate.audit) && !completedEntityList.Contains(entityToUpdate.entity))
                     {
                         string url = "";
-                        StringBuilder jsonPutPostString = new StringBuilder();
-                        jsonPutPostString.AppendLine("[");
+                        StringBuilder jsonString = new StringBuilder();
+                        jsonString.AppendLine("[");
                         bool validUpdate = false;
                         var mappedEntity = entityToUpdate.entity;
                         if (mappedEntity != null) //if we have this entity mapped to remote?
@@ -3273,7 +3273,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             string remoteEntity = mappedEntity.RemoteEntity;
 
                             url = remoteEntity + Constants.SSIntegrationSettings.UpdateMultiple;
-                            jsonPutPostString.AppendLine("{");
+                            jsonString.AppendLine("{");
 
                             //get all changes for this entity and group and build JSON
                             var associatedChanges = (localEntity == Constants.SSIntegrationSettings.SSPractitioner || localEntity == Constants.SSIntegrationSettings.SSChild ||
@@ -3293,7 +3293,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
                             if (associatedChanges.Count() > 0)
                             {
-                                jsonPutPostString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
                                 foreach (var changeLine in associatedChanges)
                                 {
                                     if (changeLine.audit.Property == "IsActive" && changeLine.audit.ValueAfter == "False")
@@ -3331,31 +3331,31 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                                 switch (mappedColumnLine.EntityDataType)
                                                 {
                                                     case "bool":
-                                                        jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + bool.Parse(valueToSend) + "\",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + bool.Parse(valueToSend) + "\",");
                                                         break;
                                                     case "integer":
-                                                        jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
                                                         break;
                                                     case "datetime":
-                                                        jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                         break;
                                                     case "date":
-                                                        jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
                                                         break;
                                                     default:
                                                         if (valueToSend.Length <= (int)mappedColumnLine.ColumnValidationLimit)
                                                         {
-                                                            jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                                         }
                                                         else
                                                         {
-                                                            jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
                                                         }
                                                         break;
                                                 }
                                                 validUpdate = true;
                                             }
-                                            //jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            //jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                         }
                                     }
 
@@ -3364,10 +3364,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     updates.Remove(changeLine.audit);
                                 }
                             }
-                            jsonPutPostString.AppendLine("}");
+                            jsonString.AppendLine("}");
                         }
 
-                        jsonPutPostString.AppendLine("]");
+                        jsonString.AppendLine("]");
                         IntegrationAPIManager.APIHandleResponse apiResponse = null;
                         try
                         {
@@ -3375,18 +3375,18 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             if (validUpdate)
                             {
                                 //now send to API call <entity type>/Multiple
-                                apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonPutPostString.ToString());
+                                apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
                                 if (apiResponse != null)
                                 {
                                     if (!apiResponse.Success)
                                     {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonPutPostString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                                     }
                                     else
                                     {
                                         await _logManager.UpdateAuditSubmitted(completedList);
                                         completedEntityList.Add(entityToUpdate.entity);
-                                        await _logManager.IntegrationLog("Data Push Success: ", jsonPutPostString.ToString(), null, LogRelatedType.Log, "PushUpdates > GetAPIHandlerResponse");
+                                        await _logManager.IntegrationLog("Data Push Success: ", jsonString.ToString(), null, LogRelatedType.Log, "PushUpdates > GetAPIHandlerResponse");
                                     }
                                 }
                             }
@@ -4533,13 +4533,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
             try
             {
 
-                StringBuilder jsonPutPostString = new StringBuilder();
+                StringBuilder jsonString = new StringBuilder();
                 var entityIdList = updates.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
 
                 if (entityIdList.Any() && entities.Any())
                 {
                     string url = "";
-                    jsonPutPostString.AppendLine("[");
+                    jsonString.AppendLine("[");
                     foreach (var entityToUpdate in entityIdList)
                     {
                         var mappedEntity = entities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
@@ -4549,7 +4549,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             string remoteEntity = mappedEntity.RemoteEntity;
 
                             url = remoteEntity + Constants.SSIntegrationSettings.UpdateMultiple;
-                            jsonPutPostString.AppendLine("{");
+                            jsonString.AppendLine("{");
                             //get all changes for this entity and group and build JSON
                             var allChanges = updates.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
                             if (updatedEntityType.Equals("ApplicationUser"))
@@ -4563,7 +4563,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             }
                             if (allChanges.Count() > 0)
                             {
-                                jsonPutPostString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
                                 foreach (var changeLine in allChanges)
                                 {
                                     var mappedColumnLine = _mappedColumns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.Property) && x.IsActive == true).FirstOrDefault();
@@ -4589,29 +4589,29 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                             switch (mappedColumnLine.EntityDataType)
                                             {
                                                 case "bool":
-                                                    jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
                                                     break;
                                                 case "integer":
-                                                    jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
                                                     break;
                                                 case "datetime":
-                                                    jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                     break;
                                                case "date":
-                                                    jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
+                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
                                                     break;
                                                 default:
                                                     if (valueToSend.Length <= (int)mappedColumnLine.ColumnValidationLimit)
                                                     {
-                                                       jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                                     }
                                                     else
                                                     {
-                                                       jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
                                                     }
                                                     break;
                                             }
-                                            //jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            //jsonString .AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                         }
                                     }
                                     //remove entry from audits list as we have processed it here and sending
@@ -4620,14 +4620,14 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     updates.Remove(changeLine);
                                 }
                             }
-                            jsonPutPostString.AppendLine("},");
+                            jsonString.AppendLine("},");
                         }
                     }
-                    jsonPutPostString.AppendLine("]");
+                    jsonString.AppendLine("]");
                     try
                     {
                         //now send to API call <entity type>/Multiple
-                        var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonPutPostString.ToString());
+                        var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
                         if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                         {
                             if (apiResponse.Success) //success
@@ -4637,7 +4637,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             }
                             else //error
                             {
-                                await _logManager.IntegrationLog("Data push failed ", jsonPutPostString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
+                                await _logManager.IntegrationLog("Data push failed ", jsonString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
                             }
                         }
                     }
