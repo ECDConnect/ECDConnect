@@ -51,6 +51,7 @@ using EcdLink.Api.CoreApi.Managers.Notifications;
 using ECDLink.Security.Managers;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Leagues;
 
 namespace EcdLink.Api.CoreApi.Services;
 public partial class SmartStartIntegrationService : IIntegrationService
@@ -1088,6 +1089,64 @@ public partial class SmartStartIntegrationService : IIntegrationService
         }
 
         return true;
+    }
+
+    public async Task IntegrationLeagueData()
+    {
+        if (!this.Enabled) return;
+        await _logManager.IntegrationLog($"IntegrationLeagueData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationLeagueData");
+        int leaguesUpdated = 0;
+        try
+        {
+            IGenericRepository<League, Guid> leagueRepo = _repositoryFactory.CreateGenericRepository<League>(userContext: _uId);
+            IGenericRepository<LeagueType, Guid> leagueTypeRepo = _repositoryFactory.CreateGenericRepository<LeagueType>(userContext: _uId);
+
+            var mappedLeagues = await _apiManager.GetLeagues();
+            var existingLeagues = leagueRepo.GetAll().ToList(); //reload all leagues
+            var existingLeagueTypes = leagueTypeRepo.GetAll().ToList(); //reload all leagueTypes
+
+            foreach (var league in mappedLeagues)
+            {
+                if (!existingLeagueTypes.Any(x => x.Name == league.LeagueType))
+                {
+                    //create type if it does not yet exist
+                    var lt = new LeagueType()
+                    {
+                        Id = Guid.NewGuid(), // reusing guids for leagues and leaguetypes
+                        Name = league.LeagueType,
+                        NormalizedName = league.LeagueType,
+                        IsActive = true,
+                        InsertedDate = DateTime.Now
+                    };
+                    leagueTypeRepo.Insert(lt);
+                    existingLeagueTypes.Add(lt);
+                }
+
+                if (existingLeagues.Any(x => x.Id == Guid.Parse(league.Guid)))
+                {
+                    continue;
+                }
+                // Create league
+                var newLeague = new League()
+                {
+                    Id = Guid.Parse(league.Guid),
+                    Name = league.Name,
+                    LeagueTypeId = existingLeagueTypes.Where(x => x.Name == league.LeagueType).Select(x => x.Id).FirstOrDefault()                    
+                };
+                leagueRepo.Insert(newLeague);
+
+                leaguesUpdated++;
+            }
+ 
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog("IntegrationLeagueData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SmartStartIntegrationService > IntegrationLeagueData");
+        }
+        finally
+        {
+            await _logManager.IntegrationLog($"IntegrationLeagueData Completed at {DateTime.Now}", $"Leagues updated {leaguesUpdated}", null, LogRelatedType.Log, "IntegrationLeagueData");
+        }
     }
     #endregion
 
@@ -2659,6 +2718,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
         return coach;
     }
+    
     #endregion
 
     #region Local Updates
