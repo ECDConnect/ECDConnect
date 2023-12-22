@@ -72,8 +72,14 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
       const firstFile = event.target.files[0];
       if (!firstFile) return;
 
+      const fileExtension = firstFile?.name
+        ? firstFile?.name?.split('.').pop()
+        : undefined;
+
+      const isPdfExtension = fileExtension?.toLowerCase()?.includes('pdf');
+
       // 5MB
-      if (isPdfRule && firstFile.size > 5242880) {
+      if (isPdfExtension && firstFile.size > 5242880) {
         setError('The file is too big, please upload a file less than 5MB');
         setLoading(false);
         return;

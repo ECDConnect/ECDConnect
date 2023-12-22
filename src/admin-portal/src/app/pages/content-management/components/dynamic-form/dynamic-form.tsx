@@ -15,7 +15,6 @@ import { Alert } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
 const acceptedFormats = [
-  'pdf',
   'svg',
   'png',
   'PNG',
