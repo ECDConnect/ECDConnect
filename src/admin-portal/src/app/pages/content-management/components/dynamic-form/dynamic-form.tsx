@@ -116,6 +116,23 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         case FieldType.Link: {
+          if (title === 'G T -  Skills' || title === 'Skills') {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  <DynamicSelector
+                    title={field.title}
+                    isReview={false}
+                    contentValue={field.contentValue}
+                    languageId={defaultLanguageId}
+                    optionDefinition={field.optionDefinition}
+                    setSelectedItems={(value) => onStateChange(propName, value)}
+                    isSkillType={true}
+                  />
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
