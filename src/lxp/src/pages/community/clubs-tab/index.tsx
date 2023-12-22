@@ -44,6 +44,7 @@ export const ClubsTab = () => {
   const appDispatch = useAppDispatch();
 
   const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const clubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
 
   const { isOnline } = useOnlineStatus();
@@ -120,10 +121,10 @@ export const ClubsTab = () => {
   const isEmptyState = !clubs?.length;
 
   useEffect(() => {
-    if (user?.id && location?.state?.isFromDashboard) {
+    if (user?.id && location?.state?.isFromDashboard && isCoach) {
       appDispatch(getClubsForCoach({ userId: user?.id }));
     }
-  }, [appDispatch, location?.state?.isFromDashboard, user?.id]);
+  }, [appDispatch, isCoach, location?.state?.isFromDashboard, user?.id]);
 
   useEffect(() => {
     if (wasLoading && !isLoading) {
