@@ -773,6 +773,8 @@ namespace EcdLink.Api.CoreApi
             public const string SSSmartSpaceVisit = "SmartSpaceVisit";
             public const string SLSmartSpaceVisit = "SmartSpaceVisit";
 
+            public const string SLLeagues = "League";
+
             //Additional API Switches
             public const string QueryAll = "/Query";
             public const string Singular = "/{{Guid}}";

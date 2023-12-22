@@ -433,6 +433,7 @@ namespace ECDLink.Core.Services
 
         public async Task DailyCoachChecksNotification()
         {
+
             //to be completed
             //var adminId = _hierarchyEngine.GetAdminUserId();
             //var traineeRepo = _repositoryFactory.CreateGenericRepository<Trainee>(userContext: adminId);
@@ -460,8 +461,6 @@ namespace ECDLink.Core.Services
 
             //5) Practitioner requested visit - find button from FE
 
-
-
             ////find all trainees thats new in last 7 days
             //var newTrainee = traineeRepo.GetAll().Where(x => x.IsActive.Equals(true) && x.InsertedDate >= DateTime.Now.AddDays(-7)).ToList();
             //List<TagsReplacements> replacements = new List<TagsReplacements>();
@@ -472,7 +471,7 @@ namespace ECDLink.Core.Services
 
             //    await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewTrainees, DateTime.Now, userToSend, "", MessageStatusConstants.Blue, replacements, DateTime.Now.AddDays(2), true);
             //}
-            }
+        }
 
 
 

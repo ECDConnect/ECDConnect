@@ -63,6 +63,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
             return await integrationService.IntegrationByNewCoach(remoteCoachId);
         }
 
+        public async Task<bool> IntegrationLeagueData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.IntegrationLeagueData();
+            return true;
+        }
+
         #endregion
     }
 }
