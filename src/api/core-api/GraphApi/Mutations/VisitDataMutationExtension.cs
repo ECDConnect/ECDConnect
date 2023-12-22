@@ -68,7 +68,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // only if the visit is completed for the coach, we want to push the data to SmartLink
             if (visit.Attended == true)
             {
-                integrationService.PushSmartSpaceVisitsData(visit.Id, (Guid)visit.TraineeId, visit.Trainee.UserId, visit.Coach.UserId);
+                if (input.VisitData.VisitName == Constants.SSSettings.coach_smartspace_check)
+                {
+                    integrationService.PushSmartSpaceVisitsData(visit.Id, (Guid)visit.TraineeId, visit.Trainee.UserId, visit.Coach.UserId);
+                }
             }
 
             return true;
