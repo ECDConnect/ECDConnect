@@ -1584,7 +1584,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     DateTime newDate = dt.AddMonths(1);
                     input.PlannedVisitDate = newDate;
-                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate == newDate).FirstOrDefault();
+                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
                     if (visit == null)
                     {
                         AddVisit(input);
@@ -1595,7 +1595,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     DateTime newDate = dt.AddMonths(2);
                     input.PlannedVisitDate = newDate;
-                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate == newDate).FirstOrDefault();
+                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
                     if (visit == null)
                     {
                         AddVisit(input);
@@ -1606,7 +1606,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     DateTime newDate = dt.AddMonths(3);
                     input.PlannedVisitDate = newDate;
-                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate == newDate).FirstOrDefault();
+                    Visit visit = visits.Where(x => x.VisitTypeId == visitType.Id && x.PlannedVisitDate.Date == newDate.Date).FirstOrDefault();
                     if (visit == null)
                     {
                         visit = AddVisit(input);
