@@ -177,6 +177,7 @@ export type ActivityChildAttendance = {
 export type ActivityChildAttendanceDetail = {
   __typename?: 'ActivityChildAttendanceDetail';
   monthName?: Maybe<Scalars['String']>;
+  percentageMembersSubmittedAllRegisters: Scalars['Int'];
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
 };
@@ -10116,6 +10117,7 @@ export type PractitionerTimeline = {
   childProgressTrainingColor?: Maybe<Scalars['String']>;
   childProgressTrainingDate?: Maybe<Scalars['DateTime']>;
   childProgressTrainingStatus?: Maybe<Scalars['String']>;
+  clubMeetings?: Maybe<PractitionerAttendance>;
   coachCircles?: Maybe<PractitionerAttendance>;
   consolidationMeetingColor?: Maybe<Scalars['String']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;

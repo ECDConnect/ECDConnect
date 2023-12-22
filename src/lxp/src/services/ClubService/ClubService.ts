@@ -1012,6 +1012,7 @@ class ClubService {
                   monthName
                   points
                   pointsColor
+                  percentageMembersSubmittedAllRegisters
               }
           }
         }

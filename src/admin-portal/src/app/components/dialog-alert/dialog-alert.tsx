@@ -5,6 +5,7 @@ export type AlertModalProps = {
   title: string;
   btnText?: string[];
   message: string;
+  isLoading?: boolean;
   onSubmit: () => void;
   onCancel: () => void;
 };
@@ -13,6 +14,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
   title,
   message,
   btnText,
+  isLoading,
   onSubmit,
   onCancel,
 }) => {
@@ -32,6 +34,8 @@ const AlertModal: React.FC<AlertModalProps> = ({
           type: 'filled',
           onClick: () => onSubmit && onSubmit(),
           leadingIcon: 'TrashIcon',
+          isLoading: isLoading,
+          disabled: isLoading,
         },
         {
           text: btnText?.[1] ?? 'No',
@@ -40,6 +44,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
           type: 'outlined',
           onClick: () => onCancel && onCancel(),
           leadingIcon: btnText?.[1] === 'Keep editing' ? 'PencilIcon' : 'XIcon',
+          disabled: isLoading,
         },
       ]}
     />

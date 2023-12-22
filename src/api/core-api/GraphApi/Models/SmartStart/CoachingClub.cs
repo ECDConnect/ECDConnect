@@ -187,6 +187,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
     public class ActivityChildAttendanceDetail
     {
         public string MonthName { get; set; }
+        public int PercentageMembersSubmittedAllRegisters { get; set; }
         public int Points { get; set; }
         public string PointsColor { get; set; }
     }

@@ -376,12 +376,16 @@ namespace EcdLink.Api.CoreApi.Services
             return rank;
         }
 
-        public PractitionerAttendance GetPractitionerAttendance(Guid practitionerId, DateTime date, string meetingType)
+        public PractitionerAttendance GetPractitionerAttendance(Guid practitionerId, string meetingType)
         {
-            List<ClubMeetingRegister> practitionerAttendance = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitionerId &&
-                                                                                                       x.ClubMeeting.MeetingDate.Value.Year == date.Year &&
-                                                                                                       x.ClubMeeting.MeetingType.Name == meetingType)
-                                                                                                    .OrderByDescending(x => x.ClubMeeting.MeetingDate).ToList();
+            var startOfYear = new DateTime(DateTime.Now.Year, 1, 1);
+            var practitionerAttendance = _clubMeetingRegisterRepo.GetAll()
+                .Where(x => x.PractitionerId == practitionerId 
+                    && x.ClubMeeting.MeetingDate.HasValue
+                    && x.ClubMeeting.MeetingDate > startOfYear
+                    && x.ClubMeeting.MeetingType.Name == meetingType)
+                .OrderByDescending(x => x.ClubMeeting.MeetingDate).ToList();
+
             PractitionerAttendance attendance = new PractitionerAttendance();
             if (practitionerAttendance.Count > 0)
             {
@@ -1374,16 +1378,21 @@ namespace EcdLink.Api.CoreApi.Services
 
         public ActivityChildAttendance GetActivityChildAttendance(Guid clubId)
         {
-            DateTime today = DateTime.Now;
-            ActivityChildAttendance activityChildAttendance = new ActivityChildAttendance();
-            activityChildAttendance.MonthlyRecords = new List<ActivityChildAttendanceDetail>();
+            var activityChildAttendance = new ActivityChildAttendance()
+            {
+                MonthlyRecords = new List<ActivityChildAttendanceDetail>()
+            };
 
-            List<ClubPoints> clubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId &&
-                                                        x.Year == today.Year &&
-                                                        x.ClubPointsLibrary.Activity == Constants.ClubSettings.capture_child_attendance).ToList();
+            var clubPoints = _clubPointsRepo.GetAll()
+                .Include(x => x.ClubPointsLibrary)
+                .Where(x => x.ClubId == clubId &&
+                            x.Year == DateTime.Now.Year &&
+                            x.ClubPointsLibrary.Activity == Constants.ClubSettings.capture_child_attendance)
+                .ToList();
 
             activityChildAttendance.Points = clubPoints.Select(x => x.Points).Sum();
             activityChildAttendance.PointsColor = MetricsColorEnum.Error.ToString();
+
             // set the color for points
             if (activityChildAttendance.Points >= Constants.ClubSettings.warning_start_800 && activityChildAttendance.Points <= Constants.ClubSettings.warning_end_800)
             {
@@ -1393,16 +1402,12 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 activityChildAttendance.PointsColor = MetricsColorEnum.Success.ToString();
             }
-
-            var months = clubPoints.Select(x => x.Month).Distinct().ToList();
-            var monthPoints = 0;
-            var percPoints = 0.0;
-            var pointsColor = MetricsColorEnum.Error.ToString();
-            foreach (var item in months)
+           
+            foreach (var item in clubPoints)
             {
-                monthPoints = clubPoints.Where(x => x.Month == item).Select(x => x.Points).Sum();
-                percPoints = (double)monthPoints / (double)Constants.ClubSettings.success_end_800 * 100;
+                var percPoints = (double)item.Points / (double)item.ClubPointsLibrary.Points * 100;
 
+                var pointsColor = MetricsColorEnum.Error.ToString();
                 if (percPoints > 0 && percPoints < 75)
                 {
                     pointsColor = MetricsColorEnum.Warning.ToString();
@@ -1413,9 +1418,10 @@ namespace EcdLink.Api.CoreApi.Services
 
                 activityChildAttendance.MonthlyRecords.Add(new ActivityChildAttendanceDetail()
                 {
-                    MonthName = new DateTime(today.Year, item, 1).ToString("MMM yyyy"),
-                    Points = monthPoints,
+                    MonthName = new DateTime(item.Year, item.Month, 1).ToString("MMM yyyy"),
+                    Points = item.Points,
                     PointsColor = pointsColor,
+                    PercentageMembersSubmittedAllRegisters = (int)Math.Round(percPoints)
                 });
             }
 

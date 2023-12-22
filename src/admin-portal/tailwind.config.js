@@ -74,7 +74,8 @@ module.exports = {
         darkBackground: 'var(--darkBackground)',
         adminPortalBg: '#EFF6FA',
         quaternary: "#D2F1F9",
-        quetenaryMain: "#1DBADF"
+        quatenaryMain: "#1DBADF",
+        darkBlue: "#27385A",
       },      
       animation: {
         spinner: 'spin 1.5s linear infinite',

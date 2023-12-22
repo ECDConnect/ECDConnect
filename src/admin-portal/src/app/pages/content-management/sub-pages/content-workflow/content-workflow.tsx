@@ -139,12 +139,12 @@ export default function ContentWorkflow({
           {!isCompareMode ? (
             <>
               <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
-                <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+                <div className="h-full py-6">
                   <div
                     className="relative h-full"
                     style={{ minHeight: '36rem' }}
                   >
-                    <div className="rounded-lg border-b px-4 py-5 sm:px-6">
+                    <div className="rounded-lg border-b py-5">
                       <div key={selectedLanguageId}>
                         <ContentEdit
                           optionDefinitions={optionDefinitions}
