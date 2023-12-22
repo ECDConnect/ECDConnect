@@ -15,7 +15,8 @@ class GenderService {
         query {
           GetAllGender {
             id
-            description      
+            description    
+            isActive  
           }
         }
           `,

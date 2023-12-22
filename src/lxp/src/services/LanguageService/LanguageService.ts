@@ -11,6 +11,7 @@ class LanguageService {
             id
             description
             locale
+            isActive
           }
         }
           `,

@@ -121,7 +121,7 @@ export const Dashboard: React.FC = () => {
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
   const a = useCallback(async () => {
-    if (isOnline) {
+    if (isOnline && !isCoach) {
       appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
     }
   }, []);
