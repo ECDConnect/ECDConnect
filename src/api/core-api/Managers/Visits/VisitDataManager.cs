@@ -37,10 +37,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         private UserLicenseManager _userLicenseManager;
         private VisitManager _visitManager;
-        private IIntegrationService _integrationService;
-
-
-
         private string _applicationUserId;
 
         public VisitDataManager(
@@ -51,8 +47,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             UserLicenseManager userLicenseManager,
             VisitManager visitManager,
             [Service] IPointsEngineService pointsEngineService,
-            HierarchyEngine hierarchyEngine,
-            [Service] IIntegrationService integrationService)
+            HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -62,7 +57,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
             _visitManager = visitManager;
-            _integrationService = integrationService;
 
             _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
@@ -288,7 +282,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return null;
         }
-        public Boolean AddCoachData(CMSVisitDataInputModel input)
+        public Visit AddCoachData(CMSVisitDataInputModel input)
         {
             if (input.VisitData.Sections == null)
             {
@@ -339,10 +333,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 entityToUpdate.ActualVisitDate = DateTime.Now;
                 _visitRepo.Update(entityToUpdate);
 
-                // after marking the visit as attended for the coach, we want to push the data to SmartLink
-                _integrationService.PushSmartSpaceVisitsData(entityToUpdate.Id, (Guid)entityToUpdate.TraineeId, entityToUpdate.Trainee.UserId, entityToUpdate.Coach.UserId);
+                return entityToUpdate;
             }
-            return true;
+            return new Visit();
         }
         public bool EditVisitData(CMSVisitDataInputModel input)
         {
