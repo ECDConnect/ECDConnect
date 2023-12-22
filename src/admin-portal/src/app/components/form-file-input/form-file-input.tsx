@@ -109,11 +109,13 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
     const fileExtension = file?.name ? file?.name?.split('.').pop() : undefined;
     const isVideoExtension = videoExtensions.includes(fileExtension);
+    const isPdfExtension = fileExtension?.toLowerCase().includes('pdf');
 
     setIsVideo(isVideoExtension);
 
     const compressedFile =
       isImage &&
+      !isPdfExtension &&
       !isVideoExtension &&
       !byPassCompression &&
       acceptedFormats.filter((x) => x === fileExtension).length > 0
