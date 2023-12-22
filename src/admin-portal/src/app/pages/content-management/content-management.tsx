@@ -389,42 +389,37 @@ export function ContentManagement() {
       {dataTypes && !isLoadingSelectedRow ? (
         <>
           {!selectedContent && (
-            <div className="flex w-full  flex-row overflow-auto rounded-md bg-white">
+            <div className="flex w-full  flex-row gap-4 overflow-auto whitespace-nowrap rounded-md bg-white">
               {navigation?.map((item: any) => (
-                <div
+                <button
                   key={item.name}
-                  className={
-                    data?.tenantContext.applicationName === 'GrowGreat'
-                      ? 'w-3/12 '
-                      : 'flex w-5/12 justify-center'
-                  }
-                >
-                  <button
-                    onClick={() => {
-                      const selectedTypeObject = dataTypes?.contentTypes.find(
-                        (type: ContentTypeDto) =>
-                          type.name === item.name || type.name === item.href
-                      );
+                  onClick={() => {
+                    const selectedTypeObject = dataTypes?.contentTypes.find(
+                      (type: ContentTypeDto) =>
+                        type.name === item.name || type.name === item.href
+                    );
 
-                      if (selectedTypeObject) {
-                        setSelectedTab(item.id);
-                        setSpecialType('');
-                        showGroupContentTypes(selectedTypeObject);
-                      } else {
-                        setSelectedTab(item.id);
-                        setSpecialType(item.name);
-                      }
-                    }}
-                    className={classNames(
-                      item.id === selectedTab
-                        ? 'bg-adminPortalBg text-secondary border-b-secondary w-full border-b-2'
-                        : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
-                      'consent-tabs text-md flex h-14 items-center justify-center font-medium'
-                    )}
-                  >
-                    {item.name}
-                  </button>
-                </div>
+                    if (selectedTypeObject) {
+                      setSelectedTab(item.id);
+                      setSpecialType('');
+                      showGroupContentTypes(selectedTypeObject);
+                    } else {
+                      setSelectedTab(item.id);
+                      setSpecialType(item.name);
+                    }
+                  }}
+                  className={classNames(
+                    item.id === selectedTab
+                      ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2'
+                      : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
+                    'consent-tabs text-md flex h-14 items-center justify-center font-medium',
+                    data?.tenantContext.applicationName === 'GrowGreat'
+                      ? 'w-3/12'
+                      : 'flex w-5/12 justify-center'
+                  )}
+                >
+                  {item.name}
+                </button>
               ))}
             </div>
           )}
@@ -462,7 +457,7 @@ export function ContentManagement() {
                   </div>
                 )}
                 <div
-                  className="relative h-full rounded-xl bg-white p-12"
+                  className="relative h-full rounded-xl bg-white p-4 md:p-12"
                   style={{ minHeight: '36rem' }}
                 >
                   {selectedType &&
