@@ -232,6 +232,11 @@ export default function ContentList({
       render: (onSubmit: any) => (
         <ContentCreate
           key={`contentPanelCreate`}
+          acceptedFileFormats={
+            selectedTab === ContentManagementTabs.COMMUNITY.id
+              ? ['pdf']
+              : undefined
+          }
           selectedLanguageId={languageId}
           languages={languages}
           contentType={contentType}
