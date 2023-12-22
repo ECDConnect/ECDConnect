@@ -8,8 +8,6 @@ import {
 } from '@ecdlink/ui';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { practitionerSelectors } from '@/store/practitioner';
-import { useSelector } from 'react-redux';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
 import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './other-colleagues.types';
@@ -18,22 +16,18 @@ import { useTheme } from '@ecdlink/core';
 
 export const OtherPractitionerProfile: React.FC<
   PractitionerProfileRouteState
-> = ({ practitionerId, setPractitionerInfo, colleagueProfile }) => {
+> = ({ setPractitionerInfo, colleagueProfile }) => {
   const { theme } = useTheme();
   const { isOnline } = useOnlineStatus();
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
-  const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
-  );
 
   const call = () => {
-    window.open(`tel:${practitioner?.user?.phoneNumber}`);
+    window.open(`tel:${colleagueProfile?.contactNumber}`);
   };
 
   const whatsapp = () => {
     window.open(
       `https://wa.me/${formatPhonenumberInternational(
-        practitioner?.user?.phoneNumber ?? ''
+        colleagueProfile?.contactNumber ?? ''
       )}`
     );
   };

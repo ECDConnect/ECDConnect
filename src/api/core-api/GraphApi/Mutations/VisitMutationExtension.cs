@@ -1,9 +1,9 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -449,6 +449,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddCoachFranchiseeAgreementForTrainee(
+            [Service] IIntegrationService integrationService,
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
@@ -484,7 +485,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             input.ChecklistData.VisitId = visit.Id.ToString();
             input.ChecklistData.TraineeId = trainee.Id.ToString();
             input.ChecklistData.CoachId = coach.Id.ToString();
-            visitDataManager.AddCoachData(input.ChecklistData);
+
+            Visit updatedVisit = visitDataManager.AddCoachData(input.ChecklistData);
+            if (updatedVisit.Attended == true)
+            {
+                if (input.ChecklistData.VisitData.VisitName == Constants.SSSettings.coach_smartspace_check)
+                {
+                    integrationService.PushSmartSpaceVisitsData(updatedVisit.Id, (Guid)updatedVisit.TraineeId, updatedVisit.Trainee.UserId, updatedVisit.Coach.UserId);
+                }
+            }
 
             return visit;
         }

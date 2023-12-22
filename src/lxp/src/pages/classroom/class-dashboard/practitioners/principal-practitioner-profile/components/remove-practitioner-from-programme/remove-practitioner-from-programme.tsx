@@ -62,6 +62,10 @@ export const RemovePractitionerFromProgramme: React.FC<
     (practitioner) => practitioner?.userId === practitionerUserId
   );
   const classroom = useSelector(classroomsSelectors?.getClassroom);
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const principalPractitioner = useSelector(
+    practitionerSelectors.getPractitioner
+  );
 
   const today = new Date();
   const tomorrow = new Date(today);
@@ -127,6 +131,17 @@ export const RemovePractitionerFromProgramme: React.FC<
       })
       .filter(Boolean) as { label: string; value: string }[];
 
+    if (
+      principalPractitioner?.isPrincipal &&
+      principalPractitioner?.userId &&
+      (!_list || _list.length === 0)
+    ) {
+      _list?.push({
+        label: `${principalPractitioner?.user?.firstName} ${principalPractitioner?.user?.surname}`,
+        value: principalPractitioner.userId,
+      });
+    }
+
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersForClass]);
@@ -135,9 +150,12 @@ export const RemovePractitionerFromProgramme: React.FC<
     useState<ClassroomGroupDto[]>();
 
   const classroomsGroupsForPractitioner = async () => {
-    const classroomDetails = await new PractitionerService(
-      authUser?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
+    const classroomDetails = classroomGroups?.filter(
+      (item: ClassroomGroupDto) => {
+        return item?.userId === practitioner?.userId;
+      }
+    );
+
     setPractitionerClassroomGroups(classroomDetails);
     var mappedClasses = classroomDetails.reduce((obj, val) => {
       return { ...obj, [val.id!]: undefined };

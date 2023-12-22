@@ -1,7 +1,6 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
@@ -9,7 +8,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
-using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -18,7 +16,6 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -33,20 +30,16 @@ using ECDLink.SmartStart.Reports.ChildProgressReport;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
 using HotChocolate;
-using HotChocolate.Data.Filters.Expressions;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -1329,6 +1322,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             foreach (var practitioner in practitioners)
             {
+                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
+                var classroom = practitionerClassrooms.FirstOrDefault();
+                var practitionerAbsenteeDays = absenteeDays.Where(x => x.UserId == practitioner.UserId).ToList(); 
+
                 var notification = new NotificationDisplay()
                 {
                     UserId = Guid.Parse(practitioner.UserId),
@@ -1348,6 +1345,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     notification.Message = "";
                     notification.Notes = "Request registration on Funda App";
                     notification.GroupingName = "Not registered on Funda App";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
+
+                #region OFFLINE ON FUNDA APP FOR 2 WEEKS
+                if (practitioner.User.LastSeen < DateTime.Now.AddDays(-14))
+                {
+                    notification.Subject = "Offline on Funda app for 2 weeks";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = $"Last login was {practitioner.User.LastSeen.ToString("MM/dd/yyyy h:mm tt")}";
+                    notification.GroupingName = "Offline on Funda app for 2 weeks";
+                    yield return notification;
+                    continue;
+                }
+                #endregion        
+
+                #region REMOVED FROM PROGRAMME
+                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId)
+                    .Where(x => x.IsActive)
+                    .OrderByDescending(x => x.InsertedDate)
+                    .FirstOrDefault();
+
+                if (removalHistory != null)
+                {
+                    notification.Subject = "Removed from programme";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval}";
+                    notification.GroupingName = "Removed from programe";
                     yield return notification;
                     continue;
                 }
@@ -1453,6 +1483,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                 continue;
                             }
                         }
+                        #region NEW TRAINEE
+                        notification.Subject = "New trainee";
+                        notification.Icon = MetricsIconEnum.Success.ToString();
+                        notification.Color = MetricsColorEnum.Success.ToString();
+                        notification.Message = "";
+                        notification.Notes = "";
+                        notification.GroupingName = "New trainee";
+                        yield return notification;
+                        continue;
+                        #endregion
                     }
                     #endregion
 
@@ -1565,7 +1605,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         notification.Color = MetricsColorEnum.Error.ToString();
                         notification.Message = "";
                         notification.Notes = smartSpaceVisit.PlannedVisitDate.ToShortDateString();
-                        notification.GroupingName = "SmartSpace visist overdue";
+                        notification.GroupingName = "SmartSpace visit overdue";
                         yield return notification;
                         continue;
                     }
@@ -1669,33 +1709,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         continue;
                     }
                     #endregion
-                }
-
- #region INCOMPLETE CHILD REGISTRATIONS
-                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
-                                        //.Include(c => c.User)
-                                        .ToListAsync().Result;
-                var childUserIds = children.Select(c => c.UserId);
-                var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true).ToList();
-                var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true
-                && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
-
-                var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
-                if (incompleteRegistrations > 0)
-                {
-                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "Child Registrations";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
+                }  
 
                 #region ON LEAVE
-                if (absenteeDays.Any(x => x.UserId == practitioner.UserId && x.AbsentDate.Date == DateTime.Now.Date))
+                if (practitionerAbsenteeDays.Any(x => x.AbsentDate.Date == DateTime.Now.Date))
                 {
                     notification.Subject = "On leave";
                     notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1709,7 +1726,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region ABSENT MORE THAN 25%
-                if (absenteeDays.Count() > 0 && absenteeDays.Count() > 4)
+                if (practitionerAbsenteeDays.Count() > 0 && practitionerAbsenteeDays.Count() > 4)
                 {
                     notification.Subject = "Practitioner absent more than 25%";
                     notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1722,43 +1739,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
                 #endregion
 
-                #region REMOVED FROM PROGRAMME
-                var removalHistory = removalRepo.GetListByUserId(practitioner.UserId)
-                    .Where(x => x.IsActive)
-                    .OrderByDescending(x => x.InsertedDate)
-                    .FirstOrDefault();
-
-                if (removalHistory != null)
+                #region ABSENT 10-24% LAST MONTH
+                if (practitionerAbsenteeDays.Count() > 0 && practitionerAbsenteeDays.Count() <= 5)
                 {
-                    notification.Subject = "Removed from programme";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Subject = "Practitioner absent last month";
+                    notification.Icon = MetricsIconEnum.Warning.ToString();
+                    notification.Color = MetricsColorEnum.Warning.ToString();
                     notification.Message = "";
-                    notification.Notes = $"Practitioner is leaving on {removalHistory.DateOfRemoval}";
-                    notification.GroupingName = "Removed from programe";
+                    notification.Notes = "";
+                    notification.GroupingName = "On leave";
                     yield return notification;
                     continue;
                 }
                 #endregion
-
-                #region OFFLINE ON FUNDA APP FOR 2 WEEKS
-                if (practitioner.User.LastSeen < DateTime.Now.AddDays(-14))
-                {
-                    notification.Subject = "Offline on Funda app for 2 weeks";
-                    notification.Icon = MetricsIconEnum.Error.ToString();
-                    notification.Color = MetricsColorEnum.Error.ToString();
-                    notification.Message = "";
-                    notification.Notes = $"Last login was {practitioner.User.LastSeen.ToString("MM/dd/yyyy h:mm tt")}";
-                    notification.GroupingName = "Offline on Funda app for 2 weeks";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region MISSING INCOME STATEMENT
-                var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId, previousMonthStart, previousMonthEnd).FirstOrDefault();
+                
                 if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
                 {
+
+                    var lastMonthStatement = incomeManager.GetStatements(practitioner.UserId, previousMonthStart, previousMonthEnd).FirstOrDefault();
+                    #region MISSING INCOME STATEMENT
                     if (lastMonthStatement == null || lastMonthStatement.AutoSubmitted)
                     {
                         notification.Subject = $"Missing income statement";
@@ -1770,8 +1769,65 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         yield return notification;
                         continue;
                     }
+                    #endregion
+
+                    #region PROGRAMME LOST R300 IN LAST 2 MONTHS
+                    var secondLastMonth = previousMonthStart.AddMonths(-1);
+                    var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId, secondLastMonth, secondLastMonth).FirstOrDefault();
+                    if (lastMonthStatement != null && secondLastMonthStatement != null)
+                    {
+                        var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
+                        if (balance < 0)
+                        {
+                            notification.Subject = $"Programme lost R{balance} in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Programme losing money";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    #endregion
+
+                    #region MADE R300 PROFIT  - WHAT IS THIS PERIOD? Last 3 moneths? Is it tied to another alert I can look up?
+                    if (lastMonthStatement != null && secondLastMonthStatement != null)
+                    {
+                        var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
+                        if (balance > 0)
+                        {
+                            notification.Subject = $"Made R{balance} profit in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
+                            notification.Icon = MetricsIconEnum.Error.ToString();
+                            notification.Color = MetricsColorEnum.Error.ToString();
+                            notification.Message = "";
+                            notification.Notes = "";
+                            notification.GroupingName = "Programme making profit";
+                            yield return notification;
+                            continue;
+                        }
+                    }
+                    #endregion
+
+                    #region LESS THAN 5 CHILDREN REGISTERED                
+                    var numberOfLearners = classroomGroupRepo.GetAll()
+                            .Where(x => practitionerClassrooms.Select(x => x.Id).Contains(x.ClassroomId))
+                            .SelectMany(x => x.Learners)
+                            .Count();
+
+                    if (numberOfLearners < 5)
+                    {
+                       notification.Subject = "Less than 5 children registered";
+                       notification.Icon = MetricsIconEnum.Error.ToString();
+                       notification.Color = MetricsColorEnum.Error.ToString();
+                       notification.Message = "";
+                       notification.Notes = "";
+                       notification.GroupingName = "Less than 5 children registered";
+                       yield return notification;
+                    }                   
+                    #endregion
                 }
-                #endregion
+
 
                 #region MISSING ATTENDANCE REGISTERS
                 var missingRegisterDayCount = GetMissingAttendanceReportsAsync(
@@ -1793,26 +1849,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     notification.GroupingName = "Missing attendance registers";
                     yield return notification;
                     continue;
-                }
-                #endregion
-
-                #region PROGRAMME LOST R300 IN LAST 2 MONTHS
-                var secondLastMonth = previousMonthStart.AddMonths(-1);
-                var secondLastMonthStatement = incomeManager.GetStatements(practitioner.UserId, secondLastMonth, secondLastMonth).FirstOrDefault();
-                if (lastMonthStatement != null && secondLastMonthStatement != null)
-                {
-                    var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
-                    if (balance < 0)
-                    {
-                        notification.Subject = $"Programme lost R{balance} in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
-                        notification.Icon = MetricsIconEnum.Error.ToString();
-                        notification.Color = MetricsColorEnum.Error.ToString();
-                        notification.Message = "";
-                        notification.Notes = "";
-                        notification.GroupingName = "Programme losing money";
-                        yield return notification;
-                        continue;
-                    }
                 }
                 #endregion
                
@@ -1862,51 +1898,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     #endregion
                 }
 
-
-                // STARTUP SUPPORT ENDING (1 month)
-
-                // Club features not implemented yet
-                // NOT ASSIGNED TO A CLUB
-                // MISSED 3 CLUB MEETINGS
-
-                #region LESS THAN 5 CHILDREN REGISTERED                
-                var practitionerClassrooms = classrooms.Where(x => x.UserId == practitioner.UserId || x.UserId == practitioner.PrincipalHierarchy.ToString()).ToList();
-                var classroom = practitionerClassrooms.FirstOrDefault();
-
-                if ((practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value))
-                {
-                    var numberOfLearners = classroomGroupRepo.GetAll()
-                        .Where(x => practitionerClassrooms.Select(x => x.Id).Contains(x.ClassroomId))
-                        .SelectMany(x => x.Learners)
-                        .Count();
-
-                    if (numberOfLearners < 5)
-                    {
-                        notification.Subject = "Less than 5 children registered";
-                        notification.Icon = MetricsIconEnum.Error.ToString();
-                        notification.Color = MetricsColorEnum.Error.ToString();
-                        notification.Message = "";
-                        notification.Notes = "";
-                        notification.GroupingName = "Less than 5 children registered";
-                        yield return notification;
-                    }
-                }
-                #endregion
-
-                #region ABSENT 10-24% LAST MONTH
-                if (absenteeDays.Count() > 0 && absenteeDays.Count() <= 5)
-                {
-                    notification.Subject = "Practitioner absent last month";
-                    notification.Icon = MetricsIconEnum.Warning.ToString();
-                    notification.Color = MetricsColorEnum.Warning.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "On leave";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
                 #region BUSINESS SKILLS TRAINING DUE
                 if (!practitioner.AttendedBusinessSkills.HasValue || !practitioner.AttendedBusinessSkills.Value)
                 {
@@ -1935,7 +1926,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
                 #endregion
 
-                // STARTUP SUPPORT ENDING (3 months)            
+                #region INCOMPLETE CHILD REGISTRATIONS
+                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitioner.Hierarchy))
+                                        //.Include(c => c.User)
+                                        .ToListAsync().Result;
+                var childUserIds = children.Select(c => c.UserId);
+                var learners = learnerRepo.GetAll().Where(l => childUserIds.Contains(l.UserId) && l.IsActive == true).ToList();
+                var documents = docRepo.GetAll().Where(d => childUserIds.Contains(d.UserId) && d.IsActive == true
+                && (d.DocumentType.EnumId == FileTypeEnum.ChildClinicCard || d.DocumentType.EnumId == FileTypeEnum.ChildBirthCertificate)).ToList();
+
+                var incompleteRegistrations = GetIncompleteChildRegistrations(children, learners, documents);
+                if (incompleteRegistrations > 0)
+                {
+                    notification.Subject = $"{incompleteRegistrations} Incomplete child registrations";
+                    notification.Icon = MetricsIconEnum.Error.ToString();
+                    notification.Color = MetricsColorEnum.Error.ToString();
+                    notification.Message = "";
+                    notification.Notes = "";
+                    notification.GroupingName = "Child Registrations";
+                    yield return notification;
+                    continue;
+                }
+                #endregion
 
                 #region CHILDREN DID NOT PROGRESS
                 var childProgress = GetChildProgress(repoFactory, GetReportPeriodStart(previousMonthStart.Year, previousMonthStart.Month <= 7), children);
@@ -1950,38 +1962,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     notification.GroupingName = "Children did not progress";
                     yield return notification;
                     continue;
-                }
-                #endregion
-
-                #region NEW TRAINEE
-                if (practitioner.IsTrainee.HasValue && practitioner.IsTrainee.Value)
-                {
-                    notification.Subject = "New trainee";
-                    notification.Icon = MetricsIconEnum.Success.ToString();
-                    notification.Color = MetricsColorEnum.Success.ToString();
-                    notification.Message = "";
-                    notification.Notes = "";
-                    notification.GroupingName = "New trainee";
-                    yield return notification;
-                    continue;
-                }
-                #endregion
-
-                #region MADE R300 PROFIT  - WHAT IS THIS PERIOD? Last 3 moneths? Is it tied to another alert I can look up?
-                if (lastMonthStatement != null && secondLastMonthStatement != null)
-                {
-                    var balance = lastMonthStatement.Balance + secondLastMonthStatement.Balance;
-                    if (balance > 0)
-                    {
-                        notification.Subject = $"Made R{balance} profit in {secondLastMonth.ToString("MMM")}-{previousMonthStart.ToString("MMM")}";
-                        notification.Icon = MetricsIconEnum.Error.ToString();
-                        notification.Color = MetricsColorEnum.Error.ToString();
-                        notification.Message = "";
-                        notification.Notes = "";
-                        notification.GroupingName = "Programme making profit";
-                        yield return notification;
-                        continue;
-                    }
                 }
                 #endregion
 

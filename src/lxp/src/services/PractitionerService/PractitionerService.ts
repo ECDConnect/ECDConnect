@@ -206,6 +206,20 @@ class PractitionerService {
                 }
                 eventId
               }
+              clubMeetings {
+                totalMeetings
+                totalPresent
+                percAttended
+                attendanceText
+                attendanceColor
+                meetingRegister {
+                  attended
+                   clubMeeting {
+                    meetingDate
+                    meetingNotes
+                  }
+                }
+              }
             }
           }
         }
@@ -466,8 +480,6 @@ class PractitionerService {
             usePhotoInReport
             isOnStipend
             isCompletedBusinessWalkThrough
-            isClubLeader
-            isClubSupport
             clubId
             absentees {
               absentDate

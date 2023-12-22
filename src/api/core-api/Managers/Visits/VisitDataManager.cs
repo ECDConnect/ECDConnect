@@ -3,7 +3,6 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
@@ -38,7 +37,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         private UserLicenseManager _userLicenseManager;
         private VisitManager _visitManager;
-
         private string _applicationUserId;
 
         public VisitDataManager(
@@ -58,7 +56,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _pointsEngineService = pointsEngineService;
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
-            _visitManager = visitManager; 
+            _visitManager = visitManager;
 
             _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
@@ -284,9 +282,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return null;
         }
-        public Boolean AddCoachData(CMSVisitDataInputModel input)
+        public Visit AddCoachData(CMSVisitDataInputModel input)
         {
-
             if (input.VisitData.Sections == null)
             {
                 var _section = new CMSVisitSection();
@@ -335,8 +332,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 entityToUpdate.Attended = true;
                 entityToUpdate.ActualVisitDate = DateTime.Now;
                 _visitRepo.Update(entityToUpdate);
+
+                return entityToUpdate;
             }
-            return true;
+            return new Visit();
         }
         public bool EditVisitData(CMSVisitDataInputModel input)
         {
@@ -814,27 +813,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 _visitRepo.Update(pqaVisit);
             }
 
-            // Club Points integration
-            if (pqaVisit.PractitionerId != null)
-            {
-                Practitioner practitioner = _practitionerRepo.GetById((Guid)pqaVisit.PractitionerId);
-                
-                if (practitioner.ClubLeader != null || practitioner.ClubMember != null || practitioner.ClubSupport != null)
-                {
-                    Club club = practitioner.ClubLeader != null ? practitioner.ClubLeader.Club :
-                                practitioner.ClubMember != null ? practitioner.ClubMember.Club :
-                                practitioner.ClubSupport != null ? practitioner.ClubSupport.Club : null;
-
-                    if (club != null)
-                    {
-                        if (club.LeagueId.HasValue)
-                        {
-                            _pointsEngineService.CalculateLeaveNoOneBehind(club.Id);
-                        }
-                    }
-                }
-            }
-
             return rating;
         }
         
@@ -1010,27 +988,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             {
                 RAVisit.Rating = rating.OverallRatingColor;
                 _visitRepo.Update(RAVisit);
-            }
-
-            // Club Points integration
-            if (RAVisit.PractitionerId != null)
-            {
-                Practitioner practitioner = _practitionerRepo.GetById((Guid)RAVisit.PractitionerId);
-
-                if (practitioner.ClubLeader != null || practitioner.ClubMember != null || practitioner.ClubSupport != null)
-                {
-                    Club club = practitioner.ClubLeader != null ? practitioner.ClubLeader.Club :
-                                practitioner.ClubMember != null ? practitioner.ClubMember.Club :
-                                practitioner.ClubSupport != null ? practitioner.ClubSupport.Club : null;
-
-                    if (club != null)
-                    {
-                        if (club.LeagueId.HasValue)
-                        {
-                            _pointsEngineService.CalculateLeaveNoOneBehind(club.Id);
-                        }
-                    }
-                }
             }
 
             return rating;

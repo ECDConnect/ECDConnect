@@ -1,5 +1,6 @@
 import {
   BannerWrapper,
+  Card,
   Dialog,
   DialogPosition,
   LoadingSpinner,
@@ -29,6 +30,8 @@ import {
 import { AcceptLeaderDetails } from './components/accept-leader-details';
 import { HostFamilyDayDetails } from './components/host-family-day-details';
 import { MeetRegularlyDetails } from './components/meet-regularly-details';
+import { ReactComponent as EmojiGreenSmile } from '@ecdlink/ui/src/assets/emoji/emoji_green_bigsmile.svg';
+import { ReactComponent as EmojiOrangeSurprise } from '@/assets/ECD_Connect_emoji11.svg';
 
 export const ClubMemberView: React.FC = () => {
   const history = useHistory();
@@ -161,28 +164,40 @@ export const ClubMemberView: React.FC = () => {
           />
           {/* Contributions list */}
           {!!contributions && !!contributions.length && (
-            <div className="mt-4 flex justify-center">
-              <StackedList
-                className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
-                type="MenuList"
-                listItems={contributions.map((x) => {
-                  return {
-                    title: x.title,
-                    titleStyle: 'text-textDark font-semibold',
-                    subTitle: x.subTitle,
-                    subTitleStyle: 'text-textMid',
-                    menuIcon: x.positiveStatus
-                      ? 'BadgeCheckIcon'
-                      : 'ExclamationIcon',
-                    menuIconClassName: 'text-white',
-                    showIcon: true,
-                    iconBackgroundColor: x.positiveStatus
-                      ? 'successMain'
-                      : 'alertMain', // TODO - should be emoji SVG
-                    backgroundColor: x.positiveState ? 'successBg' : 'alertBg',
-                  };
-                })}
-              />
+            <div className="mt-4 flex-col ">
+              {contributions.map((item, index) => {
+                return (
+                  <Card
+                    key={index}
+                    className={`mt-2 px-4 py-4 bg-${
+                      item.positiveStatus ? 'successBg' : 'alertBg'
+                    }`}
+                    shadowSize={'lg'}
+                    borderRaduis="lg"
+                  >
+                    <div className="flex flex-row items-center">
+                      {item.positiveStatus ? (
+                        <EmojiGreenSmile className="mr-4 h-12 w-12" />
+                      ) : (
+                        <EmojiOrangeSurprise className="mr-4 h-12 w-12" />
+                      )}
+
+                      <div className="flex-col">
+                        <Typography
+                          type="h4"
+                          className="text-textDark font-semibold"
+                          text={item.title}
+                        />
+                        <Typography
+                          type="h6"
+                          className="text-textMid text-sm"
+                          text={item.subTitle}
+                        />
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </>

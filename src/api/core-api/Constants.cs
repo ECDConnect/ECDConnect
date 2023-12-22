@@ -273,16 +273,16 @@ namespace EcdLink.Api.CoreApi
             public const string step12_q1_a5 = "Children cannot reach matches, lighters or paraffin.";
             public const string step12_q1_a6 = "Children cannot reach or step on sharp objects or other dangerous objects.";
             public const string step12_q1_a7 = "Children cannot reach hot cooker plates or pans on the cooker.";
-            public const string step12_q1_a8 = "There is open water (where children could fall and drown).";
+            public const string step12_q1_a8 = "There is no open water (where children could fall and drown).";
             public const string step12_q1_a9 = "There are no exposed electrical wires or electric sockets that children can reach.";
             public const string step12_q1_a10 = "There is no smoking or open fires in the venue.";
-            public const string step12_q1_a11 = "There are not heights or steps from which children could fall.";
+            public const string step12_q1_a11 = "There are no heights or steps from which children could fall.";
             public const string step12_q1_a12 = "No dangerous animals can approach the venue.";
             public const string step12_q1_a13 = "If children use an outdoor area, it is clean, with no litter or animal faeces.";
             public const string step12_q1_a14 = "The venue is in an area that is known as a safe place in the community.";
-            public const string step12_q1_a15 = "There is at minimum a bucket of sand available in case of fires or the fire blanket or extinguisher.";
+            public const string step12_q1_a15 = "There is at minimum a bucket of sand available in case of fires or fire blanket or extinguisher.";
             public const string step12_q1_a16 = "There is a basic first aid kit in case of accidents.";
-            public const string step12_q1_a17 = "There is an emergency plan displayed on the wall (can use one from Start pack).";
+            public const string step12_q1_a17 = "There is an emergency plan displayed on the wall (can use one from Starter pack).";
 
             public const string step13_q1 = "These standards are also required.  If they are not in place, SmartStarters should be able to show how they are working towards them.";
             public const string step13_q1_b = "Additional standards";
@@ -358,6 +358,7 @@ namespace EcdLink.Api.CoreApi
             public const string ss_programme = "Programme details";
             public const string ss_health = "Health, sanitation & safety";
             public const string ss_safety = "Safety - structure, space & area";
+            public const string ss_space = "Space & emergency planning";
 
             public const string coach_smartspace_check = "Coach smartspace check";
             public const string re_accreditation_follow_up = "Is {client} ready for a follow-up reaccreditation visit?";
@@ -399,6 +400,11 @@ namespace EcdLink.Api.CoreApi
             public const string self_assessment = "Self-assessment completed";
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
+
+            // integration values
+            public const string own_property = "Do you own the property where you will run your SmartStart programme?";
+            public const string number_assistants = "How many assistants will attend every session?";
+            public const string capacity = "Capacity";
         }
         public static class GGSettings
         {
@@ -567,6 +573,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_csg_receiving = "Is {client} receiving the CSG?";
             public const string q_csg_applied = "Has {client} applied for a CSG?";
             public const string q_csg_qualify = "Does {client} qualify for CSG?";
+            public const string q_csg_not_applied = "Why has {client} not applied for a CSG?";
 
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
@@ -766,6 +773,8 @@ namespace EcdLink.Api.CoreApi
             public const string SSSmartSpaceVisit = "SmartSpaceVisit";
             public const string SLSmartSpaceVisit = "SmartSpaceVisit";
 
+            public const string SLLeagues = "League";
+
             //Additional API Switches
             public const string QueryAll = "/Query";
             public const string Singular = "/{{Guid}}";
@@ -845,6 +854,8 @@ namespace EcdLink.Api.CoreApi
             public const string meeting_type_caregiver_meeting = "caregiver_meeting";
             public const string meeting_type_other = "other";
 
+            public const string calendar_club_monthly_meeting = "Club Monthly Meeting";
+
             public const string no_club_leader = "No club leader";
             public const string contact_club_leader = "Contact club leader";
             public const string contact_club_leader_name = "Contact ";
@@ -869,6 +880,7 @@ namespace EcdLink.Api.CoreApi
             public const string top_of_the_league = "Top of the league";
             public const string points_earned = " points earned in ";
             public const string coach_meeting_attended = ", Attend club meeting";
+            public const string coach_attend_first_meeting = ", Attend first club meeting";
             public const string first_meeting_attended = ", Attended first club meeting";
             public const int purple_club_max_points = 2200;
             public const int non_purple_club_max_points = 2000;

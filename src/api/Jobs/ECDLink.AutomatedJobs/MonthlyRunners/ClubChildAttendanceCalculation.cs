@@ -1,5 +1,4 @@
-﻿using ECDLink.AutomatedJobs.BiannualRunners;
-using ECDLink.AutomatedJobs.Cron;
+﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
@@ -27,10 +26,7 @@ public class ClubChildAttendanceCalculation : CronJobService
             TenancyContext.SetTenantContext(scope);
             var service = scope.ServiceProvider.GetRequiredService<IPointsService>();
 
-            if (DateTime.Now.Date == DateTime.Now.GetStartOfMonth().Date)
-            {
-                service.CalculateClubChildAttendance();
-            }
+            service.CalculateClubChildAttendance();
         }
     }
 }

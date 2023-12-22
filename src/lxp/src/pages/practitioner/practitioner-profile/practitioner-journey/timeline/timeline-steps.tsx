@@ -14,7 +14,7 @@ import {
 } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
 import { getReAccreditationStepData } from '@/pages/coach/coach-practitioner-journey/timeline/re-accreditation/step';
 import { getPqaStepData } from '@/pages/coach/coach-practitioner-journey/timeline/pqa/step';
-import { CoachCirclesMeeting } from '@/pages/coach/coach-practitioner-journey/timeline/coach-circles-meetings';
+import { ClubMeetingMeeting } from '@/pages/coach/coach-practitioner-journey/timeline/club-meetings';
 
 export interface ViewEvent {
   visit: Visit | Maybe<Visit>;
@@ -28,6 +28,19 @@ interface TimelineStepsProps {
   currentReAccreditationRating?: RatingData;
   onView: (event: ViewEvent) => void;
 }
+
+const getIconBgColor = (attendanceColor: string) => {
+  switch (attendanceColor) {
+    case 'Success':
+      return 'successMain';
+    case 'Warning':
+      return 'alertMain';
+    case 'Error':
+      return 'errorMain';
+    default:
+      return '';
+  }
+};
 
 export const timelineSteps = ({
   timeline,
@@ -176,19 +189,6 @@ export const timelineSteps = ({
         ? 'completed'
         : 'inProgress';
 
-    const getIconBgColor = (attendanceColor: string) => {
-      switch (attendanceColor) {
-        case 'Success':
-          return 'successMain';
-        case 'Warning':
-          return 'alertMain';
-        case 'Error':
-          return 'errorMain';
-        default:
-          return '';
-      }
-    };
-
     const date = new Date(
       timeline.coachCircles?.attendanceText!
     ).toLocaleDateString('en-ZA', dateOptions);
@@ -206,10 +206,48 @@ export const timelineSteps = ({
       inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',
       color: getIconBgColor(attendanceColor),
       accordionContent: (
-        <CoachCirclesMeeting
+        <ClubMeetingMeeting
           isLoading={isLoading}
           isOnline={isOnline}
-          timeline={timeline}
+          attendanceRecord={timeline.coachCircles}
+        />
+      ),
+    });
+  }
+
+  if (timeline?.clubMeetings) {
+    const clubMeetingsAttendedMeetings = timeline.clubMeetings.totalPresent;
+    const clubMeetingsTotalMeetings = timeline.clubMeetings.totalMeetings;
+    const lastMeetingattendanceDate = timeline.clubMeetings.attendanceText
+      ? new Date(timeline?.clubMeetings?.attendanceText)
+      : new Date();
+    const attendanceColor = timeline.clubMeetings.attendanceColor || 'Success';
+    const attendanceColorType =
+      timeline.clubMeetings.attendanceColor === 'Success'
+        ? 'completed'
+        : 'inProgress';
+
+    const date = new Date(
+      timeline.clubMeetings.attendanceText!
+    ).toLocaleDateString('en-ZA', dateOptions);
+    steps.push({
+      title: `${clubMeetingsAttendedMeetings}/${clubMeetingsTotalMeetings} club meetings attended`,
+      subTitle: `${new Date(lastMeetingattendanceDate).toLocaleDateString(
+        'en-ZA',
+        dateOptions
+      )}`,
+      type: attendanceColorType,
+      extraData: {
+        date: new Date(date),
+      },
+      showAccordion: true,
+      inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',
+      color: getIconBgColor(attendanceColor),
+      accordionContent: (
+        <ClubMeetingMeeting
+          isLoading={isLoading}
+          isOnline={isOnline}
+          attendanceRecord={timeline.clubMeetings}
         />
       ),
     });

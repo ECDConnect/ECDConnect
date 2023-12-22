@@ -139,20 +139,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public List<PractitionerModel> GetAllPractitioners()
         {
             ApplicationUser currentUser = (ApplicationUser)_contextAccessor.HttpContext.GetUser();
+
             List<Practitioner> practitioners = new List<Practitioner>();
+
             if (currentUser.coachObjectData != null)
             {
                 practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.CoachHierarchy.HasValue && x.CoachHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
-            } else if (currentUser.practitionerObjectData != null && currentUser.practitionerObjectData.IsPrincipal.HasValue && currentUser.practitionerObjectData.IsPrincipal.Value)
+            }
+            else if (currentUser.practitionerObjectData != null && currentUser.practitionerObjectData.IsPrincipal.HasValue && currentUser.practitionerObjectData.IsPrincipal.Value)
             {
                 practitioners = _practiGenericRepo.GetAll().Where(x => x.IsActive == true && x.PrincipalHierarchy.HasValue && x.PrincipalHierarchy.Value == Guid.Parse(currentUser.Id)).OrderBy(x => x.User.FirstName).ToList();
             }
 
             List<PractitionerModel> practitionerList = new List<PractitionerModel>();
+
             foreach (var practitioner in practitioners)
             {
                 practitionerList.Add(GetPractitionerDetails(practitioner));
             }
+
             return practitionerList;
         }
 
@@ -196,14 +201,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 practitionerRecord.ClubId = clubMember?.Club?.Id;
                 practitionerRecord.ClubName = clubMember?.Club?.Name;
-                practitionerRecord.IsClubLeader = _clubService.IsClubLeader(practitioner.Id);
-                practitionerRecord.IsClubSupport = _clubService.IsClubSupport(practitioner.Id);
                 practitionerRecord.IsNewInClub = clubMember?.IsNewInClub;
-            }
-
-            if (practitioner.ClubSupport != null)
-            {
-                practitionerRecord.IsNewInSupportRole = practitioner.ClubSupport.IsNewInSupportRole;
             }
 
             List<AbsenteeDetail> absentees = _absenteeService.GetAbsenteeByUser(practitioner.UserId, DateTime.Now.GetStartOfPreviousMonth());
@@ -793,12 +791,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // Coach Circles
             // get all attendance for practitioner
-            PractitionerAttendance attendance = _clubService.GetPractitionerAttendance(practitioner.Id, today, Constants.CoachingCircleSettings.meeting_type_coach_circle);
+            PractitionerAttendance attendance = _clubService.GetPractitionerAttendance(practitioner.Id, Constants.CoachingCircleSettings.meeting_type_coach_circle);
             if (attendance.MeetingRegister != null && attendance.MeetingRegister.Count > 0)
             {
                 // coach circle color application
                 attendance.AttendanceColor = attendance.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
                 timeline.CoachCircles = attendance;
+            }
+
+            // Club meetings
+            var clubAttendance = _clubService.GetPractitionerAttendance(practitioner.Id, Constants.ClubSettings.meeting_type_club_meeting);
+            if (clubAttendance.MeetingRegister != null && clubAttendance.MeetingRegister.Count > 0)
+            {
+                clubAttendance.AttendanceColor = clubAttendance.PercAttended >= 60 ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
+                timeline.ClubMeetings = clubAttendance;
             }
 
             timeline.PrePQASiteVisits = prePqaVisits.OrderBy(x => x.PlannedVisitDate).ToList();

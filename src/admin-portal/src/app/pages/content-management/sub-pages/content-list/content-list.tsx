@@ -98,6 +98,14 @@ export default function ContentList({
         x.fieldType.dataType !== FieldType.StaticLink
       )
         return x.fieldName;
+      else if (x?.fieldName === 'subCategories')
+        return `
+        ${x.fieldName} {
+          id
+          name
+          imageUrl
+        }
+        `;
       else if (
         x.fieldType.dataType === FieldType.Link &&
         x?.displayMainTable === true
@@ -146,10 +154,21 @@ export default function ContentList({
 
       if (selectedTab === 1) {
         let clientProfileData = moreInforItems.filter(
-          (item: { type: string }) =>
-            item.type === 'client profile' ||
-            item.type === 'Info Page' ||
-            item?.type === 'Income Statements'
+          (item: { type: string }) => {
+            console.log({ item });
+            return (
+              item.type === 'client profile' ||
+              item.type === 'Info Page' ||
+              item?.type === 'Income Statements' ||
+              item?.type === 'Taking Child Attendance' ||
+              item?.type === 'League Of Stars' ||
+              item?.type === 'Purple Clubs' ||
+              item?.type === 'Learning Through Play' ||
+              item?.type === 'The Daily Routine' ||
+              item?.type === 'Tracking Progress' ||
+              item?.type === 'Trainee Onboarding'
+            );
+          }
         );
         setTableData(
           clientProfileData?.length > 0 ? clientProfileData : moreInforItems
@@ -278,16 +297,17 @@ export default function ContentList({
                 onChange={onSearch}
               />
             </div>
-            {hasPermission(PermissionEnum.create_static) && (
-              <button
-                onClick={() => displayCreatePanel()}
-                type="button"
-                className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
-              >
-                <PlusIcon width="22px" className="pl-1" />
-                Add {camelCaseToSentanceCase(contentType.name)}
-              </button>
-            )}
+            {hasPermission(PermissionEnum.create_static) &&
+              contentType?.name !== 'Consent' && (
+                <button
+                  onClick={() => displayCreatePanel()}
+                  type="button"
+                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
+                >
+                  <PlusIcon width="22px" className="pl-1" />
+                  Add {camelCaseToSentanceCase(contentType.name)}
+                </button>
+              )}
           </div>
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">

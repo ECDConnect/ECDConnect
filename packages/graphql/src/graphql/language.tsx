@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const GetAllLanguage = gql`
-  {
-    GetAllLanguage {
+  query GetAllLanguage($pagingInput: PagedQueryInput) {
+    GetAllLanguage(pagingInput: $pagingInput) {
       id
       description
       locale
