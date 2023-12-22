@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using System;
 
 namespace ECDLink.Core.Services.Interfaces
 {
@@ -10,6 +11,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> IntegrationClubsData();
         Task<bool> PullPQAData(string franchiseeId = null);
         Task<bool> PullSmartSpaceVisitsData();
+        Task<bool> PushSmartSpaceVisitsData(Guid visitId, Guid traineeId, string traineeUserId, string coachUserId);
         Task IntegrationStatementsData();
         Task IntegrationAttendanceByDueData();
         Task PushMonthlyAttendancePdf();

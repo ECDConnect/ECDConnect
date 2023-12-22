@@ -1,56 +1,56 @@
-﻿using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
-using Newtonsoft.Json;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
-using System;
-using System.Linq;
+﻿using EcdLink.Api.CoreApi.GraphApi.Mutations;
+using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Integration;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Visits;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Abstractrions.Constants;
+using ECDLink.Abstractrions.Enums;
+using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Extensions;
+using ECDLink.Core.Helpers;
+using ECDLink.Core.Models;
+using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories;
-using HotChocolate;
-using Microsoft.AspNetCore.Identity;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Workflow;
-using Microsoft.EntityFrameworkCore;
 using ECDLink.DataAccessLayer.Entities.Clubs;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.Tenancy.Context;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.Core.Extensions;
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Integration;
-using System.Net.Http;
-using ECDLink.Core.Services;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
-using ECDLink.Core.Helpers;
-using ECDLink.Security;
-using ECDLink.Abstractrions.Constants;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
-using JsonSerializer = System.Text.Json.JsonSerializer;
-using ECDLink.Abstractrions.Services;
-using ECDLink.Core.Models;
-using ECDLink.DataAccessLayer.Entities.Visits;
-using EcdLink.Api.CoreApi.Managers.Visits;
-using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Licenses;
-using ECDLink.SmartStart.Services;
-using Microsoft.Extensions.Logging;
-using EcdLink.Api.CoreApi.GraphApi.Mutations;
-using Microsoft.AspNetCore.Http;
-using EcdLink.Api.CoreApi.Managers.Notifications;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Hierarchy.Entities;
+using ECDLink.DataAccessLayer.Repositories;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security;
 using ECDLink.Security.Managers;
-using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
-using EcdLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.SmartStart.Services;
+using ECDLink.Tenancy.Context;
+using HotChocolate;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Text;
+using System.Threading.Tasks;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace EcdLink.Api.CoreApi.Services;
 public partial class SmartStartIntegrationService : IIntegrationService
@@ -92,6 +92,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
     private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
     private IGenericRepository<Visit, Guid> _visitsRepo;
     private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+    private IGenericRepository<VisitData, Guid> _visitDataRepo;
     private IGenericRepository<PQARating, Guid> _pqaRatingRepo;
     private IGenericRepository<License, Guid> _licenseRepo;
     private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
@@ -209,6 +210,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
             _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
             _visitsRepo = repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
             _visitTypeRepo = repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
+            _visitDataRepo = repositoryFactory.CreateGenericRepository<VisitData>(userContext: _uId);
             _pqaRatingRepo = repositoryFactory.CreateGenericRepository<PQARating>(userContext: _uId);
 
             _licenseRepo = repositoryFactory.CreateGenericRepository<License>(userContext: _uId);
@@ -841,8 +843,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
         return true;
     }
 
-
-
     public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null, string coachId = null)
     {
         if (!this.Enabled) return true;
@@ -1035,7 +1035,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
         return returnOK;
     }
 
-
     public async Task<bool> IntegrationByNewCoach(string remoteCoachId)
     {
         if (!this.Enabled) return true;
@@ -1089,6 +1088,146 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
         return true;
     }
+    
+    public async Task<bool> PushSmartSpaceVisitsData(Guid visitId, Guid traineeId, string traineeUserId, string coachUserId)
+    {
+        if (!this.Enabled) return true;
+
+        await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+
+        List<VisitData> ssVisitData = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).ToList();
+
+        var _traineeMappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSTrainee);
+        var _coachMappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSCoach);
+        var mappedTraineeId = _traineeMappedEntities.Where(c => string.Equals(c.UserId, traineeUserId) && c.LocalEntity == Constants.SSIntegrationSettings.SSTrainee).Select(x => x.RemoteId).FirstOrDefault();
+        var mappedCoachId = _coachMappedEntities.Where(c => string.Equals(c.UserId, coachUserId) && c.LocalEntity == Constants.SSIntegrationSettings.SSCoach).Select(x => x.RemoteId).FirstOrDefault();
+
+        // Answers for questions - smart_space_checklist
+        var hasCleanWater = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasToilet = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasHandwashing = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoHarmfulSubstances = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoFireHazards = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a5).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoSharpObjects = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a6).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoBurnRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a7).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoDrowningRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a8).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoElectrocutionRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a9).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoSmokeRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a10).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoFallingRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a11).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNoAnimalRisks = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a12).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var isInSafePlace = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a14).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasFireExtinguishment = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a15).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasFirstAidKit = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a16).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var doesNotExceedMaximumCapacity = "false"; // not available in funda
+        var hasEnoughPlaySpace = ssVisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var isOutdoorsFenced = ssVisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a2).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var isOutdoorsClean = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a13).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var areEmergencyNumbersVisible = ssVisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a3).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var isEmergencyPlanVisible = ssVisitData.Where(x => x.Question == Constants.SSSettings.step12_q1_a17).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var hasNaturalVentilation = ssVisitData.Where(x => x.Question == Constants.SSSettings.step13_q1_a4).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var numberOfAssistants = ssVisitData.Where(x => x.Question == Constants.SSSettings.number_assistants).Select(x => x.QuestionAnswer).FirstOrDefault();
+        var capacity = ssVisitData.Where(x => x.Question == Constants.SSSettings.capacity).Select(x => x.QuestionAnswer).FirstOrDefault(); 
+        
+        // trainee question/answer
+        var ownsProperty = _visitDataRepo.GetAll().Where(x => x.Visit.TraineeId == traineeId && x.Question == Constants.SSSettings.own_property).Select(x => x.QuestionAnswer).FirstOrDefault();
+
+        // Scores
+        int programmeCount = ssVisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_programme).Count();
+        int healthCount = ssVisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_health && x.QuestionAnswer == "true").Count();
+        int safetyCount = ssVisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_safety && x.QuestionAnswer == "true").Count();
+        int requiredItemsScore = programmeCount + healthCount + safetyCount;
+        int unrequiredItemsScore = ssVisitData.Where(x => x.VisitSection == Constants.SSSettings.ss_space && x.QuestionAnswer == "true").Count();
+        int totalScore = requiredItemsScore + unrequiredItemsScore;
+
+        // Consent
+        var userConsent = _dbContext.UserConsents.Where(x => string.Equals(x.UserId, traineeUserId) && string.Equals(x.ConsentType, Constants.SSSettings.consent_type_franchisee)).FirstOrDefault();
+        var hasAcceptedSmartSpaceAgreement = userConsent != null ? "true" : "false";
+
+        DateTime dateOfVisit = ssVisitData.Select(x => x.Visit.ActualVisitDate.Value).FirstOrDefault();
+
+        StringBuilder jsonPutPostString = new StringBuilder();
+        jsonPutPostString.AppendLine("[{");
+        jsonPutPostString.AppendLine("\"Capacity\":" + capacity + ",");
+        jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + dateOfVisit.Date + "\",");
+        jsonPutPostString.AppendLine("\"NumberOfAssistants\":" + numberOfAssistants + ",");
+        jsonPutPostString.AppendLine("\"OwnsProperty\":" + (ownsProperty == null ? "false" : ownsProperty) + ",");  
+
+        // smart_space_checklist
+        jsonPutPostString.AppendLine("\"HasCleanWater\":" + hasCleanWater + ",");
+        jsonPutPostString.AppendLine("\"HasToilet\":" + hasToilet + ",");
+        jsonPutPostString.AppendLine("\"HasHandwashing\":" + hasHandwashing + ",");
+        jsonPutPostString.AppendLine("\"HasNoHarmfulSubstances\":" + hasNoHarmfulSubstances + ",");
+        jsonPutPostString.AppendLine("\"HasNoFireHazards\":" + hasNoFireHazards + ",");
+        jsonPutPostString.AppendLine("\"HasNoSharpObjects\":" + hasNoSharpObjects + ",");
+        jsonPutPostString.AppendLine("\"HasNoBurnRisks\":" + hasNoBurnRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoDrowningRisks\":" + hasNoDrowningRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoElectrocutionRisks\":" + hasNoElectrocutionRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoSmokeRisks\":" + hasNoSmokeRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoFallingRisks\":" + hasNoFallingRisks + ",");
+        jsonPutPostString.AppendLine("\"HasNoAnimalRisks\":" + hasNoAnimalRisks + ",");
+        jsonPutPostString.AppendLine("\"IsInSafePlace\":" + isInSafePlace + ",");
+        jsonPutPostString.AppendLine("\"HasFireExtinguishment\":" + hasFireExtinguishment + ",");
+        jsonPutPostString.AppendLine("\"HasFirstAidKit\":" + hasFirstAidKit + ",");
+        jsonPutPostString.AppendLine("\"DoesNotExceedMaximumCapacity\":" + doesNotExceedMaximumCapacity + ",");
+        jsonPutPostString.AppendLine("\"HasEnoughPlaySpace\":" + hasEnoughPlaySpace + ",");
+        jsonPutPostString.AppendLine("\"IsOutdoorsFenced\":" + isOutdoorsFenced + ",");
+        jsonPutPostString.AppendLine("\"IsOutdoorsClean\":" + isOutdoorsClean + ",");
+        jsonPutPostString.AppendLine("\"AreEmergencyNumbersVisible\":" + areEmergencyNumbersVisible + ",");
+        jsonPutPostString.AppendLine("\"IsEmergencyPlanVisible\":" + isEmergencyPlanVisible + ",");
+        jsonPutPostString.AppendLine("\"HasNaturalVentilation\":" + hasNaturalVentilation + ",");
+        
+        jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
+        jsonPutPostString.AppendLine("\"RequiredItemsScore\":" + requiredItemsScore + ",");
+        jsonPutPostString.AppendLine("\"UnrequiredItemsScore\":" + unrequiredItemsScore + ",");
+        jsonPutPostString.AppendLine("\"Trainee\":{\"Guid\": \"" + mappedTraineeId + "\"},");
+        jsonPutPostString.AppendLine("\"Coach\":{\"" + mappedCoachId + "\"},");
+        jsonPutPostString.AppendLine("\"HasAcceptedSmartSpaceAgreement\":" + hasAcceptedSmartSpaceAgreement + ",");
+
+        jsonPutPostString.AppendLine("\"Latitude\": null,");
+        jsonPutPostString.AppendLine("\"Longitude\": null");
+        jsonPutPostString.AppendLine("}]");
+
+        StringBuilder jsonPullString = new StringBuilder();
+        jsonPullString.AppendLine("{");
+        jsonPullString.AppendLine("\"Columns\":[\"Name\"],");
+        jsonPullString.AppendLine("\"Conditions\":[{\"Column\": \"Trainee\", \"Operator\": \"Equals\", \"Value\": \"" + mappedTraineeId + "\"}]");
+        jsonPullString.AppendLine("}");
+
+        try 
+        { 
+            string getSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.QueryAll;
+
+            // First check to see if the record exist on SL
+            var getResponse = await _apiManager.GetAPIHandlerResponse(getSmartSpaceUrl, null, null, null, false, false, jsonPullString.ToString());
+            if (!string.IsNullOrEmpty(getResponse.ResponseString) && getResponse.Success)
+            {
+                var updateSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.UpdateMultiple;
+                var updateApiResponse = await _apiManager.GetAPIHandlerResponse(updateSmartSpaceUrl, null, null, null, false, false, jsonPutPostString.ToString());
+                if (!string.IsNullOrEmpty(updateApiResponse.ResponseString) && updateApiResponse.Success)
+                {
+                    await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Updated at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+                }
+
+            } else
+            {
+                var createSmartSpaceUrl = Constants.SSIntegrationSettings.SLSmartSpaceVisit + Constants.SSIntegrationSettings.CreateMultiple;
+                var createApiResponse = await _apiManager.GetAPIHandlerResponse(createSmartSpaceUrl, null, null, null, false, false, jsonPutPostString.ToString());
+                if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
+                {
+                    await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushSmartSpaceVisitsData > GetAPIHandlerResponse > Remote ID : " + mappedTraineeId);
+        }
+
+        await _logManager.IntegrationLog($"PushSmartSpaceVisitsData Completed at {DateTime.Now}", $"visitId {visitId}", null, LogRelatedType.Log, "PushSmartSpaceVisitsData");
+
+        return true;
+    }
+
     #endregion
 
     #region Utilities
@@ -3124,8 +3263,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     if (!completedList.Contains(entityToUpdate.audit) && !completedEntityList.Contains(entityToUpdate.entity))
                     {
                         string url = "";
-                        StringBuilder jsonString = new StringBuilder();
-                        jsonString.AppendLine("[");
+                        StringBuilder jsonPutPostString = new StringBuilder();
+                        jsonPutPostString.AppendLine("[");
                         bool validUpdate = false;
                         var mappedEntity = entityToUpdate.entity;
                         if (mappedEntity != null) //if we have this entity mapped to remote?
@@ -3134,7 +3273,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             string remoteEntity = mappedEntity.RemoteEntity;
 
                             url = remoteEntity + Constants.SSIntegrationSettings.UpdateMultiple;
-                            jsonString.AppendLine("{");
+                            jsonPutPostString.AppendLine("{");
 
                             //get all changes for this entity and group and build JSON
                             var associatedChanges = (localEntity == Constants.SSIntegrationSettings.SSPractitioner || localEntity == Constants.SSIntegrationSettings.SSChild ||
@@ -3154,7 +3293,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
                             if (associatedChanges.Count() > 0)
                             {
-                                jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                jsonPutPostString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
                                 foreach (var changeLine in associatedChanges)
                                 {
                                     if (changeLine.audit.Property == "IsActive" && changeLine.audit.ValueAfter == "False")
@@ -3192,31 +3331,31 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                                 switch (mappedColumnLine.EntityDataType)
                                                 {
                                                     case "bool":
-                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + bool.Parse(valueToSend) + "\",");
+                                                        jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + bool.Parse(valueToSend) + "\",");
                                                         break;
                                                     case "integer":
-                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                        jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
                                                         break;
                                                     case "datetime":
-                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                        jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                         break;
                                                     case "date":
-                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
+                                                        jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
                                                         break;
                                                     default:
                                                         if (valueToSend.Length <= (int)mappedColumnLine.ColumnValidationLimit)
                                                         {
-                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                            jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                                         }
                                                         else
                                                         {
-                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
+                                                            jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
                                                         }
                                                         break;
                                                 }
                                                 validUpdate = true;
                                             }
-                                            //jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            //jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                         }
                                     }
 
@@ -3225,10 +3364,10 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     updates.Remove(changeLine.audit);
                                 }
                             }
-                            jsonString.AppendLine("}");
+                            jsonPutPostString.AppendLine("}");
                         }
 
-                        jsonString.AppendLine("]");
+                        jsonPutPostString.AppendLine("]");
                         IntegrationAPIManager.APIHandleResponse apiResponse = null;
                         try
                         {
@@ -3236,18 +3375,18 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             if (validUpdate)
                             {
                                 //now send to API call <entity type>/Multiple
-                                apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
+                                apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonPutPostString.ToString());
                                 if (apiResponse != null)
                                 {
                                     if (!apiResponse.Success)
                                     {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonPutPostString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                                     }
                                     else
                                     {
                                         await _logManager.UpdateAuditSubmitted(completedList);
                                         completedEntityList.Add(entityToUpdate.entity);
-                                        await _logManager.IntegrationLog("Data Push Success: ", jsonString.ToString(), null, LogRelatedType.Log, "PushUpdates > GetAPIHandlerResponse");
+                                        await _logManager.IntegrationLog("Data Push Success: ", jsonPutPostString.ToString(), null, LogRelatedType.Log, "PushUpdates > GetAPIHandlerResponse");
                                     }
                                 }
                             }
@@ -4394,13 +4533,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
             try
             {
 
-                StringBuilder jsonString = new StringBuilder();
+                StringBuilder jsonPutPostString = new StringBuilder();
                 var entityIdList = updates.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
 
                 if (entityIdList.Any() && entities.Any())
                 {
                     string url = "";
-                    jsonString.AppendLine("[");
+                    jsonPutPostString.AppendLine("[");
                     foreach (var entityToUpdate in entityIdList)
                     {
                         var mappedEntity = entities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
@@ -4410,7 +4549,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             string remoteEntity = mappedEntity.RemoteEntity;
 
                             url = remoteEntity + Constants.SSIntegrationSettings.UpdateMultiple;
-                            jsonString.AppendLine("{");
+                            jsonPutPostString.AppendLine("{");
                             //get all changes for this entity and group and build JSON
                             var allChanges = updates.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
                             if (updatedEntityType.Equals("ApplicationUser"))
@@ -4424,7 +4563,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             }
                             if (allChanges.Count() > 0)
                             {
-                                jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                jsonPutPostString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
                                 foreach (var changeLine in allChanges)
                                 {
                                     var mappedColumnLine = _mappedColumns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.Property) && x.IsActive == true).FirstOrDefault();
@@ -4450,29 +4589,29 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                             switch (mappedColumnLine.EntityDataType)
                                             {
                                                 case "bool":
-                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                                    jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
                                                     break;
                                                 case "integer":
-                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                    jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
                                                     break;
                                                 case "datetime":
-                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                    jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                     break;
                                                case "date":
-                                                    jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
+                                                    jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-dd") + "\",");
                                                     break;
                                                 default:
                                                     if (valueToSend.Length <= (int)mappedColumnLine.ColumnValidationLimit)
                                                     {
-                                                       jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                       jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                                     }
                                                     else
                                                     {
-                                                       jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
+                                                       jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend.Substring(0, (int)mappedColumnLine.ColumnValidationLimit) + "\",");
                                                     }
                                                     break;
                                             }
-                                            //jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            //jsonPutPostString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                         }
                                     }
                                     //remove entry from audits list as we have processed it here and sending
@@ -4481,14 +4620,14 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     updates.Remove(changeLine);
                                 }
                             }
-                            jsonString.AppendLine("},");
+                            jsonPutPostString.AppendLine("},");
                         }
                     }
-                    jsonString.AppendLine("]");
+                    jsonPutPostString.AppendLine("]");
                     try
                     {
                         //now send to API call <entity type>/Multiple
-                        var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonString.ToString());
+                        var apiResponse = await _apiManager.GetAPIHandlerResponse(url, null, null, null, false, true, jsonPutPostString.ToString());
                         if (!string.IsNullOrEmpty(apiResponse.ResponseString))
                         {
                             if (apiResponse.Success) //success
@@ -4498,7 +4637,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             }
                             else //error
                             {
-                                await _logManager.IntegrationLog("Data push failed ", jsonString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
+                                await _logManager.IntegrationLog("Data push failed ", jsonPutPostString.ToString() + " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "PushUpdates > Create CHild");
                             }
                         }
                     }

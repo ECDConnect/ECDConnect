@@ -3,7 +3,6 @@ using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
@@ -38,6 +37,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
         private UserLicenseManager _userLicenseManager;
         private VisitManager _visitManager;
+        private IIntegrationService _integrationService;
+
+
 
         private string _applicationUserId;
 
@@ -49,7 +51,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             UserLicenseManager userLicenseManager,
             VisitManager visitManager,
             [Service] IPointsEngineService pointsEngineService,
-            HierarchyEngine hierarchyEngine)
+            HierarchyEngine hierarchyEngine,
+            [Service] IIntegrationService integrationService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -58,7 +61,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _pointsEngineService = pointsEngineService;
             _userLicenseManager = userLicenseManager;
             _hierarchyEngine = hierarchyEngine;
-            _visitManager = visitManager; 
+            _visitManager = visitManager;
+            _integrationService = integrationService;
 
             _applicationUserId = (_contextAccessor.HttpContext != null ? _contextAccessor.HttpContext.GetUser().Id : _hierarchyEngine.GetIntegrationUserId());
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
@@ -286,7 +290,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public Boolean AddCoachData(CMSVisitDataInputModel input)
         {
-
             if (input.VisitData.Sections == null)
             {
                 var _section = new CMSVisitSection();
@@ -335,6 +338,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 entityToUpdate.Attended = true;
                 entityToUpdate.ActualVisitDate = DateTime.Now;
                 _visitRepo.Update(entityToUpdate);
+
+                // after marking the visit as attended for the coach, we want to push the data to SmartLink
+                _integrationService.PushSmartSpaceVisitsData(entityToUpdate.Id, (Guid)entityToUpdate.TraineeId, entityToUpdate.Trainee.UserId, entityToUpdate.Coach.UserId);
             }
             return true;
         }

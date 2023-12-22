@@ -1,8 +1,8 @@
 using ECDLink.Core.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.Services;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
 {
