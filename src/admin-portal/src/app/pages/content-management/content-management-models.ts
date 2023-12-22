@@ -12,6 +12,7 @@ export enum FieldType {
   Link = 'link',
   StaticLink = 'staticLink',
   ColorPicker = 'color-picker',
+  DatePicker = 'date-picker',
 }
 
 export interface DynamicFormTemplate {

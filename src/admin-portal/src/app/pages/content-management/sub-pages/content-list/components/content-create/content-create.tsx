@@ -15,6 +15,7 @@ import {
 } from '../../../../content-management-models';
 import LanguageSelector from '../../../../../../components/language-selector/language-selector';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
+import { Button } from '@ecdlink/ui';
 
 export interface ContentCreateProps {
   selectedLanguageId: string;
@@ -22,6 +23,7 @@ export interface ContentCreateProps {
   optionDefinitions: ContentDefinitionModelDto[];
   contentType: ContentTypeDto;
   closeDialog: (value: boolean) => void;
+  acceptedFileFormats?: string[];
 }
 
 export default function ContentCreate({
@@ -30,11 +32,13 @@ export default function ContentCreate({
   optionDefinitions,
   contentType,
   closeDialog,
+  acceptedFileFormats,
 }: ContentCreateProps) {
   const [defaultLanguageId, setDefaultLanguageId] = useState<string>();
-  const { register, formState, setValue, handleSubmit } = useForm();
+  const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
   const handleform = {
+    control,
     register: register,
     errors: errors,
   };
@@ -56,7 +60,7 @@ export default function ContentCreate({
       }
   `;
 
-  const [createContent] = useMutation(createMutation);
+  const [createContent, { loading }] = useMutation(createMutation);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
 
@@ -136,19 +140,25 @@ export default function ContentCreate({
               />
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              <button
+              <Button
                 onClick={() => closeDialog(false)}
-                type="button"
+                type="filled"
+                color="uiMid"
+                text="Cancel"
+                textColor="white"
                 className="bg-uiMid hover:bg-primary focus:outline-none mr-2 inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
+                disabled={loading}
+              />
+              <Button
+                buttonType="submit"
                 className="bg-primary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-              >
-                Save
-              </button>
+                type="filled"
+                color="primary"
+                text="Save"
+                textColor="white"
+                isLoading={loading}
+                disabled={loading}
+              />
             </div>
           </div>
 
@@ -158,6 +168,7 @@ export default function ContentCreate({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              acceptedFileFormats={acceptedFileFormats}
             />
           </div>
         </form>
