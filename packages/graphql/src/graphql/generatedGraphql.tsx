@@ -2690,18 +2690,18 @@ export type CoachSortInput = {
 
 export type CoachingCircleTopics = {
   __typename?: 'CoachingCircleTopics';
-  endDate?: Maybe<Scalars['DateTime']>;
+  endDate?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   resource?: Maybe<Scalars['String']>;
-  startDate?: Maybe<Scalars['DateTime']>;
+  startDate?: Maybe<Scalars['String']>;
   title?: Maybe<Scalars['String']>;
   topicContent?: Maybe<Scalars['String']>;
 };
 
 export type CoachingCircleTopicsInput = {
-  endDate?: InputMaybe<Scalars['DateTime']>;
+  endDate?: InputMaybe<Scalars['String']>;
   resource?: InputMaybe<Scalars['String']>;
-  startDate?: InputMaybe<Scalars['DateTime']>;
+  startDate?: InputMaybe<Scalars['String']>;
   title?: InputMaybe<Scalars['String']>;
   topicContent?: InputMaybe<Scalars['String']>;
 };
@@ -5863,9 +5863,9 @@ export type Mutation = {
   integrationByNewCoach: Scalars['Boolean'];
   integrationByTrainees: Scalars['Boolean'];
   integrationClubsData: Scalars['Boolean'];
+  integrationLeagueData: Scalars['Boolean'];
   integrationMonthlyAttendancePdf: Scalars['Boolean'];
   integrationPQASmartSpaceVisitsData: Scalars['Boolean'];
-  integrationSmartSpaceVisits: Scalars['Boolean'];
   integrationStatementsData: Scalars['Boolean'];
   integrationUpdates: Scalars['Boolean'];
   moveClubMembers: Scalars['Boolean'];
@@ -7543,13 +7543,6 @@ export type MutationImportTeamLeadsArgs = {
 
 export type MutationIntegrationByNewCoachArgs = {
   remoteCoachId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationIntegrationSmartSpaceVisitsArgs = {
-  coachUserId?: InputMaybe<Scalars['String']>;
-  traineeId: Scalars['UUID'];
-  traineeUserId?: InputMaybe<Scalars['String']>;
-  visitId: Scalars['UUID'];
 };
 
 export type MutationMoveClubMembersArgs = {
