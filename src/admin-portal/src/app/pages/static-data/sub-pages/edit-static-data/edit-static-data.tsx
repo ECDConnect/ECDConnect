@@ -560,6 +560,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
                         ? 'This field is required'
                         : ('' as any)
                     }
+                    maxLength={24}
                   />
 
                   <FormInput
@@ -570,6 +571,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
                     onChange={(e) => onLocaleChange(e, idx)}
                     textInputType="input"
                     placeholder={'Add a code...'}
+                    maxLength={24}
                   />
                 </div>
                 {dataValuesDescriptionLength?.length === 0 && idx === 0 && (
@@ -598,6 +600,7 @@ export const EditStaticData: React.FC<EditStaticDataProps> = ({
                     ? 'This field is required'
                     : ('' as any)
                 }
+                maxLength={24}
               />
               {dataValuesDescriptionLength?.length === 0 && idx === 0 && (
                 <Typography
