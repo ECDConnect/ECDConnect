@@ -53,3 +53,4 @@ export * from './team-lead';
 export * from './clinic';
 export * from './personalRecords';
 export * from './messaging';
+export * from './coach-circle-topics';

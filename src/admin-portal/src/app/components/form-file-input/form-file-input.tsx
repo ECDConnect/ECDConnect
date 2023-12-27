@@ -63,10 +63,27 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   );
   const lastAcceptedFormat = acceptedFormats[acceptedFormats?.length - 1];
 
+  const isPdfRule = acceptedFormats.some((format) =>
+    format.toLowerCase().includes('pdf')
+  );
+
   const handleChange = (event: any) => {
     if (event && event.target && event.target.files) {
       const firstFile = event.target.files[0];
       if (!firstFile) return;
+
+      const fileExtension = firstFile?.name
+        ? firstFile?.name?.split('.').pop()
+        : undefined;
+
+      const isPdfExtension = fileExtension?.toLowerCase()?.includes('pdf');
+
+      // 5MB
+      if (isPdfExtension && firstFile.size > 5242880) {
+        setError('The file is too big, please upload a file less than 5MB');
+        setLoading(false);
+        return;
+      }
 
       setLoading(true);
       handleFile(firstFile);
@@ -98,11 +115,13 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
 
     const fileExtension = file?.name ? file?.name?.split('.').pop() : undefined;
     const isVideoExtension = videoExtensions.includes(fileExtension);
+    const isPdfExtension = fileExtension?.toLowerCase().includes('pdf');
 
     setIsVideo(isVideoExtension);
 
     const compressedFile =
       isImage &&
+      !isPdfExtension &&
       !isVideoExtension &&
       !byPassCompression &&
       acceptedFormats.filter((x) => x === fileExtension).length > 0
@@ -143,7 +162,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           }
 
           if (compressedFile?.size > 350000) {
-            setError('The file is too big');
+            setError('The file is too big, upload a file less than 13MB');
             setLoading(false);
             return;
           }
@@ -221,6 +240,12 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
         )}
       </label>
+      {isPdfRule && acceptedFormats?.length === 1 && (
+        <p className="text-textMid mb-2 text-sm">
+          Size limit: <span className="text-errorMain font-semibold">5</span>{' '}
+          MB. Convert the file(s) to a single pdf before uploading.
+        </p>
+      )}
       <label
         className={
           contentUrl && !fileName
@@ -307,10 +332,10 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         )}
       </label>
       {error ? (
-        <p className="text-errorMain pb-4">{`${error}. ${
-          error === 'The file is too big'
-            ? 'Upload a file less than 13MB'
-            : `You can only upload a ${accepetedFormatsFormatted.join(
+        <p className="text-errorMain pb-4">{`${
+          error.toLowerCase().includes('too big')
+            ? error
+            : `${error}. You can only upload a ${accepetedFormatsFormatted.join(
                 ', '
               )} or ${lastAcceptedFormat} file`
         }`}</p>

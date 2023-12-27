@@ -21,6 +21,11 @@ import {
 } from '../../content-management-models';
 import ContentCreate from './components/content-create/content-create';
 import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
+import {
+  ContentManagementTabs,
+  ContentTypes,
+} from '../../../../constants/content-management';
+import { BulkActionStatus } from '../../../../components/ui-table/type';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -50,7 +55,9 @@ export default function ContentList({
   const panel = usePanel();
   const type = contentType.description;
 
-  const [languageId, setLanguageId] = useState<string>();
+  const [languageId, setLanguageId] = useState<string>(
+    '9688cd08-adef-408c-9d34-5d75ae5c44df'
+  );
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 
@@ -225,6 +232,11 @@ export default function ContentList({
       render: (onSubmit: any) => (
         <ContentCreate
           key={`contentPanelCreate`}
+          acceptedFileFormats={
+            selectedTab === ContentManagementTabs.COMMUNITY.id
+              ? ['pdf']
+              : undefined
+          }
           selectedLanguageId={languageId}
           languages={languages}
           contentType={contentType}
@@ -247,6 +259,15 @@ export default function ContentList({
         />
       ),
     });
+  };
+
+  const onBulkActionCallback = (status: BulkActionStatus) => {
+    if (status !== 'success') return;
+
+    refetchContent({
+      localeId: languageId.toString(),
+    });
+    refreshParent();
   };
 
   if (tableData && displayFields) {
@@ -315,11 +336,16 @@ export default function ContentList({
                       ? filterByValue(tableData, searchValue)
                       : tableData
                   }
-                  component={'cms'}
+                  component={
+                    selectedTab === ContentManagementTabs.COMMUNITY.id
+                      ? ContentTypes.COACHING_CIRCLE_TOPICS
+                      : 'cms'
+                  }
                   viewRow={
                     hasPermission(PermissionEnum.update_static) &&
                     viewSelectedRow
                   }
+                  onBulkActionCallback={onBulkActionCallback}
                 />
               </div>
             </div>
