@@ -42,6 +42,7 @@ const statementsSlice = createSlice({
       state.incomeStatements = initialState.incomeStatements;
       state.unSubmittedIncomeItems = initialState.unSubmittedIncomeItems;
       state.unSubmittedExpenseItems = initialState.unSubmittedExpenseItems;
+      state.payTypes = initialState.payTypes;
     },
   },
   extraReducers: (builder) => {
