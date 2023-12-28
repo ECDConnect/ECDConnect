@@ -144,22 +144,22 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             {tableData &&
               tableData.map((item: any) => {
                 const maximumItemsChecked = tableData.filter((x) =>
-                  currentIds.includes(x.id?.toString())
+                  currentIds?.includes(x.id?.toString())
                 );
                 const itemChecked = currentIds?.some(
-                  (x) => x === item.id.toString()
+                  (x) => x === item?.id?.toString()
                 );
                 return (
                   <CheckboxGroup
                     checkboxColor="primary"
-                    id={item.title}
-                    key={item.title}
-                    image={item.imageUrl}
-                    title={item.name}
-                    description={item.description}
+                    id={item?.title}
+                    key={item?.title}
+                    image={item?.imageUrl}
+                    title={item?.name}
+                    description={item?.description}
                     checked={itemChecked}
-                    value={item.title}
-                    onChange={() => selectItem(item.id)}
+                    value={item?.title}
+                    onChange={() => selectItem(item?.id)}
                     className="bg-secondary mb-1 w-full"
                     disabled={maximumItemsChecked?.length === 2 && !itemChecked}
                   />
@@ -186,11 +186,12 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
           }
         />
+        {title === 'C T F35 - theme Days' || title === 'theme Days'}
         <Typography
           type={'body'}
           color={'textMid'}
           text={
-            'You must choose exactly 2 skills from the list below. To change your selection, deselect the skills and choose a new pair.'
+            'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
           }
         />
 
