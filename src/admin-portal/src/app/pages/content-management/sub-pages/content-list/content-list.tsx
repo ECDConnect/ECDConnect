@@ -80,9 +80,11 @@ export default function ContentList({
 
       orderedList.forEach((x) => {
         if (
-          (x.fieldType.dataType === FieldType.Text ||
+          ((x.fieldType.dataType === FieldType.Text ||
             x.fieldType.dataType === FieldType.Link) &&
-          !!x.displayMainTable
+            !!x.displayMainTable) ||
+          x?.displayName === 'CTF45 - Languages' ||
+          x?.displayName === 'Languages'
         )
           displayFields.push(x);
       });
@@ -155,7 +157,6 @@ export default function ContentList({
       if (selectedTab === 1) {
         let clientProfileData = moreInforItems.filter(
           (item: { type: string }) => {
-            console.log({ item });
             return (
               item.type === 'client profile' ||
               item.type === 'Info Page' ||
@@ -346,6 +347,7 @@ export default function ContentList({
                     viewSelectedRow
                   }
                   onBulkActionCallback={onBulkActionCallback}
+                  languages={languages}
                 />
               </div>
             </div>

@@ -22,7 +22,12 @@ import {
   bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
-import { NOTIFICATION, useDialog, useNotifications } from '@ecdlink/core';
+import {
+  LanguageDto,
+  NOTIFICATION,
+  useDialog,
+  useNotifications,
+} from '@ecdlink/core';
 import { ContentTypes } from '../../constants/content-management';
 import { UiTableProps } from './type';
 import AlertModal from '../dialog-alert/dialog-alert';
@@ -37,6 +42,7 @@ export default function UiTable({
   viewRow,
   isLoading,
   onBulkActionCallback,
+  languages,
 }: UiTableProps) {
   const [inviteRows, setInviteRows] = useState<boolean>(false);
   const { setNotification } = useNotifications();
@@ -366,6 +372,27 @@ export default function UiTable({
                 : `${item?.name};`}
             </div>
           ))}
+        </div>
+      );
+    } else if (column.field === 'availableLanguages') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => {
+            const language = languages?.find(
+              (language) => language?.id === item?.id
+            );
+            console.log({ language });
+            return (
+              <div
+                key={item?.id}
+                className={' text-textMid m-1 rounded-full py-1 text-xs'}
+              >
+                {index === display_value?.length - 1
+                  ? `${language?.locale}`
+                  : `${language?.locale};`}
+              </div>
+            );
+          })}
         </div>
       );
     } else if (column.field === 'roles') {

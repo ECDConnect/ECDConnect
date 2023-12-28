@@ -1,3 +1,5 @@
+import { LanguageDto } from '@ecdlink/core';
+
 export type BulkActionStatus = 'success' | 'failed';
 
 export interface UiTableProps {
@@ -13,6 +15,7 @@ export interface UiTableProps {
   component?: any;
   isLoading?: boolean;
   onBulkActionCallback?: (status: BulkActionStatus) => void;
+  languages?: LanguageDto[];
 }
 
 interface Iprop {
