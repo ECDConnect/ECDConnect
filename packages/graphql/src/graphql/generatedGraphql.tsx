@@ -5868,6 +5868,7 @@ export type Mutation = {
   integrationPQASmartSpaceVisitsData: Scalars['Boolean'];
   integrationStatementsData: Scalars['Boolean'];
   integrationUpdates: Scalars['Boolean'];
+  markAsReadNotification: Scalars['Boolean'];
   moveClubMembers: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
@@ -7543,6 +7544,10 @@ export type MutationImportTeamLeadsArgs = {
 
 export type MutationIntegrationByNewCoachArgs = {
   remoteCoachId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationMarkAsReadNotificationArgs = {
+  notificationId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationMoveClubMembersArgs = {
