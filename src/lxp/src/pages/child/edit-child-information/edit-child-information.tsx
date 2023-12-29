@@ -199,17 +199,32 @@ export const EditChildInformation: React.FC = () => {
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
         <ActionModal
-          icon={'ExclamationCircleIcon'}
-          iconColor="alertMain"
+          customIcon={
+            <div className="mt-2 mb-5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                height="40"
+                width="40"
+                viewBox="0 0 512 512"
+              >
+                <path
+                  fill="#FF5C00"
+                  d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm0-384c13.3 0 24 10.7 24 24V264c0 13.3-10.7 24-24 24s-24-10.7-24-24V152c0-13.3 10.7-24 24-24zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"
+                />
+              </svg>
+            </div>
+          }
+          className="bg-white"
           iconBorderColor="alertBg"
           importantText={`Confirm ${childUser?.firstName}'s class change`}
-          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm. Make sure you submit today's attendance before changing the class.`}
+          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm.\n\nMake sure you submit today's attendance before changing the class.`}
           actionButtons={[
             {
               text: 'Yes, confirmed with caregiver',
-              textColour: 'primary',
+
+              textColour: 'white',
               colour: 'primary',
-              type: 'outlined',
+              type: 'filled',
               onClick: () => {
                 openEditField();
                 onSubmit();
@@ -218,9 +233,9 @@ export const EditChildInformation: React.FC = () => {
             },
             {
               text: 'No, do this later',
-              textColour: 'white',
+              textColour: 'primary',
               colour: 'primary',
-              type: 'filled',
+              type: 'outlined',
               onClick: () => {
                 onCancel();
                 history.push(ROUTES.CHILD_PROFILE, { childId });
