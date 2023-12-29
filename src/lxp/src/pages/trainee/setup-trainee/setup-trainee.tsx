@@ -121,8 +121,7 @@ export const SetupTrainee = () => {
             </Card>
           </div>
           <div
-            className="py-5 pt-4"
-            style={{ borderBottom: '2px dashed #5c3ca0' }}
+            className="py-4 pt-4" style={{ borderBottom: '2px dashed #5c3ca0' }}
           >
             <Steps
               items={MOCKED_INCOMPLETE_DATA.steps}
