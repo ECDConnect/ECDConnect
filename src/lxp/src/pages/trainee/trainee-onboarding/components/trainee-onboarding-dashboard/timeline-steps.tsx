@@ -125,7 +125,7 @@ export const setStep = (
             status === 'Sign start-up support agreement' &&
             nextStep === status) ||
           (consolidationMeetingAttended && status === 'Register 3 children')) &&
-        status !== 'Consolidation meeting attended1'
+        status !== 'Consolidation meeting attended'
           ? true
           : false,
       actionButtonText:
