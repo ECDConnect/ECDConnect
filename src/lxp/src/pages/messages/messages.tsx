@@ -14,7 +14,10 @@ import {
 import { IconInformationIndicator } from '../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { MessageCard } from './components/message-card';
 import { notificationTagConfig } from '@/constants/notifications';
-import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import {
+  disableBackendNotification,
+  markAsReadNotification,
+} from '@/store/notifications/notifications.actions';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
@@ -51,6 +54,12 @@ export const Messages: React.FC = () => {
 
   const messageActioned = (notification: Notification) => {
     if (notification.message?.isFromBackend) {
+      appDispatch(
+        markAsReadNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+
       appDispatch(
         disableBackendNotification({
           notificationId: notification?.message?.reference ?? '',
