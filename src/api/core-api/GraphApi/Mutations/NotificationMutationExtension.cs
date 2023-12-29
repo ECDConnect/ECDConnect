@@ -55,6 +55,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return await notificationService.DisableNotification(notificationId);
         }
 
+        public async Task<bool> MarkAsReadNotification([Service] INotificationService notificationService, string notificationId)
+        {
+            return await notificationService.MarkAsReadNotification(notificationId);
+        }
         public async Task<bool> ExpireNotification([Service] INotificationService notificationService, string notificationId)
         {
             return await notificationService.ExpireNotification(notificationId);
