@@ -7565,6 +7565,7 @@ export type MutationOpenAccessAddChildArgs = {
 };
 
 export type MutationPromotePractitionerToPrincipalArgs = {
+  sendComm?: Scalars['Boolean'];
   userId?: InputMaybe<Scalars['String']>;
 };
 
