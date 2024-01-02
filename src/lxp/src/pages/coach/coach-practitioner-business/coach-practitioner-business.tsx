@@ -13,7 +13,7 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { PractitionerBusinessParams } from './coach-practitioner-business.types';
-import { traineeSelectors, traineerReducer } from '@/store/trainee';
+import { traineeSelectors } from '@/store/trainee';
 import { differenceInMonths, format } from 'date-fns';
 import { IncomeStatementDates } from '@/constants/Dates';
 import { IncomeStatements } from './components/statements/income-statements';
@@ -50,12 +50,16 @@ export const CoachPractitionerBusiness = () => {
     practitionerForCoachSelectors.getUnsubmittedExpensesForUser(userId)
   );
 
-  const currentDate = new Date();
+  const currentDate = useMemo(() => new Date(), []);
+
   const hasStartUpSupport =
     timeline?.startUpSupportStartDate !== null &&
     timeline?.startUpSupportEndDate !== null;
 
-  const startUpSupportEndDate = new Date(timeline?.startUpSupportEndDate);
+  const startUpSupportEndDate = useMemo(
+    () => new Date(timeline?.startUpSupportEndDate),
+    [timeline?.startUpSupportEndDate]
+  );
 
   const monthDifference = differenceInMonths(
     currentDate,
@@ -176,7 +180,16 @@ export const CoachPractitionerBusiness = () => {
         listItems={listItems}
       />
     );
-  }, []);
+  }, [
+    currentSubmitMonth,
+    isStartUpSupportEnding,
+    isSubmitWindowOpen,
+    isThisMonthSubmitted,
+    lastStatementsBalance,
+    lossProfitMonths,
+    practitionerFirstName,
+    startUpSupportEndDate,
+  ]);
 
   const updateStatements = useCallback(async () => {
     setIsLoading(true);
@@ -255,7 +268,7 @@ export const CoachPractitionerBusiness = () => {
         );
       }
     }
-  }, []);
+  }, [currentDate, isSubmitWindowOpen, statements]);
 
   useEffect(() => {
     const secondLastStatementMonth = !!statements[statements.length - 2]
