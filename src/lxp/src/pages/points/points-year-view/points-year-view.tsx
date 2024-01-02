@@ -118,8 +118,8 @@ export const PointsYearView: React.FC = () => {
           <CelebrationCard
             image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-            primaryTextColour="errorMain"
-            backgroundColour="errorBg"
+            primaryTextColour="alertMain"
+            backgroundColour="alertBg"
             secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
             secondaryTextColour="black"
           />
