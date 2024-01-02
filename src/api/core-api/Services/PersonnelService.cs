@@ -464,7 +464,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return practitionerToPromote;
         }
 
-        public Practitioner PromotePractitionerToPrincipal(string userId)
+        public Practitioner PromotePractitionerToPrincipal(string userId, bool sendComm = false)
         {
             var practitionerToPromote = _practiRepo.GetByUserId(userId);            
             if (practitionerToPromote!=null)
@@ -480,21 +480,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.PromotePractitionerToPrincipal]", Roles.PRINCIPAL, user.Id, _applicationUserId);
                 var add = _userManager.AddToRoleAsync(user, Roles.PRINCIPAL).Result;
 
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                replacements.Add(new TagsReplacements()
+                if (sendComm)
                 {
-                    FindValue = "PrincipalOrFAA",
-                    ReplacementValue = "Principal"
-                });
-                //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
-                var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "ProgrammeName",
-                    ReplacementValue = classroom.Name
-                });
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
-
+                    List<TagsReplacements> replacements = new List<TagsReplacements>();
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "PrincipalOrFAA",
+                        ReplacementValue = "Principal"
+                    });
+                    //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                    var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "ProgrammeName",
+                        ReplacementValue = classroom.Name
+                    });
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                }
 
             }
             return practitionerToPromote;
