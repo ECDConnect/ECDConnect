@@ -3,3 +3,4 @@ INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","Upd
 	 update "MessageTemplate" set "Subject" = 'You have been added to [[ProgrammeName]]',"NotificationColor" = 'amber'  where "TemplateType" = 'added-to-programme';
 	 update "MessageTemplate" set "Action" = '{"url":"/practitioner/community/welcome"}'  where  "TemplateType" =  'user-added-to-club';	
 	 update "MessageTemplate" set "Action" = '{"url":"/practitioner/programme-information"}'  where  "TemplateType" =  'promoted-to-prinicpal-or-faa';
+	 update "MessageTemplate" set "Action" = '{"url":"/practitioner/community/accept-club-leader-role"}'  where  "TemplateType" =  'clubleader-role-assigned';
