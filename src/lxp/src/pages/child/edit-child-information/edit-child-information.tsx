@@ -31,6 +31,7 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 import {
   caregiverActions,
   caregiverSelectors,
@@ -200,19 +201,7 @@ export const EditChildInformation: React.FC = () => {
       render: (onSubmit, onCancel) => (
         <ActionModal
           customIcon={
-            <div className="mt-2 mb-5">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                height="40"
-                width="40"
-                viewBox="0 0 512 512"
-              >
-                <path
-                  fill="#FF5C00"
-                  d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512zm0-384c13.3 0 24 10.7 24 24V264c0 13.3-10.7 24-24 24s-24-10.7-24-24V152c0-13.3 10.7-24 24-24zM224 352a32 32 0 1 1 64 0 32 32 0 1 1 -64 0z"
-                />
-              </svg>
-            </div>
+            <ExclamationCircleIcon className="text-alertMain h-10 w-10" />
           }
           className="bg-white"
           iconBorderColor="alertBg"

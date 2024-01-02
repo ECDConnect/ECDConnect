@@ -2,6 +2,7 @@ import {
   BannerWrapper,
   Button,
   Card,
+  Divider,
   StepItem,
   Steps,
   Typography,
@@ -120,9 +121,7 @@ export const SetupTrainee = () => {
               </div>
             </Card>
           </div>
-          <div
-            className="py-4 pt-4" style={{ borderBottom: '2px dashed #5c3ca0' }}
-          >
+          <div className="py-4 pt-4">
             <Steps
               items={MOCKED_INCOMPLETE_DATA.steps}
               typeColor={{ completed: 'successMain' }}
@@ -134,7 +133,7 @@ export const SetupTrainee = () => {
               text={`When you a finish a step, a green circle and a tick will appear next to the step.`}
             />
           </div>
-
+          <Divider dividerType="dashed" className="my-4" />
           <div className="py-4 pt-4">
             <Steps
               items={MOCKED_COMPLETE_DATA.steps}
