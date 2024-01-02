@@ -20,6 +20,7 @@ import {
   ContentManagementTabs,
   ContentTypes,
 } from '../../constants/content-management';
+import { LinksShared } from './components/links-shared/links-shared';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -288,7 +289,11 @@ export function ContentManagement() {
           titleIcon: 'PuzzleIcon',
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
-            // TODO: Add handling for connect tab
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
+            );
+            showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
         },
@@ -451,7 +456,7 @@ export function ContentManagement() {
                       {navigation?.find((tab) => tab.id === selectedTab).name}
                       <span className="px-1 text-gray-400">
                         {' '}
-                        / {selectedType?.name}
+                        / {selectedType?.description}
                       </span>
                     </button>
                   </div>
@@ -461,6 +466,7 @@ export function ContentManagement() {
                   style={{ minHeight: '36rem' }}
                 >
                   {selectedType &&
+                    selectedType.name !== ContentTypes.CONNECT &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ContentList
@@ -474,6 +480,9 @@ export function ContentManagement() {
                         searchValue={searchValue}
                       ></ContentList>
                     )}
+                  {/* TODO: Replace it with dynamic validation (example: selectedType.type === 'linkGroup') */}
+                  {selectedType?.name === ContentTypes.CONNECT &&
+                    !specialType && <LinksShared contentType={selectedType} />}
                   {!!subTabs?.length && !!specialType && (
                     <div className="flex">
                       <StackedList
