@@ -5,7 +5,7 @@ import { Step1 } from './steps/step-1';
 import { Step2 } from './steps/step-2';
 import { Step3 } from './steps/step-3';
 import { Step1Props, Step2Props, Step3Props } from './index.types';
-import { useDialog, useSnackbar } from '@ecdlink/core';
+import { getAvatarColor, useDialog, useSnackbar } from '@ecdlink/core';
 import { AddCollageDialog } from '../../0-components/add-collage';
 import { ClubMeetingInput } from '@/services/ClubService/types';
 import { useSelector } from 'react-redux';
@@ -16,6 +16,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ClubActions } from '@/store/club/club.actions';
 import { OfflineModal } from '../../0-components/offline-modal';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import { ListDataItem } from '@/pages/calendar/components/calendar.types';
 
 export const AddMeeting: React.FC = () => {
   const [step1, setStep1] = useState<Step1Props>();
@@ -50,6 +51,42 @@ export const AddMeeting: React.FC = () => {
 
   const isScheduleInCalendar = step1?.hasMeetingHappened === false;
   const isNext = !isLastStep && !isScheduleInCalendar;
+
+  const guests = useMemo(
+    (): ListDataItem[] =>
+      club?.clubMembers?.map((member) => ({
+        id: member.userId,
+        profileDataUrl: member.profileImageUrl,
+        title: `${member.firstName ?? ''} ${member.surname ?? ''}`,
+        alertSeverity: 'none',
+        avatarColor: getAvatarColor() || '',
+        hideAlertSeverity: true,
+        extraData: {
+          userId: member.userId,
+          firstName: member.firstName,
+          surname: member.surname,
+          isClub: true,
+        },
+      })) ?? [],
+    [club?.clubMembers]
+  );
+
+  const coachGuest = {
+    id: club?.clubCoach?.userId,
+    profileDataUrl: club?.clubCoach?.profileImageUrl,
+    title: `${club?.clubCoach?.firstName ?? ''} ${
+      club?.clubCoach?.surname ?? ''
+    }`,
+    alertSeverity: 'none',
+    avatarColor: getAvatarColor() || '',
+    hideAlertSeverity: true,
+    extraData: {
+      userId: club?.clubCoach?.userId,
+      firstName: club?.clubCoach?.firstName,
+      surname: club?.clubCoach?.surname,
+      isClub: true,
+    },
+  } as ListDataItem;
 
   const onAddCollage = () => {
     if (!step3?.createdResource) return;
@@ -124,7 +161,9 @@ export const AddMeeting: React.FC = () => {
       const end = formattedDate.toISOString();
 
       addCalendarEvent({
+        guests: [coachGuest, ...guests],
         event: {
+          eventTypeDisabled: true,
           eventType: 'Club Monthly Meeting',
           start,
           end,
