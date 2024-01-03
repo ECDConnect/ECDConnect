@@ -1,10 +1,19 @@
 import { Button, FormInput, Typography } from '@ecdlink/ui';
-import { FormEvent, useEffect, useState } from 'react';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { LinkPerSection, LinksSharedProps } from './links-shared.types';
-import { gql, useQuery } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import { LanguageId } from '../../../../constants/language';
+import {
+  CmsConnectItemModelInput,
+  CmsConnectModelInput,
+  ConnectItem,
+} from '@ecdlink/graphql';
+import ContentLoader from '../../../../components/content-loader/content-loader';
 
-export const LinksShared = ({ contentType }: LinksSharedProps) => {
+export const LinksShared = ({
+  contentType,
+  subContentType,
+}: LinksSharedProps) => {
   const [linksPerSectionData, setLinksPerSectionData] = useState<
     LinkPerSection[]
   >([]);
@@ -12,8 +21,27 @@ export const LinksShared = ({ contentType }: LinksSharedProps) => {
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
 
   const getAllCall = `GetAll${contentType.name}`;
+  const subGetAllCall = `GetAll${subContentType.name}`;
 
-  const fields = contentType.fields?.map((field) => field.fieldName) ?? [];
+  const fields =
+    contentType.fields?.map((field) => {
+      return field.fieldName;
+    }) ?? [];
+
+  const subFields =
+    subContentType.fields?.map((field) => {
+      if (field.fieldName === 'linkedConnect') {
+        return `${field.fieldName} {
+        id
+      }`;
+      }
+
+      return field.fieldName;
+    }) ?? [];
+
+  const hint = contentType?.content?.[0]?.contentValues?.find(
+    (item) => item?.contentTypeField?.fieldName === 'hint'
+  )?.value;
 
   const query = gql` 
     query ${getAllCall} ($localeId: String) {
@@ -24,37 +52,85 @@ export const LinksShared = ({ contentType }: LinksSharedProps) => {
       }
   `;
 
-  const {
-    data: contentData,
-    // refetch: refetchContent,
-    // loading: loadingContent,
-  } = useQuery(query, {
+  const subQuery = gql` 
+    query ${subGetAllCall} ($localeId: String) {
+      ${subGetAllCall} (localeId: $localeId) {
+        id
+        ${subFields.join('\n')}
+        }
+      }
+  `;
+
+  const createMutation = gql`
+    mutation UpdateConnectSection(
+      $input: [CMSConnectModelInput]
+      $localeId: String
+    ) {
+      updateConnectSection(input: $input, localeId: $localeId)
+    }
+  `;
+
+  const { data: sectionsData, loading: loadingSections } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: LanguageId.enZa,
     },
   });
 
-  console.log({ contentData, query });
+  const {
+    data: sectionsLinksData,
+    refetch: refetchSectionsLinks,
+    loading: loadingSectionsLinks,
+  } = useQuery(subQuery, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      localeId: LanguageId.enZa,
+    },
+  });
 
-  // TODO: sectionsQuantity
-  const sectionsQuantity = 2;
-  // TODO: linksQuantity
+  const [createContent, { loading }] = useMutation(createMutation);
+
+  const sectionsQuantity = contentType?.content?.length ?? 1;
+  // TODO: define this dynamically
   const linksQuantity = 10;
 
-  const setInitialState = () => {
-    const linksPerSectionData = new Array(sectionsQuantity)
-      .fill(0)
-      .map((_, index) => ({
-        section: '',
-        links: new Array(linksQuantity).fill(0).map((_, index) => ({
-          text: '',
-          link: '',
-        })),
-      }));
+  const setInitialState = useCallback(() => {
+    const linksPerSectionData = new Array(sectionsQuantity).fill(0).map(() => ({
+      section: '',
+      links: new Array(linksQuantity).fill(0).map(() => ({
+        text: '',
+        link: '',
+      })),
+    }));
+
+    const currentSections = sectionsData?.[getAllCall] ?? [];
+
+    linksPerSectionData.forEach((sectionData, sectionIndex) => {
+      sectionData.section =
+        currentSections[sectionIndex]?.[
+          contentType.fields?.[0]?.fieldName ?? ''
+        ] ?? '';
+
+      const links = sectionsLinksData?.[subGetAllCall]?.filter(
+        (item: ConnectItem) =>
+          item?.linkedConnect?.[0]?.id === currentSections[sectionIndex]?.id
+      ) as ConnectItem[];
+
+      sectionData.links.forEach((link, index) => {
+        link.text = links[index]?.buttonText ?? '';
+        link.link = links[index]?.link ?? '';
+      });
+    });
 
     setLinksPerSectionData(linksPerSectionData);
-  };
+  }, [
+    sectionsData,
+    contentType.fields,
+    getAllCall,
+    sectionsQuantity,
+    sectionsLinksData,
+    subGetAllCall,
+  ]);
 
   const onChangeSectionTitle =
     (sectionIndex: number) =>
@@ -103,7 +179,31 @@ export const LinksShared = ({ contentType }: LinksSharedProps) => {
     return hasEmptyField;
   };
 
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const onFormatPayload = () => {
+    const payload: CmsConnectModelInput[] = contentType?.content?.map(
+      (data, index) => ({
+        contentTypeId: Number(contentType.id),
+        contentId: Number(data.id),
+        name: linksPerSectionData?.[index].section,
+        links: linksPerSectionData?.[index].links
+          .filter((link) => link.text && link.link)
+          .map(
+            (link) =>
+              ({
+                buttonText: link.text,
+                link: link.link,
+                contentId: -1,
+                linkedConnect: -1,
+                contentTypeId: Number(contentType.id),
+              } as CmsConnectItemModelInput)
+          ),
+      })
+    );
+
+    return payload;
+  };
+
+  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event?.preventDefault();
 
     setIsSubmitButtonClicked(true);
@@ -118,24 +218,26 @@ export const LinksShared = ({ contentType }: LinksSharedProps) => {
 
     if (hasEmptyField) return;
 
-    // TODO: call api
-    console.log({ payload: linksPerSectionData });
+    await createContent({
+      variables: {
+        input: onFormatPayload(),
+        localeId: LanguageId.enZa,
+      },
+    }).then(() => {
+      refetchSectionsLinks();
+    });
   };
 
   useEffect(() => {
     setInitialState();
-  }, []);
+  }, [setInitialState]);
+
+  if (loadingSections || loadingSectionsLinks) return <ContentLoader />;
 
   return (
     <form onSubmit={onSubmit}>
       <Typography type="h1" color="textDark" text={contentType.description} />
-      <Typography
-        type="h4"
-        color="textMid"
-        // TODO: hint
-        text="Links & resources for practitioners"
-        className="mb-11"
-      />
+      <Typography type="h4" color="textMid" text={hint} className="mb-11" />
       {new Array(sectionsQuantity).fill(0).map((_, sectionIndex) => (
         <div key={sectionIndex} className="mb-11">
           <Typography
@@ -164,7 +266,10 @@ export const LinksShared = ({ contentType }: LinksSharedProps) => {
               })}
           />
           {new Array(linksQuantity).fill(0).map((_, index) => (
-            <div className="mb-4 flex w-full flex-col gap-4 md:flex-row">
+            <div
+              className="mb-4 flex w-full flex-col gap-4 md:flex-row"
+              key={index}
+            >
               <FormInput
                 name={`buttonText_${index}`}
                 className="w-full"
@@ -214,6 +319,8 @@ export const LinksShared = ({ contentType }: LinksSharedProps) => {
         </div>
       ))}
       <Button
+        disabled={loading}
+        isLoading={loading}
         buttonType="submit"
         type="filled"
         color="secondary"

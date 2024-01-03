@@ -12,4 +12,5 @@ export interface LinkPerSection {
 
 export interface LinksSharedProps {
   contentType: ContentTypeDto;
+  subContentType: ContentTypeDto;
 }
