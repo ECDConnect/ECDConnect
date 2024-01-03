@@ -1478,7 +1478,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Fetch all children for principal
             var practitionerChildrenUserIds = _childRepo.GetAll()
-                .Where(x => x.User.IsActive && x.Hierarchy.StartsWith(practitioner.Hierarchy))
+                .Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy))
                 .Select(x => x.UserId)
                 .ToList();
 
