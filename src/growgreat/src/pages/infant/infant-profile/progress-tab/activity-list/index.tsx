@@ -258,15 +258,9 @@ export const ActivityList: React.FC = () => {
 
   const isChildBefore49Days = useMemo(() => ageDays <= 49, [ageDays]);
 
-  const isNewBornCare = useMemo(
-    () => isFirstVisit && ageDays <= 28,
-    [ageDays, isFirstVisit]
-  );
+  const isNewBornCare = useMemo(() => ageDays <= 28, [ageDays]);
 
-  const isKangarooMotherCare = useMemo(
-    () => isFirstVisit && ageDays <= 49,
-    [ageDays, isFirstVisit]
-  );
+  const isKangarooMotherCare = useMemo(() => ageDays <= 49, [ageDays]);
 
   const isDevelopmentalScreening = useMemo(
     () =>
