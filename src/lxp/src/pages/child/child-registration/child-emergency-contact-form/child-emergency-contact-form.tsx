@@ -60,7 +60,7 @@ export const ChildEmergencyContactForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg px-4 pt-2 pb-4'}>
+    <div className={'bg-white px-4 pt-2 pb-4'}>
       <Typography
         type={'h1'}
         text={'Person to contact in an emergency'}
