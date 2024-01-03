@@ -109,7 +109,7 @@ export const setStep = (
       completedStepIcon: status === 'Community support gained' && 'ThumbUpIcon',
       type:
         status === 'Consolidation meeting attended'
-          ? 'inProgress'
+          ? 'completed'
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:

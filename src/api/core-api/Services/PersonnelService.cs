@@ -36,6 +36,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 {
@@ -712,16 +713,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             foreach (Visit visit in pqaVisits)
             {
+                var visitData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString());
                 var pqaRating = pqaRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating(); // New PQA rating is just temp, since the DB is missing entries for old PQAs
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
+                visit.HasAnswerData = visitData.Count > 0;
+                visit.DelicenseQuestionAnswered = visitData.Any(x => x.Question == SSSettings.step16_q1 && x.QuestionAnswer == "true");
             }
 
             foreach (Visit visit in reaccreditationVisits)
             {
+                var visitData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString());
                 var pqaRating = accreditationRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating();
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
+                visit.HasAnswerData = visitData.Count > 0;
+                visit.DelicenseQuestionAnswered = visitData.Any(x => x.Question == SSSettings.step16_q1 && x.QuestionAnswer == "true");
             }
 
             foreach (Visit visit in prePqaVisits)

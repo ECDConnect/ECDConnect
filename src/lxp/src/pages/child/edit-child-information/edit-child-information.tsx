@@ -31,6 +31,7 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 import {
   caregiverActions,
   caregiverSelectors,
@@ -199,17 +200,20 @@ export const EditChildInformation: React.FC = () => {
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
         <ActionModal
-          icon={'ExclamationCircleIcon'}
-          iconColor="alertMain"
+          customIcon={
+            <ExclamationCircleIcon className="text-alertMain h-10 w-10" />
+          }
+          className="bg-white"
           iconBorderColor="alertBg"
           importantText={`Confirm ${childUser?.firstName}'s class change`}
-          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm. Make sure you submit today's attendance before changing the class.`}
+          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm.\n\nMake sure you submit today's attendance before changing the class.`}
           actionButtons={[
             {
               text: 'Yes, confirmed with caregiver',
-              textColour: 'primary',
+
+              textColour: 'white',
               colour: 'primary',
-              type: 'outlined',
+              type: 'filled',
               onClick: () => {
                 openEditField();
                 onSubmit();
@@ -218,9 +222,9 @@ export const EditChildInformation: React.FC = () => {
             },
             {
               text: 'No, do this later',
-              textColour: 'white',
+              textColour: 'primary',
               colour: 'primary',
-              type: 'filled',
+              type: 'outlined',
               onClick: () => {
                 onCancel();
                 history.push(ROUTES.CHILD_PROFILE, { childId });

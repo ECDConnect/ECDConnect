@@ -303,6 +303,7 @@ class PQAService {
             pQASiteVisits {
               id
               hasAnswerData
+              delicenseQuestionAnswered
               plannedVisitDate
               attended
               comment
@@ -321,6 +322,7 @@ class PQAService {
             reAccreditationVisits {
               id
               hasAnswerData
+              delicenseQuestionAnswered
               plannedVisitDate
               attended
               comment

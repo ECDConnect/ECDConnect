@@ -44,6 +44,7 @@ import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
+  removeReasonId,
   onSuccess,
 }) => {
   const appDispatch = useAppDispatch();
@@ -108,7 +109,12 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   } = useForm<RemovePractionerModel>({
     resolver: yupResolver(removePractionerModelSchema),
     mode: 'onChange',
-    defaultValues: initialRemovePractionerValues,
+    defaultValues: !removeReasonId
+      ? initialRemovePractionerValues
+      : {
+          ...initialRemovePractionerValues,
+          removeReasonId,
+        },
   });
 
   const { isValid, errors } = useFormState({
