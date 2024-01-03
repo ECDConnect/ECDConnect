@@ -714,6 +714,23 @@ export type BulkInvitationResult = {
   success?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
+export type CmsConnectItemModelInput = {
+  buttonText?: InputMaybe<Scalars['String']>;
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  link?: InputMaybe<Scalars['String']>;
+  linkedConnect: Scalars['Int'];
+};
+
+export type CmsConnectModelInput = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  hint?: InputMaybe<Scalars['String']>;
+  links?: InputMaybe<Array<InputMaybe<CmsConnectItemModelInput>>>;
+  name?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+};
+
 export type CmsQuestionInput = {
   answer?: InputMaybe<Scalars['String']>;
   question?: InputMaybe<Scalars['String']>;
@@ -2886,12 +2903,16 @@ export type ComparableNullableOfInt32OperationFilterInput = {
 
 export type Connect = {
   __typename?: 'Connect';
+  hint?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   name?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
 };
 
 export type ConnectInput = {
+  hint?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
 };
 
 export type ConnectItem = {
@@ -6011,6 +6032,7 @@ export type Mutation = {
   updateCommunitySupport?: Maybe<Trainee>;
   updateConnect?: Maybe<Connect>;
   updateConnectItem?: Maybe<ConnectItem>;
+  updateConnectSection: Scalars['Boolean'];
   updateConsent?: Maybe<Consent>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
   updateDocument?: Maybe<Document>;
@@ -8292,6 +8314,11 @@ export type MutationUpdateConnectItemArgs = {
   id: Scalars['String'];
   input: ConnectItemInput;
   locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateConnectSectionArgs = {
+  input?: InputMaybe<Array<InputMaybe<CmsConnectModelInput>>>;
   localeId?: InputMaybe<Scalars['String']>;
 };
 

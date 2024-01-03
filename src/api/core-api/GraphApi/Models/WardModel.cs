@@ -1,7 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities;
-using System;
-
-namespace EcdLink.Api.CoreApi.GraphApi.Models
+﻿namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class WardModel
     {
