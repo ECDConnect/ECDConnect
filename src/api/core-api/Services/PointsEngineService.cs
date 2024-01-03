@@ -1619,13 +1619,17 @@ namespace EcdLink.Api.CoreApi.Services
                 : usersByYear[0].PointsTotal == usersByYear[1].PointsTotal && usersByYear[0].PointsTotal == usersByYear[userYearPosition].PointsTotal;
 
 
-            var standingForCurrentMonth = usersByMonth[userMonthPosition].PointsTotal == 0 
+            var standingForCurrentMonth = usersByMonth.Count() == 0 || userMonthPosition < 0 
                 ? 0
-                : isUserTiedFirstThisMonth
-                    ? 99
-                    : (totalMembers - userMonthPosition) * 100 / totalMembers;
+                    : usersByMonth[userMonthPosition].PointsTotal == 0 
+                    ? 0
+                        : isUserTiedFirstThisMonth
+                        ? 99
+                        : (totalMembers - userMonthPosition) * 100 / totalMembers;
 
-            var standingForCurrentYear = usersByYear[userYearPosition].PointsTotal == 0
+            var standingForCurrentYear = usersByYear.Count() == 0 || userYearPosition < 0
+                ? 0
+                : usersByYear[userYearPosition].PointsTotal == 0
                 ? 0 
                 : isUserTiedFirstThisYear
                     ? 99
