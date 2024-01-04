@@ -974,7 +974,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                         }
                                     }
                                     //pull pqa data for this franchisee
-                                    await PullPQAData(franchisee.Guid);
+                                    //await PullPQAData(franchisee.Guid);
                                 }
                                 catch (Exception e)
                                 {
