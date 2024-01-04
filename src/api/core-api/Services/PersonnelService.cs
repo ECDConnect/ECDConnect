@@ -36,6 +36,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using static EcdLink.Api.CoreApi.Constants;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 {
@@ -464,7 +465,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return practitionerToPromote;
         }
 
-        public Practitioner PromotePractitionerToPrincipal(string userId)
+        public Practitioner PromotePractitionerToPrincipal(string userId, bool sendComm = false)
         {
             var practitionerToPromote = _practiRepo.GetByUserId(userId);            
             if (practitionerToPromote!=null)
@@ -480,21 +481,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _logger.LogInformation("Roles: Add {0} to user {1} by {2} [PersonnelService.PromotePractitionerToPrincipal]", Roles.PRINCIPAL, user.Id, _applicationUserId);
                 var add = _userManager.AddToRoleAsync(user, Roles.PRINCIPAL).Result;
 
-                List<TagsReplacements> replacements = new List<TagsReplacements>();
-                replacements.Add(new TagsReplacements()
+                if (sendComm)
                 {
-                    FindValue = "PrincipalOrFAA",
-                    ReplacementValue = "Principal"
-                });
-                //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
-                var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
-                replacements.Add(new TagsReplacements()
-                {
-                    FindValue = "ProgrammeName",
-                    ReplacementValue = classroom.Name
-                });
-                _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
-
+                    List<TagsReplacements> replacements = new List<TagsReplacements>();
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "PrincipalOrFAA",
+                        ReplacementValue = "Principal"
+                    });
+                    //var classroom = GetClassroomDetailsForPractitioner(practitionerToPromote.UserId);
+                    var classroom = _classRepo.GetByUserId(practitionerToPromote.UserId);
+                    replacements.Add(new TagsReplacements()
+                    {
+                        FindValue = "ProgrammeName",
+                        ReplacementValue = classroom.Name
+                    });
+                    _notificationService.SendNotificationAsync(null, TemplateTypeConstants.PromotedToPrincipalOrFAA, DateTime.Now, practitionerToPromote.User, null, MessageStatusConstants.Green, replacements, DateTime.Now.AddDays(7));
+                }
 
             }
             return practitionerToPromote;
@@ -710,16 +713,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             foreach (Visit visit in pqaVisits)
             {
+                var visitData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString());
                 var pqaRating = pqaRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating(); // New PQA rating is just temp, since the DB is missing entries for old PQAs
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
+                visit.HasAnswerData = visitData.Count > 0;
+                visit.DelicenseQuestionAnswered = visitData.Any(x => x.Question == SSSettings.step16_q1 && x.QuestionAnswer == "true");
             }
 
             foreach (Visit visit in reaccreditationVisits)
             {
+                var visitData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString());
                 var pqaRating = accreditationRatings.FirstOrDefault(x => x.VisitId == visit.Id) ?? new PQARating();
                 visit.OverallRatingColor = pqaRating.OverallRatingColor;
-                visit.HasAnswerData = _visitDataManager.GetVisitDataForVisitId(visit.Id.ToString()).Count > 0;
+                visit.HasAnswerData = visitData.Count > 0;
+                visit.DelicenseQuestionAnswered = visitData.Any(x => x.Question == SSSettings.step16_q1 && x.QuestionAnswer == "true");
             }
 
             foreach (Visit visit in prePqaVisits)

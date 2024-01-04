@@ -254,3 +254,28 @@ export function getInfantNearestPreviousVisitByOrderDate(
 
   return nearestDateObject;
 }
+
+export const getInfantLastVisitSelector = (
+  state: RootState,
+  visitId?: string
+): VisitDto | undefined => {
+  const visits = state.infants.visits || [];
+  const lastAttended = visits?.filter((item) => item.attended) || [];
+
+  if (visitId && visitId !== '') {
+    const visits = state.infants.visits || [];
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) {
+        return visits[i];
+      }
+    }
+  } else {
+    return lastAttended.length
+      ? lastAttended.reduce((prev, curr) =>
+          (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+            ? prev
+            : curr
+        )
+      : undefined;
+  }
+};

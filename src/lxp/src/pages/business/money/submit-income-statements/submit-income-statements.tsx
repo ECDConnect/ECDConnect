@@ -63,10 +63,17 @@ export const SubmitIncomeStatements: React.FC = () => {
     [statements]
   );
 
-  const isLastMonthSubmitted = useMemo<boolean>(
-    () => !!statements?.find((x) => x.month === new Date().getMonth()),
-    [statements]
-  );
+  const isLastMonthSubmitted = useMemo(() => {
+    var currentMonth = new Date().getMonth();
+
+    if (currentMonth === 0) {
+      return !!statements?.find(
+        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
+      );
+    }
+
+    return !!statements?.find((x) => x.month === currentMonth);
+  }, [statements]);
 
   const [daysUntilFinalSubmission, setDaysUntilFinalSubmission] =
     useState<number>(0);

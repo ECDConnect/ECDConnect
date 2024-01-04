@@ -1478,7 +1478,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             // Fetch all children for principal
             var practitionerChildrenUserIds = _childRepo.GetAll()
-                .Where(x => x.User.IsActive && x.Hierarchy.StartsWith(practitioner.Hierarchy))
+                .Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy))
                 .Select(x => x.UserId)
                 .ToList();
 
@@ -1573,7 +1573,7 @@ namespace EcdLink.Api.CoreApi.Services
         public UserClubStandingModel GetUserClubStanding(string userId)
         {
             var practitionerId = _practitionerRepo.GetByUserId(userId).Id;
-            ClubMember clubMember = _clubMemberRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).FirstOrDefault();
+            var clubMember = _clubMemberRepo.GetAll().Where(x => x.IsActive && x.PractitionerId == practitionerId).FirstOrDefault();
 
             if (clubMember == null)
             {
@@ -1583,12 +1583,13 @@ namespace EcdLink.Api.CoreApi.Services
             var clubUserIds = _clubMemberRepo.GetAll()
                 .Include(x => x.Practitioner)
                 .Where(x => x.ClubId == clubMember.ClubId)
-                .Select(x => x.Practitioner.UserId).ToList();
+                .Select(x => x.Practitioner.UserId)
+                .ToList();
 
             var usersPoints = _pointsUserSummaryRepo.GetAll()
-                .Where(x => clubUserIds.Contains(x.UserId))
+                .Where(x => clubUserIds.Contains(x.UserId) && x.Year == DateTime.Now.Year)
                 .GroupBy(x => x.UserId)
-                .Select(x => new { UserId = x.First().UserId, PointsSummaries = x.Select(y => new { y.Month, y.PointsTotal }) })
+                .Select(x => new { x.First().UserId, PointsSummaries = x.Select(y => new { y.Month, y.PointsTotal }) })
                 .ToList();
 
             var usersByMonth = usersPoints
@@ -1611,18 +1612,26 @@ namespace EcdLink.Api.CoreApi.Services
             // Check for first place tie
             var isUserTiedFirstThisMonth = usersByMonth.Count() < 2
                 ? false
-                : usersByMonth[0] == usersByMonth[1] && usersByMonth[0].PointsTotal == usersByMonth[userMonthPosition].PointsTotal;
+                : usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal && usersByMonth[0].PointsTotal == usersByMonth[userMonthPosition].PointsTotal;
 
             var isUserTiedFirstThisYear = usersByYear.Count() < 2
                 ? false
-                : usersByYear[0] == usersByYear[1] && usersByYear[0].PointsTotal == usersByYear[userYearPosition].PointsTotal;
+                : usersByYear[0].PointsTotal == usersByYear[1].PointsTotal && usersByYear[0].PointsTotal == usersByYear[userYearPosition].PointsTotal;
 
 
-            var standingForCurrentMonth = isUserTiedFirstThisMonth
-                    ? 99
-                    : (totalMembers - userMonthPosition) * 100 / totalMembers;
+            var standingForCurrentMonth = usersByMonth.Count() == 0 || userMonthPosition < 0 
+                ? 0
+                    : usersByMonth[userMonthPosition].PointsTotal == 0 
+                    ? 0
+                        : isUserTiedFirstThisMonth
+                        ? 99
+                        : (totalMembers - userMonthPosition) * 100 / totalMembers;
 
-            var standingForCurrentYear = isUserTiedFirstThisYear
+            var standingForCurrentYear = usersByYear.Count() == 0 || userYearPosition < 0
+                ? 0
+                : usersByYear[userYearPosition].PointsTotal == 0
+                ? 0 
+                : isUserTiedFirstThisYear
                     ? 99
                     : (totalMembers - userYearPosition) * 100 / totalMembers;
 
