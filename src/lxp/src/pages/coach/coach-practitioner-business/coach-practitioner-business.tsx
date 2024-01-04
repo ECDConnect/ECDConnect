@@ -143,7 +143,7 @@ export const CoachPractitionerBusiness = () => {
       });
     }
 
-    if (lastStatementsBalance !== 0) {
+    if (statements.length >= 2 && lastStatementsBalance !== 0) {
       listItems.push({
         title:
           lastStatementsBalance > 0
@@ -189,6 +189,7 @@ export const CoachPractitionerBusiness = () => {
     lossProfitMonths,
     practitionerFirstName,
     startUpSupportEndDate,
+    statements.length,
   ]);
 
   const updateStatements = useCallback(async () => {
@@ -289,6 +290,18 @@ export const CoachPractitionerBusiness = () => {
     );
   }, [statements, setLossProfitMonths, setCurrentSubmitMonth]);
 
+  const isLastMonthSubmitted = useMemo(() => {
+    var currentMonth = new Date().getMonth();
+
+    if (currentMonth === 0) {
+      return !!statements?.find(
+        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
+      );
+    }
+
+    return !!statements?.find((x) => x.month === currentMonth);
+  }, [statements]);
+
   return (
     <>
       <BannerWrapper
@@ -298,7 +311,9 @@ export const CoachPractitionerBusiness = () => {
         title="SmartStarter business"
         subTitle={`${practitionerFullname}`}
         onBack={() =>
-          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, { userId })
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+            practitionerId: userId,
+          })
         }
         className="p-4"
       >
@@ -320,6 +335,7 @@ export const CoachPractitionerBusiness = () => {
             unsubmittedExpenses={unsubmittedExpenses}
             isSubmitWindowOpen={isSubmitWindowOpen}
             isThisMonthSubmitted={isThisMonthSubmitted}
+            isLastMonthSubmitted={isLastMonthSubmitted}
           />
         ) : (
           <div className="h-full px-4 py-2 pt-7">

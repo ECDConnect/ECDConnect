@@ -274,7 +274,8 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const submitStatementPoints = useSelector(
     pointsSelectors.getPointsSummariesForActivity(
-      SmartStartPointsLibrary.SUBMIT_STATEMENTS
+      SmartStartPointsLibrary.SUBMIT_STATEMENTS,
+      13 // Need to get last 13 months, in case we are in the next month but still the submit window
     )
   );
   const submitPreschoolFeesPoints = useSelector(
@@ -319,7 +320,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
     if (
       currentDate.getDate() >= IncomeStatementDates.SubmitStartDay &&
-      isThisMonthSubmitted
+      !isThisMonthSubmitted
     ) {
       return <></>;
     }
@@ -400,7 +401,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     const consecutiveBonusMessage = ' You earned 25 bonus points.';
 
     // Improved messaging and colours for 12+ months submitted in a row
-    if (submittedMonthsInARow >= 12) {
+    if (submittedMonthsInARow === 12) {
       return (
         <CelebrationCard
           image={<EmojiYellowBigSmile className="mr-2 h-16 w-16" />}
@@ -457,7 +458,7 @@ export const SubmitIncomeStatements: React.FC = () => {
         backgroundColour="successBg"
         onDismiss={onDismissCelebration}
         secondaryMessage={
-          monthsSinceConsecutiveBonus >= 2
+          monthsSinceConsecutiveBonus === 2
             ? `Submit you next statement to earn ${submitStatementConsecutivePointLibrary?.points} bonus points.`
             : ''
         }

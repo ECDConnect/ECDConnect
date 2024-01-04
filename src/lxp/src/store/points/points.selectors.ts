@@ -88,7 +88,10 @@ export const getPointsLibraryById = (id: string) =>
   );
 
 // Returns the last 12 months of summaries for a specific activity
-export const getPointsSummariesForActivity = (id: string) =>
+export const getPointsSummariesForActivity = (
+  id: string,
+  numberOfMonths: number = 12
+) =>
   createSelector(
     (state: RootState) => state.points.pointsSummary,
     (state: RootState) => state.points.pointsLibrary,
@@ -106,7 +109,7 @@ export const getPointsSummariesForActivity = (id: string) =>
       }
 
       let currentDate = new Date();
-      for (let i = 0; i < 12; i++) {
+      for (let i = 0; i < numberOfMonths; i++) {
         const month = currentDate.getMonth() + 1; // 0 indexing
         const year = currentDate.getFullYear();
 

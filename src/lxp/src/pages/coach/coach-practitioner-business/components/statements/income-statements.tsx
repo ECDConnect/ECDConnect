@@ -1,9 +1,8 @@
 import ROUTES from '@/routes/routes';
 import { numberWithSpaces } from '@/utils/statements/statements-utils';
 import { Typography, Button, Card } from '@ecdlink/ui';
-import { differenceInDays, format } from 'date-fns';
-import React, { useEffect, useMemo, useState } from 'react';
-import { useSelector } from 'react-redux';
+import { format } from 'date-fns';
+import React, { useEffect, useMemo } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
 import { useAppContext } from '@/walkthrougContext';
@@ -18,10 +17,6 @@ import {
 } from '@ecdlink/core';
 import { IncomeStatementDates } from '@/constants/Dates';
 import { PractitionerBusinessParams } from '../../coach-practitioner-business.types';
-import {
-  practitionerForCoachActions,
-  practitionerForCoachSelectors,
-} from '@/store/practitionerForCoach';
 
 interface IncomeStatementProps {
   statements: IncomeStatementDto[];
@@ -29,6 +24,7 @@ interface IncomeStatementProps {
   unsubmittedExpenses: ExpenseItemDto[];
   isSubmitWindowOpen: boolean;
   isThisMonthSubmitted: boolean;
+  isLastMonthSubmitted: boolean;
 }
 
 export const IncomeStatements: React.FC<IncomeStatementProps> = ({
@@ -37,6 +33,7 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
   unsubmittedExpenses,
   isSubmitWindowOpen,
   isThisMonthSubmitted,
+  isLastMonthSubmitted,
 }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
@@ -65,9 +62,20 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
     ? lastMonthStatement.balance
     : 0;
 
-  const currentMonthRecord = isThisMonthSubmitted
-    ? format(getNextMonth(new Date()), 'MMM yyyy')
-    : format(new Date(), 'MMM yyyy');
+  const currentMonthRecord = useMemo(() => {
+    var date = new Date();
+    if (isThisMonthSubmitted) {
+      return format(getNextMonth(date), 'MMM yyyy');
+    }
+    if (
+      !isLastMonthSubmitted &&
+      date.getDate() <= IncomeStatementDates.SubmitEndDay
+    ) {
+      return format(getPreviousMonth(date), 'MMM yyyy');
+    }
+
+    return format(date, 'MMM yyyy');
+  }, [isThisMonthSubmitted, isLastMonthSubmitted]);
 
   const currentMonthTotalIncome = unsubmittedIncome.reduce((total, item) => {
     return total + item.amount;
@@ -224,7 +232,11 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
                         Number(previousMonthTotalBalance)
                       )}
                       type="body"
-                      color={'successMain'}
+                      color={
+                        Number(previousMonthTotalBalance!) >= 0
+                          ? 'successMain'
+                          : 'errorMain'
+                      }
                       align={'center'}
                     />
                   </td>
@@ -254,14 +266,11 @@ export const IncomeStatements: React.FC<IncomeStatementProps> = ({
     currentMonthTotalBalance,
     currentMonthTotalExpenses,
     currentMonthTotalIncome,
-    history,
     isOnline,
     previousMonthRecord,
     previousMonthTotalBalance,
     previousMonthTotalExpenses,
     previousMonthTotalIncome,
-    isThisMonthSubmitted,
-    isSubmitWindowOpen,
   ]);
 
   return (
