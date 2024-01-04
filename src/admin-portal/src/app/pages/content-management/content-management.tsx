@@ -453,6 +453,8 @@ export function ContentManagement() {
                   <div className="justify-self col-end-3 pb-2">
                     <button
                       onClick={() => {
+                        if (selectedType?.name === ContentTypes.CONNECT) return;
+
                         setSelectedType(null);
                         setSpecialType(
                           navigation?.find((tab) => tab.id === selectedTab).name
@@ -461,7 +463,9 @@ export function ContentManagement() {
                       type="button"
                       className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
                     >
-                      <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
+                      {selectedType?.name !== ContentTypes.CONNECT && (
+                        <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
+                      )}
                       {navigation?.find((tab) => tab.id === selectedTab).name}
                       <span className="px-1 text-gray-400">
                         {' '}
@@ -495,6 +499,13 @@ export function ContentManagement() {
                       <LinksShared
                         contentType={selectedType}
                         subContentType={selectedSubType}
+                        onClose={() => {
+                          setSelectedType(null);
+                          setSpecialType(
+                            navigation?.find((tab) => tab.id === selectedTab)
+                              .name
+                          );
+                        }}
                       />
                     )}
                   {!!subTabs?.length && !!specialType && (

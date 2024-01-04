@@ -1,4 +1,4 @@
-import { Button, FormInput, Typography } from '@ecdlink/ui';
+import { Button, DialogPosition, FormInput, Typography } from '@ecdlink/ui';
 import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { LinkPerSection, LinksSharedProps } from './links-shared.types';
 import { gql, useMutation, useQuery } from '@apollo/client';
@@ -9,16 +9,21 @@ import {
   ConnectItem,
 } from '@ecdlink/graphql';
 import ContentLoader from '../../../../components/content-loader/content-loader';
+import { useDialog } from '@ecdlink/core';
+import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 
 export const LinksShared = ({
   contentType,
   subContentType,
+  onClose: cancelEdit,
 }: LinksSharedProps) => {
   const [linksPerSectionData, setLinksPerSectionData] = useState<
     LinkPerSection[]
   >([]);
 
   const [isSubmitButtonClicked, setIsSubmitButtonClicked] = useState(false);
+
+  const dialog = useDialog();
 
   const getAllCall = `GetAll${contentType.name}`;
   const subGetAllCall = `GetAll${subContentType.name}`;
@@ -97,33 +102,43 @@ export const LinksShared = ({
   const setInitialState = useCallback(() => {
     const linksPerSectionData = new Array(sectionsQuantity).fill(0).map(() => ({
       section: '',
+      contentTypeId: 27,
+      contentId: -1,
+      hint,
       links: new Array(linksQuantity).fill(0).map(() => ({
         text: '',
         link: '',
+        contentTypeId: 28,
+        contentId: -1,
+        linkedConnect: -1,
       })),
-    }));
+    })) as LinkPerSection[];
 
     const currentSections = sectionsData?.[getAllCall] ?? [];
 
-    linksPerSectionData.forEach((sectionData, sectionIndex) => {
+    linksPerSectionData?.forEach((sectionData, sectionIndex) => {
+      const currentSection = currentSections?.[sectionIndex];
+
       sectionData.section =
-        currentSections[sectionIndex]?.[
-          contentType.fields?.[0]?.fieldName ?? ''
-        ] ?? '';
+        currentSection?.[contentType.fields?.[0]?.fieldName ?? ''] ?? '';
+      sectionData.contentId = currentSection?.id ?? -1;
 
       const links = sectionsLinksData?.[subGetAllCall]?.filter(
         (item: ConnectItem) =>
-          item?.linkedConnect?.[0]?.id === currentSections[sectionIndex]?.id
+          item?.linkedConnect?.[0]?.id === currentSection?.id
       ) as ConnectItem[];
 
-      sectionData.links.forEach((link, index) => {
-        link.text = links[index]?.buttonText ?? '';
-        link.link = links[index]?.link ?? '';
+      sectionData?.links?.forEach((link, index) => {
+        link.text = links?.[index]?.buttonText ?? '';
+        link.link = links?.[index]?.link ?? '';
+        link.linkedConnect = currentSection?.id ?? -1;
+        link.contentId = links?.[index]?.id ?? -1;
       });
     });
 
     setLinksPerSectionData(linksPerSectionData);
   }, [
+    hint,
     sectionsData,
     contentType.fields,
     getAllCall,
@@ -149,6 +164,7 @@ export const LinksShared = ({
     (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = event.target;
       const [fieldName, index] = name.split('_');
+      const selectedSection = linksPerSectionData?.[sectionIndex];
 
       const newLinksPerSectionData = [...linksPerSectionData];
 
@@ -157,6 +173,9 @@ export const LinksShared = ({
       } else if (fieldName === 'buttonLink') {
         newLinksPerSectionData[sectionIndex].links[index].link = value;
       }
+
+      newLinksPerSectionData[sectionIndex].links[index].linkedConnect =
+        selectedSection?.contentId ?? -1;
 
       setLinksPerSectionData(newLinksPerSectionData);
     };
@@ -184,17 +203,18 @@ export const LinksShared = ({
       (data, index) => ({
         contentTypeId: Number(contentType.id),
         contentId: Number(data.id),
-        name: linksPerSectionData?.[index].section,
-        links: linksPerSectionData?.[index].links
-          .filter((link) => link.text && link.link)
+        name: linksPerSectionData?.[index]?.section,
+        hint: linksPerSectionData?.[index]?.hint,
+        links: linksPerSectionData?.[index]?.links
+          ?.filter((link) => (link.text && link.link) || link.contentId !== -1)
           .map(
             (link) =>
               ({
                 buttonText: link.text,
                 link: link.link,
-                contentId: -1,
-                linkedConnect: -1,
-                contentTypeId: Number(contentType.id),
+                linkedConnect: link.linkedConnect,
+                contentTypeId: link.contentTypeId,
+                contentId: link.contentId,
               } as CmsConnectItemModelInput)
           ),
       })
@@ -228,6 +248,24 @@ export const LinksShared = ({
     });
   };
 
+  const onCancel = async () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <AlertModal
+          title="Discard unsaved changes?"
+          btnText={['Discard changes', 'Keep editing']}
+          message={` If you leave now, you will lose all of your changes.`}
+          onCancel={onClose}
+          onSubmit={() => {
+            cancelEdit();
+            onClose();
+          }}
+        />
+      ),
+    });
+  };
+
   useEffect(() => {
     setInitialState();
   }, [setInitialState]);
@@ -236,7 +274,19 @@ export const LinksShared = ({
 
   return (
     <form onSubmit={onSubmit}>
-      <Typography type="h1" color="textDark" text={contentType.description} />
+      <div className="flex justify-between">
+        <Typography type="h1" color="textDark" text={contentType.description} />
+        <Button
+          type="filled"
+          text="Cancel"
+          onClick={onCancel}
+          className="rounded-xl px-2"
+          color="errorBg"
+          textColor="tertiary"
+          icon="XIcon"
+          iconPosition="end"
+        />
+      </div>
       <Typography type="h4" color="textMid" text={hint} className="mb-11" />
       {new Array(sectionsQuantity).fill(0).map((_, sectionIndex) => (
         <div key={sectionIndex} className="mb-11">
