@@ -74,7 +74,7 @@ export const ProfitLossDetails: React.FC<MonthsProfitProps> = ({
 
             <div>
               <Alert
-                type={'info'}
+                type={balance > 0 ? 'info' : 'warning'}
                 className="items-left justify-left mt-4 flex"
                 title={
                   balance > 0
