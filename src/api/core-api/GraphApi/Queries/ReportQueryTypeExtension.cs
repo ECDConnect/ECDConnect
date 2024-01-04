@@ -636,11 +636,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (last2?.Count() == 2 && last2[0].Item2 > last2[1].Item2)
                     hasProgressedInLast2Periods++;
 
-                if (last3?.Count() == 3
-                    && (last3[0].Item2 > last3[1].Item2)
+                if (last3?.Count() == 3)
+                {
+                    if ((last3[0].Item2 > last3[1].Item2)
                     || (last3[0].Item2 > last3[2].Item2)
                     || (last3[1].Item2 > last3[2].Item2))
-                    hasProgressedInLast3Periods++;
+                        hasProgressedInLast3Periods++;
+
+                }
             }
             // Calculate count of children who haven't progressed
             int hasNotPorgressed2 = childIds.Count() - hasProgressedInLast2Periods;
