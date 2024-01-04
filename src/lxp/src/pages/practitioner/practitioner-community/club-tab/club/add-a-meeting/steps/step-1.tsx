@@ -55,12 +55,11 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
   const currentYear = currentDate.getFullYear();
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
 
-  const hasMeetingInCurrentMonth = false;
-  // allMeetings.some(
-  //   (meeting) =>
-  //     new Date(meeting?.meetingDate).getMonth() === currentMonth &&
-  //     new Date(meeting?.meetingDate).getFullYear() === currentYear
-  // );
+  const hasMeetingInCurrentMonth = allMeetings.some(
+    (meeting) =>
+      new Date(meeting?.meetingDate).getMonth() === currentMonth &&
+      new Date(meeting?.meetingDate).getFullYear() === currentYear
+  );
 
   const { isLoading, isFulfilled, wasLoading, isRejected, error } =
     useThunkFetchCall('clubs', ClubActions.GET_ACTIVITY_MEET_REGULAR_DETAILS);
