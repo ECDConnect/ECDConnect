@@ -3,11 +3,7 @@ import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { LinkPerSection, LinksSharedProps } from './links-shared.types';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { LanguageId } from '../../../../constants/language';
-import {
-  CmsConnectItemModelInput,
-  CmsConnectModelInput,
-  ConnectItem,
-} from '@ecdlink/graphql';
+import { ConnectItem } from '@ecdlink/graphql';
 import ContentLoader from '../../../../components/content-loader/content-loader';
 import { useDialog } from '@ecdlink/core';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
@@ -199,26 +195,21 @@ export const LinksShared = ({
   };
 
   const onFormatPayload = () => {
-    const payload: CmsConnectModelInput[] = contentType?.content?.map(
-      (data, index) => ({
-        contentTypeId: Number(contentType.id),
-        contentId: Number(data.id),
-        name: linksPerSectionData?.[index]?.section,
-        hint: linksPerSectionData?.[index]?.hint,
-        links: linksPerSectionData?.[index]?.links
-          ?.filter((link) => (link.text && link.link) || link.contentId !== -1)
-          .map(
-            (link) =>
-              ({
-                buttonText: link.text,
-                link: link.link,
-                linkedConnect: link.linkedConnect,
-                contentTypeId: link.contentTypeId,
-                contentId: link.contentId,
-              } as CmsConnectItemModelInput)
-          ),
-      })
-    );
+    const payload = contentType?.content?.map((data, index) => ({
+      contentTypeId: Number(contentType.id),
+      contentId: Number(data.id),
+      name: linksPerSectionData?.[index]?.section,
+      hint: linksPerSectionData?.[index]?.hint,
+      links: linksPerSectionData?.[index]?.links
+        ?.filter((link) => (link.text && link.link) || link.contentId !== -1)
+        .map((link) => ({
+          buttonText: link.text,
+          link: link.link,
+          linkedConnect: link.linkedConnect,
+          contentTypeId: link.contentTypeId,
+          contentId: link.contentId,
+        })),
+    }));
 
     return payload;
   };
