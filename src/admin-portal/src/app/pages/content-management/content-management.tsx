@@ -311,8 +311,6 @@ export function ContentManagement() {
       ]);
     }
 
-    console.log({ dataTypes });
-
     if (specialType === ContentManagementTabs.PROGRAMMES.name) {
       return setSubTabs([
         {

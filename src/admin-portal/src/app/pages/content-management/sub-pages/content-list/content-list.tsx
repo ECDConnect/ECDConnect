@@ -57,7 +57,6 @@ export default function ContentList({
   const { setNotification } = useNotifications();
   const panel = usePanel();
   const type = contentType.description;
-  console.log({ contentType });
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
@@ -186,8 +185,6 @@ export default function ContentList({
         let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
-
-        console.log({ moreInforItems });
 
         if (choosedSectionTitle === 'Small/large group activities') {
           setTableData(
