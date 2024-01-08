@@ -24,4 +24,5 @@ export interface StoryBookQuestionDto {
   id: number;
   name: string;
   question: string; // Markdown
+  idx?: number;
 }

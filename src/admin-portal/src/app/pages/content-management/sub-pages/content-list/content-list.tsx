@@ -8,6 +8,7 @@ import {
   LanguageDto,
   NOTIFICATION,
   PermissionEnum,
+  useDialog,
   useNotifications,
   usePanel,
 } from '@ecdlink/core';
@@ -26,6 +27,8 @@ import {
   ContentTypes,
 } from '../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../components/ui-table/type';
+import CreateStory from './components/create-story/create-story';
+import { Dialog, DialogPosition } from '@ecdlink/ui';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -49,17 +52,18 @@ export default function ContentList({
   searchValue,
 }: ContentListProps) {
   const { hasPermission } = useUser();
-
+  const dialog = useDialog();
   const [tableData, setTableData] = useState<any[]>([]);
   const { setNotification } = useNotifications();
   const panel = usePanel();
   const type = contentType.description;
-
+  console.log({ tableData });
   const [languageId, setLanguageId] = useState<string>(
     '9688cd08-adef-408c-9d34-5d75ae5c44df'
   );
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
+  const [addStory, setAddStory] = useState<boolean>(false);
 
   function filterByValue(array, value) {
     return array.filter(
@@ -67,7 +71,8 @@ export default function ContentList({
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
   }
-
+  console.log({ displayFields });
+  console.log({ contentType });
   useEffect(() => {
     if (contentType && contentType.fields) {
       const displayFields: ContentTypeFieldDto[] = [];
@@ -227,6 +232,11 @@ export default function ContentList({
   };
 
   const displayCreatePanel = () => {
+    // if(contentType?.name === 'StoryBook') {
+    //   viewSelectedRow()
+    //   setAddStory(true)
+    //   return
+    // }
     panel({
       noPadding: true,
       title: `Create ${type}`,
@@ -353,6 +363,43 @@ export default function ContentList({
             </div>
           </div>
         </div>
+        {/* <Dialog
+        className='h-full overflow-y-scroll'
+        stretch={true}
+        visible={addStory}
+        position={DialogPosition.Full}
+        fullScreen={true}
+        backdropColour='white'
+        solidBackdrop={true}
+      >
+         <CreateStory
+            key={`contentPanelCreate`}
+            acceptedFileFormats={
+              selectedTab === ContentManagementTabs.COMMUNITY.id
+                ? ['pdf']
+                : undefined
+            }
+            selectedLanguageId={languageId}
+            languages={languages}
+            contentType={contentType}
+            optionDefinitions={optionDefinitions}
+            closeDialog={(created: boolean) => {
+              // onSubmit();
+  
+              if (created) {
+                refetchContent({
+                  localeId: languageId.toString(),
+                });
+                refreshParent();
+  
+                setNotification({
+                  title: 'Successfully Created Content!',
+                  variant: NOTIFICATION.SUCCESS,
+                });
+              }
+            }}
+            />
+      </Dialog> */}
       </div>
     );
   } else {

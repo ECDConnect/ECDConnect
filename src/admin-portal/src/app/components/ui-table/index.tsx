@@ -381,7 +381,7 @@ export default function UiTable({
             const language = languages?.find(
               (language) => language?.id === item?.id
             );
-            console.log({ language });
+
             return (
               <div
                 key={item?.id}
