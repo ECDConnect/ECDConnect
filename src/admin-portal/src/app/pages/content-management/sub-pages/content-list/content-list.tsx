@@ -37,6 +37,7 @@ export interface ContentListProps {
   refreshParent: () => void;
   onSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   searchValue?: string;
+  choosedSectionTitle?: string;
 }
 
 export default function ContentList({
@@ -48,6 +49,7 @@ export default function ContentList({
   refreshParent,
   onSearch,
   searchValue,
+  choosedSectionTitle,
 }: ContentListProps) {
   const { hasPermission } = useUser();
 
@@ -55,7 +57,6 @@ export default function ContentList({
   const { setNotification } = useNotifications();
   const panel = usePanel();
   const type = contentType.description;
-
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
@@ -184,6 +185,23 @@ export default function ContentList({
         let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
+
+        if (choosedSectionTitle === 'Small/large group activities') {
+          setTableData(
+            moreInforItems?.filter(
+              (item) =>
+                item?.type === 'Small group' || item?.type === 'Large group'
+            )
+          );
+          return;
+        }
+
+        if (choosedSectionTitle === 'Story activities') {
+          setTableData(
+            moreInforItems?.filter((item) => item?.type === 'Story time')
+          );
+          return;
+        }
         setTableData(
           anteNatalData?.length > 0 ? anteNatalData : moreInforItems
         );
