@@ -29,6 +29,8 @@ export function ContentManagement() {
   const [specialType, setSpecialType] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
   const [subTabs, setSubTabs] = useState<TitleListDataItem[]>();
+  const [choosedSectionTitle, setChoosedSectionTitleSectionTitle] =
+    useState('');
 
   const previousTab = usePrevious(selectedTab);
 
@@ -309,6 +311,8 @@ export function ContentManagement() {
       ]);
     }
 
+    console.log({ dataTypes });
+
     if (specialType === ContentManagementTabs.PROGRAMMES.name) {
       return setSubTabs([
         {
@@ -338,6 +342,7 @@ export function ContentManagement() {
             const selectedTypeObject = dataTypes?.contentTypes.find(
               (type: ContentTypeDto) => type.name === 'Activity'
             );
+            setChoosedSectionTitleSectionTitle('Small/large group activities');
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -381,8 +386,9 @@ export function ContentManagement() {
           onActionClick: () => {
             setSpecialType('');
             const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'StoryBookPartQuestion'
+              (type: ContentTypeDto) => type.name === 'Activity'
             );
+            setChoosedSectionTitleSectionTitle('Story activities');
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
@@ -491,6 +497,7 @@ export function ContentManagement() {
                         selectedTab={selectedTab}
                         onSearch={search}
                         searchValue={searchValue}
+                        choosedSectionTitle={choosedSectionTitle}
                       ></ContentList>
                     )}
                   {/* TODO: Replace it with dynamic validation (example: selectedType.type === 'linkGroup') */}
