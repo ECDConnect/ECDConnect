@@ -117,6 +117,8 @@ export const AddMeeting: React.FC = () => {
   };
 
   const onSuccess = useCallback(() => {
+    appDispatch(clubActions.forceMeetRegularlyDataReload());
+
     showMessage({
       message: `Meeting added! ${
         !isOnline ? 'It will be updated when you sync the app.' : ''
@@ -124,7 +126,7 @@ export const AddMeeting: React.FC = () => {
       type: 'success',
       duration: isOnline ? 5000 : 10000,
     });
-  }, [isOnline, showMessage]);
+  }, [appDispatch, isOnline, showMessage]);
 
   const onSubmit = async () => {
     const payload: ClubMeetingInput = {
@@ -224,6 +226,8 @@ export const AddMeeting: React.FC = () => {
       }
     }
   }, [
+    appDispatch,
+    club?.id,
     error,
     history,
     isLoading,
