@@ -26,6 +26,7 @@ import {
   ContentTypes,
 } from '../../../../constants/content-management';
 import { BulkActionStatus } from '../../../../components/ui-table/type';
+import { LanguageId } from '../../../../constants/language';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -55,9 +56,7 @@ export default function ContentList({
   const panel = usePanel();
   const type = contentType.description;
 
-  const [languageId, setLanguageId] = useState<string>(
-    '9688cd08-adef-408c-9d34-5d75ae5c44df'
-  );
+  const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
 

@@ -7,4 +7,5 @@ export const ContentManagementTabs = {
 export const ContentTypes = {
   COACHING_CIRCLE_TOPICS: 'CoachingCircleTopics',
   CONNECT: 'Connect',
+  CONNECT_ITEM: 'ConnectItem',
 };

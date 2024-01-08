@@ -20,9 +20,11 @@ import {
   ContentManagementTabs,
   ContentTypes,
 } from '../../constants/content-management';
+import { LinksShared } from './components/links-shared/links-shared';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
+  const [selectedSubType, setSelectedSubType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
@@ -160,8 +162,12 @@ export function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const showGroupContentTypes = (item: ContentTypeDto) => {
+  const showGroupContentTypes = (
+    item: ContentTypeDto,
+    subItem?: ContentTypeDto
+  ) => {
     setSelectedType(item);
+    subItem && setSelectedSubType(subItem);
   };
 
   const getContentValues = (contentManagementView?: ContentManagementView) => {
@@ -288,7 +294,15 @@ export function ContentManagement() {
           titleIcon: 'PuzzleIcon',
           titleIconClassName: 'bg-secondary text-white',
           onActionClick: () => {
-            // TODO: Add handling for connect tab
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
+            );
+
+            const selectedSubTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT_ITEM
+            );
+            showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
           },
           classNames: 'bg-white',
         },
@@ -439,6 +453,8 @@ export function ContentManagement() {
                   <div className="justify-self col-end-3 pb-2">
                     <button
                       onClick={() => {
+                        if (selectedType?.name === ContentTypes.CONNECT) return;
+
                         setSelectedType(null);
                         setSpecialType(
                           navigation?.find((tab) => tab.id === selectedTab).name
@@ -447,11 +463,13 @@ export function ContentManagement() {
                       type="button"
                       className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
                     >
-                      <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
+                      {selectedType?.name !== ContentTypes.CONNECT && (
+                        <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
+                      )}
                       {navigation?.find((tab) => tab.id === selectedTab).name}
                       <span className="px-1 text-gray-400">
                         {' '}
-                        / {selectedType?.name}
+                        / {selectedType?.description}
                       </span>
                     </button>
                   </div>
@@ -461,6 +479,7 @@ export function ContentManagement() {
                   style={{ minHeight: '36rem' }}
                 >
                   {selectedType &&
+                    selectedType.name !== ContentTypes.CONNECT &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ContentList
@@ -473,6 +492,21 @@ export function ContentManagement() {
                         onSearch={search}
                         searchValue={searchValue}
                       ></ContentList>
+                    )}
+                  {/* TODO: Replace it with dynamic validation (example: selectedType.type === 'linkGroup') */}
+                  {selectedType?.name === ContentTypes.CONNECT &&
+                    !specialType && (
+                      <LinksShared
+                        contentType={selectedType}
+                        subContentType={selectedSubType}
+                        onClose={() => {
+                          setSelectedType(null);
+                          setSpecialType(
+                            navigation?.find((tab) => tab.id === selectedTab)
+                              .name
+                          );
+                        }}
+                      />
                     )}
                   {!!subTabs?.length && !!specialType && (
                     <div className="flex">

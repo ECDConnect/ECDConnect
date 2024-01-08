@@ -25,6 +25,7 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   sufficIconColor?: Colours;
   visible?: boolean;
   placeholder?: string;
+  name?: string;
   value?: string | number;
   hint?: string;
   isAdminPortalField?: boolean;
