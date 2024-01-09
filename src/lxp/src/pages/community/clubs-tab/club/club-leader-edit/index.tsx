@@ -63,7 +63,7 @@ export const ClubLeaderEdit: React.FC = () => {
     (member) =>
       member.practitionerId !== previousClubLeader?.practitionerId &&
       ((isDueDateNextLeaderTodayOrFuture &&
-        member.practitionerId !== newLeader?.practitionerId) ||
+        member.practitionerId !== nextLeader?.practitionerId) ||
         !isDueDateNextLeaderTodayOrFuture)
   );
 
