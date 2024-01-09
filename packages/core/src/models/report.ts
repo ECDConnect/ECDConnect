@@ -3,6 +3,8 @@ export interface MonthlyAttendanceRecord {
   monthOfYear: string;
   year: string;
   percentageAttendance: number;
+  numberOfSessions: number;
+  totalScheduledSessions: number;
 }
 
 export interface ChildAttendanceReportModel {

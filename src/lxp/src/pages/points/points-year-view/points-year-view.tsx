@@ -45,9 +45,7 @@ export const PointsYearView: React.FC = () => {
     currentMonth === 0
   );
 
-  const currentMonthPoints = useSelector(
-    pointsSelectors.getPointsSummaryWithLibrary(new Date())
-  );
+  const yearSummaries = useSelector(pointsSelectors.getPointsSummaryForYear());
 
   const pointsTotalForYear = useSelector(
     pointsSelectors.getPointsTotalForYear()
@@ -66,8 +64,20 @@ export const PointsYearView: React.FC = () => {
     setLoadNextMonthDisabled(nextMonthToLoad === 0);
   }, [monthsLoaded, setMonthsLoaded, setLoadNextMonthDisabled]);
 
-  //TODO - Update this to use club data to set messages when available
   const celebrationCard = useMemo(() => {
+    if (pointsTotalForYear === 0) {
+      return (
+        <CelebrationCard
+          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
+          primaryMessage="No points earned yet"
+          secondaryMessage="Keep going to earn points."
+          primaryTextColour="alertMain"
+          secondaryTextColour="alertMain"
+          backgroundColour="alertBg"
+        />
+      );
+    }
+
     if (!!userStanding) {
       if (userStanding === 100) {
         return (
@@ -108,8 +118,8 @@ export const PointsYearView: React.FC = () => {
           <CelebrationCard
             image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-            primaryTextColour="errorMain"
-            backgroundColour="errorBg"
+            primaryTextColour="alertMain"
+            backgroundColour="alertBg"
             secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
             secondaryTextColour="black"
           />
@@ -117,18 +127,7 @@ export const PointsYearView: React.FC = () => {
       }
     }
 
-    if (pointsTotalForYear === 0) {
-      return (
-        <CelebrationCard
-          image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
-          primaryMessage="No points earned yet"
-          secondaryMessage="Keep going to earn points."
-          primaryTextColour="alertMain"
-          secondaryTextColour="alertMain"
-          backgroundColour="alertBg"
-        />
-      );
-    } else if (percentageScore < 60) {
+    if (percentageScore < 60) {
       return (
         <CelebrationCard
           image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
@@ -162,14 +161,16 @@ export const PointsYearView: React.FC = () => {
         />
       );
     }
-  }, [pointsTotalForYear, percentageScore, practitioner]);
+  }, [
+    userStanding,
+    pointsTotalForYear,
+    percentageScore,
+    practitioner?.user?.firstName,
+  ]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
-  const filteredPointsSummaries = currentMonthPoints.filter(
-    (x) => x.pointsYTD > 0
-  );
 
   return (
     <BannerWrapper
@@ -287,7 +288,7 @@ export const PointsYearView: React.FC = () => {
       <div ref={shareRef} style={{ display: showPrintData ? 'block' : 'none' }}>
         <PointsShare
           viewMode="Year"
-          pointsSummaries={filteredPointsSummaries}
+          pointsSummaries={yearSummaries}
           userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
           childCount={children?.length || 0}
           clubStanding={userStanding}

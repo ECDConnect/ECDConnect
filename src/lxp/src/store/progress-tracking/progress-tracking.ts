@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  getPractitionerProgressReportSummary,
   getProgressTrackingCategories,
   getProgressTrackingLevels,
   getProgressTrackingSkills,
@@ -13,6 +14,7 @@ const initialState: ProgressTrackingState = {
   progressTrackingSubCategories: undefined,
   progressTrackingSkills: undefined,
   progressTrackingLevels: undefined,
+  practitionerProgressReportSummary: undefined,
 };
 
 const progressTrackingSlice = createSlice({
@@ -26,6 +28,8 @@ const progressTrackingSlice = createSlice({
         initialState.progressTrackingSubCategories;
       state.progressTrackingSkills = initialState.progressTrackingSkills;
       state.progressTrackingLevels = initialState.progressTrackingLevels;
+      state.practitionerProgressReportSummary =
+        initialState?.practitionerProgressReportSummary;
     },
   },
   extraReducers: (builder) => {
@@ -47,6 +51,12 @@ const progressTrackingSlice = createSlice({
     builder.addCase(getProgressTrackingLevels.fulfilled, (state, action) => {
       state.progressTrackingLevels = action.payload;
     });
+    builder.addCase(
+      getPractitionerProgressReportSummary.fulfilled,
+      (state, action) => {
+        state.practitionerProgressReportSummary = action.payload;
+      }
+    );
   },
 });
 

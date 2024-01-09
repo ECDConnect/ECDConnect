@@ -4,6 +4,7 @@ import {
   renderIcon,
   Card,
   Typography,
+  DialogPosition,
 } from '@ecdlink/ui/';
 import { DailyRoutineItemType } from '@enums/ProgrammeRoutineType';
 import { activitySelectors } from '@store/content/activity';
@@ -14,12 +15,17 @@ import {
   getRoutineItemType,
 } from '@utils/classroom/programme-planning/programmes.utils';
 import BaseListItemUpdated from '../base-list-item-updated/base-list-item-updated';
-import ProgrammeWrapper from '../../programme-dashboard/walkthrough/programme-wrapper';
-import { useAppContext } from '@/walkthrougContext';
+import { useDialog } from '@ecdlink/core';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   ProgrammePlanningRoutineListItemProps
 > = ({ routineItem, onClick, day }) => {
+  const dialog = useDialog();
+
+  const { isOnline } = useOnlineStatus();
+
   const routineType = getRoutineItemType(routineItem.name);
   const canLinkActionToType =
     routineType === DailyRoutineItemType.smallGroup ||
@@ -33,6 +39,24 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
       getActivityIdForRoutineItem(routineItem.name, day)
     )
   );
+
+  const showOnlineOnly = () => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
+
+  const handleOnClick = () => {
+    if (isOnline || (!isOnline && !!activity?.name)) {
+      return onClick();
+    }
+
+    return showOnlineOnly();
+  };
 
   const getTitle = () => {
     if (
@@ -191,37 +215,26 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   };
 
   return (
-    <>
-      <ProgrammeWrapper />
-      <div
-        id={
-          getTitle() === 'Small group activity'
-            ? 'walkthrough-plan-activity'
-            : ''
-        }
-      >
-        <BaseListItemUpdated
-          backgroundColor={'white'}
-          overwritePreSlotRender={getRoutineItemPreSlotRender}
-          titleTypography={{
-            type: getTitleTextType(),
-            text: getTitle(),
-            color: canLinkActionToType && activity ? 'textMid' : 'black',
-            weight: canLinkActionToType && activity ? 'skinny' : 'bold',
-          }}
-          subTitleTypography={{
-            type: getSubTitleTextType(),
-            text: getSubTitle(),
-            color: canLinkActionToType && activity ? 'black' : 'textMid',
-            weight: canLinkActionToType && activity ? 'bold' : 'skinny',
-          }}
-          overwritePostSlotRender={getRoutineItemPostSlotRender}
-          dividerType={'solid'}
-          dividerColor={'uiLight'}
-          onClick={onClick}
-          routineItem={routineItem}
-        />
-      </div>
-    </>
+    <BaseListItemUpdated
+      backgroundColor={'white'}
+      overwritePreSlotRender={getRoutineItemPreSlotRender}
+      titleTypography={{
+        type: getTitleTextType(),
+        text: getTitle(),
+        color: canLinkActionToType && activity ? 'textMid' : 'black',
+        weight: canLinkActionToType && activity ? 'skinny' : 'bold',
+      }}
+      subTitleTypography={{
+        type: getSubTitleTextType(),
+        text: getSubTitle(),
+        color: canLinkActionToType && activity ? 'black' : 'textMid',
+        weight: canLinkActionToType && activity ? 'bold' : 'skinny',
+      }}
+      overwritePostSlotRender={getRoutineItemPostSlotRender}
+      dividerType={'solid'}
+      dividerColor={'uiLight'}
+      onClick={handleOnClick}
+      routineItem={routineItem}
+    />
   );
 };

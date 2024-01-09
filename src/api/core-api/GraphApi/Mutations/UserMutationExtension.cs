@@ -179,6 +179,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //audit user changes
             List<AuditChanges> auditFields = new List<AuditChanges>();
 
+            if (input.ResetData is not null) {
+                user.ResetData = input.ResetData;
+            }    
+
             if (input.PhoneNumber is not null 
                 && input.PhoneNumber != user.PhoneNumber)
             {
@@ -372,10 +376,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 auditFields.Add(new AuditChanges() { FieldName = "ProfileImageUrl", ValueBefore = user.ProfileImageUrl, ValueAfter = input.ProfileImageUrl });
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
+          
+            user.UpdatedDate = DateTime.UtcNow;
+            var updateResult = await userManager.UpdateAsync(user);
+
             if (auditFields.Count > 0)
             {
-                user.UpdatedDate = DateTime.UtcNow;
-                var updateResult = await userManager.UpdateAsync(user);
 
                 DoAudit(currentUserId, repoFactory, auditFields, id);
 
@@ -440,6 +446,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public async Task<BulkDeactivateResult> BulkDeleteUser(
           [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] ILogger<UserMutationExtension> _logger,
           IGenericRepositoryFactory repoFactory,
           [Service] IPointsEngineService pointsEngineService,
           UserManager<ApplicationUser> userManager,
@@ -495,6 +502,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var roles = userManager.GetRolesAsync(user).Result;
                     foreach (var role in roles)
                     {
+                        _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserMutationExtension.BulkDeleteUser]", role, user.Id, currentUserId);
                         var result = userManager.RemoveFromRoleAsync(user, role).Result;
                     }
 

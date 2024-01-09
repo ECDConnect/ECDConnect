@@ -45,14 +45,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
              {
                  return pointsEngineService.CalculateAttendanceSubmitted(userId, today);
              }
-             else if (type == "CalculateIncomeStatements")
-             {
-                 return pointsEngineService.CalculateIncomeStatements(userId, today);
-             }
 
              return false;
-         }
+        }
 
+        public bool CalculateLeaveNoOneBehind([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateLeaveNoOneBehind();
+            return true;
+        }
+        
+        public bool CalculateMeetRegularly([Service] IPointsEngineService pointsEngineService, Guid clubId, Guid clubMeetingId)
+        {
+            return pointsEngineService.CalculateMeetRegularly(clubId, clubMeetingId);
+        }
 
+        public bool CalculateProgressReports([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateCompleteChildProgressReports();
+            return true;
+        }
+
+        public bool CalculateCaregiverReportBack([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateCompleteCaregiverReportBack();
+            return true;
+        }
+
+        public bool CalculateClubChildAttendance([Service] IPointsService pointsEngineService)
+        {
+            pointsEngineService.CalculateClubChildAttendance();
+            return true;
+        }
     }
 }

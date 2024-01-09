@@ -33,29 +33,40 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
     )
   );
 
-  const mergedMembers = clubs
-    ?.map((club) => club.clubMembers)
-    .flat()
-    .map((item) => item?.practitioner);
+  const mergedMembers = clubs?.map((club) => club.clubMembers).flat();
+
   const practitionersNotInClub = filteredPractitioners?.filter(
     (practitioner) =>
-      !mergedMembers?.find((member) => practitioner.id === member?.id)
+      !mergedMembers?.find(
+        (member) => practitioner.id === member?.practitionerId
+      )
   );
 
   const isSmartStartersWithoutClub = !!practitionersNotInClub?.length;
 
   const onCheckboxChange = (event: CheckboxChange) => {
-    const value = event.value as PractitionerDto | undefined;
-    if (event.checked) {
+    const value = event.value as PractitionerDto;
+    if (event.checked && !!value) {
       const currentPractitioners = selectedPractitioners
-        ? [...selectedPractitioners, value]
-        : [value];
+        ? [
+            ...selectedPractitioners,
+            {
+              practitionerId: value.id!,
+              name: `${value.user?.firstName} ${value.user?.surname}`,
+            },
+          ]
+        : [
+            {
+              practitionerId: value.id!,
+              name: `${value.user?.firstName} ${value.user?.surname}`,
+            },
+          ];
 
       return setSelectedPractitioners(currentPractitioners);
     }
 
     const currentPractitioners = selectedPractitioners?.filter(
-      (item) => item?.id !== value?.id
+      (item) => item.practitionerId !== value?.id
     );
 
     return setSelectedPractitioners(currentPractitioners);
@@ -99,7 +110,7 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: ClubAddProps) => {
               title={`${practitioner.user?.firstName} ${practitioner.user?.surname}`}
               titleWeight="semibold"
               checked={selectedPractitioners?.some(
-                (option) => practitioner.id === option?.id
+                (option) => practitioner.id === option.practitionerId
               )}
               value={practitioner}
               icon={

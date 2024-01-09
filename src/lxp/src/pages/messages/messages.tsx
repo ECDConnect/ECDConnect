@@ -13,13 +13,26 @@ import {
 } from '@store/notifications';
 import { IconInformationIndicator } from '../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { MessageCard } from './components/message-card';
+import { notificationTagConfig } from '@/constants/notifications';
+import {
+  disableBackendNotification,
+  markAsReadNotification,
+} from '@/store/notifications/notifications.actions';
+import { MessageActionConfig } from '@models/messages/messages';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const notifications = useSelector(
+  let notifications = useSelector(
     notificationsSelectors.getMessageBoardNotifications
   );
+
+  notifications = notifications.sort(
+    (a, b) =>
+      new Date(b.message.dateCreated).getTime() -
+      new Date(a.message.dateCreated).getTime()
+  );
+
   const paging = usePaging<Notification>(notifications, 3, 0, 'accummilate');
   const appDispatch = useAppDispatch();
 
@@ -41,13 +54,49 @@ export const Messages: React.FC = () => {
   }, []);
 
   const messageActioned = (notification: Notification) => {
+    if (notification.message?.isFromBackend) {
+      appDispatch(
+        markAsReadNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+
+      appDispatch(
+        disableBackendNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+    }
+    appDispatch(notificationActions.removeNotification(notification));
+
+    if (notification.message.action) {
+      const action = JSON.parse(
+        notification.message.action
+      ) as MessageActionConfig;
+      action?.url && history.push(action.url);
+    }
+
+    for (const [key, value] of Object.entries(notificationTagConfig)) {
+      if (value.cta === notification.message.cta && value.routeConfig!) {
+        history.push(value?.routeConfig?.route);
+        break;
+      }
+    }
+
     if (notification.message.routeConfig) {
       history.push(
         notification.message.routeConfig.route,
         notification.message.routeConfig.params
       );
     }
-    appDispatch(notificationActions.removeNotification(notification));
+
+    const notificationIndex = paging.visibleItems?.findIndex(
+      (n) => n.message.reference === notification.message.reference
+    );
+
+    if (notificationIndex!! < 0) return;
+
+    paging.visibleItems?.splice(notificationIndex!!, 1);
   };
 
   return (
@@ -76,7 +125,7 @@ export const Messages: React.FC = () => {
               title={notification.message.title}
               message={notification.message.message}
               dateCreated={notification.message.dateCreated}
-              actionText={notification.message.actionText}
+              actionText={notification.message.actionText || 'Remove'}
               icon={notification.message.icon}
               iconBackgroundColor={notification.message.color}
               onAction={() => messageActioned(notification)}

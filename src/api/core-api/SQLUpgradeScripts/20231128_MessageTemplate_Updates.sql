@@ -1,0 +1,1 @@
+update "MessageTemplate" set "Subject" = 'Attendance register incomplete for today',"Message" = 'You have not submitted your attendance register for today. Submit attendance registers daily to [[IsStipendReceiverText]] get SmartStart points.' where "TemplateType" = 'submit-daily-attendance' and "Protocol" = 'hub';

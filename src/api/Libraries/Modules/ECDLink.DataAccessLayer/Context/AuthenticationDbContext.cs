@@ -1,4 +1,5 @@
 using ECDLink.Core.Helpers;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Calendar;
@@ -32,7 +33,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ECDLink.DataAccessLayer.Context
 {
-    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser> //AuditIdentityDbContext<ApplicationUser>
+    public class AuthenticationDbContext : IdentityDbContext<ApplicationUser, ApplicationIdentityRole, string>
     {
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
         public DbSet<MessageLog> MessageLogs { get; set; }
@@ -97,6 +98,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Mother> Mothers { get; set; }
         public DbSet<Infant> Infants { get; set; }
         public DbSet<Trainee> Trainees { get; set; }
+        public DbSet<TeamLead> TeamLead {  get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }
@@ -162,6 +164,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<ClubPointsLibrary> ClubPointsLibrary { get; set; }
         public DbSet<ClubPoints> ClubPoints { get; set; }
         public DbSet<ClubActivityUpload> ClubActivityUpload { get; set; }
+        public DbSet<ClubActivityUploadType> ClubActivityUploadType { get; set; }
 
         // Leagues
         public DbSet<LeagueType> LeagueType { get; set; }

@@ -124,6 +124,9 @@ import { SupportRoleEdit } from '@/pages/practitioner/practitioner-community/clu
 import { AddMeeting } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-meeting';
 import { AddAFamilyDayEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-a-family-day-event';
 import { AddCollageEvent } from '@/pages/practitioner/practitioner-community/club-tab/club/add-collage-event';
+import { PractitionerCommunityWelcome } from '@/pages/practitioner/practitioner-community/welcome';
+import { PractitionerPdfSummaryReport } from '@/pages/classroom/progress-observation/practitioner-pdf-summary-report/practitioner-pdf-summary-report';
+import { CoachPractitionerPoints } from '@/pages/coach/coach-practitioner-points/coach-practitioner-points';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -262,6 +265,7 @@ const AuthRoutes: React.FC = () => {
         path={[
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.COACH,
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.LEADER,
+          ROUTES.COMMUNITY.CLUB.USER_PROFILE.SUPPORT_ROLE,
           ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER,
         ]}
         component={UserProfile}
@@ -313,8 +317,17 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
-        path={[ROUTES.COMMUNITY.CLUB.POINTS.HELP, ROUTES.COMMUNITY.LEAGUE.HELP]}
+        path={[
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP,
+          ROUTES.COMMUNITY.LEAGUE.HELP,
+          ROUTES.COMMUNITY.HELP,
+        ]}
         component={ActivityHelp}
+        exact
+      />
+      <Route
+        path={ROUTES.PRACTITIONER.COMMUNITY.WELCOME}
+        component={PractitionerCommunityWelcome}
         exact
       />
       <Route
@@ -594,6 +607,11 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.COACH.PRACTITIONER_CLASSROOM}
         component={CoachPractitionerClassroom}
       />
+      <Route
+        exact
+        path={ROUTES.PRACTITIONER_PROGRESS_REPORT_SUMMARY}
+        component={PractitionerPdfSummaryReport}
+      />
       <Route path={ROUTES.COACH.NOTES} component={CoachNotes} />
       <Route
         path={ROUTES.COACH.PRACTIONER_REMOVE}
@@ -631,6 +649,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH.PRACTITIONER_JOURNEY}
         component={CoachPractitionerJourney}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_POINTS}
+        component={CoachPractitionerPoints}
       />
       <Route
         exact

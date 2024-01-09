@@ -8,8 +8,11 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -17,20 +20,40 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace EcdLink.Api.CoreApi.Managers
 {
 
     public class DocumentManager
     {
+        private readonly IHttpContextAccessor _contextAccessor;
         private IntegrationLogManager _logManager;
         private IFileService _fileService;
-        private IGenericRepositoryFactory _repoFactory;
+        private string _uId;
 
-        public DocumentManager([Service] IFileService fileService, IGenericRepositoryFactory repoFactory, IntegrationLogManager logManager)
+        private readonly IGenericRepositoryFactory _repoFactory;
+        private readonly IGenericRepository<Document, Guid> _documentRepo;
+        private readonly IGenericRepository<DocumentType, Guid> _documentTypeRepo;
+        private readonly IGenericRepository<WorkflowStatusType, Guid> _workflowStatusTypeRepo;
+        private readonly IGenericRepository<WorkflowStatus, Guid> _workflowStatusRepo;
+
+        public DocumentManager(
+            IHttpContextAccessor contextAccessor,
+            [Service] IFileService fileService, 
+            IGenericRepositoryFactory repoFactory, 
+            IntegrationLogManager logManager)
         {
+            _contextAccessor = contextAccessor;
+            _repoFactory = repoFactory;
             _logManager = logManager;
             _fileService = fileService;
-            _repoFactory = repoFactory;
+
+            _uId = _contextAccessor.HttpContext.GetUser()?.Id;
+
+            _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _uId);
+            _documentTypeRepo = _repoFactory.CreateGenericRepository<DocumentType>(userContext: _uId);
+            _workflowStatusTypeRepo = _repoFactory.CreateGenericRepository<WorkflowStatusType>(userContext: _uId);
+            _workflowStatusRepo = _repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
         }
 
         //
@@ -124,7 +147,7 @@ namespace EcdLink.Api.CoreApi.Managers
         // SAVING DOCUMENTS
         //
 
-        public async Task<Document> SaveIncomeStatementPDF(PdfDocumentModel input)
+        public async Task<Document> SaveIncomeStatementPDF(DocumentModel input)
         {
             if (input != null && input.Reference != "")
             {
@@ -191,7 +214,7 @@ namespace EcdLink.Api.CoreApi.Managers
             return null;
         }
 
-        public async Task<Document> SaveAttendancePDF(PdfDocumentModel input)
+        public async Task<Document> SaveAttendancePDF(DocumentModel input)
         {
             if (input != null && input.Reference != "")
             {
@@ -210,6 +233,12 @@ namespace EcdLink.Api.CoreApi.Managers
                 // First validate if document is already in db
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
                 
+                if (doc != null)
+                {
+                    // remove previous file on file server
+                    await _fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
+                }
+
                 // Upload the document
                 var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
                 try
@@ -233,9 +262,6 @@ namespace EcdLink.Api.CoreApi.Managers
                     }
                     else
                     {
-                        // remove previous file on file server
-                        await _fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
-
                         doc.Name = input.FileName;
                         doc.UpdatedBy = input.CreatedUserId;
                         doc.Reference = document.Url.TrimEnd('/');
@@ -251,6 +277,54 @@ namespace EcdLink.Api.CoreApi.Managers
                     return null;
                 }
             }
+            return null;
+        }
+
+        public async Task<Document> SaveActivityUploadDocument(DocumentModel input)
+        {
+            if (input != null && input.Reference != "")
+            {
+                // Workflow info
+                var wsType = _workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.ClubSettings.workflow_upload_type).FirstOrDefault();
+                var ws = _workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == Constants.ClubSettings.workflow_status_upload_type).FirstOrDefault();
+
+                // Get the document type
+                var docType = _documentTypeRepo.GetAll().Where(x => x.Name == Constants.ClubSettings.activity_upload_type).FirstOrDefault();
+
+                // First validate if document is already in db
+                Document doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+
+                // Upload the document
+                try
+                {
+                    if (doc == null)
+                    {
+                        var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.ClubActivityUpload);
+                        // Save new document to the database
+                        doc = new Document
+                        {
+                            Id = Guid.NewGuid(),
+                            CreatedUserId = input.CreatedUserId,
+                            Name = input.FileName,
+                            UpdatedBy = input.CreatedUserId,
+                            InsertedDate = DateTime.Now,
+                            Reference = document.Url.TrimEnd('/'),
+                            UserId = input.UserId,
+                            DocumentTypeId = docType.Id,
+                            WorkflowStatusId = ws.Id,
+                            TenantId = TenantExecutionContext.Tenant.Id
+                        };
+                        return _documentRepo.Insert(doc);
+                    }
+                    
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog("SaveActivityUploadDocument Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "SaveActivityUploadDocument");
+                    return null;
+                }
+            }
+
             return null;
         }
     }

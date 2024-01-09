@@ -1,3 +1,4 @@
+using Azure.Core;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.Abstractrions.Notifications.Message;
@@ -8,6 +9,7 @@ using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -42,8 +44,8 @@ namespace ECDLink.Notifications.BulkSms
             }
         }
 
-        public SmsSender(ISystemSetting<BulkSmsOptions> optionsAccessor, IMessageFactory messageFactory, TemplateProcessor templateProcessor, IMessageLogger<BulkSmsMessage> messageLogger)
-               : base(messageFactory, templateProcessor, new BulkSmsMessage())
+        public SmsSender(ISystemSetting<BulkSmsOptions> optionsAccessor, IMessageFactory messageFactory, TemplateProcessor templateProcessor, IMessageLogger<BulkSmsMessage> messageLogger, ILogger<SmsSenderBase> logger)
+               : base(messageFactory, templateProcessor, new BulkSmsMessage(), logger)
         {
             _smsOptions = optionsAccessor;
             _messageLogger = messageLogger;
@@ -54,11 +56,13 @@ namespace ECDLink.Notifications.BulkSms
         {
             if (string.IsNullOrEmpty(_message.To))
             {
+                _logger.LogError("No receiver address specified");
                 throw new KeyNotFoundException("No receiver address specified");
             }
 
             if (string.IsNullOrEmpty(_message.MessageBody))
             {
+                _logger.LogError("No message template found");
                 throw new KeyNotFoundException("No message template found");
             }
 
@@ -75,7 +79,9 @@ namespace ECDLink.Notifications.BulkSms
             // build the request based on the supplied settings
             var request = new HttpRequestMessage(HttpMethod.Post, "messages");
             var message = JsonConvert.SerializeObject(_message);
-            request.Content = new StringContent(message, Encoding.UTF8, "application/json");
+            var requestContent = new StringContent(message, Encoding.UTF8, "application/json");
+            var requestContentAsString = await requestContent.ReadAsStringAsync();
+            request.Content = requestContent;
 
             var response = await GetSmsClient.SendAsync(request, cancellationToken);
             
@@ -83,14 +89,12 @@ namespace ECDLink.Notifications.BulkSms
 
             if (response.IsSuccessStatusCode)
             {
-                // TODO: Something with the SMS reply
+                _logger.LogInformation("{0}", requestContentAsString);
             }
             else
             {
-                Console.Error.WriteLine("Error sending SMS: {0}", message);
-                Console.Error.WriteLine("Error sending SMS - Response Code: {0}", response.StatusCode);
-                var responseContent = await response.Content.ReadAsStringAsync();
-                Console.Error.WriteLine("Error sending SMS - Response Content: {0}", responseContent);
+                var responseContentAsString = await response.Content.ReadAsStringAsync();
+                _logger.LogError("{0}: {1}", requestContentAsString, responseContentAsString);
                 throw new HttpRequestException();
             }
         }

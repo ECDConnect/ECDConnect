@@ -1,5 +1,6 @@
 import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
-import { traineeSelectors } from '@/store/trainee';
+import { useAppDispatch } from '@/store';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { PractitionerDto } from '@ecdlink/core';
 import {
   Alert,
@@ -43,11 +44,12 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
   submitCoachFranchisorAgreement,
   coachSmartSpaceVisit2DataNotAttendedStandards,
 }) => {
+  const appDispatch = useAppDispatch();
   const visitData = useSelector(
     traineeSelectors.getCoachFranchisorAgreementData
   );
   const coachVisitNextSteps = useSelector(
-    traineeSelectors?.getCoachVisitDataNextSteps
+    traineeSelectors?.getCoachFranchiseeAgreementVisitDataNextSteps
   );
 
   const [questions, setAnswers] = useState([
@@ -145,23 +147,21 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
         color={'textDark'}
         className={'my-3'}
       />
-      {coachVisitNextSteps && (
-        <Card className="bg-uiBg rounded-2xl p-4">
-          <Typography
-            type={'body'}
-            weight="bold"
-            text={`Next steps for ${practitioner?.user?.firstName}`}
-            color={'textDark'}
-            className={'my-3'}
-          />
-          <Typography
-            type={'body'}
-            text={`• ${coachVisitNextSteps}`}
-            color={'textMid'}
-            className={'my-3'}
-          />
-        </Card>
-      )}
+      <Card className="bg-uiBg rounded-2xl p-4">
+        <Typography
+          type={'body'}
+          weight="bold"
+          text={`Next steps for ${practitioner?.user?.firstName}`}
+          color={'textDark'}
+          className={'my-3'}
+        />
+        <Typography
+          type={'body'}
+          text={`• ${coachVisitNextSteps?.questions?.[0]?.answer}`}
+          color={'textMid'}
+          className={'my-3'}
+        />
+      </Card>
 
       <Typography
         type={'h4'}

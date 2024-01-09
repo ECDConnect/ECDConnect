@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (classRoom != null)
             {
 
-                reassignmentService.AddReassignmentForPractitioner(uId, uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classroomId, true);
+                reassignmentService.AddReassignmentForPractitioner(uId, userId, "Principal Linked Practitioner", DateTime.Now, uId, classroomId, true);
                 return classRoom;
             }
 
@@ -54,15 +54,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id.Equals(id)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             Guid? programmeType = input.ProgrammeTypeId;
-            //if a programmetype already exists on a previously created classroomgroup, use that to avoid mismatching programmes
-            var existingGroup = classRepo.GetAll()
-                    .Where(x => x.ClassroomId == input.ClassroomId)
-                    .OrderByDescending(x => x.InsertedDate)
-                    .FirstOrDefault();
-
-            if (existingGroup != null) { 
-                programmeType = existingGroup.ProgrammeTypeId;
-            }
 
             var hierarchy = engine.GetUserHierarchy(input.UserId != null ? input.UserId.ToString() : uId);
             if (classRoomGroup == null)

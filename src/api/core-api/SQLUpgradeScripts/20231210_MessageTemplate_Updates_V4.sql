@@ -1,0 +1,3 @@
+INSERT INTO "MessageTemplate" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Protocol","TemplateType","Message","TenantId","Subject","CTA","CTAText","TypeCode","NotificationColor","Ordering") VALUES
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NULL,'push','added-to-programme','Edit your profile to accept or disagree.','258a15e6-3736-45ea-875c-48d9377de4c8','You have been added to [[ProgrammeName]]','[[EditProfile]]','Edit profile',null,'amber',5);
+	 update "MessageTemplate" set "Subject" = 'You have been added to [[ProgrammeName]]',"NotificationColor" = 'amber'  where "TemplateType" = 'added-to-programme';

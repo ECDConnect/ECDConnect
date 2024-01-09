@@ -8,6 +8,8 @@ export type Message = {
   priority: number;
   viewOnDashboard: boolean;
   actionText: string;
+  isFromBackend?: boolean;
+  cta?: string;
   icon: string;
   color: Colours;
   routeConfig?: MessageRouteConfig;
@@ -22,6 +24,7 @@ export type Message = {
     | 'programme-planning'
     | 'progress-report';
   expiryDate?: string;
+  action?: string;
 };
 
 export type MessageRouteConfig = {
@@ -29,4 +32,11 @@ export type MessageRouteConfig = {
   params?: any;
 };
 
-export type MessageViewType = 'Messages' | 'Hub' | 'Both';
+export interface MessageActionConfig {
+  buttonName: string;
+  buttonIcon?: string;
+  url: string;
+  state?: any;
+}
+
+export type MessageViewType = 'Messages' | 'Hub' | 'Both' | 'None';

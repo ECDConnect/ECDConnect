@@ -24,6 +24,8 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { userSelectors } from '@store/user';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { NotificationDisplay } from '@ecdlink/graphql';
+import { useAppDispatch } from '@/store';
+import { getClubsForCoach } from '@/store/club/club.actions';
 
 type ListDataItem = UserAlertListDataItem<{
   firstName: string;
@@ -64,6 +66,7 @@ const sortOptions: SearchSortOptions = {
 };
 
 export const Practitioners: React.FC = () => {
+  const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const userData = useSelector(userSelectors.getUser);
@@ -109,14 +112,21 @@ export const Practitioners: React.FC = () => {
   const handleClick = (practitionerId: string) => {
     if (isCoach) {
       history.push('practitioner-profile-info', {
-        practitionerId,
+        practitionerId: practitionerId,
       });
     } else {
       history.push('practitioner-info-dashboard', {
-        practitionerId,
+        practitionerId: practitionerId,
       });
     }
   };
+
+  // Need to load clubs so we have the names when viewing each practitioner
+  useEffect(() => {
+    if (userData?.id) {
+      appDispatch(getClubsForCoach({ userId: userData?.id }));
+    }
+  }, [appDispatch, userData?.id]);
 
   useEffect(() => {
     if (

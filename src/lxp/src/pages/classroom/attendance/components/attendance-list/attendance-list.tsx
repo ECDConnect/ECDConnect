@@ -13,7 +13,7 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { format, getDay } from 'date-fns';
+import { format, getDay, getDayOfYear } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -110,7 +110,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       setSelectedClassroomGroups(selectedGroups);
 
       const _allLearners = allLearners.filter(
-        (x) => !Boolean(x.stoppedAttendance)
+        (x) =>
+          !Boolean(x.stoppedAttendance) &&
+          getDayOfYear(attendanceDate) >=
+            getDayOfYear(new Date(x.startedAttendance))
       );
 
       const uniqueLearners = _allLearners.filter((object, index, array) => {
@@ -404,7 +407,10 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                   selectedGroup.id ===
                   primaryClassProgramme[0]?.classroomGroupId;
                 return (
-                  <div id={`attendanceList${selectedGroup.id}`}>
+                  <div
+                    key={`attencance_list_${idx}`}
+                    id={`attendanceList${selectedGroup.id}`}
+                  >
                     <ClassProgrammeAttendanceList
                       key={`class_attencance_list_${idx}`}
                       isPrimaryClass={isPrimaryList}

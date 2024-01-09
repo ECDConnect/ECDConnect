@@ -1,12 +1,18 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { getWeek, getYear } from 'date-fns';
 import localForage from 'localforage';
-import { getAttendance } from './attendance.actions';
+import {
+  getAttendance,
+  getMonthlyAttendanceReport,
+  getPreviousWeekAttendance,
+} from './attendance.actions';
 import { AttendanceState, TrackAttendanceModelInput } from './attendance.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: AttendanceState = {
   attendance: undefined,
   attendanceTracked: undefined,
+  monthlyAttendanceRecordsByUser: {},
 };
 
 const attendanceSlice = createSlice({
@@ -59,8 +65,33 @@ const attendanceSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, getMonthlyAttendanceReport);
     builder.addCase(getAttendance.fulfilled, (state, action) => {
       state.attendance = action.payload;
+    });
+    builder.addCase(getPreviousWeekAttendance.fulfilled, (state, action) => {
+      if (!state.attendance) state.attendance = [];
+
+      for (let i = 0; i < action.payload.length; i++) {
+        const existingIndex = state.attendance?.findIndex(
+          (x) =>
+            x.userId === action.payload[i].userId &&
+            x.weekOfYear === action.payload[i].weekOfYear &&
+            x.year === action.payload[i].year &&
+            x.classroomProgrammeId === action.payload[i].classroomProgrammeId &&
+            x.attendanceDate === action.payload[i].attendanceDate
+        );
+        if (existingIndex >= 0) {
+          state.attendance[existingIndex] = action.payload[i];
+        } else {
+          state.attendance.push(action.payload[i]);
+        }
+      }
+    });
+    builder.addCase(getMonthlyAttendanceReport.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+      state.monthlyAttendanceRecordsByUser[action.meta.arg.userId] =
+        action.payload;
     });
   },
 });

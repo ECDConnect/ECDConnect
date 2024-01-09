@@ -1,10 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const GetAllGrant = gql`
-  {
-    GetAllGrant {
+  query GetAllGrant($pagingInput: PagedQueryInput) {
+    GetAllGrant(pagingInput: $pagingInput) {
       id
       description
+      isActive
     }
   }
 `;

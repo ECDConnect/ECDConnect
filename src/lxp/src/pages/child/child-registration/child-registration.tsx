@@ -110,7 +110,40 @@ export const ChildRegistration: React.FC = () => {
     childrenSelectors.getChildUserById(existingChild?.userId)
   );
 
-  const classroom = useSelector(classroomsSelectors.getClassroom);
+  const existingPhotoConsent = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.PhotoPermissions
+    )
+  );
+
+  const existingCommitmentConsent = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.CommitmentAgreement
+    )
+  );
+
+  const existingConsent = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.ConsentAgreement
+    )
+  );
+
+  const existingIndemnity = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.IndemnityAgreement
+    )
+  );
+
+  const existingInformation = useSelector(
+    userSelectors.getUserConsentByType(
+      existingChild?.userId,
+      ContentConsentTypeEnum.PersonalInformationAgreement
+    )
+  );
 
   const { goToStep, canGoBack, goBackOneStep, activeStepKey } =
     useStepNavigation(routeStep || ChildRegistrationSteps.registrationForm);
@@ -184,75 +217,99 @@ export const ChildRegistration: React.FC = () => {
 
     // CONSENT
     if (formState.childRegistrationFormModel?.childPhotoConsentAccepted) {
-      const consent = consentList?.find(
+      const photoPermissionConsent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.PhotoPermissions
       );
 
-      if (consent) {
+      if (photoPermissionConsent) {
         const childPhotoConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          photoPermissionConsent,
+          existingPhotoConsent?.id
         );
         appDispatch(userActions.createUserConsent(childPhotoConsent));
+        if (isOnline) {
+          appDispatch(userThunkActions.upsertUserConsents(childPhotoConsent));
+        }
       }
     }
     if (formState.childRegistrationFormModel?.commitmentAgreementAccepted) {
-      const consent = consentList?.find(
+      const commitmentAgreementConsent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.CommitmentAgreement
       );
-
-      if (consent) {
-        const childPhotoConsent = mapUserConsentDto(
+      if (commitmentAgreementConsent) {
+        const childCommitmentConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          commitmentAgreementConsent,
+          existingCommitmentConsent?.id
         );
-        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        appDispatch(userActions.createUserConsent(childCommitmentConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childCommitmentConsent)
+          );
+        }
       }
     }
     if (formState.childRegistrationFormModel?.consentAgreementAccepted) {
-      const consent = consentList?.find(
+      const consentAgreement = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.ConsentAgreement
       );
-
-      if (consent) {
-        const childPhotoConsent = mapUserConsentDto(
+      if (consentAgreement) {
+        const childAgreementConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          consentAgreement,
+          existingConsent?.id
         );
-        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        appDispatch(userActions.createUserConsent(childAgreementConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childAgreementConsent)
+          );
+        }
       }
     }
     if (formState.childRegistrationFormModel?.indemnityAgreementAccepted) {
-      const consent = consentList?.find(
+      const indemnityAgreementconsent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.IndemnityAgreement
       );
-
-      if (consent) {
-        const childPhotoConsent = mapUserConsentDto(
+      if (indemnityAgreementconsent) {
+        const childIndemnityConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          indemnityAgreementconsent,
+          existingIndemnity?.id
         );
-        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        appDispatch(userActions.createUserConsent(childIndemnityConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childIndemnityConsent)
+          );
+        }
       }
     }
     if (
       formState.childRegistrationFormModel?.personalInformationAgreementAccepted
     ) {
-      const consent = consentList?.find(
+      const personalConsent = consentList?.find(
         (x) => x.type === ContentConsentTypeEnum.PersonalInformationAgreement
       );
-
-      if (consent) {
-        const childPhotoConsent = mapUserConsentDto(
+      if (personalConsent) {
+        const childPersonalConsent = mapUserConsentDto(
           user?.id ?? '',
           userId,
-          consent
+          personalConsent,
+          existingInformation?.id
         );
-        appDispatch(userActions.createUserConsent(childPhotoConsent));
+        appDispatch(userActions.createUserConsent(childPersonalConsent));
+        if (isOnline) {
+          appDispatch(
+            userThunkActions.upsertUserConsents(childPersonalConsent)
+          );
+        }
       }
     }
     // END CONSENT
@@ -377,7 +434,7 @@ export const ChildRegistration: React.FC = () => {
       WorkflowStatusEnum.ChildActive
     );
     childInputModel.caregiverId = caregiverDto.id;
-    childInputModel.workflowStatusId = childStatusId;
+    childInputModel.workflowStatusId = childStatusId || undefined;
     childInputModel.insertedBy = user?.fullName;
 
     await updateChild(childInputModel);
@@ -418,7 +475,13 @@ export const ChildRegistration: React.FC = () => {
           return (
             <ActionModal
               customIcon={<Emoji3 className="mb-2" />}
-              title={`${childDetails?.firstName}'s registration is complete, great job!`}
+              title={
+                childDetails
+                  ? `${childDetails?.firstName}'s registration is complete, great job!`
+                  : existingChildUser
+                  ? `${existingChildUser.firstName}'s registration is complete, great job!`
+                  : `This child's registration is complete, great job!`
+              }
               detailText={`You earned ${pointsLibraryRegisterChild?.points} points`}
               actionButtons={[
                 {

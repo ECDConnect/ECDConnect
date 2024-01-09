@@ -124,7 +124,10 @@ export const SmartSpaceSummary: React.FC<SmartSpaceSummaryProps> = ({
   const renderLicenceResponseCard = useMemo(() => {
     const notAwardedDate = new Date(timeline?.smartSpaceLicenseNotAwardedDate);
     const awardedDate = new Date(timeline?.smartSpaceLicenseDate);
-    if (timeline?.smartSpaceLicenseNotAwardedDate) {
+    if (
+      timeline?.smartSpaceLicenseNotAwardedDate &&
+      !timeline?.smartSpaceLicenseDate
+    ) {
       return (
         <Card className="bg-errorBg my-4 flex items-center gap-4 rounded-2xl p-4">
           <div>

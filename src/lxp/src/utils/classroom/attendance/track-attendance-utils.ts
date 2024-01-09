@@ -143,13 +143,31 @@ export const getMissedClassAttendance = (
           isBefore(programStartDateDay, dateDay);
   });
 
+  const meetingDays = getClassroomGroupSchoolDays(
+    classProgrammesUpToCurrentDay
+  );
+
+  const startOfWeekDate = startOfWeek(new Date().setHours(23, 59, 59, 999), {
+    weekStartsOn: 1,
+  });
+
   if (classProgrammesUpToCurrentDay)
     for (const programme of classProgrammesUpToCurrentDay) {
+      const missedDayDate = addDays(startOfWeekDate, programme.meetingDay - 1);
+
       const classGroups = classRoomGroups.filter((x) => {
         return x.id === programme.classroomGroupId;
       });
       const classLearners = classroomGroupLearners?.filter((x) => {
-        return classGroups.some((item) => item.id === x.classroomGroupId);
+        const isValidDay =
+          isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
+          missedDayDate.getTime() >= new Date(x.startedAttendance).getTime();
+
+        return (
+          isValidDay &&
+          !Boolean(x.stoppedAttendance) &&
+          classGroups.some((item) => item.id === x.classroomGroupId)
+        );
       });
       if (
         classLearners &&
@@ -247,9 +265,23 @@ export const getMissedClassAttendanceForLearner = (
     return x.userId === learner.userId;
   });
 
+  const meetingDays = getClassroomGroupSchoolDays(
+    classProgrammesUpToCurrentDay
+  );
+  const startOfWeekDate = startOfWeek(new Date().setHours(23, 59, 59, 999), {
+    weekStartsOn: 1,
+  });
+
   if (classProgrammesUpToCurrentDay)
     for (const programme of classProgrammesUpToCurrentDay) {
+      const missedDayDate = addDays(startOfWeekDate, programme.meetingDay - 1);
+      const isValidDay =
+        isValidAttendableDate(missedDayDate, meetingDays || [], []) &&
+        missedDayDate.getTime() >=
+          new Date(learner.startedAttendance).getTime();
+
       if (
+        isValidDay &&
         !learnerAttendance.some(
           (att) => att.classroomProgrammeId === programme.id
         )

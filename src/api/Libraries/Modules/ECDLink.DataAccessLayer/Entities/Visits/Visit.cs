@@ -37,12 +37,15 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         [NotMapped]
         public string OverallRatingColor { get; set; }
         [NotMapped]
+        public bool DelicenseQuestionAnswered { get; set; }
+        [NotMapped]
         public bool VisitInProgress { get; set; }
         public DateTime? DueDate { get; set; }
         public Guid? EventId { get; set; }
         [NotMapped]
         public bool HasAnswerData { get; set; }
         public string Rating { get; set; }
+        public virtual PQARating PQARating { get; set; }
     }
 
     public interface VisitJoin<TKey>

@@ -18,14 +18,14 @@ import paintPaletteIcon from '@/assets/icon/paint-palette.svg';
 import partnershipIcon from '@/assets/icon/partnership.svg';
 import ROUTES from '@/routes/routes';
 import { LeagueType, ClubActivities } from '@/constants/club';
-import { getScoreBarColor } from '../../index.filters';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../individual-club-view';
 
 export const ClubPoints: React.FC = () => {
   const { clubId } = useParams<ClubsRouteState>();
 
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
 
-  const isPurpleLeague = club?.league?.leagueType?.name === LeagueType.Purple;
+  const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
 
   const history = useHistory();
 
@@ -151,12 +151,19 @@ export const ClubPoints: React.FC = () => {
       />
       <ScoreCard
         className="mt-5"
-        mainText={String(club?.totalClubPoints || 0)}
+        mainText={String(club?.pointsTotal || 0)}
         hint="points"
-        currentPoints={club?.totalClubPoints ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)
-        maxPoints={club?.maxClubPoints ?? 0}
+        currentPoints={club?.pointsTotal ?? 80} // EC-1400: if the club has earned 0 points, show red bar (8px width only)
+        maxPoints={club?.maxPointsTotal ?? 0}
         barBgColour="uiLight"
-        barColour={getScoreBarColor(club?.totalClubPoints ?? 0, 1500, 1499)}
+        barColour={
+          isCurrentPointsAtLeast80PercentOfTotal(
+            club?.pointsTotal || 0,
+            club?.maxPointsTotal || 0
+          )
+            ? 'successMain'
+            : 'alertMain'
+        }
         bgColour="uiBg"
         textColour="black"
       />

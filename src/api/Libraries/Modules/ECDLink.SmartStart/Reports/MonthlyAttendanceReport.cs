@@ -3,8 +3,6 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
 using HotChocolate;
@@ -60,6 +58,7 @@ namespace ECDLink.SmartStart.Reports
                         
                         if(daysOfClass.Count() > 0)
                         {
+                            // TODO - I think this needs to check the year as well
                             var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
@@ -100,7 +99,9 @@ namespace ECDLink.SmartStart.Reports
                     MonthOfYear = item.Key.Month,
                     Month = item.Key.ToString("MMMM"),
                     Year = item.Key.Year,
-                    PercentageAttendance = reportPercentage > 100 ? 100 : (reportPercentage < 0 ? 0 : reportPercentage)
+                    PercentageAttendance = reportPercentage > 100 ? 100 : (reportPercentage < 0 ? 0 : reportPercentage),
+                    NumberOfSessions = actualAttendance,
+                    TotalScheduledSessions = totalAttendance,
                 });
             }
 

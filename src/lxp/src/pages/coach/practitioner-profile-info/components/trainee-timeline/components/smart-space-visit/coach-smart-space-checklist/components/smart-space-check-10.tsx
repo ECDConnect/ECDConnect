@@ -5,7 +5,6 @@ import {
   Button,
   CheckboxGroup,
   Colours,
-  Divider,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';

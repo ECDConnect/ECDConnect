@@ -86,20 +86,27 @@ export const getUserConsents = createAsyncThunk<
 );
 
 export const upsertUserConsents = createAsyncThunk<
-  boolean[],
+  any,
   // eslint-disable-next-line @typescript-eslint/ban-types
-  {},
+  UserConsentDto,
   ThunkApiType<RootState>
 >(
   'upsertUserConsents',
   // eslint-disable-next-line no-empty-pattern
-  async ({}, { getState, rejectWithValue }) => {
+  async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
       user: { userConsent },
     } = getState();
 
     try {
+      if (userAuth?.auth_token && input.id) {
+        return await new UserService(userAuth?.auth_token).updateUserConsents(
+          input.id,
+          mapConsent(input)
+        );
+      }
+
       let promises: Promise<boolean>[] = [];
 
       if (userAuth?.auth_token && userConsent) {
@@ -223,6 +230,15 @@ export const addUser = createAsyncThunk<
   }
 });
 
+const mapConsent = (userConsent: UserConsentDto): UserConsentInput => ({
+  Id: userConsent.id,
+  ConsentId: userConsent.consentId,
+  ConsentType: userConsent.consentType,
+  CreatedUserId: userConsent.createdUserId,
+  UserId: userConsent.userId,
+  IsActive: true,
+});
+
 const mapUser = (user: Partial<UserDto>): UserModelInput => ({
   isSouthAfricanCitizen: user.isSouthAfricanCitizen || false,
   idNumber: user.idNumber && user.idNumber.length > 0 ? user.idNumber : null,
@@ -248,4 +264,5 @@ const mapUser = (user: Partial<UserDto>): UserModelInput => ({
   languageId:
     user.languageId && user.languageId.length ? user.languageId : null,
   whatsAppNumber: user.whatsappNumber ? user.whatsappNumber : null,
+  resetData: user.resetData || false,
 });

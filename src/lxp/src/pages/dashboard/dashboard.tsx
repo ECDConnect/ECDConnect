@@ -12,6 +12,7 @@ import {
   Typography,
   UserAvatar,
   ScoreCard,
+  TitleListItem,
 } from '@ecdlink/ui';
 import { ReactComponent as Badge } from '@ecdlink/ui/src/assets/badge/badge_neutral.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -63,6 +64,10 @@ import { ScoreCardProps } from '@ecdlink/ui/lib/components/score-card/score-card
 import { CommunityRouteState } from '../community/community.types';
 import { coachSelectors } from '@/store/coach';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
+import { isCurrentPointsAtLeast80PercentOfTotal } from '../community/clubs-tab/club/individual-club-view';
+import { notificationTagConfig } from '@/constants/notifications';
+import { UserTypeEnum } from '@/models/auth/user/UserContext';
 const { version } = require('../../../package.json');
 
 export enum NavigationTypes {
@@ -87,6 +92,7 @@ export interface DashboardRouteState {
 }
 
 export const Dashboard: React.FC = () => {
+  const club = useSelector(getClubForPractitionerSelector);
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
@@ -103,6 +109,7 @@ export const Dashboard: React.FC = () => {
   const newNotificationCount = useSelector(
     notificationsSelectors.getNewNotificationCount
   );
+
   const isPractitioner = !!practitioner;
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
@@ -112,20 +119,17 @@ export const Dashboard: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-
-  const a = useCallback(async () => {
-    appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
-  }, []);
-
-  useEffect(() => {
-    a();
-  }, []);
-
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
+  const isPractitionerAcceptAgreementNotification =
+    dashboardNotification?.message?.cta?.includes(
+      notificationTagConfig.AcceptAgreement.cta!
+    );
+
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -149,7 +153,7 @@ export const Dashboard: React.FC = () => {
 
     const currentMonth = new Date().getMonth() + 1; // +1 for 0 index
     const pointsTotal = pointsSummaryData.reduce((total, current) => {
-      if (current.month == currentMonth) {
+      if (current.month === currentMonth) {
         return (total += current.pointsTotal);
       }
       return total;
@@ -241,44 +245,54 @@ export const Dashboard: React.FC = () => {
     }
   }, [completedSteps?.length]);
 
-  const leagueCard = useMemo((): ScoreCardProps => {
-    // TODO: add integration
-    const mockedLeague = {
-      position: 4,
-      name: 'Lady Bugs',
-      currentPoints: 200,
-      maxPoints: 300,
-      isTop80Percent: true,
-    };
+  const clubCard = useMemo((): ScoreCardProps => {
+    const isAtLeast80PercentOfTotal = isCurrentPointsAtLeast80PercentOfTotal(
+      club?.pointsTotal ?? 0,
+      club?.maxPointsTotal ?? 0
+    );
+    const mainColor =
+      !!club?.pointsTotal && isAtLeast80PercentOfTotal
+        ? 'successMain'
+        : 'secondary';
+    const bgColour =
+      !!club?.pointsTotal && isAtLeast80PercentOfTotal
+        ? 'successBg'
+        : 'secondaryAccent2';
+
     return {
       image: (
         <div className="relative mr-4 flex h-14 w-14 items-center justify-center">
           <Badge
             className="absolute z-0 h-12 w-12"
-            fill={`var(--${
-              mockedLeague.isTop80Percent ? 'successMain' : 'secondary'
-            })`}
+            fill={`var(--${mainColor})`}
           />
           <Typography
             className="relative z-10"
             color="white"
             type="h1"
-            text={String(mockedLeague.position)}
+            text={String(club?.leagueRanking)}
           />
         </div>
       ),
-      currentPoints: mockedLeague.currentPoints,
-      maxPoints: mockedLeague.maxPoints,
+      currentPoints: club?.pointsTotal ?? 0,
+      maxPoints: club?.maxPointsTotal ?? 0,
       barBgColour: 'white',
-      barColour: 'successMain',
-      hint: mockedLeague.name,
+      barColour: mainColor,
+      hint: club?.name ?? '',
       mainText: '',
       hintClassName: 'mt-10',
-      bgColour: 'successBg',
+      bgColour,
       textColour: 'black',
-      onClick: () => history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT),
+      onClick: () =>
+        history.push(
+          isPractitionerAcceptAgreementNotification
+            ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+            : ROUTES.PRACTITIONER.COMMUNITY[
+                practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+              ]
+        ),
     };
-  }, []);
+  }, [club, practitioner]);
 
   const initStaticStoreSetup = async () => {
     const today = new Date();
@@ -338,13 +352,15 @@ export const Dashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    initStaticStoreSetup();
-    if (
-      dashboardNotification?.isNew &&
-      practitioner?.progress! >= 2 &&
-      !practitioner?.isTrainee
-    ) {
-      appDispatch(notificationActions.resetNotificationState());
+    if (isOnline) {
+      initStaticStoreSetup();
+      if (
+        dashboardNotification?.isNew &&
+        practitioner?.progress! >= 2 &&
+        !practitioner?.isTrainee
+      ) {
+        appDispatch(notificationActions.resetFrontendNotificationState());
+      }
     }
   }, []);
 
@@ -367,12 +383,14 @@ export const Dashboard: React.FC = () => {
    */
   useEffect(() => {
     if (isOnline && !!userData) {
-      if (isCoach) {
-        (async () =>
-          await appDispatch(
-            practitionerForCoachThunkActions.getPractitionersForCoach({})
-          ).unwrap())();
+      (async () =>
+        await appDispatch(
+          pointsThunkActions.getPointsLibrary({
+            userId: userData?.id!,
+          })
+        ).unwrap())();
 
+      if (isCoach) {
         (async (id) =>
           await appDispatch(
             classroomsForCoachThunkActions.getClassroomForCoach({
@@ -386,14 +404,13 @@ export const Dashboard: React.FC = () => {
           ).unwrap())();
       }
 
-      if (userData.roles?.some((role) => role.name === 'Practitioner')) {
-        (async () =>
-          await appDispatch(
-            practitionerThunkActions.getPractitionerByUserId({
-              userId: userData?.id || '',
-            })
-          ).unwrap())();
-
+      if (
+        userData.roles?.some(
+          (role) =>
+            role.name === UserTypeEnum.Practitioner ||
+            role.name === UserTypeEnum.Principal
+        )
+      ) {
         const currentDate = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setMonth(currentDate.getMonth() - 12);
@@ -403,13 +420,6 @@ export const Dashboard: React.FC = () => {
               userId: userData?.id!,
               startDate: oneYearAgo,
               endDate: currentDate,
-            })
-          ).unwrap())();
-
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsLibrary({
-              userId: userData?.id!,
             })
           ).unwrap())();
 
@@ -536,8 +546,8 @@ export const Dashboard: React.FC = () => {
     navigation.splice(3, 0, {
       name: NavigationTypes.Community,
       href: isFirstTimeCommunitySection
-        ? ROUTES.COMMUNITY.WELCOME
-        : ROUTES.COMMUNITY.ROOT,
+        ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
+        : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
       params: { isFromDashboard: true } as CommunityRouteState,
       icon: 'BookOpenIcon',
       current: false,
@@ -684,6 +694,7 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
+
     dashboardItems.push({
       title: 'Calendar',
       titleIcon: 'CalendarIcon',
@@ -942,7 +953,7 @@ export const Dashboard: React.FC = () => {
         className={styles.welcomeText}
       />
 
-      <div className={`${!classroom ? styles.wrapper : ''}`}>
+      <div className={`${!classroom ? styles.wrapper : ''} pb-4`}>
         <DashboardItems
           listItems={dashboardItems}
           notification={dashboardNotification}
@@ -964,23 +975,44 @@ export const Dashboard: React.FC = () => {
             textPosition={pointsScoreProps.textPosition}
           />
         )}
-        {isPractitioner && (
+        {isPractitioner && !!club && !!club?.league?.id && isOnline && (
           <ScoreCard
             className="h-20"
-            mainText={leagueCard.mainText}
-            hint={leagueCard.hint}
-            hintClassName={leagueCard.hintClassName}
+            mainText={clubCard.mainText}
+            hint={clubCard.hint}
+            hintClassName={clubCard.hintClassName}
             textPosition="left"
-            currentPoints={leagueCard.currentPoints}
-            maxPoints={leagueCard.maxPoints}
-            onClick={leagueCard.onClick}
-            barBgColour={leagueCard.barBgColour}
-            barColour={leagueCard.barColour}
-            bgColour={leagueCard.bgColour}
-            image={leagueCard.image}
-            textColour={leagueCard.textColour}
+            currentPoints={clubCard.currentPoints}
+            maxPoints={clubCard.maxPoints}
+            onClick={clubCard.onClick}
+            barBgColour={clubCard.barBgColour}
+            barColour={clubCard.barColour}
+            bgColour={clubCard.bgColour}
+            image={clubCard.image}
+            textColour={clubCard.textColour}
           />
         )}
+        {isPractitioner &&
+          (!club || (!!club && !club?.league?.id) || (!!club && !isOnline)) && (
+            <div className="mt-1">
+              <TitleListItem
+                item={{
+                  title: !!club ? club?.name : 'Community',
+                  titleIcon: 'UserGroupIcon',
+                  titleIconClassName: styles.communityIcon,
+                  classNames: 'bg-uiBg',
+                  onActionClick: () =>
+                    history.push(
+                      isPractitionerAcceptAgreementNotification
+                        ? ROUTES.PRACTITIONER.COMMUNITY.ACCEPT_CLUB_LEADER_ROLE
+                        : ROUTES.PRACTITIONER.COMMUNITY[
+                            practitioner?.isNewInClub ? 'WELCOME' : 'ROOT'
+                          ]
+                    ),
+                }}
+              />
+            </div>
+          )}
       </div>
     </BannerWrapper>
   );

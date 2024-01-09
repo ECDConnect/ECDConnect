@@ -70,7 +70,7 @@ export const CareGiverContributionForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg px-4 pt-2 pb-4'}>
+    <div className={'h-full bg-white px-4 pt-2 pb-4'}>
       <Typography type={'h1'} text={'Primary caregiver'} color={'primary'} />
       <Typography
         type={'h2'}
@@ -134,7 +134,7 @@ export const CareGiverContributionForm: React.FC<
 const PractitionerForm: React.FC<{ amount: number }> = ({ amount }) => {
   return (
     <>
-      {amount > 0 ? (
+      {!!amount ? (
         <label className={classNames(styles.label, 'mt-4')}>
           {`Did the caregiver commit to contributing R${amount} to the programme each month?`}
         </label>
@@ -158,7 +158,7 @@ const CaregiverForm: React.FC<{ playgroupName: string; amount: number }> = ({
         type="unspecified"
         fontSize="14"
       />
-      {amount > 0 ? (
+      {!!amount ? (
         <Typography
           className="mt-4"
           text={`Do you commit to contributing a monthly amount of R${amount} towards ${playgroupName}?`}

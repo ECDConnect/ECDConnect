@@ -17,6 +17,7 @@ import walktroughImage from '../../../assets/walktroughImage.png';
 import ROUTES from '@/routes/routes';
 import { useAppContext } from '@/walkthrougContext';
 import { useHistory } from 'react-router';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
 
 interface StatementsShowInfoProps {
   setShowInfo: any;
@@ -38,6 +39,7 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
 }) => {
   const dialog = useDialog();
   const history = useHistory();
+  const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [data, setData] = useState<Dataprops[]>();
   const [availableLanguages, setAvailableLanguages] = useState<Dataprops[]>();
@@ -57,15 +59,17 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
   }, [availableLanguages, selectedLanguage]);
 
   useLayoutEffect(() => {
-    const loadInfoData = async () => {
-      const htmlData = await new IncomeStatementsService(
-        userAuth?.auth_token!
-      ).GetAllIncomeStatementsInfo(selectedLanguage);
+    if (isOnline) {
+      const loadInfoData = async () => {
+        const htmlData = await new IncomeStatementsService(
+          userAuth?.auth_token!
+        ).GetAllIncomeStatementsInfo(selectedLanguage);
 
-      setData(htmlData as any);
-    };
+        setData(htmlData as any);
+      };
 
-    loadInfoData();
+      loadInfoData();
+    }
   }, [selectedLanguage, userAuth?.auth_token]);
 
   useEffect(() => {
@@ -88,15 +92,17 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
   }, [availableLanguages]);
 
   useLayoutEffect(() => {
-    const loadAvailableLanguages = async () => {
-      const availableLang = await new IncomeStatementsService(
-        userAuth?.auth_token!
-      ).allContentLanguages('IncomeStatements');
+    if (isOnline) {
+      const loadAvailableLanguages = async () => {
+        const availableLang = await new IncomeStatementsService(
+          userAuth?.auth_token!
+        ).allContentLanguages('IncomeStatements');
 
-      setAvailableLanguages(availableLang as any);
-    };
+        setAvailableLanguages(availableLang as any);
+      };
 
-    loadAvailableLanguages();
+      loadAvailableLanguages();
+    }
   }, [userAuth?.auth_token]);
 
   const { setState } = useAppContext();
@@ -166,11 +172,6 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
           fontSize={'16'}
           text={data?.[0]?.description}
           color={'textDark'}
-        />
-        <Alert
-          className="my-2"
-          type="info"
-          title={`You will get 100 Top Me Up points for every income statement you submit!`}
         />
         <Typography
           type="markdown"

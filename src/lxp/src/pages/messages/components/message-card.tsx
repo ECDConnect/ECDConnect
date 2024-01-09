@@ -45,7 +45,7 @@ export const MessageCard: React.FC<MessageCardProps> = ({
           iconColor={'white'}
         />
       </div>
-      <div className="w-4/5 flex flex-col items-start">
+      <div className="flex w-4/5 flex-col items-start">
         <div className="flex flex-row items-center">
           <Typography
             className="mr-2"
@@ -59,7 +59,7 @@ export const MessageCard: React.FC<MessageCardProps> = ({
             )}
           />
           {status === 'new' && (
-            <div className={'h-2 w-2 rounded-full p-1 bg-infoMain'}></div>
+            <div className={'bg-infoMain h-2 w-2 rounded-full p-1'}></div>
           )}
         </div>
 
@@ -77,15 +77,17 @@ export const MessageCard: React.FC<MessageCardProps> = ({
           text={message}
         />
 
-        <Button
-          className="mt-2"
-          type="filled"
-          size="small"
-          textColor="white"
-          text={actionText}
-          onClick={onAction}
-          color="primary"
-        />
+        {actionText && (
+          <Button
+            className="mt-2"
+            type="filled"
+            size="small"
+            textColor="white"
+            text={actionText}
+            onClick={onAction}
+            color="primary"
+          />
+        )}
       </div>
     </div>
   );

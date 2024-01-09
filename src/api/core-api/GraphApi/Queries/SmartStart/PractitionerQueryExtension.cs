@@ -6,7 +6,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
-using ECDLink.Api.CoreApi.Services.Interfaces;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -265,7 +265,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public async Task<List<Child>> GetAllChildrenByRole([Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
-            [Service] RoleManager<IdentityRole> roleManager,
+            [Service] RoleManager<ApplicationIdentityRole> roleManager,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService practiManager,
             string userId)
@@ -432,7 +432,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             return result;
         }
-
         public List<PractitionerModel> GetAllPractitioners([Service] PersonnelService personnelService)
         {
             return personnelService.GetAllPractitioners();

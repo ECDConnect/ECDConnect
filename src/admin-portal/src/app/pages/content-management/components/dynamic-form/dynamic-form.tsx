@@ -12,6 +12,7 @@ import {
   FormTemplateField,
 } from '../../content-management-models';
 import { Alert } from '@ecdlink/ui';
+import { CombinedDatePickers } from '../../../../components/combined-date-pickers';
 
 const acceptedFormats = [
   'svg',
@@ -28,6 +29,7 @@ export interface DynamicFormProps {
   handleform: any;
   setValue: any;
   defaultLanguageId: string;
+  acceptedFileFormats?: string[];
 }
 
 const contentWrapper = '';
@@ -37,8 +39,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
   handleform,
   setValue,
   defaultLanguageId,
+  acceptedFileFormats,
 }) => {
-  const { register, errors } = handleform;
+  const { register, control, errors } = handleform;
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -100,7 +103,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
               />
               <div className="sm:col-span-12">
                 <FormFileInput
-                  acceptedFormats={acceptedFormats}
+                  acceptedFormats={acceptedFileFormats || acceptedFormats}
                   label={title}
                   nameProp={propName}
                   contentUrl={
@@ -113,6 +116,23 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         case FieldType.Link: {
+          if (title === 'G T -  Skills' || title === 'Skills') {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  <DynamicSelector
+                    title={field.title}
+                    isReview={false}
+                    contentValue={field.contentValue}
+                    languageId={defaultLanguageId}
+                    optionDefinition={field.optionDefinition}
+                    setSelectedItems={(value) => onStateChange(propName, value)}
+                    isSkillType={true}
+                  />
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -161,7 +181,22 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             </div>
           );
         }
-
+        case FieldType.DatePicker: {
+          return (
+            <div key={propName} className={contentWrapper}>
+              <div className="sm:col-span-12">
+                <CombinedDatePickers
+                  label={title}
+                  nameProp={propName}
+                  control={control}
+                  error={errors[propName]?.message}
+                  required={required}
+                  validation={validation}
+                />
+              </div>
+            </div>
+          );
+        }
         default:
           return (
             <div key={propName}>

@@ -42,6 +42,7 @@ const statementsSlice = createSlice({
       state.incomeStatements = initialState.incomeStatements;
       state.unSubmittedIncomeItems = initialState.unSubmittedIncomeItems;
       state.unSubmittedExpenseItems = initialState.unSubmittedExpenseItems;
+      state.payTypes = initialState.payTypes;
     },
   },
   extraReducers: (builder) => {
@@ -66,7 +67,18 @@ const statementsSlice = createSlice({
     });
     builder.addCase(submitIncomeStatement.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
-      state.incomeStatements = [...state.incomeStatements, action.payload];
+
+      // Check if we have already synced the statement, if not add it to the state
+      if (
+        state.incomeStatements.findIndex(
+          (statement) =>
+            statement.year === action.payload.year &&
+            statement.month === action.payload.month
+        ) < 0
+      ) {
+        state.incomeStatements = [...state.incomeStatements, action.payload];
+      }
+
       state.unsyncedIncomeItems = [];
       state.unsyncedExpenseItems = [];
       state.unSubmittedIncomeItems = [];

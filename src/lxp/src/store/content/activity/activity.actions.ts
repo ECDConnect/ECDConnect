@@ -13,26 +13,31 @@ export const getActivities = createAsyncThunk<
   async ({ locale }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      activityData: { activities: activitiesCache },
     } = getState();
 
-    try {
-      let activities: ActivityDto[] | undefined;
+    if (!activitiesCache) {
+      try {
+        let activities: ActivityDto[] | undefined;
 
-      if (userAuth?.auth_token) {
-        activities = await new ContentActivityService(
-          userAuth?.auth_token
-        ).getActivities(locale);
-      } else {
-        return rejectWithValue('no access token, profile check required');
+        if (userAuth?.auth_token) {
+          activities = await new ContentActivityService(
+            userAuth?.auth_token
+          ).getActivities(locale);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!activities) {
+          return rejectWithValue('Error getting activities');
+        }
+
+        return activities;
+      } catch (err) {
+        return rejectWithValue(err);
       }
-
-      if (!activities) {
-        return rejectWithValue('Error getting activities');
-      }
-
-      return activities;
-    } catch (err) {
-      return rejectWithValue(err);
+    } else {
+      return activitiesCache;
     }
   }
 );

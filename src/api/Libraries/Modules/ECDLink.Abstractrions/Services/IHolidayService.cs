@@ -7,6 +7,13 @@ namespace ECDLink.Abstractrions.Services
     {
         IEnumerable<T> GetHolidays(int year, string locale = "ZA");
 
-        IEnumerable<T> GetHolidays(DateTime startMonth, DateTime endMonth, string locale = "ZA");
+        /// <summary>
+        /// Return public holidays between the given dates
+        /// </summary>
+        /// <param name="startDate">Start date</param>
+        /// <param name="endDate">End date</param>
+        /// <param name="locale">Region to fetch holidays for</param>
+        /// <returns></returns>
+        IEnumerable<T> GetHolidays(DateTime startDate, DateTime endDate, string locale = "ZA");
     }
 }

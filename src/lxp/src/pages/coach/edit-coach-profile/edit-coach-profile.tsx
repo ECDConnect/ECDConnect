@@ -60,7 +60,7 @@ export const EditCoachProfile: React.FC = () => {
 
         appDispatch(coachActions.updateCoach(coachCopy));
         appDispatch(coachThunkActions.updateCoach(coachCopy));
-        appDispatch(notificationActions.resetNotificationState());
+        appDispatch(notificationActions.resetFrontendNotificationState());
       }
 
       history.push(ROUTES.ROOT);

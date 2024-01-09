@@ -76,7 +76,11 @@ export const PointsSummary: React.FC = () => {
     });
 
     return pointsList;
-  }, [pointsSummaryDataWithLibrary]);
+  }, [
+    pointsSummaryDataWithLibrary,
+    practitioner?.isFundaAppAdmin,
+    practitioner?.isPrincipal,
+  ]);
 
   const pointsTotal = pointsSummaryDataWithLibrary.reduce(
     (total, current) => (total += current.pointsTotal),
@@ -121,23 +125,25 @@ export const PointsSummary: React.FC = () => {
         );
       }
       if (userStanding >= 50) {
-        <CelebrationCard
-          image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
-          primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
-          secondaryMessage="So far this year, you have more points than most other SmartStarters in you club!"
-          primaryTextColour="secondary"
-          secondaryTextColour="black"
-          backgroundColour="infoBb"
-        />;
+        return (
+          <CelebrationCard
+            image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
+            primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
+            secondaryMessage="You have more points than most other SmartStarters in your club!"
+            primaryTextColour="secondary"
+            secondaryTextColour="black"
+            backgroundColour="infoBb"
+          />
+        );
       }
       if (userStanding < 50) {
         return (
           <CelebrationCard
             image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-            primaryTextColour="errorMain"
-            backgroundColour="errorBg"
-            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points this year! Earn more points to join them.`}
+            primaryTextColour="alertMain"
+            backgroundColour="alertBg"
+            secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points! Earn more points to join them.`}
             secondaryTextColour="black"
           />
         );
@@ -149,8 +155,8 @@ export const PointsSummary: React.FC = () => {
         <CelebrationCard
           image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
           primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-          primaryTextColour="errorMain"
-          backgroundColour="errorBg"
+          primaryTextColour="alertMain"
+          backgroundColour="alertBg"
           secondaryMessage="Check out the tips below to earn more points this month."
           secondaryTextColour="black"
         />
@@ -178,7 +184,12 @@ export const PointsSummary: React.FC = () => {
         />
       );
     }
-  }, [percentageScore, userStanding]);
+  }, [
+    percentageScore,
+    pointsTotalForYear,
+    practitioner?.user?.firstName,
+    userStanding,
+  ]);
 
   // SHARE LOGIC
   const shareRef = useRef<HTMLDivElement>(null);
@@ -239,7 +250,7 @@ export const PointsSummary: React.FC = () => {
                       ? pointsLibraryScore.maxMonthlyPoints
                       : pointsLibraryScore.maxYearlyPoints
                   }
-                  description={pointsLibraryScore.subActivity || 'Unknown'}
+                  description={pointsLibraryScore.todoDescription || 'Unknown'}
                   badgeImage={
                     <Badge
                       style={{

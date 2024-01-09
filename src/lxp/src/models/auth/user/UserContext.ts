@@ -3,6 +3,7 @@ export enum UserTypeEnum {
   Practitioner = 'Practitioner',
   Caregiver = 'Caregiver',
   Child = 'Child',
+  Principal = 'Principal',
 }
 
 export interface UserContext {

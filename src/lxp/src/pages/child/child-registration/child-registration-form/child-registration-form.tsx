@@ -184,7 +184,7 @@ const PractitionerForm: React.FC<any> = ({
   isValid,
 }) => {
   return (
-    <div className={'w-full p-4'}>
+    <div className={'w-full bg-white p-4'}>
       <Alert
         type={'info'}
         message={

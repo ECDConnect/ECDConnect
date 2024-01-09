@@ -1,37 +1,42 @@
+import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { isSameDay } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { programmeSelectors } from '@store/programme';
 import { DailyRoutine } from './components/daily-routine/daily-routine';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useHolidays } from '@/hooks/useHolidays';
-import ProgrammeWrapper from './walkthrough/programme-wrapper';
+import { LocalStorageKeys, useDialog } from '@ecdlink/core';
 import {
   getStorageItem,
   setStorageItem,
 } from '@/utils/common/local-storage.utils';
-import walktroughImage from '@/assets/walktroughImage.png';
-import { LocalStorageKeys, useDialog } from '@ecdlink/core';
-import { ActionModal, DialogPosition, Typography } from '@ecdlink/ui';
-import { useAppContext } from '@/walkthrougContext';
+import iconRobotImage from '@/assets/iconRobot.svg';
+import {
+  progressTrackingSelectors,
+  progressTrackingThunkActions,
+} from '@/store/progress-tracking';
+import { useAppDispatch } from '@/store';
+import ProgressReport from '../components/progress-report/progress-report';
+const { usePDF } = require('react-to-pdf');
 
 interface ProgrammeDashboardProps {
   programmeStartDate: Date | undefined;
 }
 
+export interface iSkills {
+  skill: string;
+  totalChildren: number;
+}
+
 export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   programmeStartDate,
 }) => {
-  // const history = useHistory();
-  // const { isOnline } = useOnlineStatus();
-
-  const completeProgrammeTutorial = () => {
-    setStorageItem(true, LocalStorageKeys.programmeWalkthroughComplete);
-  };
-
+  const dialog = useDialog();
+  const appDispatch = useAppDispatch();
+  const [showReport, setShowReport] = useState(false);
   const [selectedDate, setSelectedDate] = useState(
     programmeStartDate || new Date()
   );
-
   const currentProgramme = useSelector(
     programmeSelectors.getProgrammeByDate(new Date(selectedDate))
   );
@@ -40,28 +45,166 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   );
   const holiday = useHolidays();
   const isHoliday = holiday?.isHoliday(selectedDate);
-  const dialog = useDialog();
 
-  const {
-    setState,
-    state: { run, stepIndex },
-  } = useAppContext();
-
-  const programmeTutorialTaken = getStorageItem(
-    LocalStorageKeys.programmeWalkthroughComplete
+  // Progress Summary Report
+  const progressSummary = useSelector(
+    progressTrackingSelectors?.getPractitionerProgressReportSummary
+  );
+  const fetchData = useCallback(
+    async (reportDate: string) => {
+      await appDispatch(
+        progressTrackingThunkActions.getPractitionerProgressReportSummary({
+          reportingPeriod: reportDate,
+        })
+      );
+    },
+    [appDispatch]
   );
 
-  const handleClickStart = () => {
-    setState({ run: true, tourActive: true, stepIndex: 0 });
-  };
+  const { toPDF, targetRef } = usePDF({
+    filename: 'practitioner-progress-summary-report.pdf',
+  });
+
+  const downloadPdf = useCallback(() => {
+    setShowReport(true);
+    setTimeout(() => toPDF(), 600);
+    setTimeout(() => setShowReport(false), 600);
+  }, [setShowReport, toPDF]);
 
   useEffect(() => {
-    //if (programmeTutorialTaken === undefined && !programmeTutorialTaken) {
-    // if (!run) {
-    //   showProgrammeWalkthrough();
-    // }
-    //}
-  }, [programmeTutorialTaken]);
+    if (!progressSummary) {
+      const today = new Date();
+      const reportDate =
+        today.getMonth() >= 0 && today.getMonth() <= 6
+          ? 'June'
+          : 'November' + today.getFullYear();
+      fetchData(reportDate);
+    } else {
+      let total: number = 0;
+      const skills: iSkills[] = [];
+      const dMessage = [];
+
+      const showProgressReportDialog = async (dMessage: string[]) => {
+        dialog({
+          // blocking: true,
+          position: DialogPosition.Middle,
+          render: (onSubmit: any, onCancel: any) => (
+            <ActionModal
+              className={'mx-4'}
+              title="What are children working on?"
+              paragraphs={dMessage}
+              customIcon={
+                <div
+                  className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"
+                  style={{ width: 85 }}
+                >
+                  <img src={iconRobotImage} alt="card" />
+                </div>
+              }
+              actionButtons={[
+                {
+                  text: 'Download the full summary',
+                  colour: 'primary',
+                  onClick: () => {
+                    downloadPdf();
+                    setTimeout(() => onCancel(), 600);
+                  },
+                  type: 'filled',
+                  textColour: 'white',
+                  leadingIcon: 'DownloadIcon',
+                },
+                {
+                  text: 'Close',
+                  textColour: 'primary',
+                  colour: 'primary',
+                  type: 'outlined',
+                  onClick: () => onCancel(),
+                  leadingIcon: 'XIcon',
+                },
+              ]}
+            />
+          ),
+        });
+      };
+
+      progressSummary?.classSummaries?.forEach((item) => {
+        total = item.childCount || 0;
+        item?.categories?.forEach((subItem) => {
+          subItem?.subCategories?.forEach((subCategoriesItem) => {
+            subCategoriesItem?.childrenPerSkill?.forEach((skillItem) => {
+              let childSkill: string = skillItem?.skill || '';
+              let childCount: number = skillItem?.childCount || 0;
+              const existing = skills.find((n) => n.skill === childSkill);
+              if (existing) {
+                childCount = existing.totalChildren + childCount;
+              }
+              skills.push({ skill: childSkill, totalChildren: childCount });
+            });
+          });
+        });
+      });
+
+      const today = new Date();
+      const thisYear31July = new Date(today.getFullYear(), 6, 31);
+      const thisYear20Dec = new Date(today.getFullYear(), 11, 20);
+      const nextYear31July = new Date(today.getFullYear() + 1, 6, 31);
+      const reportMonth = today.getMonth() >= 6 ? 'June' : 'November';
+
+      if (skills.length === 0) {
+        dMessage.push('None of the children are working on skills.');
+      } else {
+        dMessage.push(
+          'Based on your ' +
+            reportMonth +
+            ' progress reports, here are some areas that children are working on:'
+        );
+
+        skills.sort((a, b) => a.totalChildren - b.totalChildren);
+        skills.forEach((item, index) => {
+          if (index <= 2) {
+            dMessage.push(
+              '- ' +
+                item.skill +
+                ' (' +
+                item.totalChildren +
+                (item.totalChildren === 1 ? ' child)' : ' children)')
+            );
+          }
+        });
+
+        dMessage.push(
+          'Think about adding activities to work on these areas. Download the full summary.'
+        );
+      }
+
+      const storageItemJuly = getStorageItem<number>(
+        LocalStorageKeys.hasViewedJulProgressReport
+      );
+      const storageItemDecember = getStorageItem<number>(
+        LocalStorageKeys.hasViewedDecProgressReport
+      );
+
+      if (total > 0) {
+        if (today >= thisYear31July && today < thisYear20Dec) {
+          if (!storageItemJuly || storageItemJuly === 0) {
+            setStorageItem(
+              today.getTime(),
+              LocalStorageKeys.hasViewedJulProgressReport
+            );
+            showProgressReportDialog(dMessage);
+          }
+        } else if (today >= thisYear20Dec && today < nextYear31July) {
+          if (!storageItemDecember || storageItemDecember === 0) {
+            showProgressReportDialog(dMessage);
+            setStorageItem(
+              today.getTime(),
+              LocalStorageKeys.hasViewedDecProgressReport
+            );
+          }
+        }
+      }
+    }
+  }, [fetchData, progressSummary, downloadPdf, dialog]);
 
   // const handleAddProgramme = () => {
   //   if (isOnline) {
@@ -75,94 +218,13 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   //   dialog({
   //     position: DialogPosition.Bottom,
   //     render: (onSubmit) => {
-  //       return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+  //       return <div>test</div>//<OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
   //     },
   //   });
   // };
 
-  const handleDeclineWalkthrough = () => {
-    dialog({
-      position: DialogPosition.Bottom,
-      render: (submit, cancel) => (
-        <ActionModal
-          customIcon={
-            <div className="flex">
-              <img src={walktroughImage} alt="profile" className="mb-2" />
-              <Typography
-                text="Ok, you can always get  help by tapping the question mark at the top of the screen!"
-                type={'body'}
-                color={'textDark'}
-                align="center"
-                className="mt-2"
-              />
-            </div>
-          }
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          actionButtons={[
-            {
-              text: 'Close',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                submit();
-                setStorageItem(
-                  true,
-                  LocalStorageKeys.programmeWalkthroughComplete
-                );
-              },
-              leadingIcon: 'XIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
-
-  const showProgrammeWalkthrough = () => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (submit, cancel) => (
-        <ActionModal
-          customIcon={
-            <img src={walktroughImage} alt="profile" className="mb-2" />
-          }
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`Hello!  Would you like me to show you how to use this section?`}
-          detailText={`I'll show you how to pick a theme and plan a programme.`}
-          actionButtons={[
-            {
-              text: 'Yes, help me!',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                cancel();
-                handleClickStart();
-              },
-              leadingIcon: 'ChevronRightIcon',
-            },
-            {
-              text: 'No, skip',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                handleDeclineWalkthrough();
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  };
-
   return (
     <>
-      <ProgrammeWrapper />
       <DailyRoutine
         programme={currentProgramme}
         currentDailyProgramme={currentDailyProgramme}
@@ -170,6 +232,14 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
         selectedDate={selectedDate}
         isHoliday={isHoliday}
       />
+
+      {showReport && (
+        <div className="mt-10 h-screen overflow-y-scroll">
+          <div ref={targetRef}>
+            <ProgressReport progressSummary={progressSummary!} />
+          </div>
+        </div>
+      )}
     </>
   );
 };

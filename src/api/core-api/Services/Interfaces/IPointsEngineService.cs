@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,7 @@ namespace ECDLink.Core.Services.Interfaces
     {
 
         // Points library
-        List<PointsLibrary> GetPointsLibraryForActivity(string activity);
+        List<PointsLibrary> GetPointsLibraryForActivity(string activity, string subActivity = null);
         List<PointsLibrary> GetPointsLibraryForTenant();
         List<PointsUser> GetIndividualUserPoints(Guid pointsLibraryId, string userId, int month, int year);
         List<PointsUserSummary> GetSummaryUserPoints(string userId, DateTime startDate, DateTime? endDate = null);
@@ -30,10 +31,8 @@ namespace ECDLink.Core.Services.Interfaces
         bool CalculateChildrenRegistrationAdd(string userId, DateTime today);
         bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
         bool CalculateAttendanceSubmitted(string userId, DateTime today);
-        bool CalculateIncomeStatements(string userId, DateTime today);
-        bool CalculateIncomeStatementsSubmitted(string userId, DateTime today);
-        bool CalculateIncomeStatementPreSchoolFees(string userId, DateTime today);
-        bool CalculateThreeConsecutiveIncomeStatementsSubmitted(string userId, DateTime today);
+        bool CalculateIncomeStatements(string userId, StatementsIncomeStatement lastStatement);
+       
 
         // SS TODO: Pre-school fees on profile - development pending
         bool CalculatePreSchoolFees(string userId, DateTime today);
@@ -45,12 +44,8 @@ namespace ECDLink.Core.Services.Interfaces
         /// <returns></returns>
         UserClubStandingModel GetUserClubStanding(string userId);
         // Clubs
-        bool CalculateLeaveNoOneBehind(Guid clubId, string userId, DateTime today);
         bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today);
-        bool CalculateCompleteChildProgressReports(Guid clubId, string userId, DateTime today);
-        bool CalculateCaptureChildAttendance(Guid clubId, string userId, DateTime today);
-        bool CalculateMeetRegularly(Guid clubId, string userId, DateTime today);
+        bool CalculateMeetRegularly(Guid clubId, Guid clubMeetingId);
         bool CalculateBeCreative(Guid clubId, string userId, DateTime today);
-
     }
 }

@@ -37,6 +37,7 @@ const ROUTES = {
   }),
   TRAINING: '/training',
   COMMUNITY: addPrefix('/community', {
+    HELP: '/help/:activityId',
     WELCOME: '/welcome',
     CLUB: addPrefix('/club/:clubId', {
       ADD: '/add',
@@ -55,6 +56,7 @@ const ROUTES = {
       USER_PROFILE: addPrefix('/user-profile', {
         COACH: '/coach/:coachId',
         LEADER: '/leader/:leaderId',
+        SUPPORT_ROLE: '/support-role/:supportRoleId',
         MEMBER: '/member/:practitionerId',
       }),
       POINTS: addPrefix('/points', {
@@ -78,6 +80,7 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
+  PRACTITIONER_PROGRESS_REPORT_SUMMARY: '/progress-summary-report',
   CHILD_REGISTRATION: '/child-registration',
   CHILD_REGISTRATION_BIRTH_CERTIFICATE: '/child-registration-birth-certificate',
   PRINCIPAL: addPrefix('/principal', {
@@ -108,6 +111,7 @@ const ROUTES = {
     }),
     CONTACT_COACH: '/contact-coach',
     COMMUNITY: addPrefix('/community', {
+      WELCOME: '/welcome',
       ACCEPT_CLUB_LEADER_ROLE: '/accept-club-leader-role',
       CLUB: addPrefix('/club', {
         SUPPORT_ROLE: addPrefix('/support-role', {
@@ -162,6 +166,7 @@ const ROUTES = {
     PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
     PRACTITIONER_REASSIGN_CLASS: '/practitioner-reassign-class',
     PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
+    PRACTITIONER_POINTS: '/practitioner-points/:userId',
     PRACTITIONER_BUSINESS: addPrefix('/practitioner-business', {
       BUSINESS: '/:userId',
       LIST_STATEMENTS: '/:userId/previous-statements-list',

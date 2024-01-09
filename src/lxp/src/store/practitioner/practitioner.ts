@@ -43,6 +43,30 @@ const practitionerSlice = createSlice({
         state.practitioner = action.payload;
       }
     },
+    updateClubForPractitioner: (
+      state,
+      action: PayloadAction<{ practitionerId: string; clubId: string }>
+    ) => {
+      if (!state.practitioners) {
+        return;
+      }
+
+      const practitioner = state.practitioners.find(
+        (practitioner) => practitioner.id === action.payload.practitionerId
+      );
+
+      if (!!practitioner) {
+        state.practitioners = [
+          ...state.practitioners?.filter(
+            (practitioner) => practitioner.id !== action.payload.practitionerId
+          ),
+          {
+            ...practitioner,
+            clubId: action.payload.clubId,
+          },
+        ];
+      }
+    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, deActivatePractitioner);
@@ -63,6 +87,9 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(deActivatePractitioner.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
+      state.practitioners = state.practitioners?.filter(
+        (x) => x.userId !== action.meta.arg.userId
+      );
     });
     builder.addCase(
       updatePractitionerBusinessWalkThrough.fulfilled,

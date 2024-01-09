@@ -1,4 +1,5 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.EGraphQL.Authorization;
@@ -9,6 +10,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] UserManager<ApplicationUser> userManager,
           [Service] HierarchyEngine engine,
           [Service] IHttpContextAccessor httpContextAccessor,
-          [Service] RoleManager<IdentityRole> roleManager,
+          [Service] RoleManager<ApplicationIdentityRole> roleManager,
           string userId,
           List<string> roleNames)
         {
@@ -64,6 +66,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> RemoveUserFromRolesAsync(
           [Service] UserManager<ApplicationUser> userManager,
+          [Service] ILogger<UserMutationExtension> _logger,
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] HierarchyEngine engine,
           string userId,
@@ -90,13 +93,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 userIsAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
                 // If user having its roles removed is an admin, remove them only if requesting user is an admin
                 var currentUserIsAdmin = await userManager.IsInRoleAsync(new ApplicationUser() { Id = currentUserId }, Roles.ADMINISTRATOR);
-                result = currentUserIsAdmin ? await userManager.RemoveFromRolesAsync(user, distinctRoleNames) : result;
+                if (currentUserIsAdmin)
+                {
+                    _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserRoleMutationExtension.RemoveUserFromRolesAsync(1)]", string.Join(',',distinctRoleNames), user.Id, currentUserId);
+                    result = await userManager.RemoveFromRolesAsync(user, distinctRoleNames);
+                }
             }
 
             // If user having its roles removed is not an admin, remove them... no this is still not right.
             // TODO: Use hierarchy to check if user has authority to remove target users roles...
             if (!userIsAdmin)
             {
+                _logger.LogInformation("Roles: Remove {0} from user {1} by {2} [UserRoleMutationExtension.RemoveUserFromRolesAsync(2)]", string.Join(',', distinctRoleNames), user.Id, currentUserId);
                 result = await userManager.RemoveFromRolesAsync(user, distinctRoleNames);
             }
 

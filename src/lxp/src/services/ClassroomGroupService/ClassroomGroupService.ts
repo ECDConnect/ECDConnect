@@ -118,19 +118,29 @@ class ClassroomGroupService {
     absentDate: Date,
     loggedByUser: string,
     classProgram: string,
-    absentDateEnd?: Date
+    absentDateEnd?: Date,
+    fromRole?: string,
+    toRole?: string,
+    roleAssignedToUser?: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
       mutation addAbsenteeForPractitioner ($practitionerId: String,
         $reason: String, $absentDate: DateTime!,$loggedByUser: String,
-        $classProgram: String,$reassignedToPractitioner: String, $absentDateEnd: DateTime!)       {
+        $classProgram: String,$reassignedToPractitioner: String, $absentDateEnd: DateTime!,
+        $fromRole: String,
+        $toRole: String,
+        $roleAssignedToUser: String
+        )       {
          addAbsenteeForPractitioner (practitionerId: $practitionerId,
            reason: $reason, absentDate: $absentDate, 
            loggedByUser: $loggedByUser, classProgram: $classProgram, 
            reassignedToPractitioner: $reassignedToPractitioner, 
-           absentDateEnd: $absentDateEnd) { 
+           absentDateEnd: $absentDateEnd,
+           fromRole: $fromRole,
+           toRole: $toRole,
+           roleAssignedToUser: $roleAssignedToUser) { 
                   id  
                      }      
                        }
@@ -143,6 +153,9 @@ class ClassroomGroupService {
         loggedByUser: loggedByUser,
         classProgram: classProgram,
         absentDateEnd: absentDateEnd,
+        fromRole: fromRole,
+        toRole: toRole,
+        roleAssignedToUser: roleAssignedToUser,
       },
     });
 
@@ -161,7 +174,9 @@ class ClassroomGroupService {
     reassignedToPractitioner: string,
     reason: string,
     absentDate: Date,
-    absentDateEnd?: Date
+    absentDateEnd?: Date,
+    isRoleAssign?: boolean,
+    roleAssignedToUser?: string
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -172,17 +187,19 @@ class ClassroomGroupService {
     $reassignedToPractitioner: String!,
     $reason: String!,
     $absentDate: DateTime!,
-    $absentDateEnd: DateTime!)       {
+    $absentDateEnd: DateTime!,
+    $isRoleAssign: Boolean,
+    $roleAssignedToUser: String
+    )       {
         editAbsentee (absenteeId: $absenteeId,
         deleteAbsentee: $deleteAbsentee,
     reassignedToPractitioner: $reassignedToPractitioner,
      reason: $reason,
      absentDate: $absentDate,
-     absentDateEnd: $absentDateEnd
-     ) { 
-          id   
-             }  
-               }
+     absentDateEnd: $absentDateEnd,
+    isRoleAssign: $isRoleAssign,
+    roleAssignedToUser: $roleAssignedToUser
+     ) {           id             }               }
       `,
       variables: {
         absenteeId,
@@ -191,6 +208,8 @@ class ClassroomGroupService {
         reason,
         absentDate,
         absentDateEnd,
+        isRoleAssign: isRoleAssign,
+        roleAssignedToUser: roleAssignedToUser,
       },
     });
 

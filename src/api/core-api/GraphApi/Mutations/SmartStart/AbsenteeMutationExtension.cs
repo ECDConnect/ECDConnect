@@ -21,18 +21,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
 
         public Absentees AddAbsenteeForPractitioner(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IAbsenteeService absenteetService,
+            [Service] IAbsenteeService absenteeService,
             string practitionerId,
             string reassignedToPractitioner,
             string reason,
             DateTime absentDate,
             string loggedByUser,
             string classProgram = null,
-            DateTime? absentDateEnd = null)
+            DateTime? absentDateEnd = null,
+            bool isRoleAssign = false,
+            string fromRole = null,
+            string toRole = null,
+            string roleAssignedToUser = null)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return absenteetService.AddAbsenteeForPractitioner(uId, practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd);
+            return absenteeService.AddAbsenteeForPractitioner(practitionerId, reassignedToPractitioner, reason, absentDate, loggedByUser, classProgram, absentDateEnd, isRoleAssign, fromRole, toRole,roleAssignedToUser, null);
         }
 
         public Absentees EditAbsentee(
@@ -42,17 +44,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
     string reassignedToPractitioner = null,
     string reason = null,
     DateTime? absentDate = null,
-    DateTime? absentDateEnd = null)
+    DateTime? absentDateEnd = null,
+    bool isRoleAssign = false,
+    string roleAssignedToUser = null)
         {
-            return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd);
+            return absenteetService.EditAbsentee(absenteeId, deleteAbsentee, reassignedToPractitioner, reason, absentDate, absentDateEnd, isRoleAssign, roleAssignedToUser);
         }
 
-        public bool ReassignAbsenteeFromHistory([Service] IHttpContextAccessor contextAccessor,
-            [Service] IReassignmentService reassignmentService,
+        public bool ReassignAbsenteeFromHistory([Service] IReassignmentService reassignmentService,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            return reassignmentService.ReassignClassroomsFromHistory(uId, userId);
+            return reassignmentService.ReassignClassroomsFromHistory(userId);
         }
 
     }

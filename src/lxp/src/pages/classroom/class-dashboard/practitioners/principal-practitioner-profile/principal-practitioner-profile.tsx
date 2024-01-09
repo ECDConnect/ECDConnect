@@ -13,6 +13,8 @@ import {
   Typography,
   Card,
   ActionModal,
+  MenuListDataItem,
+  StackedList,
 } from '@ecdlink/ui';
 import {
   ClassroomMetricReport,
@@ -46,11 +48,14 @@ import {
   isToday,
   isWeekend,
   nextMonday,
+  sub,
 } from 'date-fns';
 import { PractitionerService } from '@/services/PractitionerService';
 import EditRemovePractitionerFromProgrammePrompt from './components/remove-practitioner-from-programme/edit-remove-practitioner-from-programme-prompt';
 import { formatDateLong } from '@/utils/common/date.utils';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
+import { AbsenceCard } from './components/absence-card/absence-card';
+import { AbsencesView } from './components/absences-view/absences-view';
 
 export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -65,8 +70,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   const practitioner = practitioners?.find(
     (practitioner) => practitioner?.userId === practitionerUserId
   );
+  const daysAbsentLastMonth = practitioner?.daysAbsentLastMonth;
+  const practitionerUser = useSelector(practitionerSelectors.getPractitioner);
 
   const practitionerAbsentees = practitioner?.absentees;
+
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDateEnd as string)) ||
@@ -88,6 +96,19 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     (item) => item?.absentDate === currentAbsentee?.absentDate
   );
 
+  const classesWithAbsence =
+    validAbsenteesDates &&
+    Object.values(
+      validAbsenteesDates?.reduce(
+        (acc, obj) => ({ ...acc, [obj.absentDate as string]: obj }),
+        {}
+      )
+    );
+
+  classesWithAbsence?.sort(function (a, b) {
+    return a?.absentDate?.localeCompare(b?.absentDate);
+  });
+
   const isOnLeave =
     isPast(new Date(currentAbsentee?.absentDate as string)) &&
     !isPast(new Date(currentAbsentee?.absentDateEnd as string));
@@ -100,6 +121,10 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     () => currentAbsentee?.absentDate !== currentAbsentee?.absentDateEnd,
     [currentAbsentee?.absentDate, currentAbsentee?.absentDateEnd]
   );
+  const lastMonth = sub(new Date(), {
+    months: 1,
+  });
+  const [showAbsences, setShowAbsences] = useState(false);
 
   const practitionerClassroomGroups = classroomGroups?.filter((item) => {
     return item?.userId === practitionerUserId;
@@ -120,6 +145,27 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
 
   const handleReassignClass = useCallback(
     (practitionerId: string, allAbsenteeClasses?: AbsenteeDto[]) => {
+      const isPrincipal = practitioner?.isPrincipal;
+
+      if (isPrincipal) {
+        if (allAbsenteeClasses) {
+          history.push('practitioner-reassign-class', {
+            practitionerId,
+            allAbsenteeClasses,
+            principalPractitioner: practitionerUser,
+          });
+          return;
+        }
+        if (allAbsenteeClasses)
+          history.push('practitioner-reassign-class', {
+            practitionerId,
+            allAbsenteeClasses,
+            // principalPractitioner: practitionerUser,
+          });
+
+        return;
+      }
+
       if (allAbsenteeClasses) {
         history.push('practitioner-reassign-class', {
           practitionerId,
@@ -132,7 +178,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         practitionerId,
       });
     },
-    [history]
+    [history, practitionerUser]
   );
 
   const handleComebackDay = useCallback((date: Date) => {
@@ -143,43 +189,50 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     return new Date(addDays(new Date(date), 1));
   }, []);
 
-  const handleAbsenceModal = useCallback(() => {
-    dialog({
-      position: DialogPosition.Middle,
-      render: (onSubmit, onCancel) => (
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`What would you like to edit?`}
-          actionButtons={[
-            {
-              text: 'Edit this absence',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => {
-                handleReassignClass(practitionerUserId, allAbsenteeClasses);
-                onSubmit();
+  const handleAbsenceModal = useCallback(
+    (item: AbsenteeDto) => {
+      const absenceClasses = validAbsenteesDates?.filter(
+        (absence) => absence?.absenteeId === item?.absenteeId
+      );
+
+      dialog({
+        position: DialogPosition.Middle,
+        render: (onSubmit, onCancel) => (
+          <ActionModal
+            icon={'InformationCircleIcon'}
+            iconColor="alertMain"
+            iconBorderColor="alertBg"
+            importantText={`What would you like to edit?`}
+            actionButtons={[
+              {
+                text: 'Edit this absence',
+                textColour: 'white',
+                colour: 'primary',
+                type: 'filled',
+                onClick: () => {
+                  handleReassignClass(practitionerUserId, absenceClasses);
+                  onSubmit();
+                },
+                leadingIcon: 'PencilAltIcon',
               },
-              leadingIcon: 'PencilAltIcon',
-            },
-            {
-              text: 'Add a new leave/absence',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                handleReassignClass(practitionerUserId);
-                onSubmit();
+              {
+                text: 'Add a new leave/absence',
+                textColour: 'primary',
+                colour: 'primary',
+                type: 'outlined',
+                onClick: () => {
+                  handleReassignClass(practitionerUserId);
+                  onSubmit();
+                },
+                leadingIcon: 'PlusIcon',
               },
-              leadingIcon: 'PlusIcon',
-            },
-          ]}
-        />
-      ),
-    });
-  }, [dialog, handleReassignClass, practitionerUserId]);
+            ]}
+          />
+        ),
+      });
+    },
+    [dialog, handleReassignClass, practitionerUserId, validAbsenteesDates]
+  );
 
   useEffect(() => {
     if (!!classMetrics && !!classMetrics?.length) {
@@ -250,255 +303,23 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
     setExisitingRemoval(undefined);
   };
 
-  const renderCardHeader = useMemo(() => {
-    if (absenceIsToday) {
-      return (
-        <>
-          <Typography
-            type={'h1'}
-            color="textDark"
-            text={`${practitioner?.user?.firstName} is absent today`}
-            className={styles.absentCardTitle}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Reason:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${currentAbsentee?.reason}`}
-              className={'mt-4'}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`${practitioner?.user?.firstName} will be back on:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${format(
-                new Date(
-                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-                ),
-                'd MMM yyyy'
-              )}`}
-              className={'mt-4'}
-            />
-          </div>
-        </>
-      );
-    }
-
-    if (isOnLeave) {
-      return (
-        <>
-          <Typography
-            type={'h1'}
-            color="textDark"
-            text={`${practitioner?.user?.firstName} is on leave`}
-            className={styles.absentCardTitle}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Start date:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${format(
-                new Date(
-                  handleComebackDay(currentAbsentee?.absentDate as Date)
-                ),
-                'd MMM yyyy'
-              )}`}
-              className={'mt-4'}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`End date:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${format(
-                new Date(
-                  handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-                ),
-                'd MMM yyyy'
-              )}`}
-              className={'mt-4'}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Reason:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${currentAbsentee?.reason}`}
-              className={'mt-4'}
-            />
-          </div>
-        </>
-      );
-    }
-
-    if (
-      !isOnLeave &&
-      currentAbsentee?.absentDate === currentAbsentee?.absentDateEnd
-    ) {
-      return (
-        <>
-          <Typography
-            type={'h1'}
-            color="textDark"
-            text={`${practitioner?.user?.firstName} will be absent on ${
-              currentAbsentee?.absentDate &&
-              format(new Date(currentAbsentee?.absentDate as string), 'EEEE')
-            }, ${
-              currentAbsentee?.absentDate &&
-              format(new Date(currentAbsentee?.absentDate as string), 'd MMM')
-            }`}
-            className={styles.absentCardTitle}
-          />
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`Reason:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${currentAbsentee?.reason}`}
-              className={'mt-4'}
-            />
-          </div>
-          <div className="flex items-center gap-2">
-            <Typography
-              type={'body'}
-              color="textMid"
-              weight="bold"
-              text={`${practitioner?.user?.firstName} will be back on:`}
-              className={styles.absentCardSubTitle}
-            />
-            <Typography
-              type={'body'}
-              color="textMid"
-              text={`${
-                currentAbsentee?.absentDateEnd &&
-                format(
-                  new Date(
-                    handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-                  ),
-                  'd MMM yyyy'
-                )
-              }`}
-              className={'mt-4'}
-            />
-          </div>
-        </>
-      );
-    }
-
-    return (
-      <>
-        <Typography
-          type={'h1'}
-          color="textDark"
-          text={`${practitioner?.user?.firstName} will be on leave`}
-          className={styles.absentCardTitle}
-        />
-        <div className="flex items-center gap-2">
-          <Typography
-            type={'body'}
-            color="textMid"
-            weight="bold"
-            text={`Start date:`}
-            className={styles.absentCardSubTitle}
-          />
-          <Typography
-            type={'body'}
-            color="textMid"
-            text={`${format(
-              new Date(handleComebackDay(currentAbsentee?.absentDate as Date)),
-              'd MMM yyyy'
-            )}`}
-            className={'mt-4'}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            type={'body'}
-            color="textMid"
-            weight="bold"
-            text={`End date:`}
-            className={styles.absentCardSubTitle}
-          />
-          <Typography
-            type={'body'}
-            color="textMid"
-            text={`${format(
-              new Date(
-                handleComebackDay(currentAbsentee?.absentDateEnd as Date)
-              ),
-              'd MMM yyyy'
-            )}`}
-            className={'mt-4'}
-          />
-        </div>
-        <div className="flex items-center gap-2">
-          <Typography
-            type={'body'}
-            color="textMid"
-            weight="bold"
-            text={`Reason:`}
-            className={styles.absentCardSubTitle}
-          />
-          <Typography
-            type={'body'}
-            color="textMid"
-            text={`${currentAbsentee?.reason}`}
-            className={'mt-4'}
-          />
-        </div>
-      </>
-    );
-  }, [
-    absenceIsToday,
-    currentAbsentee?.absentDate,
-    currentAbsentee?.absentDateEnd,
-    currentAbsentee?.reason,
-    handleComebackDay,
-    isOnLeave,
-    practitioner?.user?.firstName,
-  ]);
+  const notificationItem: MenuListDataItem[] = [
+    {
+      showIcon: true,
+      menuIcon: 'ExclamationIcon',
+      menuIconClassName: 'border-0',
+      iconColor: 'white',
+      title: `${daysAbsentLastMonth} ${
+        daysAbsentLastMonth && Number(daysAbsentLastMonth) > 1 ? 'days' : 'day'
+      } absent last month`,
+      titleStyle: 'text-textDark semibold whitespace-normal',
+      subTitle: format(lastMonth, 'MMMM yyyy'),
+      subTitleStyle: 'text-textMid',
+      iconBackgroundColor: 'alertMain',
+      backgroundColor: 'alertBg',
+      onActionClick: () => setShowAbsences(true),
+    },
+  ];
 
   return (
     <>
@@ -507,6 +328,7 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
         <PractitionerNotRegistered
           practitioner={practitioner}
           classroom={classroom}
+          existingRemoval={existingRemoval}
         />
       ) : (
         <div className={styles.contentWrapper}>
@@ -638,90 +460,34 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                 </div>
               </Card>
             )}
-            {currentAbsentee ? (
-              <Card className={styles.absentCard}>
-                <div className={'p-4'}>
-                  {renderCardHeader}
-                  {allAbsenteeClasses &&
-                    allAbsenteeClasses?.length > 0 &&
-                    allAbsenteeClasses?.map((item) => {
-                      return (
-                        <div className="flex items-center gap-2">
-                          <Typography
-                            type={'body'}
-                            color="textMid"
-                            weight="bold"
-                            text={`${item?.className} class reassigned to:`}
-                            className={styles.absentCardSubTitle}
-                          />
-                          <Typography
-                            type={'body'}
-                            color="textMid"
-                            text={`${item?.reassignedToPerson}`}
-                            className={'mt-4'}
-                          />
-                        </div>
-                      );
-                    })}
-
-                  <div className="flex justify-center">
-                    <Button
-                      type="filled"
-                      color="primary"
-                      className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                      onClick={() => handleAbsenceModal()}
-                    >
-                      {renderIcon(
-                        'PencilAltIcon',
-                        'w-5 h-5 color-white text-white mr-1'
-                      )}
-                      <Typography
-                        type="body"
-                        className="mr-4"
-                        color="white"
-                        text={isLeave ? 'Edit leave' : 'Edit absence'}
-                      ></Typography>
-                    </Button>
-                  </div>
-                </div>
-              </Card>
-            ) : (
-              <Card className={styles.absentCard}>
-                <div className={styles.absentCardTitle}>
-                  <Typography
-                    type={'h1'}
-                    color="textDark"
-                    text={`Mark ${practitioner?.user?.firstName} absent`}
-                    className={styles.absentCardTitle}
+            {!currentAbsentee &&
+              !!daysAbsentLastMonth &&
+              Number(daysAbsentLastMonth) > 0 && (
+                <div className="my-4 flex w-11/12 justify-center">
+                  <StackedList
+                    isFullHeight={false}
+                    className={'flex w-11/12 flex-col gap-2'}
+                    listItems={notificationItem}
+                    type={'MenuList'}
                   />
-                  <Typography
-                    type={'body'}
-                    color="textMid"
-                    text={`Mark ${practitioner?.user?.firstName} absent and reassign classes to another practitioner if needed.`}
-                    className={styles.absentCardSubTitle}
-                  />
-                  <div className="flex justify-center">
-                    <Button
-                      type="filled"
-                      color="primary"
-                      className={'mt-6 mb-6 w-11/12 rounded-2xl'}
-                      onClick={() => handleReassignClass(practitionerUserId)}
-                    >
-                      {renderIcon(
-                        'PencilAltIcon',
-                        'w-5 h-5 color-white text-white mr-1'
-                      )}
-                      <Typography
-                        type="body"
-                        className="mr-4"
-                        color="white"
-                        text={'Record absence/leave'}
-                      ></Typography>
-                    </Button>
-                  </div>
                 </div>
-              </Card>
-            )}
+              )}
+            <AbsenceCard
+              absenceIsToday={absenceIsToday}
+              currentAbsentee={currentAbsentee}
+              handleComebackDay={handleComebackDay}
+              practitioner={practitioner!}
+              isOnLeave={isOnLeave}
+              handleReassignClass={handleReassignClass}
+              handleAbsenceModal={(item: AbsenteeDto) =>
+                handleAbsenceModal(item)
+              }
+              isLeave={isLeave}
+              allAbsenteeClasses={allAbsenteeClasses}
+              practitionerUserId={practitionerUserId}
+              classesWithAbsence={classesWithAbsence}
+              practitionerAbsentees={practitionerAbsentees}
+            />
             {!!classMetrics && !!classMetrics.length
               ? classMetrics?.map((item, index) => {
                   const classroomGroup = practitionerClassroomGroups?.find(
@@ -1079,6 +845,18 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
           </>
         </div>
       )}
+      <Dialog
+        stretch={true}
+        visible={showAbsences}
+        position={DialogPosition.Full}
+      >
+        <AbsencesView
+          practitioner={practitioner!}
+          setShowAbsences={setShowAbsences}
+          lastMonth={lastMonth}
+          absences={practitionerAbsentees}
+        />
+      </Dialog>
       <Dialog
         className={'mb-16 px-4'}
         stretch={true}

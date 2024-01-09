@@ -39,6 +39,7 @@ export enum NavigationTypes {
   Clients = 'Clients',
   Visits = 'Visits',
   Highlights = 'Highlights',
+  Calendar = 'Calendar',
   Profile = 'Profile',
   Messages = 'Messages',
   Training = 'Training',
@@ -253,6 +254,13 @@ export const Dashboard: React.FC = () => {
       ],
     },
     {
+      name: NavigationTypes.Calendar,
+      href: ROUTES.CALENDAR,
+      icon: 'CalendarIcon',
+      current: false,
+      showDivider: true,
+    },
+    {
       name: NavigationTypes.Profile,
       href: ROUTES.PRACTITIONER.PROFILE.ROOT,
       icon: 'UserIcon',
@@ -380,6 +388,15 @@ export const Dashboard: React.FC = () => {
               titleIconClassName: styles.classRoomIcon,
               onActionClick: () => {
                 showMenuDialog();
+              },
+              classNames: 'bg-secondaryAccent2',
+            },
+            {
+              title: 'Calendar',
+              titleIcon: 'CalendarIcon',
+              titleIconClassName: styles.classRoomIcon,
+              onActionClick: () => {
+                history.push(ROUTES.CALENDAR);
               },
               classNames: 'bg-secondaryAccent2',
             },

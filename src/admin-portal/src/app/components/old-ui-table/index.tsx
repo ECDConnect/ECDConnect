@@ -14,6 +14,8 @@ export default function UiTable({
   editRow,
   deleteRow,
   viewRow,
+  showSearch = true,
+  searchInput,
 }: UiTableProps) {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
@@ -37,12 +39,13 @@ export default function UiTable({
   useEffect(() => {
     setSearchRows(getSearchResults());
     setLastUpdate(Date.now());
+    if (!showSearch) setSearchValue(searchInput);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
+  }, [searchValue, searchInput]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
-  }, 150);
+  }, 350);
 
   const getSearchResults = () => {
     if (!searchValue) {
@@ -72,7 +75,7 @@ export default function UiTable({
               icon="SearchIcon"
               color="transparent"
               height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               onClick={() => viewRow(row)}
             />
           )}
@@ -82,7 +85,7 @@ export default function UiTable({
               icon="PencilAltIcon"
               color="transparent"
               height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               onClick={() => editRow(row)}
             />
           )}
@@ -92,7 +95,7 @@ export default function UiTable({
               icon="PencilAltIcon"
               color="transparent"
               height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               onClick={() => urlRow(row)}
             />
           )}
@@ -102,7 +105,7 @@ export default function UiTable({
               icon="MailIcon"
               color="transparent"
               height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               onClick={() => sendRow(row)}
             />
           )}
@@ -110,7 +113,7 @@ export default function UiTable({
             <Icon
               key={`deleteRow${rowKey}`}
               icon="TrashIcon"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               height="20px"
               color="transparent"
               onClick={() => deleteRow(row)}
@@ -145,18 +148,18 @@ export default function UiTable({
 
     if (typeof display_value === 'boolean') {
       rowValue = (
-        <div className="flex ml-5">
+        <div className="ml-5 flex">
           {display_value ? (
             <Icon
               icon="CheckCircleIcon"
-              className="ml-1 text-successMain"
+              className="text-successMain ml-1"
               height="20px"
               color="transparent"
             />
           ) : (
             <Icon
               icon="XCircleIcon"
-              className="ml-1 text-errorMain"
+              className="text-errorMain ml-1"
               height="20px"
               color="transparent"
             />
@@ -169,12 +172,12 @@ export default function UiTable({
       );
     } else if (column.type === 'array') {
       rowValue = (
-        <div className="ml-4 flex items-center flex-row flex-wrap">
+        <div className="ml-4 flex flex-row flex-wrap items-center">
           {display_value &&
             display_value.map((item) => (
               <div
                 key={item.id}
-                className="text-xs rounded-full py-1 px-3 m-1 bg-uiMid text-white"
+                className="bg-uiMid m-1 rounded-full py-1 px-3 text-xs text-white"
               >
                 {item[column.displayProperty]}
               </div>
@@ -185,7 +188,7 @@ export default function UiTable({
       rowValue = (
         <span
           className={classNames(
-            'px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white',
+            'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white',
             display_value && display_value[0].statusColor
           )}
         >
@@ -204,31 +207,33 @@ export default function UiTable({
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-lg shadow-lg table-top">
-      <div className="relative p-2 px-4 text-gray-400 bg-gray-50 focus-within:text-gray-600">
-        <input
-          className="block w-full py-2 pl-8 pr-3 leading-5 text-gray-900 placeholder-gray-600 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary focus:ring-white focus:border-white sm:text-sm"
-          placeholder="Search..."
-          onChange={search}
-        />
-        <span className="inset-y-1/2 left-6 absolute input-group-text flex items-center text-base font-normal text-gray-600 text-center whitespace-nowrap rounded">
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            data-prefix="fas"
-            data-icon="search"
-            className="w-4"
-            role="img"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 512 512"
-          >
-            <path
-              fill="currentColor"
-              d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
-            ></path>
-          </svg>
-        </span>
-      </div>
+    <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
+      {showSearch && (
+        <div className="relative bg-gray-50 p-2 px-4 text-gray-400 focus-within:text-gray-600">
+          <input
+            className="focus:outline-none focus:ring-offset-primary block w-full rounded-md border border-gray-200 bg-white py-2 pl-8 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 sm:text-sm"
+            placeholder="Search..."
+            onChange={search}
+          />
+          <span className="input-group-text absolute inset-y-1/2 left-6 flex items-center whitespace-nowrap rounded text-center text-base font-normal text-gray-600">
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              data-prefix="fas"
+              data-icon="search"
+              className="w-4"
+              role="img"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 512 512"
+            >
+              <path
+                fill="currentColor"
+                d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
+              ></path>
+            </svg>
+          </span>
+        </div>
+      )}
       <Table
         key={`table-${lastUpdate}`}
         row_render={renderFormat}

@@ -73,6 +73,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   const location = useLocation<PractitionerChildRegisterState>();
 
   const practitionerIdFromCoachView = location?.state?.practitionerId;
+  const childDetails = location?.state?.childDetails;
 
   const [provideReason, setProvideReason] = useState(false);
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -98,10 +99,11 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       : item;
   });
 
+  // suppress also the unsure class for principal
   const classroomsForPrincipal = [
     ...classroomsForPractitioner,
     ...classroomsByPractitionersForPrincipal,
-  ];
+  ].filter((item: ClassroomGroupDto) => item.name !== UNSURE_CLASS);
 
   const [updatedPlaygroups, setUpdatedPlaygroups] = useState<
     DropDownOption<string>[]
@@ -125,6 +127,8 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   const practitioner =
     practitionerFromPractitionerView || practitionerFromCoachView;
+
+  const isTrainee = practitioner?.isTrainee;
 
   useEffect(() => {
     if (classroomsForPractitionerFromPractitionerFlow) {
@@ -183,14 +187,14 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
   useEffect(() => {
     if (dobDay && dobMonth && dobYear) {
-      const dateOfBirth = new Date(dobYear, dobMonth, dobDay);
+      const dateOfBirth = new Date(dobYear, dobMonth - 1, dobDay);
       setChildInformationFormValue('dob', dateOfBirth);
       validateDateOfBirth();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dobDay, dobMonth, dobYear]);
 
-  // Practitioners who are not principals OR FAAs should not be able to see the “Unsure” class or add children to the unsure class
+  // Should not be able to see the “Unsure” class or add children to the unsure class
   useEffect(() => {
     if (
       !practitionerIdFromCoachView &&
@@ -201,9 +205,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 
       filterUniqueClassrooms(
         classroomsForPractitionerAnyType.filter(
-          (item: ClassroomGroupDto) =>
-            (practitioner?.isTrainee && item) ||
-            (!practitioner?.isTrainee && item.name !== UNSURE_CLASS)
+          (item: ClassroomGroupDto) => item.name !== UNSURE_CLASS
         )
       ).forEach((groupedItem: any) => {
         groupedItems.push({
@@ -224,8 +226,9 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
       filterUniqueClassrooms(
         currentClassroomGroups.filter(
           (item) =>
-            ((practitioner?.isTrainee || practitioner?.isPrincipal) && item) ||
-            (!practitioner?.isTrainee && item.name !== UNSURE_CLASS)
+            (isTrainee && item) ||
+            (!isTrainee && item.name !== UNSURE_CLASS) ||
+            childDetails?.playgroupId! === item.classroomId
         )
       ).forEach((groupedItem) => {
         groupedItems.push({
@@ -341,7 +344,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   };
 
   return (
-    <div className={'bg-uiBg pt-2'}>
+    <div className={'h-full bg-white pt-2'}>
       <Typography
         type={'h1'}
         text={"Child's details"}

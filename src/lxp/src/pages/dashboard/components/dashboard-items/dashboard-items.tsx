@@ -7,10 +7,16 @@ import {
 import { useHistory } from 'react-router';
 import { useAppDispatch } from '@store';
 import { Notification, notificationActions } from '@store/notifications';
+import { MessageActionConfig } from '@models/messages/messages';
 import { NotificationHeaderCard } from '../notification-header-card/notification-header-card';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useDialog } from '@ecdlink/core';
 import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
+import { notificationTagConfig } from '@/constants/notifications';
+import {
+  disableBackendNotification,
+  markAsReadNotification,
+} from '@/store/notifications/notifications.actions';
 
 interface DashboardItemsProps extends ComponentBaseProps {
   listItems: StackedListItemType[];
@@ -46,13 +52,41 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
       return showOnlineOnly();
     }
 
+    if (notification.message?.isFromBackend) {
+      appDispatch(
+        markAsReadNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+
+      appDispatch(
+        disableBackendNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+    }
+    appDispatch(notificationActions.removeNotification(notification));
+
     if (notification.message.routeConfig) {
       history.push(
         notification.message.routeConfig.route,
         notification.message.routeConfig.params
       );
     }
-    appDispatch(notificationActions.removeNotification(notification));
+
+    if (notification.message.action) {
+      const action = JSON.parse(
+        notification.message.action
+      ) as MessageActionConfig;
+      action?.url && history.push(action.url);
+    }
+
+    for (const [key, value] of Object.entries(notificationTagConfig)) {
+      if (value.cta === notification.message.cta && value.routeConfig!) {
+        history.push(value?.routeConfig?.route);
+        break;
+      }
+    }
   };
 
   return (

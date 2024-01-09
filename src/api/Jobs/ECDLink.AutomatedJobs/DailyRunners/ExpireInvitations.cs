@@ -1,12 +1,8 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.PostgresTenancy.Services;
-using ECDLink.Tenancy.Context;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
+using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -15,10 +11,8 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 public class ExpireInvitations : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IGenericRepositoryFactory _repoFactory;
-    private readonly HierarchyEngine _hierarchyEngine;
-    public ExpireInvitations(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config)
-        : base(config.CronExpression, config.TimeZoneInfo)
+    public ExpireInvitations(IServiceScopeFactory scopeFactory, CronJobConfig<ExpireInvitations> config, ILogger<ExpireInvitations> logger)
+            : base(config, logger)
     {
         _scopeFactory = scopeFactory;
     }
@@ -27,10 +21,8 @@ public class ExpireInvitations : CronJobService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
-            var service = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
-
             TenancyContext.SetTenantContext(scope);
-
+            var service = scope.ServiceProvider.GetRequiredService<IReassignmentService>();
             service.ExpireRelationshipLinks();
         }
     }

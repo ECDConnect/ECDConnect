@@ -9,7 +9,7 @@ import {
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
+import { MouseEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
 import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
@@ -17,18 +17,10 @@ import {
   DynamicFormTemplate,
   FormTemplateField,
 } from '../../../../content-management-models';
+import { Alert, DialogPosition } from '@ecdlink/ui';
 import {
-  Alert,
-  Button,
-  DialogPosition,
-  Typography,
-  classNames,
-} from '@ecdlink/ui';
-import {
-  ArrowLeftIcon,
-  DocumentDuplicateIcon,
-  PencilIcon,
-  SaveAsIcon,
+  BookOpenIcon,
+  SaveIcon,
   TrashIcon,
   XIcon,
 } from '@heroicons/react/solid';
@@ -65,17 +57,17 @@ export default function ContentEdit({
     errors: errors,
   };
 
-  const mutationName = `update${contentType.name}`;
+  const mutationName = `update${contentType?.name}`;
 
   const updateMutation = gql` 
-    mutation ${mutationName} ($id: String!, $input: ${contentType.name}Input!, $localeId: String!) {
+    mutation ${mutationName} ($id: String!, $input: ${contentType?.name}Input!, $localeId: String!) {
       ${mutationName} (id: $id, input: $input, localeId: $localeId) {
         id
       } 
     }
   `;
 
-  const deleteMutationName = `delete${contentType.name}`;
+  const deleteMutationName = `delete${contentType?.name}`;
   const deleteMutation = gql` 
     mutation ${deleteMutationName} ($id: String!, $localeId: String!) {
       ${deleteMutationName} (id: $id, localeId: $localeId) 
@@ -84,9 +76,12 @@ export default function ContentEdit({
 
   const dialog = useDialog();
 
-  const [deleteContent] = useMutation(deleteMutation);
+  const [deleteContent, { loading: isLoadingDeleteContent }] =
+    useMutation(deleteMutation);
 
-  const deleteAndRefresh = async (item: any) => {
+  const deleteAndRefresh = async (event: MouseEvent<HTMLButtonElement>) => {
+    event?.preventDefault();
+
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
@@ -95,6 +90,7 @@ export default function ContentEdit({
           message={` You will not be able to recover this content if you delete it now.`}
           onCancel={onCancel}
           btnText={['Yes, Delete Content', 'Keep editing']}
+          isLoading={isLoadingDeleteContent}
           onSubmit={() => {
             onSubmit();
             deleteContent({
@@ -123,7 +119,7 @@ export default function ContentEdit({
     dialog({
       // blocking: true,
       position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
+      render: (onSubmit, onCancel) => (
         <AlertModal
           title="Discard unsaved changes?"
           btnText={['Discard changes', 'Keep editing']}
@@ -146,20 +142,25 @@ export default function ContentEdit({
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
       const t: DynamicFormTemplate = {
-        title: `${contentType.name} Form`,
+        title: `${contentType?.name} Form`,
         fields: [],
       };
 
-      const copy: ContentTypeFieldDto[] = Object.assign([], contentType.fields);
+      const copy: ContentTypeFieldDto[] = Object.assign(
+        [],
+        contentType?.fields
+      );
 
       const orderedList = copy?.sort(function (a, b) {
         return a.fieldOrder - b.fieldOrder;
       });
 
       orderedList.forEach((item: ContentTypeFieldDto) => {
-        const renderedField = getRenderField(item);
+        if (item.displayPage) {
+          const renderedField = getRenderField(item);
 
-        if (renderedField) t.fields.push(renderedField);
+          if (renderedField) t.fields.push(renderedField);
+        }
       });
 
       setTemplate(t);
@@ -183,7 +184,7 @@ export default function ContentEdit({
     const returnField: FormTemplateField = {
       propName: field?.fieldName ?? '',
       type: field?.fieldType.dataType ?? '',
-      title: camelCaseToSentanceCase(field?.fieldName ?? ''),
+      title: camelCaseToSentanceCase(field?.displayName ?? ''),
       required: {
         value: false,
         message: '',
@@ -226,33 +227,40 @@ export default function ContentEdit({
     setLoading(false);
   };
 
-  if (contentType && contentValues && template && !loading) {
+  if (
+    contentType &&
+    contentValues &&
+    template &&
+    !loading &&
+    !isLoadingDeleteContent
+  ) {
     return (
       <div className="flex flex-col rounded-md ">
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
-                {cancelEdit && camelCaseToSentanceCase(content.name ?? content.type)}
+                {cancelEdit &&
+                  camelCaseToSentanceCase(content?.name ?? content?.type)}
               </h3>
             </div>
             <div className="ml-4 mt-2 flex-shrink-0">
-              {cancelCompare && (
+              {!!cancelCompare && (
                 <button
                   type="button"
                   onClick={cancelCompare}
-                  className=" bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                 >
                   Compare Languages
-                  <DocumentDuplicateIcon width="20px" className="pl-1" />
+                  <BookOpenIcon width="20px" className="pl-1" />
                 </button>
               )}
 
-              {cancelEdit && (
+              {!!cancelEdit && (
                 <button
                   onClick={cancelDialog}
                   type="button"
-                  className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
+                  className="bg-errorBg text-tertiary hover:bg-tertiary ml-2 inline-flex items-center rounded-xl border border-transparent px-4 py-2.5 text-sm font-medium shadow-sm hover:text-white"
                 >
                   Cancel
                   <XIcon width="22px" className="pl-1" />
@@ -261,13 +269,13 @@ export default function ContentEdit({
             </div>
           </div>
           <div className="rounded-xl bg-white px-12 pt-6 pb-8">
-            {contentType.name === 'Consent' ? (
+            {contentType?.name === 'Consent' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
                 type="info"
               />
-            ) : contentType.name === 'Info Pages' ? (
+            ) : contentType?.name === 'Info Pages' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
                 message={`You cannot edit the ECD Connect consent. You can add on or edit your organisation’s consent text below.`}
@@ -292,20 +300,18 @@ export default function ContentEdit({
           <div className="flex flex-row">
             <button
               type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 ml-4 inline-flex items-center rounded-md border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
             >
+              <SaveIcon width="22px" className="mr-2" />
               Save & publish
-              <SaveAsIcon width="22px" className="pl-1" />
             </button>
 
             <button
               onClick={deleteAndRefresh}
-              className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-md border-2  bg-transparent px-14 py-2.5 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2"
+              className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
             >
+              <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
               Delete {content.name}
-              <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
-                {' '}
-              </TrashIcon>
             </button>
           </div>
         </form>

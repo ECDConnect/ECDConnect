@@ -42,7 +42,10 @@ import { PublicHolidayIndicator } from '../../../programme-routine/components/pu
 import ROUTES from '@routes/routes';
 import { ProgrammePlanningHeaderUpdated } from '../../../components/programme-planning-header-updated/programme-planning-header-updated';
 import { ProgrammePlanningRoutineListItemUpdated } from '../../../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
-import { programmeThemeSelectors } from '@/store/content/programme-theme';
+import {
+  programmeThemeSelectors,
+  programmeThemeThunkActions,
+} from '@/store/content/programme-theme';
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
 import { isSameWeek, isWeekend } from 'date-fns';
@@ -51,8 +54,6 @@ import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import { CustomSuccessCard } from '@/components/custom-success-card/custom-success-card';
 import { userSelectors } from '@/store/user';
 import format from 'date-fns/format';
-import { useAppContext } from '@/walkthrougContext';
-import ProgrammeWrapper from '../../walkthrough/programme-wrapper';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -73,10 +74,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     useProgrammePlanningRecommendations();
   const recommendedActivities =
     getCurrentProgrammeRecommendedActivities(programme);
-  const { getAdditionalRecommendedSubCategories } =
-    useProgrammePlanningRecommendations();
-  const additionalRecommendedActivities =
-    getAdditionalRecommendedSubCategories(programme);
+  // const { getAdditionalRecommendedSubCategories } =
+  //   useProgrammePlanningRecommendations();
+  // const additionalRecommendedActivities =
+  //   getAdditionalRecommendedSubCategories(programme);
   const isCurrentDayEmpty =
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
@@ -100,12 +101,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const [improveProgrammeMessage, setImproveProgrammeMessage] = useState('');
   const plannedActivities = getAllGroupActivityIds(programme!);
 
-  const { setState, state } = useAppContext();
-  const nextStep = (stepNr: number) => {
-    setState({ stepIndex: stepNr });
-  };
-  const isWalkthroughSession = Boolean(state.run);
-
   const nextProgrammeDaysWithoutActivity =
     nextProgrammes?.[0]?.dailyProgrammes?.filter((item) => {
       return (
@@ -125,17 +120,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   const handleAddProgramme = () => {
     if (isOnline) {
-      nextStep(1);
+      if (themes.length === 0) {
+        appDispatch(
+          programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+        );
+      }
       history.push(ROUTES.PROGRAMMES.THEME);
-    } else {
-      showOnlineOnly();
-    }
-  };
-
-  const handleProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
-    if (isOnline) {
-      nextStep(5);
-      onProgrammeClick(routineItem);
     } else {
       showOnlineOnly();
     }
@@ -203,28 +193,24 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       position: DialogPosition.Full,
       render: (onSubmit, onClose) => {
         return routineItem.name !== DailyRoutineItemType.storyBook ? (
-          <>
-            <ProgrammeWrapper />
-            <ActivityDetails
-              activityId={activityId}
-              isSelected={true}
-              disabled={false}
-              onActivitySelected={() => {
-                onClose();
-                nextStep(6);
-                // onEditActivityItem(routineItem, day);
-              }}
-              onActivityChanged={
-                currentDailyProgramme
-                  ? () => {
-                      onClose();
-                      onEditActivityItem(routineItem, day);
-                    }
-                  : () => {}
-              }
-              onBack={onClose}
-            />
-          </>
+          <ActivityDetails
+            activityId={activityId}
+            isSelected={true}
+            disabled={false}
+            onActivitySelected={() => {
+              onClose();
+              // onEditActivityItem(routineItem, day);
+            }}
+            onActivityChanged={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
+            onBack={onClose}
+          />
         ) : (
           <StoryActivityDetails
             selected={true}
@@ -363,37 +349,39 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   useEffect(() => {
-    if (!isWalkthroughSession) {
-      // Celebrate message
-      if (programmeWeeks && programmeWeeks.length >= 4 && selectedDate) {
-        const lastWeek = programmeWeeks[programmeWeeks.length - 1];
-        if (
-          format(lastWeek.endDate, 'dd MMM yyyy') ===
-          format(selectedDate, 'dd MMM yyyy')
-        ) {
-          const message =
-            'Wow, great job ' +
-            userData?.firstName +
-            '! You have planned for ' +
-            programmeWeeks.length +
-            ' weeks in a row. Keep it up!';
-          setCelebrateMessage(message);
-        }
+    // Celebrate message
+    if (programmeWeeks && programmeWeeks.length >= 4 && selectedDate) {
+      var lastWeek = programmeWeeks[programmeWeeks.length - 1];
+      if (
+        format(lastWeek.endDate, 'dd MMM yyyy') ===
+        format(selectedDate, 'dd MMM yyyy')
+      ) {
+        var message =
+          'Wow, great job ' +
+          userData?.firstName +
+          '! You have planned for ' +
+          programmeWeeks.length +
+          ' weeks in a row. Keep it up!';
+        setCelebrateMessage(message);
       }
+    }
 
-      if (plannedActivities) {
-        setSkillMixMessage('');
-        setImproveProgrammeMessage('');
-        // Mix skill message
-        if (plannedActivities.length > 9) {
-          setSkillMixMessage(
-            'Good job, your programme has a good mix of skills!'
-          );
-        }
-        // Improve programme
-        if (plannedActivities.length > 0 && plannedActivities.length < 9) {
-          setImproveProgrammeMessage('Want to improve your programme?');
-        }
+    if (plannedActivities) {
+      setSkillMixMessage('');
+      setImproveProgrammeMessage('');
+
+      // Mix skill message
+      if (plannedActivities.length >= 10) {
+        setSkillMixMessage(
+          'Good job, your programme has a good mix of skills!'
+        );
+      }
+      // Improve programme
+      if (
+        plannedActivities.length >= 10 &&
+        recommendedActivities.length !== 0
+      ) {
+        setImproveProgrammeMessage('Want to improve your programme?');
       }
     }
   }, [
@@ -403,7 +391,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     plannedActivities,
     setSkillMixMessage,
     setImproveProgrammeMessage,
-    isWalkthroughSession,
+    selectedDate,
+    recommendedActivities,
   ]);
 
   const onEditActivityItem = (
@@ -472,7 +461,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   return (
-    <div className={'flex flex-col pt-4'}>
+    <div className={'mb-20 flex flex-col pt-4'}>
       <ProgrammePlanningHeaderUpdated
         headerText={`Today's daily Routine`}
         subHeaderText={currentDate}
@@ -517,7 +506,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                     key={`id_${routineItem.id}`}
                     routineItem={routineItem}
                     day={currentDailyProgramme}
-                    onClick={() => handleProgrammeClick(routineItem)}
+                    onClick={() => onProgrammeClick(routineItem)}
                   />
                 );
               }
@@ -549,7 +538,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         />
       )}
       {improveProgrammeMessage && (
-        <>
+        <div className="px-4">
           <Typography
             type={'h4'}
             text={improveProgrammeMessage}
@@ -576,11 +565,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 return null;
               })}
           </Card>
-        </>
+        </div>
       )}
 
       <Button
-        id="walkthrough-start"
+        id="gtm-add-programme"
         className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
         size="small"
         type={'filled'}

@@ -95,7 +95,8 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
         item?.question ===
           'Do you own the property where you will run your SmartStart programme?' ||
         item?.question === 'Do you have the Title Deeds for the property?' ||
-        item?.question === 'Do you live at the property?'
+        item?.question === 'Do you live at the property?' ||
+        item?.question === 'Is the property on un-proclaimed land?'
     );
 
   const propertyOwnAnswer = useMemo(() => {
@@ -114,13 +115,20 @@ export const SmartSpaceCheck6: React.FC<SmartSpaceCheck1Props> = ({
       programmeDetailsSections?.find(
         (item) => item?.question === 'Is the property on un-proclaimed land?'
       )?.questionAnswer === 'true';
-
+    const livesAtTheProperty =
+      programmeDetailsSections?.find(
+        (item) => item?.question === 'Do you live at the property?'
+      )?.questionAnswer === 'true';
     if (ownTheProperty && hasTheTitleDeeds) {
       return `${practitioner?.user?.firstName} owns the property and has the title deeds.`;
     }
 
     if (ownTheProperty && isUnproclaimedLand) {
       return `${practitioner?.user?.firstName} owns the property and the property is on un-proclaimed land.`;
+    }
+
+    if (!ownTheProperty && !livesAtTheProperty) {
+      return `${practitioner?.user?.firstName} does not own the property and does not live at the property.`;
     }
 
     return `${practitioner?.user?.firstName} does not own the property and lives at the property.`;

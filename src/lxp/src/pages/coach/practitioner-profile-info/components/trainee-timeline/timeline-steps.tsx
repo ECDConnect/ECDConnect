@@ -47,7 +47,8 @@ export const setStep = (
   color?: Maybe<string>,
   onView?: (text: string) => void,
   nextStep?: string,
-  visitEventId?: string
+  visitEventId?: string,
+  previousStep?: string
 ): StepItem<{
   date?: Date | null;
 }> => {
@@ -116,29 +117,51 @@ export const setStep = (
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
-        (notShowButtonRules || nextStep === status) &&
+        (notShowButtonRules ||
+          nextStep === status ||
+          (status === smartSpaceVisitFromCoach && previousStep)) &&
+        status !== franchisorAgreement &&
         status !== register3Children
           ? true
           : false,
-      actionButtonText: calendarViewRules
-        ? 'View'
-        : !!visitEventId
-        ? 'Start'
-        : 'Schedule',
-      actionButtonTextColor: calendarViewRules
-        ? 'secondary'
-        : !!visitEventId
-        ? 'white'
-        : 'primary',
-      actionButtonColor: calendarViewRules ? 'secondaryAccent2' : 'primary',
-      actionButtonIcon: calendarViewRules
-        ? ''
-        : !!visitEventId
-        ? 'ArrowCircleRightIcon'
-        : 'CalendarIcon',
+      actionButtonText:
+        calendarViewRules &&
+        status !== smartSpaceVisitFromCoach &&
+        !previousStep
+          ? 'View'
+          : !!visitEventId
+          ? 'Start'
+          : 'Schedule',
+      actionButtonTextColor:
+        calendarViewRules &&
+        status !== smartSpaceVisitFromCoach &&
+        !previousStep
+          ? 'secondary'
+          : !!visitEventId ||
+            (status === smartSpaceVisitFromCoach && previousStep)
+          ? 'white'
+          : 'primary',
+      actionButtonColor:
+        calendarViewRules &&
+        status !== smartSpaceVisitFromCoach &&
+        !previousStep
+          ? 'secondaryAccent2'
+          : 'primary',
+      actionButtonIcon:
+        calendarViewRules &&
+        status !== smartSpaceVisitFromCoach &&
+        !previousStep
+          ? ''
+          : !!visitEventId
+          ? 'ArrowCircleRightIcon'
+          : 'CalendarIcon',
       actionButtonOnClick: onView,
       actionButtonType:
-        calendarViewRules || !!visitEventId ? 'filled' : 'outlined',
+        calendarViewRules ||
+        !!visitEventId ||
+        (status === smartSpaceVisitFromCoach && previousStep)
+          ? 'filled'
+          : 'outlined',
       actionButtonIconStartPosition:
         stepCompleted || !!visitEventId ? false : true,
       actionButtonClassName: stepCompleted
@@ -237,7 +260,10 @@ export const timelineSteps = (
     )
   );
 
-  if (timeline?.smartSpaceLicenseNotAwardedDate) {
+  if (
+    timeline?.smartSpaceLicenseNotAwardedDate &&
+    timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence not received'
+  ) {
     steps.push(
       setStep(
         'SmartSpace Licence not awarded',
@@ -249,7 +275,10 @@ export const timelineSteps = (
     );
   }
 
-  if (timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received') {
+  if (
+    timeline?.smartSpaceLicenseStatus === 'SmartSpace Licence received' &&
+    timeline?.smartSpaceLicenseDate
+  ) {
     steps.push(
       setStep(
         'SmartSpace Licence received',
@@ -261,7 +290,11 @@ export const timelineSteps = (
     );
   }
 
-  if (timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received') {
+  if (
+    timeline?.smartSpaceLicenseStatus !== 'SmartSpace Licence received' &&
+    (!timeline?.smartSpaceLicenseDate ||
+      timeline?.smartSpaceLicenseNotAwardedDate)
+  ) {
     steps.push(
       setStep(
         timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',
@@ -274,7 +307,8 @@ export const timelineSteps = (
             visitId: (timeline.sSCoachVisitId as string) || '',
           }),
         nextStep,
-        timeline?.sSCoachVisitEventId || timeline?.sSCoachVisitId
+        timeline?.sSCoachVisitEventId,
+        timeline?.smartSpaceLicenseNotAwardedDate
       )
     );
   }

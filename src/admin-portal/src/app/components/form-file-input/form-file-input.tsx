@@ -55,14 +55,37 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   const [error, setError] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [isVideo, setIsVideo] = useState(false);
+  const accepetedFormatsWithoutLastItem = acceptedFormats?.slice(0, -1);
+  const accepetedFormatsFormatted = accepetedFormatsWithoutLastItem?.map(
+    (item) => {
+      return item + ' ';
+    }
+  );
+  const lastAcceptedFormat = acceptedFormats[acceptedFormats?.length - 1];
+
+  const isPdfRule = acceptedFormats.some((format) =>
+    format.toLowerCase().includes('pdf')
+  );
 
   const handleChange = (event: any) => {
     if (event && event.target && event.target.files) {
       const firstFile = event.target.files[0];
       if (!firstFile) return;
 
-      setLoading(true);
+      const fileExtension = firstFile?.name
+        ? firstFile?.name?.split('.').pop()
+        : undefined;
 
+      const isPdfExtension = fileExtension?.toLowerCase()?.includes('pdf');
+
+      // 5MB
+      if (isPdfExtension && firstFile.size > 5242880) {
+        setError('The file is too big, please upload a file less than 5MB');
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
       handleFile(firstFile);
       setFileName(firstFile?.name);
     } else {
@@ -88,22 +111,29 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
   };
 
   const handleFile = async (file: any) => {
-    setFile('');
+    // setFile('');
 
     const fileExtension = file?.name ? file?.name?.split('.').pop() : undefined;
-
     const isVideoExtension = videoExtensions.includes(fileExtension);
+    const isPdfExtension = fileExtension?.toLowerCase().includes('pdf');
 
     setIsVideo(isVideoExtension);
 
     const compressedFile =
-      isImage && !isVideoExtension && !byPassCompression
+      isImage &&
+      !isPdfExtension &&
+      !isVideoExtension &&
+      !byPassCompression &&
+      acceptedFormats.filter((x) => x === fileExtension).length > 0
         ? await getCompressedImage(file)
         : file;
 
     if (fileExtension) {
       if (acceptedFormats.length > 0) {
-        if (acceptedFormats.filter((x) => x === fileExtension).length > 0) {
+        if (
+          acceptedFormats.filter((x) => x === fileExtension).length > 0 &&
+          compressedFile?.size < 350000
+        ) {
           setError('');
 
           const reader = new FileReader();
@@ -125,6 +155,17 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             setLoading(false);
           };
         } else {
+          if (acceptedFormats.filter((x) => x === fileExtension).length === 0) {
+            setError('Invalid File type');
+            setLoading(false);
+            return;
+          }
+
+          if (compressedFile?.size > 350000) {
+            setError('The file is too big, upload a file less than 13MB');
+            setLoading(false);
+            return;
+          }
           setError('Invalid File type');
           setLoading(false);
         }
@@ -199,6 +240,12 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           <span className="font-normal">: {acceptedFormats?.join(', ')}</span>
         )}
       </label>
+      {isPdfRule && acceptedFormats?.length === 1 && (
+        <p className="text-textMid mb-2 text-sm">
+          Size limit: <span className="text-errorMain font-semibold">5</span>{' '}
+          MB. Convert the file(s) to a single pdf before uploading.
+        </p>
+      )}
       <label
         className={
           contentUrl && !fileName
@@ -216,8 +263,8 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         }}
       >
         {contentUrl && !fileName ? (
-          <div className="bg-uiBg relative">
-            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
+          <div className="bg-adminPortalBg relative">
+            <div className="bg-adminPortalBg absolute inset-0 z-10 flex flex-col items-center justify-center bg-opacity-40 text-center opacity-0 duration-300 hover:opacity-40">
               <UploadIcon className={classNames(iconBaseStyle, 'text-black')} />
             </div>
             <div className="relative">
@@ -243,7 +290,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           </div>
         ) : (
           <div
-            className="flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
+            className="bg-adminPortalBg flex h-40 w-full flex-1 flex-col items-center justify-center bg-contain bg-center bg-no-repeat p-5"
             style={
               file
                 ? {
@@ -284,7 +331,17 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
           </div>
         )}
       </label>
-      {fileName && <p className="pb-4">{fileName}</p>}
+      {error ? (
+        <p className="text-errorMain pb-4">{`${
+          error.toLowerCase().includes('too big')
+            ? error
+            : `${error}. You can only upload a ${accepetedFormatsFormatted.join(
+                ', '
+              )} or ${lastAcceptedFormat} file`
+        }`}</p>
+      ) : (
+        fileName && <p className="pb-4">{fileName}</p>
+      )}
 
       {contentUrl && !fileName && (
         <Alert

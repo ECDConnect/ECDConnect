@@ -1,4 +1,5 @@
 import {
+  PractitionerProgressReportSummaryDto,
   ProgressTrackingCategoryDto,
   ProgressTrackingLevelDto,
   ProgressTrackingSkillDto,
@@ -168,6 +169,41 @@ export const getProgressTrackingLevels = createAsyncThunk<
       }
     } else {
       return progressTrackingLevels;
+    }
+  }
+);
+
+export const getPractitionerProgressReportSummary = createAsyncThunk<
+  PractitionerProgressReportSummaryDto,
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { reportingPeriod: string },
+  ThunkApiType<RootState>
+>(
+  'getPractitionerProgressReportSummary',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ reportingPeriod }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let summary: PractitionerProgressReportSummaryDto | undefined;
+
+      if (userAuth?.auth_token) {
+        summary = await new ProgressTrackingService(
+          userAuth?.auth_token
+        ).practitionerProgressReportSummary(reportingPeriod);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!summary) {
+        return rejectWithValue('Error getting progress tracking skills');
+      }
+
+      return summary;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

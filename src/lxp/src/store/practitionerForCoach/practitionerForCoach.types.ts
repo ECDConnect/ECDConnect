@@ -4,7 +4,10 @@ import {
   IncomeStatementDto,
   PractitionerDto,
 } from '@ecdlink/core';
-import { PointsUserSummary } from '@ecdlink/graphql';
+import {
+  ChildProgressReportsStatus,
+  PointsUserSummary,
+} from '@ecdlink/graphql';
 
 export interface PractitionerForCoachState {
   practitionerForCoach?: PractitionerDto;
@@ -24,5 +27,8 @@ export interface PractitionerForCoachState {
       unsubmittedIncomeItems: IncomeItemDto[];
       unsubmittedExpenseItems: ExpenseItemDto[];
     };
+  };
+  childProgressReportStatusForPractitionerUser: {
+    [userId: string]: ChildProgressReportsStatus;
   };
 }

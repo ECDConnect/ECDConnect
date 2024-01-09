@@ -1,4 +1,8 @@
-interface UiTableProps {
+import { LanguageDto } from '@ecdlink/core';
+
+export type BulkActionStatus = 'success' | 'failed';
+
+export interface UiTableProps {
   rows: any;
   columns: any;
   options?: any;
@@ -9,6 +13,9 @@ interface UiTableProps {
   deleteRow?: any;
   searchInput?: any;
   component?: any;
+  isLoading?: boolean;
+  onBulkActionCallback?: (status: BulkActionStatus) => void;
+  languages?: LanguageDto[];
 }
 
 interface Iprop {

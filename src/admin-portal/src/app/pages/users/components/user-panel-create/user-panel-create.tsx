@@ -3,7 +3,14 @@ import { useMutation } from '@apollo/client';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Alert, Button, Typography } from '@ecdlink/ui';
+import {
+  ActionModal,
+  Alert,
+  Button,
+  Dialog,
+  DialogPosition,
+  Typography,
+} from '@ecdlink/ui';
 import { UserPanelCreateProps } from '../users';
 import {
   NOTIFICATION,
@@ -18,7 +25,8 @@ import {
 } from '@ecdlink/graphql';
 import { newGuid } from '../../../../utils/uuid.utils';
 import FormField from '../../../../components/form-field/form-field';
-import { SaveIcon } from '@heroicons/react/solid';
+import { SaveIcon, XIcon } from '@heroicons/react/solid';
+import { useCallback, useEffect, useState } from 'react';
 
 export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
@@ -43,8 +51,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
+  const [displayFormIsDirty, setDisplayFormIsDirty] = useState(false);
 
-  const { errors, isValid } = formState;
+  const { errors, isValid, isDirty } = formState;
 
   const onSave = async (formData: any) => {
     await saveUser(formData);
@@ -128,6 +137,17 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     return (
       <>
         <div className="">
+          {isDirty && (
+            <div className="focus:outline-none focus:ring-primary absolute right-5 -top-20 z-10 mt-6 flex h-7 items-center rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2">
+              <button
+                className="focus:outline-none focus:ring-primary rounded-md bg-white text-gray-400 hover:text-gray-500 focus:ring-2 focus:ring-offset-2"
+                onClick={() => setDisplayFormIsDirty(true)}
+              >
+                <span className="sr-only">Close panel</span>
+                <XIcon className="h-6 w-6" aria-hidden="true" />
+              </button>
+            </div>
+          )}
           <div className="border-b border-dashed border-gray-500 px-2">
             <h1 className="py-4 text-xl font-medium leading-6 text-black">
               Administrator Details
@@ -167,7 +187,42 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
               </div>
             </div>
           </form>
-          <div></div>
+          <Dialog
+            className={'mb-16 px-4'}
+            stretch
+            visible={displayFormIsDirty}
+            position={DialogPosition.Middle}
+          >
+            <ActionModal
+              icon={'InformationCircleIcon'}
+              iconColor="alertMain"
+              iconBorderColor="alertBg"
+              importantText={`Discard unsaved changes?`}
+              detailText={
+                'If you leave now, you will lose all of your changes.'
+              }
+              actionButtons={[
+                {
+                  text: 'Keep editing',
+                  textColour: 'secondary',
+                  colour: 'secondary',
+                  type: 'outlined',
+                  onClick: () => setDisplayFormIsDirty(false),
+                  leadingIcon: 'PencilIcon',
+                },
+                {
+                  text: 'Discard changes',
+                  textColour: 'white',
+                  colour: 'secondary',
+                  type: 'filled',
+                  onClick: () => {
+                    emitCloseDialog(false);
+                  },
+                  leadingIcon: 'TrashIcon',
+                },
+              ]}
+            />
+          </Dialog>
         </div>
       </>
     );

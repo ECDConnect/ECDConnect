@@ -1,10 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const GetAllRelation = gql`
-  {
-    GetAllRelation {
+  query GetAllRelation($pagingInput: PagedQueryInput) {
+    GetAllRelation(pagingInput: $pagingInput) {
       id
       description
+      isActive
     }
   }
 `;

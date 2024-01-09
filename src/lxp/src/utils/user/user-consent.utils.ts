@@ -4,10 +4,11 @@ import { newGuid } from '../common/uuid.utils';
 export const mapUserConsentDto = (
   createdUserId: string,
   userId: string,
-  consent: ConsentDto
+  consent: ConsentDto,
+  consentId?: string
 ): UserConsentDto => {
   return {
-    id: newGuid(),
+    id: consentId ? consentId : newGuid(),
     createdUserId,
     userId,
     consentId: consent.id,

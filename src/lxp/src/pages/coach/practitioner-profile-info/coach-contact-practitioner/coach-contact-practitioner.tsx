@@ -47,7 +47,7 @@ export const CoachContactPractitioner: React.FC = () => {
         renderOverflow={false}
         onBack={() =>
           history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
-            practitionerId,
+            practitionerId: practitionerId,
           })
         }
         displayOffline={!isOnline}

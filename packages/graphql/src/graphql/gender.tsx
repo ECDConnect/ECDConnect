@@ -1,10 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const GenderList = gql`
-  {
-    GetAllGender {
+  query GetAllGender($pagingInput: PagedQueryInput) {
+    GetAllGender(pagingInput: $pagingInput) {
       id
       description
+      isActive
     }
   }
 `;

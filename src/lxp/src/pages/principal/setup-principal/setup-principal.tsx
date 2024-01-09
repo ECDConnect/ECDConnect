@@ -176,7 +176,7 @@ export const SetupPrincipal: React.FC = () => {
       );
     }
 
-    appDispatch(notificationActions.resetNotificationState());
+    appDispatch(notificationActions.resetFrontendNotificationState());
 
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
@@ -186,6 +186,7 @@ export const SetupPrincipal: React.FC = () => {
             idNumber: principalPractitioner.idNumber,
             firstName: principalPractitioner.firstName,
             lastName: principalPractitioner.surname,
+            programmeTypeId: programmeType?.id,
           };
           await new PractitionerService(
             userAuth?.auth_token

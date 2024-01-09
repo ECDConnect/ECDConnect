@@ -1,5 +1,6 @@
 ﻿using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Notifications;
+using ECDLink.AutomatedJobs.Anonymise;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
@@ -10,6 +11,7 @@ using ECDLink.PostgresTenancy.Services;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -20,8 +22,8 @@ namespace ECDLink.AutomatedJobs.Notifications
     {
         private readonly IServiceScopeFactory _scopeFactory;
 
-        public LogOnNotificationSender(IServiceScopeFactory scopeFactory, IScheduleConfig<LogOnNotificationSender> config)
-            : base(config.CronExpression, config.TimeZoneInfo)
+        public LogOnNotificationSender(IServiceScopeFactory scopeFactory, CronJobConfig<LogOnNotificationSender> config, ILogger<LogOnNotificationSender> logger)
+            : base(config, logger)
         {
             _scopeFactory = scopeFactory;
         }

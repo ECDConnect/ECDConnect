@@ -77,6 +77,7 @@ import { isDateWithinThreeMonths } from './timeline/utils';
 import { getReAccreditationStepData } from './timeline/re-accreditation/step';
 import { getUserPointsSummaryForCoach } from '@/store/points/points.actions';
 import { pointsConstants } from '@/constants/points';
+import ROUTES from '@/routes/routes';
 
 export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
@@ -450,7 +451,7 @@ export const CoachPractitionerJourney = () => {
     }
   }, [selectedForm]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     getTimeline();
   }, [getTimeline]);
 
@@ -728,6 +729,14 @@ export const CoachPractitionerJourney = () => {
             }
             bgColour="uiBg"
             textColour="black"
+            onClick={() =>
+              history.push(
+                ROUTES.COACH.PRACTITIONER_POINTS.replace(
+                  ':userId',
+                  practitioner?.userId || ''
+                )
+              )
+            }
           />
           {renderAlert()}
           <Typography
@@ -758,7 +767,7 @@ export const CoachPractitionerJourney = () => {
             textColor="primary"
             icon="LocationMarkerIcon"
             text="Start support visit"
-            onClick={onSupportVisit}
+            onClick={() => onSupportVisit('')}
           />
           {!!timeline && (
             <Steps

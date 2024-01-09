@@ -30,6 +30,8 @@ import {
   getInfantVisitByVisitIdSelector,
   getIsInfantFirstVisitSelector,
   getIsInfantSecondVisitSelector,
+  getIsInfantFirstVisitForAgeSelector,
+  getInfantLastVisitSelector,
 } from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
@@ -148,9 +150,12 @@ export const ActivityList: React.FC = () => {
     documentSelectors.getDocumentsByUserId(infantId)
   );
 
-  const visit = useSelector((state: RootState) =>
+  const currentVisit = useSelector((state: RootState) =>
     getInfantVisitByVisitIdSelector(state, visitId)
   );
+
+  const previousCurrentVisit = useSelector(getInfantLastVisitSelector);
+
   const completedVisits = useSelector((state: RootState) =>
     getCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;
@@ -163,24 +168,38 @@ export const ActivityList: React.FC = () => {
         visitId,
       })
     ).unwrap();
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForInfant({
-        visitId,
-      })
-    ).unwrap();
+    if (
+      !!previousCurrentVisit &&
+      previousCurrentVisit?.id !== currentVisit?.id &&
+      !!currentVisit
+    ) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForInfant({
+          visitId: previousCurrentVisit?.id,
+        })
+      ).unwrap();
+    } else {
+      if (!previousCurrentVisit && !!currentVisit) {
+        appDispatch(
+          visitThunkActions.getPreviousVisitInformationForInfant({
+            visitId: currentVisit?.id,
+          })
+        );
+      }
+    }
     appDispatch(
       visitThunkActions.GetInfantSummaryByPriority({
         visitId,
       })
     );
-  }, [visitId, appDispatch]);
+  }, [visitId, appDispatch, previousCurrentVisit, currentVisit]);
 
   const previousCurrentVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
 
   const previousVisit = useSelector((state: RootState) =>
-    getInfantNearestPreviousVisitByOrderDate(state, visit)
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
   const infant = useSelector((state: RootState) =>
@@ -214,6 +233,18 @@ export const ActivityList: React.FC = () => {
 
   const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
   const isSecondVisit = useSelector(getIsInfantSecondVisitSelector);
+  const isFirstVisitAfter9MonthsBefore24Months =
+    useSelector((state: RootState) =>
+      getIsInfantFirstVisitForAgeSelector(state, new Date(dateOfBirth), 9, 24)
+    ) &&
+    ageDays > 274 &&
+    ageDays < 730;
+  const isFirstVisitAfter24MonthsBefore60Months =
+    useSelector((state: RootState) =>
+      getIsInfantFirstVisitForAgeSelector(state, new Date(dateOfBirth), 24, 60)
+    ) &&
+    ageDays > 730 &&
+    ageDays < 1825;
 
   const getIsFollowUp = useCallback(
     (section: string, visitName: string) => {
@@ -245,15 +276,9 @@ export const ActivityList: React.FC = () => {
 
   const isChildBefore49Days = useMemo(() => ageDays <= 49, [ageDays]);
 
-  const isNewBornCare = useMemo(
-    () => isFirstVisit && ageDays <= 28,
-    [ageDays, isFirstVisit]
-  );
+  const isNewBornCare = useMemo(() => ageDays <= 28, [ageDays]);
 
-  const isKangarooMotherCare = useMemo(
-    () => isFirstVisit && ageDays <= 49,
-    [ageDays, isFirstVisit]
-  );
+  const isKangarooMotherCare = useMemo(() => ageDays <= 49, [ageDays]);
 
   const isDevelopmentalScreening = useMemo(
     () =>
@@ -303,8 +328,18 @@ export const ActivityList: React.FC = () => {
   );
 
   const isMaternalDistress = useMemo(
-    () => isFirstVisit && ageDays >= 49 && !ageYears && ageMonths < 9,
-    [ageDays, ageMonths, ageYears, isFirstVisit]
+    () =>
+      (isFirstVisit && ageDays >= 49 && !ageYears && ageMonths < 9) ||
+      isFirstVisitAfter9MonthsBefore24Months ||
+      isFirstVisitAfter24MonthsBefore60Months,
+    [
+      ageDays,
+      ageMonths,
+      ageYears,
+      isFirstVisit,
+      isFirstVisitAfter24MonthsBefore60Months,
+      isFirstVisitAfter9MonthsBefore24Months,
+    ]
   );
 
   const previousBirthCertificateAnswer = previousAnswers?.find(
@@ -546,7 +581,7 @@ export const ActivityList: React.FC = () => {
     completedForms.length >= visibleActivities.length &&
     !completedVisits?.some((item) => item.includes('Follow'));
   const isAllCompleted =
-    !!visit?.attended ||
+    !!currentVisit?.attended ||
     completedVisits?.some((item) => item?.includes('Follow'));
 
   const goBack = useCallback(() => {

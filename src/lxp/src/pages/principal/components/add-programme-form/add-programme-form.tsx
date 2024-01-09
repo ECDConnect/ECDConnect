@@ -14,11 +14,7 @@ import {
 } from '@schemas/practitioner/edit-programme';
 import { yesNoOptions } from './add-programme-form.types';
 import { userSelectors } from '@/store/user';
-import {
-  classroomsActions,
-  classroomsSelectors,
-  classroomsThunkActions,
-} from '@/store/classroom';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@/utils/common/uuid.utils';
 import {
@@ -165,9 +161,12 @@ export const AddProgrammeForm: React.FC<{
       insertedDate: new Date().toISOString(),
       isActive: true,
     };
+    const programmeInput = programData?.find((x) => x.id === programme.type);
 
     appDispatch(classroomsActions.createClassroom(classroomInputModel));
-    appDispatch(classroomsActions.setProgrammeType(programme.type));
+    if (programmeInput) {
+      appDispatch(classroomsActions.setProgrammeType(programmeInput));
+    }
   };
 
   const updateClassroom = (
@@ -187,10 +186,18 @@ export const AddProgrammeForm: React.FC<{
         : 0,
       insertedDate: new Date().toISOString(),
       isActive: true,
+      siteAddress: classroom?.siteAddress,
+      siteAddressId: classroom?.siteAddressId,
+      preschoolFeeAmount: classroom?.preschoolFeeAmount,
+      preschoolFeeAmountLastUpdateDate:
+        classroom?.preschoolFeeAmountLastUpdateDate,
     };
 
+    const programmeInput = programData?.find((x) => x.id === programme.type);
     appDispatch(classroomsActions.updateClassroom(classroomInputModel));
-    appDispatch(classroomsActions.setProgrammeType(programme.type));
+    if (programmeInput) {
+      appDispatch(classroomsActions.setProgrammeType(programmeInput));
+    }
   };
 
   const onSubmit = (e: EditProgrammeModel) => {
@@ -205,10 +212,15 @@ export const AddProgrammeForm: React.FC<{
   };
 
   const onSubmitForImportedUser = (e: EditProgrammeModel) => {
-    if (classroom?.id) {
-      updateClassroom(e, classroom.id);
+    if (!e.isPrincipalOrLeader && e.isPrincipleOrOwnerSmartStarter) {
+      setIsNotPrincipal(true);
+      onNext(PractitionerSetupSteps.ADD_PHOTO);
+    } else {
+      if (classroom?.id) {
+        updateClassroom(e, classroom.id);
+      }
+      onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
     }
-    onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
 
   useEffect(() => {
@@ -335,7 +347,7 @@ export const AddProgrammeForm: React.FC<{
 
             <FormInput<EditProgrammeModel>
               label={
-                'How many non-SmartStart trained teaching assistants do have?'
+                'How many non-SmartStart trained teaching assistants do you have?'
               }
               register={programmeFormRegister}
               nameProp={'nonSmartStartPractitioners'}
@@ -391,7 +403,7 @@ export const AddProgrammeForm: React.FC<{
             className={styles.button}
             disabled={isFundaAppAdmin ? !validationForFundaAdmin : !isValid}
             onClick={
-              isSmartLinkImported && classroom?.id
+              isSmartLinkImported
                 ? handleSubmit(onSubmitForImportedUser)
                 : handleSubmit(onSubmit)
             } // Navigate to a different page if it is principle

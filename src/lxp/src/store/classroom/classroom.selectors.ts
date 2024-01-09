@@ -18,9 +18,21 @@ export const getProgrammeType = () =>
   createSelector(
     (state: RootState) => state,
     (rootState: RootState): ProgrammeTypeDto | undefined => {
-      return rootState.staticData.programmeTypes?.find(
-        (x) => x.id === rootState.classroomData.programmeType
-      );
+      if (!!rootState.classroomData.programmeType) {
+        return rootState.staticData.programmeTypes?.find(
+          (x) => x.id === rootState.classroomData.programmeType
+        );
+      } else {
+        const groups =
+          rootState.classroomData.classroomGroups?.filter((x) => x.isActive) ||
+          [];
+
+        if (groups?.length > 0) {
+          return groups[0].programmeType;
+        }
+
+        return;
+      }
     }
   );
 
@@ -29,6 +41,19 @@ export const getAllClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
 
 export const getClassroomGroups = (state: RootState): ClassroomGroupDto[] =>
   state.classroomData.classroomGroups?.filter((x) => x.isActive) || [];
+
+export const getClassroomGroupsForUser = (userId: string) =>
+  createSelector(
+    (state: RootState) => state.classroomData?.classroomGroups,
+    (classroomGroups) => {
+      return (
+        classroomGroups?.filter(
+          (classroomGroup) =>
+            classroomGroup.isActive && classroomGroup.userId === userId
+        ) || []
+      );
+    }
+  );
 
 export const getPrincipal = (state: RootState): PrincipalDto =>
   state.classroomData.principal || ({} as PrincipalDto);

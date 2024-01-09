@@ -44,6 +44,7 @@ import { MultipleChildren } from '@/pages/infant/multiple-children';
 import { InfantBackReferralUpdate } from '@/pages/infant/infant-profile/referrals-tab/update-back-referral';
 import { MotherBackReferralUpdate } from '@/pages/mom/pregnant-profile/referrals-tab/update-back-referral';
 import { Community } from '@/pages/community/community';
+import Calendar from '@/pages/calendar/calendar-home';
 
 function PublicRoutes() {
   return (
@@ -258,6 +259,7 @@ function AuthRoutes() {
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
       <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
+      <Route exact path={ROUTES.CALENDAR} component={Calendar} />
     </Switch>
   );
 }

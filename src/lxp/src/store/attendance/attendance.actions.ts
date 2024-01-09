@@ -16,6 +16,10 @@ import {
   MonthlyAttendanceReportQueryParams,
 } from './attendance.types';
 
+export const AttendanceActions = {
+  GET_MONTHLY_ATTENDANCE_REPORT: 'getMonthlyAttendanceReport',
+};
+
 export const getAttendance = createAsyncThunk<
   AttendanceDto[],
   AttendanceQueryParams,
@@ -52,6 +56,36 @@ export const getAttendance = createAsyncThunk<
   }
 );
 
+export const getPreviousWeekAttendance = createAsyncThunk<
+  AttendanceDto[],
+  AttendanceQueryParams,
+  ThunkApiType<RootState>
+>(
+  'getPreviousWeekAttendance',
+  async ({ year, monthOfYear, weekOfYear }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let attendance: AttendanceDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        attendance = await new AttendanceService(
+          userAuth?.auth_token
+        ).getAttendance(year, monthOfYear, weekOfYear);
+      }
+
+      if (!attendance) {
+        return rejectWithValue('Error getting Attendance Records');
+      }
+
+      return attendance;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 export const getMonthlyAttendanceReport = createAsyncThunk<
   MonthlyAttendanceRecord[],
   MonthlyAttendanceReportQueryParams,
@@ -59,7 +93,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
 >(
   'getMonthlyAttendanceReport',
   async (
-    { classroomId, startDate, endDate },
+    { userId, classroomId, startDate, endDate },
     { getState, rejectWithValue }
   ) => {
     const {
@@ -72,12 +106,7 @@ export const getMonthlyAttendanceReport = createAsyncThunk<
       if (userAuth?.auth_token) {
         reportData = await new AttendanceService(
           userAuth?.auth_token
-        ).getMonthlyAttendanceReport(
-          userAuth.id,
-          classroomId,
-          startDate,
-          endDate
-        );
+        ).getMonthlyAttendanceReport(userId, classroomId, startDate, endDate);
       }
 
       if (!reportData) {

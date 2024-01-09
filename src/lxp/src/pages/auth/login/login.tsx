@@ -105,7 +105,7 @@ export const Login: React.FC = () => {
           password: loginFormGetValues().password,
         };
 
-        if (currentUserId) {
+        if (currentUserId && !isOnline) {
           if (checkIdOrPassport !== userIdHashDecryptedToString) {
             setDisplayWrongUserError(true);
             setIsLoading(false);
@@ -117,6 +117,7 @@ export const Login: React.FC = () => {
           .then((isAuthenticated: any) => {
             if (
               isAuthenticated &&
+              isAuthenticated?.error === undefined &&
               isAuthenticated?.payload?.response?.status !== 401
             ) {
               appDispatch(settingActions.setApplicationVersion(version));

@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Templates;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -16,13 +17,15 @@ namespace ECDLink.Notifications.Sms
         protected readonly IMessageFactory _messageFactory;
         protected readonly TemplateProcessor _templateProcessor;
         protected IMessage _message;
+        protected ILogger<SmsSenderBase> _logger;
 
-        public SmsSenderBase(IMessageFactory messageFactory, TemplateProcessor templateProcessor, IMessage message)
+        public SmsSenderBase(IMessageFactory messageFactory, TemplateProcessor templateProcessor, IMessage message, ILogger<SmsSenderBase> logger)
         {
             _messageFactory = messageFactory;
             _templateProcessor = templateProcessor;
             _message = message;
             _fieldTransform = new Dictionary<string, string>();
+            _logger = logger;
         }
 
         virtual public async Task SendMessageAsync(CancellationToken cancellationToken = default)

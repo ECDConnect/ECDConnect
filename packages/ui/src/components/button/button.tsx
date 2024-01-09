@@ -23,13 +23,14 @@ export const Button: React.FC<ButtonProps> = ({
   text,
   textColor,
   style,
+  buttonType = 'button',
 }) => {
   return (
     <button
       style={style}
       id={id}
       data-testid={testId}
-      type="button"
+      type={buttonType}
       className={classNames(
         styles.getButtonClassName(
           type,

@@ -21,7 +21,8 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string CTA { get; set; }
         public string CTAText { get; set; }
         public int? TypeCode { get; set; }
-
+        public int Ordering { get; set; }
+        public string Action { get; set; }
 
     }
 
@@ -38,7 +39,10 @@ namespace ECDLink.DataAccessLayer.Entities.Notifications
         public string Subject { get; set; }
         public string CTAText { get; set; }
         public string CTA { get; set; }
-
+    }
+    public class MessageTemplateAction
+    {
+        public string URL { get; set; }
 
     }
 }

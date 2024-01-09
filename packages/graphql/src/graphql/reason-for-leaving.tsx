@@ -1,10 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const GetAllReasonForLeaving = gql`
-  {
-    GetAllReasonForLeaving {
+  query GetAllReasonForLeaving($pagingInput: PagedQueryInput) {
+    GetAllReasonForLeaving(pagingInput: $pagingInput) {
       id
       description
+      isActive
     }
   }
 `;

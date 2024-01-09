@@ -9,6 +9,12 @@ import { PractitionerService } from '@services/PractitionerService';
 import { RootState, ThunkApiType } from '../types';
 import { differenceInDays } from 'date-fns';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
+import { ChildProgressReportsStatus } from '@ecdlink/graphql';
+import { CoachService } from '@/services/CoachService';
+
+export const PractitionersForCoachActions = {
+  GET_CHILD_PROGRESS_REPORTS_STATUS: 'getChildProgressReportsStatus',
+};
 
 export const getPractitionersForCoach = createAsyncThunk<
   PractitionerDto[],
@@ -207,6 +213,35 @@ export const getUserExpensesForCoach = createAsyncThunk<
       }
 
       return expenseItems;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getChildProgressReportsStatusForUser = createAsyncThunk<
+  ChildProgressReportsStatus,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  'getChildProgressReportsStatus',
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let reportsStatus: ChildProgressReportsStatus | undefined;
+
+      if (userAuth?.auth_token) {
+        reportsStatus = await new CoachService(
+          userAuth?.auth_token!
+        ).getChildProgressReportsStatusForUser(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return reportsStatus;
     } catch (err) {
       return rejectWithValue(err);
     }

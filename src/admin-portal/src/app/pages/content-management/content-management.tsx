@@ -1,33 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import debounce from 'lodash.debounce';
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
 import {
   GetAllLanguage,
   GetTenantContext,
-  SortEnumType,
   contentDefinitions,
   contentTypes,
 } from '@ecdlink/graphql';
-import { ContentTypeDto, DocumentTypeDto } from '@ecdlink/core';
+import { ContentTypeDto, usePrevious } from '@ecdlink/core';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
-import { StackedList, StackedListItemType, classNames } from '@ecdlink/ui';
+import { StackedList, TitleListDataItem, classNames } from '@ecdlink/ui';
 import ContentLoader from '../../components/content-loader/content-loader';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
-import {
-  ArrowLeftIcon,
-  ChartBarIcon,
-  PresentationChartBarIcon,
-  SearchIcon,
-} from '@heroicons/react/solid';
+import { ArrowLeftIcon } from '@heroicons/react/solid';
 import { useLazyQuery } from '@apollo/client';
+import {
+  ContentManagementTabs,
+  ContentTypes,
+} from '../../constants/content-management';
+import { LinksShared } from './components/links-shared/links-shared';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
+  const [selectedSubType, setSelectedSubType] = useState<ContentTypeDto>();
   const [searchValue, setSearchValue] = useState('');
   const [specialType, setSpecialType] = useState('');
   const [selectedTab, setSelectedTab] = useState(0);
+  const [subTabs, setSubTabs] = useState<TitleListDataItem[]>();
+  const [choosedSectionTitle, setChoosedSectionTitleSectionTitle] =
+    useState('');
+
+  const previousTab = usePrevious(selectedTab);
 
   const [selectedContent, setSelectedContent] =
     useState<ContentManagementView>();
@@ -40,19 +45,19 @@ export function ContentManagement() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getContentTypes, { data: dataTypes, refetch }] = useLazyQuery(
-    contentTypes,
-    {
-      variables: {
-        search: '',
-        searchInContent: null,
-        isVisiblePortal: true,
-        // contentTypeIdFilter: '',
-        // contentTypeNameFilter: ''
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  const [
+    getContentTypes,
+    { data: dataTypes, refetch, loading: isLoadingSelectedRow },
+  ] = useLazyQuery(contentTypes, {
+    variables: {
+      search: '',
+      searchInContent: null,
+      isVisiblePortal: true,
+      // contentTypeIdFilter: '',
+      // contentTypeNameFilter: ''
+    },
+    fetchPolicy: 'cache-and-network',
+  });
 
   const { data: dataDefinitions, refetch: refrechDefinitions } = useQuery(
     contentDefinitions,
@@ -63,7 +68,10 @@ export function ContentManagement() {
 
   useEffect(() => {
     if (dataTypes && dataTypes.contentTypes && !selectedType) {
-      setSelectedType(dataTypes.contentTypes[0]);
+      const defaultType = dataTypes.contentTypes?.find(
+        (item) => item?.name === 'Consent'
+      );
+      setSelectedType(defaultType);
     } else if (dataTypes && dataTypes.contentTypes && selectedType) {
       const currentSelectedContent = dataTypes.contentTypes.find(
         (x) => x.id === selectedType.id
@@ -106,7 +114,7 @@ export function ContentManagement() {
           id: 4,
         },
         {
-          name: 'Community',
+          name: ContentManagementTabs.COMMUNITY.name,
           href: 'CommunitySectionGG',
           id: 5,
         },
@@ -124,18 +132,18 @@ export function ContentManagement() {
           id: 1,
         },
         {
-          name: 'Progress',
+          name: ContentManagementTabs.PROCESS.name,
           // href: '/',
-          id: 2,
+          id: ContentManagementTabs.PROCESS.id,
         },
         {
-          name: 'Programmes',
+          name: ContentManagementTabs.PROGRAMMES.name,
           // href: '/',
-          id: 3,
+          id: ContentManagementTabs.PROGRAMMES.id,
         },
         {
-          name: 'Community',
-          id: 4,
+          name: ContentManagementTabs.COMMUNITY.name,
+          id: ContentManagementTabs.COMMUNITY.id,
         },
       ];
     }
@@ -156,8 +164,12 @@ export function ContentManagement() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const showGroupContentTypes = (item: ContentTypeDto) => {
+  const showGroupContentTypes = (
+    item: ContentTypeDto,
+    subItem?: ContentTypeDto
+  ) => {
     setSelectedType(item);
+    subItem && setSelectedSubType(subItem);
   };
 
   const getContentValues = (contentManagementView?: ContentManagementView) => {
@@ -168,7 +180,6 @@ export function ContentManagement() {
       setSelectedType(currentType);
       setSelectedContent(contentManagementView);
     });
-    console.log(contentManagementView);
   };
 
   const refreshParent = () => {
@@ -177,7 +188,6 @@ export function ContentManagement() {
   };
 
   useEffect(() => {
-    console.log(searchValue);
     getContentTypes({
       variables: {
         search: searchValue,
@@ -192,203 +202,245 @@ export function ContentManagement() {
     // getCountUsers({
     //   variables: getUserCountQueryVariables
     // });
-  }, [searchValue]);
+  }, []);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
-  }, 150);
+  }, 500);
 
-  const listItems: StackedListItemType[] = [];
+  const handleSubTabs = useCallback(() => {
+    if (specialType === ContentManagementTabs.PROCESS.name) {
+      return setSubTabs([
+        {
+          title: 'Levels',
+          description:
+            'Children will be placed at a specific level or stage of development',
+          titleIcon: 'ChartBarIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'ProgressTrackingLevel'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+        {
+          title: 'Progress categories & subcategories',
+          description: 'Development areas',
+          titleIcon: 'PresentationChartBarIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'ProgressTrackingCategory'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+        // {
+        //   title: 'Progress subcategories',
+        //   description: 'Development areas',
+        //   titleIcon: 'PresentationChartBarIcon',
+        //   titleIconClassName: 'bg-secondary text-white',
+        //   onActionClick: () => {
+        //     setSpecialType('');
+        //     const selectedTypeObject = dataTypes?.contentTypes.find(
+        //       (type: ContentTypeDto) =>
+        //         type.name === 'ProgressTrackingSubCategory'
+        //     );
+        //     showGroupContentTypes(selectedTypeObject);
+        //   },
+        //   classNames: 'bg-uiBg',
+        // },
+        {
+          title: 'Progress tool',
+          description: 'Edit the skills shown in the progress tracker',
+          titleIcon: 'PresentationChartBarIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'ProgressTrackingSkill'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+      ]);
+    }
 
-  console.log(dataTypes?.contentTypes);
+    if (specialType === ContentManagementTabs.COMMUNITY.name) {
+      return setSubTabs([
+        {
+          title: 'Coaching circle topics',
+          description: 'Add, edit, delete topics for coaches',
+          titleIcon: 'DuplicateIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) =>
+                type.name === ContentTypes.COACHING_CIRCLE_TOPICS
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+        {
+          title: 'Connect tab',
+          description:
+            'Add or edit the links shared with practitioners and coaches',
+          titleIcon: 'PuzzleIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT
+            );
 
-  if (specialType === 'Progress') {
-    listItems.push(
-      {
-        title: 'Levels',
-        description:
-          'Children will be placed at a specific level or stage of development',
-        titleIcon: 'ChartBarIcon',
-        titleIconClassName: 'bg-secondary text-white',
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) => type.name === 'ProgressTrackingLevel'
-          );
-          showGroupContentTypes(selectedTypeObject);
+            const selectedSubTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === ContentTypes.CONNECT_ITEM
+            );
+            showGroupContentTypes(selectedTypeObject, selectedSubTypeObject);
+          },
+          classNames: 'bg-white',
         },
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: 'Progress categories',
-        description: 'Development areas',
-        titleIcon: 'PresentationChartBarIcon',
-        titleIconClassName: 'bg-secondary text-white',
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) => type.name === 'ProgressTrackingCategory'
-          );
-          showGroupContentTypes(selectedTypeObject);
-        },
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: 'Progress subcategories',
-        description: 'Development areas',
-        titleIcon: 'PresentationChartBarIcon',
-        titleIconClassName: 'bg-secondary text-white',
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) =>
-              type.name === 'ProgressTrackingSubCategory'
-          );
-          showGroupContentTypes(selectedTypeObject);
-        },
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: 'Progress tool',
-        description: 'Edit the skills shown in the progress tracker',
-        titleIcon: 'PresentationChartBarIcon',
-        titleIconClassName: 'bg-secondary text-white',
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) => type.name === 'ProgressTrackingSkill'
-          );
-          showGroupContentTypes(selectedTypeObject);
-        },
-        classNames: 'bg-uiBg',
-      }
-    );
-  } else {
-    listItems.push(
-      {
-        title: 'Themes',
-        description:
-          'An organized set of activities based around a particular topic',
-        titleIcon: 'SparklesIcon',
-        titleIconClassName: 'bg-secondary text-white',
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) => type.name === 'Theme'
-          );
-          showGroupContentTypes(selectedTypeObject);
-        },
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: 'Small/large group activities',
-        description:
-          'Classroom activities for children to do either in small groups or as a whole class',
-        titleIcon: 'UsersIcon',
-        titleIconClassName: 'bg-secondary text-white',
+      ]);
+    }
 
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) => type.name === 'Activity'
-          );
-          showGroupContentTypes(selectedTypeObject);
+    if (specialType === ContentManagementTabs.PROGRAMMES.name) {
+      return setSubTabs([
+        {
+          title: 'Themes',
+          description:
+            'An organized set of activities based around a particular topic',
+          titleIcon: 'SparklesIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'Theme'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
         },
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: 'Stories',
-        description: 'Read aloud stories and story books',
-        titleIcon: 'BookOpenIcon',
-        titleIconClassName: 'bg-secondary text-white',
+        {
+          title: 'Small/large group activities',
+          description:
+            'Classroom activities for children to do either in small groups or as a whole class',
+          titleIcon: 'UsersIcon',
+          titleIconClassName: 'bg-secondary text-white',
 
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) => type.name === 'StoryBook'
-          );
-          showGroupContentTypes(selectedTypeObject);
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'Activity'
+            );
+            setChoosedSectionTitleSectionTitle('Small/large group activities');
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
         },
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: 'Story Book Parts',
-        description: 'Read aloud stories and story books',
-        titleIcon: 'BookOpenIcon',
-        titleIconClassName: 'bg-secondary text-white',
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) => type.name === 'StoryBookParts'
-          );
-          showGroupContentTypes(selectedTypeObject);
-        },
-        classNames: 'bg-uiBg',
-      },
-      {
-        title: 'Story activities',
-        description: 'Activities to do during story time ',
+        {
+          title: 'Stories',
+          description: 'Read aloud stories and story books',
+          titleIcon: 'BookOpenIcon',
+          titleIconClassName: 'bg-secondary text-white',
 
-        titleIcon: 'BriefcaseIcon',
-        titleIconClassName: 'bg-secondary text-white',
-
-        onActionClick: () => {
-          setSpecialType('');
-          const selectedTypeObject = dataTypes?.contentTypes.find(
-            (type: ContentTypeDto) => type.name === 'StoryBookPartQuestion'
-          );
-          showGroupContentTypes(selectedTypeObject);
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'StoryBook'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
         },
-        classNames: 'bg-uiBg',
-      }
-    );
-  }
+        {
+          title: 'Story Book Parts',
+          description: 'Read aloud stories and story books',
+          titleIcon: 'BookOpenIcon',
+          titleIconClassName: 'bg-secondary text-white',
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'StoryBookParts'
+            );
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+        {
+          title: 'Story activities',
+          description: 'Activities to do during story time ',
+
+          titleIcon: 'BriefcaseIcon',
+          titleIconClassName: 'bg-secondary text-white',
+
+          onActionClick: () => {
+            setSpecialType('');
+            const selectedTypeObject = dataTypes?.contentTypes.find(
+              (type: ContentTypeDto) => type.name === 'Activity'
+            );
+            setChoosedSectionTitleSectionTitle('Story activities');
+            showGroupContentTypes(selectedTypeObject);
+          },
+          classNames: 'bg-white',
+        },
+      ]);
+    }
+    return setSubTabs([]);
+  }, [dataTypes?.contentTypes, specialType]);
+
+  useEffect(() => {
+    if (previousTab !== selectedTab) {
+      handleSubTabs();
+    }
+  }, [handleSubTabs, previousTab, selectedTab]);
 
   return (
     <div className="">
-      {dataTypes ? (
+      {dataTypes && !isLoadingSelectedRow ? (
         <>
           {!selectedContent && (
-            <div className="flex w-full  flex-row overflow-auto rounded-md bg-white">
-              {navigation.map((item: any) => (
-                <div
+            <div className="flex w-full  flex-row gap-4 overflow-auto whitespace-nowrap rounded-md bg-white">
+              {navigation?.map((item: any) => (
+                <button
                   key={item.name}
-                  className={
-                    data?.tenantContext.applicationName === 'GrowGreat'
-                      ? 'w-3/12 '
-                      : 'w-5/12 px-4'
-                  }
-                >
-                  <a
-                    onClick={() => {
-                      const selectedTypeObject = dataTypes?.contentTypes.find(
-                        (type: ContentTypeDto) =>
-                          type.name === item.name || type.name === item.href
-                      );
+                  onClick={() => {
+                    const selectedTypeObject = dataTypes?.contentTypes.find(
+                      (type: ContentTypeDto) =>
+                        type.name === item.name || type.name === item.href
+                    );
 
-                      if (selectedTypeObject) {
-                        setSelectedTab(item.id);
-                        setSpecialType('');
-                        showGroupContentTypes(selectedTypeObject);
-                      } else {
-                        setSelectedTab(item.id);
-                        setSpecialType(item.name);
-                      }
-                    }}
-                    className={classNames(
-                      item.id === selectedTab
-                        ? 'bg-infoBb text-secondary border-b-secondary border-b-2  '
-                        : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
-                      'consent-tabs text-md flex h-14 items-center font-medium'
-                    )}
-                  >
-                    {item.name}
-                  </a>
-                </div>
+                    if (selectedTypeObject) {
+                      setSelectedTab(item.id);
+                      setSpecialType('');
+                      showGroupContentTypes(selectedTypeObject);
+                    } else {
+                      setSelectedTab(item.id);
+                      setSpecialType(item.name);
+                    }
+                  }}
+                  className={classNames(
+                    item.id === selectedTab
+                      ? 'bg-adminPortalBg text-secondary border-b-secondary border-b-2'
+                      : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
+                    'consent-tabs text-md flex h-14 items-center justify-center font-medium',
+                    data?.tenantContext.applicationName === 'GrowGreat'
+                      ? 'w-3/12'
+                      : 'flex w-5/12 justify-center'
+                  )}
+                >
+                  {item.name}
+                </button>
               ))}
             </div>
           )}
-
           {selectedType && languages?.GetAllLanguage && selectedContent ? (
             <ContentWorkflow
               optionDefinitions={dataDefinitions.contentDefinitions}
@@ -400,53 +452,38 @@ export function ContentManagement() {
             />
           ) : (
             <div className=" lg:min-w-0 lg:flex-1">
-              <div className="h-full py-3 px-4 sm:px-6 lg:px-8">
-                {(selectedType?.name === 'Theme' ||
-                  selectedType?.name === 'Activity' ||
-                  selectedType?.name === 'ProgressTrackingLevel' ||
-                  selectedType?.name === 'ProgressTrackingCategory' ||
-                  selectedType?.name === 'StoryBookParts' ||
-                  selectedType?.name === 'StoryBook' ||
-                  selectedType?.name === 'StoryBookPartQuestion') && (
+              <div className="h-full py-3">
+                {!!subTabs?.length && !specialType && (
                   <div className="justify-self col-end-3 pb-2">
                     <button
                       onClick={() => {
+                        if (selectedType?.name === ContentTypes.CONNECT) return;
+
                         setSelectedType(null);
-                        setSpecialType('Programmes');
+                        setSpecialType(
+                          navigation?.find((tab) => tab.id === selectedTab).name
+                        );
                       }}
                       type="button"
                       className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
                     >
-                      <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
-                        {' '}
-                      </ArrowLeftIcon>
-                      {selectedTab === 2 ? 'Progress' : 'Programme'}
+                      {selectedType?.name !== ContentTypes.CONNECT && (
+                        <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4" />
+                      )}
+                      {navigation?.find((tab) => tab.id === selectedTab).name}
                       <span className="px-1 text-gray-400">
                         {' '}
-                        / {selectedType?.name}
+                        / {selectedType?.description}
                       </span>
                     </button>
                   </div>
                 )}
                 <div
-                  className="relative h-full rounded-xl bg-white p-12"
+                  className="relative h-full rounded-xl bg-white p-4 md:p-12"
                   style={{ minHeight: '36rem' }}
                 >
-                  {specialType === '' && (
-                    <div className="relative w-6/12">
-                      <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                        {searchValue === '' && (
-                          <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-                        )}
-                      </span>
-                      <input
-                        className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                        placeholder="      Search by type..."
-                        onChange={search}
-                      />
-                    </div>
-                  )}
                   {selectedType &&
+                    selectedType.name !== ContentTypes.CONNECT &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ContentList
@@ -456,24 +493,32 @@ export function ContentManagement() {
                         viewContent={getContentValues}
                         refreshParent={() => refreshParent()}
                         selectedTab={selectedTab}
+                        onSearch={search}
+                        searchValue={searchValue}
+                        choosedSectionTitle={choosedSectionTitle}
                       ></ContentList>
                     )}
-                  {specialType === 'Programmes' && (
-                    <div className="flex">
-                      <StackedList
-                        className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
-                        type="TitleList"
-                        listItems={listItems}
+                  {/* TODO: Replace it with dynamic validation (example: selectedType.type === 'linkGroup') */}
+                  {selectedType?.name === ContentTypes.CONNECT &&
+                    !specialType && (
+                      <LinksShared
+                        contentType={selectedType}
+                        subContentType={selectedSubType}
+                        onClose={() => {
+                          setSelectedType(null);
+                          setSpecialType(
+                            navigation?.find((tab) => tab.id === selectedTab)
+                              .name
+                          );
+                        }}
                       />
-                    </div>
-                  )}
-
-                  {specialType === 'Progress' && (
+                    )}
+                  {!!subTabs?.length && !!specialType && (
                     <div className="flex">
                       <StackedList
                         className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
                         type="TitleList"
-                        listItems={listItems}
+                        listItems={subTabs}
                       />
                     </div>
                   )}

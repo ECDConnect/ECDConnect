@@ -7,6 +7,7 @@ import {
   LearnerDto,
   Document,
   useDialog,
+  ClassroomGroupDto,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -30,6 +31,7 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
+import { ExclamationCircleIcon } from '@heroicons/react/solid';
 import {
   caregiverActions,
   caregiverSelectors,
@@ -70,6 +72,7 @@ import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentSelectors } from '@store/document';
 import { userSelectors } from '@store/user';
 import ROUTES from '../../../../src/routes/routes';
+import { UNSURE_CLASS } from '@/constants/classroom';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -79,6 +82,7 @@ export const EditChildInformation: React.FC = () => {
   const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
+  const practitionerIsOnLeave = location.state.practitionerIsOnLeave;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some((role) => role.name === 'Coach');
@@ -163,9 +167,11 @@ export const EditChildInformation: React.FC = () => {
   useEffect(() => {
     if (classroomGroups) {
       const classRoomGroupDownDownList: DropDownOption<string>[] =
-        classroomGroups.map((x) => {
-          return { id: x.id, value: x.id || '', label: x.name };
-        });
+        classroomGroups
+          .filter((item: ClassroomGroupDto) => item.name !== UNSURE_CLASS)
+          .map((x) => {
+            return { id: x.id, value: x.id || '', label: x.name };
+          });
 
       setClassRoomGroupsList(classRoomGroupDownDownList);
     }
@@ -194,17 +200,20 @@ export const EditChildInformation: React.FC = () => {
       position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
         <ActionModal
-          icon={'ExclamationCircleIcon'}
-          iconColor="alertMain"
+          customIcon={
+            <ExclamationCircleIcon className="text-alertMain h-10 w-10" />
+          }
+          className="bg-white"
           iconBorderColor="alertBg"
           importantText={`Confirm ${childUser?.firstName}'s class change`}
-          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm. Make sure you submit today's attendance before changing the class.`}
+          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm.\n\nMake sure you submit today's attendance before changing the class.`}
           actionButtons={[
             {
               text: 'Yes, confirmed with caregiver',
-              textColour: 'primary',
+
+              textColour: 'white',
               colour: 'primary',
-              type: 'outlined',
+              type: 'filled',
               onClick: () => {
                 openEditField();
                 onSubmit();
@@ -213,9 +222,9 @@ export const EditChildInformation: React.FC = () => {
             },
             {
               text: 'No, do this later',
-              textColour: 'white',
+              textColour: 'primary',
               colour: 'primary',
-              type: 'filled',
+              type: 'outlined',
               onClick: () => {
                 onCancel();
                 history.push(ROUTES.CHILD_PROFILE, { childId });
@@ -323,6 +332,26 @@ export const EditChildInformation: React.FC = () => {
     return '';
   };
 
+  const getAddress = () => {
+    if (caregiver?.siteAddress) {
+      let address = '';
+      if (caregiver?.siteAddress?.addressLine1 !== '') {
+        address += caregiver?.siteAddress?.addressLine1;
+      }
+      if (caregiver?.siteAddress?.addressLine2 !== '') {
+        address += ', ' + caregiver?.siteAddress?.addressLine2;
+      }
+      if (caregiver?.siteAddress?.addressLine3 !== '') {
+        address += ', ' + caregiver?.siteAddress?.addressLine3;
+      }
+      if (caregiver?.siteAddress?.ward !== '') {
+        address += ', ' + caregiver?.siteAddress?.ward;
+      }
+      return address;
+    }
+    return 'Add address';
+  };
+
   const setNewStackListItems = (child: ChildDto, caregiver?: CaregiverDto) => {
     const list: ActionListDataItem[] = [];
     if (child) {
@@ -357,7 +386,7 @@ export const EditChildInformation: React.FC = () => {
         title: 'Class',
         subTitle: learnerClassroomGroup?.name || 'No class',
         switchTextStyles: true,
-        actionName: isCoach ? undefined : 'Edit',
+        actionName: isCoach || practitionerIsOnLeave ? undefined : 'Edit',
         actionIcon: 'PencilIcon',
         onActionClick: () => {
           openChildConfirmEditClassPrompt();
@@ -407,9 +436,7 @@ export const EditChildInformation: React.FC = () => {
 
         list.push({
           title: 'Address',
-          subTitle: caregiver?.siteAddress?.ward
-            ? `${caregiver?.siteAddress?.ward} ${caregiver?.siteAddress?.addressLine1}, ${caregiver?.siteAddress?.addressLine2}`
-            : 'Add address',
+          subTitle: getAddress(),
           switchTextStyles: true,
           actionName: 'View',
           actionIcon: 'EyeIcon',

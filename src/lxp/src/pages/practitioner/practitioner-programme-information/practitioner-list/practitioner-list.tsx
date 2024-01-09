@@ -7,6 +7,7 @@ import {
   StackedList,
   Dialog,
   DialogPosition,
+  renderIcon,
 } from '@ecdlink/ui';
 import {
   PractitionerColleagues,
@@ -14,11 +15,9 @@ import {
 } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router-dom';
-import * as styles from './practitioner-list.styles';
 import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { PractitionerListProps } from './practitioner-list.types';
-import { renderIcon } from '@ecdlink/ui';
 import { practitionerSelectors } from '@/store/practitioner';
 import { EditPractitioner } from './edit-practitioner/edit-practitioner';
 import { userSelectors } from '@store/user';
@@ -112,7 +111,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
 
   const cancelPractitionerRemoval = async () => {
     const removalId = existingRemovals?.find(
-      (x) => x.userId == removingPractitionerId
+      (x) => x.userId === removingPractitionerId
     )?.id;
     if (removalId) {
       await new PractitionerService(
@@ -136,7 +135,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
               ? item?.user?.roles[0]?.name
               : '',
             switchTextStyles: true,
-            actionName: 'Remove',
+            actionName: !!practitioners && practitioners.length ? 'Remove' : '',
             actionIcon: 'PencilIcon',
             buttonType:
               !!practitioners && practitioners.length ? 'filled' : 'ghost',
@@ -161,7 +160,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
                   );
                 }
               }
-            }, // Disabled the editPractitioner view state
+            },
           };
         })
       : otherColleaguesFiltered?.map((item: any) => {
@@ -186,7 +185,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         });
 
   return (
-    <div className="scroll-auto mb-8 h-screen">
+    <>
       <BannerWrapper
         // showBackground={true}
         backgroundUrl={theme?.images.graphicOverlayUrl}
@@ -199,21 +198,23 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
         onBack={history.goBack}
         displayOffline={!isOnline}
       />
-      <div className="ml-4 mt-4">
+      <div className="h-screen overflow-y-scroll p-4">
         <Typography
           type={'h2'}
           text={isPrincipal ? 'Edit Practitioners' : 'View Practitioners'}
           color={'textDark'}
         />
         {stackedListItems && (
-          <StackedList
-            className="pr-4"
-            listItems={stackedListItems}
-            type={'ActionList'}
-          ></StackedList>
+          <div>
+            <StackedList
+              className="pr-4"
+              listItems={stackedListItems}
+              type={'ActionList'}
+            ></StackedList>
+          </div>
         )}
         {isPrincipal && (
-          <div className="mb-8 h-full">
+          <div className="mb-24">
             <div>
               <Button
                 size="small"
@@ -297,6 +298,6 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
           }}
         />
       </Dialog>
-    </div>
+    </>
   );
 };

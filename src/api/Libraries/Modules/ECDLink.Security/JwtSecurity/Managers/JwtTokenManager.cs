@@ -39,18 +39,33 @@ namespace ECDLink.Security.JwtSecurity.Managers
             _jwtService = jWTService;
         }
 
-        public async Task<string> GenerateJwt(ClaimsIdentity identity, string userId, JwtEncoderEnum encoderType)
+        public async Task<string> GenerateJwt(ClaimsIdentity identity, string userId, JwtEncoderEnum encoderType, bool? resetData)
         {
             var jwtEncoder = _jwtFactory.CreateJwtEncoder(encoderType);
 
-            var response = new
+            if (encoderType.Equals(JwtEncoderEnum.OneTime))
             {
-                id = identity.Claims.Single(c => c.Type == "id").Value,
-                auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
-                expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds
-            };
+                var response = new
+                {
+                    id = identity.Claims.Single(c => c.Type == "id").Value,
+                    auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
+                    expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds,
+                };
+                return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+            }
+            else
+            {
 
-            return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+                var response = new
+                {
+                    id = identity.Claims.Single(c => c.Type == "id").Value,
+                    auth_token = await jwtEncoder.GenerateEncodedToken(userId, identity.Claims),
+                    expires_in = (int)jwtEncoder.Options.ValidFor.TotalSeconds,
+                    resetData = resetData != null ? resetData : false,
+                };
+
+                return JsonConvert.SerializeObject(response, new JsonSerializerSettings() { Formatting = Formatting.Indented });
+            }
         }
 
         public async Task<bool> CanRefreshToken(string token)

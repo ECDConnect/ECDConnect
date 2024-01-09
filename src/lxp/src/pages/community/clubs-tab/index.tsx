@@ -2,6 +2,7 @@ import AlienImage from '@/assets/ECD_Connect_alien.svg';
 import ROUTES from '@/routes/routes';
 import {
   AlertSeverityType,
+  DialogPosition,
   EmptyPage,
   FADButton,
   LoadingSpinner,
@@ -14,17 +15,12 @@ import {
 import { useHistory, useLocation } from 'react-router';
 import { useAppDispatch } from '@/store';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  ClubActions,
-  getAllClubMembersForCoach,
-  getAllClubsDetailsForCoach,
-  getAllClubsForCoach,
-} from '@/store/club/club.actions';
+import { ClubActions, getClubsForCoach } from '@/store/club/club.actions';
 import { useSelector } from 'react-redux';
 import { userSelectors } from '@/store/user';
 import { clubSelectors } from '@/store/club';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useSnackbar } from '@ecdlink/core';
+import { useDialog, useSnackbar } from '@ecdlink/core';
 import SearchHeader from '@/components/search-header/search-header';
 import {
   filterClubsByLeagueType,
@@ -34,6 +30,8 @@ import {
   typeFilterOptions,
 } from './index.filters';
 import { CommunityRouteState } from '../community.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import OnlineOnlyModal from '@/modals/offline-sync/online-only-modal';
 
 export const ClubsTab = () => {
   const [type, setType] = useState<SearchDropDownOption<string>[]>([]);
@@ -46,20 +44,25 @@ export const ClubsTab = () => {
   const appDispatch = useAppDispatch();
 
   const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const clubs = useSelector(clubSelectors.getAllClubsForCoachSelector);
+
+  const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
 
   const {
     isLoading: isLoadingGetClubs,
     wasLoading: wasLoadingGetClubs,
     isRejected: isRejectedGetClubs,
     error: errorGetClubs,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUBS_FOR_COACH);
+  } = useThunkFetchCall('clubs', ClubActions.GET_CLUB_BY_ID);
   const {
     isLoading: isLoadingClubMembers,
     wasLoading: wasLoadingClubMembers,
     isRejected: isRejectedClubMembers,
     error: errorClubMembers,
-  } = useThunkFetchCall('clubs', ClubActions.GET_ALL_CLUB_MEMBERS_FOR_COACH);
+  } = useThunkFetchCall('clubs', ClubActions.GET_CLUBS_FOR_COACH);
 
   const isLoading = isLoadingGetClubs || isLoadingClubMembers;
   const wasLoading = wasLoadingGetClubs || wasLoadingClubMembers;
@@ -67,6 +70,24 @@ export const ClubsTab = () => {
   const error = errorGetClubs || errorClubMembers;
 
   const { showMessage } = useSnackbar();
+
+  const onOffline = () => {
+    return dialog({
+      position: DialogPosition.Middle,
+      blocking: true,
+      render: (onClose) => {
+        return <OnlineOnlyModal onSubmit={onClose} />;
+      },
+    });
+  };
+
+  const onNewClub = () => {
+    if (isOnline) {
+      return history.push(ROUTES.COMMUNITY.CLUB.ADD.replace(':clubId', 'new'));
+    }
+
+    return onOffline();
+  };
 
   const filteredList = useMemo(() => {
     let list = clubs ?? [];
@@ -87,18 +108,12 @@ export const ClubsTab = () => {
       avatarColor: 'var(--primaryAccent2)',
       iconColor: 'primary',
       alertSeverity:
-        (club?.secondaryTextColor?.toLocaleLowerCase() as AlertSeverityType) ??
+        (club.issuesTasks[0]?.secondaryTextColor?.toLocaleLowerCase() as AlertSeverityType) ??
         'none',
       title: club?.name ?? '',
       profileText: club?.name ?? '',
-      subTitle: club?.secondaryText ?? '',
+      subTitle: club.issuesTasks[0]?.secondaryText ?? '',
       onActionClick() {
-        appDispatch(
-          getAllClubsDetailsForCoach({
-            userId: user?.id ?? '',
-            clubId: club?.id,
-          })
-        ).unwrap();
         history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', club?.id));
       },
     })) ?? [];
@@ -106,11 +121,10 @@ export const ClubsTab = () => {
   const isEmptyState = !clubs?.length;
 
   useEffect(() => {
-    if (user?.id && location?.state?.isFromDashboard) {
-      appDispatch(getAllClubsForCoach({ userId: user?.id }));
-      appDispatch(getAllClubMembersForCoach({ userId: user?.id }));
+    if (user?.id && location?.state?.isFromDashboard && isCoach) {
+      appDispatch(getClubsForCoach({ userId: user?.id }));
     }
-  }, [appDispatch, location?.state?.isFromDashboard, user?.id]);
+  }, [appDispatch, isCoach, location?.state?.isFromDashboard, user?.id]);
 
   useEffect(() => {
     if (wasLoading && !isLoading) {
@@ -203,9 +217,7 @@ export const ClubsTab = () => {
           color="primary"
           shape="round"
           className="absolute bottom-1 right-1 z-10 m-3 px-3.5 py-2.5"
-          click={() =>
-            history.push(ROUTES.COMMUNITY.CLUB.ADD.replace(':clubId', 'new'))
-          }
+          click={onNewClub}
         />
       </div>
     </>

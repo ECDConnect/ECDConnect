@@ -46,6 +46,6 @@ type ShortMonthType = {
 };
 
 export const IncomeStatementDates = {
-  SubmitStartDay: 19, // TODO change back after testing!
-  SubmitEndDay: 7,
+  SubmitStartDay: 25,
+  SubmitEndDay: 12, // Reset back to 7 after testing!
 };

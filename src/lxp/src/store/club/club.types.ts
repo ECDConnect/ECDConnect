@@ -1,18 +1,59 @@
 import {
+  ActivityChildProgressDto,
+  DetailClubDto,
+} from '@/models/club/club.dto';
+import { LeagueClubsDto } from '@/models/club/league.dto';
+import {
+  BeCreativeActivityInput,
+  ClubMeetingInput,
+} from '@/services/ClubService/types';
+import {
   ActivityBeCreative,
+  ActivityChildAttendance,
+  ActivityHostFamilyDays,
+  ActivityLeaveNoOneBehind,
   ActivityMeetRegular,
-  CoachingClub,
-  CoachingClubBase,
 } from '@ecdlink/graphql';
 
-export type MergedCoachingClub = CoachingClubBase & CoachingClub;
-
 export type Points = {
-  meetRegularly?: ActivityMeetRegular;
+  meetRegularly?: {
+    dataLoaded?: string;
+    data: ActivityMeetRegular;
+  };
   beCreative?: ActivityBeCreative;
+  hostFamily?: ActivityHostFamilyDays;
+  leaveNoOneBehind?: ActivityLeaveNoOneBehind;
+  childProgressDetails?: ActivityChildProgressDto;
+  childAttendance?: ActivityChildAttendance;
 };
 
 export type ClubState = {
-  allClubsForCoach?: MergedCoachingClub[];
-  points?: Points;
+  clubForPractitioner: {
+    dateLoaded?: string;
+    club?: DetailClubDto;
+    points?: Points;
+  };
+  leagueForPractitioner: LeagueClubsDto | undefined;
+  practitionerLastCaregiverReportBackDate:
+    | {
+        year: number;
+        month: number;
+      }
+    | undefined;
+
+  clubsForCoach: {
+    [clubId: string]: {
+      dateLoaded: string;
+      club: DetailClubDto;
+      points?: Points;
+    };
+  };
+  leaguesForCoach: LeagueClubsDto[];
+
+  dateLeagueDataLoaded: string | undefined;
+
+  addClubMeetingSyncInputs?: ClubMeetingInput[];
+  addBeCreativeActivitySyncInputs?: BeCreativeActivityInput[];
+  addFamilyDayMeetingSyncInputs?: ClubMeetingInput[];
+  addCaregiverReportBackMeetingSyncInput?: { clubId: string; userId: string };
 };

@@ -131,12 +131,14 @@ class AttendanceService {
           userId: $userId
           classroomId: $classroomId
           startMonth: $startMonth
-          endMonth: $endMonth
+          endMonth: $endMonth          
         ) {
           month
           monthOfYear
           year
           percentageAttendance
+          numberOfSessions
+          totalScheduledSessions
         }
       }
       `,
@@ -240,10 +242,6 @@ class AttendanceService {
     if (response.data.errors) {
       throw new Error('Update Attendance failed - please contact helpdesk');
     }
-    if (response.data.data.trackAttendance === false) {
-      throw new Error('Update Attendance failed - please contact helpdesk');
-    }
-
     return response.data.data.trackAttendance;
   }
 }

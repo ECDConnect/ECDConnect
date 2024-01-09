@@ -95,7 +95,7 @@ export const PastVisits: React.FC = () => {
       return {
         title: isAdditionalVisit
           ? 'Other visit'
-          : item.visitType?.normalizedName + ' visit' || 'Visit',
+          : item.visitType?.normalizedName || 'Visit',
         subTitle:
           isAdditionalVisit && item.comment!
             ? item.comment
