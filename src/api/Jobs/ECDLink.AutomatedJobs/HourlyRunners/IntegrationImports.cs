@@ -1,22 +1,19 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.Core.Services.Interfaces;
-using Microsoft.Extensions.DependencyInjection; 
+using Microsoft.Extensions.DependencyInjection;
 using System.Threading;
 using System.Threading.Tasks;
 using ECDLink.AutomatedJobs.Util;
 using Microsoft.Extensions.Logging;
-
 namespace ECDLink.AutomatedJobs.DailyRunners;
-
-public class IntegrationChanges : CronJobService
+public class IntegrationImports : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public IntegrationChanges(IServiceScopeFactory scopeFactory, CronJobConfig<IntegrationChanges> config, ILogger<IntegrationChanges> logger)
+    public IntegrationImports(IServiceScopeFactory scopeFactory, CronJobConfig<IntegrationImports> config, ILogger<IntegrationImports> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;
     }
-
     public override async Task DoWork(CancellationToken cancellationToken)
     {
         using (var scope = _scopeFactory.CreateScope())
@@ -25,7 +22,7 @@ public class IntegrationChanges : CronJobService
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
             if (service != null && service.Enabled)
             {
-                await service.IntegrationUpdates();
+                await service.IntegrationByMappedCoach(null, null, true);
             }
         }
     }

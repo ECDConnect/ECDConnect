@@ -465,6 +465,10 @@ public class IntegrationAPIManager
             string[] columns = null;
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+            optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "CaregiverPopiaConsent", Operator = "Equals", Value = "true" });
+            //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "FirstName", Operator = "NotNull" });
+            //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Surname", Operator = "NotNull" });
+            //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Caregiver", Operator = "NotNull" });
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = Constants.SSIntegrationSettings.SLPractitioner, Operator = "Equals", Value = remoteFranchiseeId });
 
             List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
@@ -550,11 +554,23 @@ public class IntegrationAPIManager
         try
         {
             string[] columns = null;
+            var relatedConditions = new List<IntegrationOptionRelatedEntity>
+            {
+                new IntegrationOptionRelatedEntity()
+                {
+                    RelatedBy = "DocumentType",
+                    Columns = new[] { "Name" },
+                    Conditions = new IntegrationOptionConditionEntity()
+                    {
+                        Column = "DocumentType",
+                        Operator = "In",
+                        Value = new [] { "Child Registration Form", "Child Birth Certificate", "Child Birth Certificate", "Identity Document" }
+                    }
+                }
+            };
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = Constants.SSIntegrationSettings.SLPractitioner, Operator = "Equals", Value = remoteFranchiseeId });
-            List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
-            relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "DocumentType", AllColumns = "True", Columns = null });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);
 
@@ -580,11 +596,23 @@ public class IntegrationAPIManager
         try
         {
             string[] columns = null;
+            var relatedConditions = new List<IntegrationOptionRelatedEntity>
+            {
+                new IntegrationOptionRelatedEntity()
+                {
+                    RelatedBy = "DocumentType",
+                    Columns = new[] { "Name" },
+                    Conditions = new IntegrationOptionConditionEntity()
+                    {
+                        Column = "DocumentType",
+                        Operator = "In",
+                        Value = new [] { "Child Registration Form", "Child Birth Certificate", "Child Birth Certificate", "Identity Document" }
+                    }
+                }
+            };
             List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = Constants.SSIntegrationSettings.SLChild, Operator = "Equals", Value = remoteChildId });
-            List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
-            relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "DocumentType", AllColumns = "False", Columns = new[] { "Name" } });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLDocument + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);
 
