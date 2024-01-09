@@ -74,7 +74,7 @@ export const CaptureChildAttendance: React.FC = () => {
       );
     }
   }, [appDispatch, clubId, isOnline]);
-  console.log('here');
+
   return (
     <BannerWrapper
       isLoading={isLoading}
