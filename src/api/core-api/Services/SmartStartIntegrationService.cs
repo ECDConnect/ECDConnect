@@ -177,7 +177,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
         if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-        if (!this.Enabled)
+        if (this.Enabled)
         {
             _uId = _hierarchyEngine.GetIntegrationUserId();
 
@@ -455,7 +455,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
     }
     public async Task<bool> PushPQAData()
     {
-        if (this.Enabled) return true;
+        if (!this.Enabled) return true;
 
         await _logManager.IntegrationLog($"PushPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushPQAData");
         var _practitionerMappedEntities = await GetMappedEntities(Constants.SSIntegrationSettings.SSPractitioner);
