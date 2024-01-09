@@ -914,7 +914,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                             {
                                 try
                                 {
-
+                                    bool franchiseeCreated = false;
                                     if (franchisee != null)
                                     {
                                         Practitioner newPractitioner = null;
@@ -927,6 +927,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                             //send notification to coach
                                             var userToSend = await _userManager.FindByIdAsync(coach.UserId);
                                             await _notificationService.SendNotificationAsync(null, TemplateTypeConstants.CoachNewPractitionersLinked, DateTime.Now, userToSend, null, MessageStatusConstants.Green, null, DateTime.Now.AddDays(7));
+                                            totalFranchiseesAddedToSS++;
+                                            franchiseeCreated = true;
                                         }
                                         else
                                         {
@@ -936,12 +938,11 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
                                         if (newPractitioner != null)
                                         {
-                                            totalFranchiseesAddedToSS++;
                                             //get all elements underneath and map those too
 
                                             //1. Children
                                             List<MappedChild> remoteChildren = await _apiManager.GetChildren(franchisee.Guid);
-                                            if (remoteChildren != null)
+                                            if (remoteChildren.Any())
                                             {
                                                 //List of allocated children to new practitioner
                                                 List<Child> newChildren = new List<Child>();
@@ -968,11 +969,14 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                                 await AlignChildHierarchy(newPractitioner, newChildren);
                                                 await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
                                             }
-                                            //2. Franchisee Documents
-                                            List<MappedDocument> newDocuments = await _apiManager.GetFranchiseeDocuments(franchisee.Guid);
-                                            if (newDocuments.Any())
+                                            if (franchiseeCreated)
                                             {
-                                                List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, remoteChildren, newPractitioner);
+                                                //2. Franchisee Documents only if newly created
+                                                List<MappedDocument> newDocuments = await _apiManager.GetFranchiseeDocuments(franchisee.Guid);
+                                                if (newDocuments.Any())
+                                                {
+                                                    List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, remoteChildren, newPractitioner);
+                                                }
                                             }
                                         }
                                     }
@@ -985,8 +989,11 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 }
 
                             }
-                            //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
-                            await MatchPrincipals();
+                            if (totalFranchiseesAddedToSS > 0)
+                            {
+                                //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet - only run when something has been added and mapped
+                                await MatchPrincipals();
+                            }
                         }
                         catch (Exception e)
                         {
@@ -996,15 +1003,30 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     }
 
                     //Pull Trainees
-                    List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
-                    if (remoteTrainees.Any())
+                    try
                     {
-                        foreach (var trainee in remoteTrainees)
+                        List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
+                        if (remoteTrainees.Any())
                         {
-                            trainee.localParentEntityUserId = coach.UserId;
-                            trainee.localParentEntityId = coach.Id.ToString();
-                            await MapTrainee(trainee);
+                            foreach (var trainee in remoteTrainees)
+                            {
+                                trainee.localParentEntityUserId = coach.UserId;
+                                trainee.localParentEntityId = coach.Id.ToString();
+                                await MapTrainee(trainee);
+                            }
                         }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationByMappedCoach > Trainees");
+                    }
+
+                    if (coach.IsComplete == false) //mark coach as complete now that all users are pulled in
+                    {
+                        coach.IsComplete = true;
+                        coach.LastCheckedDate = DateTime.Now;
+                        coach.LastUpdatedDate = DateTime.Now;
+                        _mapperRepo.Update(coach);
                     }
                 }
             }
@@ -1049,11 +1071,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
             {
                 foreach (var coach in remoteCoaches)
                 {
-
-                    //check if teh franchisor is mapped already, otehrwise start there first
+                    //check if the franchisor is mapped already, otherwise start there first
                     var franchisor = _mappedEntities.Where(x => x.RemoteId.Equals(coach.Franchisor.Guid) && x.LocalEntity == Constants.SSIntegrationSettings.SSFranchisor).FirstOrDefault();
-
-
                     if (franchisor != null)
                     {
                         coach.localParentEntityUserId = franchisor.UserId;
@@ -1075,16 +1094,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         Coach newCoach = await MapCoach(coach);
                         await IntegrationByMappedCoach(null, newCoach.UserId);
                     }
-                    else
-                    {
-                        //run all its practitioners and trainees
-                        await IntegrationByMappedCoach(null, mappedCoach.UserId);
-                    }
                 }
             }
-        } else
-        {
-            await IntegrationByMappedCoach(null, mappedCoach.UserId);
         }
 
         return true;
