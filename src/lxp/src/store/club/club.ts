@@ -431,7 +431,10 @@ const clubSlice = createSlice({
         ...state.clubsForCoach,
         [action.payload.id]: {
           ...state.clubsForCoach[action.payload.id],
-          name: action.payload.name,
+          club: {
+            ...state.clubsForCoach[action.payload.id].club,
+            name: action.payload.name,
+          },
         },
       };
 

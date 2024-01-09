@@ -85,7 +85,11 @@ export const BeCreative: React.FC = () => {
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
-  const isLeagueStarts = currentMonth >= 3;
+  // SUPPRESS DATE RULES
+  /////////////////////////////////////////////////////////
+  // const isLeagueStarts = currentMonth >= 3;
+  const isLeagueStarts = true;
+  /////////////////////////////////////////////////////////
   const isClubInALeague = !!club?.league;
   const isFromAddCollageEvent = location?.state?.isFromAddCollageEvent;
   const isToShowAddImageEventButton =
