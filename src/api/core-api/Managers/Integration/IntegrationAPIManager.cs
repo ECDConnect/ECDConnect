@@ -470,7 +470,7 @@ public class IntegrationAPIManager
             //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Surname", Operator = "NotNull" });
             //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Caregiver", Operator = "NotNull" });
             optionConditions.Add(new IntegrationOptionConditionEntity() { Column = Constants.SSIntegrationSettings.SLPractitioner, Operator = "Equals", Value = remoteFranchiseeId });
-            List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();//
+            List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
             relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Caregiver", AllColumns = "True", Columns = null, JoinType = "Outer" });
 
             var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLChild + Constants.SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);

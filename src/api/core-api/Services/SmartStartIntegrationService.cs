@@ -1722,7 +1722,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
                             //send sms to new practitioner
                             SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-                            //await invite.SendInviteToApplication(_invitationManager, _notificationManager, _userManager, _accessor, userId);
+                            await invite.SendInviteToApplication(_invitationManager, _notificationManager, _userManager, _accessor, userId);
 
                             return newPractitioner;
                         }
