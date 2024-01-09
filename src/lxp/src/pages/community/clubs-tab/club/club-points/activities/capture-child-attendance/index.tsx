@@ -74,7 +74,7 @@ export const CaptureChildAttendance: React.FC = () => {
       );
     }
   }, [appDispatch, clubId, isOnline]);
-
+  console.log('here');
   return (
     <BannerWrapper
       isLoading={isLoading}
@@ -87,10 +87,10 @@ export const CaptureChildAttendance: React.FC = () => {
       displayHelp
       onHelp={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
-            ':activityId',
-            activityId
-          )
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.ROOT.replace(
+            ':clubId',
+            clubId
+          ).replace(':activityId', activityId)
         )
       }
     >
