@@ -408,6 +408,7 @@ const mapCoach = (coach: Partial<CoachDto>): CoachInput => ({
   FranchisorId: coach.franchisorId,
   UserId: coach.userId,
   Id: coach.id,
+  ClickedClubTab: coach.clickedClubTab,
 });
 
 const mapSiteAddress = (

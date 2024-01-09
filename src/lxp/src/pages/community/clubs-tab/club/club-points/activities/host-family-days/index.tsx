@@ -75,6 +75,12 @@ export const HostFamilyDays: React.FC = () => {
   const isLeader = club?.clubLeader?.userId === user?.id;
   const isSupportRole = club?.clubSupport?.userId === user?.id;
 
+  const currentTerm = currentMonth < 5 ? 1 : currentMonth < 8 ? 2 : 3;
+
+  const submittedThisTerm = details?.terms?.some(
+    (term) => term?.termNr === currentTerm && !!term.eventName
+  );
+
   const isToShowFamilyDayEventButton =
     (isFromAddFamilyDayEvent || isLeader || isSupportRole) && isEventDeadline;
   const isToShowPoints = isLeagueStarts && isClubInALeague;
@@ -185,7 +191,7 @@ export const HostFamilyDays: React.FC = () => {
           subTitle=""
         />
       )}
-      {isToShowFamilyDayEventButton && (
+      {isToShowFamilyDayEventButton && !submittedThisTerm && (
         <Button
           className="mt-auto mb-4"
           icon="PlusCircleIcon"

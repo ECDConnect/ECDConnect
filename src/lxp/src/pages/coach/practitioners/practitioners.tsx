@@ -112,11 +112,11 @@ export const Practitioners: React.FC = () => {
   const handleClick = (practitionerId: string) => {
     if (isCoach) {
       history.push('practitioner-profile-info', {
-        practitionerId,
+        practitionerId: practitionerId,
       });
     } else {
       history.push('practitioner-info-dashboard', {
-        practitionerId,
+        practitionerId: practitionerId,
       });
     }
   };

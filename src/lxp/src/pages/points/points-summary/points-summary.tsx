@@ -129,7 +129,7 @@ export const PointsSummary: React.FC = () => {
           <CelebrationCard
             image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
             primaryMessage={`Good job ${practitioner?.user?.firstName}!`}
-            secondaryMessage="You have more points than most other SmartStarters in you club!"
+            secondaryMessage="You have more points than most other SmartStarters in your club!"
             primaryTextColour="secondary"
             secondaryTextColour="black"
             backgroundColour="infoBb"
@@ -141,8 +141,8 @@ export const PointsSummary: React.FC = () => {
           <CelebrationCard
             image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
             primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-            primaryTextColour="errorMain"
-            backgroundColour="errorBg"
+            primaryTextColour="alertMain"
+            backgroundColour="alertBg"
             secondaryMessage={`Most of the SmartStarters in you club have more than ${pointsTotalForYear} points! Earn more points to join them.`}
             secondaryTextColour="black"
           />
@@ -155,8 +155,8 @@ export const PointsSummary: React.FC = () => {
         <CelebrationCard
           image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
           primaryMessage={`Keep going ${practitioner?.user?.firstName}!`}
-          primaryTextColour="errorMain"
-          backgroundColour="errorBg"
+          primaryTextColour="alertMain"
+          backgroundColour="alertBg"
           secondaryMessage="Check out the tips below to earn more points this month."
           secondaryTextColour="black"
         />

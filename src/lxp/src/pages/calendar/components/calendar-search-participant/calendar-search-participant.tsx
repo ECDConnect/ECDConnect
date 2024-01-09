@@ -27,10 +27,14 @@ import { coachSelectors } from '@/store/coach';
 
 export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
-> = ({ currentParticipantUsers, onBack, onDone }) => {
-  const [filteredData, setFilteredData] = useState<ListDataItem[]>([]);
+> = ({ currentParticipantUsers, customList, onBack, onDone }) => {
+  const [filteredData, setFilteredData] = useState<ListDataItem[]>(
+    customList || []
+  );
   const [selectedData, setSelectedData] = useState<ListDataItem[]>([]);
-  const [unselectedData, setUnselectedData] = useState<ListDataItem[]>([]);
+  const [unselectedData, setUnselectedData] = useState<ListDataItem[]>(
+    customList || []
+  );
   const [, setAddChildButtonExpanded] = useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState<boolean>(false);
   const [busySaving, setBusySaving] = useState<boolean>(false);
@@ -87,7 +91,9 @@ export const CalendarSearchParticipant: React.FC<
       );
       if (filteredIndex !== -1) filtered.splice(filteredIndex, 1);
       setUnselectedData(unselected);
-      setSelectedData([selectedData[0], ...selected]);
+      setSelectedData(
+        !!selectedData?.[0] ? [selectedData[0], ...selected] : selected
+      );
       setFilteredData(filtered);
     },
     [unselectedData, selectedData, filteredData, currentUser.id]
@@ -113,17 +119,21 @@ export const CalendarSearchParticipant: React.FC<
 
   const onClickDone = useCallback(() => {
     setBusySaving(true);
-    const participantUsers: CalendarAddEventParticipantFormModel[] =
-      selectedData.slice(1).map((x) => ({
-        userId: x.id || '',
-        firstName: x.extraData?.firstName || '',
-        surname: x.extraData?.surname || '',
-        isClub: x.extraData?.isClub || false,
-      }));
+    const participantUsers: CalendarAddEventParticipantFormModel[] = (
+      !!customList ? selectedData : selectedData.slice(1)
+    ).map((x) => ({
+      userId: x.id || '',
+      firstName: x.extraData?.firstName || '',
+      surname: x.extraData?.surname || '',
+      isClub: x.extraData?.isClub || false,
+    }));
+
     onDone(participantUsers);
-  }, [selectedData, onDone]);
+  }, [customList, selectedData, onDone]);
 
   useEffect(() => {
+    if (customList) return;
+
     if (
       !!practitioners &&
       practitioners.length > 0 &&
@@ -165,7 +175,7 @@ export const CalendarSearchParticipant: React.FC<
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitioners, clubs]);
+  }, [practitioners, clubs, customList]);
 
   return (
     <BannerWrapper

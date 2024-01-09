@@ -1,13 +1,12 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
+using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Threading;
 using System.Threading.Tasks;
-using ECDLink.AutomatedJobs.Util;
-using ECDLink.AutomatedJobs.Anonymise;
-using Microsoft.Extensions.Logging;
 
 namespace ECDLink.AutomatedJobs.MonthlyRunners;
 

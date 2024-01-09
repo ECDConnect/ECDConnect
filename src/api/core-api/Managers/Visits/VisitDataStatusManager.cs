@@ -607,11 +607,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 else if (vData.Question == Constants.GGSettings.q_csg_not_applied)
                 {
-                    comment = Constants.GGSettings.has_csg3;
-                    AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.sassa_refferals, false);
+                    if (!string.IsNullOrWhiteSpace(vData.QuestionAnswer))
+                    {
+                        comment = Constants.GGSettings.has_csg3;
+                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.sassa_refferals, false);
 
-                    comment = Constants.GGSettings.has_csg3;
-                    AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
+                        comment = Constants.GGSettings.has_csg3;
+                        AddVisitDataStatus(vData, comment, _amber, _progress, vData.VisitSection, false);
+                    }
                 }
             }
 

@@ -28,6 +28,7 @@ export const ClubMembers: React.FC = () => {
   const { showMessage } = useSnackbar();
 
   const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const currentLeader = useSelector(
     clubSelectors.getCurrentClubLeaderByClubIdSelector(clubId)
@@ -259,9 +260,11 @@ export const ClubMembers: React.FC = () => {
       className="flex flex-col p-4 pt-6 pb-20"
       size="small"
       title={`${club?.name} club`}
-      onBack={() =>
-        history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
-      }
+      onBack={() => {
+        isCoach
+          ? history.push(ROUTES.COMMUNITY.CLUB.ROOT.replace(':clubId', clubId))
+          : history.push(ROUTES.PRACTITIONER.COMMUNITY.ROOT);
+      }}
     >
       <Typography type="h2" text={`${club?.name} club members`} />
       <Typography className="mb-4 mt-6" type="h3" text="Coach" />

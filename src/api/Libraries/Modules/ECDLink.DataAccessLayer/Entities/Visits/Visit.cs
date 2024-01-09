@@ -37,6 +37,8 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         [NotMapped]
         public string OverallRatingColor { get; set; }
         [NotMapped]
+        public bool DelicenseQuestionAnswered { get; set; }
+        [NotMapped]
         public bool VisitInProgress { get; set; }
         public DateTime? DueDate { get; set; }
         public Guid? EventId { get; set; }

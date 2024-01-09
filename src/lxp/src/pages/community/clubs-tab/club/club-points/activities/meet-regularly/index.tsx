@@ -101,11 +101,16 @@ export const MeetRegularly: React.FC = () => {
       '12',
     ];
 
+    const currentMonth = new Date().getMonth() + 1;
+    const monthsToPopulateFrom = monthsToPopulate.filter(
+      (month) => Number(month) < currentMonth
+    );
+
     const mutableMeetingArray = [...(meetingArray ?? [])];
 
     const year = new Date().getFullYear();
 
-    for (const month of monthsToPopulate) {
+    for (const month of monthsToPopulateFrom) {
       // Check if a meeting for the current month already exists in the mutableMeetingArray
       const existingMeeting = mutableMeetingArray?.find((item) => {
         // Extract the month from the item's meetingDate
@@ -115,7 +120,7 @@ export const MeetRegularly: React.FC = () => {
       });
 
       if (!existingMeeting) {
-        const date = `${year}-${month}-10T00:00:00.000Z`;
+        const date = `${year}-${month}-10T00:00:00.000`;
 
         mutableMeetingArray?.push({
           meetingAbsentees: [],

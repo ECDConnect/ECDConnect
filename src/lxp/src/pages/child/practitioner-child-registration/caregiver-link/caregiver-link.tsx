@@ -264,7 +264,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
   };
 
   return (
-    <div className="bg-uiBg flex h-full w-full flex-col p-4">
+    <div className="flex h-full w-full flex-col bg-white p-4">
       <Typography
         type="unspecified"
         weight="normal"

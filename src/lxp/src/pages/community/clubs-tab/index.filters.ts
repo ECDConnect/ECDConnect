@@ -215,7 +215,7 @@ export function getScoreBarColor(
 export function getPointsActivityDateDetails(date: string) {
   if (!date) return { monthName: '', formattedDate: '' };
 
-  const parsedDate = parseISO(date);
+  const parsedDate = parseISO(date.replace('Z', ''));
   const formattedDate = format(parsedDate, 'd MMMM yyyy');
   const monthName = format(parsedDate, 'MMMM');
 

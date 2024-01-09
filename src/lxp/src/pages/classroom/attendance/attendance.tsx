@@ -382,11 +382,22 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     }
   };
 
+  if (!classroomGroups || classroomGroups?.length === 0) {
+    return (
+      <div className={'h-full flex-1 bg-white px-4 pt-4'}>
+        <IconInformationIndicator
+          title="You don't have any classes yet!"
+          subTitle="Assign a class to capture attendance."
+        />
+      </div>
+    );
+  }
+
   if (children?.length === 0 || learners?.length === 0) {
     return (
       <IconInformationIndicator
         title="You don't have any children allocated to classes yet!"
-        subTitle="Navigate to the 'Children' tab to add children"
+        subTitle="Navigate to the 'Children' tab to add children."
       />
     );
   }

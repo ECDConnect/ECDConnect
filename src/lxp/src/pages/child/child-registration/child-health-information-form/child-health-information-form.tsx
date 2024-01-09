@@ -45,7 +45,7 @@ export const ChildHealthInformationForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg h-full px-4 pt-2 pb-4'}>
+    <div className={'h-full bg-white px-4 pt-2 pb-4'}>
       <Typography type={'h1'} text={childName} color={'primary'} />
       <Typography type={'h2'} text={'Health information'} color={'textMid'} />
       <div>

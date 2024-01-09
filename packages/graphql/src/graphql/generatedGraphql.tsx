@@ -177,6 +177,7 @@ export type ActivityChildAttendance = {
 export type ActivityChildAttendanceDetail = {
   __typename?: 'ActivityChildAttendanceDetail';
   monthName?: Maybe<Scalars['String']>;
+  percentageMembersSubmittedAllRegisters: Scalars['Int'];
   points: Scalars['Int'];
   pointsColor?: Maybe<Scalars['String']>;
 };
@@ -2347,20 +2348,6 @@ export type ClubMemberSortInput = {
   updatedBy?: InputMaybe<SortEnumType>;
   updatedDate?: InputMaybe<SortEnumType>;
   welcomeMessage?: InputMaybe<SortEnumType>;
-};
-
-export type ClubModel = {
-  __typename?: 'ClubModel';
-  clubCoach?: Maybe<ClubCoachModel>;
-  clubLeader?: Maybe<ClubLeaderModel>;
-  clubMembers?: Maybe<Array<Maybe<ClubMemberModel>>>;
-  clubSupport?: Maybe<ClubSupportModel>;
-  id: Scalars['UUID'];
-  league?: Maybe<LeagueModel>;
-  leagueRanking: Scalars['Int'];
-  maxPointsTotal: Scalars['Int'];
-  name?: Maybe<Scalars['String']>;
-  pointsTotal: Scalars['Int'];
 };
 
 export type ClubPoints = {
@@ -5876,10 +5863,12 @@ export type Mutation = {
   integrationByNewCoach: Scalars['Boolean'];
   integrationByTrainees: Scalars['Boolean'];
   integrationClubsData: Scalars['Boolean'];
+  integrationLeagueData: Scalars['Boolean'];
   integrationMonthlyAttendancePdf: Scalars['Boolean'];
   integrationPQASmartSpaceVisitsData: Scalars['Boolean'];
   integrationStatementsData: Scalars['Boolean'];
   integrationUpdates: Scalars['Boolean'];
+  markAsReadNotification: Scalars['Boolean'];
   moveClubMembers: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
@@ -7555,6 +7544,10 @@ export type MutationImportTeamLeadsArgs = {
 
 export type MutationIntegrationByNewCoachArgs = {
   remoteCoachId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationMarkAsReadNotificationArgs = {
+  notificationId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationMoveClubMembersArgs = {
@@ -10122,6 +10115,7 @@ export type PractitionerTimeline = {
   childProgressTrainingColor?: Maybe<Scalars['String']>;
   childProgressTrainingDate?: Maybe<Scalars['DateTime']>;
   childProgressTrainingStatus?: Maybe<Scalars['String']>;
+  clubMeetings?: Maybe<PractitionerAttendance>;
   coachCircles?: Maybe<PractitionerAttendance>;
   consolidationMeetingColor?: Maybe<Scalars['String']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;
@@ -11113,7 +11107,7 @@ export type Query = {
     Array<Maybe<PractitionerClassroomName>>
   >;
   clubById?: Maybe<DetailClubModel>;
-  clubForUser?: Maybe<ClubModel>;
+  clubForUser?: Maybe<DetailClubModel>;
   clubsForCoach?: Maybe<Array<Maybe<DetailClubModel>>>;
   clubsMembers?: Maybe<Array<Maybe<ClubMember>>>;
   coachByCoachUserId?: Maybe<Coach>;
@@ -15971,6 +15965,7 @@ export type Visit = {
   coach?: Maybe<Coach>;
   coachId?: Maybe<Scalars['UUID']>;
   comment?: Maybe<Scalars['String']>;
+  delicenseQuestionAnswered: Scalars['Boolean'];
   dueDate?: Maybe<Scalars['DateTime']>;
   eventId?: Maybe<Scalars['UUID']>;
   hasAnswerData: Scalars['Boolean'];
@@ -16226,6 +16221,7 @@ export type VisitFilterInput = {
   coach?: InputMaybe<CoachFilterInput>;
   coachId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
+  delicenseQuestionAnswered?: InputMaybe<BooleanOperationFilterInput>;
   dueDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   eventId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   hasAnswerData?: InputMaybe<BooleanOperationFilterInput>;
@@ -16383,6 +16379,7 @@ export type VisitInput = {
   Coach?: InputMaybe<CoachInput>;
   CoachId?: InputMaybe<Scalars['UUID']>;
   Comment?: InputMaybe<Scalars['String']>;
+  DelicenseQuestionAnswered: Scalars['Boolean'];
   DueDate?: InputMaybe<Scalars['DateTime']>;
   EventId?: InputMaybe<Scalars['UUID']>;
   HasAnswerData: Scalars['Boolean'];
@@ -16436,6 +16433,7 @@ export type VisitSortInput = {
   coach?: InputMaybe<CoachSortInput>;
   coachId?: InputMaybe<SortEnumType>;
   comment?: InputMaybe<SortEnumType>;
+  delicenseQuestionAnswered?: InputMaybe<SortEnumType>;
   dueDate?: InputMaybe<SortEnumType>;
   eventId?: InputMaybe<SortEnumType>;
   hasAnswerData?: InputMaybe<SortEnumType>;
