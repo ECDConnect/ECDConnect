@@ -111,7 +111,7 @@ export default function ContentWorkflow({
     return orderedList;
   };
 
-  if (contentView && languages && currentContent && defaultLanguageId) {
+  if (contentView && languages && defaultLanguageId) {
     return (
       <div className="flex flex-col">
         <div className="mb-6 flex flex-row gap-2 overflow-auto rounded-md bg-white px-2">
