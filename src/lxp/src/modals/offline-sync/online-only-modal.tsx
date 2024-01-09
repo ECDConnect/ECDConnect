@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActionModal, renderIcon } from '@ecdlink/ui';
-import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import { ExclamationIcon } from '@heroicons/react/solid';
 
 export type OnlineOnlyModalProps = {
   onSubmit: () => void;
@@ -14,9 +14,7 @@ export const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({
   return (
     <ActionModal
       className="bg-white"
-      customIcon={
-        <ExclamationCircleIcon className="text-alertMain h-10 w-10" />
-      }
+      customIcon={<ExclamationIcon className="text-alertMain h-10 w-10" />}
       iconColor="alertMain"
       iconBorderColor="alertBg"
       title={
