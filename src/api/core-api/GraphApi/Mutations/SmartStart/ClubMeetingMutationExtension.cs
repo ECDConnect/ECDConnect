@@ -33,27 +33,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public ClubMeeting AddFamilyDayMeeting([Service] IClubService clubService, ClubMeetingModel input)
         {
-            string meeting_type = "";
+            string meetingType = "";
             switch (input.MeetingType)
             {
                 case "Play Day":
-                    meeting_type = Constants.ClubSettings.meeting_type_play_day;
+                    meetingType = Constants.ClubSettings.meeting_type_play_day;
                     break;
                 case "Story Day":
-                    meeting_type = Constants.ClubSettings.meeting_type_story_day;
+                    meetingType = Constants.ClubSettings.meeting_type_story_day;
                     break;
                 case "End of Year Celebration":
-                    meeting_type = Constants.ClubSettings.meeting_type_end_of_year_celebration;
+                    meetingType = Constants.ClubSettings.meeting_type_end_of_year_celebration;
                     break;
                 case "Open Day":
-                    meeting_type = Constants.ClubSettings.meeting_type_open_day;
+                    meetingType = Constants.ClubSettings.meeting_type_open_day;
                     break;
                 case "Other":
-                    meeting_type = Constants.ClubSettings.meeting_type_other;
+                    meetingType = Constants.ClubSettings.meeting_type_other;
                     break;
             }
-            input.Name = input.Name == "" ? meeting_type : input.Name;
-            return clubService.AddClubMeeting(input, meeting_type);
+            input.Name = input.Name == "" ? meetingType : input.Name;
+            return clubService.AddClubMeeting(input, meetingType);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

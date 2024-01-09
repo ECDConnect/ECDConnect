@@ -1764,8 +1764,9 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool CalculateHostFamilyDays(Guid clubId, string userId, DateTime today)
         {
-            Club club = _clubRepo.GetById(clubId);
-            ClubPointsLibrary clubPointsLibrary = new ClubPointsLibrary();
+            var club = _clubRepo.GetById(clubId);
+            ClubPointsLibrary clubPointsLibrary;
+
             if (club?.League.LeagueType.Name == Constants.ClubSettings.name_purple)
             {
                 clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.host_family_days && x.Type == Constants.ClubSettings.name_purple).FirstOrDefault();
@@ -1775,26 +1776,34 @@ namespace EcdLink.Api.CoreApi.Services
                 clubPointsLibrary = _clubPointsLibraryRepo.GetAll().Where(x => x.Activity == Constants.ClubSettings.host_family_days && x.Type != Constants.ClubSettings.name_purple).FirstOrDefault();
             }
 
-            int totalClubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == today.Year && x.ClubPointsLibraryId == clubPointsLibrary.Id).Select(x => x.Points).Sum();
-            if (clubPointsLibrary.MaxPointsYearly <= (clubPointsLibrary.MaxPointsYearly - clubPointsLibrary.Points))
+            if (clubPointsLibrary == null) { return false; }
+
+            var totalClubPoints = _clubPointsRepo.GetAll().Where(x => x.ClubId == clubId && x.Year == today.Year && x.ClubPointsLibraryId == clubPointsLibrary.Id).Select(x => x.Points).Sum();
+
+            var pointsEarned = clubPointsLibrary.Points;
+            var newTotal = totalClubPoints + clubPointsLibrary.Points;
+
+            if (newTotal > clubPointsLibrary.MaxPointsYearly)
             {
-                totalClubPoints += clubPointsLibrary.Points;
-                _clubPointsRepo.Insert(new ClubPoints()
-                {
-                    Id = Guid.NewGuid(),
-                    ClubId = clubId,
-                    UserId = userId,
-                    InsertedDate = DateTime.Now,
-                    UpdatedDate = DateTime.Now,
-                    UpdatedBy = _uId,
-                    IsActive = true,
-                    ClubPointsLibraryId = clubPointsLibrary.Id,
-                    Month = today.Month,
-                    Year = today.Year,
-                    Points = clubPointsLibrary.Points,
-                    PointsYTD = totalClubPoints
-                });
+                newTotal = clubPointsLibrary.MaxPointsYearly;
+                pointsEarned = clubPointsLibrary.MaxPointsYearly - totalClubPoints;
             }
+
+            _clubPointsRepo.Insert(new ClubPoints()
+            {
+                Id = Guid.NewGuid(),
+                ClubId = clubId,
+                UserId = userId,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                UpdatedBy = _uId,
+                IsActive = true,
+                ClubPointsLibraryId = clubPointsLibrary.Id,
+                Month = today.Month,
+                Year = today.Year,
+                Points = pointsEarned,
+                PointsYTD = newTotal
+            });
 
             return true;
         }
