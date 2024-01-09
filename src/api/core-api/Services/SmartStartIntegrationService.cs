@@ -569,7 +569,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 List<IntegrationOptionConditionEntity> smartSpaceOptionConditions = new List<IntegrationOptionConditionEntity>
                 {
                     new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" },
-                    new IntegrationOptionConditionEntity() { Column = "DateOfVisit", Operator = "Equals", Value = visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") },
                     new IntegrationOptionConditionEntity() { Column = "Trainee", Operator = "Equals", Value = mappedTraineeId }
                 };
 
