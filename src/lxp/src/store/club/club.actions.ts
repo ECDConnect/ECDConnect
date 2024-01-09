@@ -720,8 +720,9 @@ export const addClubMeeting = createAsyncThunk<
           );
         }
         if (!input?.meetingDate && addClubMeetingSyncInputs?.length) {
-          const promises = addClubMeetingSyncInputs.map((meeting) =>
-            new ClubService(userAuth?.auth_token).addClubMeeting(meeting)
+          const promises = addClubMeetingSyncInputs.map(
+            (meeting: ClubMeetingInput) =>
+              new ClubService(userAuth?.auth_token).addClubMeeting(meeting)
           );
 
           return await Promise.all(promises);

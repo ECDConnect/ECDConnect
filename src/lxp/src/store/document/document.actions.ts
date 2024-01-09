@@ -4,6 +4,10 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DocumentService } from '@services/DocumentService';
 import { RootState, ThunkApiType } from '../types';
 
+export const DocumentsActions = {
+  CREATE_DOCUMENT: 'createDocument',
+};
+
 export const getDocuments = createAsyncThunk<
   DocumentDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
@@ -50,7 +54,7 @@ export const createDocument = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'createDocument',
+  DocumentsActions.CREATE_DOCUMENT,
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {

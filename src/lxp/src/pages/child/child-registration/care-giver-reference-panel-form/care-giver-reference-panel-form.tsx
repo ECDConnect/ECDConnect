@@ -50,7 +50,7 @@ export const CareGiverReferencePanelForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg px-4 pt-2 pb-4'}>
+    <div className={'h-full bg-white px-4 pt-2 pb-4'}>
       <Typography
         type={'h1'}
         text={'Caregiver reference panel'}

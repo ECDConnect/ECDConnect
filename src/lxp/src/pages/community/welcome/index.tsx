@@ -65,12 +65,6 @@ export const CommunityWelcome: React.FC = () => {
       await appDispatch(
         coachThunkActions.updateCoachClubClicked({ userId: user?.id! })
       );
-      await appDispatch(
-        coachThunkActions.getCoachByCoachId({
-          coachId: user?.id!,
-          forceUpdate: true,
-        })
-      );
     }
 
     if (isToShowAddPhotoScreen) {

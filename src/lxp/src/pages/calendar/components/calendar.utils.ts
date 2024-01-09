@@ -23,6 +23,7 @@ export const mapPractitionerToListDataItem = (
     alertSeverity: 'none',
     avatarColor: getAvatarColor() || '',
     extraData: {
+      userId: practitioner.user?.id || '',
       firstName: practitioner.user?.firstName || '',
       surname: practitioner.user?.surname || '',
       isClub: false,
@@ -44,6 +45,7 @@ export const mapUserToListDataItem = (user: UserDto): ListDataItem => {
     alertSeverity: 'none',
     avatarColor: getAvatarColor() || '',
     extraData: {
+      userId: user.id || '',
       firstName: user.firstName || '',
       surname: user.surname || '',
       isClub: false,
@@ -63,6 +65,7 @@ export const mapClubToListDataItem = (club: ClubDto): ListDataItem => {
     alertSeverity: 'none',
     avatarColor: getAvatarColor() || '',
     extraData: {
+      userId: '',
       firstName: club.name,
       surname: '',
       isClub: true,

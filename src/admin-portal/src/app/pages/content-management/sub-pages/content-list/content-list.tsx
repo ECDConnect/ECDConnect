@@ -13,7 +13,6 @@ import {
 } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import LanguageSelector from '../../../../components/language-selector/language-selector';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import {
@@ -21,7 +20,13 @@ import {
   FieldType,
 } from '../../content-management-models';
 import ContentCreate from './components/content-create/content-create';
-import { PlusIcon } from '@heroicons/react/solid';
+import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
+import {
+  ContentManagementTabs,
+  ContentTypes,
+} from '../../../../constants/content-management';
+import { BulkActionStatus } from '../../../../components/ui-table/type';
+import { LanguageId } from '../../../../constants/language';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -30,7 +35,9 @@ export interface ContentListProps {
   languages: LanguageDto[];
   viewContent: (content?: ContentManagementView) => void;
   refreshParent: () => void;
+  onSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   searchValue?: string;
+  choosedSectionTitle?: string;
 }
 
 export default function ContentList({
@@ -40,7 +47,9 @@ export default function ContentList({
   optionDefinitions,
   viewContent,
   refreshParent,
+  onSearch,
   searchValue,
+  choosedSectionTitle,
 }: ContentListProps) {
   const { hasPermission } = useUser();
 
@@ -48,11 +57,10 @@ export default function ContentList({
   const { setNotification } = useNotifications();
   const panel = usePanel();
   const type = contentType.description;
-
-  const [languageId, setLanguageId] = useState<string>();
+  const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
-  console.log({ displayFields });
+
   function filterByValue(array, value) {
     return array.filter(
       (data) =>
@@ -72,9 +80,11 @@ export default function ContentList({
 
       orderedList.forEach((x) => {
         if (
-          (x.fieldType.dataType === FieldType.Text ||
+          ((x.fieldType.dataType === FieldType.Text ||
             x.fieldType.dataType === FieldType.Link) &&
-          !!x.displayMainTable
+            !!x.displayMainTable) ||
+          x?.displayName === 'CTF45 - Languages' ||
+          x?.displayName === 'Languages'
         )
           displayFields.push(x);
       });
@@ -90,6 +100,14 @@ export default function ContentList({
         x.fieldType.dataType !== FieldType.StaticLink
       )
         return x.fieldName;
+      else if (x?.fieldName === 'subCategories')
+        return `
+        ${x.fieldName} {
+          id
+          name
+          imageUrl
+        }
+        `;
       else if (
         x.fieldType.dataType === FieldType.Link &&
         x?.displayMainTable === true
@@ -119,7 +137,11 @@ export default function ContentList({
       }
   `;
 
-  const { data: contentData, refetch: refetchContent } = useQuery(query, {
+  const {
+    data: contentData,
+    refetch: refetchContent,
+    loading: loadingContent,
+  } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
       localeId: languageId,
@@ -134,10 +156,20 @@ export default function ContentList({
 
       if (selectedTab === 1) {
         let clientProfileData = moreInforItems.filter(
-          (item: { type: string }) =>
-            item.type === 'client profile' ||
-            item.type === 'Info Page' ||
-            item?.type === 'Income Statements'
+          (item: { type: string }) => {
+            return (
+              item.type === 'client profile' ||
+              item.type === 'Info Page' ||
+              item?.type === 'Income Statements' ||
+              item?.type === 'Taking Child Attendance' ||
+              item?.type === 'League Of Stars' ||
+              item?.type === 'Purple Clubs' ||
+              item?.type === 'Learning Through Play' ||
+              item?.type === 'The Daily Routine' ||
+              item?.type === 'Tracking Progress' ||
+              item?.type === 'Trainee Onboarding'
+            );
+          }
         );
         setTableData(
           clientProfileData?.length > 0 ? clientProfileData : moreInforItems
@@ -153,6 +185,23 @@ export default function ContentList({
         let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
+
+        if (choosedSectionTitle === 'Small/large group activities') {
+          setTableData(
+            moreInforItems?.filter(
+              (item) =>
+                item?.type === 'Small group' || item?.type === 'Large group'
+            )
+          );
+          return;
+        }
+
+        if (choosedSectionTitle === 'Story activities') {
+          setTableData(
+            moreInforItems?.filter((item) => item?.type === 'Story time')
+          );
+          return;
+        }
         setTableData(
           anteNatalData?.length > 0 ? anteNatalData : moreInforItems
         );
@@ -201,6 +250,11 @@ export default function ContentList({
       render: (onSubmit: any) => (
         <ContentCreate
           key={`contentPanelCreate`}
+          acceptedFileFormats={
+            selectedTab === ContentManagementTabs.COMMUNITY.id
+              ? ['pdf']
+              : undefined
+          }
           selectedLanguageId={languageId}
           languages={languages}
           contentType={contentType}
@@ -225,6 +279,15 @@ export default function ContentList({
     });
   };
 
+  const onBulkActionCallback = (status: BulkActionStatus) => {
+    if (status !== 'success') return;
+
+    refetchContent({
+      localeId: languageId.toString(),
+    });
+    refreshParent();
+  };
+
   if (tableData && displayFields) {
     return (
       <div>
@@ -242,25 +305,38 @@ export default function ContentList({
               </div>
               <div className="flex flex-col">
                 <div className="mt-1 ml-4">
-                  {hasPermission(PermissionEnum.create_static) && (
-                    <button
-                      onClick={() => displayCreatePanel()}
-                      type="button"
-                      className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                    >
-                      <PlusIcon width="22px" className="pl-1" />
-                      Add {camelCaseToSentanceCase(contentType.name)}
-                    </button>
-                  )}
                 </div>
               </div>
             </div>
           </div> */}
-
+          <div className="mb-8 flex flex-col items-center gap-2 md:justify-between lg:flex-row">
+            <div className="bg-adminPortalBg relative w-full rounded-md lg:w-6/12">
+              <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                <SearchIcon className="text-textMid h-5 w-5" />
+              </span>
+              <input
+                className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
+                placeholder="Search by title, section or content..."
+                onChange={onSearch}
+              />
+            </div>
+            {hasPermission(PermissionEnum.create_static) &&
+              contentType?.name !== 'Consent' && (
+                <button
+                  onClick={() => displayCreatePanel()}
+                  type="button"
+                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
+                >
+                  <PlusIcon width="22px" className="pl-1" />
+                  Add {camelCaseToSentanceCase(contentType.name)}
+                </button>
+              )}
+          </div>
           <div className=" -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
+                  isLoading={!tableData.length && loadingContent}
                   columns={displayFields.map((item) => {
                     return {
                       field:
@@ -278,11 +354,17 @@ export default function ContentList({
                       ? filterByValue(tableData, searchValue)
                       : tableData
                   }
-                  component={'cms'}
+                  component={
+                    selectedTab === ContentManagementTabs.COMMUNITY.id
+                      ? ContentTypes.COACHING_CIRCLE_TOPICS
+                      : 'cms'
+                  }
                   viewRow={
                     hasPermission(PermissionEnum.update_static) &&
                     viewSelectedRow
                   }
+                  onBulkActionCallback={onBulkActionCallback}
+                  languages={languages}
                 />
               </div>
             </div>

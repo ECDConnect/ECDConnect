@@ -865,6 +865,35 @@ public class IntegrationAPIManager
         }
     }
 
+    public async Task<List<MappedLeague>> GetLeagues()
+    {
+        try
+        {
+            string[] columns = { "Guid", "Name", "LeagueType", "CreatedOn" };
+            var optionConditions = new List<IntegrationOptionConditionEntity>
+            {
+                new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" },
+            };
+
+            var apiResponse = await GetAPIHandlerResponse(Constants.SSIntegrationSettings.SLLeagues + Constants.SSIntegrationSettings.QueryAll, columns, optionConditions, null);
+
+            if (apiResponse.Success) //success
+            {
+                return JsonConvert.DeserializeObject<List<MappedLeague>>(apiResponse.ResponseString);
+            }
+            else
+            {
+                await _logManager.IntegrationLog("GetLeagues failed ", " | " + apiResponse.ResponseString, null, LogRelatedType.Error, "GetLeagues");
+                return null;
+            }
+        }
+        catch (Exception e)
+        {
+            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetLeagues");
+            return null;
+        }
+    }
+
     #endregion
 }
 

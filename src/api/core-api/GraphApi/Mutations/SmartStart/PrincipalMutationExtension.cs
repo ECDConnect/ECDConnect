@@ -188,9 +188,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Principal PromotePractitionerToPrincipal([Service] PersonnelService personnelManager,
-             string userId)
+             string userId, bool sendComm = false)
         {
-            Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userId);
+            Practitioner practitionerToPromote = personnelManager.PromotePractitionerToPrincipal(userId, sendComm);
             return personnelManager.MapPractitionerToPrincipal(practitionerToPromote);
         }
 
@@ -206,6 +206,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
             [Service] IReassignmentService reassignmentService,
             [Service] INotificationService notificationService,
+            [Service] PersonnelService personnelManager,
         string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -229,6 +230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                     status.AcceptedDate = null;
                     int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
+                    bool sendRejectedNotification = true;
                     //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
                     if (practitioner.DateToBeRemoved != null || practitioner.IsRegistered == null)
                     {
@@ -242,6 +244,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
+
+                        notificationService.ExpireNotificationsTypesForUser(principal.UserId, TemplateTypeConstants.RejectedInvitation);
+                        sendRejectedNotification = false;
                     }
                     else
                     {
@@ -259,13 +264,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                         status.Leaving = true;
                     }
-                    //send message of rejection
-                    List<TagsReplacements> replacements = new List<TagsReplacements>
+                    if (sendRejectedNotification)
                     {
-                        new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
-                        new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToString() }
-                    };
-                    notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                        //send message of rejection
+                        string programmeName = personnelManager.GetSiteNameForPractitioner(principal.UserId);
+                        List<TagsReplacements> replacements = new List<TagsReplacements>
+                        {
+                            new TagsReplacements() { FindValue = "PractitionerName", ReplacementValue = practitioner.User.FullName },
+                            new TagsReplacements() { FindValue = "ProgrammeName", ReplacementValue = programmeName },
+                            new TagsReplacements() { FindValue = "RemovalDate", ReplacementValue = DateTime.Now.AddHours(hrsToReassign).ToShortDateString() }
+                        };
+                        notificationService.SendNotificationAsync(null, TemplateTypeConstants.RejectedInvitation, DateTime.Now, principal.User, "", MessageStatusConstants.Amber, replacements, DateTime.Now.AddDays(7));
+                    }
                 }
                 else
                 {

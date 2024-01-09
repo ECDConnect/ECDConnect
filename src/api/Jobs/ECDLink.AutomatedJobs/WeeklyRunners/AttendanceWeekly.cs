@@ -31,6 +31,7 @@ public class AttendanceWeekly : CronJobService
             if (service != null && service.Enabled)
             {
                 await service.IntegrationAttendanceByDueData();
+                await service.IntegrationLeagueData();
             }
         }
     }

@@ -344,7 +344,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
   };
 
   return (
-    <div className={'bg-uiBg pt-2'}>
+    <div className={'h-full bg-white pt-2'}>
       <Typography
         type={'h1'}
         text={"Child's details"}

@@ -64,13 +64,13 @@ export const ChildNotes: React.FC = () => {
         displayOffline={!isOnline}
       >
         <Typography
-          className={'pt-1 px-4'}
+          className={'px-4 pt-1'}
           type={'h1'}
           color={'primary'}
           text="Notes"
         />
         <NotesList
-          className={'bg-uiBg w-full'}
+          className={'w-full bg-white px-4'}
           notes={notes}
           viewToNote={(note: NoteDto) => viewNote(note)}
         />

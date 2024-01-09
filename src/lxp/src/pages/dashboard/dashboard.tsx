@@ -119,17 +119,6 @@ export const Dashboard: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const isOnStipend = practitioner?.isOnStipend;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-
-  const a = useCallback(async () => {
-    if (isOnline && !isCoach) {
-      appDispatch(practitionerThunkActions?.getAllPractitioners({})).unwrap();
-    }
-  }, []);
-
-  useEffect(() => {
-    a();
-  }, []);
-
   const isFirstTimeCommunitySection = !coach?.clickedClubTab;
 
   const dashboardNotification = useSelector(
@@ -402,11 +391,6 @@ export const Dashboard: React.FC = () => {
         ).unwrap())();
 
       if (isCoach) {
-        (async () =>
-          await appDispatch(
-            practitionerForCoachThunkActions.getPractitionersForCoach({})
-          ).unwrap())();
-
         (async (id) =>
           await appDispatch(
             classroomsForCoachThunkActions.getClassroomForCoach({
@@ -427,13 +411,6 @@ export const Dashboard: React.FC = () => {
             role.name === UserTypeEnum.Principal
         )
       ) {
-        (async () =>
-          await appDispatch(
-            practitionerThunkActions.getPractitionerByUserId({
-              userId: userData?.id || '',
-            })
-          ).unwrap())();
-
         const currentDate = new Date();
         const oneYearAgo = new Date();
         oneYearAgo.setMonth(currentDate.getMonth() - 12);
@@ -569,8 +546,8 @@ export const Dashboard: React.FC = () => {
     navigation.splice(3, 0, {
       name: NavigationTypes.Community,
       href: isFirstTimeCommunitySection
-        ? ROUTES.COMMUNITY.WELCOME
-        : ROUTES.COMMUNITY.ROOT,
+        ? ROUTES.PRACTITIONER.COMMUNITY.WELCOME
+        : ROUTES.PRACTITIONER.COMMUNITY.ROOT,
       params: { isFromDashboard: true } as CommunityRouteState,
       icon: 'BookOpenIcon',
       current: false,

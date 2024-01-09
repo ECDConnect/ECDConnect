@@ -19,6 +19,8 @@ import {
   ChildRegistrationRouteState,
   ChildRegistrationSteps,
 } from '../child-registration/child-registration.types';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { DocumentsActions } from '@/store/document/document.actions';
 
 export const ChildRegistrationBirthCertificate: React.FC = () => {
   const history = useHistory();
@@ -36,6 +38,11 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
 
   const [formState, setFormState] = useState<ChildRegistrationFormState>({});
 
+  const { isLoading } = useThunkFetchCall(
+    'documents',
+    DocumentsActions.CREATE_DOCUMENT
+  );
+
   const saveChildBirthCertificate = async (
     birthCertificateForm: ChildBirthCertificateFormModel
   ) => {
@@ -46,7 +53,7 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
 
     const fileName = `${birthCertificateForm.birthCertificateType}.png`;
 
-    const documentStatusId = await getWorkflowStatusIdByEnum(
+    const documentStatusId = getWorkflowStatusIdByEnum(
       WorkflowStatusEnum.DocumentPendingVerification
     );
     const fileType =
@@ -54,7 +61,7 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
         ? FileTypeEnum.ChildClinicCard
         : FileTypeEnum.ChildBirthCertificate;
 
-    const typeId = await getDocumentTypeIdByEnum(fileType);
+    const typeId = getDocumentTypeIdByEnum(fileType);
 
     const documentInputModel = childRegisterUtils.mapDocumentDto(
       existingChildUser?.id || '',
@@ -66,10 +73,14 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
       user
     );
 
-    await appDispatch(documentActions.createDocument(documentInputModel));
-    await appDispatch(
-      documentThunkActions.createDocument(documentInputModel)
-    ).unwrap();
+    appDispatch(documentActions.createDocument(documentInputModel));
+
+    if (isOnline) {
+      await appDispatch(
+        documentThunkActions.createDocument(documentInputModel)
+      ).unwrap();
+    }
+
     exitRegistration();
   };
 
@@ -98,12 +109,14 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
           title="Child registration"
           onBack={() => exitRegistration()}
           isOnline={isOnline}
+          showOfflineCard={false}
         >
           <Step
             stepKey={ChildRegistrationSteps.childBirthCertificateForm}
             viewBannerWapper
           >
             <ChildBirthCertificateForm
+              isLoading={isLoading}
               isSingleForm={true}
               childBirthCertificateForm={
                 formState.childBirthCertificateFormModel

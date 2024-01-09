@@ -19,5 +19,6 @@ export interface ButtonProps extends ComponentBaseProps {
   iconPosition?: 'start' | 'end';
   text?: string;
   textColor?: Colours;
+  buttonType?: 'button' | 'submit' | 'reset';
   onClick?: () => void;
 }

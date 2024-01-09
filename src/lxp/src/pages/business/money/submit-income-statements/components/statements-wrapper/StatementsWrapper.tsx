@@ -226,7 +226,7 @@ export default function StatementsWrapper() {
           </div>
           <div className="mt-4 flex items-center justify-end gap-4">
             <SliderPagination
-              totalItems={4}
+              totalItems={10}
               activeIndex={index}
               className={'p-4'}
             />

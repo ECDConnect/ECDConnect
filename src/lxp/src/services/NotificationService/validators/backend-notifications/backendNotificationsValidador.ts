@@ -60,6 +60,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
         viewType: notificationConfig?.viewType || viewType,
         area: notificationConfig?.area || this.getDefaultArea(this.user ?? {}),
         expiryDate: notification.messageEndDate,
+        action: notification.action ?? '',
       });
     }
 
@@ -144,6 +145,7 @@ export class BackendNotificationsValidator implements NotificationValidator {
                 cTAText
                 typeCode                        
               }
+             action 
           }
         }
 

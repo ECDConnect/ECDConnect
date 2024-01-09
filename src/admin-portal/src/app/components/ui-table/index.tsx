@@ -1,27 +1,36 @@
-import { Button, Typography, classNames } from '@ecdlink/ui';
+import {
+  Button,
+  DialogPosition,
+  LoadingSpinner,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
 import Fuse from 'fuse.js';
 import {
   ChangeEvent,
-  Key,
-  ReactChild,
-  ReactFragment,
-  ReactPortal,
+  useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
-  useCallback,
 } from 'react';
 import Table from 'react-tailwind-table';
-import Icon from '../icon';
-import { Link, useHistory } from 'react-router-dom';
-import { useLazyQuery, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import {
   sentInviteToMultipleUsers,
   deleteMultipleUsers,
+  bulkDeleteCoachingCircleTopics,
 } from '@ecdlink/graphql';
-import { ReactI18NextChild } from 'react-i18next';
 import { PaperAirplaneIcon, TrashIcon } from '@heroicons/react/solid';
-import { NOTIFICATION, useNotifications } from '@ecdlink/core';
+import {
+  LanguageDto,
+  NOTIFICATION,
+  useDialog,
+  useNotifications,
+} from '@ecdlink/core';
+import { ContentTypes } from '../../constants/content-management';
+import { UiTableProps } from './type';
+import AlertModal from '../dialog-alert/dialog-alert';
 
 export default function UiTable({
   columns = [],
@@ -31,10 +40,12 @@ export default function UiTable({
   searchInput,
   component,
   viewRow,
+  isLoading,
+  onBulkActionCallback,
+  languages,
 }: UiTableProps) {
-  const history = useHistory();
   const [inviteRows, setInviteRows] = useState<boolean>(false);
-  const { setNotification, clearNotification } = useNotifications();
+  const { setNotification } = useNotifications();
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
@@ -48,6 +59,8 @@ export default function UiTable({
     distance: 0,
   };
   const fuse = useRef(new Fuse(rows, fuseOptions));
+
+  const dialog = useDialog();
 
   const [sendInvitations, { loading: invitationsLoading }] = useMutation(
     sentInviteToMultipleUsers,
@@ -68,7 +81,17 @@ export default function UiTable({
     }
   );
 
-  const inviteUsers = () => {
+  const [
+    deleteCoachingCircleTopicsMutation,
+    { loading: deletingCoachingCircleTopics },
+  ] = useMutation(bulkDeleteCoachingCircleTopics, {
+    variables: {
+      contentIds: [],
+    },
+    fetchPolicy: 'network-only',
+  });
+
+  const inviteUsers = useCallback(() => {
     sendInvitations({
       variables: {
         userIds: selectedRows,
@@ -94,9 +117,9 @@ export default function UiTable({
           variant: NOTIFICATION.ERROR,
         });
       });
-  };
+  }, [selectedRows, sendInvitations, setNotification]);
 
-  const deactivateUser = () => {
+  const deactivateUser = useCallback(() => {
     deactivateUsers({
       variables: {
         ids: selectedRows,
@@ -122,7 +145,43 @@ export default function UiTable({
           variant: NOTIFICATION.ERROR,
         });
       });
-  };
+  }, [deactivateUsers, selectedRows, setNotification]);
+
+  const deleteCoachingCircleTopics = useCallback(() => {
+    deleteCoachingCircleTopicsMutation({
+      variables: {
+        contentIds: selectedRows,
+      },
+    })
+      .then((res) => {
+        if (res.data?.bulkDeleteCoachingCircleTopics?.success.length > 0) {
+          setNotification({
+            title: ` Successfully deleted ${res.data?.bulkDeleteCoachingCircleTopics?.success.length} topics!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          onBulkActionCallback?.('success');
+        }
+        if (res.data?.bulkDeleteCoachingCircleTopics?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to delete ${res.data?.bulkDeleteCoachingCircleTopics?.failed.length} topics!`,
+            variant: NOTIFICATION.ERROR,
+          });
+          onBulkActionCallback?.('failed');
+        }
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to delete topics',
+          variant: NOTIFICATION.ERROR,
+        });
+        onBulkActionCallback?.('failed');
+      });
+  }, [
+    deleteCoachingCircleTopicsMutation,
+    onBulkActionCallback,
+    selectedRows,
+    setNotification,
+  ]);
 
   useEffect(() => {
     fuse.current = new Fuse(rows, fuseOptions);
@@ -188,9 +247,6 @@ export default function UiTable({
 
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
-      const rowWithCheckbox = {
-        ...row,
-      };
 
       ++rowKey;
 
@@ -270,9 +326,71 @@ export default function UiTable({
           {formatDate(display_value)}
         </span>
       );
+    } else if (display_value === 'Small group') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-darkBlue inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (display_value === 'Large group') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-secondary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (display_value === 'Story book') {
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer">
+          <div className="bg-darkBlue inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white">
+            <span>{display_value}</span>
+          </div>
+        </div>
+      );
+    } else if (display_value === 'Story book, Read aloud, other') {
+      const splitValues = display_value?.split(', ');
+      rowValue = (
+        <div className="ml-1 flex cursor-pointer gap-1">
+          {splitValues?.map((item) => (
+            <div
+              className={`${
+                item === 'Story book'
+                  ? 'bg-secondary'
+                  : item === 'Read aloud'
+                  ? 'bg-darkBlue'
+                  : 'bg-successMain'
+              } inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+            >
+              <span className="text-xs">
+                {item.charAt(0).toUpperCase() + item.slice(1)}
+              </span>
+            </div>
+          ))}
+        </div>
+      );
+    } else if (
+      column.field === 'subCategories' &&
+      (column?.use === 'GT - Skills' || column?.use === 'Skills')
+    ) {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => (
+            <div className="ml-1 flex cursor-pointer">
+              <div
+                className={`bg-tertiary inline-block overflow-ellipsis rounded-full px-2 py-1 font-bold text-white`}
+              >
+                <img alt="skill" src={item?.imageUrl} className="h-6 w-6" />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
     } else if (column.field === 'subCategories') {
       rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
           {display_value?.map((item: any, index: number) => (
             <div
               key={item?.id}
@@ -283,6 +401,26 @@ export default function UiTable({
                 : `${item?.name};`}
             </div>
           ))}
+        </div>
+      );
+    } else if (column.field === 'availableLanguages') {
+      rowValue = (
+        <div className="ml-0 flex cursor-pointer flex-row items-center">
+          {display_value?.map((item: any, index: number) => {
+            const language = languages?.find(
+              (language) => language?.id === item?.id
+            );
+            return (
+              <div
+                key={item?.id}
+                className={' text-textMid m-1 rounded-full py-1 text-xs'}
+              >
+                {index === display_value?.length - 1
+                  ? `${language?.locale}`
+                  : `${language?.locale};`}
+              </div>
+            );
+          })}
         </div>
       );
     } else if (column.field === 'roles') {
@@ -340,43 +478,108 @@ export default function UiTable({
     );
   };
 
+  const deleteDialog = useCallback(() => {
+    dialog({
+      color: 'bg-white',
+      position: DialogPosition.Middle,
+      render: (onClose) => (
+        <AlertModal
+          title="Are you sure you want to delete this content?"
+          message="You will not be able to recover this content if you delete it now. This will change what practitioners see on the app and might change items they have edited previously."
+          onCancel={onClose}
+          btnText={['Delete', 'Keep editing']}
+          onSubmit={() => {
+            deleteCoachingCircleTopics();
+            onClose();
+          }}
+        />
+      ),
+    });
+  }, [deleteCoachingCircleTopics, dialog]);
+
+  const renderBulkActions = useMemo(() => {
+    if (component === ContentTypes.COACHING_CIRCLE_TOPICS) {
+      return (
+        <Button
+          className="rounded-2xl px-2"
+          type="filled"
+          color="errorBg"
+          textColor="tertiary"
+          text="Delete"
+          icon="TrashIcon"
+          iconPosition="end"
+          isLoading={deletingCoachingCircleTopics}
+          disabled={deletingCoachingCircleTopics}
+          onClick={deleteDialog}
+        />
+      );
+    }
+
+    return (
+      <>
+        <Button
+          className="mr-4 rounded-xl px-6 py-0"
+          type="filled"
+          isLoading={invitationsLoading}
+          disabled={invitationsLoading}
+          color="secondary"
+          onClick={inviteUsers}
+        >
+          <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
+          <Typography type="help" color="white" text="Resend Invitations" />
+        </Button>
+
+        <Button
+          className="rounded-xl px-6 py-0"
+          type="outlined"
+          isLoading={deactivating}
+          disabled={deactivating}
+          color="tertiary"
+          onClick={deactivateUser}
+        >
+          <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
+            {' '}
+          </TrashIcon>
+          <Typography
+            type="help"
+            color="tertiary"
+            text={'Deactivate User'}
+          ></Typography>
+        </Button>
+      </>
+    );
+  }, [
+    component,
+    deactivateUser,
+    deactivating,
+    deleteDialog,
+    deletingCoachingCircleTopics,
+    invitationsLoading,
+    inviteUsers,
+  ]);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor="infoMain"
+        backgroundColor="uiBg"
+        className="my-4"
+      />
+    );
+  }
+
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
       {selectedRows?.length >= 1 && (
-        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2">
+        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2 px-4">
           <div className="w-4/12">
-            <p className="text-md pl-4 text-white">
+            <p className="text-md text-white">
               {selectedRows?.length} Selected
             </p>
           </div>
-          <div className="flex w-6/12 flex-row items-center">
-            <Button
-              className="mr-4 rounded-xl px-6 py-0"
-              type="filled"
-              isLoading={invitationsLoading}
-              color="secondary"
-              onClick={inviteUsers}
-            >
-              <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
-              <Typography type="help" color="white" text="Resend Invitations" />
-            </Button>
-
-            <Button
-              className="mr-4 rounded-xl px-6 py-0"
-              type="outlined"
-              isLoading={deactivating}
-              color="tertiary"
-              onClick={deactivateUser}
-            >
-              <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
-                {' '}
-              </TrashIcon>
-              <Typography
-                type="help"
-                color="tertiary"
-                text={'Deactivate User'}
-              ></Typography>
-            </Button>
+          <div className="flex w-6/12 flex-row items-center justify-end">
+            {renderBulkActions}
           </div>
         </div>
       )}

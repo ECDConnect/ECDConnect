@@ -1,7 +1,6 @@
 using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
@@ -9,7 +8,6 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
-using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -18,7 +16,6 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
@@ -33,20 +30,16 @@ using ECDLink.SmartStart.Reports.ChildProgressReport;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
 using HotChocolate;
-using HotChocolate.Data.Filters.Expressions;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -643,11 +636,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (last2?.Count() == 2 && last2[0].Item2 > last2[1].Item2)
                     hasProgressedInLast2Periods++;
 
-                if (last3?.Count() == 3
-                    && (last3[0].Item2 > last3[1].Item2)
+                if (last3?.Count() == 3)
+                {
+                    if ((last3[0].Item2 > last3[1].Item2)
                     || (last3[0].Item2 > last3[2].Item2)
                     || (last3[1].Item2 > last3[2].Item2))
-                    hasProgressedInLast3Periods++;
+                        hasProgressedInLast3Periods++;
+
+                }
             }
             // Calculate count of children who haven't progressed
             int hasNotPorgressed2 = childIds.Count() - hasProgressedInLast2Periods;
@@ -1612,7 +1608,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         notification.Color = MetricsColorEnum.Error.ToString();
                         notification.Message = "";
                         notification.Notes = smartSpaceVisit.PlannedVisitDate.ToShortDateString();
-                        notification.GroupingName = "SmartSpace visist overdue";
+                        notification.GroupingName = "SmartSpace visit overdue";
                         yield return notification;
                         continue;
                     }

@@ -1,23 +1,23 @@
-import { Visit, PractitionerTimeline } from '@ecdlink/graphql';
+import { Visit, PractitionerAttendance } from '@ecdlink/graphql';
 import { dateOptions, getStepType } from './timeline-steps';
 import { Typography } from '@ecdlink/ui';
 import { format } from 'date-fns';
 
 interface SupportVisitsProps {
   isLoading: boolean;
-  timeline: PractitionerTimeline;
+  attendanceRecord: PractitionerAttendance;
   isOnline: boolean;
   onView?: (visit: Visit) => void;
 }
 
-export const CoachCirclesMeeting = ({
-  timeline,
+export const ClubMeetingMeeting = ({
+  attendanceRecord,
   isOnline,
   isLoading,
   onView,
 }: SupportVisitsProps) => (
   <>
-    {timeline?.coachCircles?.meetingRegister?.map((item) => (
+    {attendanceRecord.meetingRegister?.map((item) => (
       <div className="my-4" key={item?.id}>
         <div className="relative flex items-center gap-2">
           {item?.attended === true ? (

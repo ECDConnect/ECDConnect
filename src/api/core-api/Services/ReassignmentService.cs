@@ -148,6 +148,8 @@ namespace ECDLink.Core.Services
                             _applicationUserId, 
                             null, 
                             true);
+
+                        _notificationService.ExpireNotificationsTypesForUser(prac.PrincipalHierarchy.ToString(), TemplateTypeConstants.RejectedInvitation);
                     }
 
                     prac.DateToBeRemoved = null;
@@ -158,7 +160,7 @@ namespace ECDLink.Core.Services
                     prac.PrincipalHierarchy = null;
                     prac.ShareInfo = false;
 
-                    practiRepo.Update(prac);
+                    practiRepo.Update(prac);                    
                 }
             }
         }

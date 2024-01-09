@@ -1,8 +1,8 @@
 using ECDLink.Core.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.Services;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
 {
@@ -61,6 +61,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         public async Task<bool> IntegrationByNewCoach([Service] IIntegrationService integrationService, string remoteCoachId)
         {
             return await integrationService.IntegrationByNewCoach(remoteCoachId);
+        }
+
+        public async Task<bool> IntegrationLeagueData([Service] IIntegrationService integrationService)
+        {
+            await integrationService.IntegrationLeagueData();
+            return true;
         }
 
         #endregion

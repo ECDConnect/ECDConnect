@@ -451,7 +451,7 @@ export const CoachPractitionerJourney = () => {
     }
   }, [selectedForm]);
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     getTimeline();
   }, [getTimeline]);
 

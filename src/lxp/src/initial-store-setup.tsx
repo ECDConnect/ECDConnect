@@ -415,18 +415,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           await appDispatch(
             getClubForUser({ userId: userData?.id! })
           ).unwrap())();
-        (async () =>
-          await appDispatch(
-            pointsThunkActions.getPointsSummaryForUser({
-              userId: userData?.id!,
-              startDate: oneYearAgo,
-              endDate: currentDate,
-            })
-          ).unwrap())();
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appDispatch, userData, isCoach, practitioner]);
+  }, [appDispatch, userData, isCoach]);
 
   return (
     <IntialStoreSetupContext.Provider value={values}>
