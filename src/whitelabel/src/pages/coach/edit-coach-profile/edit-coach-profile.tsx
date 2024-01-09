@@ -71,7 +71,7 @@ export const EditCoachProfile: React.FC = () => {
 
   const showOnlineOnly = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit) => {
         return (
           <OnlineOnlyModal
