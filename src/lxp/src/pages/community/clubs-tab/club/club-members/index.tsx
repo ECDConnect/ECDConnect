@@ -123,13 +123,18 @@ export const ClubMembers: React.FC = () => {
         profileDataUrl: member.profileImageUrl || '',
         alertSeverity: 'none',
         hideAlertSeverity: true,
-        onActionClick: () =>
+        onActionClick: () => {
+          const isSupportRole = member?.userId === club?.clubSupport?.userId;
+
           history.push(
-            ROUTES.COMMUNITY.CLUB.USER_PROFILE.MEMBER.replace(
-              ':clubId',
-              clubId
-            ).replace(':practitionerId', member.practitionerId)
-          ),
+            ROUTES.COMMUNITY.CLUB.USER_PROFILE[
+              isSupportRole ? 'SUPPORT_ROLE' : 'MEMBER'
+            ]
+              .replace(':clubId', clubId)
+              .replace(':practitionerId', member.practitionerId)
+              .replace(':supportRoleId', member.userId)
+          );
+        },
       })) ?? [];
 
   const onOffline = () => {

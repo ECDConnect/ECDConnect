@@ -318,7 +318,8 @@ const AuthRoutes: React.FC = () => {
       />
       <Route
         path={[
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP,
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.ROOT,
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.LEAGUE_TYPE,
           ROUTES.COMMUNITY.LEAGUE.HELP,
           ROUTES.COMMUNITY.HELP,
         ]}
