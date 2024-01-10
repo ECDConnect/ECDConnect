@@ -58,12 +58,6 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
           notificationId: notification?.message?.reference ?? '',
         })
       );
-
-      appDispatch(
-        disableBackendNotification({
-          notificationId: notification?.message?.reference ?? '',
-        })
-      );
     }
     appDispatch(notificationActions.removeNotification(notification));
 

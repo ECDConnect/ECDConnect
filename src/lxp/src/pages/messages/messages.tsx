@@ -60,12 +60,6 @@ export const Messages: React.FC = () => {
           notificationId: notification?.message?.reference ?? '',
         })
       );
-
-      appDispatch(
-        disableBackendNotification({
-          notificationId: notification?.message?.reference ?? '',
-        })
-      );
     }
     appDispatch(notificationActions.removeNotification(notification));
 
