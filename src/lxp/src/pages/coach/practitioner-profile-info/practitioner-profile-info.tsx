@@ -1,6 +1,11 @@
 import { useHistory, useLocation } from 'react-router';
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
+import {
+  ReasonsForPractitionerLeaving,
+  useDialog,
+  useSnackbar,
+  useTheme,
+} from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -53,12 +58,14 @@ import {
 } from 'date-fns';
 import { AbsenteeDto } from '@ecdlink/core/lib/models/dto/Users/absentee.dto';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
 import { clubSelectors, clubThunkActions } from '@/store/club';
 import { getActivityMeetRegularDetails } from '@/store/club/club.actions';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
-  const appDispatchAction = useAppDispatch();
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
@@ -137,6 +144,60 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
   const practitionerAbsentees = practitioner?.absentees;
 
+  useEffect(() => {
+    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+  }, [appDispatch, practitionerId]);
+
+  const practitionerTimeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+
+  const [removeReasonId, setRemoveReasonId] = useState<string | undefined>(
+    undefined
+  );
+
+  // Check if the practitioner needs to be removed for whatever reason
+  useEffect(() => {
+    if (!practitionerTimeline) {
+      return;
+    }
+
+    const attendedPqaVisits = practitionerTimeline?.pQASiteVisits?.filter(
+      (visit) => !!visit?.attended
+    );
+    const attendedReaccreditationVisits =
+      practitionerTimeline?.reAccreditationVisits?.filter(
+        (visit) => !!visit?.attended
+      );
+
+    const lastPqa = attendedPqaVisits?.[attendedPqaVisits?.length - 1];
+
+    const previousPqa = attendedPqaVisits?.[attendedPqaVisits?.length - 2];
+
+    const lastReaccreditation =
+      attendedReaccreditationVisits?.[
+        attendedReaccreditationVisits?.length - 1
+      ];
+
+    const previousReaccreditation =
+      attendedReaccreditationVisits?.[
+        attendedReaccreditationVisits?.length - 2
+      ];
+
+    const isToRemoveSmartStarter =
+      lastPqa?.delicenseQuestionAnswered ||
+      lastReaccreditation?.delicenseQuestionAnswered ||
+      (lastPqa?.overallRatingColor === 'Error' &&
+        previousPqa?.overallRatingColor === 'Error') ||
+      (lastReaccreditation?.overallRatingColor === 'Error' &&
+        previousReaccreditation?.overallRatingColor === 'Error');
+
+    if (isToRemoveSmartStarter) {
+      setRemoveReasonId(ReasonsForPractitionerLeaving.DELICENSED);
+      setRemovePractionerReasonsVisible(true);
+    }
+  }, [practitionerTimeline]);
+
   const validAbsenteesDates = practitionerAbsentees?.filter(
     (item) =>
       !isPast(new Date(item?.absentDate as string)) ||
@@ -200,11 +261,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const updatedUserReassigned = useCallback(async () => {
     if (isFromReassignView) {
-      await appDispatchAction(
+      await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
       ).unwrap();
     }
-  }, [appDispatchAction, isFromReassignView]);
+  }, [appDispatch, isFromReassignView]);
 
   useEffect(() => {
     updatedUserReassigned();
@@ -266,7 +327,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     );
   };
 
-  const appDispatch = useAppDispatch();
   useEffect(() => {
     const getTraineeTimeline = async () =>
       await appDispatch(
@@ -303,7 +363,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         })
       );
     }
-  }, [appDispatch, isOnline, practitioner?.clubId]);
+  }, []);
 
   // TODO - This should be saved to the store
   // Actually might be in the store, why are we fetching it, to bascially just check if they have a class
@@ -1318,6 +1378,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               >
                 <div className={styles.dialogContent}>
                   <RemovePractioner
+                    removeReasonId={removeReasonId}
                     onSuccess={() =>
                       showMessage({
                         message: `${practitioner?.user?.firstName} removed`,

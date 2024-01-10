@@ -295,486 +295,12 @@ export default function CreateStory({
     var newCurrentStorybookParts = {};
     var createdBookPartId: any = {};
 
-    console.log({ filteredStoryBookPartsQuestions });
-    console.log({ filteredStoryBookParts });
-
     filteredStoryBookParts?.map(async (item: StoryBookPartDto, idx: number) => {
-      if (item?.id && item?.partText === '') {
-        deleteStoryBookPartContent({
-          variables: {
-            id: item?.id.toString(),
-            localeId: selectedLanguageId.toString(),
-          },
-        })
-          .then((response: any) => {
-            console.log(response);
-            if (response) {
-              // refetch();
-              // onCancel();
-              setNotification({
-                title: `Changes saved`,
-                variant: NOTIFICATION.SUCCESS,
-              });
-              const currentStorybookParts = values?.storyBookParts || '';
-              let currentStorybookPartsArray =
-                currentStorybookParts?.split(',');
-              currentStorybookPartsArray?.filter(
-                (currentItem) => currentItem?.id !== item?.id
-              );
-              const newData = currentStorybookPartsArray?.join(',');
-              newCurrentStorybookParts = newData;
-              const model = {
-                ...values,
-                storyBookParts: newCurrentStorybookParts,
-              };
-              updateContent({
-                variables: {
-                  id: content.id.toString(),
-                  input: { ...model },
-                  localeId: selectedLanguageId.toString(),
-                },
-              });
-            }
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-        setLoading(false);
+      if (!item?.id && item?.partText === '') {
         return;
-      } else if (!item?.id && item?.partText !== '') {
-        await createStoryBookPartContent({
-          variables: {
-            input: {
-              name: item?.name,
-              part: item?.part.toString(),
-              partText: item?.partText,
-              storyBookPartQuestions: '',
-            },
-            localeId: selectedLanguageId.toString(),
-          },
-        })
-          .then((response) => {
-            if (response.data && response.data) {
-              setNotification({
-                title: `Changes saved`,
-                variant: NOTIFICATION.SUCCESS,
-              });
-
-              if (filteredStoryBookPartsQuestions?.length > 0) {
-                filteredStoryBookPartsQuestions?.map(
-                  async (questionContent) => {
-                    if (
-                      !questionContent?.id &&
-                      questionContent?.question !== ''
-                    ) {
-                      const hasQuestionsChanges =
-                        filteredStoryBookPartsQuestions?.find(
-                          (question) => question?.idx === idx
-                        );
-                      if (hasQuestionsChanges) {
-                        if (
-                          !hasQuestionsChanges?.id &&
-                          hasQuestionsChanges.question !== ''
-                        ) {
-                          await createStoryBookPartQuestionContent({
-                            variables: {
-                              input: {
-                                name: hasQuestionsChanges?.name,
-                                question: hasQuestionsChanges?.question,
-                              },
-                              localeId: selectedLanguageId.toString(),
-                            },
-                          })
-                            .then(async (response) => {
-                              setNotification({
-                                title: `Changes saved!`,
-                                variant: NOTIFICATION.SUCCESS,
-                              });
-                              //   onCancel();
-                              // create the redirect to the main list
-                              console.log('1', createdBookPartId);
-                              await updateStoryBookPartContent({
-                                variables: {
-                                  id: response?.data?.createStoryBookParts?.toString(),
-                                  input: {
-                                    name: item?.name,
-                                    part: item?.part.toString(),
-                                    partText: item?.partText,
-                                    storyBookPartQuestions:
-                                      response?.data?.createStoryBookPartQuestion?.toString(),
-                                  },
-                                  localeId: selectedLanguageId.toString(),
-                                },
-                              })
-                                .then((response) => {
-                                  setNotification({
-                                    title: `Changes saved!`,
-                                    variant: NOTIFICATION.SUCCESS,
-                                  });
-                                  //   onCancel();
-                                  // create the redirect to the main list
-                                  const currentStorybookParts =
-                                    values?.storyBookParts || '';
-                                  let currentStorybookPartsArray =
-                                    currentStorybookParts?.split(',');
-                                  currentStorybookPartsArray?.push(
-                                    response?.data?.createStoryBookParts
-                                  );
-                                  const newData =
-                                    currentStorybookPartsArray?.join(',');
-                                  newCurrentStorybookParts = newData;
-
-                                  const model = {
-                                    ...values,
-                                    storyBookParts: newCurrentStorybookParts,
-                                  };
-
-                                  updateContent({
-                                    variables: {
-                                      id: content.id.toString(),
-                                      input: { ...model },
-                                      localeId: selectedLanguageId.toString(),
-                                    },
-                                  }).catch(() => {
-                                    setLoading(false);
-                                  });
-
-                                  setNotification({
-                                    title: 'Successfully Updated Content!',
-                                    variant: NOTIFICATION.SUCCESS,
-                                  });
-                                  setLoading(false);
-                                })
-                                .catch((error) => {
-                                  console.log(error);
-                                });
-                              setLoading(false);
-                            })
-                            .catch((error) => {
-                              console.log(error);
-                            });
-                        }
-                      }
-                    }
-                  }
-                );
-              }
-
-              // createdBookPartId = response?.data
-              // setEdit(true);
-
-              savedContent();
-              cancelEdit();
-              setLoading(false);
-              return;
-            }
-            // savedContent();
-            //   onCancel();
-            // create the redirect to the main list
-          })
-          .catch((error) => {
-            console.log(error);
-          });
       }
-      if (filteredStoryBookPartsQuestions?.length > 0) {
-        const hasQuestionsChanges = filteredStoryBookPartsQuestions?.find(
-          (question) => question?.idx === idx
-        );
-        if (hasQuestionsChanges) {
-          if (!hasQuestionsChanges?.id && hasQuestionsChanges.question !== '') {
-            await createStoryBookPartQuestionContent({
-              variables: {
-                input: {
-                  name: hasQuestionsChanges?.name,
-                  question: hasQuestionsChanges?.question,
-                },
-                localeId: selectedLanguageId.toString(),
-              },
-            }).then(async (response) => {
-              setNotification({
-                title: `Changes saved!`,
-                variant: NOTIFICATION.SUCCESS,
-              });
-              await updateStoryBookPartContent({
-                variables: {
-                  id: createdBookPartId?.createStoryBookParts?.toString(),
-                  input: {
-                    name: item?.name,
-                    part: item?.part.toString(),
-                    partText: item?.partText,
-                    storyBookPartQuestions:
-                      response?.data?.createStoryBookPartQuestion?.toString(),
-                  },
-                  localeId: selectedLanguageId.toString(),
-                },
-              })
-                .then((response) => {
-                  setNotification({
-                    title: `Changes saved!`,
-                    variant: NOTIFICATION.SUCCESS,
-                  });
-                  setLoading(false);
-                })
-                .catch((error) => {
-                  console.log(error);
-                });
-            });
-            return;
-          }
-        }
-        //                } else {
-        //                  await createStoryBookPartQuestionContent({
-        //           variables: {
-        //             input: {
-        //               name: hasQuestionsChanges?.name,
-        //               question: hasQuestionsChanges?.question,
-        //             },
-        //             localeId: selectedLanguageId.toString()
-        //           }
-        //         })
-        //         .then(async (response) => {
-        //           setNotification({
-        //             title: `Changes saved!`,
-        //             variant: NOTIFICATION.SUCCESS,
-        //           });
-        //         //   onCancel();
-        //           // create the redirect to the main list
-        //           await updateStoryBookPartContent({
-        //             variables: {
-        //               id: item?.id.toString(),
-        //               input: {
-        //                 name: item?.name,
-        //                 part: item?.part.toString(),
-        //                 partText: item?.partText,
-        //                 storyBookPartQuestions: response?.data?.createStoryBookPartQuestion?.toString()
-        //                },
-        //               localeId: selectedLanguageId.toString()
-        //             },
-        //           })
-        //             .then((response) => {
-        //               setNotification({
-        //                 title: `Changes saved!`,
-        //                 variant: NOTIFICATION.SUCCESS,
-        //               });
-        //             //   onCancel();
-        //               // create the redirect to the main list
-        //               setLoading(false);
-        //             })
-        //             .catch((error) => {
-        //               console.log(error);
-        //             });
-        //           setLoading(false);
-        //         })
-        //         .catch((error) => {
-        //           console.log(error);
-        //         });
-        //                }
-        //               }
-        //             }
-        //           })
-        //           console.log('return')
-        //           return
-        //       }
-        // } else {
-        //   if(String(item?.id) !== '') {
-        //     console.log('item?.id) !== ')
-        //     const hasQuestionsChanges = filteredStoryBookPartsQuestions?.find(question => question?.idx === idx)
-        //     if(hasQuestionsChanges) {
-        //       console.log('hasQuestionsChanges 2')
-        //      if(hasQuestionsChanges?.id && hasQuestionsChanges.question !== '') {
-        //       console.log('hasQuestionsChanges?.id 3')
-        //       await updateStoryBookPartQuestionContent({
-        //         variables: {
-        //           id: hasQuestionsChanges?.id.toString(),
-        //           input: {
-        //             name: hasQuestionsChanges?.name,
-        //             question: hasQuestionsChanges?.question,
-        //           },
-        //           localeId: selectedLanguageId.toString()
-        //         }
-        //       })
-        //       .then(async (response) => {
-        //         setNotification({
-        //           title: `Changes saved!`,
-        //           variant: NOTIFICATION.SUCCESS,
-        //         });
-        //       //   onCancel();
-        //         // create the redirect to the main list
-        //         await updateStoryBookPartContent({
-        //           variables: {
-        //             id: item?.id.toString(),
-        //             input: {
-        //               name: item?.name,
-        //               part: item?.part.toString(),
-        //               partText: item?.partText,
-        //               storyBookPartQuestions: response?.data?.createStoryBookPartQuestion?.toString()
-        //              },
-        //             localeId: selectedLanguageId.toString()
-        //           },
-        //         })
-        //           .then((response) => {
-        //             setNotification({
-        //               title: `Changes saved!`,
-        //               variant: NOTIFICATION.SUCCESS,
-        //             });
-        //           //   onCancel();
-        //             // create the redirect to the main list
-        //             setLoading(false);
-        //           })
-        //           .catch((error) => {
-        //             console.log(error);
-        //           });
-        //         setLoading(false);
-        //       })
-        //       .catch((error) => {
-        //         console.log(error);
-        //       });
-        //      }
-        //     }
-        //     else if(!item?.id && item?.partText !== '') {
-        //       const hasQuestionsChanges = filteredStoryBookPartsQuestions?.find(question => question?.idx === idx)
-        //       if(hasQuestionsChanges) {
-        //         console.log('else if(!item?.id && item?.partText !==')
-        //        if(hasQuestionsChanges?.id && hasQuestionsChanges.question !== '') {
-        //         console.log('entrou 33')
-        //         await createStoryBookPartQuestionContent({
-        //           variables: {
-        //             input: {
-        //               name: hasQuestionsChanges?.name,
-        //               question: hasQuestionsChanges?.question,
-        //             },
-        //             localeId: selectedLanguageId.toString()
-        //           }
-        //         })
-        //         .then(async (response) => {
-        //           setNotification({
-        //             title: `Changes saved!`,
-        //             variant: NOTIFICATION.SUCCESS,
-        //           });
-        //         //   onCancel();
-        //           // create the redirect to the main list
-        //           await updateStoryBookPartContent({
-        //             variables: {
-        //               id: item?.id.toString(),
-        //               input: {
-        //                 name: item?.name,
-        //                 part: item?.part.toString(),
-        //                 partText: item?.partText,
-        //                 storyBookPartQuestions: response?.data?.createStoryBookPartQuestion?.toString()
-        //                },
-        //               localeId: selectedLanguageId.toString()
-        //             },
-        //           })
-        //             .then((response) => {
-        //               setNotification({
-        //                 title: `Changes saved!`,
-        //                 variant: NOTIFICATION.SUCCESS,
-        //               });
-        //             //   onCancel();
-        //               // create the redirect to the main list
-        //               setLoading(false);
-        //             })
-        //             .catch((error) => {
-        //               console.log(error);
-        //             });
-        //           setLoading(false);
-        //         })
-        //         .catch((error) => {
-        //           console.log(error);
-        //         });
-        //        }
-        //     }
-        //   }
 
-        // if(filteredStoryBookPartsQuestions?.length > 0) {
-        //   const hasQuestionsChanges = filteredStoryBookPartsQuestions?.find(question => question?.idx === idx)
-        //   if(hasQuestionsChanges) {
-        //     if(!hasQuestionsChanges?.id && hasQuestionsChanges.question !== '') {
-        //       await createStoryBookPartQuestionContent({
-        //         variables: {
-        //           input: {
-        //             name: hasQuestionsChanges?.name,
-        //             question: hasQuestionsChanges?.question,
-        //           },
-        //           localeId: selectedLanguageId.toString()
-        //         }
-        //       })
-        //       .then(async (response) => {
-        //         setNotification({
-        //           title: `Changes saved!`,
-        //           variant: NOTIFICATION.SUCCESS,
-        //         });
-        //         console.log({response})
-        //         await updateStoryBookPartContent({
-        //           variables: {
-        //             id: createdBookPartId?.createStoryBookParts?.toString(),
-        //             input: {
-        //               name: item?.name,
-        //               part: item?.part.toString(),
-        //               partText: item?.partText,
-        //               storyBookPartQuestions: response?.data?.createStoryBookPartQuestion?.toString()
-        //              },
-        //             localeId: selectedLanguageId.toString()
-        //           },
-        //         })
-        //           .then((response) => {
-        //             setNotification({
-        //               title: `Changes saved!`,
-        //               variant: NOTIFICATION.SUCCESS,
-        //             });
-        //         setLoading(false);
-        //       })
-        //       .catch((error) => {
-        //         console.log(error);
-        //       });
-        //       })
-        //     return
-        //     }
-        //     if(hasQuestionsChanges?.id && hasQuestionsChanges.question !== '') {
-        //       await updateStoryBookPartQuestionContent({
-        //         variables: {
-        //           id: hasQuestionsChanges?.id?.toString(),
-        //           input: {
-        //             name: hasQuestionsChanges?.name,
-        //             question: hasQuestionsChanges?.question,
-        //           },
-        //           localeId: selectedLanguageId.toString()
-        //         }
-        //       })
-        //       .then(async (response) => {
-        //         setNotification({
-        //           title: `Changes saved!`,
-        //           variant: NOTIFICATION.SUCCESS,
-        //         });
-        //         console.log({response})
-        //         await updateStoryBookPartContent({
-        //           variables: {
-        //             id: createdBookPartId?.createStoryBookParts?.toString(),
-        //             input: {
-        //               name: item?.name,
-        //               part: item?.part.toString(),
-        //               partText: item?.partText,
-        //               storyBookPartQuestions: response?.data?.createStoryBookPartQuestion?.toString()
-        //              },
-        //             localeId: selectedLanguageId.toString()
-        //           },
-        //         })
-        //           .then((response) => {
-        //             setNotification({
-        //               title: `Changes saved!`,
-        //               variant: NOTIFICATION.SUCCESS,
-        //             });
-        //         setLoading(false);
-        //       })
-        //       .catch((error) => {
-        //         console.log(error);
-        //       });
-        //       })
-        //     return
-        //     }
-        // }
-        // }
-
+      if (item?.id && item?.partText !== '') {
         await updateStoryBookPartContent({
           variables: {
             id: item?.id.toString(),
@@ -801,28 +327,133 @@ export default function CreateStory({
             console.log(error);
           });
 
-        const model = { ...values, storyBookParts: newCurrentStorybookParts };
-        //     console.log({model})
-        //     await updateContent({
-        //       variables: {
-        //         id: content.id.toString(),
-        //         input: { ...model },
-        //         localeId: selectedLanguageId.toString(),
-        //       },
-        //     }).catch(() => {
-        //       setLoading(false);
-        //     });
+        const model = { ...values };
+        console.log({ model });
+        await updateContent({
+          variables: {
+            id: content.id.toString(),
+            input: { ...model },
+            localeId: selectedLanguageId.toString(),
+          },
+        }).catch(() => {
+          setLoading(false);
+        });
 
-        // setNotification({
-        //   title: 'Successfully Updated Content!',
-        //   variant: NOTIFICATION.SUCCESS,
-        // });
+        setNotification({
+          title: 'Successfully Updated Content!',
+          variant: NOTIFICATION.SUCCESS,
+        });
 
         savedContent();
 
         setLoading(false);
       }
+
+      if (item?.id && item?.partText === '') {
+        deleteStoryBookPartContent({
+          variables: {
+            id: item?.id.toString(),
+            localeId: selectedLanguageId.toString(),
+          },
+        })
+          .then((response: any) => {
+            if (response) {
+              // refetch();
+              // onCancel();
+              setNotification({
+                title: `Changes saved`,
+                variant: NOTIFICATION.SUCCESS,
+              });
+              const currentStorybookParts = values?.storyBookParts || '';
+              let currentStorybookPartsArray =
+                currentStorybookParts?.split(',');
+              console.log('current', currentStorybookPartsArray);
+              const filteredcurrentStorybookPartsArray =
+                currentStorybookPartsArray?.filter((currentItem) => {
+                  console.log({ currentItem });
+                  console.log(item?.id);
+                  return currentItem !== item?.id.toString();
+                });
+              const newData = filteredcurrentStorybookPartsArray?.join(',');
+              newCurrentStorybookParts = newData;
+              console.log({ newCurrentStorybookParts });
+              const model = {
+                ...values,
+                storyBookParts: newCurrentStorybookParts,
+              };
+              updateContent({
+                variables: {
+                  id: content.id.toString(),
+                  input: { ...model },
+                  localeId: selectedLanguageId.toString(),
+                },
+              });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+        setLoading(false);
+
+        savedContent();
+        cancelEdit();
+        return;
+      }
+      if (!item?.id && item?.partText !== '') {
+        await createStoryBookPartContent({
+          variables: {
+            input: {
+              name: item?.name,
+              part: item?.part.toString(),
+              partText: item?.partText,
+              storyBookPartQuestions: '',
+            },
+            localeId: selectedLanguageId.toString(),
+          },
+        })
+          .then(async (response) => {
+            if (response.data && response.data) {
+              setNotification({
+                title: `Changes saved`,
+                variant: NOTIFICATION.SUCCESS,
+              });
+
+              createdBookPartId = response?.data?.createStoryBookParts;
+              const currentStorybookParts = values?.storyBookParts || '';
+              let currentStorybookPartsArray =
+                currentStorybookParts?.split(',');
+              console.log(currentStorybookParts);
+              currentStorybookPartsArray?.push(createdBookPartId);
+
+              const newData = currentStorybookPartsArray?.join(',');
+              console.log({ newData });
+              newCurrentStorybookParts = newData;
+              const model = {
+                ...values,
+                storyBookParts: newCurrentStorybookParts,
+              };
+              // setEdit(true);
+
+              await updateContent({
+                variables: {
+                  id: content.id.toString(),
+                  input: { ...model },
+                  localeId: selectedLanguageId.toString(),
+                },
+              });
+            }
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+        setLoading(false);
+
+        savedContent();
+        cancelEdit();
+      }
     });
+
+    return;
   };
 
   if (
@@ -838,9 +469,9 @@ export default function CreateStory({
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
               {/* <h3 className="text-xl font-semibold leading-6 text-gray-900">
-                {cancelEdit &&
-                  camelCaseToSentanceCase(content?.name ?? content?.type)}
-              </h3> */}
+                      {cancelEdit &&
+                        camelCaseToSentanceCase(content?.name ?? content?.type)}
+                    </h3> */}
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 Story
               </h3>

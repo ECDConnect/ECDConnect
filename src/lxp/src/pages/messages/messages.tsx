@@ -14,7 +14,11 @@ import {
 import { IconInformationIndicator } from '../classroom/programme-planning/components/icon-information-indicator/icon-information-indicator';
 import { MessageCard } from './components/message-card';
 import { notificationTagConfig } from '@/constants/notifications';
-import { disableBackendNotification } from '@/store/notifications/notifications.actions';
+import {
+  disableBackendNotification,
+  markAsReadNotification,
+} from '@/store/notifications/notifications.actions';
+import { MessageActionConfig } from '@models/messages/messages';
 
 export const Messages: React.FC = () => {
   const history = useHistory();
@@ -52,12 +56,25 @@ export const Messages: React.FC = () => {
   const messageActioned = (notification: Notification) => {
     if (notification.message?.isFromBackend) {
       appDispatch(
+        markAsReadNotification({
+          notificationId: notification?.message?.reference ?? '',
+        })
+      );
+
+      appDispatch(
         disableBackendNotification({
           notificationId: notification?.message?.reference ?? '',
         })
       );
     }
     appDispatch(notificationActions.removeNotification(notification));
+
+    if (notification.message.action) {
+      const action = JSON.parse(
+        notification.message.action
+      ) as MessageActionConfig;
+      action?.url && history.push(action.url);
+    }
 
     for (const [key, value] of Object.entries(notificationTagConfig)) {
       if (value.cta === notification.message.cta && value.routeConfig!) {
@@ -72,6 +89,14 @@ export const Messages: React.FC = () => {
         notification.message.routeConfig.params
       );
     }
+
+    const notificationIndex = paging.visibleItems?.findIndex(
+      (n) => n.message.reference === notification.message.reference
+    );
+
+    if (notificationIndex!! < 0) return;
+
+    paging.visibleItems?.splice(notificationIndex!!, 1);
   };
 
   return (
@@ -100,7 +125,7 @@ export const Messages: React.FC = () => {
               title={notification.message.title}
               message={notification.message.message}
               dateCreated={notification.message.dateCreated}
-              actionText={notification.message.actionText}
+              actionText={notification.message.actionText || 'Remove'}
               icon={notification.message.icon}
               iconBackgroundColor={notification.message.color}
               onAction={() => messageActioned(notification)}

@@ -169,42 +169,42 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     }
   }, [storyBookPartsValues]);
 
-  useEffect(() => {
-    if (currentStoryBooksPartQuestions && storyBookPartQuestionsIds) {
-      const emptyArray = [];
-      const inputLimit = 10;
-      for (let i = 0; i < inputLimit; i++) {
-        emptyArray?.push({
-          name: '',
-          id: '',
-          question: '',
-        });
-      }
+  // useEffect(() => {
+  //   if (currentStoryBooksPartQuestions && storyBookPartQuestionsIds) {
+  //     const emptyArray = [];
+  //     const inputLimit = 10;
+  //     for (let i = 0; i < inputLimit; i++) {
+  //       emptyArray?.push({
+  //         name: '',
+  //         id: '',
+  //         question: '',
+  //       });
+  //     }
 
-      storyBookPartsValuesFormatted?.map((bookPart, idx) => {
-        if (bookPart?.storyBookPartQuestions?.length > 0) {
-          emptyArray?.splice(idx, 1, {
-            name: storyBookPartsQuestions?.find(
-              (question) =>
-                question?.id === bookPart?.storyBookPartQuestions?.[0]?.id
-            ).name,
-            id: bookPart?.storyBookPartQuestions?.[0]?.id,
-            question: storyBookPartsQuestions?.find(
-              (question) =>
-                question?.id === bookPart?.storyBookPartQuestions?.[0]?.id
-            ).question,
-          });
-        }
-      });
+  //     storyBookPartsValuesFormatted?.map((bookPart, idx) => {
+  //       if (bookPart?.storyBookPartQuestions?.length > 0) {
+  //         emptyArray?.splice(idx, 1, {
+  //           name: storyBookPartsQuestions?.find(
+  //             (question) =>
+  //               question?.id === bookPart?.storyBookPartQuestions?.[0]?.id
+  //           ).name,
+  //           id: bookPart?.storyBookPartQuestions?.[0]?.id,
+  //           question: storyBookPartsQuestions?.find(
+  //             (question) =>
+  //               question?.id === bookPart?.storyBookPartQuestions?.[0]?.id
+  //           ).question,
+  //         });
+  //       }
+  //     });
 
-      setStoryBookPartsQuestionsFormatted([...emptyArray]);
-    }
-  }, [
-    currentStoryBooksPartQuestions,
-    storyBookPartQuestionsIds,
-    storyBookPartsQuestions,
-    storyBookPartsValuesFormatted,
-  ]);
+  //     setStoryBookPartsQuestionsFormatted([...emptyArray]);
+  //   }
+  // }, [
+  //   currentStoryBooksPartQuestions,
+  //   storyBookPartQuestionsIds,
+  //   storyBookPartsQuestions,
+  //   storyBookPartsValuesFormatted,
+  // ]);
 
   useEffect(() => {
     if (contentValue) {
@@ -285,6 +285,8 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     [storyBookPartsValues, storyBookPartsValuesFormatted]
   );
 
+  console.log({ changedStoryBookPartsArr });
+
   let changedStoryBookPartsQuestionsArr = useMemo(
     () =>
       storyBookPartsQuestionsFormatted?.filter((o1) => {
@@ -303,17 +305,17 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     }
   }, [changedStoryBookPartsArr, setFilteredStoryBookParts]);
 
-  useEffect(() => {
-    if (changedStoryBookPartsQuestionsArr) {
-      setFilteredStoryBookPartsQuestions(changedStoryBookPartsQuestionsArr);
-      setFilteredStoryBookParts(storyBookPartsValuesFormatted);
-    }
-  }, [
-    changedStoryBookPartsQuestionsArr,
-    setFilteredStoryBookParts,
-    setFilteredStoryBookPartsQuestions,
-    storyBookPartsValuesFormatted,
-  ]);
+  // useEffect(() => {
+  //   if (changedStoryBookPartsQuestionsArr) {
+  //     setFilteredStoryBookPartsQuestions(changedStoryBookPartsQuestionsArr);
+  //     setFilteredStoryBookParts(storyBookPartsValuesFormatted);
+  //   }
+  // }, [
+  //   changedStoryBookPartsQuestionsArr,
+  //   setFilteredStoryBookParts,
+  //   setFilteredStoryBookPartsQuestions,
+  //   storyBookPartsValuesFormatted,
+  // ]);
 
   if (
     tempData &&
@@ -447,7 +449,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                         // }
                       />
                     </div>
-                    <Typography
+                    {/* <Typography
                       type={'h4'}
                       text={`Question`}
                       className={'mt-2 text-sm font-normal'}
@@ -485,34 +487,8 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                       //     ? 'This field is required'
                       //     : ('' as any)
                       // }
-                    />
+                    /> */}
                   </div>
-                  //   <tr key={item.id}>
-                  //     <td className="whitespace-nowrap px-2 py-4">
-                  //       <div className="flex items-center">
-                  //         <div className="ml-4">
-                  //           <div className="text-sm font-medium text-gray-900">
-                  //             {item.name}
-                  //           </div>
-                  //         </div>
-                  //       </div>
-                  //     </td>
-                  //     <td className="whitespace-nowrap px-6 py-4">
-                  //       <div className="flex items-center">
-                  //         <div className="text-sm font-medium text-gray-900">
-                  //           <input
-                  //             disabled={isReview}
-                  //             defaultChecked={currentIds?.some(
-                  //               (x) => x === item.id.toString()
-                  //             )}
-                  //             type="checkbox"
-                  //             className="focus:ring-primary text-primary h-4 w-4 rounded border-gray-300"
-                  //             onChange={() => selectItem(item.id)}
-                  //           />
-                  //         </div>
-                  //       </div>
-                  //     </td>
-                  //   </tr>
                 );
               })}
             {/* </tbody> */}

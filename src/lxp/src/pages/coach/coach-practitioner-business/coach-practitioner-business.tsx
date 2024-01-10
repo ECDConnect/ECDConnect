@@ -13,7 +13,7 @@ import { useMemo, useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { PractitionerBusinessParams } from './coach-practitioner-business.types';
-import { traineeSelectors, traineerReducer } from '@/store/trainee';
+import { traineeSelectors } from '@/store/trainee';
 import { differenceInMonths, format } from 'date-fns';
 import { IncomeStatementDates } from '@/constants/Dates';
 import { IncomeStatements } from './components/statements/income-statements';
@@ -50,12 +50,16 @@ export const CoachPractitionerBusiness = () => {
     practitionerForCoachSelectors.getUnsubmittedExpensesForUser(userId)
   );
 
-  const currentDate = new Date();
+  const currentDate = useMemo(() => new Date(), []);
+
   const hasStartUpSupport =
     timeline?.startUpSupportStartDate !== null &&
     timeline?.startUpSupportEndDate !== null;
 
-  const startUpSupportEndDate = new Date(timeline?.startUpSupportEndDate);
+  const startUpSupportEndDate = useMemo(
+    () => new Date(timeline?.startUpSupportEndDate),
+    [timeline?.startUpSupportEndDate]
+  );
 
   const monthDifference = differenceInMonths(
     currentDate,
@@ -139,7 +143,7 @@ export const CoachPractitionerBusiness = () => {
       });
     }
 
-    if (lastStatementsBalance !== 0) {
+    if (statements.length >= 2 && lastStatementsBalance !== 0) {
       listItems.push({
         title:
           lastStatementsBalance > 0
@@ -176,7 +180,17 @@ export const CoachPractitionerBusiness = () => {
         listItems={listItems}
       />
     );
-  }, []);
+  }, [
+    currentSubmitMonth,
+    isStartUpSupportEnding,
+    isSubmitWindowOpen,
+    isThisMonthSubmitted,
+    lastStatementsBalance,
+    lossProfitMonths,
+    practitionerFirstName,
+    startUpSupportEndDate,
+    statements.length,
+  ]);
 
   const updateStatements = useCallback(async () => {
     setIsLoading(true);
@@ -255,7 +269,7 @@ export const CoachPractitionerBusiness = () => {
         );
       }
     }
-  }, []);
+  }, [currentDate, isSubmitWindowOpen, statements]);
 
   useEffect(() => {
     const secondLastStatementMonth = !!statements[statements.length - 2]
@@ -276,6 +290,18 @@ export const CoachPractitionerBusiness = () => {
     );
   }, [statements, setLossProfitMonths, setCurrentSubmitMonth]);
 
+  const isLastMonthSubmitted = useMemo(() => {
+    var currentMonth = new Date().getMonth();
+
+    if (currentMonth === 0) {
+      return !!statements?.find(
+        (x) => x.month === 12 && x.year === new Date().getFullYear() - 1
+      );
+    }
+
+    return !!statements?.find((x) => x.month === currentMonth);
+  }, [statements]);
+
   return (
     <>
       <BannerWrapper
@@ -285,7 +311,9 @@ export const CoachPractitionerBusiness = () => {
         title="SmartStarter business"
         subTitle={`${practitionerFullname}`}
         onBack={() =>
-          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, { userId })
+          history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+            practitionerId: userId,
+          })
         }
         className="p-4"
       >
@@ -307,6 +335,7 @@ export const CoachPractitionerBusiness = () => {
             unsubmittedExpenses={unsubmittedExpenses}
             isSubmitWindowOpen={isSubmitWindowOpen}
             isThisMonthSubmitted={isThisMonthSubmitted}
+            isLastMonthSubmitted={isLastMonthSubmitted}
           />
         ) : (
           <div className="h-full px-4 py-2 pt-7">

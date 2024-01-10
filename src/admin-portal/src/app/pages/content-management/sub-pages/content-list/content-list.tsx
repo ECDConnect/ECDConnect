@@ -29,6 +29,7 @@ import {
 import { BulkActionStatus } from '../../../../components/ui-table/type';
 import CreateStory from './components/create-story/create-story';
 import { Dialog, DialogPosition } from '@ecdlink/ui';
+import { LanguageId } from '../../../../constants/language';
 
 export interface ContentListProps {
   selectedTab?: number;
@@ -39,6 +40,7 @@ export interface ContentListProps {
   refreshParent: () => void;
   onSearch?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   searchValue?: string;
+  choosedSectionTitle?: string;
 }
 
 export default function ContentList({
@@ -50,6 +52,7 @@ export default function ContentList({
   refreshParent,
   onSearch,
   searchValue,
+  choosedSectionTitle,
 }: ContentListProps) {
   const { hasPermission } = useUser();
   const dialog = useDialog();
@@ -57,10 +60,7 @@ export default function ContentList({
   const { setNotification } = useNotifications();
   const panel = usePanel();
   const type = contentType.description;
-  console.log({ tableData });
-  const [languageId, setLanguageId] = useState<string>(
-    '9688cd08-adef-408c-9d34-5d75ae5c44df'
-  );
+  const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
   const [addStory, setAddStory] = useState<boolean>(false);
@@ -71,8 +71,7 @@ export default function ContentList({
         JSON.stringify(data).toLowerCase().indexOf(value.toLowerCase()) !== -1
     );
   }
-  console.log({ displayFields });
-  console.log({ contentType });
+
   useEffect(() => {
     if (contentType && contentType.fields) {
       const displayFields: ContentTypeFieldDto[] = [];
@@ -190,6 +189,23 @@ export default function ContentList({
         let anteNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'antenatal'
         );
+
+        if (choosedSectionTitle === 'Small/large group activities') {
+          setTableData(
+            moreInforItems?.filter(
+              (item) =>
+                item?.type === 'Small group' || item?.type === 'Large group'
+            )
+          );
+          return;
+        }
+
+        if (choosedSectionTitle === 'Story activities') {
+          setTableData(
+            moreInforItems?.filter((item) => item?.type === 'Story time')
+          );
+          return;
+        }
         setTableData(
           anteNatalData?.length > 0 ? anteNatalData : moreInforItems
         );

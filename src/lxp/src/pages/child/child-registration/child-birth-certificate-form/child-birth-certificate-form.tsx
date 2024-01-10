@@ -31,6 +31,7 @@ interface ChildChildBirthCertificateFormProps
   childBirthCertificateForm?: ChildBirthCertificateFormModel;
   childInformation?: ChildInformationFormModel;
   isSingleForm?: boolean;
+  isLoading?: boolean;
 }
 
 export const ChildBirthCertificateForm: React.FC<
@@ -40,6 +41,7 @@ export const ChildBirthCertificateForm: React.FC<
   childBirthCertificateForm,
   childInformation,
   isSingleForm = false,
+  isLoading = false,
 }) => {
   const [hasChildDocumentation, setHasChildDocumentation] =
     useState<boolean>(true);
@@ -254,8 +256,11 @@ export const ChildBirthCertificateForm: React.FC<
             size="small"
             color="primary"
             type="filled"
+            isLoading={isLoading}
             disabled={
-              !birthCertificateImage && !acceptChildDocumentationDeclaration
+              (!birthCertificateImage &&
+                !acceptChildDocumentationDeclaration) ||
+              isLoading
             }
           >
             {renderIcon(

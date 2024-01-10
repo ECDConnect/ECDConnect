@@ -75,7 +75,19 @@ const clubSlice = createSlice({
       state.addCaregiverReportBackMeetingSyncInput =
         initialState.addCaregiverReportBackMeetingSyncInput;
     },
-    addClubMeeting: (state, action: PayloadAction<ClubMeetingInput>) => {
+    forceMeetRegularlyDataReload: (state) => {
+      const date = new Date();
+      date.setDate(date.getDate() - 2);
+
+      if (state.clubForPractitioner.points?.meetRegularly) {
+        state.clubForPractitioner.points.meetRegularly.dataLoaded =
+          date.toISOString();
+      }
+    },
+    addClubMeeting: (
+      state,
+      action: PayloadAction<ClubMeetingInput & { forceReload?: boolean }>
+    ) => {
       const newMeeting = action.payload as ClubMeetingInput;
       const existingMeetingIndex = state.addClubMeetingSyncInputs?.findIndex(
         (meeting) => meeting?.meetingDate === newMeeting?.meetingDate
@@ -419,7 +431,10 @@ const clubSlice = createSlice({
         ...state.clubsForCoach,
         [action.payload.id]: {
           ...state.clubsForCoach[action.payload.id],
-          name: action.payload.name,
+          club: {
+            ...state.clubsForCoach[action.payload.id].club,
+            name: action.payload.name,
+          },
         },
       };
 

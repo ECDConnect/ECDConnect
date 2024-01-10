@@ -112,6 +112,8 @@ export default function ContentWorkflow({
     return orderedList;
   };
 
+  console.log({ contentType });
+
   if (contentView && languages && currentContent && defaultLanguageId) {
     return (
       <div className="flex flex-col">
