@@ -106,6 +106,58 @@ export const IssuesAndTasks = ({
     item?.secondaryText?.includes(IssuesTasks.clubAttendance)
   );
 
+  const getCoachAttendFirstMeetingItem = useCallback(() => {
+    // if there is an upcoming first club meeting is scheduled in Funda App for sometime within the next 30 days
+    const firstMeeting = itemsFromBackend?.find((item) =>
+      item?.secondaryText?.includes(IssuesTasks.coachAttendFirstMeeting)
+    );
+
+    if (!!firstMeeting) {
+      const date = firstMeeting?.secondaryText?.split(',')?.[0];
+
+      addIssuesAndTasksItem({
+        menuIcon: 'ExclamationCircleIcon',
+        title: 'Attend the first club meeting',
+        subTitle: date,
+        iconBackgroundColor: 'infoMain',
+        backgroundColor: 'infoBb',
+        onActionClick: () =>
+          onOnlineNavigation(
+            ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
+              ':clubId',
+              clubId
+            )
+          ),
+      });
+    }
+  }, [addIssuesAndTasksItem, clubId, itemsFromBackend, onOnlineNavigation]);
+
+  const getCoachMeetingAttended = useCallback(() => {
+    // Show alert if the coach has NOT attended a club meeting
+    const meeting = itemsFromBackend?.find((item) =>
+      item?.secondaryText?.includes(IssuesTasks.coachMeetingAttended)
+    );
+
+    if (!!meeting) {
+      const date = meeting?.secondaryText?.split(',')?.[0];
+
+      addIssuesAndTasksItem({
+        menuIcon: 'ExclamationCircleIcon',
+        title: 'Attend the next club meeting',
+        subTitle: date,
+        iconBackgroundColor: 'infoMain',
+        backgroundColor: 'infoBb',
+        onActionClick: () =>
+          onOnlineNavigation(
+            ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.ROOT.replace(
+              ':clubId',
+              clubId
+            )
+          ),
+      });
+    }
+  }, [addIssuesAndTasksItem, clubId, itemsFromBackend, onOnlineNavigation]);
+
   const getMissingRegisterItem = useCallback(() => {
     // show alert from the 1st of the month IF the club did not submit a club meeting attendance register for the previous month
     const missingRegister = itemsFromBackend?.find((item) =>
@@ -278,9 +330,13 @@ export const IssuesAndTasks = ({
     getNotEnoughClubMembersItem();
     getCreateClubItem();
     getClubLeaderMonthsItem();
+    getCoachAttendFirstMeetingItem();
+    getCoachMeetingAttended();
   }, [
     getClubAttendanceItem,
     getClubLeaderMonthsItem,
+    getCoachAttendFirstMeetingItem,
+    getCoachMeetingAttended,
     getCreateClubItem,
     getMissingRegisterItem,
     getNoClubLeaderItem,
