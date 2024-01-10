@@ -59,7 +59,6 @@ export const DashboardItems: React.FC<DashboardItemsProps> = ({
         })
       );
     }
-    appDispatch(notificationActions.removeNotification(notification));
 
     if (notification.message.routeConfig) {
       history.push(

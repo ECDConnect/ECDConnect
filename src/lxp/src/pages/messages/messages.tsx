@@ -61,7 +61,6 @@ export const Messages: React.FC = () => {
         })
       );
     }
-    appDispatch(notificationActions.removeNotification(notification));
 
     if (notification.message.action) {
       const action = JSON.parse(
