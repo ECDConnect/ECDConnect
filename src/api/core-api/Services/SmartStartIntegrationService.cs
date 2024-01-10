@@ -482,7 +482,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSPractitioner) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.UserId))
                 .Select(x => x.RemoteId).FirstOrDefault();
 
-            if (mappedPractitionerId != null)
+            if (mappedPractitionerId != null || mappedTraineeId != null)
             {
                 // check to see if visit exist for practitioner
                 var remoteRecordId = "";
@@ -492,7 +492,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 {
                     new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" },
                     new IntegrationOptionConditionEntity() { Column = "DateOfVisit", Operator = "Equals", Value = visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddTHH:mm:ss.fffZ") },
-                    new IntegrationOptionConditionEntity() { Column = "Franchisee", Operator = "Equals", Value = mappedPractitionerId }
+                    new IntegrationOptionConditionEntity() { Column = "Franchisee", Operator = "Equals", Value = string.IsNullOrEmpty(mappedPractitionerId) ? mappedTraineeId : mappedPractitionerId  }
                 };
                 var getExistingRecordResponse = await _apiManager.GetAPIHandlerResponse(getPQAUrl, columns, optionConditions, null);
                 if (!string.IsNullOrEmpty(getExistingRecordResponse.ResponseString))
@@ -521,7 +521,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     {
                         delicensingNotes = license.DelicensedComment;
                         isSmartSpaceStillFine = license.DelicensedDate.HasValue ? "true" : "false";
-                        isFranchiseeDelicensed = license.DelicensedDate.HasValue.ToString();
+                        isFranchiseeDelicensed = license.DelicensedDate.HasValue ? "true" : "false";
                         hasCollectedHandbook = (bool)license.CollectedSSHandbook ? "true" : "false";
                         hasCollectedPlaykit = (bool)license.CollectedSSPlaykit ? "true" : "false";
                     }
@@ -532,12 +532,23 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     var observationNotes = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.observation_notes).Select(x => x.QuestionAnswer).FirstOrDefault();
 
                     // Scores
-                    var stableAndNurturingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step6_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var stimulatingAndResourcedScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step4_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var useOfSmartStartRoutineScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step5_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var interactiveStoryTellingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step2_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var childOpportunitiesScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
-                    var positiveInteractionScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step7_section).Select(x => x.SectionScore).FirstOrDefault();
+                    // Section 1 total = 12(step 2) StimulatingAndResourcedScore
+                    // Section 2 total = 16(step 3 & 4) UseOfSmartStartRoutineScore
+                    // Section 3 total = 12(step 5) StableAndNurturingScore
+                    // Section 4 total = 10(step 6) PositiveInteractionScore
+                    // Section 5 total = 10(step 7) ChildOpportunitiesScore
+                    // Section 6 total = 8(step 8) InteractiveStoryTellingScore
+
+                    var stimulatingAndResourcedScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step2_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var stableAndNurturingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step5_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var positiveInteractionScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step6_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var childOpportunitiesScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step7_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var interactiveStoryTellingScore = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step8_section).Select(x => x.SectionScore).FirstOrDefault();
+                    
+                    var step3 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step3_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var step4 = visit.PQARating.Sections.Where(x => x.VisitSection == Constants.SSSettings.step4_section).Select(x => x.SectionScore).FirstOrDefault();
+                    var useOfSmartStartRoutineScore = step3 + step4;
+
                     var totalScore = stableAndNurturingScore + stimulatingAndResourcedScore + useOfSmartStartRoutineScore + interactiveStoryTellingScore + childOpportunitiesScore + positiveInteractionScore;
 
                     var numberOfChildrenPresent = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.total_children_present).Select(x => x.QuestionAnswer).FirstOrDefault();
@@ -594,7 +605,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     jsonPutPostString.AppendLine("\"ChildOpportunitiesScore\":" + childOpportunitiesScore + ",");
                     jsonPutPostString.AppendLine("\"PositiveInteractionScore\":" + positiveInteractionScore + ",");
                     jsonPutPostString.AppendLine("\"TotalScore\":" + totalScore + ",");
-                    jsonPutPostString.AppendLine("\"NumberOfChildrenPresent\":" + numberOfChildrenPresent != null ? numberOfChildrenPresent : 0 + ",");
+                    jsonPutPostString.AppendLine("\"NumberOfChildrenPresent\":" + (numberOfChildrenPresent != null ? numberOfChildrenPresent : 0) + ",");
                     jsonPutPostString.AppendLine("\"NumberOfChildrenNotRegistered\":" + numberOfChildrenNotRegistered + ",");
                     jsonPutPostString.AppendLine("\"Latitude\": null,");
                     jsonPutPostString.AppendLine("\"Longitude\": null,");
@@ -611,17 +622,12 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     jsonPutPostString.AppendLine("\"HasCollectedPlaykit\":" + hasCollectedPlaykit + ",");
                     jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
                     jsonPutPostString.AppendLine("\"StatusOutcome\":\"" + statusOutcome + "\",");
-                    jsonPutPostString.AppendLine("\"Coach\":{\"Guid\": \"" + mappedCoachId + "\"},");
-                    jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
-                    if (smartSpaceRemoteRecordId == "")
-                    {
-                        jsonPutPostString.AppendLine("\"SmartSpaceVisit\": null");
-                    } else
-                    {
-                        jsonPutPostString.AppendLine("\"SmartSpaceVisit\":\"" + smartSpaceRemoteRecordId + "\"");
+                    jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + (string.IsNullOrEmpty(mappedPractitionerId) ? mappedTraineeId : mappedPractitionerId) + "\"},");
 
-                    }
-                    jsonPutPostString.AppendLine("}");
+                    _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":{\"Guid\": \"" + mappedCoachId + "\"},");
+                    _ = string.IsNullOrEmpty(smartSpaceRemoteRecordId) ? jsonPutPostString.AppendLine("\"SmartSpaceVisit\": null") : jsonPutPostString.AppendLine("\"SmartSpaceVisit\":\"" + smartSpaceRemoteRecordId + "\"");
+                    
+                    jsonPutPostString.AppendLine("},");
 
                     visitsToUpdate.Add(visit);
                 }
@@ -1077,8 +1083,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
             * 6) start with income statements and attendance and push only to SL
             */
 
-            //Only allow data pulling when api mode has been set
-            await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
+                    //Only allow data pulling when api mode has been set
+                    await _logManager.IntegrationLog($"IntegrationByMappedCoach Started at {DateTime.Now}", null, null, LogRelatedType.Log, "IntegrationByMappedCoach");
 
             if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
             {
@@ -1487,7 +1493,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
                     jsonPutPostString.AppendLine("\"Trainee\":{\"Guid\": \"" + mappedTraineeId + "\"},");
                     jsonPutPostString.AppendLine("\"Coach\":\"" + mappedCoachId + "\"");
-                    jsonPutPostString.AppendLine("}");
+                    jsonPutPostString.AppendLine("},");
 
                     visitsToUpdate.Add(visit);
                 }
