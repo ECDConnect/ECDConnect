@@ -12,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ECDLink.Abstractrions.Constants;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -22,6 +23,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private ILogger<ChildrenAnonymiseService> _logger;
         private readonly AuthenticationDbContext _context;
+        private readonly NotificationService _notificationService;
 
         public ChildrenAnonymiseService(
             IGenericRepositoryFactory repositoryFactory,
@@ -29,6 +31,7 @@ namespace EcdLink.Api.CoreApi.Services
             HierarchyEngine hierarchyEngine,
             [Service] UserManager<ApplicationUser> userManager,
             ILogger<ChildrenAnonymiseService> logger,
+            [Service] NotificationService notificationService,
             [Service] AuthenticationDbContext context)
         {
             _documentManagementService = documentManagementService;
@@ -36,6 +39,7 @@ namespace EcdLink.Api.CoreApi.Services
             _userManager = userManager;
             _logger = logger;
             _context = context;
+            _notificationService = notificationService;
         }
 
         public void AnonymiseChild()
@@ -56,6 +60,8 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     }
                     _hierarchyEngine.DeleteHierarchy(child.UserId);
+                    var parentUserId = _hierarchyEngine.GetUserParentUserId(child.UserId);
+                    _notificationService.ExpireNotificationsTypesForUser(parentUserId, TemplateTypeConstants.ChildRegistrationIncomplete, child.User.FirstName.Trim() + " " + child.User.Surname.Trim()); //remove prac notifications for this specific child
                     var documents = _context.Documents.Where(x => x.UserId == child.UserId).ToList();
                     if (documents.Any())
                     {
@@ -68,13 +74,16 @@ namespace EcdLink.Api.CoreApi.Services
                         foreach(var jobNotificationRow in jobNotification)
                         { _context.Remove(jobNotificationRow);}
                     }
+
                     _context.Remove(child);
                     _context.SaveChanges();
-                    var result = _userManager.DeleteAsync(child.User).Result;
+                    
+                    var result = _userManager.DeleteAsync(child.User).Result; _notificationService.ExpireNotificationsTypesForUser(parentUserId, TemplateTypeConstants.ChildRegistrationIncomplete);
                     if (result.Succeeded)
                     {
                         _logger.LogInformation("AnonymiseChild Succeeded for child Id: {0} and UserId {1}", child.Id, child.UserId);
                     }
+                    
                 }
                 catch (Exception ex)
                 {
