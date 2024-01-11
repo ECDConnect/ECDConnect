@@ -363,7 +363,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         })
       );
     }
-  }, [appDispatch, isOnline, practitioner?.clubId]);
+  }, []);
 
   // TODO - This should be saved to the store
   // Actually might be in the store, why are we fetching it, to bascially just check if they have a class

@@ -1,12 +1,9 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Hierarchy;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.Extensions.DependencyInjection; 
 using System.Threading;
 using System.Threading.Tasks;
 using ECDLink.AutomatedJobs.Util;
-using ECDLink.AutomatedJobs.Anonymise;
 using Microsoft.Extensions.Logging;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
@@ -14,8 +11,6 @@ namespace ECDLink.AutomatedJobs.DailyRunners;
 public class IntegrationChanges : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    private readonly IGenericRepositoryFactory _repoFactory;
-    private readonly HierarchyEngine _hierarchyEngine;
     public IntegrationChanges(IServiceScopeFactory scopeFactory, CronJobConfig<IntegrationChanges> config, ILogger<IntegrationChanges> logger)
             : base(config, logger)
     {

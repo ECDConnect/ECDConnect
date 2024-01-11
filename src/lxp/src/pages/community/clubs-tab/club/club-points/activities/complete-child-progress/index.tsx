@@ -74,7 +74,7 @@ export const CompleteChildProgressReports: React.FC = () => {
         })
       );
     }
-  }, [appDispatch, clubId, isOnline]);
+  }, [clubId, isOnline]);
 
   const history = useHistory();
 
@@ -158,10 +158,10 @@ export const CompleteChildProgressReports: React.FC = () => {
       displayHelp
       onHelp={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
-            ':activityId',
-            activityId
-          )
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP.ROOT.replace(
+            ':clubId',
+            clubId
+          ).replace(':activityId', activityId)
         )
       }
     >

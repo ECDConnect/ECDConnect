@@ -411,7 +411,7 @@ export const getClubContributionsForPractitionerSelector = (
         contributions.push({
           title: 'Host family days',
           subTitle: `Attended ${familyDaysAttendanded} of ${familyDaysHeld} family day events`,
-          positiveStatus: attendancePercentage <= 0.6,
+          positiveStatus: attendancePercentage >= 0.6,
         });
       } else {
         contributions.push({
@@ -423,7 +423,7 @@ export const getClubContributionsForPractitionerSelector = (
 
       // Complete child progress - after June for purple leagues only
       if (
-        new Date().getMonth() >= 6 &&
+        // new Date().getMonth() >= 6 && // SUPPRESS DATE RULES for testing
         !!club.league &&
         club.league.leagueTypeName === LeagueType.Purple
       ) {

@@ -68,7 +68,9 @@ const ROUTES = {
         LEAVE_NO_ONE_BEHIND: '/leave-no-one-behind',
         CAPTURE_CHILD_ATTENDANCE: '/capture-child-attendance',
         COMPLETE_CHILD_PROGRESS_REPORTS: '/complete-child-progress-reports',
-        HELP: '/help/:activityId',
+        HELP: addPrefix('/help/:activityId', {
+          LEAGUE_TYPE: '/:leagueType',
+        }),
       }),
     }),
     LEAGUE: addPrefix('/league/:leagueId', {

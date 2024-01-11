@@ -2,7 +2,9 @@
 {
     public class UserClubStandingModel
     {
-        public int PercentileStandingForCurrentMonth { get; set; }
-        public int PercentileStandingForCurrentYear { get; set; }
+        public int PercentageMembersWithMorePointsForCurrentMonth { get; set; }
+        public int PercentageMembersWithMorePointsForCurrentYear { get; set; }
+        public int PercentageMembersWithFewerPointsForCurrentMonth { get; set; }
+        public int PercentageMembersWithFewerPointsForCurrentYear { get; set; }
     }
 }

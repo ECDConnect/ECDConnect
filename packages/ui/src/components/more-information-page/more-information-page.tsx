@@ -5,6 +5,7 @@ import BannerWrapper from '../banner-wrapper/banner-wrapper';
 import Button from '../button/button';
 import LanguageSelector from '../language-selector/language-selector';
 import { useWindowSize } from '@reach/window-size';
+import LoadingSpinner from '../loading-spinner/loading-spinner';
 
 // This is a copy paste from the text.utils, since this project doesn't have access
 const replaceBraces = (sentenceWithBraces: string, value: string) => {
@@ -21,7 +22,9 @@ export const MoreInformationPage = ({
   moreInformation,
   languages,
   setSelectedLanguage,
+  isLoading,
 }: {
+  isLoading?: boolean;
   subTitle?: string;
   name?: string;
   onClose: () => void;
@@ -185,6 +188,7 @@ export const MoreInformationPage = ({
 
   return (
     <BannerWrapper
+      isLoading={isLoading}
       size="small"
       onBack={onClose}
       title={title}

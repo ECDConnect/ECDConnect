@@ -38,9 +38,7 @@ export const PointsSummary: React.FC = () => {
   const pointsSummaryDataWithLibrary = useSelector(
     pointsSelectors.getPointsSummaryWithLibrary(new Date())
   );
-  const userStanding = useSelector(
-    pointsSelectors.getCurrentPercentileClubStandingForMonth()
-  );
+  const userStanding = useSelector(pointsSelectors.getCurrentClubStanding());
   const pointsTotalForYear = useSelector(
     pointsSelectors.getPointsTotalForYear()
   );
@@ -100,7 +98,9 @@ export const PointsSummary: React.FC = () => {
 
   const celebrationCard = useMemo(() => {
     if (!!userStanding) {
-      if (userStanding === 100) {
+      if (
+        userStanding.percentageMembersWithFewerPointsForCurrentMonth === 100
+      ) {
         return (
           <CelebrationCard
             image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -112,7 +112,7 @@ export const PointsSummary: React.FC = () => {
           />
         );
       }
-      if (userStanding > 75) {
+      if (userStanding.percentageMembersWithFewerPointsForCurrentMonth > 75) {
         return (
           <CelebrationCard
             image={<EmojiGreenSmile className="mr-2 h-16 w-16" />}
@@ -124,7 +124,7 @@ export const PointsSummary: React.FC = () => {
           />
         );
       }
-      if (userStanding >= 50) {
+      if (userStanding.percentageMembersWithFewerPointsForCurrentMonth >= 50) {
         return (
           <CelebrationCard
             image={<EmojiBlueSmile className="mr-2 h-16 w-16" />}
@@ -136,7 +136,7 @@ export const PointsSummary: React.FC = () => {
           />
         );
       }
-      if (userStanding < 50) {
+      if (userStanding.percentageMembersWithMorePointsForCurrentMonth > 50) {
         return (
           <CelebrationCard
             image={<EmojiOrangeSmile className="mr-2 h-16 w-16" />}
@@ -312,7 +312,9 @@ export const PointsSummary: React.FC = () => {
           pointsSummaries={filteredPointsSummaries}
           userFullName={`${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
           childCount={children?.length || 0}
-          clubStanding={userStanding}
+          clubStanding={
+            userStanding?.percentageMembersWithFewerPointsForCurrentMonth || 0
+          }
           clubName={practitioner?.clubName || 'Unknown Club'}
         />
       </div>

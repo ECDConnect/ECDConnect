@@ -186,14 +186,15 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
           }
         />
-        {title === 'C T F35 - theme Days' || title === 'theme Days'}
-        <Typography
-          type={'body'}
-          color={'textMid'}
-          text={
-            'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
-          }
-        />
+        {(title === 'C T F35 - theme Days' || title === 'theme Days') && (
+          <Typography
+            type={'body'}
+            color={'textMid'}
+            text={
+              'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
+            }
+          />
+        )}
 
         <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">

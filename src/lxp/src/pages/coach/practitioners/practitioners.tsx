@@ -123,10 +123,10 @@ export const Practitioners: React.FC = () => {
 
   // Need to load clubs so we have the names when viewing each practitioner
   useEffect(() => {
-    if (userData?.id) {
+    if (userData?.id && isOnline) {
       appDispatch(getClubsForCoach({ userId: userData?.id }));
     }
-  }, [appDispatch, userData?.id]);
+  }, [appDispatch, isOnline, userData?.id]);
 
   useEffect(() => {
     if (

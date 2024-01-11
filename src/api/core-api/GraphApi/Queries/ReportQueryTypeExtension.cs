@@ -995,12 +995,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return progressHistory;
         }
 
+        // TODO - This needs to move into a service
         private (int dueReportsSubmitted, int missedReportCount, int overdueReportsSubmitted) GetChildProgressReportStatusCountsForPractitioner(
             IGenericRepositoryFactory repoFactory,
             string userId,
             string practitionerHierarcry,
             IEnumerable<Guid> classroomGroupIds,
-            DateTime currentDate)
+            DateTime currentDate) 
         {
             DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
@@ -1026,15 +1027,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var progressReports = childProgressReportRepo
                 .GetAll()
                 .Where(x =>
-                        classroomGroupIds.Contains(x.ClassroomGroupId.Value)
-                        && x.ReportDate.ToUniversalTime() >= reportDueStart
-                        && x.ReportDate.ToUniversalTime() <= reportOverDueEnd
+                        x.ClassroomGroupId.HasValue 
+                        && classroomGroupIds.Contains(x.ClassroomGroupId.Value)
+                        && x.ReportDate >= reportPeriodStart
+                        && x.ReportDate <= reportOverDueEnd
                         && x.IsActive == true)
                 .OrderBy(x => x.ReportDate)
                 .ToList();
 
-            var dueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportDueStart && r.ReportDate <= reportDueEnd) ?? 0;
-            var overdueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportOverDueStart && r.ReportDate <= reportOverDueEnd) ?? 0;
+            var dueReportsSubmitted = progressReports?.Count(r => r.InsertedDate <= reportDueEnd) ?? 0;
+            var overdueReportsSubmitted = progressReports?.Count(r => r.InsertedDate >= reportOverDueStart) ?? 0;
 
             var childCount = childRepo.GetAll().Count(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHierarcry));
 
@@ -1149,11 +1151,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                .Count();
 
             // Notifications for child progress reports
-            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, uId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), DateTime.Now);
+            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, userId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), new DateTime(2023,12,1)); // SUPPRESS DATE RULES for testing
 
             return new ChildProgressReportsStatus
             {
-                CompletedReports = reportCounts.dueReportsSubmitted,
+                CompletedReports = reportCounts.dueReportsSubmitted + reportCounts.overdueReportsSubmitted,
                 NumberOfChildren = childCount
             };
         }

@@ -65,15 +65,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public bool AddCoachVisitData([Service] IIntegrationService integrationService, [Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
             Visit visit = visitDataManager.AddCoachData(input);
-            // only if the visit is completed for the coach, we want to push the data to SmartLink
-            if (visit.Attended == true)
-            {
-                if (input.VisitData.VisitName == Constants.SSSettings.coach_smartspace_check)
-                {
-                    integrationService.PushSmartSpaceVisitsData(visit.Id, (Guid)visit.TraineeId, visit.Trainee.UserId, visit.Coach.UserId);
-                }
-            }
-
             return true;
         }
             

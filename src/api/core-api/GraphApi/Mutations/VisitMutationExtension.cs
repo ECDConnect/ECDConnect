@@ -478,14 +478,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             input.ChecklistData.CoachId = coach.Id.ToString();
 
             Visit updatedVisit = visitDataManager.AddCoachData(input.ChecklistData);
-            if (updatedVisit.Attended == true)
-            {
-                if (input.ChecklistData.VisitData.VisitName == Constants.SSSettings.coach_smartspace_check)
-                {
-                    integrationService.PushSmartSpaceVisitsData(updatedVisit.Id, (Guid)updatedVisit.TraineeId, updatedVisit.Trainee.UserId, updatedVisit.Coach.UserId);
-                }
-            }
-
             return visit;
         }
 

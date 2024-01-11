@@ -7,6 +7,7 @@ export enum LocalStorageKeys {
   hasViewedJulProgressReport = 'HasViewedJulProgressReport',
   hasViewedDecProgressReport = 'HasViewedDecProgressReport',
   attendanceTutorialComplete = 'AttendanceTutorialComplete',
+  programmeWalkthroughComplete = 'programmeWalkthroughComplete',
   hasClosedAttendanceSmartStartPointsMessage = 'HasClosedAttendanceSmartStartPointsMessage',
   HasTrackedChildProgressBefore = 'HasTrackedChildProgressBefore',
   isSmartStartUser = 'IsSmartStartUser',

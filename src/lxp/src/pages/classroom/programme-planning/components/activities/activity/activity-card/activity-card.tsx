@@ -80,18 +80,17 @@ const ActivityCard: React.FC<ActivityCardProps> = ({
             </div>
             <Typography type="body" text={activity.name} color={'textDark'} />
           </div>
-          <div>
-            <div className="flex max-h-20 items-center justify-between gap-2">
-              <Radio
-                isActivity={true}
-                description={limitStringLength(activity.materials, 50)}
-                checked={selected}
-                onChange={() => onSelected()}
-                className={'max-h-20 truncate'}
-              />
-              <div onClick={handleDetailsClick} className={'mb-2'}>
-                {renderIcon('InformationCircleIcon', 'h-6 w-6 text-infoMain')}
-              </div>
+          <div className="flex max-h-20 flex-row items-center justify-between gap-2 overflow-hidden">
+            <Radio
+              variant="slim"
+              isActivity={true}
+              description={limitStringLength(activity.materials, 50)}
+              checked={selected}
+              onChange={() => onSelected()}
+              className={'max-h-20 truncate'}
+            />
+            <div onClick={handleDetailsClick} className={'mb-2'}>
+              {renderIcon('InformationCircleIcon', 'h-6 w-6 text-infoMain')}
             </div>
           </div>
         </div>
