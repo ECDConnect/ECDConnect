@@ -23,7 +23,7 @@ namespace EcdLink.Api.CoreApi.Services
         private readonly UserManager<ApplicationUser> _userManager;
         private ILogger<ChildrenAnonymiseService> _logger;
         private readonly AuthenticationDbContext _context;
-        private readonly NotificationService _notificationService;
+        private readonly INotificationService _notificationService;
 
         public ChildrenAnonymiseService(
             IGenericRepositoryFactory repositoryFactory,
@@ -31,7 +31,7 @@ namespace EcdLink.Api.CoreApi.Services
             HierarchyEngine hierarchyEngine,
             [Service] UserManager<ApplicationUser> userManager,
             ILogger<ChildrenAnonymiseService> logger,
-            [Service] NotificationService notificationService,
+            [Service] INotificationService notificationService,
             [Service] AuthenticationDbContext context)
         {
             _documentManagementService = documentManagementService;
