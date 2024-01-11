@@ -384,9 +384,9 @@ export function ContentManagement() {
           onActionClick: () => {
             setSpecialType('');
             const selectedTypeObject = dataTypes?.contentTypes.find(
-              (type: ContentTypeDto) => type.name === 'StoryBookPartQuestion'
+              (type: ContentTypeDto) => type.name === 'Activity'
             );
-            // setChoosedSectionTitleSectionTitle('Story activities');
+            setChoosedSectionTitleSectionTitle('Story activities');
             showGroupContentTypes(selectedTypeObject);
           },
           classNames: 'bg-white',
