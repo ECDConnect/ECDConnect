@@ -11,7 +11,7 @@ import {
   FieldType,
   FormTemplateField,
 } from '../../../../../content-management-models';
-import { Alert } from '@ecdlink/ui';
+import { Alert, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
 import { CombinedDatePickers } from '../../../../../../../components/combined-date-pickers';
 import StoryContentForm from '../../../../../../../components/story-content-form/story-content-form';
 import { StoryBookPartDto, StoryBookQuestionDto } from '@ecdlink/core';
@@ -26,6 +26,12 @@ const acceptedFormats = [
   ...videoExtensions,
 ];
 
+export enum StoryBookTypes {
+  storyBook = 'Story book',
+  readAloud = 'Read aloud',
+  other = 'Other',
+}
+
 export interface CreateStoryFormProps {
   template: DynamicFormTemplate;
   handleform: any;
@@ -34,6 +40,7 @@ export interface CreateStoryFormProps {
   acceptedFileFormats?: string[];
   setFilteredStoryBookParts?: (item?: StoryBookPartDto[]) => void;
   setFilteredStoryBookPartsQuestions?: (item?: StoryBookQuestionDto[]) => void;
+  formType?: StoryBookTypes;
 }
 
 const contentWrapper = '';
@@ -46,8 +53,15 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   acceptedFileFormats,
   setFilteredStoryBookParts,
   setFilteredStoryBookPartsQuestions,
+  formType,
 }) => {
   const { register, control, errors } = handleform;
+
+  const storyBookTypeOptions = [
+    { text: 'Story book', value: 'Story book' },
+    { text: 'Read aloud', value: 'Read aloud' },
+    { text: 'other', value: 'Other' },
+  ];
 
   const onStateChange = (name: string, state: any) => {
     setValue(name, state);
@@ -56,12 +70,12 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
   const [fields, setFields] = useState<any>();
 
   useEffect(() => {
-    if (template) {
+    if (template || formType) {
       const fields = renderFields(template.fields);
       setFields(fields);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [template]);
+  }, [template, formType]);
 
   const renderFields = (fields: FormTemplateField[]) => {
     return fields.map((field) => {
@@ -71,6 +85,36 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
 
       switch (type) {
         case FieldType.Text:
+          if (
+            propName === 'type' &&
+            template?.fields?.find((item) => item?.propName === 'name')
+              ?.contentValue === undefined
+          ) {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="bg-uiBg sm:col-span-12">
+                  <ButtonGroup
+                    options={storyBookTypeOptions}
+                    onOptionSelected={(value: string | string[]) => {
+                      onStateChange(propName, value);
+                    }}
+                    selectedOptions={formType}
+                    color="tertiary"
+                    type={ButtonGroupTypes.Button}
+                    className={'w-full'}
+                    multiple={false}
+                  />
+                </div>
+              </div>
+            );
+          }
+          if (
+            propName === 'type' &&
+            template?.fields?.find((item) => item?.propName === 'name')
+              ?.contentValue !== undefined
+          ) {
+            return null;
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -86,6 +130,25 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             </div>
           );
         case FieldType.Markdown:
+          if (propName === 'bookLocation') {
+            return (
+              <div key={propName} className={contentWrapper}>
+                <div className="sm:col-span-12">
+                  <div className="mb-2 font-semibold">
+                    Where can you find a copy of this story book?
+                  </div>
+                  <FormField
+                    label={title}
+                    nameProp={propName}
+                    register={register}
+                    error={errors[propName]?.message}
+                    required={required}
+                    validation={validation}
+                  />
+                </div>
+              </div>
+            );
+          }
           return (
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
@@ -122,26 +185,35 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             </div>
           );
         case FieldType.Link: {
-          if (title === 'G T -  Story  Content' || title === 'Story  Content') {
-            return (
-              <div key={propName} className={contentWrapper}>
-                <div className="sm:col-span-12">
-                  <StoryContentForm
-                    title={field.title}
-                    isReview={false}
-                    contentValue={field.contentValue}
-                    languageId={defaultLanguageId}
-                    optionDefinition={field.optionDefinition}
-                    setSelectedItems={(value) => onStateChange(propName, value)}
-                    // isSkillType={true}
-                    setFilteredStoryBookParts={setFilteredStoryBookParts}
-                    setFilteredStoryBookPartsQuestions={
-                      setFilteredStoryBookPartsQuestions
-                    }
-                  />
+          if (propName === 'storyBookParts') {
+            if (formType === 'Story book') {
+              return (
+                <div key={propName} className={contentWrapper}>
+                  <div className="sm:col-span-12">
+                    <StoryContentForm
+                      title={field.title}
+                      isReview={false}
+                      contentValue={field.contentValue}
+                      languageId={defaultLanguageId}
+                      optionDefinition={field.optionDefinition}
+                      setSelectedItems={(value) =>
+                        onStateChange(propName, value)
+                      }
+                      setFilteredStoryBookParts={setFilteredStoryBookParts}
+                      setFilteredStoryBookPartsQuestions={
+                        setFilteredStoryBookPartsQuestions
+                      }
+                    />
+                  </div>
                 </div>
-              </div>
-            );
+              );
+            }
+            if (
+              formType === StoryBookTypes.readAloud ||
+              formType === StoryBookTypes.other
+            ) {
+              return null;
+            }
           }
           if (title === 'G T -  Skills' || title === 'Skills') {
             return (
@@ -160,20 +232,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
               </div>
             );
           }
-          return (
-            <div key={propName} className={contentWrapper}>
-              <div className="sm:col-span-12">
-                <DynamicSelector
-                  title={field.title}
-                  isReview={false}
-                  contentValue={field.contentValue}
-                  languageId={defaultLanguageId}
-                  optionDefinition={field.optionDefinition}
-                  setSelectedItems={(value) => onStateChange(propName, value)}
-                />
-              </div>
-            </div>
-          );
+          return null;
         }
         case FieldType.StaticLink: {
           return (

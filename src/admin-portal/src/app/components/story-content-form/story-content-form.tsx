@@ -101,26 +101,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     useState(currentStoryBooks);
   const [storyBookPartsValuesFormatted, setStoryBookPartsDataValuesFormatted] =
     useState(currentStoryBooks);
-  const [
-    storyBookPartsQuestionsFormatted,
-    setStoryBookPartsQuestionsFormatted,
-  ] = useState(storyBookPartsQuestions);
-  console.log({ storyBookPartsQuestionsFormatted });
-  const storyBookPartQuestionsIds = useMemo(
-    () =>
-      storyBookPartsValues?.map(
-        (item) => item?.storyBookPartQuestions?.[0]?.id
-      ),
-    [storyBookPartsValues]
-  );
-
-  const currentStoryBooksPartQuestions = useMemo(
-    () =>
-      storyBookPartsQuestions?.filter((x) =>
-        storyBookPartQuestionsIds?.includes(x.id)
-      ),
-    [storyBookPartQuestionsIds, storyBookPartsQuestions]
-  );
 
   useEffect(() => {
     if (optionDefinition && optionDefinition.fields) {
@@ -168,43 +148,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
       ]);
     }
   }, [storyBookPartsValues]);
-
-  // useEffect(() => {
-  //   if (currentStoryBooksPartQuestions && storyBookPartQuestionsIds) {
-  //     const emptyArray = [];
-  //     const inputLimit = 10;
-  //     for (let i = 0; i < inputLimit; i++) {
-  //       emptyArray?.push({
-  //         name: '',
-  //         id: '',
-  //         question: '',
-  //       });
-  //     }
-
-  //     storyBookPartsValuesFormatted?.map((bookPart, idx) => {
-  //       if (bookPart?.storyBookPartQuestions?.length > 0) {
-  //         emptyArray?.splice(idx, 1, {
-  //           name: storyBookPartsQuestions?.find(
-  //             (question) =>
-  //               question?.id === bookPart?.storyBookPartQuestions?.[0]?.id
-  //           ).name,
-  //           id: bookPart?.storyBookPartQuestions?.[0]?.id,
-  //           question: storyBookPartsQuestions?.find(
-  //             (question) =>
-  //               question?.id === bookPart?.storyBookPartQuestions?.[0]?.id
-  //           ).question,
-  //         });
-  //       }
-  //     });
-
-  //     setStoryBookPartsQuestionsFormatted([...emptyArray]);
-  //   }
-  // }, [
-  //   currentStoryBooksPartQuestions,
-  //   storyBookPartQuestionsIds,
-  //   storyBookPartsQuestions,
-  //   storyBookPartsValuesFormatted,
-  // ]);
 
   useEffect(() => {
     if (contentValue) {
@@ -261,18 +204,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     setStoryBookPartsDataValuesFormatted(newArray);
   };
 
-  const onQuestionChange = (e, idx) => {
-    let newArray = [...storyBookPartsQuestionsFormatted];
-
-    newArray[idx] = {
-      ...newArray[idx],
-      question: e.target.value,
-      name: e.target.value,
-      idx: idx,
-    };
-    setStoryBookPartsQuestionsFormatted(newArray);
-  };
-
   let changedStoryBookPartsArr = useMemo(
     () =>
       storyBookPartsValuesFormatted?.filter((o1) => {
@@ -285,37 +216,11 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     [storyBookPartsValues, storyBookPartsValuesFormatted]
   );
 
-  console.log({ changedStoryBookPartsArr });
-
-  let changedStoryBookPartsQuestionsArr = useMemo(
-    () =>
-      storyBookPartsQuestionsFormatted?.filter((o1) => {
-        return storyBookPartsQuestions?.every(
-          (o2) =>
-            (o2.question !== o1.question && o1?.question !== '') ||
-            (o1?.question === '' && !!o1?.id)
-        );
-      }),
-    [storyBookPartsQuestionsFormatted, storyBookPartsQuestions]
-  );
-
   useEffect(() => {
     if (changedStoryBookPartsArr) {
       setFilteredStoryBookParts(changedStoryBookPartsArr);
     }
   }, [changedStoryBookPartsArr, setFilteredStoryBookParts]);
-
-  // useEffect(() => {
-  //   if (changedStoryBookPartsQuestionsArr) {
-  //     setFilteredStoryBookPartsQuestions(changedStoryBookPartsQuestionsArr);
-  //     setFilteredStoryBookParts(storyBookPartsValuesFormatted);
-  //   }
-  // }, [
-  //   changedStoryBookPartsQuestionsArr,
-  //   setFilteredStoryBookParts,
-  //   setFilteredStoryBookPartsQuestions,
-  //   storyBookPartsValuesFormatted,
-  // ]);
 
   if (
     tempData &&
@@ -389,6 +294,16 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
             camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
           }
         />
+
+        {(title === 'C T F35 - theme Days' || title === 'theme Days') && (
+          <Typography
+            type={'body'}
+            color={'textMid'}
+            text={
+              'Every theme must have 16 planned days (Fridays are Mahala - practitioners choose their own activities). Please make sure all activities and stories have been added to the admin portal before you search for them here.'
+            }
+          />
+        )}
         {title === 'C T F35 - theme Days' || title === 'theme Days'}
         <Typography
           type={'body'}
@@ -398,17 +313,6 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
 
         <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
           <div className="min-w-full  divide-gray-200">
-            {/* <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className=" w-full px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-                >
-                  Name
-                </th>
-              </tr>
-            </thead> */}
-            {/* <tbody className="z-10 divide-y divide-gray-200 bg-white"> */}
             {storyBookPartsValuesFormatted &&
               storyBookPartsValuesFormatted.map((item: any, idx: number) => {
                 return (
@@ -426,72 +330,20 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                       color={'textDark'}
                     />
                     <div>
-                      {/* <Typography
-                      type={'body'}
-                      text={`${item?.partText}`}
-                      className={'text-sm font-normal mt-1'}
-                      color={'textDark'}
-                    /> */}
                       <FormInput
                         key={idx}
                         className="bg-adminPortalBg my-4 p-4"
                         isAdminPortalField={true}
                         id={item?.id}
                         value={item?.partText}
-                        // disabled={isViewAnswers}
                         onChange={(e) => onChange(e, idx)}
                         textInputType="input"
                         placeholder={'Add a response...'}
-                        // error={
-                        //   dataValuesDescriptionLength?.length === 0 && idx === 0
-                        //     ? 'This field is required'
-                        //     : ('' as any)
-                        // }
                       />
                     </div>
-                    {/* <Typography
-                      type={'h4'}
-                      text={`Question`}
-                      className={'mt-2 text-sm font-normal'}
-                      color={'textDark'}
-                    />
-                    <Typography
-                      type={'body'}
-                      text={`Optional`}
-                      className={'mt-1 text-sm font-normal'}
-                      color={'textDark'}
-                    />
-                    <FormInput
-                      key={idx}
-                      className="bg-adminPortalBg my-4 p-4"
-                      isAdminPortalField={true}
-                      id={item?.id}
-                      value={
-                        (storyBookPartsQuestionsFormatted &&
-                          storyBookPartsQuestionsFormatted?.length &&
-                          storyBookPartsQuestionsFormatted?.find(
-                            (question) =>
-                              question?.id ===
-                              item?.storyBookPartQuestions?.[0]?.id
-                          )?.question) ||
-                        storyBookPartsQuestionsFormatted?.find(
-                          (question) => question?.idx === idx
-                        )?.question
-                      }
-                      disabled={item?.partText === ''}
-                      onChange={(e) => onQuestionChange(e, idx)}
-                      textInputType="input"
-                      placeholder={'Add a question...'}
-                      // error={
-                      //   dataValuesDescriptionLength?.length === 0 && idx === 0
-                      //     ? 'This field is required'
-                      //     : ('' as any)
-                      // }
-                    /> */}
                   </div>
                 );
               })}
-            {/* </tbody> */}
           </div>
 
           <Pagination

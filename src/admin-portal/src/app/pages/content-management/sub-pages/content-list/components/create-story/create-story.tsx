@@ -11,10 +11,9 @@ import {
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
-import { MouseEvent, useCallback, useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { MouseEvent, useEffect, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
-import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
   DynamicFormTemplate,
   FormTemplateField,
@@ -53,14 +52,17 @@ export default function CreateStory({
   cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit } = useForm();
+  const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
   };
 
+  const { type: formType } = useWatch({ control });
+
   const mutationName = `update${contentType?.name}`;
+  const createMutationName = `create${contentType?.name}`;
 
   const updateMutation = gql` 
     mutation ${mutationName} ($id: String!, $input: ${contentType?.name}Input!, $localeId: String!) {
@@ -76,6 +78,12 @@ export default function CreateStory({
       ${deleteMutationName} (id: $id, localeId: $localeId) 
       }
   `;
+
+  const createMutation = gql` 
+  mutation createStoryBook ($input: ${contentType.name}Input!, $localeId: String!) {
+    ${createMutationName} (input: $input, localeId: $localeId) 
+    }
+`;
 
   const updateStoryBookPart = gql`
     mutation updateStoryBookParts(
@@ -104,33 +112,6 @@ export default function CreateStory({
     }
   `;
 
-  const updateStoryBookPartQuestion = gql`
-    mutation updateStoryBookPartQuestion(
-      $id: String!
-      $input: StoryBookPartQuestionInput!
-      $localeId: String!
-    ) {
-      updateStoryBookPartQuestion(id: $id, input: $input, localeId: $localeId) {
-        id
-      }
-    }
-  `;
-
-  const createStoryBookPartQuestion = gql`
-    mutation createStoryBookPartQuestion(
-      $input: StoryBookPartQuestionInput!
-      $localeId: String!
-    ) {
-      createStoryBookPartQuestion(input: $input, localeId: $localeId)
-    }
-  `;
-
-  const deleteStoryBookPartQuestion = gql`
-    mutation deleteStoryBookPartQuestion($id: String!, $localeId: String!) {
-      deleteStoryBookPartQuestion(id: $id, localeId: $localeId)
-    }
-  `;
-
   const dialog = useDialog();
 
   const [deleteContent, { loading: isLoadingDeleteContent }] =
@@ -145,20 +126,7 @@ export default function CreateStory({
   const [deleteStoryBookPartContent, { loading: isLoadingDeleteStoryContent }] =
     useMutation(deleteStoryBookPart);
 
-  const [
-    updateStoryBookPartQuestionContent,
-    { loading: isLoadingUpdateQuestionContent },
-  ] = useMutation(updateStoryBookPartQuestion);
-
-  const [
-    createStoryBookPartQuestionContent,
-    { loading: isLoadingCreateQuestionContent },
-  ] = useMutation(createStoryBookPartQuestion);
-
-  const [
-    deleteStoryBookPartQuestionContent,
-    { loading: isLoadingDeleteStoryQuestionContent },
-  ] = useMutation(deleteStoryBookPartQuestion);
+  const [storybookPartsIds, setStorybookPartsIds] = useState([]);
 
   const deleteAndRefresh = async (event: MouseEvent<HTMLButtonElement>) => {
     event?.preventDefault();
@@ -216,15 +184,13 @@ export default function CreateStory({
   };
 
   const [updateContent] = useMutation(updateMutation);
+  const [crateContent] = useMutation(createMutation);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
   const [filteredStoryBookParts, setFilteredStoryBookParts] =
     useState<StoryBookPartDto[]>();
-  const [filteredStoryBookPartsQuestions, setFilteredStoryBookPartsQuestions] =
-    useState<StoryBookQuestionDto[]>();
-  console.log({ filteredStoryBookPartsQuestions });
-  console.log({ filteredStoryBookParts });
+
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
       const t: DynamicFormTemplate = {
@@ -292,10 +258,38 @@ export default function CreateStory({
   const onSubmit = async (values: any) => {
     setLoading(true);
 
-    var newCurrentStorybookParts = {};
+    let newCurrentStorybookPartsIds = [];
     var createdBookPartId: any = {};
+    let newStoryBook = '';
 
-    filteredStoryBookParts?.map(async (item: StoryBookPartDto, idx: number) => {
+    const model = { ...values };
+    if (!content?.id) {
+      const createResponse = await crateContent({
+        variables: {
+          input: { ...model },
+          localeId: selectedLanguageId.toString(),
+        },
+      });
+      setLoading(false);
+      newStoryBook = createResponse?.data?.createStoryBook;
+      savedContent();
+      cancelEdit();
+    } else {
+      await updateContent({
+        variables: {
+          id: content.id.toString(),
+          input: { ...model },
+          localeId: selectedLanguageId.toString(),
+        },
+      }).catch(() => {
+        setLoading(false);
+      });
+      setLoading(false);
+      savedContent();
+      cancelEdit();
+    }
+
+    for (let item of filteredStoryBookParts) {
       if (!item?.id && item?.partText === '') {
         return;
       }
@@ -319,8 +313,6 @@ export default function CreateStory({
               title: `Changes saved!`,
               variant: NOTIFICATION.SUCCESS,
             });
-            // onCancel();
-            // create the redirect to the main list
             setLoading(false);
           })
           .catch((error) => {
@@ -328,7 +320,7 @@ export default function CreateStory({
           });
 
         const model = { ...values };
-        console.log({ model });
+
         await updateContent({
           variables: {
             id: content.id.toString(),
@@ -350,49 +342,37 @@ export default function CreateStory({
       }
 
       if (item?.id && item?.partText === '') {
-        deleteStoryBookPartContent({
+        const response = deleteStoryBookPartContent({
           variables: {
             id: item?.id.toString(),
             localeId: selectedLanguageId.toString(),
           },
-        })
-          .then((response: any) => {
-            if (response) {
-              // refetch();
-              // onCancel();
-              setNotification({
-                title: `Changes saved`,
-                variant: NOTIFICATION.SUCCESS,
-              });
-              const currentStorybookParts = values?.storyBookParts || '';
-              let currentStorybookPartsArray =
-                currentStorybookParts?.split(',');
-              console.log('current', currentStorybookPartsArray);
-              const filteredcurrentStorybookPartsArray =
-                currentStorybookPartsArray?.filter((currentItem) => {
-                  console.log({ currentItem });
-                  console.log(item?.id);
-                  return currentItem !== item?.id.toString();
-                });
-              const newData = filteredcurrentStorybookPartsArray?.join(',');
-              newCurrentStorybookParts = newData;
-              console.log({ newCurrentStorybookParts });
-              const model = {
-                ...values,
-                storyBookParts: newCurrentStorybookParts,
-              };
-              updateContent({
-                variables: {
-                  id: content.id.toString(),
-                  input: { ...model },
-                  localeId: selectedLanguageId.toString(),
-                },
-              });
-            }
-          })
-          .catch((error) => {
-            console.log(error);
+        });
+
+        if (response) {
+          setNotification({
+            title: `Changes saved`,
+            variant: NOTIFICATION.SUCCESS,
           });
+          const currentStorybookParts = values?.storyBookParts || '';
+          let currentStorybookPartsArray = currentStorybookParts?.split(',');
+          const filteredcurrentStorybookPartsArray =
+            currentStorybookPartsArray?.filter((currentItem) => {
+              return Number(currentItem) !== item?.id;
+            });
+          const newData = filteredcurrentStorybookPartsArray?.join(',');
+          const model = {
+            ...values,
+            storyBookParts: newData,
+          };
+          updateContent({
+            variables: {
+              id: content.id.toString(),
+              input: { ...model },
+              localeId: selectedLanguageId.toString(),
+            },
+          });
+        }
         setLoading(false);
 
         savedContent();
@@ -400,7 +380,7 @@ export default function CreateStory({
         return;
       }
       if (!item?.id && item?.partText !== '') {
-        await createStoryBookPartContent({
+        const response = await createStoryBookPartContent({
           variables: {
             input: {
               name: item?.name,
@@ -410,49 +390,46 @@ export default function CreateStory({
             },
             localeId: selectedLanguageId.toString(),
           },
-        })
-          .then(async (response) => {
-            if (response.data && response.data) {
-              setNotification({
-                title: `Changes saved`,
-                variant: NOTIFICATION.SUCCESS,
-              });
+        });
 
-              createdBookPartId = response?.data?.createStoryBookParts;
-              const currentStorybookParts = values?.storyBookParts || '';
-              let currentStorybookPartsArray =
-                currentStorybookParts?.split(',');
-              console.log(currentStorybookParts);
-              currentStorybookPartsArray?.push(createdBookPartId);
-
-              const newData = currentStorybookPartsArray?.join(',');
-              console.log({ newData });
-              newCurrentStorybookParts = newData;
-              const model = {
-                ...values,
-                storyBookParts: newCurrentStorybookParts,
-              };
-              // setEdit(true);
-
-              await updateContent({
-                variables: {
-                  id: content.id.toString(),
-                  input: { ...model },
-                  localeId: selectedLanguageId.toString(),
-                },
-              });
-            }
-          })
-          .catch((error) => {
-            console.log(error);
+        if (response && response.data) {
+          setNotification({
+            title: `Changes saved`,
+            variant: NOTIFICATION.SUCCESS,
           });
+
+          createdBookPartId = response?.data?.createStoryBookParts;
+          setStorybookPartsIds([...storybookPartsIds, createdBookPartId]);
+          newCurrentStorybookPartsIds = [
+            ...newCurrentStorybookPartsIds,
+            createdBookPartId,
+          ];
+          const currentStorybookParts = values?.storyBookParts || '';
+          let currentStorybookPartsArray = currentStorybookParts?.split(',');
+          currentStorybookPartsArray?.push(createdBookPartId);
+        }
+
+        const newModel = {
+          ...model,
+          storyBookParts:
+            model?.storyBookParts +
+            ',' +
+            newCurrentStorybookPartsIds.toString(),
+        };
+
+        await updateContent({
+          variables: {
+            id: content?.id ? content?.id?.toString() : newStoryBook,
+            input: { ...newModel },
+            localeId: selectedLanguageId.toString(),
+          },
+        });
         setLoading(false);
 
         savedContent();
         cancelEdit();
       }
-    });
-
+    }
     return;
   };
 
@@ -468,10 +445,6 @@ export default function CreateStory({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 ">
           <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
             <div className="ml-4 mt-2">
-              {/* <h3 className="text-xl font-semibold leading-6 text-gray-900">
-                      {cancelEdit &&
-                        camelCaseToSentanceCase(content?.name ?? content?.type)}
-                    </h3> */}
               <h3 className="text-xl font-semibold leading-6 text-gray-900">
                 Story
               </h3>
@@ -531,9 +504,7 @@ export default function CreateStory({
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
               setFilteredStoryBookParts={setFilteredStoryBookParts}
-              setFilteredStoryBookPartsQuestions={
-                setFilteredStoryBookPartsQuestions
-              }
+              formType={formType}
             />
           </div>
 
@@ -551,7 +522,7 @@ export default function CreateStory({
               className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
             >
               <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
-              Delete {content.name}
+              Delete {content?.name}
             </button>
           </div>
         </form>
