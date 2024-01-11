@@ -15833,8 +15833,10 @@ export type UserByToken = {
 
 export type UserClubStandingModel = {
   __typename?: 'UserClubStandingModel';
-  percentileStandingForCurrentMonth: Scalars['Int'];
-  percentileStandingForCurrentYear: Scalars['Int'];
+  percentageMembersWithFewerPointsForCurrentMonth: Scalars['Int'];
+  percentageMembersWithFewerPointsForCurrentYear: Scalars['Int'];
+  percentageMembersWithMorePointsForCurrentMonth: Scalars['Int'];
+  percentageMembersWithMorePointsForCurrentYear: Scalars['Int'];
 };
 
 export type UserConsent = {
