@@ -36,6 +36,10 @@ import { childrenSelectors } from '@/store/children';
 import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
 import { userSelectors } from '@/store/user';
 import { contentReportSelectors } from '@/store/content/report';
+import {
+  programmeThemeSelectors,
+  programmeThemeThunkActions,
+} from '@/store/content/programme-theme';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
@@ -65,6 +69,7 @@ export const ClassDashboard: React.FC = () => {
   const isTrainee = practitioner?.isTrainee;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
+  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const showAttendanceTutorial = useMemo(
     () =>
       selectedTabIndex === 0 &&
@@ -201,6 +206,13 @@ export const ClassDashboard: React.FC = () => {
     setProgrammeStartDate(new Date());
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
+    if (tabIndex === 3) {
+      if (themes.length === 0) {
+        appDispatch(
+          programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+        );
+      }
+    }
   };
 
   const displayTutorial = (type?: string) => {
