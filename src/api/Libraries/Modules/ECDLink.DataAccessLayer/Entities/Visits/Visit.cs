@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Users;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Visits
@@ -46,6 +47,8 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public bool HasAnswerData { get; set; }
         public string Rating { get; set; }
         public virtual PQARating PQARating { get; set; }
+        public DateTime? IntegrationSubmitDate {  get; set; }
+        public virtual ICollection<VisitData> VisitAnswers { get; set; }
     }
 
     public interface VisitJoin<TKey>

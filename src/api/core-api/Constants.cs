@@ -405,6 +405,8 @@ namespace EcdLink.Api.CoreApi
             public const string own_property = "Do you own the property where you will run your SmartStart programme?";
             public const string number_assistants = "How many assistants will attend every session?";
             public const string capacity = "Capacity";
+            public const string observation_notes = "Observation notes";
+            public const string total_children_present = "How many children are present today?";
         }
         public static class GGSettings
         {
