@@ -3,6 +3,8 @@ export const errorStyle =
   'block w-full py-3 pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 export const defaultInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 placeholder-textLight font-h1';
+export const portalDdefaultInputStyle =
+  'font-h1 bg-adminPortalBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 placeholder-textLight font-h1';
 export const disabledInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textLight py-3 placeholder-textLight font-h1';
 export const defaultMoneyInputStyle =
