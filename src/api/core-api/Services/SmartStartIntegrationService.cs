@@ -2690,7 +2690,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         IsActive = true,
                         UserId = userId.ToString(),
                         SecondaryAreaOfOperation = entity.SecondaryAreaOfOperation,
-                        
+                        FranchisorId = new Guid(entity.localParentEntityUserId)
                     };
                     if (insertedAddress)
                     {
