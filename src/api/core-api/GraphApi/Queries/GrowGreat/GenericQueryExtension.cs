@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Documents;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Helpers;
@@ -37,6 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var docRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
             var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: uId);
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
+            var caregiverRepo = repoFactory.CreateGenericRepository<Caregiver>(userContext: uId);
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
 
             if (showOnlyTypes == null)
@@ -58,15 +60,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             //populate additional user info based on usertypes - createduser is HCW, userid is infant/mother
             foreach (var doc in docsList)
             {
-                if (doc.CreatedUserId != null)
-                {
-                    HealthCareWorker hcw = healthCareWorkerRepo.GetAll().Where(x => x.UserId == doc.CreatedUserId).FirstOrDefault();
-                    if (hcw != null && hcw.User != null)
-                    {
-                        doc.CreatedUser = hcw.User;
-                        doc.CreatedByName = hcw.User.FirstName + " " + hcw.User.Surname; 
-                    }
-                }
+                HealthCareWorker hcw = new HealthCareWorker(); 
 
                 if (doc.DocumentType.Name == DocumentTypeConstants.MaternalCaseRecord)
                 {
@@ -76,17 +70,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     {
                         doc.ClientName = mother.User.FirstName + " " + mother.User.Surname;
                         doc.ClientStatus = (mother.IsActive ? "Active" : "Inactive");
+
+                        hcw = healthCareWorkerRepo.GetAll().Where(x => x.Id == mother.HealthCareWorkerId).FirstOrDefault();
                     }
                 } 
                 else if (doc.DocumentType.Name == DocumentTypeConstants.RoadToHealthBook)
                 {
+                    Caregiver caregiver = new Caregiver();
                     //infants
                     Infant infant = infantRepo.GetAll().Where(x => x.UserId == doc.UserId).FirstOrDefault();
                     if (infant != null && infant.Caregiver != null)
                     {
                         doc.ClientName = infant.Caregiver.FirstName + " " + infant.Caregiver.Surname + " & " + infant.User.FirstName;
                         doc.ClientStatus = (infant.Caregiver.IsActive ? "Active" : "Inactive");
+
+                        if (infant.Caregiver != null) {
+                            caregiver = caregiverRepo.GetAll().Where(x => x.Id == infant.CaregiverId).FirstOrDefault();
+                            if (caregiver != null && caregiver.HealthCareWorkerId != null)
+                            {
+                                hcw = healthCareWorkerRepo.GetAll().Where(x => x.Id == caregiver.HealthCareWorkerId).FirstOrDefault();
+                            }
+                        }
                     }
+                }
+                if (hcw != null && hcw.User != null)
+                {
+                    doc.CreatedUser = hcw.User;
+                    doc.CreatedByName = hcw.User.FirstName + " " + hcw.User.Surname;
                 }
             }
 
