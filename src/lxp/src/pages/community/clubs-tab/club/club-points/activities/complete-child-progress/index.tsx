@@ -74,7 +74,7 @@ export const CompleteChildProgressReports: React.FC = () => {
         })
       );
     }
-  }, [appDispatch, clubId, isOnline]);
+  }, [clubId, isOnline]);
 
   const history = useHistory();
 
