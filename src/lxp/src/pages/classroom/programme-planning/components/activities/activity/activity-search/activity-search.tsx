@@ -318,7 +318,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
         >
           <SearchDropDown<number>
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             className={'mr-1'}
             options={themeDropDownOptions}
@@ -335,7 +335,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
           <SearchDropDown<string>
             displayMenuOverlay={true}
             className={'mr-1'}
-            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             options={languagesDropDownOptions}
             selectedOptions={selectedLanguageFilterOptions}
@@ -350,7 +350,7 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
 
           <SearchDropDown<ProgressTrackingSubCategoryDto>
             displayMenuOverlay={true}
-            menuItemClassName={'w-11/12 left-4 h-60 overflow-y-scroll'}
+            menuItemClassName={'w-11/12 left-4'}
             overlayTopOffset={'120'}
             options={skillsDropDownOptions}
             selectedOptions={selectedSkillsFilterOptions}
