@@ -94,8 +94,10 @@ class PointsService {
     }>(``, {
       query: `query userClubStanding($userId: String) {
           userClubStanding(userId: $userId) {
-            percentileStandingForCurrentMonth
-            percentileStandingForCurrentYear 
+            percentageMembersWithFewerPointsForCurrentMonth
+            percentageMembersWithFewerPointsForCurrentYear
+            percentageMembersWithMorePointsForCurrentMonth
+            percentageMembersWithMorePointsForCurrentYear
           }
         }`,
       variables: {

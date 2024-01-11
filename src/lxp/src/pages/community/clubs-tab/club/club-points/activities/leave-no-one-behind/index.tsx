@@ -22,7 +22,7 @@ import { formatStringWithFirstLetterCapitalized } from '@ecdlink/core';
 import { userSelectors } from '@/store/user';
 import { getScoreBarColor } from '@/pages/community/clubs-tab/index.filters';
 import { useCallback, useEffect, useMemo } from 'react';
-import { ClubActivitiesPointsPerLeague } from '@/constants/club';
+import { ClubActivitiesPointsPerLeague, LeagueType } from '@/constants/club';
 import { UserTypeEnum } from '@/models/auth/user/UserContext';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useAppDispatch } from '@/store';
@@ -56,6 +56,8 @@ export const LeaveNoOneBehind: React.FC = () => {
   const isCoach = user?.roles?.some(
     (item) => item?.name === UserTypeEnum.Coach
   );
+
+  const isPurpleLeague = club?.league?.leagueTypeName === LeagueType.Purple;
 
   const activityId = 'leave-no-one-behind';
 
@@ -284,10 +286,15 @@ export const LeaveNoOneBehind: React.FC = () => {
       displayHelp={isToShowPoints}
       onHelp={() =>
         history.push(
-          ROUTES.COMMUNITY.CLUB.POINTS.HELP.replace(':clubId', clubId).replace(
-            ':activityId',
-            activityId
-          )
+          ROUTES.COMMUNITY.CLUB.POINTS.HELP[
+            isPurpleLeague ? 'LEAGUE_TYPE' : 'ROOT'
+          ]
+            .replace(':clubId', clubId)
+            .replace(':activityId', activityId)
+            .replace(
+              ':leagueType',
+              isPurpleLeague ? club?.league?.leagueTypeName?.toLowerCase() : ''
+            )
         )
       }
     >

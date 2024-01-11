@@ -1582,7 +1582,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             var clubUserIds = _clubMemberRepo.GetAll()
                 .Include(x => x.Practitioner)
-                .Where(x => x.ClubId == clubMember.ClubId)
+                .Where(x => x.ClubId == clubMember.ClubId && x.IsActive)
                 .Select(x => x.Practitioner.UserId)
                 .ToList();
 
@@ -1602,44 +1602,43 @@ namespace EcdLink.Api.CoreApi.Services
                 .OrderByDescending(x => x.PointsTotal)
                 .ToList();
 
-            var userMonthPosition = usersByMonth.FindIndex(x => x.UserId == userId);
-            var userYearPosition = usersByYear.FindIndex(x => x.UserId == userId);
-
-            var standing = new UserClubStandingModel();
 
             var totalMembers = clubUserIds.Count();
 
-            // Check for first place tie
-            var isUserTiedFirstThisMonth = usersByMonth.Count() < 2
-                ? false
-                : usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal && usersByMonth[0].PointsTotal == usersByMonth[userMonthPosition].PointsTotal;
+            var userMonthPoints = usersByMonth.FirstOrDefault(x => x.UserId == userId)?.PointsTotal ?? 0;
+            var userYearPoints = usersByYear.FirstOrDefault(x => x.UserId == userId)?.PointsTotal ?? 0;
 
-            var isUserTiedFirstThisYear = usersByYear.Count() < 2
-                ? false
-                : usersByYear[0].PointsTotal == usersByYear[1].PointsTotal && usersByYear[0].PointsTotal == usersByYear[userYearPosition].PointsTotal;
+            var usersWithMorePointsThisMonth = usersByMonth.Where(x => x.PointsTotal > userMonthPoints).Count();
+            var usersWithMorePointsThisYear = usersByYear.Where(x => x.PointsTotal > userYearPoints).Count();
+
+            var percentageWithMorePointsThisMonth = (double)usersWithMorePointsThisMonth / totalMembers * 100;
+            var percentageWithMorePointsThisYear = (double)usersWithMorePointsThisYear / totalMembers * 100;
+
+            var usersWithNoPoints = clubUserIds.Where(x => !usersByMonth.Any(y => y.UserId == x)).Count();
+            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints).Count() + usersWithNoPoints;
+            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints).Count() + usersWithNoPoints;
+
+            var percentageWithFewerPointsThisMonth = (double)userWithFewerPointsThisMonth / totalMembers * 100;
+            var percentageWithFewerPointsThisYear = (double)userWithFewerPointsThisYear / totalMembers * 100;
 
 
-            var standingForCurrentMonth = usersByMonth.Count() == 0 || userMonthPosition < 0 
-                ? 0
-                    : usersByMonth[userMonthPosition].PointsTotal == 0 
-                    ? 0
-                        : isUserTiedFirstThisMonth
-                        ? 99
-                        : (totalMembers - userMonthPosition) * 100 / totalMembers;
+            // Offset for first place ties
+            if (percentageWithFewerPointsThisMonth == 100 && usersByMonth.Count() > 1 && usersByMonth[0].PointsTotal == usersByMonth[1].PointsTotal)
+            {
+                percentageWithFewerPointsThisMonth = 99;
+            }
 
-            var standingForCurrentYear = usersByYear.Count() == 0 || userYearPosition < 0
-                ? 0
-                : usersByYear[userYearPosition].PointsTotal == 0
-                ? 0 
-                : isUserTiedFirstThisYear
-                    ? 99
-                    : (totalMembers - userYearPosition) * 100 / totalMembers;
-
+            if (percentageWithFewerPointsThisYear == 100 && usersByYear.Count() > 1 && usersByYear[0].PointsTotal == usersByYear[1].PointsTotal)
+            {
+                percentageWithFewerPointsThisYear = 99;
+            }
 
             return new UserClubStandingModel
             {
-                PercentileStandingForCurrentMonth = standingForCurrentMonth,
-                PercentileStandingForCurrentYear = standingForCurrentYear,
+                PercentageMembersWithFewerPointsForCurrentMonth = (int)percentageWithFewerPointsThisMonth,
+                PercentageMembersWithFewerPointsForCurrentYear = (int)percentageWithFewerPointsThisYear,
+                PercentageMembersWithMorePointsForCurrentMonth = (int)percentageWithMorePointsThisMonth,
+                PercentageMembersWithMorePointsForCurrentYear = (int)percentageWithMorePointsThisYear
             };
         }
        

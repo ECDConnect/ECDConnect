@@ -240,22 +240,10 @@ export const getPointsTotalForYear = () =>
     }
   );
 
-export const getCurrentPercentileClubStandingForMonth = () =>
+export const getCurrentClubStanding = () =>
   createSelector(
     (state: RootState) => state.points.userClubStanding,
     (userClubStanding) => {
-      return !!userClubStanding
-        ? userClubStanding.standing.percentileStandingForCurrentMonth
-        : 0;
-    }
-  );
-
-export const getCurrentClubPercentileStandingForYear = () =>
-  createSelector(
-    (state: RootState) => state.points.userClubStanding,
-    (userClubStanding) => {
-      return !!userClubStanding
-        ? userClubStanding.standing.percentileStandingForCurrentYear
-        : 0;
+      return userClubStanding?.standing;
     }
   );

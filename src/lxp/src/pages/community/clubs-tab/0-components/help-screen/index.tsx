@@ -13,21 +13,31 @@ export const ActivityHelp: React.FC = () => {
   const [data, setData] = useState<MoreInformation[]>();
   const [selectedLanguage, setSelectedLanguage] = useState('en-za');
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const userAuth = useSelector(authSelectors.getAuthUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
 
   const history = useHistory();
 
-  const { activityId } = useParams<ActivityHelpRouteState>();
+  const { activityId, leagueType } = useParams<ActivityHelpRouteState>();
+
+  const section = leagueType ? `${activityId}-${leagueType}` : activityId;
 
   useEffect(() => {
+    setIsLoading(true);
     new InfoService()
-      .getMoreInformation(activityId, selectedLanguage)
-      .then((info) => setData(info));
-  }, [activityId, selectedLanguage, userAuth]);
+      .getMoreInformation(section, selectedLanguage)
+      .then((info) => {
+        setData(info);
+        setIsLoading(false);
+      })
+      .catch(() => setIsLoading(false));
+  }, [section, selectedLanguage, userAuth]);
 
   return (
     <MoreInformationPage
+      isLoading={isLoading}
       languages={languages.map((x) => ({
         value: x.locale,
         label: x.description,

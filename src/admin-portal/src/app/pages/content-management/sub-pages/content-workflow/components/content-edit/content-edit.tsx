@@ -59,6 +59,8 @@ export default function ContentEdit({
 
   const mutationName = `update${contentType?.name}`;
 
+  const creationMutationName = `create${contentType?.name}`;
+
   const updateMutation = gql` 
     mutation ${mutationName} ($id: String!, $input: ${contentType?.name}Input!, $localeId: String!) {
       ${mutationName} (id: $id, input: $input, localeId: $localeId) {
@@ -73,6 +75,12 @@ export default function ContentEdit({
       ${deleteMutationName} (id: $id, localeId: $localeId) 
       }
   `;
+
+  const createMutation = gql` 
+  mutation ${creationMutationName} ($input: ${contentType.name}Input!, $localeId: String!) {
+    ${creationMutationName} (input: $input, localeId: $localeId) 
+    }
+`;
 
   const dialog = useDialog();
 
@@ -135,6 +143,7 @@ export default function ContentEdit({
   };
 
   const [updateContent] = useMutation(updateMutation);
+  const [createContent] = useMutation(createMutation);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
@@ -206,16 +215,26 @@ export default function ContentEdit({
   const onSubmit = async (values: any) => {
     setLoading(true);
     const model = { ...values };
-
-    await updateContent({
-      variables: {
-        id: content.id.toString(),
-        input: { ...model },
-        localeId: selectedLanguageId.toString(),
-      },
-    }).catch(() => {
-      setLoading(false);
-    });
+    if (!content?.id) {
+      await createContent({
+        variables: {
+          input: { ...model },
+          localeId: selectedLanguageId.toString(),
+        },
+      }).catch(() => {
+        setLoading(false);
+      });
+    } else {
+      await updateContent({
+        variables: {
+          id: content.id.toString(),
+          input: { ...model },
+          localeId: selectedLanguageId.toString(),
+        },
+      }).catch(() => {
+        setLoading(false);
+      });
+    }
 
     setNotification({
       title: 'Successfully Updated Content!',
@@ -305,14 +324,15 @@ export default function ContentEdit({
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
-
-            <button
-              onClick={deleteAndRefresh}
-              className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
-            >
-              <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
-              Delete {content.name}
-            </button>
+            {content?.id && (
+              <button
+                onClick={deleteAndRefresh}
+                className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"
+              >
+                <TrashIcon color="tertiary" className="mr-2 h-6 w-6" />
+                Delete {content?.name}
+              </button>
+            )}
           </div>
         </form>
       </div>

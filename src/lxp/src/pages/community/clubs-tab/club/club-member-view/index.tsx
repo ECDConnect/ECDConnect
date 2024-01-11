@@ -177,9 +177,9 @@ export const ClubMemberView: React.FC = () => {
                   >
                     <div className="flex flex-row items-center">
                       {item.positiveStatus ? (
-                        <EmojiGreenSmile className="mr-4 h-12 w-12" />
+                        <EmojiGreenSmile className="mr-4 h-14 w-14 p-1" />
                       ) : (
-                        <EmojiOrangeSurprise className="mr-4 h-12 w-12" />
+                        <EmojiOrangeSurprise className="mr-4 h-14 w-14" />
                       )}
 
                       <div className="flex-col">
