@@ -93,9 +93,17 @@ export default function ContentList({
           displayFields.push(x);
       });
 
+      if (choosedSectionTitle === 'Small/large group activities') {
+        const smallLargeGroupsDisplayFields = displayFields?.filter(
+          (item) => item?.fieldName !== 'subType'
+        );
+        setDisplayFields(smallLargeGroupsDisplayFields);
+        return;
+      }
+
       setDisplayFields(displayFields);
     }
-  }, [contentType]);
+  }, [choosedSectionTitle, contentType]);
 
   const fields =
     contentType.fields?.map((x) => {
@@ -244,49 +252,46 @@ export default function ContentList({
       content: item,
       languageId: languageId,
     };
+
     viewContent(model);
   };
 
-  const displayCreatePanel = () => {
-    // if(contentType?.name === 'StoryBook') {
-    //   viewSelectedRow()
-    //   setAddStory(true)
-    //   return
-    // }
-    panel({
-      noPadding: true,
-      title: `Create ${type}`,
-      render: (onSubmit: any) => (
-        <ContentCreate
-          key={`contentPanelCreate`}
-          acceptedFileFormats={
-            selectedTab === ContentManagementTabs.COMMUNITY.id
-              ? ['pdf']
-              : undefined
-          }
-          selectedLanguageId={languageId}
-          languages={languages}
-          contentType={contentType}
-          optionDefinitions={optionDefinitions}
-          closeDialog={(created: boolean) => {
-            onSubmit();
+  //TO BE REMOVED AFTER NEW CREATE BE VALIDATED
+  // const displayCreatePanel = () => {
+  //   panel({
+  //     noPadding: true,
+  //     title: `Create ${type}`,
+  //     render: (onSubmit: any) => (
+  //       <ContentCreate
+  //         key={`contentPanelCreate`}
+  //         acceptedFileFormats={
+  //           selectedTab === ContentManagementTabs.COMMUNITY.id
+  //             ? ['pdf']
+  //             : undefined
+  //         }
+  //         selectedLanguageId={languageId}
+  //         languages={languages}
+  //         contentType={contentType}
+  //         optionDefinitions={optionDefinitions}
+  //         closeDialog={(created: boolean) => {
+  //           onSubmit();
 
-            if (created) {
-              refetchContent({
-                localeId: languageId.toString(),
-              });
-              refreshParent();
+  //           if (created) {
+  //             refetchContent({
+  //               localeId: languageId.toString(),
+  //             });
+  //             refreshParent();
 
-              setNotification({
-                title: 'Successfully Created Content!',
-                variant: NOTIFICATION.SUCCESS,
-              });
-            }
-          }}
-        />
-      ),
-    });
-  };
+  //             setNotification({
+  //               title: 'Successfully Created Content!',
+  //               variant: NOTIFICATION.SUCCESS,
+  //             });
+  //           }
+  //         }}
+  //       />
+  //     ),
+  //   });
+  // };
 
   const onBulkActionCallback = (status: BulkActionStatus) => {
     if (status !== 'success') return;
@@ -332,7 +337,10 @@ export default function ContentList({
             {hasPermission(PermissionEnum.create_static) &&
               contentType?.name !== 'Consent' && (
                 <button
-                  onClick={() => displayCreatePanel()}
+                  onClick={() => {
+                    hasPermission(PermissionEnum.update_static) &&
+                      viewSelectedRow();
+                  }}
                   type="button"
                   className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
                 >

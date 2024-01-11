@@ -11,7 +11,11 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public string ContactNumber { get; set; }
         public string Gender { get; set; }
         public DateTime CreatedOn { get; set; }
-        public Owner Owner { get; set; }
+
+        public string AddressLine1 { get; set; }
+        public string AddressLine2 { get; set; }
+        public string AddressLine3 { get; set; }
+        public string PostalCode { get; set; }
 
     }
 }
