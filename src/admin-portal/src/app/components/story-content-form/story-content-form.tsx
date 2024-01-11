@@ -2,14 +2,16 @@ import { gql, useQuery } from '@apollo/client';
 import {
   ContentDefinitionModelDto,
   ContentValueDto,
+  StoryBookPartDto,
+  StoryBookQuestionDto,
   camelCaseToSentanceCase,
 } from '@ecdlink/core';
-import { CheckboxGroup, Typography } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { CheckboxGroup, FormInput, Typography } from '@ecdlink/ui';
+import { useEffect, useMemo, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
 
-export interface DynamicSelectorProps {
+export interface StoryContentFormProps {
   contentValue?: ContentValueDto;
   languageId?: string;
   title?: string;
@@ -17,9 +19,11 @@ export interface DynamicSelectorProps {
   isReview: boolean;
   setSelectedItems?: (value: string) => void;
   isSkillType?: boolean;
+  setFilteredStoryBookParts?: (item?: StoryBookPartDto[]) => void;
+  setFilteredStoryBookPartsQuestions?: (item?: StoryBookQuestionDto[]) => void;
 }
 
-const DynamicSelector: React.FC<DynamicSelectorProps> = ({
+const StoryContentForm: React.FC<StoryContentFormProps> = ({
   contentValue,
   languageId,
   title,
@@ -27,6 +31,8 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   isReview,
   setSelectedItems,
   isSkillType,
+  setFilteredStoryBookParts,
+  setFilteredStoryBookPartsQuestions,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -46,6 +52,10 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   const [tableData, setTableData] = useState<any[]>([]);
 
   const [currentIds, setCurrentIds] = useState<string[]>();
+  const currentStoryBooks = useMemo(
+    () => tableData.filter((x) => currentIds?.includes(x.id?.toString())),
+    [currentIds, tableData]
+  );
 
   const query = gql` 
     query ${getAllCall} ($localeId: String) {
@@ -56,6 +66,17 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       }
   `;
 
+  const storyBookPartsQuestionsQuery = gql`
+    query GetAllStoryBookPartQuestion($localeId: String) {
+      GetAllStoryBookPartQuestion(localeId: $localeId) {
+        id
+        question
+        name
+        __typename
+      }
+    }
+  `;
+
   const { data: contentData } = useQuery(query, {
     fetchPolicy: 'cache-and-network',
     variables: {
@@ -63,7 +84,23 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     },
   });
 
+  const { data: storyBookPartQuestioncontentData } = useQuery(
+    storyBookPartsQuestionsQuery,
+    {
+      fetchPolicy: 'cache-and-network',
+      variables: {
+        localeId: languageId?.toString(),
+      },
+    }
+  );
+
+  const [storyBookPartsQuestions, setStoryBookPartsQuestions] =
+    useState<StoryBookQuestionDto[]>();
   const [displayFields, setDisplayFields] = useState<string[]>();
+  const [storyBookPartsValues, setStoryBookPartsValues] =
+    useState(currentStoryBooks);
+  const [storyBookPartsValuesFormatted, setStoryBookPartsDataValuesFormatted] =
+    useState(currentStoryBooks);
 
   useEffect(() => {
     if (optionDefinition && optionDefinition.fields) {
@@ -77,6 +114,40 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
       setDisplayFields(displayFields);
     }
   }, [optionDefinition]);
+
+  useEffect(() => {
+    if (currentStoryBooks) {
+      setStoryBookPartsValues(currentStoryBooks);
+    }
+  }, [currentStoryBooks]);
+
+  useEffect(() => {
+    if (storyBookPartQuestioncontentData) {
+      setStoryBookPartsQuestions(
+        storyBookPartQuestioncontentData?.GetAllStoryBookPartQuestion
+      );
+    }
+  }, [storyBookPartQuestioncontentData]);
+
+  useEffect(() => {
+    if (storyBookPartsValues) {
+      const emptyArray = [];
+      const inputLimit = 10 - storyBookPartsValues?.length;
+      for (let i = 0; i < inputLimit; i++) {
+        emptyArray?.push({
+          name: '',
+          id: '',
+          part: '',
+          partText: '',
+          storyBookPartQuestions: [],
+        });
+      }
+      setStoryBookPartsDataValuesFormatted([
+        ...storyBookPartsValues,
+        ...emptyArray,
+      ]);
+    }
+  }, [storyBookPartsValues]);
 
   useEffect(() => {
     if (contentValue) {
@@ -119,7 +190,44 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
     }
   };
 
-  if (tempData && displayFields) {
+  const onChange = (e, idx) => {
+    let newArray = [...storyBookPartsValuesFormatted];
+
+    newArray[idx] = {
+      ...newArray[idx],
+      partText: e.target.value,
+      part: `Part ${idx + 1}`,
+      name: `Part ${idx + 1}`,
+      idx: idx,
+    };
+
+    setStoryBookPartsDataValuesFormatted(newArray);
+  };
+
+  let changedStoryBookPartsArr = useMemo(
+    () =>
+      storyBookPartsValuesFormatted?.filter((o1) => {
+        return storyBookPartsValues?.every(
+          (o2) =>
+            (o2.partText !== o1.partText && o1?.partText !== '') ||
+            (o1?.partText === '' && o1?.id)
+        );
+      }),
+    [storyBookPartsValues, storyBookPartsValuesFormatted]
+  );
+
+  useEffect(() => {
+    if (changedStoryBookPartsArr) {
+      setFilteredStoryBookParts(changedStoryBookPartsArr);
+    }
+  }, [changedStoryBookPartsArr, setFilteredStoryBookParts]);
+
+  if (
+    tempData &&
+    displayFields &&
+    storyBookPartsQuestions &&
+    storyBookPartsValuesFormatted
+  ) {
     if (isSkillType) {
       return (
         <div>
@@ -186,6 +294,7 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             camelCaseToSentanceCase(optionDefinition?.contentName ?? '')
           }
         />
+
         {(title === 'C T F35 - theme Days' || title === 'theme Days') && (
           <Typography
             type={'body'}
@@ -195,54 +304,50 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
             }
           />
         )}
+        {title === 'C T F35 - theme Days' || title === 'theme Days'}
+        <Typography
+          type={'body'}
+          color={'textMid'}
+          text={'You must add at least one part.'}
+        />
 
         <div className="mt-4 overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th
-                  scope="col"
-                  className=" w-full px-6 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500"
-                >
-                  Name
-                </th>
-              </tr>
-            </thead>
-            <tbody className="z-10 divide-y divide-gray-200 bg-white">
-              {tableData &&
-                tableData.map((item: any) => (
-                  <tr key={item.id}>
-                    <td className="whitespace-nowrap px-2 py-4">
-                      <div className="flex items-center">
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {item.name}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="whitespace-nowrap px-6 py-4">
-                      <div className="flex items-center">
-                        <div className="text-sm font-medium text-gray-900">
-                          <input
-                            disabled={isReview}
-                            defaultChecked={currentIds?.some(
-                              (x) => x === item.id.toString()
-                            )}
-                            type="checkbox"
-                            className="focus:ring-primary text-primary h-4 w-4 rounded border-gray-300"
-                            onChange={() => selectItem(item.id)}
-                          />
-                        </div>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <div className="min-w-full  divide-gray-200">
+            {storyBookPartsValuesFormatted &&
+              storyBookPartsValuesFormatted.map((item: any, idx: number) => {
+                return (
+                  <div className="mt-4">
+                    <Typography
+                      type={'h4'}
+                      text={`Part ${idx + 1}`}
+                      className={'text-sm font-normal'}
+                      color={'textDark'}
+                    />
+                    <Typography
+                      type={'body'}
+                      text={`Text`}
+                      className={'mt-1 text-sm font-normal'}
+                      color={'textDark'}
+                    />
+                    <div>
+                      <FormInput
+                        key={idx}
+                        className="bg-adminPortalBg my-4 p-4"
+                        isAdminPortalField={true}
+                        id={item?.id}
+                        value={item?.partText}
+                        onChange={(e) => onChange(e, idx)}
+                        textInputType="input"
+                        placeholder={'Add a response...'}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
 
           <Pagination
-            recordsPerPage={8}
+            recordsPerPage={1000}
             items={tempData}
             responseData={setTableData}
           />
@@ -254,4 +359,4 @@ const DynamicSelector: React.FC<DynamicSelectorProps> = ({
   }
 };
 
-export default DynamicSelector;
+export default StoryContentForm;

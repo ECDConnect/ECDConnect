@@ -6,10 +6,7 @@ import {
   ContentTypeDto,
   ContentTypeFieldDto,
   LanguageDto,
-  NOTIFICATION,
   PermissionEnum,
-  useNotifications,
-  usePanel,
 } from '@ecdlink/core';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -19,7 +16,6 @@ import {
   ContentManagementView,
   FieldType,
 } from '../../content-management-models';
-import ContentCreate from './components/content-create/content-create';
 import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import {
   ContentManagementTabs,
@@ -52,11 +48,7 @@ export default function ContentList({
   choosedSectionTitle,
 }: ContentListProps) {
   const { hasPermission } = useUser();
-
   const [tableData, setTableData] = useState<any[]>([]);
-  const { setNotification } = useNotifications();
-  const panel = usePanel();
-  const type = contentType.description;
   const [languageId, setLanguageId] = useState<string>(LanguageId.enZa);
 
   const [displayFields, setDisplayFields] = useState<ContentTypeFieldDto[]>();
@@ -302,23 +294,6 @@ export default function ContentList({
     return (
       <div>
         <div className="flex flex-col">
-          {/* <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <h3 className="text-lg font-medium leading-6 text-white">{type}</h3>
-            <div className="flex flex-row">
-              <div className="flex flex-col">
-                <LanguageSelector
-                  disabled={false}
-                  languages={languages}
-                  currentLanguageId={languageId}
-                  selectLanguage={getContentGroupContentByLanguageId}
-                />
-              </div>
-              <div className="flex flex-col">
-                <div className="mt-1 ml-4">
-                </div>
-              </div>
-            </div>
-          </div> */}
           <div className="mb-8 flex flex-col items-center gap-2 md:justify-between lg:flex-row">
             <div className="bg-adminPortalBg relative w-full rounded-md lg:w-6/12">
               <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
