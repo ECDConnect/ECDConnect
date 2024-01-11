@@ -21,3 +21,7 @@ export interface AddMeetingProps {
   setStep3?: (step3: Step3Props) => void;
   setIsEnabledButton: (isEnabledButton: boolean) => void;
 }
+
+export interface AddMeetingRouteState {
+  eventId?: string;
+}

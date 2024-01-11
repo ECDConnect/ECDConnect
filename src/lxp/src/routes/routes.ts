@@ -120,7 +120,9 @@ const ROUTES = {
           EDIT: '/edit',
         }),
         MEETING: addPrefix('/meeting', {
-          ADD_MEETING: '/add',
+          ADD_MEETING: addPrefix('/add', {
+            UPCOMING_MEETING: '/:eventId',
+          }),
         }),
         FAMILY_DAY_EVENT: addPrefix('/family-day-event', {
           ADD_EVENT: '/add',

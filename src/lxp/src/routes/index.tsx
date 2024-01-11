@@ -347,7 +347,11 @@ const AuthRoutes: React.FC = () => {
         exact
       />
       <Route
-        path={ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING}
+        path={[
+          ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.ROOT,
+          ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+            .UPCOMING_MEETING,
+        ]}
         component={AddMeeting}
         exact
       />

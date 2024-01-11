@@ -1,12 +1,13 @@
 import {
   Alert,
   ButtonGroup,
+  ButtonGroupOption,
   ButtonGroupTypes,
   DatePicker,
   LoadingSpinner,
   Typography,
 } from '@ecdlink/ui';
-import { AddMeetingProps } from '../index.types';
+import { AddMeetingProps, AddMeetingRouteState } from '../index.types';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
@@ -18,6 +19,7 @@ import {
 } from '@/store/club/club.actions';
 import { useAppDispatch } from '@/store';
 import { useSnackbar } from '@ecdlink/core';
+import { useParams } from 'react-router';
 
 export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
   const [hasMeetingHappened, setHasMeetingHappened] = useState<
@@ -34,6 +36,12 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
   const club = useSelector(clubSelectors.getClubForPractitionerSelector);
   const details = useSelector(
     clubSelectors.getActivityMeetRegularDetailsSelector(club?.id ?? '')
+  );
+
+  const { eventId } = useParams<AddMeetingRouteState>();
+
+  const upcomingMeeting = details?.upcomingMeetings?.find(
+    (item) => item?.eventId === eventId
   );
 
   const allMeetings = useMemo(
@@ -55,19 +63,29 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
   const currentYear = currentDate.getFullYear();
   const monthName = currentDate.toLocaleString('default', { month: 'long' });
 
-  const hasMeetingInCurrentMonth = allMeetings.some(
-    (meeting) =>
-      new Date(meeting?.meetingDate).getMonth() === currentMonth &&
-      new Date(meeting?.meetingDate).getFullYear() === currentYear
-  );
+  const hasMeetingInCurrentMonth = false;
+  // allMeetings.some(
+  //   (meeting) =>
+  //     new Date(meeting?.meetingDate).getMonth() === currentMonth &&
+  //     new Date(meeting?.meetingDate).getFullYear() === currentYear
+  // );
 
   const { isLoading, isFulfilled, wasLoading, isRejected, error } =
     useThunkFetchCall('clubs', ClubActions.GET_ACTIVITY_MEET_REGULAR_DETAILS);
 
-  const yesNoOptions = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+  const yesNoOptions: ButtonGroupOption<boolean>[] = [
+    { text: 'Yes', value: true, disabled: !!upcomingMeeting },
+    { text: 'No', value: false, disabled: !!upcomingMeeting },
   ];
+
+  useEffect(() => {
+    if (!upcomingMeeting) return;
+
+    setHasMeetingHappened(!!upcomingMeeting);
+    setDate(
+      new Date(`${upcomingMeeting.meetingDate?.split('T')?.[0]}T00:00:00`)
+    );
+  }, [upcomingMeeting]);
 
   useEffect(() => {
     setIsEnabledButton(!!date);
@@ -133,6 +151,7 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
         color="secondary"
         type={ButtonGroupTypes.Button}
         className="mb-4"
+        selectedOptions={hasMeetingHappened}
       />
       {hasMeetingHappened !== undefined &&
       (!isOnline || error) &&
@@ -167,6 +186,7 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
               onChange={setDate}
               minDate={hasMeetingHappened ? minDate : currentDate}
               maxDate={hasMeetingHappened ? currentDate : undefined}
+              disabled={!!upcomingMeeting}
             />
           )}
           {hasMeetingHappened !== undefined && hasMeetingInCurrentMonth && (

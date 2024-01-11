@@ -125,7 +125,7 @@ export const ClubTab: React.FC = () => {
     // Scenario 1
     if (!addedMeetingRegularThisMonth && addedFamilyDayThisQuarter) {
       return history.push(
-        ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING
+        ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.ROOT
       );
     }
 

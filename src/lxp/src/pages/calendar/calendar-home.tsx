@@ -27,6 +27,10 @@ import { useSelector } from 'react-redux';
 import { calendarSelectors } from '@/store/calendar';
 import { CalendarEventModel } from '@ecdlink/core';
 import { useCalendarViewEvent } from './components/calendar-view-event/calendar-view-event';
+import { CalendarAddEventInfo } from './components/calendar-add-event/calendar-add-event.types';
+import ROUTES from '@/routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
+import { clubSelectors } from '@/store/club';
 
 export const CalendarHome: React.FC = () => {
   const history = useHistory();
@@ -40,7 +44,16 @@ export const CalendarHome: React.FC = () => {
   const [calendarView, setCalendarView] = useState<ViewType>('day');
   const calendarRef = createRef<ToastUIReactCalendar>();
 
+  const [selectedEventId, setSelectedEventId] = useState('');
+
   const events = useSelector(calendarSelectors.getCalendarEventObjects());
+  const eventById = useSelector(
+    calendarSelectors.getCalendarEventById(selectedEventId)
+  );
+
+  const isClubMonthlyMeeting =
+    (eventById?.eventType as CalendarAddEventInfo['eventType']) ===
+    'Club Monthly Meeting';
 
   const calendarAddEvent = useCalendarAddEvent();
   const calendarViewEvent = useCalendarViewEvent();
@@ -113,15 +126,36 @@ export const CalendarHome: React.FC = () => {
         start: start.toISOString(),
         end: end.toISOString(),
       },
+      // Added this blocking because it's necessary to know the club member list
+      // and in this generic event creation we don't have that information
+      optionsToHide: ['Club Monthly Meeting'],
       onCancel: onCalendarAddEventBack,
       onUpdated: onCalendarAddEventUpdate,
     });
   };
 
   const updateEvent = (event: EventObject) => {
+    setSelectedEventId(event.id);
     calendarInstance()?.clearGridSelections();
     calendarViewEvent({
       event: event.id,
+      // Added this blocking because this type of event is linked to a club and cannot be changed
+      eventTypeDisabled: isClubMonthlyMeeting,
+      hideAddParticipantsButton: isClubMonthlyMeeting,
+      actionButton: isClubMonthlyMeeting
+        ? {
+            name: 'Record meeting',
+            icon: 'ArrowCircleRightIcon',
+            onClick: () => {
+              history.push(
+                ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
+                  ':eventId',
+                  event.id
+                )
+              );
+            },
+          }
+        : undefined,
     });
   };
 
@@ -156,7 +190,7 @@ export const CalendarHome: React.FC = () => {
       // calendarInstance()?.off('clickDayName');
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [eventById]);
 
   return (
     <div className={styles.contentWrapper}>

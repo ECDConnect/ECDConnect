@@ -175,14 +175,14 @@ export const MeetRegularly: React.FC = () => {
           hideAvatar: true,
           onActionClick: () =>
             history.push(
-              ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS.replace(
-                ':meetingId',
-                meetingId!
-              ).replace(':clubId', clubId)
+              ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
+                ':eventId',
+                item?.eventId ?? ''
+              )
             ),
         };
       }) ?? [],
-    [clubId, details?.upcomingMeetings, history]
+    [details?.upcomingMeetings, history]
   );
 
   const pastMeetings: UserAlertListDataItem[] = useMemo(
@@ -345,7 +345,9 @@ export const MeetRegularly: React.FC = () => {
           color="primary"
           text="Add a meeting"
           onClick={() =>
-            history.push(ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING)
+            history.push(
+              ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.ROOT
+            )
           }
         />
       )}
