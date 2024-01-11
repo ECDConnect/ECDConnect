@@ -714,6 +714,23 @@ export type BulkInvitationResult = {
   success?: Maybe<Array<Maybe<Scalars['String']>>>;
 };
 
+export type CmsConnectItemModelInput = {
+  buttonText?: InputMaybe<Scalars['String']>;
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  link?: InputMaybe<Scalars['String']>;
+  linkedConnect: Scalars['Int'];
+};
+
+export type CmsConnectModelInput = {
+  contentId: Scalars['Int'];
+  contentTypeId: Scalars['Int'];
+  hint?: InputMaybe<Scalars['String']>;
+  links?: InputMaybe<Array<InputMaybe<CmsConnectItemModelInput>>>;
+  name?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
+};
+
 export type CmsQuestionInput = {
   answer?: InputMaybe<Scalars['String']>;
   question?: InputMaybe<Scalars['String']>;
@@ -2886,12 +2903,16 @@ export type ComparableNullableOfInt32OperationFilterInput = {
 
 export type Connect = {
   __typename?: 'Connect';
+  hint?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['Int']>;
   name?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
 };
 
 export type ConnectInput = {
+  hint?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  type?: InputMaybe<Scalars['String']>;
 };
 
 export type ConnectItem = {
@@ -5063,6 +5084,13 @@ export type ListFilterInputTypeOfStatementsIncomeFilterInput = {
   some?: InputMaybe<StatementsIncomeFilterInput>;
 };
 
+export type ListFilterInputTypeOfVisitDataFilterInput = {
+  all?: InputMaybe<VisitDataFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<VisitDataFilterInput>;
+  some?: InputMaybe<VisitDataFilterInput>;
+};
+
 export type ListFilterInputTypeOfVisitFilterInput = {
   all?: InputMaybe<VisitFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -5872,6 +5900,8 @@ export type Mutation = {
   moveClubMembers: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
+  pushPQAData: Scalars['Boolean'];
+  pushSmartSpaceVisitsData: Scalars['Boolean'];
   reassignAbsenteeFromHistory: Scalars['Boolean'];
   reassignAbsentees: Scalars['Boolean'];
   reassignAllClassroomsFromHistoryService: Scalars['Boolean'];
@@ -6011,6 +6041,7 @@ export type Mutation = {
   updateCommunitySupport?: Maybe<Trainee>;
   updateConnect?: Maybe<Connect>;
   updateConnectItem?: Maybe<ConnectItem>;
+  updateConnectSection: Scalars['Boolean'];
   updateConsent?: Maybe<Consent>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
   updateDocument?: Maybe<Document>;
@@ -7565,6 +7596,7 @@ export type MutationOpenAccessAddChildArgs = {
 };
 
 export type MutationPromotePractitionerToPrincipalArgs = {
+  sendComm?: Scalars['Boolean'];
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -8291,6 +8323,11 @@ export type MutationUpdateConnectItemArgs = {
   id: Scalars['String'];
   input: ConnectItemInput;
   locale?: InputMaybe<Scalars['String']>;
+  localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateConnectSectionArgs = {
+  input?: InputMaybe<Array<InputMaybe<CmsConnectModelInput>>>;
   localeId?: InputMaybe<Scalars['String']>;
 };
 
@@ -15973,6 +16010,7 @@ export type Visit = {
   infant?: Maybe<Infant>;
   infantId?: Maybe<Scalars['UUID']>;
   insertedDate: Scalars['DateTime'];
+  integrationSubmitDate?: Maybe<Scalars['DateTime']>;
   isActive: Scalars['Boolean'];
   linkedVisitId?: Maybe<Scalars['UUID']>;
   mother?: Maybe<Mother>;
@@ -15989,6 +16027,7 @@ export type Visit = {
   traineeId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  visitAnswers?: Maybe<Array<Maybe<VisitData>>>;
   visitInProgress: Scalars['Boolean'];
   visitType?: Maybe<VisitType>;
   visitTypeId: Scalars['UUID'];
@@ -16229,6 +16268,7 @@ export type VisitFilterInput = {
   infant?: InputMaybe<InfantFilterInput>;
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  integrationSubmitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   linkedVisitId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   mother?: InputMaybe<MotherFilterInput>;
@@ -16246,6 +16286,7 @@ export type VisitFilterInput = {
   traineeId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  visitAnswers?: InputMaybe<ListFilterInputTypeOfVisitDataFilterInput>;
   visitInProgress?: InputMaybe<BooleanOperationFilterInput>;
   visitType?: InputMaybe<VisitTypeFilterInput>;
   visitTypeId?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -16386,6 +16427,7 @@ export type VisitInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   Infant?: InputMaybe<InfantInput>;
   InfantId?: InputMaybe<Scalars['UUID']>;
+  IntegrationSubmitDate?: InputMaybe<Scalars['DateTime']>;
   IsActive: Scalars['Boolean'];
   LinkedVisitId?: InputMaybe<Scalars['UUID']>;
   Mother?: InputMaybe<MotherInput>;
@@ -16401,6 +16443,7 @@ export type VisitInput = {
   Trainee?: InputMaybe<TraineeInput>;
   TraineeId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  VisitAnswers?: InputMaybe<Array<InputMaybe<VisitDataInput>>>;
   VisitInProgress: Scalars['Boolean'];
   VisitType?: InputMaybe<VisitTypeInput>;
   VisitTypeId: Scalars['UUID'];
@@ -16441,6 +16484,7 @@ export type VisitSortInput = {
   infant?: InputMaybe<InfantSortInput>;
   infantId?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
+  integrationSubmitDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
   linkedVisitId?: InputMaybe<SortEnumType>;
   mother?: InputMaybe<MotherSortInput>;
