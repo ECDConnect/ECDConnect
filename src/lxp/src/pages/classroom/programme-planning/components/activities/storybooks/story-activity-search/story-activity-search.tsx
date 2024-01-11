@@ -171,10 +171,12 @@ export const StoryActivitySearch: React.FC<StoryActivitySearchProps> = ({
       selectedLanguageFilterOptions &&
       selectedLanguageFilterOptions.length > 0
     ) {
-      allStoriesCopy = allStoriesCopy.filter((story) =>
-        story.availableLanguages.some(
-          (x) => x.id === selectedLanguageFilterOptions[0].id
-        )
+      allStoriesCopy = allStoriesCopy.filter(
+        (story) =>
+          story.availableLanguages &&
+          story.availableLanguages.some(
+            (x) => x.id === selectedLanguageFilterOptions[0].id
+          )
       );
     }
 
