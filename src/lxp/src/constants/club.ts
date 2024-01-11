@@ -63,4 +63,6 @@ export const enum IssuesTasks {
   missingRegister = 'Missing club meeting register',
   missingRegisterForMonth = ' club meeting register',
   clubAttendance = '% club attendance in ',
+  coachAttendFirstMeeting = ', Attend first club meeting',
+  coachMeetingAttended = ', Attend club meeting',
 }
