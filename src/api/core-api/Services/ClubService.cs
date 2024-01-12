@@ -1947,6 +1947,14 @@ namespace EcdLink.Api.CoreApi.Services
             return 1;
         }
 
+        public List<ClubMeeting> GetClubMeetingsWithMissingRegisters(Guid clubId)
+        {
+            return _clubMeetingRepo.GetAll().Where(x => x.ClubId == clubId && 
+                                                   x.ClubMeetingRegister == null && 
+                                                   x.MeetingDate.Value.Year == DateTime.Now.Year &&
+                                                   x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting).ToList();
+        }
+
         public ClubMeeting SetContactClubLeaderStatusForMeeting(Guid clubMeetingId)
         {
             ClubMeeting clubMeeting = _clubMeetingRepo.GetById(clubMeetingId);

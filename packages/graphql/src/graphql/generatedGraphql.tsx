@@ -11157,6 +11157,7 @@ export type Query = {
   >;
   clubById?: Maybe<DetailClubModel>;
   clubForUser?: Maybe<DetailClubModel>;
+  clubMeetingsWithMissingRegisters?: Maybe<Array<Maybe<ClubMeeting>>>;
   clubsForCoach?: Maybe<Array<Maybe<DetailClubModel>>>;
   clubsMembers?: Maybe<Array<Maybe<ClubMember>>>;
   coachByCoachUserId?: Maybe<Coach>;
@@ -13041,6 +13042,10 @@ export type QueryClubByIdArgs = {
 
 export type QueryClubForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClubMeetingsWithMissingRegistersArgs = {
+  clubId: Scalars['UUID'];
 };
 
 export type QueryClubsForCoachArgs = {
