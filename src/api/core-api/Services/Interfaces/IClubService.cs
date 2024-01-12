@@ -45,5 +45,6 @@ namespace ECDLink.Api.CoreApi.Services.Interfaces
         public void ArchiveClubUser(Guid practitionerId);
         public LeagueClubsModel GetLeagueForUser(string userId);
         public ClubSupport UpdateClubSupportStatus(Guid practitionerId);
+        public ClubMeeting SetContactClubLeaderStatusForMeeting(Guid clubMeetingId);
     }
 }

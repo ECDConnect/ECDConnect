@@ -259,7 +259,9 @@ export type ActivityMeetRegular = {
 
 export type ActivityMeetRegularDetail = {
   __typename?: 'ActivityMeetRegularDetail';
+  clubLeaderContacted: Scalars['Boolean'];
   eventId?: Maybe<Scalars['UUID']>;
+  id: Scalars['UUID'];
   meetingAbsentees?: Maybe<Array<Maybe<ClubUser>>>;
   meetingAttendanceColor?: Maybe<Scalars['String']>;
   meetingAttendancePerc: Scalars['Float'];
@@ -6007,6 +6009,7 @@ export type Mutation = {
   sendUserAddedToClubNotification: Scalars['Boolean'];
   sendUserAssignedToClassFromOldClassNotification: Scalars['Boolean'];
   sendUserAssignedToClassNotification: Scalars['Boolean'];
+  setContactClubLeaderStatusForMeeting?: Maybe<ClubMeeting>;
   submitMonthlyStatement?: Maybe<IncomeStatementModel>;
   switchPrincipal: Scalars['Boolean'];
   testPointEngine: Scalars['Boolean'];
@@ -8132,6 +8135,10 @@ export type MutationSendUserAssignedToClassNotificationArgs = {
   oldClassName?: InputMaybe<Scalars['String']>;
   principalName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationSetContactClubLeaderStatusForMeetingArgs = {
+  clubMeetingId: Scalars['UUID'];
 };
 
 export type MutationSubmitMonthlyStatementArgs = {

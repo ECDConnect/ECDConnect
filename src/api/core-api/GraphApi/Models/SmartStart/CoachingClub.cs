@@ -101,6 +101,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
 
     public class ActivityMeetRegularDetail
     {
+        public Guid Id { get; set; }
         public DateTime MeetingDate { get; set; }
         public double MeetingAttendancePerc { get; set; }
         public string MeetingAttendanceColor { get; set; }
