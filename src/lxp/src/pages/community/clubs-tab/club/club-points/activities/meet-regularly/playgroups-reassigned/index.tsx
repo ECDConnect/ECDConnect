@@ -38,7 +38,6 @@ export const PlaygroupsReassigned = () => {
 
   const clubLeaderFirstName = club?.clubLeader?.firstName;
 
-  console.log({ club, meetings });
   const onWhatsapp = () => {
     const whatsAppNumber = club?.clubLeader?.whatsAppNumber;
 

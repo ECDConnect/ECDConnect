@@ -164,7 +164,6 @@ export const IssuesAndTasks = ({
     );
 
     if (!!missingRegister) {
-      console.log({ clubId });
       addIssuesAndTasksItem({
         menuIcon: 'ExclamationCircleIcon',
         title: missingRegister?.secondaryText,
