@@ -29,14 +29,14 @@ export interface CoachSmartSpaceChecklistRouteState {
 
 export const CoachTraineeFranchisorAgreement: React.FC<
   CoachSmartSpaceChecklistProps
-> = ({ setNotificationStep }) => {
+> = ({ setNotificationStep, practitioner: trainee }) => {
   const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
   const location = useLocation<CoachSmartSpaceChecklistRouteState>();
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
-  const practitioner = location.state.practitioner;
+  const practitioner = location.state.practitioner || trainee;
 
   const coachSmartSpaceVisit2DataNotAttendedStandards = useSelector(
     traineeSelectors.getCoachSmartSpaceVisit2DataNotAttendedStandards
@@ -58,8 +58,9 @@ export const CoachTraineeFranchisorAgreement: React.FC<
 
   const handleBackButton = () => {
     if (activeStep === 1) {
+      setNotificationStep('');
       history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
-        practitionerId: practitioner?.userId,
+        practitionerId: practitioner?.userId || practitioner?.user?.id,
       });
     }
     setActiveStep(activeStep - 1);
