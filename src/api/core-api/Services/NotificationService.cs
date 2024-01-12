@@ -236,6 +236,8 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var notification = _messageRepo.GetById(Guid.Parse(notificationId));
                 notification.IsActive = false;
+                notification.MessageEndDate = DateTime.Now;
+                notification.UpdatedDate = DateTime.Now;
                 _messageRepo.Update(notification);
             }
             return true;
@@ -246,6 +248,7 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var notification = _messageRepo.GetById(Guid.Parse(notificationId));
                 notification.MessageEndDate = DateTime.Now;
+                notification.UpdatedDate = DateTime.Now;
                 _messageRepo.Update(notification);
             }
             return true;
