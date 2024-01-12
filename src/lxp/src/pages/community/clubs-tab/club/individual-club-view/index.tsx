@@ -67,6 +67,10 @@ export const Club: React.FC = () => {
     'clubs',
     ClubActions.GET_CLUBS_FOR_COACH
   );
+  const { isLoading: isLoadingClub } = useThunkFetchCall(
+    'clubs',
+    ClubActions.GET_CLUB_BY_ID
+  );
 
   const { clubId } = useParams<ClubsRouteState>();
 
@@ -460,7 +464,7 @@ export const Club: React.FC = () => {
       title={`${club?.name} club`}
       onBack={() => history.push(ROUTES.COMMUNITY.ROOT)}
     >
-      {isLoading ? (
+      {isLoading || isLoadingClub ? (
         <LoadingSpinner
           className="mt-4"
           size="medium"

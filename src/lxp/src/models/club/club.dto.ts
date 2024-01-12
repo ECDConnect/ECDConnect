@@ -56,6 +56,7 @@ export type ClubLeaderDto = {
   profileImageUrl: string;
   dateAccepted: string;
   dateAssigned: string;
+  whatsAppNumber: string;
 };
 
 export type ClubSupportDto = {

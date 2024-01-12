@@ -37,6 +37,26 @@ export const getLeagueForCoachSelector = (leagueId: string) =>
   );
 
 // Both
+export const getClubMeetingsWithMissingRegistersSelector = (clubId: string) =>
+  createSelector(
+    (state: RootState) => {
+      const user = state.user.user;
+
+      const isCoach = user?.roles?.some((role) =>
+        role.name.includes(UserTypeEnum.Coach)
+      );
+
+      if (isCoach) {
+        return state.clubs.clubsForCoach[clubId].points?.meetRegularly
+          ?.missingMeetings;
+      } else {
+        return state.clubs.clubForPractitioner?.points?.meetRegularly
+          ?.missingMeetings;
+      }
+    },
+    (meetings) => meetings
+  );
+
 export const getClubByIdSelector = (clubId: string) =>
   createSelector(
     (state: RootState) => {

@@ -1087,6 +1087,68 @@ class ClubService {
 
     return response.data.data.updateClubSupportStatus;
   }
+
+  async getClubMeetingsWithMissingRegisters(input: {
+    clubId: string;
+  }): Promise<ClubMeeting[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { clubMeetingsWithMissingRegisters: ClubMeeting[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetClubMeetingsWithMissingRegisters($clubId: UUID!) {
+          clubMeetingsWithMissingRegisters(clubId: $clubId) {
+              id
+              meetingDate
+              name    
+          }     
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get club meetings with missing registers - Server connection error'
+      );
+    }
+
+    return response.data.data.clubMeetingsWithMissingRegisters;
+  }
+
+  async setContactClubLeaderStatusForMeeting(input: {
+    clubMeetingId: string;
+  }): Promise<ClubMeeting> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { setContactClubLeaderStatusForMeeting: ClubMeeting };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation SetContactClubLeaderStatusForMeeting($clubMeetingId: UUID!) {
+          setContactClubLeaderStatusForMeeting(clubMeetingId: $clubMeetingId) {
+              id
+              meetingDate
+              clubLeaderContacted
+          }
+        }
+      `,
+      variables: {
+        ...input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Set contact club leader status for meeting - Server connection error'
+      );
+    }
+
+    return response.data.data.setContactClubLeaderStatusForMeeting;
+  }
 }
 
 export default ClubService;
