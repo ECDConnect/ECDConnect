@@ -123,7 +123,8 @@ namespace EcdLink.Api.CoreApi.Services
                 OtherDescription = input.OtherDescription == null ? "": input.OtherDescription,
                 TotalCaregiversAttended = input.TotalCaregiversAttended == null ? 0 : input.TotalCaregiversAttended.Value,
                 CoachAttended = input.CoachAttend == null ? false : true,
-                EventId = input.EventId
+                EventId = input.EventId,
+                ClubLeaderContacted = false
             });
             
             // insert participants for club meeting
@@ -234,7 +235,8 @@ namespace EcdLink.Api.CoreApi.Services
                     MeetingTypeId = meetingTypeId,
                     MeetingNotes = "",
                     OtherDescription = "",
-                    CoachAttended = false,    
+                    CoachAttended = false,
+                    ClubLeaderContacted = false,
                     TotalCaregiversAttended = 0,
                     ClubMeetingRegister = members.Distinct().Select(x => new ClubMeetingRegister
                     {
@@ -554,6 +556,7 @@ namespace EcdLink.Api.CoreApi.Services
                 foreach (var item in clubSupports)
                 {
                     item.IsActive = false;
+                    item.IsNewInSupportRole = false;
                     item.UpdatedBy = _applicationUserId;
                     item.UpdatedDate = DateTime.Now;
                     _clubSupportRepo.Update(item);
@@ -772,18 +775,21 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     pastMeetings.Add(new ActivityMeetRegularDetail()
                     {
+                        Id = item.Id,
                         MeetingDate = (DateTime)item.MeetingDate,
                         MeetingAttendancePerc = Math.Round(meetingAttendancePerc, 0),
                         MeetingAttendanceColor = meetingAttendanceColor,
                         MeetingNotes = item.MeetingNotes,
                         MeetingParticipants = meetingParticipants,
                         MeetingAbsentees = meetingAbsentees,
+                        ClubLeaderContacted = item.ClubLeaderContacted,
                         Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
                     });
                 } else
                 {
                     upcomingMeetings.Add(new ActivityMeetRegularDetail()
                     {
+                        Id = item.Id,
                         EventId = item.EventId,
                         Name = item.Name,
                         MeetingDate = (DateTime)item.MeetingDate,
@@ -792,6 +798,7 @@ namespace EcdLink.Api.CoreApi.Services
                         MeetingNotes = item.MeetingNotes,
                         MeetingParticipants = meetingParticipants,
                         MeetingAbsentees = meetingAbsentees,
+                        ClubLeaderContacted = item.ClubLeaderContacted,
                         Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
                     });
                 }
@@ -842,7 +849,8 @@ namespace EcdLink.Api.CoreApi.Services
                     MeetingNotes = calendarEvent.Description,
                     MeetingDate = calendarEvent.Start,
                     MeetingAbsentees = new List<ClubUser>(),
-                    MeetingParticipants = meetingParticipants
+                    MeetingParticipants = meetingParticipants,
+                    ClubLeaderContacted = false
                 });
             }
             return upcomingMeetings;
@@ -1937,6 +1945,24 @@ namespace EcdLink.Api.CoreApi.Services
                 return -1;
             }
             return 1;
+        }
+
+        public List<ClubMeeting> GetClubMeetingsWithMissingRegisters(Guid clubId)
+        {
+            return _clubMeetingRepo.GetAll().Where(x => x.ClubId == clubId && 
+                                                   x.ClubMeetingRegister == null && 
+                                                   x.MeetingDate.Value.Year == DateTime.Now.Year &&
+                                                   x.MeetingType.Name == Constants.ClubSettings.meeting_type_club_meeting).ToList();
+        }
+
+        public ClubMeeting SetContactClubLeaderStatusForMeeting(Guid clubMeetingId)
+        {
+            ClubMeeting clubMeeting = _clubMeetingRepo.GetById(clubMeetingId);
+            clubMeeting.ClubLeaderContacted = true;
+            clubMeeting.UpdatedBy = _applicationUserId;
+            clubMeeting.UpdatedDate = DateTime.Now;
+            return _clubMeetingRepo.Update(clubMeeting);
+
         }
     }
 }
