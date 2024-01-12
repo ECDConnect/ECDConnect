@@ -18,6 +18,7 @@ export interface StoryBookPartDto {
   part: string;
   partText: string; // Markdown
   storyBookPartQuestions: StoryBookQuestionDto[];
+  idx?: number;
 }
 
 export interface StoryBookQuestionDto {

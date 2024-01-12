@@ -112,6 +112,33 @@ export default function CreateStory({
     }
   `;
 
+  const createStoryBookPartQuestion = gql`
+    mutation createStoryBookPartQuestion(
+      $input: StoryBookPartQuestionInput!
+      $localeId: String!
+    ) {
+      createStoryBookPartQuestion(input: $input, localeId: $localeId)
+    }
+  `;
+
+  const updateStoryBookPartQuestion = gql`
+    mutation updateStoryBookPartQuestion(
+      $id: String!
+      $input: StoryBookPartQuestionInput!
+      $localeId: String!
+    ) {
+      updateStoryBookPartQuestion(id: $id, input: $input, localeId: $localeId) {
+        id
+      }
+    }
+  `;
+
+  const deleteStoryBookPartQuestion = gql`
+    mutation deleteStoryBookPartQuestion($id: String!, $localeId: String!) {
+      deleteStoryBookPartQuestion(id: $id, localeId: $localeId)
+    }
+  `;
+
   const dialog = useDialog();
 
   const [deleteContent, { loading: isLoadingDeleteContent }] =
@@ -125,6 +152,21 @@ export default function CreateStory({
 
   const [deleteStoryBookPartContent, { loading: isLoadingDeleteStoryContent }] =
     useMutation(deleteStoryBookPart);
+
+  const [
+    createStoryBookPartQuestionContent,
+    { loading: isLoadingCreateQuestionContent },
+  ] = useMutation(createStoryBookPartQuestion);
+
+  const [
+    updateStoryBookPartQuestionContent,
+    { loading: isLoadingUpdateQuestionContent },
+  ] = useMutation(updateStoryBookPartQuestion);
+
+  const [
+    deleteStoryBookPartQuestionContent,
+    { loading: isLoadingDeleteStoryQuestionContent },
+  ] = useMutation(deleteStoryBookPartQuestion);
 
   const [storybookPartsIds, setStorybookPartsIds] = useState([]);
 
@@ -190,6 +232,8 @@ export default function CreateStory({
   const [loading, setLoading] = useState<boolean>(false);
   const [filteredStoryBookParts, setFilteredStoryBookParts] =
     useState<StoryBookPartDto[]>();
+  const [filteredStoryBookPartsQuestions, setFilteredStoryBookPartsQuestions] =
+    useState<StoryBookQuestionDto[]>();
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -295,7 +339,7 @@ export default function CreateStory({
       }
 
       if (item?.id && item?.partText !== '') {
-        await updateStoryBookPartContent({
+        const updateStoryBookPartResponse = await updateStoryBookPartContent({
           variables: {
             id: item?.id.toString(),
             input: {
@@ -307,17 +351,84 @@ export default function CreateStory({
             },
             localeId: selectedLanguageId.toString(),
           },
-        })
-          .then((response) => {
-            setNotification({
-              title: `Changes saved!`,
-              variant: NOTIFICATION.SUCCESS,
-            });
-            setLoading(false);
-          })
-          .catch((error) => {
-            console.log(error);
+        });
+        if (updateStoryBookPartResponse) {
+          setNotification({
+            title: `Changes saved!`,
+            variant: NOTIFICATION.SUCCESS,
           });
+          setLoading(false);
+
+          if (filteredStoryBookPartsQuestions?.length > 0) {
+            const indexHasChanges = filteredStoryBookPartsQuestions?.find(
+              (quest) => {
+                return quest?.idx === item?.idx;
+              }
+            );
+            if (indexHasChanges) {
+              if (indexHasChanges?.id && indexHasChanges?.question === '') {
+                const deleteQuestionResponse =
+                  await deleteStoryBookPartQuestionContent({
+                    variables: {
+                      id: indexHasChanges?.id.toString(),
+                      localeId: selectedLanguageId.toString(),
+                    },
+                  });
+
+                if (deleteQuestionResponse) {
+                  setNotification({
+                    title: 'Successfully Updated Content!',
+                    variant: NOTIFICATION.SUCCESS,
+                  });
+                }
+              }
+            }
+            if (indexHasChanges?.question) {
+              if (!indexHasChanges?.id && indexHasChanges?.question !== '') {
+                const createQuestionResponse =
+                  await createStoryBookPartQuestionContent({
+                    variables: {
+                      input: {
+                        name: indexHasChanges?.question,
+                        question: indexHasChanges?.question,
+                      },
+                      localeId: selectedLanguageId.toString(),
+                    },
+                  });
+
+                if (createQuestionResponse) {
+                  await updateStoryBookPartContent({
+                    variables: {
+                      id: item?.id.toString(),
+                      input: {
+                        name: item?.name,
+                        part: item?.part.toString(),
+                        partText: item?.partText,
+                        storyBookPartQuestions:
+                          createQuestionResponse.data?.createStoryBookPartQuestion?.toString(),
+                      },
+                      localeId: selectedLanguageId.toString(),
+                    },
+                  });
+                }
+              }
+
+              if (indexHasChanges?.id && indexHasChanges?.question !== '') {
+                const createQuestionResponse =
+                  await updateStoryBookPartQuestionContent({
+                    variables: {
+                      id: indexHasChanges?.id.toString(),
+                      input: {
+                        name: indexHasChanges?.question,
+                        question: indexHasChanges?.question,
+                      },
+                      localeId: selectedLanguageId.toString(),
+                    },
+                  });
+              }
+            }
+          }
+        }
 
         const model = { ...values };
 
@@ -380,7 +491,7 @@ export default function CreateStory({
         return;
       }
       if (!item?.id && item?.partText !== '') {
-        const response = await createStoryBookPartContent({
+        const createBookPartresponse = await createStoryBookPartContent({
           variables: {
             input: {
               name: item?.name,
@@ -392,13 +503,65 @@ export default function CreateStory({
           },
         });
 
-        if (response && response.data) {
+        if (createBookPartresponse && createBookPartresponse.data) {
           setNotification({
             title: `Changes saved`,
             variant: NOTIFICATION.SUCCESS,
           });
 
-          createdBookPartId = response?.data?.createStoryBookParts;
+          if (filteredStoryBookPartsQuestions?.length > 0) {
+            const indexHasChanges = filteredStoryBookPartsQuestions?.find(
+              (quest) => {
+                return quest?.idx === item?.idx;
+              }
+            );
+            if (indexHasChanges?.question) {
+              if (!indexHasChanges?.id && indexHasChanges?.question !== '') {
+                const createQuestionResponse =
+                  await createStoryBookPartQuestionContent({
+                    variables: {
+                      input: {
+                        name: indexHasChanges?.question,
+                        question: indexHasChanges?.question,
+                      },
+                      localeId: selectedLanguageId.toString(),
+                    },
+                  });
+
+                if (createBookPartresponse) {
+                  await updateStoryBookPartContent({
+                    variables: {
+                      id: createBookPartresponse.data?.createStoryBookParts?.toString(),
+                      input: {
+                        name: item?.name,
+                        part: item?.part.toString(),
+                        partText: item?.partText,
+                        storyBookPartQuestions:
+                          createQuestionResponse.data?.createStoryBookPartQuestion?.toString(),
+                      },
+                      localeId: selectedLanguageId.toString(),
+                    },
+                  });
+                }
+                if (indexHasChanges?.id && indexHasChanges?.question !== '') {
+                  const createQuestionResponse =
+                    await updateStoryBookPartQuestionContent({
+                      variables: {
+                        id: indexHasChanges?.id,
+                        input: {
+                          name: indexHasChanges?.question,
+                          question: indexHasChanges?.question,
+                        },
+                        localeId: selectedLanguageId.toString(),
+                      },
+                    });
+                }
+              }
+            }
+          }
+
+          createdBookPartId =
+            createBookPartresponse?.data?.createStoryBookParts;
           setStorybookPartsIds([...storybookPartsIds, createdBookPartId]);
           newCurrentStorybookPartsIds = [
             ...newCurrentStorybookPartsIds,
@@ -504,6 +667,9 @@ export default function CreateStory({
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
               setFilteredStoryBookParts={setFilteredStoryBookParts}
+              setFilteredStoryBookPartsQuestions={
+                setFilteredStoryBookPartsQuestions
+              }
               formType={formType}
             />
           </div>
