@@ -110,6 +110,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public int Points { get; set; }
         public Guid? EventId { get; set; }
         public string Name { set; get; }
+        public bool ClubLeaderContacted { get; set; }
     }
 
     public class ClubUser

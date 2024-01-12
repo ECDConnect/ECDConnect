@@ -123,7 +123,8 @@ namespace EcdLink.Api.CoreApi.Services
                 OtherDescription = input.OtherDescription == null ? "": input.OtherDescription,
                 TotalCaregiversAttended = input.TotalCaregiversAttended == null ? 0 : input.TotalCaregiversAttended.Value,
                 CoachAttended = input.CoachAttend == null ? false : true,
-                EventId = input.EventId
+                EventId = input.EventId,
+                ClubLeaderContacted = false
             });
             
             // insert participants for club meeting
@@ -234,7 +235,8 @@ namespace EcdLink.Api.CoreApi.Services
                     MeetingTypeId = meetingTypeId,
                     MeetingNotes = "",
                     OtherDescription = "",
-                    CoachAttended = false,    
+                    CoachAttended = false,
+                    ClubLeaderContacted = false,
                     TotalCaregiversAttended = 0,
                     ClubMeetingRegister = members.Distinct().Select(x => new ClubMeetingRegister
                     {
