@@ -9,7 +9,6 @@ import {
   StepItem,
   Typography,
   renderIcon,
-  Divider,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
@@ -49,14 +48,13 @@ export const OverdueSteps: React.FC<OverdueStepsoProps> = ({
 
     return {
       showIcon: true,
-      menuIcon: 'ExclamationCircleIcon',
-      menuIconClassName: 'h-10 w-10',
-      iconColor: 'alertMain',
+      menuIcon: 'ExclamationIcon',
+      iconColor: 'white',
       titleStyle: 'text-textDark',
       title: overdueStep?.title,
       subTitle: replacedString,
       subTitleStyle: 'text-alertMain',
-      iconBackgroundColor: 'white',
+      iconBackgroundColor: 'alertMain',
       backgroundColor: 'white',
       onActionClick: () => {},
     };
@@ -107,7 +105,6 @@ export const OverdueSteps: React.FC<OverdueStepsoProps> = ({
             />
           </div>
         )}
-        <Divider dividerType="dashed" className="my-2" />
         <Typography
           text={`Contact ${practitioner?.user?.firstName} for more information and to see if they need help.`}
           type="h3"
