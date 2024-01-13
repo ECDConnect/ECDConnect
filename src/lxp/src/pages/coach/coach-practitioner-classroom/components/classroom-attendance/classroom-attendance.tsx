@@ -5,7 +5,6 @@ import {
   getMonthName,
   getPrevMonth,
 } from '@utils/classroom/attendance/track-attendance-utils';
-import { getMonth, getYear } from 'date-fns';
 
 export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
   practitionerClassroomGroups,
