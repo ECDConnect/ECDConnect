@@ -38,12 +38,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string ReassignedClassProgrammes { get; set; }
         public string ReassignedLearners { get; set; }
 
-        [GraphQLIgnore]
-        public Guid? PractitionerRemovalHistoryId { get; set; }
-
-        [GraphQLIgnore, ForeignKey(nameof(PractitionerRemovalHistoryId))]
-        public virtual PractitionerRemovalHistory PractitionerRemovalHistory { get; set; }
-
 
         public DateTime AssignedToDate { get; set; }
 
