@@ -10,6 +10,7 @@ import {
   updatePractitionerUsePhotoInReport,
   updatePractitionerBusinessWalkThrough,
   getPractitionerByUserId,
+  updatePractitionerShareInfo,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -81,6 +82,9 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(updatePractitionerRegistered.fulfilled, (state) => {
       state.practitioner = { ...state.practitioner, isRegistered: true };
+    });
+    builder.addCase(updatePractitionerShareInfo.fulfilled, (state) => {
+      state.practitioner = { ...state.practitioner, shareInfo: true };
     });
     builder.addCase(updatePractitionerProgress.fulfilled, (state, action) => {
       state.practitioner = { ...state.practitioner, progress: action.payload };

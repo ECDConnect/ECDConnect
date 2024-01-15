@@ -269,7 +269,7 @@ export const timelineSteps = ({
   if (timeline?.clubMeetings) {
     const clubMeetingsAttendedMeetings = timeline.clubMeetings.totalPresent;
     const clubMeetingsTotalMeetings = timeline.clubMeetings.totalMeetings;
-    const lastMeetingattendanceDate = timeline.clubMeetings.attendanceText
+    const lastMeetingAttendanceDate = timeline.clubMeetings.attendanceText
       ? new Date(timeline?.clubMeetings?.attendanceText)
       : new Date();
     const attendanceColor = timeline.clubMeetings.attendanceColor || 'Success';
@@ -278,18 +278,15 @@ export const timelineSteps = ({
         ? 'completed'
         : 'inProgress';
 
-    const date = new Date(
-      timeline.clubMeetings.attendanceText!
-    ).toLocaleDateString('en-ZA', dateOptions);
     steps.push({
       title: `${clubMeetingsAttendedMeetings}/${clubMeetingsTotalMeetings} club meetings attended`,
-      subTitle: `${new Date(lastMeetingattendanceDate).toLocaleDateString(
+      subTitle: `${lastMeetingAttendanceDate.toLocaleDateString(
         'en-ZA',
         dateOptions
       )}`,
       type: attendanceColorType,
       extraData: {
-        date: new Date(date),
+        date: lastMeetingAttendanceDate,
       },
       showAccordion: true,
       inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',

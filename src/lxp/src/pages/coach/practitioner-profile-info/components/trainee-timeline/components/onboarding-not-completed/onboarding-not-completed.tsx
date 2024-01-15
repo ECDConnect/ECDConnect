@@ -143,7 +143,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
                     className="text-primary mr-1 h-5 w-5"
                   />
                   <Typography
-                    text={`Whatsapp ${coach?.user?.firstName}`}
+                    text={`Whatsapp ${practitioner?.user?.firstName}`}
                     type="button"
                     weight="skinny"
                     color="primary"
@@ -163,7 +163,7 @@ export const OnboardingNotCompleted: React.FC<OnboardingNotCompletedProps> = ({
                     aria-hidden="true"
                   />
                   <Typography
-                    text={`Call ${coach?.user?.firstName}`}
+                    text={`Call ${practitioner?.user?.firstName}`}
                     type="button"
                     weight="skinny"
                     color="primary"

@@ -10,6 +10,7 @@ import { CheckboxGroup, FormInput, Typography } from '@ecdlink/ui';
 import { useEffect, useMemo, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
+import { StoryBookTypes } from '../../pages/content-management/sub-pages/content-list/components/create-story/components/create-story-form';
 
 export interface StoryContentFormProps {
   contentValue?: ContentValueDto;
@@ -21,6 +22,7 @@ export interface StoryContentFormProps {
   isSkillType?: boolean;
   setFilteredStoryBookParts?: (item?: StoryBookPartDto[]) => void;
   setFilteredStoryBookPartsQuestions?: (item?: StoryBookQuestionDto[]) => void;
+  formType?: string;
 }
 
 const StoryContentForm: React.FC<StoryContentFormProps> = ({
@@ -33,6 +35,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
   isSkillType,
   setFilteredStoryBookParts,
   setFilteredStoryBookPartsQuestions,
+  formType,
 }) => {
   const fields =
     optionDefinition?.fields?.map((x) => {
@@ -132,7 +135,10 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
   useEffect(() => {
     if (storyBookPartsValues) {
       const emptyArray = [];
-      const inputLimit = 10 - storyBookPartsValues?.length;
+      const inputLimit =
+        formType === StoryBookTypes.storyBook
+          ? 10 - storyBookPartsValues?.length
+          : 1 - storyBookPartsValues?.length;
       for (let i = 0; i < inputLimit; i++) {
         emptyArray?.push({
           name: '',
@@ -147,7 +153,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
         ...emptyArray,
       ]);
     }
-  }, [storyBookPartsValues]);
+  }, [formType, storyBookPartsValues]);
 
   useEffect(() => {
     if (contentValue) {
@@ -317,18 +323,32 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
               storyBookPartsValuesFormatted.map((item: any, idx: number) => {
                 return (
                   <div className="mt-4">
-                    <Typography
-                      type={'h4'}
-                      text={`Part ${idx + 1}`}
-                      className={'text-sm font-normal'}
-                      color={'textDark'}
-                    />
-                    <Typography
-                      type={'body'}
-                      text={`Text`}
-                      className={'mt-1 text-sm font-normal'}
-                      color={'textDark'}
-                    />
+                    {formType === StoryBookTypes.storyBook && (
+                      <>
+                        <Typography
+                          type={'h4'}
+                          text={`Part ${idx + 1}`}
+                          className={'text-sm font-normal'}
+                          color={'textDark'}
+                        />
+                        <Typography
+                          type={'body'}
+                          text={`Text`}
+                          className={'mt-1 text-sm font-normal'}
+                          color={'textDark'}
+                        />
+                      </>
+                    )}
+                    {formType === StoryBookTypes.readAloud && (
+                      <>
+                        <Typography
+                          type={'h4'}
+                          text={`Story text *`}
+                          className={'text-sm font-normal'}
+                          color={'textDark'}
+                        />
+                      </>
+                    )}
                     <div>
                       <FormInput
                         key={idx}
@@ -337,7 +357,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                         id={item?.id}
                         value={item?.partText}
                         onChange={(e) => onChange(e, idx)}
-                        textInputType="input"
+                        textInputType="textarea"
                         placeholder={'Add a response...'}
                       />
                     </div>

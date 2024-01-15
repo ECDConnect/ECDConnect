@@ -186,7 +186,10 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
           );
         case FieldType.Link: {
           if (propName === 'storyBookParts') {
-            if (formType === 'Story book') {
+            if (
+              formType === StoryBookTypes.storyBook ||
+              formType === StoryBookTypes.readAloud
+            ) {
               return (
                 <div key={propName} className={contentWrapper}>
                   <div className="sm:col-span-12">
@@ -203,15 +206,13 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
                       setFilteredStoryBookPartsQuestions={
                         setFilteredStoryBookPartsQuestions
                       }
+                      formType={formType}
                     />
                   </div>
                 </div>
               );
             }
-            if (
-              formType === StoryBookTypes.readAloud ||
-              formType === StoryBookTypes.other
-            ) {
+            if (formType === StoryBookTypes.other) {
               return null;
             }
           }

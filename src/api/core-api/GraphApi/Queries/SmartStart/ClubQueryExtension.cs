@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Api.CoreApi.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
@@ -80,6 +81,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public ActivityChildProgress GetActivityChildProgress([Service] IClubService clubService, Guid clubId)
         {
             return clubService.GetActivityChildProgress(clubId);
+        }
+
+        public List<ClubMeeting> GetClubMeetingsWithMissingRegisters([Service] IClubService clubService, Guid clubId)
+        {
+            return clubService.GetClubMeetingsWithMissingRegisters(clubId);
+
         }
 
     }
