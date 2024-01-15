@@ -296,6 +296,13 @@ export const getMonthName = (monthOfYear: number) => {
   if (monthOfYear < 0 || monthOfYear > 12) return 'Invalid month';
   return format(new Date().setMonth(monthOfYear), 'MMMM');
 };
+
+export const getPrevMonth = () => {
+  let prevMonth = new Date();
+  prevMonth.setMonth(prevMonth.getMonth() - 1);
+  return prevMonth;
+};
+
 export function getMonthRange(monthName: string) {
   const year = new Date().getFullYear();
   // Parse the month name and get the corresponding month number
