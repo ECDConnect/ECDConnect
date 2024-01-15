@@ -130,6 +130,8 @@ export const MeetRegularly: React.FC = () => {
           meetingNotes: '',
           meetingParticipants: [],
           points: 0,
+          clubLeaderContacted: false,
+          id: '',
         });
       }
     }
