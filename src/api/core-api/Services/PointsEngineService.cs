@@ -1608,18 +1608,18 @@ namespace EcdLink.Api.CoreApi.Services
             var userMonthPoints = usersByMonth.FirstOrDefault(x => x.UserId == userId)?.PointsTotal ?? 0;
             var userYearPoints = usersByYear.FirstOrDefault(x => x.UserId == userId)?.PointsTotal ?? 0;
 
-            var usersWithMorePointsThisMonth = usersByMonth.Where(x => x.PointsTotal > userMonthPoints).Count();
-            var usersWithMorePointsThisYear = usersByYear.Where(x => x.PointsTotal > userYearPoints).Count();
+            var usersWithMorePointsThisMonth = usersByMonth.Where(x => x.PointsTotal > userMonthPoints && userId != x.UserId).Count();
+            var usersWithMorePointsThisYear = usersByYear.Where(x => x.PointsTotal > userYearPoints && userId != x.UserId).Count();
 
-            var percentageWithMorePointsThisMonth = (double)usersWithMorePointsThisMonth / totalMembers * 100;
-            var percentageWithMorePointsThisYear = (double)usersWithMorePointsThisYear / totalMembers * 100;
+            var percentageWithMorePointsThisMonth = (double)usersWithMorePointsThisMonth / (totalMembers - 1) * 100;
+            var percentageWithMorePointsThisYear = (double)usersWithMorePointsThisYear / (totalMembers - 1) * 100;
 
             var usersWithNoPoints = clubUserIds.Where(x => !usersByMonth.Any(y => y.UserId == x)).Count();
-            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints).Count() + usersWithNoPoints;
-            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints).Count() + usersWithNoPoints;
+            var userWithFewerPointsThisMonth = usersByMonth.Where(x => x.PointsTotal < userMonthPoints && userId != x.UserId).Count() + usersWithNoPoints;
+            var userWithFewerPointsThisYear = usersByYear.Where(x => x.PointsTotal < userYearPoints && userId != x.UserId).Count() + usersWithNoPoints;
 
-            var percentageWithFewerPointsThisMonth = (double)userWithFewerPointsThisMonth / totalMembers * 100;
-            var percentageWithFewerPointsThisYear = (double)userWithFewerPointsThisYear / totalMembers * 100;
+            var percentageWithFewerPointsThisMonth = (double)userWithFewerPointsThisMonth / (totalMembers - 1) * 100;
+            var percentageWithFewerPointsThisYear = (double)userWithFewerPointsThisYear / (totalMembers - 1) * 100;
 
 
             // Offset for first place ties

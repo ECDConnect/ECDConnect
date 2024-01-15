@@ -227,18 +227,15 @@ export const timelineSteps = ({
         ? 'completed'
         : 'inProgress';
 
-    const date = new Date(
-      timeline.clubMeetings.attendanceText!
-    ).toLocaleDateString('en-ZA', dateOptions);
     steps.push({
       title: `${clubMeetingsAttendedMeetings}/${clubMeetingsTotalMeetings} club meetings attended`,
-      subTitle: `${new Date(lastMeetingattendanceDate).toLocaleDateString(
+      subTitle: `${lastMeetingattendanceDate.toLocaleDateString(
         'en-ZA',
         dateOptions
       )}`,
       type: attendanceColorType,
       extraData: {
-        date: new Date(date),
+        date: lastMeetingattendanceDate,
       },
       showAccordion: true,
       inProgressStepIcon: 'alertMain' && 'ExclamationCircleIcon',

@@ -710,10 +710,7 @@ class PractitionerService {
     return response.data.data.classroomGroupClassroomsForPractitioner;
   }
 
-  async UpdatePractitionerShareInfo(
-    practitionerId: string,
-    principalId: string
-  ): Promise<boolean> {
+  async UpdatePractitionerShareInfo(practitionerId: string): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
