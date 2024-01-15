@@ -247,6 +247,7 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     if (stepIndex === 8) {
+      console.log('Step 8');
       const el = document.getElementById('howMayDaysToSubmit');
 
       el?.scrollIntoView();
@@ -493,32 +494,32 @@ export const SubmitIncomeStatements: React.FC = () => {
         )}
         {hasIncomeStatements && (
           <div id="statementsDashboard">
-            {isOnline &&
+            {((isOnline &&
               !isThisMonthSubmitted &&
               isSubmitWindowOpen &&
-              !isSubmittingStatement && (
-                <div className="flex items-center" id="howMayDaysToSubmit">
-                  <StatusChip
-                    backgroundColour={
-                      daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-                    }
-                    borderColour={
-                      daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
-                    }
-                    text={`${daysUntilFinalSubmission} days`}
-                    textColour={'white'}
-                    className={'mr-2'}
-                  />
-                  <Typography
-                    className="truncate"
-                    type="h4"
-                    weight="bold"
-                    color="textDark"
-                    text={'To submit next income statement'}
-                  />
-                </div>
-              )}
-
+              !isSubmittingStatement) ||
+              (tourActive && stepIndex === 8)) && (
+              <div className="flex items-center" id="howMayDaysToSubmit">
+                <StatusChip
+                  backgroundColour={
+                    daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
+                  }
+                  borderColour={
+                    daysUntilFinalSubmission > 8 ? 'successMain' : 'alertMain'
+                  }
+                  text={`${daysUntilFinalSubmission} days`}
+                  textColour={'white'}
+                  className={'mr-2'}
+                />
+                <Typography
+                  className="truncate"
+                  type="h4"
+                  weight="bold"
+                  color="textDark"
+                  text={'To submit next income statement'}
+                />
+              </div>
+            )}
             {!!celebrationCard && celebrationCard}
 
             {((isOnline &&
