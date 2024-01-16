@@ -271,7 +271,7 @@ export const LeaveNoOneBehind: React.FC = () => {
         clubThunkActions.getActivityLeaveNoOneBehindDetails({ clubId })
       );
     }
-  }, [appDispatch, clubId, isOnline]);
+  }, [clubId, isOnline]);
 
   return (
     <BannerWrapper

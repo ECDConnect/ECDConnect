@@ -1164,13 +1164,15 @@ namespace EcdLink.Api.CoreApi.Services
 
             foreach (var Id in allPractitionerIds)
             {
-                var attendedVisit = allVisits.Where(x => x.Attended && x.PractitionerId == Id &&
-                                                    x.ActualVisitDate.HasValue && x.ActualVisitDate.Value >= startDate)
-                                        .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
-                var pendingVisit = allVisits.Where(x => !x.Attended && x.PractitionerId == Id &&
-                                                (x.PlannedVisitDate >= startDate || x.DueDate.HasValue && x.DueDate.Value >= startDate) &&
-                                                (x.PlannedVisitDate <= endDate || x.DueDate.HasValue && x.DueDate.Value <= endDate))
-                                        .OrderByDescending(x => x.DueDate).FirstOrDefault();
+                var attendedVisit = allVisits
+                    .Where(x => x.Attended && x.PractitionerId == Id)
+                    .OrderByDescending(x => x.ActualVisitDate).FirstOrDefault();
+                
+                var pendingVisit = allVisits
+                    .Where(x => !x.Attended && x.PractitionerId == Id 
+                        && (x.PlannedVisitDate >= startDate || x.DueDate.HasValue && x.DueDate.Value >= startDate) 
+                        && (x.PlannedVisitDate <= endDate || x.DueDate.HasValue && x.DueDate.Value <= endDate))
+                    .OrderByDescending(x => x.DueDate).FirstOrDefault();
 
 
                 if (attendedVisit != null && attendedVisit.PQARating != null)
