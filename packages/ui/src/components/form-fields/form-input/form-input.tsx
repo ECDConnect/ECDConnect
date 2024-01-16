@@ -68,6 +68,9 @@ export const FormInput = <T extends FieldValues>({
     }
 
     if (disabled) {
+      if (isAdminPortalField) {
+        return styles.portalDisabledInputStyle;
+      }
       return styles.disabledInputStyle;
     }
 

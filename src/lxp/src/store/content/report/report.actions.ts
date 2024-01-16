@@ -108,12 +108,13 @@ export const syncChildProgressReports = createAsyncThunk<
           if (!currentReportCopy) return Promise.resolve<boolean>(true);
 
           const childProgressReportInput: ChildProgressReportInput = {
-            ChildId: currentReportCopy?.childId,
+            ChildId: currentReportCopy.childId,
             ClassroomGroupId: x.classroomGroupId,
-            Id: currentReportCopy?.id,
-            ReportDate: currentReportCopy?.reportingDate,
+            Id: currentReportCopy.id,
+            ReportDate: currentReportCopy.reportingDate,
             ReportContent: JSON.stringify(currentReportCopy),
             IsActive: true,
+            DateCompleted: currentReportCopy.dateCompleted,
           };
 
           return await new ContentReportService(

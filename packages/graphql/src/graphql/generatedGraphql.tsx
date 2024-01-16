@@ -1243,6 +1243,7 @@ export type ChildProgressReport = {
   childId: Scalars['UUID'];
   classroomGroup?: Maybe<ClassroomGroup>;
   classroomGroupId?: Maybe<Scalars['UUID']>;
+  dateCompleted?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -1281,6 +1282,7 @@ export type ChildProgressReportFilterInput = {
   childId?: InputMaybe<ComparableGuidOperationFilterInput>;
   classroomGroup?: InputMaybe<ClassroomGroupFilterInput>;
   classroomGroupId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  dateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -1297,6 +1299,7 @@ export type ChildProgressReportInput = {
   ChildId: Scalars['UUID'];
   ClassroomGroup?: InputMaybe<ClassroomGroupInput>;
   ClassroomGroupId?: InputMaybe<Scalars['UUID']>;
+  DateCompleted?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   ReportContent?: InputMaybe<Scalars['String']>;
@@ -1310,6 +1313,7 @@ export type ChildProgressReportSortInput = {
   childId?: InputMaybe<SortEnumType>;
   classroomGroup?: InputMaybe<ClassroomGroupSortInput>;
   classroomGroupId?: InputMaybe<SortEnumType>;
+  dateCompleted?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   insertedDate?: InputMaybe<SortEnumType>;
   isActive?: InputMaybe<SortEnumType>;
