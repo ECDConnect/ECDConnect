@@ -20,6 +20,7 @@ import ContentEdit from './components/content-edit/content-edit';
 import ContentView from './components/content-view/content-view';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import CreateStory from '../content-list/components/create-story/create-story';
+import CreateTheme from './components/create-theme/create-theme';
 
 export interface ContentWorkflowProps {
   contentView: ContentManagementView;
@@ -140,35 +141,67 @@ export default function ContentWorkflow({
         </div>
         <div className="min-w-0 flex-1 rounded xl:flex">
           {!isCompareMode ? (
-            contentType?.name === 'StoryBook' ? (
-              <>
-                <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
-                  <div className="h-full py-6">
-                    <div
-                      className="relative h-full"
-                      style={{ minHeight: '36rem' }}
-                    >
-                      <div className="rounded-lg border-b py-5">
-                        <div key={selectedLanguageId}>
-                          <CreateStory
-                            optionDefinitions={optionDefinitions}
-                            content={contentView.content}
-                            selectedLanguageId={selectedLanguageId}
-                            contentValues={getOrderedContentValues(
-                              currentContent?.contentValues
-                            )}
-                            contentType={contentType}
-                            cancelEdit={() => goBack()}
-                            savedContent={savedContent}
-                            defaultLanguageId={defaultLanguageId}
-                            cancelCompare={() => setIsCompareMode(!isEdit)}
-                          />
+            contentType?.name === 'StoryBook' ||
+            contentType?.name === 'Theme' ? (
+              contentType?.name === 'Theme' ? (
+                <>
+                  <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+                    <div className="h-full py-6">
+                      <div
+                        className="relative h-full"
+                        style={{ minHeight: '36rem' }}
+                      >
+                        <div className="rounded-lg border-b py-5">
+                          <div key={selectedLanguageId}>
+                            <CreateTheme
+                              optionDefinitions={optionDefinitions}
+                              content={contentView.content}
+                              selectedLanguageId={selectedLanguageId}
+                              contentValues={getOrderedContentValues(
+                                currentContent?.contentValues
+                              )}
+                              contentType={contentType}
+                              cancelEdit={() => goBack()}
+                              savedContent={savedContent}
+                              defaultLanguageId={defaultLanguageId}
+                              cancelCompare={() => setIsCompareMode(!isEdit)}
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              </>
+                </>
+              ) : (
+                <>
+                  <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+                    <div className="h-full py-6">
+                      <div
+                        className="relative h-full"
+                        style={{ minHeight: '36rem' }}
+                      >
+                        <div className="rounded-lg border-b py-5">
+                          <div key={selectedLanguageId}>
+                            <CreateStory
+                              optionDefinitions={optionDefinitions}
+                              content={contentView.content}
+                              selectedLanguageId={selectedLanguageId}
+                              contentValues={getOrderedContentValues(
+                                currentContent?.contentValues
+                              )}
+                              contentType={contentType}
+                              cancelEdit={() => goBack()}
+                              savedContent={savedContent}
+                              defaultLanguageId={defaultLanguageId}
+                              cancelCompare={() => setIsCompareMode(!isEdit)}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )
             ) : (
               <>
                 <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">

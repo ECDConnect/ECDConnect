@@ -155,25 +155,24 @@ export default function ContentList({
       }));
 
       if (selectedTab === 1) {
-        let clientProfileData = moreInforItems.filter(
-          (item: { type: string }) => {
-            return (
-              item.type === 'client profile' ||
-              item.type === 'Info Page' ||
-              item?.type === 'Income Statements' ||
-              item?.type === 'Taking Child Attendance' ||
-              item?.type === 'League Of Stars' ||
-              item?.type === 'Purple Clubs' ||
-              item?.type === 'Learning Through Play' ||
-              item?.type === 'The Daily Routine' ||
-              item?.type === 'Tracking Progress' ||
-              item?.type === 'Trainee Onboarding'
-            );
-          }
-        );
-        setTableData(
-          clientProfileData?.length > 0 ? clientProfileData : moreInforItems
-        );
+        // Wait for validation on dev
+        // let clientProfileData = moreInforItems.filter(
+        //   (item: { type: string }) => {
+        //     return (
+        //       item.type === 'client profile' ||
+        //       item.type === 'Info Page' ||
+        //       item?.type === 'Income Statements' ||
+        //       item?.type === 'Taking Child Attendance' ||
+        //       item?.type === 'League Of Stars' ||
+        //       item?.type === 'Purple Clubs' ||
+        //       item?.type === 'Learning Through Play' ||
+        //       item?.type === 'The Daily Routine' ||
+        //       item?.type === 'Tracking Progress' ||
+        //       item?.type === 'Trainee Onboarding'
+        //     );
+        //   }
+        // );
+        setTableData(moreInforItems);
       } else if (selectedTab === 2) {
         let postNatalData = moreInforItems.filter(
           (item: { type: string }) => item.type === 'postnatal'
