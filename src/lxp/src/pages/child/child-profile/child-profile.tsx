@@ -452,7 +452,7 @@ export const ChildProfile: React.FC = () => {
   }, [createChildNoteVisible]);
 
   useEffect(() => {
-    if (!attendanceData || !child || !playGroup) return;
+    if (!attendanceData || !child) return;
 
     const childBirthDate = childUser?.dateOfBirth
       ? new Date(childUser?.dateOfBirth)
@@ -462,32 +462,34 @@ export const ChildProfile: React.FC = () => {
 
     setChildAge(ageOfChild);
 
-    if (isOnline) {
-      new AttendanceService(authUser?.auth_token ?? '')
-        .getChildAttendanceRecords(
-          child.userId ?? '',
-          playGroup?.id ?? '',
-          startOfISOWeekYear(new Date()),
-          currentDate
-        )
-        .then((data) => {
-          setAttendanceReport(data);
-        });
+    if (playGroup) {
+      if (isOnline) {
+        new AttendanceService(authUser?.auth_token ?? '')
+          .getChildAttendanceRecords(
+            child.userId ?? '',
+            playGroup?.id ?? '',
+            startOfISOWeekYear(new Date()),
+            currentDate
+          )
+          .then((data) => {
+            setAttendanceReport(data);
+          });
+      }
+
+      const applicableNotifications: ListItemProps[] = [];
+
+      const attendanceNotification = getAttendanceNotification(
+        child.userId || '',
+        attendanceData,
+        playGroup.id || ''
+      );
+
+      if (attendanceNotification) {
+        applicableNotifications.push(attendanceNotification);
+      }
+
+      setNotifications([...applicableNotifications]);
     }
-
-    const applicableNotifications: ListItemProps[] = [];
-
-    const attendanceNotification = getAttendanceNotification(
-      child.userId || '',
-      attendanceData,
-      playGroup.id || ''
-    );
-
-    if (attendanceNotification) {
-      applicableNotifications.push(attendanceNotification);
-    }
-
-    setNotifications([...applicableNotifications]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendanceData, child, playGroup]);
 
