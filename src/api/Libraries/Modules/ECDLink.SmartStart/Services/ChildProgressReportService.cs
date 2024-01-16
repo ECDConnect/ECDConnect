@@ -1,5 +1,6 @@
 using ECDLink.Abstractrions.Enums;
 using ECDLink.ContentManagement.Repositories;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Reporting;
 using ECDLink.Core.Services.Interfaces;
@@ -11,9 +12,11 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.PDFGenerator.Services.Interfaces;
+using ECDLink.Security.Extensions;
 using ECDLink.SmartStart.Reports.ChildProgressReport;
 using ECDLink.SmartStart.Services.Interfaces;
 using HotChocolate;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
@@ -69,10 +72,14 @@ namespace ECDLink.SmartStart.Services
         private readonly ContentManagementRepository _contentRepo;
         private readonly ILocaleService<Language> _localeService;
 
+        private IGenericRepository<Child, Guid> _childRepo;
+        private IGenericRepository<ChildProgressReport, Guid> _childProgressReportRepo;
+
         private List<Category> _categories = null;
         private Dictionary<int, Skill> _skillMap = null;
 
         public ChildProgressReportService(
+            IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             IDbContextFactory<AuthenticationDbContext> dbFactory,
             IFillableFieldService fieldService,
@@ -91,6 +98,10 @@ namespace ECDLink.SmartStart.Services
             _personnelService = personnelService;
             _contentRepo = contentRepo;
             _localeService = localeService;
+
+            var userId = contextAccessor.HttpContext.GetUser()?.Id;
+            _childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
+            _childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: userId);
         }
 
         public async Task<string> GenerateReport(DataAccessLayer.Entities.Reports.ChildProgressReport reportEntity,
@@ -445,5 +456,90 @@ namespace ECDLink.SmartStart.Services
             return list;
         }
 
+        public (int reportsSubmittedOnTime, int reportsMissingOrIncomplete, int reportsSubmittedOverdue) GetChildProgressReportStatusCountsForPractitioner(
+            string practitionerHierarcry,
+            IEnumerable<Guid> classroomGroupIds)
+        {
+            DateTime previousMonthStart = DateTime.Now.GetStartOfPreviousMonth();
+            DateTime previousMonthEnd = DateTime.Now.GetEndOfPreviousMonth();
+            var isPeriod1 = previousMonthStart.Month <= 7;
+            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodEnd = GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
+
+            DateTime reportDueStart = GetReportDueStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportDueEnd = GetReportDueEnd(previousMonthStart.Year, isPeriod1);
+
+            var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+            var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
+
+            var progressReports = _childProgressReportRepo
+                .GetAll()
+                .Where(x =>
+                        x.ClassroomGroupId.HasValue
+                        && classroomGroupIds.Contains(x.ClassroomGroupId.Value)
+                        && x.ReportDate >= reportPeriodStart
+                        && x.ReportDate <= reportOverDueEnd
+                        && x.IsActive == true)
+                .OrderBy(x => x.ReportDate)
+                .ToList();
+
+            var reportsSubmittedOnTime = progressReports?.Count(r => r.DateCompleted.HasValue && r.DateCompleted.Value <= reportDueEnd) ?? 0;
+            var reportsSubmittedOverdue = progressReports?.Count(r => r.DateCompleted.HasValue && r.DateCompleted.Value >= reportOverDueStart) ?? 0;
+
+            var childCount = _childRepo.GetAll().Count(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHierarcry));
+
+            var reportsMissingOrIncomplete = childCount - (reportsSubmittedOnTime + reportsSubmittedOverdue);
+
+            return (reportsSubmittedOnTime, reportsMissingOrIncomplete, reportsSubmittedOverdue);
+        }
+
+
+        public static DateTime GetReportPeriodStart(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 1, 1) : new DateOnly(year, 7, 1))
+                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        }
+
+        public static DateTime GetReportPeriodEnd(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 12, 20))
+                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        }
+
+        public static DateTime GetNextReportDuePeriodStart(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 11, 1) : new DateOnly(year + 1, 6, 1))
+                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        }
+
+        public static DateTime GetNextReportDuePeriodEnd(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 11, 30) : new DateOnly(year + 1, 6, 30))
+                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        }
+
+        public static DateTime GetReportDueStart(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 6, 1) : new DateOnly(year, 11, 1))
+                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        }
+
+        public static DateTime GetReportDueEnd(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 11, 30))
+                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        }
+
+        public static DateTime GetReportOverDueStart(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 7, 1) : new DateOnly(year, 12, 1))
+                            .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        }
+
+        public static DateTime GetReportOverDueEnd(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 7, 31) : new DateOnly(year, 12, 20))
+                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        }
     }
 }

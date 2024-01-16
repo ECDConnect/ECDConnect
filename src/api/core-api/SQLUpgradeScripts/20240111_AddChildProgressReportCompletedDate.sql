@@ -1,0 +1,1 @@
+ALTER TABLE public."ChildProgressReport" ADD "DateCompleted" timestamp NULL;

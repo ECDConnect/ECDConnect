@@ -7,7 +7,7 @@ import {
   camelCaseToSentanceCase,
 } from '@ecdlink/core';
 import { CheckboxGroup, FormInput, Typography } from '@ecdlink/ui';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { FieldType } from '../../pages/content-management/content-management-models';
 import Pagination from '../pagination/pagination';
 import { StoryBookTypes } from '../../pages/content-management/sub-pages/content-list/components/create-story/components/create-story-form';
@@ -87,8 +87,9 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     },
   });
 
-  const { data: storyBookPartQuestioncontentData } = useQuery(
+  const { data: storyBookPartQuestioncontentData, loading } = useQuery(
     storyBookPartsQuestionsQuery,
+
     {
       fetchPolicy: 'cache-and-network',
       variables: {
@@ -104,6 +105,44 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     useState(currentStoryBooks);
   const [storyBookPartsValuesFormatted, setStoryBookPartsDataValuesFormatted] =
     useState(currentStoryBooks);
+  const [
+    initialStoryBookPartsQuestionsFormatted,
+    setInitialStoryBookPartsQuestionsFormatted,
+  ] = useState([]);
+  const [
+    storyBookPartsQuestionsFormatted,
+    setStoryBookPartsQuestionsFormatted,
+  ] = useState([]);
+  const [hasLoadedQuestionData, setHasLoadedQuestionData] = useState(false);
+
+  const storyBookPartQuestionsIds = useMemo(
+    () =>
+      storyBookPartsValues?.map(
+        (item) => item?.storyBookPartQuestions?.[0]?.id
+      ),
+    [storyBookPartsValues]
+  );
+
+  useEffect(() => {
+    if (
+      initialStoryBookPartsQuestionsFormatted &&
+      hasLoadedQuestionData &&
+      !loading
+    ) {
+      setStoryBookPartsQuestionsFormatted(
+        initialStoryBookPartsQuestionsFormatted
+      );
+      setHasLoadedQuestionData(false);
+    }
+  }, [initialStoryBookPartsQuestionsFormatted, loading]);
+
+  const currentStoryBooksPartQuestions = useMemo(
+    () =>
+      storyBookPartsQuestions?.filter((x) =>
+        storyBookPartQuestionsIds?.includes(x.id)
+      ),
+    [storyBookPartQuestionsIds, storyBookPartsQuestions]
+  );
 
   useEffect(() => {
     if (optionDefinition && optionDefinition.fields) {
@@ -129,6 +168,7 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
       setStoryBookPartsQuestions(
         storyBookPartQuestioncontentData?.GetAllStoryBookPartQuestion
       );
+      setHasLoadedQuestionData(true);
     }
   }, [storyBookPartQuestioncontentData]);
 
@@ -148,12 +188,57 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
           storyBookPartQuestions: [],
         });
       }
-      setStoryBookPartsDataValuesFormatted([
-        ...storyBookPartsValues,
-        ...emptyArray,
-      ]);
+
+      const tempArray = [...storyBookPartsValues, ...emptyArray];
+
+      const indexArray = tempArray?.map((bookPart, idx) => {
+        return {
+          ...bookPart,
+          idx: idx,
+        };
+      });
+
+      setStoryBookPartsDataValuesFormatted(indexArray);
     }
   }, [formType, storyBookPartsValues]);
+
+  useEffect(() => {
+    if (currentStoryBooksPartQuestions && storyBookPartQuestionsIds) {
+      const emptyArray = [];
+      const inputLimit = 10;
+      for (let i = 0; i < inputLimit; i++) {
+        emptyArray?.push({
+          name: '',
+          id: '',
+          question: '',
+        });
+      }
+
+      storyBookPartsValuesFormatted?.map((bookPart, idx) => {
+        if (bookPart?.storyBookPartQuestions?.length > 0) {
+          emptyArray?.splice(idx, 1, {
+            name: storyBookPartsQuestions?.find(
+              (question) =>
+                question?.id === bookPart?.storyBookPartQuestions?.[0]?.id
+            )?.name,
+            id: bookPart?.storyBookPartQuestions?.[0]?.id,
+            question: storyBookPartsQuestions?.find(
+              (question) =>
+                question?.id === bookPart?.storyBookPartQuestions?.[0]?.id
+            )?.question,
+            idx: idx,
+          });
+        }
+      });
+
+      setInitialStoryBookPartsQuestionsFormatted([...emptyArray]);
+    }
+  }, [
+    currentStoryBooksPartQuestions,
+    storyBookPartQuestionsIds,
+    storyBookPartsQuestions,
+    storyBookPartsValuesFormatted,
+  ]);
 
   useEffect(() => {
     if (contentValue) {
@@ -196,19 +281,37 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     }
   };
 
-  const onChange = (e, idx) => {
-    let newArray = [...storyBookPartsValuesFormatted];
+  const onChange = useCallback(
+    (e, idx) => {
+      let newArray = [...storyBookPartsValuesFormatted];
 
-    newArray[idx] = {
-      ...newArray[idx],
-      partText: e.target.value,
-      part: `Part ${idx + 1}`,
-      name: `Part ${idx + 1}`,
-      idx: idx,
-    };
+      newArray[idx] = {
+        ...newArray[idx],
+        partText: e.target.value,
+        part: `Part ${idx + 1}`,
+        name: `Part ${idx + 1}`,
+        idx: idx,
+      };
 
-    setStoryBookPartsDataValuesFormatted(newArray);
-  };
+      setStoryBookPartsDataValuesFormatted(newArray);
+    },
+    [storyBookPartsValuesFormatted]
+  );
+
+  const onQuestionChange = useCallback(
+    (e, idx) => {
+      let newArray = [...storyBookPartsQuestionsFormatted];
+
+      newArray[idx] = {
+        ...newArray[idx],
+        question: e.target.value,
+        name: e.target.value,
+        idx: idx,
+      };
+      setStoryBookPartsQuestionsFormatted(newArray);
+    },
+    [storyBookPartsQuestionsFormatted]
+  );
 
   let changedStoryBookPartsArr = useMemo(
     () =>
@@ -222,11 +325,35 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
     [storyBookPartsValues, storyBookPartsValuesFormatted]
   );
 
+  let changedStoryBookPartsQuestionsArr = useMemo(
+    () =>
+      storyBookPartsQuestionsFormatted?.filter((o1) => {
+        return storyBookPartsQuestions?.every(
+          (o2) =>
+            (o2?.question !== o1?.question && o1?.question !== '') ||
+            (o1?.question === '' && o1?.id)
+        );
+      }),
+    [storyBookPartsQuestionsFormatted, storyBookPartsQuestions]
+  );
+
   useEffect(() => {
     if (changedStoryBookPartsArr) {
       setFilteredStoryBookParts(changedStoryBookPartsArr);
     }
   }, [changedStoryBookPartsArr, setFilteredStoryBookParts]);
+
+  useEffect(() => {
+    if (changedStoryBookPartsQuestionsArr?.length > 0) {
+      setFilteredStoryBookPartsQuestions(changedStoryBookPartsQuestionsArr);
+      setFilteredStoryBookParts(storyBookPartsValuesFormatted);
+    }
+  }, [
+    changedStoryBookPartsQuestionsArr,
+    setFilteredStoryBookParts,
+    setFilteredStoryBookPartsQuestions,
+    storyBookPartsValuesFormatted,
+  ]);
 
   if (
     tempData &&
@@ -361,6 +488,45 @@ const StoryContentForm: React.FC<StoryContentFormProps> = ({
                         placeholder={'Add a response...'}
                       />
                     </div>
+                    <Typography
+                      type={'h4'}
+                      text={`Question`}
+                      className={'mt-2 text-sm font-normal'}
+                      color={'textDark'}
+                    />
+                    <Typography
+                      type={'body'}
+                      text={`Optional`}
+                      className={'mt-1 text-sm font-normal'}
+                      color={'textDark'}
+                    />
+                    <FormInput
+                      key={idx}
+                      className="bg-adminPortalBg my-4 p-4"
+                      isAdminPortalField={true}
+                      id={item?.id}
+                      value={
+                        (storyBookPartsQuestionsFormatted &&
+                          storyBookPartsQuestionsFormatted?.length &&
+                          storyBookPartsQuestionsFormatted?.find(
+                            (question) =>
+                              question?.id ===
+                              item?.storyBookPartQuestions?.[0]?.id
+                          )?.question) ||
+                        storyBookPartsQuestionsFormatted?.find(
+                          (question) => question?.idx === idx
+                        )?.question
+                      }
+                      disabled={item?.partText === ''}
+                      onChange={(e) => onQuestionChange(e, idx)}
+                      textInputType="textarea"
+                      placeholder={'Add a question...'}
+                      // error={
+                      //   dataValuesDescriptionLength?.length === 0 && idx === 0
+                      //     ? 'This field is required'
+                      //     : ('' as any)
+                      // }
+                    />
                   </div>
                 );
               })}

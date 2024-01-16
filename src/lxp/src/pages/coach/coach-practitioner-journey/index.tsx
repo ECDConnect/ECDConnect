@@ -204,7 +204,7 @@ export const CoachPractitionerJourney = () => {
             today.getMonth(),
             today.getDate()
           ).toISOString(),
-          maxDate: new Date(visit.plannedVisitDate).toISOString(),
+          //maxDate: new Date(visit.plannedVisitDate).toISOString(),
           name: '',
           description: '',
           participantUserIds: [practitionerId],

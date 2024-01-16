@@ -315,6 +315,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public async Task<List<NotificationDisplay>> GetClassroomActionItems(
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] ChildProgressReportService childProgressReportService,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] ChildAttendanceReport attendanceReportService,
@@ -410,24 +411,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Get Due/Overdue Reports
             // Get Children not progressed
             var isPeriod1 = previousMonthStart.Month <= 7;
-            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportPeriodEnd = GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodEnd = ChildProgressReportService.GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
 
-            DateTime reportDueStart = GetReportDueStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportDueEnd = GetReportDueEnd(previousMonthStart.Year, isPeriod1);
+            DateTime reportDueStart = ChildProgressReportService.GetReportDueStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportDueEnd = ChildProgressReportService.GetReportDueEnd(previousMonthStart.Year, isPeriod1);
 
-            var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-            var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
+            var reportOverDueStart = ChildProgressReportService.GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+            var reportOverDueEnd = ChildProgressReportService.GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
 
             // Notifications for child progress reports
-            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, uId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), DateTime.Now);
+            var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
 
             // If any reports were submitted in the overdue period (2nd month of the submission window
-            if (reportCounts.overdueReportsSubmitted > 0)
+            if (reportCounts.reportsSubmittedOverdue > 0)
             {
                 notifications.Add(new NotificationDisplay()
                 {
-                    Subject = $"{reportCounts.overdueReportsSubmitted} overdue progress reports",
+                    Subject = $"{reportCounts.reportsSubmittedOverdue} overdue progress reports",
                     // TODO: Warnings or errors?
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
@@ -440,12 +441,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             // If any children did not get a report submitted
-            if (reportCounts.missedReportCount > 0
+            if (reportCounts.reportsMissingOrIncomplete > 0
                 && currentDate >= reportOverDueEnd)
             {
                 notifications.Add(new NotificationDisplay()
                 {
-                    Subject = $"{reportCounts.missedReportCount} missed progress reports",
+                    Subject = $"{reportCounts.reportsMissingOrIncomplete} missed progress reports",
                     // TODO: Warnings or errors?
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
@@ -486,7 +487,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Rule:
             // Show only if the practitioner did not submit reports for the January to June reporting period by the deadline(31 July)
             // or for the July to November reporting period by the deadline(20 Dec)"
-            if (reportCounts.missedReportCount > 0
+            if (reportCounts.reportsMissingOrIncomplete > 0
                         && currentDate >= reportOverDueEnd)
             {
                 var childProgress = GetChildProgress(repoFactory, reportPeriodStart, children);
@@ -554,55 +555,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             }
 
             return notifications;
-        }
-
-
-        private static DateTime GetReportPeriodStart(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 1, 1) : new DateOnly(year, 7, 1))
-                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetNextReportDuePeriodStart(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 11, 1) : new DateOnly(year + 1, 6, 1))
-                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetNextReportDuePeriodEnd(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 11, 30) : new DateOnly(year + 1, 6, 30))
-                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportPeriodEnd(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 12, 20))
-                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportDueStart(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 6, 1) : new DateOnly(year, 11, 1))
-                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportDueEnd(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 11, 30))
-                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportOverDueStart(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 7, 1) : new DateOnly(year, 12, 1))
-                            .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-        }
-
-        private static DateTime GetReportOverDueEnd(int year, bool isPeriod1)
-        {
-            return (isPeriod1 ? new DateOnly(year, 7, 31) : new DateOnly(year, 12, 20))
-                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
         }
 
         private static (int notProgressedFor2Periods, int notProgressedFor3Periods) GetChildProgress(
@@ -706,9 +658,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (missingRegisterDayCount > 0)
             {
                 var isPeriod1 = currentDate.Month <= 7;
-                DateTime currentReportingPeriodEnd = GetReportDueEnd(currentDate.Year, isPeriod1);
+                DateTime currentReportingPeriodEnd = ChildProgressReportService.GetReportDueEnd(currentDate.Year, isPeriod1);
                 var isPreviousMonthPeriod1 = previousMonthStart.Month <= 7;
-                DateTime nextReportingPeriodEnd = GetNextReportDuePeriodEnd(previousMonthStart.Year, isPreviousMonthPeriod1);
+                DateTime nextReportingPeriodEnd = ChildProgressReportService.GetNextReportDuePeriodEnd(previousMonthStart.Year, isPreviousMonthPeriod1);
 
                 return new ActionItemMissedProgressReportsDisplay()
                 {
@@ -750,7 +702,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
 
             var isPeriod1 = previousMonthStart.Month <= 7;
-            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodStart = ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
@@ -995,56 +947,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return progressHistory;
         }
 
-        // TODO - This needs to move into a service
-        private (int dueReportsSubmitted, int missedReportCount, int overdueReportsSubmitted) GetChildProgressReportStatusCountsForPractitioner(
-            IGenericRepositoryFactory repoFactory,
-            string userId,
-            string practitionerHierarcry,
-            IEnumerable<Guid> classroomGroupIds,
-            DateTime currentDate) 
-        {
-            DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
-            DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
-            var isPeriod1 = previousMonthStart.Month <= 7;
-            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportPeriodEnd = GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
-
-            DateTime reportDueStart = GetReportDueStart(previousMonthStart.Year, isPeriod1);
-            DateTime reportDueEnd = GetReportDueEnd(previousMonthStart.Year, isPeriod1);
-
-            var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-            var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
-
-            if (DateTime.Now <= reportPeriodStart)
-            {
-                // Reports aren't due yet
-                return (0, 0, 0);
-            }
-
-            var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
-            var childProgressReportRepo = repoFactory.CreateRepository<ChildProgressReport>(userContext: userId);
-
-            var progressReports = childProgressReportRepo
-                .GetAll()
-                .Where(x =>
-                        x.ClassroomGroupId.HasValue 
-                        && classroomGroupIds.Contains(x.ClassroomGroupId.Value)
-                        && x.ReportDate >= reportPeriodStart
-                        && x.ReportDate <= reportOverDueEnd
-                        && x.IsActive == true)
-                .OrderBy(x => x.ReportDate)
-                .ToList();
-
-            var dueReportsSubmitted = progressReports?.Count(r => r.InsertedDate <= reportDueEnd) ?? 0;
-            var overdueReportsSubmitted = progressReports?.Count(r => r.InsertedDate >= reportOverDueStart) ?? 0;
-
-            var childCount = childRepo.GetAll().Count(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHierarcry));
-
-            var missedReportCount = childCount - (dueReportsSubmitted + overdueReportsSubmitted);
-
-            return (dueReportsSubmitted, missedReportCount, overdueReportsSubmitted);
-        }
-
         private async Task<int> GetMissingAttendanceReportsAsync(
             IGenericRepository<ClassProgramme, Guid> classProgrammeRepo,
             AttendanceTrackingRepository attendanceRepo,
@@ -1128,6 +1030,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             HierarchyEngine hierarchyEngine,
+            [Service] ChildProgressReportService childProgressReportService,
             string userId)
         {
             var user = contextAccessor.HttpContext.GetUser();
@@ -1151,11 +1054,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                .Count();
 
             // Notifications for child progress reports
-            var reportCounts = GetChildProgressReportStatusCountsForPractitioner(repoFactory, userId, practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList(), new DateTime(2023,12,1)); // SUPPRESS DATE RULES for testing
+            var reportCounts = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(practitioner.Hierarchy, classroomGroups.Select(x => x.Id).ToList());
 
             return new ChildProgressReportsStatus
             {
-                CompletedReports = reportCounts.dueReportsSubmitted + reportCounts.overdueReportsSubmitted,
+                CompletedReports = reportCounts.reportsSubmittedOnTime + reportCounts.reportsSubmittedOverdue,
                 NumberOfChildren = childCount
             };
         }
@@ -1164,10 +1067,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<NotificationDisplay> GetDisplayMetrics(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] AttendanceTrackingRepository attendanceRepo,
-            [Service] VisitDataManager visitDataManager,
             [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
+            [Service] ChildProgressReportService childProgressReportService,
             IGenericRepositoryFactory repoFactory,
             string type)
         {
@@ -1186,6 +1089,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         incomeManager,
                         holidayService,
                         personnelService,
+                        childProgressReportService,
                         repoFactory,
                         uId,
                         type).ToList();
@@ -1276,6 +1180,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IIncomeExpenseService incomeManager,
             [Service] IHolidayService<Holiday> holidayService,
             [Service] PersonnelService personnelService,
+            [Service] ChildProgressReportService childProgressReportService,
             IGenericRepositoryFactory repoFactory,
             string uId,
             string mode)
@@ -1390,19 +1295,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                 #region PROGRESS REPORTS OVERDUE
                 var isPeriod1 = previousMonthStart.Month <= 7;
-                var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
-                var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
+                var reportOverDueStart = ChildProgressReportService.GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+                var reportOverDueEnd = ChildProgressReportService.GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
 
                 if (DateTime.Now > reportOverDueStart && DateTime.Now < reportOverDueEnd)
                 {
-                    var missedReports = GetChildProgressReportStatusCountsForPractitioner(
-                    repoFactory,
-                    uId,
+                    var missedReports = childProgressReportService.GetChildProgressReportStatusCountsForPractitioner(
                     practitioner.Hierarchy,
-                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList(),
-                    DateTime.Now);
+                    classroomGroups.Where(x => x.UserId.HasValue && x.UserId.Value == Guid.Parse(practitioner.UserId)).Select(x => x.Id).ToList());
 
-                    if (missedReports.overdueReportsSubmitted > 0)
+                    if (missedReports.reportsMissingOrIncomplete > 0)
                     {
                         notification.Subject = "Progress reports overdue";
                         notification.Icon = MetricsIconEnum.Error.ToString();
@@ -1955,7 +1857,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 #endregion
 
                 #region CHILDREN DID NOT PROGRESS
-                var childProgress = GetChildProgress(repoFactory, GetReportPeriodStart(previousMonthStart.Year, previousMonthStart.Month <= 7), children);
+                var childProgress = GetChildProgress(repoFactory, ChildProgressReportService.GetReportPeriodStart(previousMonthStart.Year, previousMonthStart.Month <= 7), children);
 
                 if (childProgress.notProgressedFor2Periods > 0)
                 {
