@@ -8,11 +8,11 @@ using System.Threading.Tasks;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
-public class ReAccreditationVisits : CronJobService
+public class Visits : CronJobService
 {
     private readonly IServiceScopeFactory _scopeFactory;
-    public ReAccreditationVisits(IServiceScopeFactory scopeFactory,
-        CronJobConfig<ReAccreditationVisits> config, ILogger<ReAccreditationVisits> logger)
+    public Visits(IServiceScopeFactory scopeFactory,
+        CronJobConfig<Visits> config, ILogger<Visits> logger)
             : base(config, logger)
     {
         _scopeFactory = scopeFactory;
@@ -26,6 +26,8 @@ public class ReAccreditationVisits : CronJobService
             var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
             if (service != null && service.Enabled)
             {
+                await service.PushSmartSpaceVisitsData();
+                await service.PushPQAData();
                 await service.PushReAccreditationData();
             }
         }
