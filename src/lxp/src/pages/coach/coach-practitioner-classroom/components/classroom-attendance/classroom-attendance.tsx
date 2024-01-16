@@ -35,7 +35,8 @@ export const ClassroomAttendance: React.FC<ClassroomAttendanceProps> = ({
 
             let percentageClassname =
               'mt-4 mb-3 text-4xl font-semibold text-successMain';
-            const randomPercentage = classroomMetrics?.attendancePercentage;
+            const randomPercentage =
+              classroomMetrics?.attendancePercentage || 0;
             if (randomPercentage <= 75) {
               percentageClassname =
                 'mt-4 mb-3 text-4xl font-semibold text-alertMain';
