@@ -433,6 +433,77 @@ export const Dashboard: React.FC = () => {
     }
   }, [userData]);
 
+  const showCompleteProfileBlockingDialog = () => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Top,
+      render: (onSubmit, onCancel) => {
+        return (
+          <ActionModal
+            className="z-50"
+            icon="XCircleIcon"
+            iconBorderColor="errorBg"
+            iconColor="errorMain"
+            title="Missing programme information"
+            paragraphs={[
+              `Ask the principal of the programme to add you to the programme on Funda App. If you are the principal or if your principal is not a SmartStarter, please update your profile.`,
+            ]}
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Add programme details',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'PlusIcon',
+                onClick: isTrainee
+                  ? async () => {
+                      onSubmit();
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
+                      );
+                    }
+                  : async () => {
+                      onSubmit();
+                      handleOnlineCallback(() =>
+                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+                      );
+                    },
+              },
+              {
+                colour: 'primary',
+                text: 'Close',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'XIcon',
+                onClick: () => {
+                  onSubmit();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const onNavigation = (navItem: any) => {
+    if (
+      (((classroom && classroom.id) ||
+        (classroomGroup && classroomGroup.length > 0)) &&
+        isRegistered &&
+        isProgress &&
+        isProgress > 0 &&
+        hasConsent) ||
+      isTrainee
+    ) {
+      history.push(navItem.href, navItem.params);
+    } else if (navItem.href.includes('classroom')) {
+      showCompleteProfileBlockingDialog();
+    } else {
+      history.push(navItem.href, navItem.params);
+    }
+  };
+
   useEffect(() => {
     if (isOnline) {
       if (practitioner?.userId && !classroom) {
@@ -479,24 +550,28 @@ export const Dashboard: React.FC = () => {
               {
                 name: NavigationTypes.Attendance,
                 href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
                 params: { activeTabIndex: 0 },
                 current: false,
               },
               {
                 name: NavigationTypes.Practitioners,
                 href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
                 params: { activeTabIndex: 1 },
                 current: false,
               },
               {
                 name: NavigationTypes.Children,
                 href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
                 params: { activeTabIndex: 2 },
                 current: false,
               },
               {
                 name: NavigationTypes.Programme,
                 href: ROUTES.CLASSROOM.ROOT,
+                onNavigation: onNavigation,
                 params: { activeTabIndex: 3 },
                 current: false,
               },
@@ -817,19 +892,6 @@ export const Dashboard: React.FC = () => {
     history.push(ROUTES.TRAINING);
   };
 
-  const onNavigation = (navItem: any) => {
-    if (
-      (classroom && classroom.id && navItem.href.includes('classroom')) ||
-      isTrainee
-    ) {
-      history.push(navItem.href, navItem.params);
-    } else if (navItem.href.includes('classroom')) {
-      showCompleteProfileBlockingDialog();
-    } else {
-      history.push(navItem.href, navItem.params);
-    }
-  };
-
   const showOnlineOnly = () => {
     dialog({
       color: 'bg-white',
@@ -846,59 +908,6 @@ export const Dashboard: React.FC = () => {
     } else {
       showOnlineOnly();
     }
-  };
-
-  const showCompleteProfileBlockingDialog = () => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Top,
-      render: (onSubmit, onCancel) => {
-        return (
-          <ActionModal
-            className="z-50"
-            icon="XCircleIcon"
-            iconBorderColor="errorBg"
-            iconColor="errorMain"
-            title="Missing programme information"
-            paragraphs={[
-              `Ask the principal of the programme to add you to the programme on Funda App. If you are the principal or if your principal is not a SmartStarter, please update your profile.`,
-            ]}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Add programme details',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'PlusIcon',
-                onClick: isTrainee
-                  ? async () => {
-                      onSubmit();
-                      handleOnlineCallback(() =>
-                        history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)
-                      );
-                    }
-                  : async () => {
-                      onSubmit();
-                      handleOnlineCallback(() =>
-                        history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-                      );
-                    },
-              },
-              {
-                colour: 'primary',
-                text: 'Close',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'XIcon',
-                onClick: () => {
-                  onSubmit();
-                },
-              },
-            ]}
-          />
-        );
-      },
-    });
   };
 
   const profilePc =
