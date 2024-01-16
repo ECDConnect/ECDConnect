@@ -37,7 +37,7 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
       setAgeGroup3((prevState) => prevState + 1);
       return;
     }
-    if (childAgeInMonths > 60) setAgeGroup4((prevState) => prevState + 1);
+    if (childAgeInMonths >= 60) setAgeGroup4((prevState) => prevState + 1);
   };
 
   useEffect(() => {
