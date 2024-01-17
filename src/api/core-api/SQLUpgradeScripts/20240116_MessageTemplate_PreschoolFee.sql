@@ -1,0 +1,1 @@
+update "MessageTemplate" set "Action" = '{"url":"/classroom/preschool-fee"}' where "TemplateType"  = 'update-preschool-fee'; 
