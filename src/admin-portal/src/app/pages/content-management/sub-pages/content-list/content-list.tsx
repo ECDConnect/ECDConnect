@@ -300,7 +300,7 @@ export default function ContentList({
               </span>
               <input
                 className="text-textMid focus:outline-none w-full rounded-md bg-transparent py-2 pl-11 focus:ring-2 focus:ring-offset-2"
-                placeholder="Search by title, section or content..."
+                placeholder="Search by title or content..."
                 onChange={onSearch}
               />
             </div>
@@ -316,7 +316,10 @@ export default function ContentList({
                   className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 lg:w-auto"
                 >
                   <PlusIcon width="22px" className="pl-1" />
-                  Add {camelCaseToSentanceCase(contentType.name)}
+                  Add{' '}
+                  {contentType?.name === 'StoryBook'
+                    ? camelCaseToSentanceCase('Story')
+                    : camelCaseToSentanceCase(contentType.name)}
                 </button>
               )}
           </div>
