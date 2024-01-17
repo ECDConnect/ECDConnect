@@ -1,8 +1,6 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Users;
-using HotChocolate;
 using System;
 using System.Collections.Generic;
 
@@ -24,5 +22,6 @@ namespace ECDLink.Core.Services.Interfaces
         List<StatementsIncome> GetUnsubmittedIncomeItems(string userId);
         List<StatementsExpenses> GetUnsubmittedExpenseItems(string userId);
         List<StatementReport> GetStatementLinesToReport(string userId, int year, int month);
+        StatementsIncomeStatement UpdateUserContactStatusForStatement(Guid statementId);
     }
 }

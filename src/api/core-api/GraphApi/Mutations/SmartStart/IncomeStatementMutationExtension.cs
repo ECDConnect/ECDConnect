@@ -1,17 +1,11 @@
-using DotLiquid.Util;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart.Input;
-using EcdLink.Api.CoreApi.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -19,7 +13,6 @@ using Newtonsoft.Json;
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -112,6 +105,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 incomeManager.AutoSubmitStatement(pracData.Key, duePeriod.Year, duePeriod.Month);
             }
             return new ResultReturnObject() { ResultMessage = "OK" };
+        }
+
+       [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
+       public StatementsIncomeStatement UpdateUserContactStatusForStatement([Service] IIncomeExpenseService incomeManager, Guid statementId)
+        {
+            return incomeManager.UpdateUserContactStatusForStatement(statementId);
         }
     }
 }

@@ -10,4 +10,5 @@ export interface IncomeStatementDto {
   balance: number;
   incomeItems: IncomeItemMinDto[];
   expenseItems: ExpenseItemMinDto[];
+  contactedByCoach: boolean;
 }
