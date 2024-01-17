@@ -89,6 +89,14 @@ export default function ContentList({
         return;
       }
 
+      if (choosedSectionTitle === 'Story activities') {
+        const smallLargeGroupsDisplayFields = displayFields?.filter(
+          (item) => item?.fieldName !== 'subCategories'
+        );
+        setDisplayFields(smallLargeGroupsDisplayFields);
+        return;
+      }
+
       setDisplayFields(displayFields);
     }
   }, [choosedSectionTitle, contentType]);
