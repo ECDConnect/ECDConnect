@@ -244,6 +244,8 @@ export default function ContentEdit({
     savedContent();
 
     setLoading(false);
+
+    cancelEdit();
   };
 
   if (
