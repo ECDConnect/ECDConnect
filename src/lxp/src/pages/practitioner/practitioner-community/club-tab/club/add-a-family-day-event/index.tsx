@@ -61,17 +61,13 @@ export const AddAFamilyDayEvent: React.FC = () => {
         initialMonth: 'May',
         lastMonth: 'July',
       };
-      // SUPPRESS DATE RULES
-      /////////////////////////////////////////////////////////
-      // } else if (month >= 7 && month <= 9) {
-    } else if (month >= 7) {
+    } else if (month >= 7 && month <= 9) {
       return {
         term: 'Term 3',
         initialMonth: 'August',
         lastMonth: 'October',
       };
     }
-    /////////////////////////////////////////////////////////
   }, []);
 
   const formatDate = (date: Date) => {
