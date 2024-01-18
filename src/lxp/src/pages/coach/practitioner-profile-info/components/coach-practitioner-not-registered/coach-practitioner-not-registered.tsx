@@ -161,11 +161,10 @@ export const CoachPractitionerNotRegistered: React.FC<
           </div>
         )}
         <Dialog
-          className={styles.dialogContainer}
           borderRadius="normal"
           stretch={true}
           visible={showAlert}
-          position={DialogPosition.Bottom}
+          position={DialogPosition.Middle}
         >
           <div className={'flex justify-center p-4'}>
             <div className="w-11/12">
