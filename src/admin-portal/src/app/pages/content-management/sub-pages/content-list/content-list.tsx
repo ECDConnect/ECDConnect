@@ -361,7 +361,8 @@ export default function ContentList({
             </div>
             {hasPermission(PermissionEnum.create_static) &&
               contentType?.name !== 'Consent' &&
-              contentType?.name !== 'ProgressTrackingLevel' && (
+              contentType?.name !== 'ProgressTrackingLevel' &&
+              contentType?.name !== 'ProgressTrackingCategory' && (
                 <button
                   onClick={() => {
                     hasPermission(PermissionEnum.update_static) &&
