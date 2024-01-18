@@ -967,7 +967,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         public ActivityHostFamilyDays GetActivityHostFamilyDetails(Guid clubId)
         {
-            var year = 2023;
+            var year = DateTime.Now.Year;
             
             DateTime term1Start = new DateTime(year, 01, 01);
             DateTime term1End = new DateTime(year, 04, 30);
@@ -1065,9 +1065,9 @@ namespace EcdLink.Api.CoreApi.Services
 
         public ActivityLeaveNoOneBehind GetActivityLeaveNoOneBehindDetails(Guid clubId)
         {
-            var year = 2023; // Reset to current year
+            var year = DateTime.Now.Year; 
             var startDate = new DateTime(year - 1, 12, 1);
-            var endDate = new DateTime(year, 12, 31); // Reset to end of november
+            var endDate = new DateTime(year, 11, 30);
 
 
             var activityLeaveNoOneBehind = new ActivityLeaveNoOneBehind()
