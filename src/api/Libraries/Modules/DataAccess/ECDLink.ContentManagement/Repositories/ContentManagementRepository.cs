@@ -92,6 +92,7 @@ namespace ECDLink.ContentManagement.Repositories
                 // Ignore the TenantId on ContentTypeField because HotChocolate doesn't allow duplicate names.
                 var contentFieldValuePairs = contentValues.ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
                 contentFieldValuePairs.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
+                contentFieldValuePairs.Add("updatedDate", item.UpdatedDate.ToString());
                 if (contentFieldValuePairs?.Any() ?? false)
                 {
                     allContentValuePairs.Add(contentFieldValuePairs.ToObject());
@@ -291,7 +292,9 @@ namespace ECDLink.ContentManagement.Repositories
                             Value = fileUrl.ToString(),
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
-                            TenantId = TenantExecutionContext.Tenant.Id
+                            TenantId = TenantExecutionContext.Tenant.Id,
+                            InsertedDate = DateTime.Now,
+                            UpdatedDate = DateTime.Now
                         });
 
                     }
@@ -302,7 +305,9 @@ namespace ECDLink.ContentManagement.Repositories
                             Value = value?.ToString(),
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
-                            TenantId = TenantExecutionContext.Tenant.Id
+                            TenantId = TenantExecutionContext.Tenant.Id,
+                            InsertedDate = DateTime.Now,
+                            UpdatedDate = DateTime.Now
                         });
                     }
 
@@ -314,7 +319,9 @@ namespace ECDLink.ContentManagement.Repositories
                 ContentTypeId = contentTypeId,
                 ContentValues = contentValues,
                 IsActive = true,
-                TenantId = TenantExecutionContext.Tenant.Id
+                TenantId = TenantExecutionContext.Tenant.Id,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now
             };
 
             _context.Contents.Add(newContent);
@@ -432,7 +439,7 @@ namespace ECDLink.ContentManagement.Repositories
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
                             TenantId = currentTenant,
-                            InsertedDate = DateTime.UtcNow,
+                            InsertedDate = DateTime.Now,
                             UpdatedDate = DateTime.UtcNow
                         });
 
@@ -444,7 +451,9 @@ namespace ECDLink.ContentManagement.Repositories
                             Value = value?.ToString(),
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
-                            TenantId = currentTenant
+                            TenantId = currentTenant,
+                            InsertedDate = DateTime.Now,
+                            UpdatedDate = DateTime.UtcNow
                         });
                     }
 
