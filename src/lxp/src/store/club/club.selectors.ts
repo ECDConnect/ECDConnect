@@ -423,7 +423,7 @@ export const getClubContributionsForPractitionerSelector = (
 
       // Complete child progress - after June for purple leagues only
       if (
-        // new Date().getMonth() >= 6 && // SUPPRESS DATE RULES for testing
+        new Date().getMonth() >= 6 &&
         !!club.league &&
         club.league.leagueTypeName === LeagueType.Purple
       ) {
