@@ -32,6 +32,7 @@ export const CoachPractitionerNotRegistered: React.FC<
   const [inviteCount, setInviteCount] = useState(0);
   const [inviteDates, setInviteDates] = useState<[]>();
   const [lastInviteDate, setLastInviteDate] = useState<Date>();
+  const [lastInviteDiffInMinutes, setLastInviteDiffInMinutes] = useState(0);
   const [showAlert, setShowAlert] = useState(false);
 
   useEffect(() => {
@@ -50,24 +51,25 @@ export const CoachPractitionerNotRegistered: React.FC<
       userAuth?.auth_token || ''
     ).GetAllPractitionerInvites(practitioner?.userId || '');
     setLastInviteDate(lastInviteDate as any);
-    const diffHours = lastInviteDate
-      ? Math.abs(differenceInMinutes(new Date(lastInviteDate), new Date()))
-      : 0;
-
-    if (diffHours > 60) {
-      setShowAlert(true);
-      return;
-    }
+    setLastInviteDiffInMinutes(
+      lastInviteDate
+        ? Math.abs(differenceInMinutes(new Date(lastInviteDate), new Date()))
+        : 0
+    );
     setInviteCount(Number(inviteCountData));
     setInviteDates(lastInviteDates as any);
   };
 
   const sendPractitionerInvite = async () => {
     if (isOnline) {
-      await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).SendPractitionerInviteToApplication(practitioner?.userId || '');
-      getClassroomDetails();
+      if (lastInviteDiffInMinutes > 60 || inviteCount === 0) {
+        await new PractitionerService(
+          userAuth?.auth_token || ''
+        ).SendPractitionerInviteToApplication(practitioner?.userId || '');
+        getClassroomDetails();
+      } else {
+        setShowAlert(true);
+      }
     } else {
       showOnlineOnly();
     }
