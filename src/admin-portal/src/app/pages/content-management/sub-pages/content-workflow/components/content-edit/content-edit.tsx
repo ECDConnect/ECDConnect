@@ -249,8 +249,6 @@ export default function ContentEdit({
     cancelEdit();
   };
 
-  console.log({ content });
-
   if (
     contentType &&
     contentValues &&
