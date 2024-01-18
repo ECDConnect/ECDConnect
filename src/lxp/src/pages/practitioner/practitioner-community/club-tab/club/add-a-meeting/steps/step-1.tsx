@@ -7,7 +7,7 @@ import {
   LoadingSpinner,
   Typography,
 } from '@ecdlink/ui';
-import { AddMeetingProps, AddMeetingRouteState } from '../index.types';
+import { AddMeetingProps, AddMeetingRouteParams } from '../index.types';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { clubSelectors } from '@/store/club';
@@ -21,7 +21,11 @@ import { useAppDispatch } from '@/store';
 import { useSnackbar } from '@ecdlink/core';
 import { useParams } from 'react-router';
 
-export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
+export const Step1 = ({
+  setIsEnabledButton,
+  setStep1,
+  clubId,
+}: AddMeetingProps) => {
   const [hasMeetingHappened, setHasMeetingHappened] = useState<
     boolean | undefined
   >();
@@ -33,12 +37,12 @@ export const Step1 = ({ setIsEnabledButton, setStep1 }: AddMeetingProps) => {
 
   const { showMessage } = useSnackbar();
 
-  const club = useSelector(clubSelectors.getClubForPractitionerSelector);
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const details = useSelector(
     clubSelectors.getActivityMeetRegularDetailsSelector(club?.id ?? '')
   );
 
-  const { eventId } = useParams<AddMeetingRouteState>();
+  const { eventId } = useParams<AddMeetingRouteParams>();
 
   const upcomingMeeting = details?.upcomingMeetings?.find(
     (item) => item?.eventId === eventId

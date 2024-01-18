@@ -5,24 +5,27 @@ import {
   Checkbox,
   Typography,
 } from '@ecdlink/ui';
-import { AddMeetingProps, AddMeetingRouteState } from '../index.types';
+import { AddMeetingProps, AddMeetingRouteParams } from '../index.types';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { getClubForPractitionerSelector } from '@/store/club/club.selectors';
 import { usePrevious } from '@ecdlink/core';
 import { useParams } from 'react-router';
 import { clubSelectors } from '@/store/club';
 
-export const Step2 = ({ setIsEnabledButton, setStep2 }: AddMeetingProps) => {
+export const Step2 = ({
+  setIsEnabledButton,
+  setStep2,
+  clubId,
+}: AddMeetingProps) => {
   const [attendance, setAttendance] = useState<AttendanceListDataItem[]>([]);
   const [isChecked, setIsChecked] = useState<boolean>(false);
 
-  const club = useSelector(getClubForPractitionerSelector);
+  const club = useSelector(clubSelectors.getClubByIdSelector(clubId));
   const details = useSelector(
     clubSelectors.getActivityMeetRegularDetailsSelector(club?.id ?? '')
   );
 
-  const { eventId } = useParams<AddMeetingRouteState>();
+  const { eventId } = useParams<AddMeetingRouteParams>();
 
   const upcomingMeeting = details?.upcomingMeetings?.find(
     (item) => item?.eventId === eventId

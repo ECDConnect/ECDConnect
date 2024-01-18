@@ -162,8 +162,9 @@ export const MeetRegularly: React.FC = () => {
   const upcomingMeetings: UserAlertListDataItem[] = useMemo(
     () =>
       details?.upcomingMeetings?.map((item) => {
-        const { meetingId, monthName, formattedDate } =
-          getPointsActivityDateDetails(item?.meetingDate ?? '');
+        const { monthName, formattedDate } = getPointsActivityDateDetails(
+          item?.meetingDate ?? ''
+        );
 
         return {
           title: monthName,
@@ -178,11 +179,12 @@ export const MeetRegularly: React.FC = () => {
               ROUTES.PRACTITIONER.COMMUNITY.CLUB.MEETING.ADD_MEETING.UPCOMING_MEETING.replace(
                 ':eventId',
                 item?.eventId ?? ''
-              )
+              ),
+              { clubId }
             ),
         };
       }) ?? [],
-    [details?.upcomingMeetings, history]
+    [clubId, details?.upcomingMeetings, history]
   );
 
   const pastMeetings: UserAlertListDataItem[] = useMemo(
@@ -210,7 +212,8 @@ export const MeetRegularly: React.FC = () => {
                   ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.MEETING_DETAILS.replace(
                     ':meetingId',
                     meetingId!
-                  ).replace(':clubId', clubId)
+                  ).replace(':clubId', clubId),
+                  { clubId }
                 ),
             }),
           };

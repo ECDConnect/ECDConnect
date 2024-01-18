@@ -14,6 +14,7 @@ export interface Step3Props {
 }
 
 export interface AddMeetingProps {
+  clubId: string;
   step1?: Step1Props;
   step2?: unknown;
   setStep1?: (step1: Step1Props) => void;
@@ -22,6 +23,10 @@ export interface AddMeetingProps {
   setIsEnabledButton: (isEnabledButton: boolean) => void;
 }
 
-export interface AddMeetingRouteState {
+export interface AddMeetingRouteParams {
   eventId?: string;
+}
+
+export interface AddMeetingRouteState {
+  clubId?: string;
 }
