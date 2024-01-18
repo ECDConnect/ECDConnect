@@ -1,11 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
-import { useState, useEffect, useCallback, useMemo } from 'react';
-import {
-  ReasonsForPractitionerLeaving,
-  useDialog,
-  useSnackbar,
-  useTheme,
-} from '@ecdlink/core';
+import { useState, useEffect, useCallback } from 'react';
+import { useDialog, useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -62,6 +57,7 @@ import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
 import { clubSelectors, clubThunkActions } from '@/store/club';
 import { getActivityMeetRegularDetails } from '@/store/club/club.actions';
+import { PractitionerDelicensed } from './practitioner-delicensed/practitioner-delicensed';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const dialog = useDialog();
@@ -83,6 +79,9 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   const isPrincipal = practitioner?.isPrincipal === true;
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
+  const [isToRemoveSmartStarter, setIsToRemoveSmartStarter] =
+    useState<boolean>(false);
+  const [delicenseDate, setDelicenseDate] = useState<Date>();
 
   const isTrainee = practitioner?.isTrainee;
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
@@ -152,10 +151,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     getPractitionerTimelineByIdSelector(practitionerId)
   );
 
-  const [removeReasonId, setRemoveReasonId] = useState<string | undefined>(
-    undefined
-  );
-
   // Check if the practitioner needs to be removed for whatever reason
   useEffect(() => {
     if (!practitionerTimeline) {
@@ -184,17 +179,22 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         attendedReaccreditationVisits?.length - 2
       ];
 
-    const isToRemoveSmartStarter =
-      lastPqa?.delicenseQuestionAnswered ||
-      lastReaccreditation?.delicenseQuestionAnswered ||
+    if (
+      !!lastPqa?.delicenseQuestionAnswered ||
       (lastPqa?.overallRatingColor === 'Error' &&
-        previousPqa?.overallRatingColor === 'Error') ||
-      (lastReaccreditation?.overallRatingColor === 'Error' &&
-        previousReaccreditation?.overallRatingColor === 'Error');
+        previousPqa?.overallRatingColor === 'Error')
+    ) {
+      setIsToRemoveSmartStarter(true);
+      setDelicenseDate(new Date(lastPqa.insertedDate));
+    }
 
-    if (isToRemoveSmartStarter) {
-      setRemoveReasonId(ReasonsForPractitionerLeaving.DELICENSED);
-      setRemovePractionerReasonsVisible(true);
+    if (
+      !!lastReaccreditation?.delicenseQuestionAnswered ||
+      (lastReaccreditation?.overallRatingColor === 'Error' &&
+        previousReaccreditation?.overallRatingColor === 'Error')
+    ) {
+      setIsToRemoveSmartStarter(true);
+      setDelicenseDate(new Date(lastReaccreditation.insertedDate));
     }
   }, [practitionerTimeline]);
 
@@ -654,16 +654,26 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     return new Date(addDays(new Date(date), 1));
   }, []);
 
+  const practitionerNotRegistered =
+    (practitioner?.isRegistered === null ||
+      practitioner?.isRegistered === false) &&
+    !isTrainee;
+
   return (
     <>
-      {(practitioner?.isRegistered === null ||
-        practitioner?.isRegistered === false) &&
-      !isTrainee ? (
+      {isToRemoveSmartStarter && (
+        <PractitionerDelicensed
+          practitioner={practitioner!}
+          delicenseDate={delicenseDate!}
+        />
+      )}
+      {practitionerNotRegistered && (
         <CoachPractitionerNotRegistered
           practitioner={practitioner}
           classroom={classroom}
         />
-      ) : (
+      )}
+      {!isToRemoveSmartStarter && !practitionerNotRegistered && (
         <div className={styles.contentWrapper}>
           <BannerWrapper
             showBackground={true}
@@ -1356,37 +1366,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   {renderIcon('EyeIcon', styles.actionIcon)}
                 </Button>
               </div>
-              <Dialog
-                fullScreen
-                visible={createPractitionerNoteVisible}
-                position={DialogPosition.Middle}
-              >
-                <div className={styles.dialogContent}>
-                  <CreateNote
-                    userId={practitionerId || ''}
-                    noteType={NoteTypeEnum.Unknown}
-                    titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
-                    onBack={() => onCreatePractitionerNoteBack()}
-                    onCreated={() => onCreatePractitionerNoteBack()}
-                  />
-                </div>
-              </Dialog>
-              <Dialog
-                fullScreen
-                visible={removePractionerReasonsVisible}
-                position={DialogPosition.Middle}
-              >
-                <div className={styles.dialogContent}>
-                  <RemovePractioner
-                    removeReasonId={removeReasonId}
-                    onSuccess={() =>
-                      showMessage({
-                        message: `${practitioner?.user?.firstName} removed`,
-                      })
-                    }
-                  />
-                </div>
-              </Dialog>
             </div>
             <Divider dividerType="dashed" className="my-4" />
             <div className="flex w-full justify-center">
@@ -1435,20 +1414,50 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               </div>
             )}
           </>
-          <Dialog
-            fullScreen
-            visible={showTraineeDashboard}
-            position={DialogPosition.Top}
-          >
-            <div className={styles.dialogContent}>
-              <CoachTraineeOnboarding
-                practitioner={practitioner}
-                setShowTraineeDashboard={setShowTraineeDashboard}
-              />
-            </div>
-          </Dialog>
         </div>
       )}
+      <Dialog
+        fullScreen
+        visible={createPractitionerNoteVisible}
+        position={DialogPosition.Middle}
+      >
+        <div className={styles.dialogContent}>
+          <CreateNote
+            userId={practitionerId || ''}
+            noteType={NoteTypeEnum.Unknown}
+            titleText={`Add a note to ${practitioner?.user?.firstName} profile`}
+            onBack={() => onCreatePractitionerNoteBack()}
+            onCreated={() => onCreatePractitionerNoteBack()}
+          />
+        </div>
+      </Dialog>
+      <Dialog
+        fullScreen
+        visible={removePractionerReasonsVisible}
+        position={DialogPosition.Middle}
+      >
+        <div className={styles.dialogContent}>
+          <RemovePractioner
+            onSuccess={() =>
+              showMessage({
+                message: `${practitioner?.user?.firstName} removed`,
+              })
+            }
+          />
+        </div>
+      </Dialog>
+      <Dialog
+        fullScreen
+        visible={showTraineeDashboard}
+        position={DialogPosition.Top}
+      >
+        <div className={styles.dialogContent}>
+          <CoachTraineeOnboarding
+            practitioner={practitioner}
+            setShowTraineeDashboard={setShowTraineeDashboard}
+          />
+        </div>
+      </Dialog>
     </>
   );
 };
