@@ -293,8 +293,8 @@ namespace ECDLink.ContentManagement.Repositories
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
                             TenantId = TenantExecutionContext.Tenant.Id,
-                            InsertedDate = DateTime.Now,
-                            UpdatedDate = DateTime.Now
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
                         });
 
                     }
@@ -306,8 +306,8 @@ namespace ECDLink.ContentManagement.Repositories
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
                             TenantId = TenantExecutionContext.Tenant.Id,
-                            InsertedDate = DateTime.Now,
-                            UpdatedDate = DateTime.Now
+                            InsertedDate = DateTime.UtcNow,
+                            UpdatedDate = DateTime.UtcNow
                         });
                     }
 
@@ -320,8 +320,8 @@ namespace ECDLink.ContentManagement.Repositories
                 ContentValues = contentValues,
                 IsActive = true,
                 TenantId = TenantExecutionContext.Tenant.Id,
-                InsertedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now
+                InsertedDate = DateTime.UtcNow,
+                UpdatedDate = DateTime.UtcNow
             };
 
             _context.Contents.Add(newContent);
@@ -439,7 +439,7 @@ namespace ECDLink.ContentManagement.Repositories
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
                             TenantId = currentTenant,
-                            InsertedDate = DateTime.Now,
+                            InsertedDate = DateTime.UtcNow,
                             UpdatedDate = DateTime.UtcNow
                         });
 
@@ -452,7 +452,7 @@ namespace ECDLink.ContentManagement.Repositories
                             ContentTypeFieldId = field.Id,
                             LocaleId = localeId,
                             TenantId = currentTenant,
-                            InsertedDate = DateTime.Now,
+                            InsertedDate = DateTime.UtcNow,
                             UpdatedDate = DateTime.UtcNow
                         });
                     }
