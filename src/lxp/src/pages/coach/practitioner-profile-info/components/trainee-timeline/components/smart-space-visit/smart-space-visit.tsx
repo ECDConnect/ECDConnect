@@ -132,12 +132,7 @@ export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
 
   return (
     // <div className="bg-primaryAccent1 flex h-screen items-center justify-center">
-    <Dialog
-      className={'bg-primaryAccent1 px-4'}
-      stretch={true}
-      visible={visible}
-      position={DialogPosition.Middle}
-    >
+    <Dialog stretch={true} visible={visible} position={DialogPosition.Middle}>
       <ActionModal
         icon={'QuestionMarkCircleIcon'}
         iconColor="white"
