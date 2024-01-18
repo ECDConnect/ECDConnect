@@ -343,7 +343,7 @@ export default function ContentList({
     });
     refreshParent();
   };
-  console.log({ contentType });
+
   if (tableData && displayFields) {
     return (
       <div>
