@@ -50,11 +50,12 @@ export default function ContentEdit({
   cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit } = useForm();
+  const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
+    control: control,
   };
 
   const mutationName = `update${contentType?.name}`;
