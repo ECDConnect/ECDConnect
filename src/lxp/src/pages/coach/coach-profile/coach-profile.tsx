@@ -146,7 +146,10 @@ export const CoachProfile: React.FC = () => {
   };
 
   const isProfileComplete =
-    !!coach?.user?.firstName && !!coach?.user?.surname && !!coach?.siteAddress;
+    !!coach?.user?.firstName &&
+    !!coach?.user?.surname &&
+    !!coach?.user?.email &&
+    !!coach?.siteAddress;
 
   const tabItem: TabItem[] = [
     {
