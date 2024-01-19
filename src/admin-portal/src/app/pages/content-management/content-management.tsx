@@ -21,6 +21,7 @@ import {
   ContentTypes,
 } from '../../constants/content-management';
 import { LinksShared } from './components/links-shared/links-shared';
+import ProgressToolsContentList from './sub-pages/content-list/components/progress-tools-content-list/progress-tools-content-list';
 
 export function ContentManagement() {
   const [selectedType, setSelectedType] = useState<ContentTypeDto>();
@@ -484,6 +485,7 @@ export function ContentManagement() {
                 >
                   {selectedType &&
                     selectedType.name !== ContentTypes.CONNECT &&
+                    selectedType.name !== 'ProgressTrackingSkill' &&
                     languages?.GetAllLanguage &&
                     specialType === '' && (
                       <ContentList
@@ -497,6 +499,24 @@ export function ContentManagement() {
                         searchValue={searchValue}
                         choosedSectionTitle={choosedSectionTitle}
                       ></ContentList>
+                    )}
+
+                  {selectedType &&
+                    selectedType.name !== ContentTypes.CONNECT &&
+                    selectedType.name === 'ProgressTrackingSkill' &&
+                    languages?.GetAllLanguage &&
+                    specialType === '' && (
+                      <ProgressToolsContentList
+                        optionDefinitions={dataDefinitions.contentDefinitions}
+                        contentType={selectedType}
+                        languages={languages.GetAllLanguage}
+                        viewContent={getContentValues}
+                        refreshParent={() => refreshParent()}
+                        selectedTab={selectedTab}
+                        onSearch={search}
+                        searchValue={searchValue}
+                        choosedSectionTitle={choosedSectionTitle}
+                      ></ProgressToolsContentList>
                     )}
                   {/* TODO: Replace it with dynamic validation (example: selectedType.type === 'linkGroup') */}
                   {selectedType?.name === ContentTypes.CONNECT &&
