@@ -13,6 +13,9 @@ import ContentEdit from './components/content-edit/content-edit';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import CreateStory from '../content-list/components/create-story/create-story';
 import CreateTheme from './components/create-theme/create-theme';
+import CategoryContentForm from '../../../../components/category-content-form/category-content-form';
+import CategoryForm from './components/edit-category/category-form/category-form';
+import EditCategory from './components/edit-category/edit-category';
 
 export interface ContentWorkflowProps {
   contentView: ContentManagementView;
@@ -105,6 +108,97 @@ export default function ContentWorkflow({
     return orderedList;
   };
 
+  const handleNoDynamicForms = (type: string) => {
+    switch (type) {
+      case 'StoryBook':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateStory
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        cancelEdit={() => goBack()}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case 'Theme':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <CreateTheme
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        cancelEdit={() => goBack()}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      case 'ProgressTrackingCategory':
+        return (
+          <>
+            <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
+              <div className="h-full py-6">
+                <div className="relative h-full" style={{ minHeight: '36rem' }}>
+                  <div className="rounded-lg border-b py-5">
+                    <div key={selectedLanguageId}>
+                      <EditCategory
+                        optionDefinitions={optionDefinitions}
+                        content={contentView.content}
+                        selectedLanguageId={selectedLanguageId}
+                        contentValues={getOrderedContentValues(
+                          currentContent?.contentValues
+                        )}
+                        contentType={contentType}
+                        cancelEdit={() => goBack()}
+                        savedContent={savedContent}
+                        defaultLanguageId={defaultLanguageId}
+                        cancelCompare={() => setIsCompareMode(!isEdit)}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </>
+        );
+      default:
+        return null;
+    }
+  };
+
   if (contentView && languages && defaultLanguageId) {
     return (
       <div className="flex flex-col">
@@ -134,66 +228,9 @@ export default function ContentWorkflow({
         <div className="min-w-0 flex-1 rounded xl:flex">
           {!isCompareMode ? (
             contentType?.name === 'StoryBook' ||
-            contentType?.name === 'Theme' ? (
-              contentType?.name === 'Theme' ? (
-                <>
-                  <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
-                    <div className="h-full py-6">
-                      <div
-                        className="relative h-full"
-                        style={{ minHeight: '36rem' }}
-                      >
-                        <div className="rounded-lg border-b py-5">
-                          <div key={selectedLanguageId}>
-                            <CreateTheme
-                              optionDefinitions={optionDefinitions}
-                              content={contentView.content}
-                              selectedLanguageId={selectedLanguageId}
-                              contentValues={getOrderedContentValues(
-                                currentContent?.contentValues
-                              )}
-                              contentType={contentType}
-                              cancelEdit={() => goBack()}
-                              savedContent={savedContent}
-                              defaultLanguageId={defaultLanguageId}
-                              cancelCompare={() => setIsCompareMode(!isEdit)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
-                    <div className="h-full py-6">
-                      <div
-                        className="relative h-full"
-                        style={{ minHeight: '36rem' }}
-                      >
-                        <div className="rounded-lg border-b py-5">
-                          <div key={selectedLanguageId}>
-                            <CreateStory
-                              optionDefinitions={optionDefinitions}
-                              content={contentView.content}
-                              selectedLanguageId={selectedLanguageId}
-                              contentValues={getOrderedContentValues(
-                                currentContent?.contentValues
-                              )}
-                              contentType={contentType}
-                              cancelEdit={() => goBack()}
-                              savedContent={savedContent}
-                              defaultLanguageId={defaultLanguageId}
-                              cancelCompare={() => setIsCompareMode(!isEdit)}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              )
+            contentType?.name === 'Theme' ||
+            contentType?.name === 'ProgressTrackingCategory' ? (
+              handleNoDynamicForms(contentType?.name)
             ) : (
               <>
                 <div className="bg-slate-100 lg:min-w-0 lg:flex-1 ">
