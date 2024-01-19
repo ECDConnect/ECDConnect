@@ -451,19 +451,29 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool MoveClubMembers(NewClubMember input)
         {
-            ClubMember clubMember = new ClubMember();
+            ClubMember oldClubMember = new ClubMember();
+            ClubMember newClubMember = new ClubMember();
             List<ClubMember> clubMembers = new List<ClubMember>();
             foreach (var Id in input.PractitionerIds)
             {
-                clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == Id).FirstOrDefault();
-                clubMember.IsNewInClub = true;
-                clubMember.ClubId = input.ClubId;
-                clubMember.UpdatedBy = _applicationUserId;
-                clubMember.UpdatedDate = DateTime.Now;
-                clubMember.DateClubJoined = DateTime.Now;
+                oldClubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == Id && x.IsActive == true)
+                    .Include(x => x.Practitioner)
+                    .ThenInclude(x => x.User)
+                    .FirstOrDefault();
+               
+                newClubMember.IsNewInClub = true;
+                newClubMember.ClubId = input.ClubId;
+                newClubMember.UpdatedBy = _applicationUserId;
+                newClubMember.UpdatedDate = DateTime.Now;
+                newClubMember.DateClubJoined = DateTime.Now;
+                newClubMember.PractitionerId = Id;
+                newClubMember.ShareContactInfo = oldClubMember.ShareContactInfo;
+                newClubMember.IsActive = true;
+                newClubMember.WelcomeMessage = oldClubMember.WelcomeMessage;
 
-                clubMembers.Add(clubMember);
-                _clubMemberRepo.Update(clubMember);
+                _clubMemberRepo.Delete(oldClubMember.Id);
+                newClubMember = _clubMemberRepo.Insert(newClubMember);
+                clubMembers.Add(newClubMember);
             }
 
             // Notify club members that they are in a new club
@@ -771,37 +781,19 @@ namespace EcdLink.Api.CoreApi.Services
                     .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
                     .OrderBy(x => x.FirstName).ToList();
                 
-                if (item.MeetingDate.Value.Date <= DateTime.Now.Date)
+                pastMeetings.Add(new ActivityMeetRegularDetail()
                 {
-                    pastMeetings.Add(new ActivityMeetRegularDetail()
-                    {
-                        Id = item.Id,
-                        MeetingDate = (DateTime)item.MeetingDate,
-                        MeetingAttendancePerc = Math.Round(meetingAttendancePerc, 0),
-                        MeetingAttendanceColor = meetingAttendanceColor,
-                        MeetingNotes = item.MeetingNotes,
-                        MeetingParticipants = meetingParticipants,
-                        MeetingAbsentees = meetingAbsentees,
-                        ClubLeaderContacted = item.ClubLeaderContacted,
-                        Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
-                    });
-                } else
-                {
-                    upcomingMeetings.Add(new ActivityMeetRegularDetail()
-                    {
-                        Id = item.Id,
-                        EventId = item.EventId,
-                        Name = item.Name,
-                        MeetingDate = (DateTime)item.MeetingDate,
-                        MeetingAttendancePerc = Math.Round(meetingAttendancePerc, 0),
-                        MeetingAttendanceColor = meetingAttendanceColor,
-                        MeetingNotes = item.MeetingNotes,
-                        MeetingParticipants = meetingParticipants,
-                        MeetingAbsentees = meetingAbsentees,
-                        ClubLeaderContacted = item.ClubLeaderContacted,
-                        Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
-                    });
-                }
+                    Id = item.Id,
+                    MeetingDate = (DateTime)item.MeetingDate,
+                    MeetingAttendancePerc = Math.Round(meetingAttendancePerc, 0),
+                    MeetingAttendanceColor = meetingAttendanceColor,
+                    MeetingNotes = item.MeetingNotes,
+                    MeetingParticipants = meetingParticipants,
+                    MeetingAbsentees = meetingAbsentees,
+                    ClubLeaderContacted = item.ClubLeaderContacted,
+                    EventId = item.EventId,
+                    Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
+                });
             }
 
             // get user ids to fetch calendar events
@@ -836,7 +828,7 @@ namespace EcdLink.Api.CoreApi.Services
                 foreach (var participant in calendarEvent.Participants)
                 {
                     meetingParticipants.Add(
-                        new ClubUser { UserId = participant.UserId, 
+                        new ClubUser { UserId = participant.ParticipantUserId, 
                                        FirstName = participant.ParticipantUser.FirstName, 
                                        Surname = participant.ParticipantUser.Surname, 
                                        ProfileImageUrl = participant.ParticipantUser.ProfileImageUrl });
@@ -1601,6 +1593,7 @@ namespace EcdLink.Api.CoreApi.Services
             var secondaryDescription = "";
 
             // Get meeting attendance details for last month
+            var lastMonthPointsTotal = club.ClubPoints.Where(x => x.Month == prevMonth.Month && x.Year == prevMonth.Year).Sum(x => x.Points);
             var attendance = 0.0;
             int totalMembers = club.ClubMembers.Count();
             var attendanceRecords = _clubMeetingRegisterRepo.GetAll().Where(x =>
@@ -1660,7 +1653,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Priority 13 - X % club attendance in Nov(green)->show if the club's meeting attendance was 80% or more in the previous month;
-            if (attendance >= 80)
+            if (DateTime.Now.Month > 1 && attendance >= 80)
             {
                 secondaryText = $"{attendance} {Constants.ClubSettings.club_attendance} {monthName}";
                 secondaryTextColor = MetricsColorEnum.Success.ToString();
@@ -1668,9 +1661,9 @@ namespace EcdLink.Api.CoreApi.Services
 
             var percPointsEarned = Math.Round((double)pointsTotal / (double)maxPointsTotal * 100, 0);
             // Priority 12 - X points earned in Nov(green)->show if the club earned 80 % or more of the monthly max points for the club (see club points tab for detail) ;
-            if (club.LeagueId != null && percPointsEarned >= 80)
+            if (DateTime.Now.Month > 1 && club.LeagueId != null && percPointsEarned >= 80)
             {
-                secondaryText = $"{percPointsEarned} {Constants.ClubSettings.points_earned} {monthName}";
+                secondaryText = $"{lastMonthPointsTotal} {Constants.ClubSettings.points_earned} {monthName}";
                 secondaryTextColor = MetricsColorEnum.Success.ToString();
             }
 
@@ -1683,7 +1676,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Priority 10 - X % club attendance in Nov(amber)->show if the club's meeting attendance was 60 to 79%, inclusive in the previous month;
-            if (attendance >= 60 && attendance < 80)
+            if (DateTime.Now.Month > 1 && attendance >= 60 && attendance < 80)
             {
                 secondaryText = $"{attendance} {Constants.ClubSettings.club_attendance} {monthName}";
                 secondaryTextColor = MetricsColorEnum.Warning.ToString();
@@ -1691,9 +1684,9 @@ namespace EcdLink.Api.CoreApi.Services
             }
             
             // Priority 9 - X points earned in Nov(amber)->show if the club earned less than 80 % of the max points for the club (see club points tab for detail) ;
-            if (club.LeagueId != null && percPointsEarned < 80)
+            if (DateTime.Now.Month > 1 && club.LeagueId != null && percPointsEarned < 80)
             {
-                secondaryText = $"{percPointsEarned} {Constants.ClubSettings.points_earned} {monthName}";
+                secondaryText = $"{lastMonthPointsTotal} {Constants.ClubSettings.points_earned} {monthName}";
                 secondaryTextColor = MetricsColorEnum.Warning.ToString();
             }
 
@@ -1736,7 +1729,7 @@ namespace EcdLink.Api.CoreApi.Services
             }
 
             // Priority 6 - X % club attendance in Nov(red)->show if the club's meeting attendance was less than 60% in the previous month
-            if (attendance < 60)
+            if (DateTime.Now.Month > 1 && attendance < 60)
             {
                 secondaryText = $"{attendance} {Constants.ClubSettings.club_attendance} {monthName}";
                 secondaryTextColor = MetricsColorEnum.Error.ToString();
@@ -1783,12 +1776,6 @@ namespace EcdLink.Api.CoreApi.Services
             // Priority 1 - No club leader->IF the club does not have a club leader assigned
             if (activeClubLeader == null)
             {
-                secondaryText = Constants.ClubSettings.no_club_leader;
-                secondaryTextColor = MetricsColorEnum.Error.ToString();
-                secondaryDescription = Constants.ClubSettings.assign_club_leader;
-            }
-            else
-            {
                 var pendingClubLeader = club.ClubLeaders.FirstOrDefault(x => x.IsActive && !x.DateAccepted.HasValue && x.DateAssigned.HasValue);
                 if (pendingClubLeader != null)
                 {
@@ -1796,7 +1783,14 @@ namespace EcdLink.Api.CoreApi.Services
                     secondaryTextColor = MetricsColorEnum.Error.ToString();
                     secondaryDescription = Constants.ClubSettings.contact_club_leader_name + pendingClubLeader.Practitioner.User.FirstName;
                 }
-            }
+                else
+                {
+                    secondaryText = Constants.ClubSettings.no_club_leader;
+                    secondaryTextColor = MetricsColorEnum.Error.ToString();
+                    secondaryDescription = Constants.ClubSettings.assign_club_leader;
+                }
+            }            
+             
             // Do we need to return the attendance also as with previous function?
             // Only one priority can be shipped to front-end
             tasks.Add(new IssueTask()

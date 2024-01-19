@@ -355,6 +355,10 @@ namespace ECDLink.ContentManagement.Repositories
             {
                 fileExt = ".mkv";
             }
+            if (fileStr.ToLower().EndsWith("m4v"))
+            {
+                fileExt = ".m4v";
+            }
             if (fileStr.ToLower().EndsWith("mp4"))
             {
                 fileExt = ".mp4";
@@ -366,6 +370,10 @@ namespace ECDLink.ContentManagement.Repositories
             if (fileStr.ToLower().EndsWith("webm"))
             {
                 fileExt = ".webm";
+            }
+            if (fileStr.ToLower().EndsWith("pdf"))
+            {
+                fileExt = ".pdf";
             }
             return fileExt;
         }

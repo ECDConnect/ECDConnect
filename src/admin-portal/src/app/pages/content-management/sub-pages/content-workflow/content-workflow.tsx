@@ -4,20 +4,12 @@ import {
   ContentTypeDto,
   ContentValueDto,
   LanguageDto,
-  camelCaseToSentanceCase,
 } from '@ecdlink/core';
-import {
-  ArrowLeftIcon,
-  CheckCircleIcon,
-  DocumentDuplicateIcon,
-  XCircleIcon,
-} from '@heroicons/react/outline';
 import { classNames } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentManagementView } from '../../content-management-models';
 import ContentCompare from './components/content-compare/content-compare';
 import ContentEdit from './components/content-edit/content-edit';
-import ContentView from './components/content-view/content-view';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import CreateStory from '../content-list/components/create-story/create-story';
 import CreateTheme from './components/create-theme/create-theme';
@@ -215,7 +207,7 @@ export default function ContentWorkflow({
             languages
               ?.filter((item) => item?.isActive === true)
               .map((item: LanguageDto, index: number) => (
-                <div className={'w-3/12'}>
+                <div className={'w-3/12'} key={index}>
                   <a
                     key={index}
                     onClick={() => {

@@ -190,6 +190,7 @@ const CreateThemeForm: React.FC<CreateThemeFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <CombinedDatePickers
+                  contentValue={field.contentValue.value}
                   label={title}
                   nameProp={propName}
                   control={control}

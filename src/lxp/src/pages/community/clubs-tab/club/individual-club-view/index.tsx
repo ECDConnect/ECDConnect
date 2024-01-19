@@ -503,7 +503,7 @@ export const Club: React.FC = () => {
           />
           {!!totalMembers ? (
             <>
-              {!isDecember ? renderEndOfYearMessage : renderLeagueContent}
+              {isDecember ? renderEndOfYearMessage : renderLeagueContent}
               <Typography className="mb-2" type="h3" text="Club leader" />
               {hasLeader && (
                 <div>
