@@ -1,5 +1,4 @@
-﻿using Castle.Components.DictionaryAdapter.Xml;
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+﻿using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -26,7 +25,6 @@ using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Entities.Leagues;
 using ECDLink.DataAccessLayer.Entities.Licenses;
-using ECDLink.DataAccessLayer.Entities.PQA;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -178,8 +176,8 @@ public partial class SmartStartIntegrationService : IIntegrationService
         if (!Enum.TryParse(_options.Value.Mode, out _apiMode)) _apiMode = MappingMode.None;
         if (!Enum.TryParse(_options.Value.MaskDataMode, out _maskMode)) _maskMode = MappingMaskDataMode.None;
 
-        if (this.Enabled)
-        {
+       if (this.Enabled)
+       {
             _uId = _hierarchyEngine.GetIntegrationUserId();
 
             //Generic static repos
@@ -456,7 +454,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
     }
     public async Task<bool> PushPQAData()
     {
-        if (!this.Enabled) return false;
+       if (!this.Enabled) return false;
 
         await _logManager.IntegrationLog($"PushPQAData Started at {DateTime.Now}", null, null, LogRelatedType.Log, "PushPQAData");
 
@@ -497,7 +495,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                                                                         mappedTraineeId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
                 }
 
-                if (mappedVisitId == "")
+                if (mappedVisitId == null)
                 {
                     // License
                     var delicensingNotes = "";
@@ -637,9 +635,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 }
             }
         }
-
-        
-
             
         await _logManager.IntegrationLog($"PushPQAData Completed at {DateTime.Now}", "", null, LogRelatedType.Log, "PushPQAData");
         return true;
@@ -660,65 +655,100 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
                 x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
 
-        var hasCleanWater = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a1) != -1 ? "true" : "false";
-        var hasToilet = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a2) != -1 ? "true" : "false";
-        var hasHandwashing = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a3) != -1 ? "true" : "false";
-        var hasNoHarmfulSubstances = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a4) != -1 ? "true" : "false";
-        var hasNoFireHazards = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a5) != -1 ? "true" : "false";
-        var hasNoSharpObjects = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a6) != -1 ? "true" : "false";
-        var hasNoBurnRisks = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a7) != -1 ? "true" : "false";
-        var hasNoDrowningRisks = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a8) != -1 ? "true" : "false";
-        var hasNoElectrocutionRisks = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a9) != -1 ? "true" : "false";
-        var hasNoSmokeRisks = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a10) != -1 ? "true" : "false";
-        var hasNoFallingRisks = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a11) != -1 ? "true" : "false";
-        var hasNoAnimalRisks = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a12) != -1 ? "true" : "false";
-        var isInSafePlace = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a14) != -1 ? "true" : "false";
-        var hasFireExtinguishment = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15) != -1 ? "true" : "false";
-        var hasFirstAidKit = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a16) != -1 ? "true" : "false";
-        var hasEnoughPlaySpace = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a1) != -1 ? "true" : "false";
-        var isOutdoorsFenced = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a2) != -1 ? "true" : "false";
-        var isOutdoorsClean = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a13) != -1 ? "true" : "false";
-        var areEmergencyNumbersVisible = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a3) != -1 ? "true" : "false";
-        var isEmergencyPlanVisible = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a17) != -1 ? "true" : "false";
-        var hasNaturalVentilation = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a4) != -1 ? "true" : "false";
-        var numberOfAssistants = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.number_assistants) != -1 ? "true" : "false";
-        var capacity = smartSpaceAnswers != null && smartSpaceAnswers.IndexOf(Constants.SSSettings.capacity) != -1 ? "true" : "false";
 
-        // not available on PQA or ReAccreditation
-        var ownsProperty = "false";
-        var maximumCapacity = visitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
-        var doesNotExceedMaximumCapacity = maximumCapacity == null? "false" : maximumCapacity; 
+        var hasCleanWater = "false";
+        var hasToilet = "false";
+        var hasHandwashing = "false";
+        var hasNoHarmfulSubstances = "false";
+        var hasNoFireHazards = "false";
+        var hasNoSharpObjects = "false";
+        var hasNoBurnRisks = "false";
+        var hasNoDrowningRisks = "false";
+        var hasNoElectrocutionRisks = "false";
+        var hasNoSmokeRisks = "false";
+        var hasNoFallingRisks = "false";
+        var hasNoAnimalRisks = "false";
+        var isInSafePlace = "false";
+        var hasFireExtinguishment = "false";
+        var hasFirstAidKit = "false";
+        var hasEnoughPlaySpace = "false";
+        var isOutdoorsFenced = "false";
+        var isOutdoorsClean = "false";
+        var areEmergencyNumbersVisible = "false";
+        var isEmergencyPlanVisible = "false";
+        var hasNaturalVentilation = "false";
+        var numberOfAssistants = "false";
+        var capacity = "false";
+        var ownsProperty = "false"; // not available on PQA or ReAccreditation
+        var doesNotExceedMaximumCapacity = "false";
         var hasAcceptedSmartSpaceAgreement = "false";
-
         int programmeCount = 0; // not available on PQA and Accreditation
-
-        // Health Count
         int healthCount = 0; // pqa step 12, re-accreditation step 2;
-        healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a1) == -1 ? 0 : 1;
-        healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a2) == -1 ? 0 : 1;
-        healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a3) == -1 ? 0 : 1;
-        healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a4) == -1 ? 0 : 1;
-        healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a5) == -1 ? 0 : 1;
-        healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a6) == -1 ? 0 : 1;
-        healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a7) == -1 ? 0 : 1;
-
         int safetyCount = 0; // pqa step 12, re-accreditation step 2;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a8) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a9) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a10) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a11) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a12) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a13) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a14) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15b) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a16) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a17) == -1 ? 0 : 1;
-        safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a18) == -1 ? 0 : 1;
+        int unrequiredItemsScore = 0;
 
+        if (smartSpaceAnswers != null)
+        {
+            hasCleanWater = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a1) != -1 ? "true" : "false";
+            hasToilet = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a2) != -1 ? "true" : "false";
+            hasHandwashing = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a3) != -1 ? "true" : "false";
+            hasNoHarmfulSubstances = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a4) != -1 ? "true" : "false";
+            hasNoFireHazards = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a5) != -1 ? "true" : "false";
+            hasNoSharpObjects = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a6) != -1 ? "true" : "false";
+            hasNoBurnRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a7) != -1 ? "true" : "false";
+            hasNoDrowningRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a8) != -1 ? "true" : "false";
+            hasNoElectrocutionRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a9) != -1 ? "true" : "false";
+            hasNoSmokeRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a10) != -1 ? "true" : "false";
+            hasNoFallingRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a11) != -1 ? "true" : "false";
+            hasNoAnimalRisks = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a12) != -1 ? "true" : "false";
+            isInSafePlace = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a14) != -1 ? "true" : "false";
+            hasFireExtinguishment = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15) != -1 ? "true" : "false";
+            hasFirstAidKit = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a16) != -1 ? "true" : "false";
+            hasEnoughPlaySpace = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a1) != -1 ? "true" : "false";
+            isOutdoorsFenced = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a2) != -1 ? "true" : "false";
+            isOutdoorsClean = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a13) != -1 ? "true" : "false";
+            areEmergencyNumbersVisible = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a3) != -1 ? "true" : "false";
+            isEmergencyPlanVisible = smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a17) != -1 ? "true" : "false";
+            hasNaturalVentilation = smartSpaceAnswers.IndexOf(Constants.SSSettings.step13_q1_a4) != -1 ? "true" : "false";
+            numberOfAssistants = smartSpaceAnswers.IndexOf(Constants.SSSettings.number_assistants) != -1 ? "true" : "false";
+            capacity = smartSpaceAnswers.IndexOf(Constants.SSSettings.capacity) != -1 ? "true" : "false";
+
+            // Health Count
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a1) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a2) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a3) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a4) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a5) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a6) == -1 ? 0 : 1;
+            healthCount = healthCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a7) == -1 ? 0 : 1;
+
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a8) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a9) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a10) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a11) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a12) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a13) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a14) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a15b) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a16) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a17) == -1 ? 0 : 1;
+            safetyCount = safetyCount + smartSpaceAnswers.IndexOf(Constants.SSSettings.step12_q1_a18) == -1 ? 0 : 1;
+        }
+
+        if (visitAnswers != null)
+        {
+            var maximumCapacity = visitAnswers.Where(x => x.Question == Constants.SSSettings.step16_q4).Select(x => x.QuestionAnswer).FirstOrDefault();
+            doesNotExceedMaximumCapacity = maximumCapacity == null? "false" : maximumCapacity; 
+        }
+
+        if (spaceEmergencyPlanning != null)
+        {
+            unrequiredItemsScore = spaceEmergencyPlanning.Where(x => x.QuestionAnswer == "true").Count(); // step 13 on pqa
+        }
+        
         // Scores
         int requiredItemsScore = programmeCount + healthCount + safetyCount;
-        int unrequiredItemsScore = spaceEmergencyPlanning != null ? spaceEmergencyPlanning.Where(x => x.QuestionAnswer == "true").Count() : 0; // step 13 on pqa
         int totalScore = requiredItemsScore + unrequiredItemsScore;
 
         StringBuilder jsonPutPostString = new StringBuilder();
@@ -847,11 +877,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         var spaceEmergencyPlanning = visit.VisitAnswers.Where(x =>
                                 (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
                                 x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
-                        mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(smartSpaceCheckAnswers, spaceEmergencyPlanning, (DateTime)visit.ActualVisitDate.Value.Date, mappedTraineeId, mappedCoachId);
+                        mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
+                                                                                        mappedTraineeId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
+
                     }
                 }
 
-                if (mappedVisitId == null && mappedSpartSpaceVisitId != "")
+                if (mappedVisitId == null && mappedSpartSpaceVisitId != null)
                 {
                     // License
                     var delicensingNotes = "";
@@ -1679,7 +1711,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSSmartSpaceVisit) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
                 .Select(x => x.RemoteId).FirstOrDefault();
 
-            if (mappedTraineeId != null && mappedCoachId != null && mappedVisitId == "")
+            if (mappedTraineeId != null && mappedCoachId != null && mappedVisitId == null)
             {
                 // Answers for questions - smart_space_checklist
                 var hasCleanWater = visit.VisitAnswers.Where(x => x.Question == Constants.SSSettings.step12_q1_a1).Select(x => x.QuestionAnswer).FirstOrDefault();
