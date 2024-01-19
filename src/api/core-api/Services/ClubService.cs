@@ -781,37 +781,18 @@ namespace EcdLink.Api.CoreApi.Services
                     .Select(x => new ClubUser { UserId = x.Practitioner.UserId, FirstName = x.Practitioner.User.FirstName, Surname = x.Practitioner.User.Surname, ProfileImageUrl = x.Practitioner.User.ProfileImageUrl })
                     .OrderBy(x => x.FirstName).ToList();
                 
-                if (item.MeetingDate.Value.Date <= DateTime.Now.Date)
+                pastMeetings.Add(new ActivityMeetRegularDetail()
                 {
-                    pastMeetings.Add(new ActivityMeetRegularDetail()
-                    {
-                        Id = item.Id,
-                        MeetingDate = (DateTime)item.MeetingDate,
-                        MeetingAttendancePerc = Math.Round(meetingAttendancePerc, 0),
-                        MeetingAttendanceColor = meetingAttendanceColor,
-                        MeetingNotes = item.MeetingNotes,
-                        MeetingParticipants = meetingParticipants,
-                        MeetingAbsentees = meetingAbsentees,
-                        ClubLeaderContacted = item.ClubLeaderContacted,
-                        Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
-                    });
-                } else
-                {
-                    upcomingMeetings.Add(new ActivityMeetRegularDetail()
-                    {
-                        Id = item.Id,
-                        EventId = item.EventId,
-                        Name = item.Name,
-                        MeetingDate = (DateTime)item.MeetingDate,
-                        MeetingAttendancePerc = Math.Round(meetingAttendancePerc, 0),
-                        MeetingAttendanceColor = meetingAttendanceColor,
-                        MeetingNotes = item.MeetingNotes,
-                        MeetingParticipants = meetingParticipants,
-                        MeetingAbsentees = meetingAbsentees,
-                        ClubLeaderContacted = item.ClubLeaderContacted,
-                        Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
-                    });
-                }
+                    Id = item.Id,
+                    MeetingDate = (DateTime)item.MeetingDate,
+                    MeetingAttendancePerc = Math.Round(meetingAttendancePerc, 0),
+                    MeetingAttendanceColor = meetingAttendanceColor,
+                    MeetingNotes = item.MeetingNotes,
+                    MeetingParticipants = meetingParticipants,
+                    MeetingAbsentees = meetingAbsentees,
+                    ClubLeaderContacted = item.ClubLeaderContacted,
+                    Points = club.ClubPoints.Where(x => x.Month == item.MeetingDate.Value.Month && x.ClubPointsLibraryId == libraryItem.Id).Select(x => x.Points).FirstOrDefault()
+                });
             }
 
             // get user ids to fetch calendar events
