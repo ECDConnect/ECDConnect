@@ -220,7 +220,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
             _incomeManager = incomeManager;
             _visitManager = visitManager;
             _attendanceService = attendanceService;
-        }
+       }
     }
 
     public bool Enabled {  get { return this._apiMode != MappingMode.None; } }
@@ -470,9 +470,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
             jsonPutPostString.AppendLine("[{");
 
             // Mapped Ids
-            var mappedTraineeId = _mapperRepo.GetAll()
-                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSTrainee) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.UserId))
-                .Select(x => x.RemoteId).FirstOrDefault();
             var mappedCoachId = _mapperRepo.GetAll()
                 .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.CoachHierarchy.ToString()))
                 .Select(x => x.RemoteId).FirstOrDefault();
@@ -486,13 +483,13 @@ public partial class SmartStartIntegrationService : IIntegrationService
                 .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSSmartSpaceVisit) && x.RemoteEntity != "" && x.LocalId == visit.Id.ToString())
                 .Select(x => x.RemoteId).FirstOrDefault();
 
-            if (mappedPractitionerId != null || mappedTraineeId != null)
+            if (mappedPractitionerId != null)
             {
                 // get smart space visit ID if available
                 if (mappedSpartSpaceVisitId == null)
                 {
-                    mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date, 
-                                                                                        mappedTraineeId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
+                    mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
+                                                                                        mappedPractitionerId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
                 }
 
                 if (mappedVisitId == null)
@@ -586,7 +583,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     jsonPutPostString.AppendLine("\"HasCollectedPlaykit\":" + hasCollectedPlaykit + ",");
                     jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + visit.ActualVisitDate.Value.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
                     jsonPutPostString.AppendLine("\"StatusOutcome\":\"" + statusOutcome + "\",");
-                    jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + (string.IsNullOrEmpty(mappedPractitionerId) ? mappedTraineeId : mappedPractitionerId) + "\"},");
+                    jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
 
                     _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":{\"Guid\": \"" + mappedCoachId + "\"},");
                     _ = string.IsNullOrEmpty(mappedSpartSpaceVisitId) ? jsonPutPostString.AppendLine("\"SmartSpaceVisit\": null") : jsonPutPostString.AppendLine("\"SmartSpaceVisit\":\"" + mappedSpartSpaceVisitId + "\"");
@@ -599,10 +596,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         var createApiResponse = await _apiManager.GetAPIHandlerResponse(createPQAUrl, null, null, null, false, false, jsonPutPostString.ToString());
                         if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
                         {
-                            // Update visit
-                            visit.IntegrationSubmitDate = DateTime.Now;
-                            _visitsRepo.Update(visit);
-
                             var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
                             var remoteRecordId = "";
                             if (returnObj != null)
@@ -612,18 +605,24 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                     remoteRecordId = returnObj[0].Guid.ToString();
                                 }
                             }
+                            if (remoteRecordId != "")
+                            {
+                                // Update visit
+                                visit.IntegrationSubmitDate = DateTime.Now;
+                                _visitsRepo.Update(visit);
 
-                            IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
-                            cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSPQA;
-                            cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLPQA;
-                            cgMapping.LocalId = visit.Id.ToString();
-                            cgMapping.RemoteId = remoteRecordId;
-                            cgMapping.UserId = visit.Practitioner.UserId;
-                            cgMapping.UpdatedBy = _uId;
-                            cgMapping.UpdatedDate = DateTime.Now;
-                            cgMapping.IsComplete = true;
-                            cgMapping.BeforeJSON = jsonPutPostString.ToString();
-                            _mapperRepo.Insert(cgMapping);
+                                IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSPQA;
+                                cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLPQA;
+                                cgMapping.LocalId = visit.Id.ToString();
+                                cgMapping.RemoteId = remoteRecordId;
+                                cgMapping.UserId = visit.Practitioner.UserId;
+                                cgMapping.UpdatedBy = _uId;
+                                cgMapping.UpdatedDate = DateTime.Now;
+                                cgMapping.IsComplete = true;
+                                cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                                _mapperRepo.Insert(cgMapping);
+                            }
 
                             await _logManager.IntegrationLog($"PushPQAData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushPQAData");
                         }
@@ -642,7 +641,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
 
     private async Task<string> AddSmartSpaceForPQAAndAccreditation(ICollection<VisitData> visitAnswers, 
                                                                    DateTime dateOfVisit,
-                                                                   string mappedTraineeId,
+                                                                   string mappedPractitionerId,
                                                                    string mappedCoachId,
                                                                    string visitId,
                                                                    string userId)
@@ -654,7 +653,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
         var spaceEmergencyPlanning = visitAnswers.Where(x =>
                 (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
                 x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
-
 
         var hasCleanWater = "false";
         var hasToilet = "false";
@@ -786,7 +784,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
         jsonPutPostString.AppendLine("\"IsEmergencyPlanVisible\":" + isEmergencyPlanVisible + ",");
         jsonPutPostString.AppendLine("\"HasNaturalVentilation\":" + hasNaturalVentilation + ",");
         jsonPutPostString.AppendLine("\"DateOfVisit\":\"" + dateOfVisit.Date.ToString("yyyy-MM-ddT00:00:00") + "\",");
-        jsonPutPostString.AppendLine("\"Trainee\":{\"Guid\": \"" + mappedTraineeId + "\"},");
+        jsonPutPostString.AppendLine("\"Franchisee\":{\"Guid\": \"" + mappedPractitionerId + "\"},");
         _ = string.IsNullOrEmpty(mappedCoachId) ? jsonPutPostString.AppendLine("\"Coach\": null,") : jsonPutPostString.AppendLine("\"Coach\":\"" + mappedCoachId + "\"");
 
         jsonPutPostString.AppendLine("}]");
@@ -805,18 +803,20 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         smartSpaceId = returnObj[0].Guid.ToString();
                     }
                 }
-
-                IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
-                cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSSmartSpaceVisit;
-                cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLSmartSpaceVisit;
-                cgMapping.LocalId = visitId;
-                cgMapping.RemoteId = smartSpaceId;
-                cgMapping.UserId = userId;
-                cgMapping.UpdatedBy = _uId;
-                cgMapping.UpdatedDate = DateTime.Now;
-                cgMapping.IsComplete = true;
-                cgMapping.BeforeJSON = jsonPutPostString.ToString();
-                _mapperRepo.Insert(cgMapping);
+                if (smartSpaceId != "")
+                {
+                    IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                    cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSSmartSpaceVisit;
+                    cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLSmartSpaceVisit;
+                    cgMapping.LocalId = visitId;
+                    cgMapping.RemoteId = smartSpaceId;
+                    cgMapping.UserId = userId;
+                    cgMapping.UpdatedBy = _uId;
+                    cgMapping.UpdatedDate = DateTime.Now;
+                    cgMapping.IsComplete = true;
+                    cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                    _mapperRepo.Insert(cgMapping);
+                }
 
                 await _logManager.IntegrationLog($"SmartSpaceForPQAAndAccreditation Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "SmartSpaceForPQAAndAccreditation");
             }
@@ -850,9 +850,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
             jsonPutPostString.AppendLine("[{");
 
             // Mapped Ids
-            var mappedTraineeId = _mapperRepo.GetAll()
-                .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSTrainee) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.UserId))
-                .Select(x => x.RemoteId).FirstOrDefault();
             var mappedCoachId = _mapperRepo.GetAll()
                 .Where(x => x.LocalEntity.Equals(Constants.SSIntegrationSettings.SSCoach) && x.RemoteEntity != "" && x.LocalId != null && string.Equals(x.UserId, visit.Practitioner.CoachHierarchy.ToString()))
                 .Select(x => x.RemoteId).FirstOrDefault();
@@ -878,7 +875,7 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 (x.Question == Constants.SSSettings.step13_q1_a1 || x.Question == Constants.SSSettings.step13_q1_a2 ||
                                 x.Question == Constants.SSSettings.step13_q1_a3 || x.Question == Constants.SSSettings.step13_q1_a4)).ToList();
                         mappedSpartSpaceVisitId = await AddSmartSpaceForPQAAndAccreditation(visit.VisitAnswers, (DateTime)visit.ActualVisitDate.Value.Date,
-                                                                                        mappedTraineeId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
+                                                                                        mappedPractitionerId, mappedCoachId, visit.Id.ToString(), visit.Practitioner.UserId);
 
                     }
                 }
@@ -994,10 +991,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                         var createApiResponse = await _apiManager.GetAPIHandlerResponse(createPQAUrl, null, null, null, false, false, jsonPutPostString.ToString());
                         if (!string.IsNullOrEmpty(createApiResponse.ResponseString) && createApiResponse.Success)
                         {
-                            // Update visit
-                            visit.IntegrationSubmitDate = DateTime.Now;
-                            _visitsRepo.Update(visit);
-
                             var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(createApiResponse.ResponseString);
                             var remoteRecordId = "";
                             if (returnObj != null)
@@ -1008,18 +1001,24 @@ public partial class SmartStartIntegrationService : IIntegrationService
                                 }
                             }
 
-                            IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
-                            cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSAnnualAccreditation;
-                            cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLAnnualAccreditation;
-                            cgMapping.LocalId = visit.Id.ToString();
-                            cgMapping.RemoteId = remoteRecordId;
-                            cgMapping.UserId = visit.Practitioner.UserId;
-                            cgMapping.UpdatedBy = _uId;
-                            cgMapping.UpdatedDate = DateTime.Now;
-                            cgMapping.IsComplete = true;
-                            cgMapping.BeforeJSON = jsonPutPostString.ToString();
-                            _mapperRepo.Insert(cgMapping);
+                            if (remoteRecordId != "")
+                            {
+                                // Update visit
+                                visit.IntegrationSubmitDate = DateTime.Now;
+                                _visitsRepo.Update(visit);
 
+                                IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                                cgMapping.LocalEntity = Constants.SSIntegrationSettings.SSAnnualAccreditation;
+                                cgMapping.RemoteEntity = Constants.SSIntegrationSettings.SLAnnualAccreditation;
+                                cgMapping.LocalId = visit.Id.ToString();
+                                cgMapping.RemoteId = remoteRecordId;
+                                cgMapping.UserId = visit.Practitioner.UserId;
+                                cgMapping.UpdatedBy = _uId;
+                                cgMapping.UpdatedDate = DateTime.Now;
+                                cgMapping.IsComplete = true;
+                                cgMapping.BeforeJSON = jsonPutPostString.ToString();
+                                _mapperRepo.Insert(cgMapping);
+                            }
                             await _logManager.IntegrationLog($"PushReAccreditationData Inserted at {DateTime.Now}", $"{jsonPutPostString.ToString()}", null, LogRelatedType.Log, "PushReAccreditationData");
                         }
                     }
@@ -1027,7 +1026,6 @@ public partial class SmartStartIntegrationService : IIntegrationService
                     {
                         await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushReAccreditationData ");
                     }
-
                 }
             }
         }
