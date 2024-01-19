@@ -273,6 +273,7 @@ const CreateStoryForm: React.FC<CreateStoryFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <CombinedDatePickers
+                  contentValue={field.contentValue.value}
                   label={title}
                   nameProp={propName}
                   control={control}
