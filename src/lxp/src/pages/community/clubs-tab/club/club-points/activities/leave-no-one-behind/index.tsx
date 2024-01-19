@@ -66,14 +66,8 @@ export const LeaveNoOneBehind: React.FC = () => {
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
 
-  // SUPPRESS DATE RULES
-  /////////////////////////////////////////////////////////
-  // Date rules
-  // const isDecember = currentMonth === 11;
-  // const isLeagueStarts = currentMonth >= 3;
-  const isDecember = false;
-  const isLeagueStarts = true;
-  /////////////////////////////////////////////////////////
+  const isDecember = currentMonth === 11;
+  const isLeagueStarts = currentMonth >= 3;
 
   const isClubInALeague = !!club?.league;
   const isToShowPoints = isLeagueStarts && isClubInALeague;

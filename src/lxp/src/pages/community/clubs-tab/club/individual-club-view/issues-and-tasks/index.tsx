@@ -92,7 +92,6 @@ export const IssuesAndTasks = ({
     [issuesAndTasks, setIssuesAndTasks]
   );
 
-  // TODO: integrate these items -> EC-1390, EC-1397 and EC-1398
   const itemsFromBackend = club?.issuesTasks?.filter(
     (item) =>
       !item?.secondaryText?.includes(IssuesTasks.notAcceptedClubLeader) &&
@@ -171,11 +170,16 @@ export const IssuesAndTasks = ({
         subTitle: missingRegister?.secondaryDescription,
         iconBackgroundColor: 'errorMain',
         backgroundColor: 'errorBg',
-        // TODO: add navigation
-        onActionClick: () => {},
+        onActionClick: () =>
+          onOnlineNavigation(
+            ROUTES.COMMUNITY.CLUB.POINTS.MEET_REGULARLY.PLAYGROUP_REASSIGNED.replace(
+              ':clubId',
+              clubId
+            )
+          ),
       });
     }
-  }, [addIssuesAndTasksItem, itemsFromBackend]);
+  }, [addIssuesAndTasksItem, clubId, itemsFromBackend, onOnlineNavigation]);
 
   const getClubAttendanceItem = useCallback(() => {
     // if practitioner attendance at the previous month's club meeting was less than 60%
