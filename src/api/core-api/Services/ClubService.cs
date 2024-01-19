@@ -451,19 +451,29 @@ namespace EcdLink.Api.CoreApi.Services
 
         public bool MoveClubMembers(NewClubMember input)
         {
-            ClubMember clubMember = new ClubMember();
+            ClubMember oldClubMember = new ClubMember();
+            ClubMember newClubMember = new ClubMember();
             List<ClubMember> clubMembers = new List<ClubMember>();
             foreach (var Id in input.PractitionerIds)
             {
-                clubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == Id).FirstOrDefault();
-                clubMember.IsNewInClub = true;
-                clubMember.ClubId = input.ClubId;
-                clubMember.UpdatedBy = _applicationUserId;
-                clubMember.UpdatedDate = DateTime.Now;
-                clubMember.DateClubJoined = DateTime.Now;
+                oldClubMember = _clubMemberRepo.GetAll().Where(x => x.PractitionerId == Id && x.IsActive == true)
+                    .Include(x => x.Practitioner)
+                    .ThenInclude(x => x.User)
+                    .FirstOrDefault();
+               
+                newClubMember.IsNewInClub = true;
+                newClubMember.ClubId = input.ClubId;
+                newClubMember.UpdatedBy = _applicationUserId;
+                newClubMember.UpdatedDate = DateTime.Now;
+                newClubMember.DateClubJoined = DateTime.Now;
+                newClubMember.PractitionerId = Id;
+                newClubMember.ShareContactInfo = oldClubMember.ShareContactInfo;
+                newClubMember.IsActive = true;
+                newClubMember.WelcomeMessage = oldClubMember.WelcomeMessage;
 
-                clubMembers.Add(clubMember);
-                _clubMemberRepo.Update(clubMember);
+                _clubMemberRepo.Delete(oldClubMember.Id);
+                newClubMember = _clubMemberRepo.Insert(newClubMember);
+                clubMembers.Add(newClubMember);
             }
 
             // Notify club members that they are in a new club
