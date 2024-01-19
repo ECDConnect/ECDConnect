@@ -49,6 +49,7 @@ export default function ContentEdit({
   savedContent,
   cancelCompare,
 }: ContentViewProps) {
+  const [acceptedFileFormats, setAcceptedFileFormats] = useState<any>();
   const { setNotification } = useNotifications();
   const { register, formState, setValue, handleSubmit, control } = useForm();
   const { errors } = formState;
@@ -177,6 +178,14 @@ export default function ContentEdit({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contentType, contentValues, selectedLanguageId]);
+
+  useEffect(() => {
+    if (contentType) {
+      if (contentType.name === 'CoachingCircleTopics') {
+        setAcceptedFileFormats(['pdf']);
+      }
+    }
+  }, [contentType]);
 
   const getRenderField = (
     field: ContentTypeFieldDto
@@ -316,6 +325,7 @@ export default function ContentEdit({
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              acceptedFileFormats={acceptedFileFormats}
             />
           </div>
 

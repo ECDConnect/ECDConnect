@@ -98,7 +98,7 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <Alert
                 className="mt-2 mb-2 rounded-md"
-                message={`Editing the image here will update the image for all translations of this page.`}
+                message={`Editing the file here will update the file for all translations of this page.`}
                 type="warning"
               />
               <div className="sm:col-span-12">
@@ -186,6 +186,9 @@ const DynamicForm: React.FC<DynamicFormProps> = ({
             <div key={propName} className={contentWrapper}>
               <div className="sm:col-span-12">
                 <CombinedDatePickers
+                  contentValue={
+                    field.contentValue ? field.contentValue.value : ''
+                  }
                   label={title}
                   nameProp={propName}
                   control={control}
