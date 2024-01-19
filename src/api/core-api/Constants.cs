@@ -284,10 +284,13 @@ namespace EcdLink.Api.CoreApi
             public const string step12_q1_a13 = "If children use an outdoor area, it is clean, with no litter or animal faeces.";
             public const string step12_q1_a14 = "The venue is in an area that is known as a safe place in the community.";
             public const string step12_q1_a15 = "There is at minimum a bucket of sand available in case of fires or fire blanket or extinguisher.";
+            public const string step12_q1_a15b = "There is at minimum a bucket of sand available in case of fires or the fire blanket or extinguisher.";
             public const string step12_q1_a16 = "There is a basic first aid kit in case of accidents.";
             public const string step12_q1_a17 = "There is an emergency plan displayed on the wall (can use one from Starter pack).";
+            public const string step12_q1_a18 = "There is an emergency plan displayed on the wall (can use one from Start pack).";
 
             public const string step13_q1 = "These standards are also required.  If they are not in place, SmartStarters should be able to show how they are working towards them.";
+
             public const string step13_q1_b = "Additional standards";
             public const string step13_q1_a1 = "The venue offers children enough space to play freely (about one square metre per child).";
             public const string step13_q1_a2 = "If children use an outdoor area, it is fenced with a lockable gate.";
