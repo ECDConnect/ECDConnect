@@ -4093,6 +4093,7 @@ export type IncomeItemModel = {
 export type IncomeStatementModel = {
   __typename?: 'IncomeStatementModel';
   balance: Scalars['Float'];
+  contactedByCoach: Scalars['Boolean'];
   expenseItems?: Maybe<Array<Maybe<ExpenseItemModel>>>;
   expenseTotal: Scalars['Float'];
   id: Scalars['UUID'];
@@ -6163,6 +6164,7 @@ export type Mutation = {
   updateTraineeAddress?: Maybe<Trainee>;
   updateUser?: Maybe<ApplicationUser>;
   updateUserConsent?: Maybe<UserConsent>;
+  updateUserContactStatusForStatement?: Maybe<StatementsIncomeStatement>;
   updateUserHierarchyEntity?: Maybe<UserHierarchyEntity>;
   updateVisit?: Maybe<Visit>;
   updateVisitBackReferral?: Maybe<VisitBackReferral>;
@@ -8934,6 +8936,10 @@ export type MutationUpdateUserArgs = {
 export type MutationUpdateUserConsentArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<UserConsentInput>;
+};
+
+export type MutationUpdateUserContactStatusForStatementArgs = {
+  statementId: Scalars['UUID'];
 };
 
 export type MutationUpdateUserHierarchyEntityArgs = {
@@ -15064,6 +15070,7 @@ export type StatementsIncomeStatement = {
   annualSubmittedDate?: Maybe<Scalars['DateTime']>;
   autoSubmitted: Scalars['Boolean'];
   balance: Scalars['Float'];
+  contactedByCoach: Scalars['Boolean'];
   expenseItems?: Maybe<Array<Maybe<StatementsExpenses>>>;
   expenseTotal: Scalars['Float'];
   id: Scalars['UUID'];
@@ -15088,6 +15095,7 @@ export type StatementsIncomeStatementFilterInput = {
   annualSubmittedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   autoSubmitted?: InputMaybe<BooleanOperationFilterInput>;
   balance?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  contactedByCoach?: InputMaybe<BooleanOperationFilterInput>;
   expenseItems?: InputMaybe<ListFilterInputTypeOfStatementsExpensesFilterInput>;
   expenseTotal?: InputMaybe<ComparableDoubleOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -15112,6 +15120,7 @@ export type StatementsIncomeStatementInput = {
   AnnualSubmittedDate?: InputMaybe<Scalars['DateTime']>;
   AutoSubmitted: Scalars['Boolean'];
   Balance: Scalars['Float'];
+  ContactedByCoach: Scalars['Boolean'];
   ExpenseItems?: InputMaybe<Array<InputMaybe<StatementsExpensesInput>>>;
   ExpenseTotal: Scalars['Float'];
   Id?: InputMaybe<Scalars['UUID']>;
@@ -15133,6 +15142,7 @@ export type StatementsIncomeStatementSortInput = {
   annualSubmittedDate?: InputMaybe<SortEnumType>;
   autoSubmitted?: InputMaybe<SortEnumType>;
   balance?: InputMaybe<SortEnumType>;
+  contactedByCoach?: InputMaybe<SortEnumType>;
   expenseTotal?: InputMaybe<SortEnumType>;
   id?: InputMaybe<SortEnumType>;
   incomeTotal?: InputMaybe<SortEnumType>;

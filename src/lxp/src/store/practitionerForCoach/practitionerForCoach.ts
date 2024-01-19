@@ -8,6 +8,7 @@ import {
   getUserExpensesForCoach,
   getUserIncomeForCoach,
   getUserStatementsForCoach,
+  updateUserContactStatusForStatement,
 } from './practitionerForCoach.actions';
 import { PractitionerForCoachState } from './practitionerForCoach.types';
 import { getUserPointsSummaryForCoach } from '../points/points.actions';
@@ -33,6 +34,42 @@ const practitionerForCoachSlice = createSlice({
     updatePractitioner: (state, action: PayloadAction<PractitionerDto>) => {
       if (state.practitionerForCoach) {
         state.practitionerForCoach = action.payload;
+      }
+    },
+    updateStatementForPractitioner: (
+      state,
+      action: PayloadAction<{ userId: string; statementId: string }>
+    ) => {
+      if (!state.statementsForPractitionerUser) {
+        return;
+      }
+
+      const statement = state.statementsForPractitionerUser[
+        action.payload.userId
+      ]?.statements?.find(
+        (statement) => statement.id === action.payload.statementId
+      );
+
+      if (!!statement) {
+        const updatedStatements = [
+          ...state.statementsForPractitionerUser[
+            action.payload.userId
+          ]?.statements?.filter(
+            (statement) => statement.id !== action.payload.statementId
+          ),
+          {
+            ...statement,
+            contactedByCoach: true,
+          },
+        ];
+
+        state.statementsForPractitionerUser = {
+          ...state.statementsForPractitionerUser,
+          [action.payload.userId]: {
+            ...state.statementsForPractitionerUser[action.payload.userId],
+            statements: updatedStatements,
+          },
+        };
       }
     },
   },
@@ -74,6 +111,13 @@ const practitionerForCoachSlice = createSlice({
         },
       };
     });
+
+    builder.addCase(
+      updateUserContactStatusForStatement.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
 
     builder.addCase(getUserIncomeForCoach.fulfilled, (state, action) => {
       state.statementsForPractitionerUser = {

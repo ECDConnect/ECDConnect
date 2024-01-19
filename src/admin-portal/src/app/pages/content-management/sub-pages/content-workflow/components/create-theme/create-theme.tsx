@@ -12,7 +12,6 @@ import {
 import { MouseEvent, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
-import DynamicForm from '../../../../components/dynamic-form/dynamic-form';
 import {
   DynamicFormTemplate,
   FormTemplateField,
@@ -25,6 +24,7 @@ import {
   XIcon,
 } from '@heroicons/react/solid';
 import AlertModal from '../../../../../../components/dialog-alert/dialog-alert';
+import CreateThemeForm from './components/create-theme-form';
 
 export interface ContentViewProps {
   content: any;
@@ -38,7 +38,7 @@ export interface ContentViewProps {
   cancelCompare?: () => void;
 }
 
-export default function ContentEdit({
+export default function CreateTheme({
   content,
   selectedLanguageId,
   defaultLanguageId,
@@ -50,12 +50,11 @@ export default function ContentEdit({
   cancelCompare,
 }: ContentViewProps) {
   const { setNotification } = useNotifications();
-  const { register, formState, setValue, handleSubmit, control } = useForm();
+  const { register, formState, setValue, handleSubmit } = useForm();
   const { errors } = formState;
   const handleform = {
     register: register,
     errors: errors,
-    control: control,
   };
 
   const mutationName = `update${contentType?.name}`;
@@ -82,6 +81,24 @@ export default function ContentEdit({
     ${creationMutationName} (input: $input, localeId: $localeId) 
     }
 `;
+
+  const createthemeDay = gql`
+    mutation createThemeDay($input: ThemeDayInput!, $localeId: String!) {
+      createThemeDay(input: $input, localeId: $localeId)
+    }
+  `;
+
+  const updateThemeDay = gql`
+    mutation updateThemeDay(
+      $id: String!
+      $input: ThemeDayInput!
+      $localeId: String!
+    ) {
+      updateThemeDay(id: $id, input: $input, localeId: $localeId) {
+        id
+      }
+    }
+  `;
 
   const dialog = useDialog();
 
@@ -145,9 +162,19 @@ export default function ContentEdit({
 
   const [updateContent] = useMutation(updateMutation);
   const [createContent] = useMutation(createMutation);
+  const [updateThemeDayContent] = useMutation(updateThemeDay);
+  const [createThemeDayContent] = useMutation(createthemeDay);
 
   const [template, setTemplate] = useState<DynamicFormTemplate>();
   const [loading, setLoading] = useState<boolean>(false);
+  const [filteredThemeDays, setFilteredThemeDays] = useState([]);
+  const validation = filteredThemeDays.every(
+    (item) =>
+      item.smallGroupActivity &&
+      item.largeGroupActivity &&
+      item.storyBook &&
+      item.storyActivity
+  );
 
   useEffect(() => {
     if (contentType && contentValues && selectedLanguageId) {
@@ -214,10 +241,13 @@ export default function ContentEdit({
   };
 
   const onSubmit = async (values: any) => {
+    let themeDaysIds = [];
+    let newThemeId = '';
     setLoading(true);
     const model = { ...values };
+
     if (!content?.id) {
-      await createContent({
+      const createThemeResponse = await createContent({
         variables: {
           input: { ...model },
           localeId: selectedLanguageId.toString(),
@@ -225,6 +255,10 @@ export default function ContentEdit({
       }).catch(() => {
         setLoading(false);
       });
+
+      if (createThemeResponse) {
+        newThemeId = createThemeResponse?.data?.createTheme;
+      }
     } else {
       await updateContent({
         variables: {
@@ -242,11 +276,117 @@ export default function ContentEdit({
       variant: NOTIFICATION.SUCCESS,
     });
 
-    savedContent();
+    if (filteredThemeDays?.length > 0) {
+      for (let item of filteredThemeDays) {
+        if (
+          !item?.id &&
+          (item?.smallGroupActivity?.[0]?.id === '' ||
+            item?.smallGroupActivity === '')
+        ) {
+          savedContent();
+
+          setLoading(false);
+          return;
+        }
+
+        if (
+          item?.id &&
+          (item?.smallGroupActivity?.[0]?.id !== '' ||
+            item?.smallGroupActivity?.id !== '')
+        ) {
+          const updateThemeDayResponse = await updateThemeDayContent({
+            variables: {
+              id: item?.id.toString(),
+              input: {
+                day: item?.day,
+                name: item?.name,
+                smallGroupActivity:
+                  item?.smallGroupActivity?.[0]?.id.toString() ||
+                  item?.smallGroupActivity?.toString(),
+                largeGroupActivity:
+                  item?.largeGroupActivity?.[0]?.id.toString() ||
+                  item?.largeGroupActivity?.toString(),
+                storyActivity:
+                  item?.storyActivity?.[0]?.id.toString() ||
+                  item?.storyActivity?.toString(),
+                storyBook:
+                  item?.storyBook?.[0]?.id.toString() ||
+                  item?.storyBook?.toString(),
+              },
+              localeId: selectedLanguageId.toString(),
+            },
+          });
+          if (updateThemeDayResponse) {
+            setNotification({
+              title: `Changes saved!`,
+              variant: NOTIFICATION.SUCCESS,
+            });
+          }
+        }
+
+        if (
+          !item?.id &&
+          (item?.smallGroupActivity?.[0]?.id !== '' ||
+            item?.smallGroupActivity !== '')
+        ) {
+          const dayNumber = item?.idx + 1;
+          const updateThemeDayResponse = await createThemeDayContent({
+            variables: {
+              input: {
+                day: dayNumber.toString(),
+                name: `Day ${dayNumber?.toString()}`,
+                smallGroupActivity:
+                  item?.smallGroupActivity?.[0]?.id.toString() ||
+                  item?.smallGroupActivity?.toString(),
+                largeGroupActivity:
+                  item?.largeGroupActivity?.[0]?.id.toString() ||
+                  item?.largeGroupActivity?.toString(),
+                storyActivity:
+                  item?.storyActivity?.[0]?.id.toString() ||
+                  item?.storyActivity?.toString(),
+                storyBook:
+                  item?.storyBook?.[0]?.id.toString() ||
+                  item?.storyBook?.toString(),
+              },
+              localeId: selectedLanguageId.toString(),
+            },
+          });
+          if (updateThemeDayResponse) {
+            setNotification({
+              title: `Changes saved!`,
+              variant: NOTIFICATION.SUCCESS,
+            });
+
+            themeDaysIds?.push(
+              updateThemeDayResponse?.data?.createThemeDay?.toString()
+            );
+          }
+
+          const newModel = { ...model, themeDays: themeDaysIds?.toString() };
+
+          await updateContent({
+            variables: {
+              id: content?.id?.toString() || newThemeId,
+              input: { ...newModel },
+              localeId: selectedLanguageId.toString(),
+            },
+          }).catch(() => {
+            setLoading(false);
+          });
+        }
+      }
+
+      savedContent();
+
+      setLoading(false);
+      cancelEdit();
+    }
 
     setLoading(false);
 
-    cancelEdit();
+    savedContent();
+
+    setLoading(false);
   };
 
   if (
@@ -290,7 +430,7 @@ export default function ContentEdit({
               )}
             </div>
           </div>
-          <div className="rounded-xl bg-white px-12 pt-6 pb-8">
+          <div className="w-full rounded-xl bg-white px-12 pt-6 pb-8">
             {contentType?.name === 'Consent' ? (
               <Alert
                 className="mt-2 mb-2 rounded-md"
@@ -311,23 +451,29 @@ export default function ContentEdit({
               />
             )}
 
-            <DynamicForm
+            <CreateThemeForm
               template={template}
               handleform={handleform}
               setValue={setValue}
               defaultLanguageId={defaultLanguageId}
+              setFilteredThemeDays={setFilteredThemeDays}
             />
           </div>
 
           <div className="flex flex-row">
             <button
               type="submit"
-              className="bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              disabled={filteredThemeDays?.length < 16 || !validation}
+              className={`${
+                filteredThemeDays?.length < 16 || !validation
+                  ? 'opacity-25'
+                  : ''
+              } bg-secondary hover:bg-uiMid focus:outline-none mt-3 inline-flex items-center rounded-2xl border border-transparent px-14 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2`}
             >
               <SaveIcon width="22px" className="mr-2" />
               Save & publish
             </button>
-            {content?.id && content?.__typename !== 'ProgressTrackingLevel' && (
+            {content?.id && (
               <button
                 onClick={deleteAndRefresh}
                 className="hover:bg-tertiary border-tertiary focus:outline-none text-tertiary mt-3 ml-4 inline-flex items-center rounded-2xl border-2 bg-transparent  px-14 py-2.5 text-sm font-medium shadow-sm hover:text-white focus:ring-2 focus:ring-offset-2"

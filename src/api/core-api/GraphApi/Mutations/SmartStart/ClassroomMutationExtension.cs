@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ECDLink.Abstractrions.Constants;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -330,6 +331,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             [Service] IPointsEngineService pointsEngineService,
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            [Service] INotificationService notificationService,
             Guid classroomId,
             double? amount)
         {
@@ -344,6 +346,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             classroomRepo.Update(classroom);
 
             pointsEngineService.CalculatePreSchoolFees(uId, DateTime.Now);
+            if (classroom.UserId != null)
+            {
+                    notificationService.ExpireNotificationsTypesForUser(classroom.UserId, TemplateTypeConstants.UpdatePreschoolFee);
+            }
 
             return true;
         }

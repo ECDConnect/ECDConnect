@@ -1297,44 +1297,47 @@ namespace EcdLink.Api.CoreApi.Services
 
             Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
 
-            var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList(); ;
-            var childCount = children.Where(x => x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
-
-            if (childCount > 0)
+            if (practitioner != null)
             {
-                PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
-                int activityPoints = childCount * activity.Points;
+                var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+                var childCount = children.Where(x => x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
 
-                if (activity_record == null)
+                if (childCount > 0)
                 {
-                    InsertIndividualUserPoints(
-                        new PointsUser
-                        {
-                            Id = Guid.NewGuid(),
-                            IsActive = true,
-                            InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
-                            Month = today.Month,
-                            Year = today.Year,
-                            Points = activityPoints,
-                            UserId = userId,
-                            PointsLibraryId = activity.Id,
-                            Comment = "Total: " + childCount
-                        }
-                    );
+                    PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    int activityPoints = childCount * activity.Points;
+
+                    if (activity_record == null)
+                    {
+                        InsertIndividualUserPoints(
+                            new PointsUser
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                UpdatedBy = _uId,
+                                Month = today.Month,
+                                Year = today.Year,
+                                Points = activityPoints,
+                                UserId = userId,
+                                PointsLibraryId = activity.Id,
+                                Comment = "Total: " + childCount
+                            }
+                        );
+                    }
+                    else
+                    {
+                        activity_record.Points = activityPoints;
+                        activity_record.UpdatedDate = DateTime.Now;
+                        activity_record.UpdatedBy = _uId;
+                        UpdateIndividualUserPoints(activity_record);
+                    }
+                    UpdateUserSummaryPoints(
+                        userId,
+                        activity,
+                        today,
+                        (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
                 }
-                else
-                {
-                    activity_record.Points = activityPoints;
-                    activity_record.UpdatedDate = DateTime.Now;
-                    activity_record.UpdatedBy = _uId;
-                    UpdateIndividualUserPoints(activity_record);
-                }
-                UpdateUserSummaryPoints(
-                    userId, 
-                    activity, 
-                    today, 
-                    (practitioner.IsPrincipal.HasValue && practitioner.IsPrincipal.Value) || (practitioner.IsFundaAppAdmin.HasValue && practitioner.IsFundaAppAdmin.Value));
             }
             return true;
         }

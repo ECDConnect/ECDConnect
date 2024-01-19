@@ -4,6 +4,7 @@ export type NavigationItem = {
   name: string;
   href: string;
   current: boolean;
+  onNavigation?: (item: NavigationItem) => void;
   params?: any;
 };
 

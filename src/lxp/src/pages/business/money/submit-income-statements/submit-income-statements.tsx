@@ -254,7 +254,6 @@ export const SubmitIncomeStatements: React.FC = () => {
     }
 
     if (stepIndex === 8) {
-      console.log('Step 8');
       const el = document.getElementById('howMayDaysToSubmit');
 
       el?.scrollIntoView();

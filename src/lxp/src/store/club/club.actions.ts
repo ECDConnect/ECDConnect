@@ -8,6 +8,7 @@ import {
   ActivityMeetRegular,
   Club,
   ClubLeader,
+  ClubMeeting,
   ClubMember,
   ClubSupport,
   Coach,
@@ -68,6 +69,10 @@ export const ClubActions = {
   ADD_BE_CREATIVE_ACTIVITY: 'addBeCreativeActivity',
   ADD_FAMILY_DAY_MEETING: 'addFamilyDayMeeting',
   UPDATE_CLUB_SUPPORT_STATUS: 'updateClubSupportStatus',
+  GET_CLUB_MEETINGS_WITH_MISSING_REGISTERS:
+    'getClubMeetingsWithMissingRegisters',
+  SET_CONTACT_CLUB_LEADER_STATUS_FOR_MEETING:
+    'setContactClubLeaderStatusForMeeting',
 };
 
 export const getClubById = createAsyncThunk<
@@ -826,6 +831,56 @@ export const updateClubSupportStatus = createAsyncThunk<
         return await new ClubService(
           userAuth?.auth_token
         ).updateClubSupportStatus(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getClubMeetingsWithMissingRegisters = createAsyncThunk<
+  ClubMeeting[],
+  { clubId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.GET_CLUB_MEETINGS_WITH_MISSING_REGISTERS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).getClubMeetingsWithMissingRegisters(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const setContactClubLeaderStatusForMeeting = createAsyncThunk<
+  ClubMeeting,
+  { clubMeetingId: string },
+  ThunkApiType<RootState>
+>(
+  ClubActions.SET_CONTACT_CLUB_LEADER_STATUS_FOR_MEETING,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new ClubService(
+          userAuth?.auth_token
+        ).setContactClubLeaderStatusForMeeting(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
